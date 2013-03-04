@@ -6,8 +6,6 @@
 /*Variables used in controlling the buttons and such*/
 var tundralogicmodule = null;
 
-var moveButton = null;
-
 var isEnabled = null;
 var PresetsBox = null;
 
@@ -16,16 +14,12 @@ var radEA3 = null;
 var radEuclidean = null;
 
 var EuclBox = null;
-var cbEuclEnabled 
 var spnEuclRadius
 
 var RayBox = null;
-var cbRayEnabled = null;
-var spnRayRadius = null;
 var spnRayInt = null;
 
 var ModifiersBox = null;
-var cbRelEnabled = null;
 var spnRelRadius = null;
 
 var btnApply = null;
@@ -106,9 +100,6 @@ function CreateIMSettingsWindow()
     isEnabled = findChild(IMWidget, "chkFilterEnabled");
     isEnabled.stateChanged.connect(FilteringChanged);
 
-    moveButton = findChild(IMWidget, "btnMove");
-    moveButton.clicked.connect(MoveButtonClicked);
-
     btnApply  = findChild(IMWidget, "btnApply"); 
     btnApply.clicked.connect(ApplyButtonClicked);
 
@@ -124,21 +115,13 @@ function CreateIMSettingsWindow()
         radEuclidean.toggled.connect(EuclideanRadioButtonToggled);
 
     EuclBox = findChild(IMWidget, "EuclDistBox");
-        cbEuclEnabled = findChild(IMWidget, "chkEuclEnabled");
-        cbEuclEnabled.stateChanged.connect(EuclideanCheckBoxToggled);
         spnEuclRadius = findChild(IMWidget, "spnERadius");
         spnEuclRadius["valueChanged(int)"].connect(EuclideanSpinBoxChanged);
 
     RayBox = findChild(IMWidget, "RayVisibilityBox");
-        cbRayEnabled = findChild(IMWidget, "chkRayEnabled");
-        cbRayEnabled.stateChanged.connect(RayCheckBoxToggled);
-        spnRayRadius = findChild(IMWidget, "spnRayRadius");
-        spnRayRadius["valueChanged(int)"].connect(RaySpinBoxChanged);
         spnRayInt = findChild(IMWidget, "spnRayInt");
 
     ModifiersBox = findChild(IMWidget, "ModifiersBox");
-        cbRelEnabled = findChild(IMWidget, "chkRelEnabled");
-        cbRelEnabled.stateChanged.connect(RelevanceCheckBoxToggled);
         spnRelRadius = findChild(IMWidget, "spnRelRadius");
         spnRelRadius["valueChanged(int)"].connect(RelevanceSpinBoxChanged);
         spnUpdateInt = findChild(IMWidget, "spnUpdateInterval");
@@ -168,9 +151,6 @@ function FilteringChanged(value)
     {
         case 0:
             PresetsBox.setEnabled(false);
-            cbEuclEnabled.setChecked(false);
-            cbRayEnabled.setChecked(false);
-            cbRelEnabled.setChecked(false);
             EuclBox.setEnabled(false);
             RayBox.setEnabled(false);
             ModifiersBox.setEnabled(false);
@@ -196,16 +176,15 @@ function FilteringChanged(value)
 function ApplyButtonClicked(value)
 {
     var enabled = isEnabled.checked;
-    var eucl_e = cbEuclEnabled.checked;
-    var ray_e = cbRayEnabled.checked;
-    var rel_e = cbRelEnabled.checked;
+    var eucl_e = EuclBox.enabled;
+    var ray_e = RayBox.enabled;
+    var rel_e = ModifiersBox.enabled;
     var critrange = spnEuclRadius.value;
-    var rayrange = spnRayRadius.value;
     var relrange = spnRelRadius.value;
     var updateint = spnUpdateInt.value;
     var raycastint = spnRayInt.value;
 
-    syncmanager.UpdateInterestManagerSettings(enabled, eucl_e, ray_e, rel_e, critrange, rayrange, relrange, updateint, raycastint);
+    syncmanager.UpdateInterestManagerSettings(enabled, eucl_e, ray_e, rel_e, critrange, relrange, updateint, raycastint);
 }
 
 // Handles the Cancel button click events
@@ -214,39 +193,9 @@ function CancelButtonClicked(value)
     IMWidget.close();
 }
 
-// Handles the Start Moving buttons click event
-function MoveButtonClicked(value)
-{
-    /*Go through all entities and order them to start moving*/
-    var users = server.AuthenticatedUsers();
-
-    if (users.length > 0)
-        print("[InterestManagerDialog] Ordering the avatars to start moving!");
-    else
-        print("[InterestManagerDialog] No avatars present inside the environment at the moment. Aborting!");
-
-    for(var i = 0; i < users.length; i++)
-    {
-        var entity = framework.Scene().MainCameraScene().GetEntityByName("Avatar" + users[i].id);
-
-        if(entity != null)
-        {
-            print("[InterestManagerDialog] Telling Avatar" + users[i].id + " to start moving.");
-            entity.Exec(4, "StartMoving");
-        }
-        else
-            print("[InterestManagerDialog] Something went wrong!");
-    }
-}
-
 // Handles the A3 Radiobutton events
 function A3RadioButtonToggled(value)
 {
-    cbEuclEnabled.setChecked(true);
-    cbEuclEnabled.setEnabled(false);
-    cbRayEnabled.setChecked(false);
-    cbRelEnabled.setChecked(true);
-    cbRelEnabled.setEnabled(false);
     EuclBox.setEnabled(true);
     RayBox.setEnabled(false);
     ModifiersBox.setEnabled(true);
@@ -255,12 +204,6 @@ function A3RadioButtonToggled(value)
 // Handles the EA3 Radiobutton events
 function EA3RadioButtonToggled(value)
 {
-    cbEuclEnabled.setChecked(true);
-    cbEuclEnabled.setEnabled(false);
-    cbRayEnabled.setChecked(true);
-    cbRayEnabled.setEnabled(false);
-    cbRelEnabled.setChecked(true);
-    cbRelEnabled.setEnabled(false);
     EuclBox.setEnabled(true);
     RayBox.setEnabled(true);
     ModifiersBox.setEnabled(true);
@@ -269,72 +212,15 @@ function EA3RadioButtonToggled(value)
 // Handles the Euclidean Radiobutton events
 function EuclideanRadioButtonToggled(value)
 {
-    cbEuclEnabled.setChecked(true);
-    cbEuclEnabled.setEnabled(false);
-    cbRayEnabled.setChecked(false);
-    cbRelEnabled.setChecked(false);
     EuclBox.setEnabled(true);
     RayBox.setEnabled(false);
     ModifiersBox.setEnabled(false);
-}
-
-
-function EuclideanCheckBoxToggled(value)
-{
-    if(value == 2)
-    {
-        spnEuclRadius.setEnabled(true);
-        ModifiersBox.setEnabled(true);
-    }
-    else
-    {
-        spnEuclRadius.setEnabled(false);
-
-        if(!cbRayEnabled.checked)
-        {
-            cbRelEnabled.setChecked(false);
-            ModifiersBox.setEnabled(false);
-        }
-    }
 }
 
 function EuclideanSpinBoxChanged(value)
 {
     if((value + 1) > spnRelRadius.value)
         spnRelRadius.setValue(value + 1);
-}
-
-function RayCheckBoxToggled(value)
-{
-    if(value == 2)
-    {
-        spnRayRadius.setEnabled(true);
-        ModifiersBox.setEnabled(true);
-    }
-    else
-    {
-        spnRayRadius.setEnabled(false);
-
-        if(!cbEuclEnabled.checked)
-        {
-            cbRelEnabled.setChecked(false);
-            ModifiersBox.setEnabled(false);
-        }
-    }
-}
-
-function RaySpinBoxChanged(value)
-{
-    if((value + 1) > spnRelRadius.value)
-        spnRelRadius.setValue(value + 1);
-}
-
-function RelevanceCheckBoxToggled(value)
-{
-    if(value == 2)
-        spnRelRadius.setEnabled(true);
-    else
-        spnRelRadius.setEnabled(false);
 }
 
 function RelevanceSpinBoxChanged(value)
