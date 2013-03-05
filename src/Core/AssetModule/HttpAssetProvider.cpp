@@ -32,6 +32,10 @@
 #endif
 #endif // TUNDRA_NO_BOOST
 
+#ifdef __APPLE__
+#define _stricmp strcasecmp
+#endif
+
 #include "MemoryLeakCheck.h"
 
 static int MonthNameToInt(const char *month)
