@@ -77,6 +77,8 @@ public slots:
         const float3 &scale = float3(1.f,1.f,1.f), bool inspectForMaterialsAndSkeleton = true);
 
 private slots:
+    /// Reads possible client/server startup parameters and reacts to them upon application startup.
+    void ReadStartupParameters();
     void StartupSceneTransfedSucceeded(AssetPtr asset);
     void StartupSceneTransferFailed(IAssetTransfer *transfer, QString reason);
 
@@ -91,8 +93,6 @@ private:
     shared_ptr<Client> client_; ///< Client
     shared_ptr<Server> server_; ///< Server
     KristalliProtocolModule *kristalliModule_; ///< KristalliProtocolModule pointer
-    bool autoStartServer_; ///< Whether to autostart the server
-    unsigned short autoStartServerPort_; ///< Autostart server port
 };
 
 }
