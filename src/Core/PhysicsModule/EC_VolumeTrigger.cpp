@@ -195,7 +195,7 @@ void EC_VolumeTrigger::CheckForRigidBody()
 void EC_VolumeTrigger::OnPhysicsUpdate()
 {
     PROFILE(EC_VolumeTrigger_OnPhysicsUpdate);
-    for(EntitiesWithinVolumeMap::const_iterator it = entities_.begin(); it != entities_.end(); ++it)
+    for(EntitiesWithinVolumeMap::iterator it = entities_.begin(); it != entities_.end(); ++it)
     {
         if (!it->first.expired())
         {
@@ -210,7 +210,7 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
             }
             if (active)
             {
-                it = entities_.erase(it);
+                entities_.erase(it);
                 
                 if (entity)
                 {
