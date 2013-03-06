@@ -96,7 +96,7 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
         }
     }
 
-    EntityPtr entity = EntityPtr(new Entity(framework_, id, this));
+    EntityPtr entity = Entity::Instantiate(framework_, id, this);
     for(size_t i=0 ; i<(size_t)components.size() ; ++i)
     {
         ComponentPtr newComp = framework_->Scene()->CreateComponentByName(this, components[i]);
@@ -109,7 +109,7 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
     entities_[entity->Id()] = entity;
 
     // Remember the creation and signal at end of frame if EmitEntityCreated() not called for this entity manually
-    entitiesCreatedThisFrame_.push_back(std::make_pair(EntityWeakPtr(entity), change));
+    entitiesCreatedThisFrame_.push_back(std::make_pair(entity, change));
 
     return entity;
 }
