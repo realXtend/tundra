@@ -11,7 +11,7 @@ cmake_minimum_required(VERSION 2.5.5)
 # If TUNDRA_NO_BOOST is set to TRUE, kNet must also be built without Boost dependecy. In order to make the
 # Tundra build fully free of Boost, you must also build Ogre and AssImp, which depend on Boost by default,
 # with Boost disabled. See the dependencies scripts for instructions how to control this.
-option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." FALSE)
+option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." TRUE)
 
 macro(PrintUsedEnvVariables)
     # Print out the resolved variables. Note that this does not print the env variables
@@ -123,7 +123,7 @@ endmacro()
 
 # Adds the given folder_name into the source files of the current project. Use this macro when your module contains .cpp and .h files in several subdirectories.
 macro(AddSourceFolder folder_name)
-    file(GLOB H_FILES_IN_FOLDER_${folder_name} ${folder_name}/*.h)
+    file(GLOB H_FILES_IN_FOLDER_${folder_name} ${folder_name}/*.h ${folder_name}/*.inl)
     file(GLOB CPP_FILES_IN_FOLDER_${folder_name} ${folder_name}/*.cpp)
     source_group("Header Files\\${folder_name}" FILES ${H_FILES_IN_FOLDER_${folder_name}})
     source_group("Source Files\\${folder_name}" FILES ${CPP_FILES_IN_FOLDER_${folder_name}})
