@@ -99,6 +99,7 @@ private slots:
 private slots:
     void OnGraphicsSceneChanged(const QList<QRectF> &);
     void OnMouseEventReceived(MouseEvent *e);
+    void OnKeyEventReceived(KeyEvent *e);
     void OnDragEnterEvent(QDragEnterEvent *e);
     void OnDragLeaveEvent(QDragLeaveEvent *e);
     void OnDragMoveEvent(QDragMoveEvent *e);
@@ -109,6 +110,7 @@ private slots:
 private:
     void AttributesChanged();
     void SendMouseEvent(QEvent::Type type, const QPointF &point, MouseEvent *e);
+    void SendKeyEvent(QEvent::Type type, KeyEvent *e);
     void SendMouseScrollEvent(MouseEvent *e, const QPointF &ptOnScene);
     Ogre::MaterialPtr OgreMaterial() const;
 
