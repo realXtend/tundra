@@ -128,20 +128,13 @@ void EC_GraphicsViewCanvas::AttributesChanged()
 void EC_GraphicsViewCanvas::OnMouseEventReceived(MouseEvent *mouseEvent)
 {
     OgreWorldPtr world = ParentScene()->GetWorld<OgreWorld>();
-    if (!world)
-        return;
-
-    EC_Camera *mainCamera = world->Renderer()->MainCameraComponent();
+    EC_Camera *mainCamera = (world ? world->Renderer()->MainCameraComponent() : 0);
     if (!mainCamera)
         return;
 
     // Test if mouse is on top of the 3D canvas
-    QSize screenSize = framework->Ui()->GraphicsView()->size();
-    float x = (float)mouseEvent->x / (float)screenSize.width();
-    float y = (float)mouseEvent->y / (float)screenSize.height();
-
-    Ray mouseRay = mainCamera->GetMouseRay(x, y);
-
+    /// @todo code duplication
+    Ray mouseRay = mainCamera->ScreenPointToRay(mouseEvent->x, mouseEvent->y);
     RaycastResult *result = 0;
     EC_Mesh *mesh = ParentEntity() ? ParentEntity()->GetComponent<EC_Mesh>().get() : 0;
     if (mesh && mouseRay.Intersects(mesh->WorldOBB(), 0, 0))
@@ -149,7 +142,6 @@ void EC_GraphicsViewCanvas::OnMouseEventReceived(MouseEvent *mouseEvent)
 
     const bool mouseOnTopOfThisCanvas = result && result->entity == ParentEntity() &&
         (Ogre::uint)result->submesh == submesh.Get() && GetFramework()->Input()->IsMouseCursorVisible();
-
     if (!mouseOnTopOfThisCanvas)
     {
         inputContext->ClearMouseCursorOverride();
@@ -198,23 +190,14 @@ void EC_GraphicsViewCanvas::OnMouseEventReceived(MouseEvent *mouseEvent)
 void EC_GraphicsViewCanvas::OnKeyEventReceived(KeyEvent *keyEvent)
 {
     OgreWorldPtr world = ParentScene()->GetWorld<OgreWorld>();
-    if (!world)
-        return;
-
-    EC_Camera *mainCamera = world->Renderer()->MainCameraComponent();
+    EC_Camera *mainCamera = (world ? world->Renderer()->MainCameraComponent() : 0);
     if (!mainCamera)
         return;
-
     if (!graphicsScene->hasFocus())
         return;
-
-    QSize screenSize = framework->Ui()->GraphicsView()->size();
+    /// @todo code duplication
     QPoint mousePos = GetFramework()->Input()->MousePos();
-    float x = (float)mousePos.x() / (float)screenSize.width();
-    float y = (float)mousePos.y() / (float)screenSize.height();
-
-    Ray mouseRay = mainCamera->GetMouseRay(x, y);
-
+    Ray mouseRay = mainCamera->ScreenPointToRay(mousePos);
     RaycastResult *result = 0;
     EC_Mesh *mesh = ParentEntity() ? ParentEntity()->GetComponent<EC_Mesh>().get() : 0;
     if (mesh && mouseRay.Intersects(mesh->WorldOBB(), 0, 0))
@@ -241,12 +224,13 @@ void EC_GraphicsViewCanvas::OnKeyEventReceived(KeyEvent *keyEvent)
 
 void EC_GraphicsViewCanvas::OnDragEnterEvent(QDragEnterEvent *e)
 {
+    /// @todo code duplication
     QPoint mousePos = GetFramework()->Input()->MousePos();
     QGraphicsItem *itemUnderMouse = GetFramework()->Ui()->GraphicsView()->VisibleItemAtCoords(mousePos.x(), mousePos.y());
     const bool mouseOnTopOf2DMainUI = (itemUnderMouse != 0 && framework->Input()->IsMouseCursorVisible());
     if (!graphicsScene || !graphicsView || mouseOnTopOf2DMainUI)
         return;
-
+    /// @todo code duplication
     RaycastResult *result = ParentScene()->GetWorld<OgreWorld>()->Raycast(mousePos.x(), mousePos.y());
     const bool mouseOnTopOfThisCanvas = (result && result->entity == ParentEntity() && (Ogre::uint)result->submesh == submesh.Get());
     if (!mouseOnTopOfThisCanvas)
@@ -275,12 +259,13 @@ void EC_GraphicsViewCanvas::OnDragEnterEvent(QDragEnterEvent *e)
 
 void EC_GraphicsViewCanvas::OnDragLeaveEvent(QDragLeaveEvent *e)
 {
+    /// @todo code duplication
     QPoint mousePos = GetFramework()->Input()->MousePos();
     QGraphicsItem *itemUnderMouse = GetFramework()->Ui()->GraphicsView()->VisibleItemAtCoords(mousePos.x(), mousePos.y());
     const bool mouseOnTopOf2DMainUI = (itemUnderMouse != 0 && framework->Input()->IsMouseCursorVisible());
     if (!graphicsScene || !graphicsView || mouseOnTopOf2DMainUI)
         return;
-
+    /// @todo code duplication
     RaycastResult *result = ParentScene()->GetWorld<OgreWorld>()->Raycast(mousePos.x(), mousePos.y());
     const bool mouseOnTopOfThisCanvas = (result && result->entity == ParentEntity() && (Ogre::uint)result->submesh == submesh.Get());
     if (!mouseOnTopOfThisCanvas)
@@ -301,12 +286,13 @@ void EC_GraphicsViewCanvas::OnDragLeaveEvent(QDragLeaveEvent *e)
 
 void EC_GraphicsViewCanvas::OnDragMoveEvent(QDragMoveEvent *e)
 {
+    /// @todo code duplication
     QPoint mousePos = GetFramework()->Input()->MousePos();
     QGraphicsItem *itemUnderMouse = GetFramework()->Ui()->GraphicsView()->VisibleItemAtCoords(mousePos.x(), mousePos.y());
     const bool mouseOnTopOf2DMainUI = (itemUnderMouse != 0 && framework->Input()->IsMouseCursorVisible());
     if (!graphicsScene || !graphicsView || mouseOnTopOf2DMainUI)
         return;
-
+    /// @todo code duplication
     RaycastResult *result = ParentScene()->GetWorld<OgreWorld>()->Raycast(mousePos.x(), mousePos.y());
     const bool mouseOnTopOfThisCanvas = (result && result->entity == ParentEntity() && (Ogre::uint)result->submesh == submesh.Get());
     if (!mouseOnTopOfThisCanvas)
@@ -335,12 +321,13 @@ void EC_GraphicsViewCanvas::OnDragMoveEvent(QDragMoveEvent *e)
 
 void EC_GraphicsViewCanvas::OnDropEvent(QDropEvent *e)
 {
+    /// @todo code duplication
     QPoint mousePos = GetFramework()->Input()->MousePos();
     QGraphicsItem *itemUnderMouse = GetFramework()->Ui()->GraphicsView()->VisibleItemAtCoords(mousePos.x(), mousePos.y());
     const bool mouseOnTopOf2DMainUI = (itemUnderMouse != 0 && framework->Input()->IsMouseCursorVisible());
     if (!graphicsScene || !graphicsView || mouseOnTopOf2DMainUI)
         return;
-
+    /// @todo code duplication
     RaycastResult *result = ParentScene()->GetWorld<OgreWorld>()->Raycast(mousePos.x(), mousePos.y());
     const bool mouseOnTopOfThisCanvas = (result && result->entity == ParentEntity() && (Ogre::uint)result->submesh == submesh.Get());
     if (!mouseOnTopOfThisCanvas)
@@ -416,19 +403,10 @@ void EC_GraphicsViewCanvas::SendMouseScrollEvent(MouseEvent *e, const QPointF &p
 
 void EC_GraphicsViewCanvas::SendKeyEvent(QEvent::Type type, KeyEvent *e)
 {
-    Qt::KeyboardModifier modifer = Qt::NoModifier;
-
-    if (e->HasShiftModifier())
-        modifer = Qt::ShiftModifier;
-    else if (e->HasCtrlModifier())
-        modifer = Qt::ControlModifier;
-    else if (e->HasAltModifier())
-        modifer = Qt::AltModifier;
-
-    QKeyEvent keyEvent(type, e->keyCode, modifer, e->text, true, e->keyPressCount);
-    keyEvent.setAccepted(false);
-    e->handled = true;
+    QKeyEvent keyEvent(type, e->keyCode, (Qt::KeyboardModifiers)e->modifiers, e->text, e->keyPressCount > 1, e->keyPressCount);
     QApplication::sendEvent(graphicsView->scene(), &keyEvent);
+    if (keyEvent.isAccepted())
+        e->Suppress();
 }
 
 void EC_GraphicsViewCanvas::OnMaterialChanged(uint materialIndex, const QString &materialName)
