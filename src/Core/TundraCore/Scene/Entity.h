@@ -384,6 +384,9 @@ signals:
 
 private:
     friend class Scene;
+    // Workaround for the fact the make_shared cannot be used for classes with private constructor.
+    static EntityPtr Instantiate(Framework* framework, Scene* scene) { return MAKE_SHARED(Entity, framework, scene); }
+    static EntityPtr Instantiate(Framework* framework, entity_id_t id, Scene* scene) { return MAKE_SHARED(Entity, framework, id, scene); }
 
     /// Constructor
     /** @param framework Framework
