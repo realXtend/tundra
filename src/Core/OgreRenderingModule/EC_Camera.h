@@ -12,6 +12,8 @@
 
 #include <QImage>
 #include <QSize>
+#include <QPoint>
+
 #include <set>
 
 #include <OgreImage.h>
@@ -175,6 +177,7 @@ public slots:
         @param y The y screen position.
         @sa ViewportPointToRay */
     Ray ScreenPointToRay(uint x, uint y) const;
+    Ray ScreenPointToRay(const QPoint &point) const { return ScreenPointToRay(point.x(), point.y()); } /**< @overload @param point Screen point. */
 
     /// Starts tracking an entity's visibility within the scene using this camera
     /** After this, connect either to the camera's EntityEnterView and EntityLeaveView signals,
