@@ -52,6 +52,8 @@ class TUNDRACORE_API Entity : public QObject, public enable_shared_from_this<Ent
     Q_PROPERTY(bool temporary READ IsTemporary WRITE SetTemporary) /**< @copydoc IsTemporary */
     Q_PROPERTY(ComponentMap components READ Components) /**< @copydoc Components */
 
+    struct HideMe {}; // Workaround for the fact the make_shared cannot be used for classes with private constructor, http://stackoverflow.com/a/7521822
+
 public:
     typedef std::map<component_id_t, ComponentPtr> ComponentMap; ///< Component container.
     typedef std::vector<ComponentPtr> ComponentVector; ///< Component vector container.
@@ -144,6 +146,19 @@ public:
 
     // DEPRECATED
     template <class T> std::vector<shared_ptr<T> > GetComponents() const { return ComponentsOfType<T>(); } /**< @deprecated Use ComponentsOfType<T> instead. @todo Add deprecationg warning print. @todo Remove.*/
+
+    /// @cond PRIVATE
+    /// Constructor
+    /** @param framework Framework
+        @param scene Scene this entity belongs to */
+    Entity(const HideMe &, Framework* framework, Scene* scene);
+
+    /// Constructor that takes an id for the entity
+    /** @param framework Framework
+        @param id unique id for the entity.
+        @param scene Scene this entity belongs to */
+    Entity(const HideMe &, Framework* framework, entity_id_t id, Scene* scene);
+    /// @endcond
 
 public slots:
     /// Returns a component by ID. This is the fastest way to query, as the components are stored in a map by id.
@@ -392,20 +407,8 @@ signals:
 
 private:
     friend class Scene;
-    // Workaround for the fact the make_shared cannot be used for classes with private constructor.
-    static EntityPtr Instantiate(Framework* framework, Scene* scene) { return MAKE_SHARED(Entity, framework, scene); }
-    static EntityPtr Instantiate(Framework* framework, entity_id_t id, Scene* scene) { return MAKE_SHARED(Entity, framework, id, scene); }
-
-    /// Constructor
-    /** @param framework Framework
-        @param scene Scene this entity belongs to */
-    Entity(Framework* framework, Scene* scene);
-
-    /// Constructor that takes an id for the entity
-    /** @param framework Framework
-        @param id unique id for the entity.
-        @param scene Scene this entity belongs to */
-    Entity(Framework* framework, entity_id_t id, Scene* scene);
+    static EntityPtr Instantiate(Framework* framework, Scene* scene) { return MAKE_SHARED(Entity, HideMe(), framework, scene); }
+    static EntityPtr Instantiate(Framework* framework, entity_id_t id, Scene* scene) { return MAKE_SHARED(Entity, HideMe(), framework, id, scene); }
 
     /// Set new id
     void SetNewId(entity_id_t id) { id_ = id; }
