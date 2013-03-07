@@ -328,10 +328,7 @@ ComponentPtr Entity::CreateLocalComponent(const QString &type_name, const QStrin
 ComponentPtr Entity::GetComponentById(component_id_t id) const
 {
     ComponentMap::const_iterator i = components_.find(id);
-    if (i != components_.end())
-        return i->second;
-    else
-        return ComponentPtr();
+    return (i != components_.end() ? i->second : ComponentPtr());
 }
 
 ComponentPtr Entity::GetComponent(const QString &type_name) const
@@ -352,11 +349,16 @@ ComponentPtr Entity::GetComponent(u32 typeId) const
     return ComponentPtr();
 }
 
-Entity::ComponentVector Entity::GetComponents(const QString &type_name) const
+Entity::ComponentVector Entity::ComponentsOfType(const QString &typeName) const
+{
+    return ComponentsOfType(framework_->Scene()->GetComponentTypeId(typeName));
+}
+
+Entity::ComponentVector Entity::ComponentsOfType(u32 typeId) const
 {
     ComponentVector ret;
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
-        if (i->second->TypeName() == type_name)
+        if (i->second->TypeId() == typeId)
             ret.push_back(i->second);
     return ret;
 }
