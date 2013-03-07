@@ -329,23 +329,14 @@ EC_Script* JavascriptModule::FindScriptApplication(EC_Script* instance, const QS
     if (!scene)
         return 0;
     // Get all script components that possibly refer to this application
-    EntityList entities = scene->GetEntitiesWithComponent(EC_Script::TypeNameStatic());
-    for (EntityList::iterator i = entities.begin(); i != entities.end(); ++i)
+    std::vector<shared_ptr<EC_Script> > scripts = scene->Components<EC_Script>();
+    for(unsigned i = 0; i < scripts.size(); ++i)
     {
-        Entity* entity = i->get();
-        Entity::ComponentVector comps = entity->GetComponents(EC_Script::TypeNameStatic());
-        for (unsigned j = 0; j < comps.size(); ++j)
-        {
-            EC_Script* app = dynamic_cast<EC_Script*>(comps[j].get());
-            if (app)
-            {
-                const QString& name = app->applicationName.Get();
-                if (!name.isEmpty() && !name.trimmed().compare(appName, Qt::CaseInsensitive))
-                    return app;
-            }
-        }
+        const QString& name = scripts[i]->applicationName.Get();
+        if (!name.isEmpty() && !name.trimmed().compare(appName, Qt::CaseInsensitive))
+            return scripts[i].get();
     }
-    
+
     return 0;
 }
 
@@ -493,22 +484,14 @@ void JavascriptModule::CreateScriptObjects(EC_Script* app)
         return;
     QString appName, className;
     // Get all script components that possibly refer to this application
-    EntityList entities = scene->GetEntitiesWithComponent(EC_Script::TypeNameStatic());
-    for (EntityList::iterator i = entities.begin(); i != entities.end(); ++i)
-    {
-        Entity* entity = i->get();
-        Entity::ComponentVector comps = entity->GetComponents(EC_Script::TypeNameStatic());
-        for (unsigned j = 0; j < comps.size(); ++j)
+    std::vector<shared_ptr<EC_Script> > scripts = scene->Components<EC_Script>();
+    for(unsigned i = 0; i < scripts.size(); ++i)
+        if (scripts[i]->ShouldRun())
         {
-            EC_Script* script = dynamic_cast<EC_Script*>(comps[j].get());
-            if (script && script->ShouldRun())
-            {
-                ParseAppAndClassName(script, appName, className);
-                if (appName == thisAppName)
-                    CreateScriptObject(app, script, className);
-            }
+            ParseAppAndClassName(scripts[i].get(), appName, className);
+            if (appName == thisAppName)
+                CreateScriptObject(app, scripts[i].get(), className);
         }
-    }
 }
 
 void JavascriptModule::RemoveScriptObjects(JavascriptInstance* jsInstance)
