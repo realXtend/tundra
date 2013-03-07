@@ -32,6 +32,13 @@
 #endif // _MSC_VER
 
 #else // TUNDRA_NO_BOOST
+
+#if defined _MSC_VER
+#ifndef strcasecmp
+#define strcasecmp _stricmp
+#endif
+#endif
+
 static int MonthNameToInt(const char *month)
 {
     if (!month) return 0;
@@ -49,6 +56,12 @@ static int MonthNameToInt(const char *month)
     if (!strcasecmp(month, "Dec") || !strcasecmp(month, "December")) return 12;
     return 0;
 }
+
+#if defined _MSC_VER
+#ifdef strcasecmp
+#undef strcasecmp
+#endif
+#endif
 
 #endif // TUNDRA_NO_BOOST
 
