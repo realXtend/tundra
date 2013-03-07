@@ -484,6 +484,10 @@ void EC_GraphicsViewCanvas::UpdateTexture()
             material->getTechnique(0)->getPass(0)->createTextureUnitState();
         material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(textureAsset->ogreTexture->getName());
     }
+#ifdef __APPLE__
+    /// \todo: Qt should do this by itself (that's the whole point of RedirectedPaintWidget), but for some reason explicit call is required on mac
+    paintTarget->render(&paintTarget->target, QPoint(), QRegion(), QWidget::DrawChildren);
+#endif
 
     textureAsset->SetContents(paintTarget->target.width(), paintTarget->target.height(), (const u8*)paintTarget->target.bits(),
         paintTarget->target.width() * paintTarget->target.height() * 4, Ogre::PF_A8R8G8B8, false, true, false);
