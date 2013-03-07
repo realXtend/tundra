@@ -10,6 +10,7 @@
 #include "UniqueIdGenerator.h"
 #include "Math/float3.h"
 #include "SceneDesc.h"
+#include "Entity.h"
 
 #include <QObject>
 #include <QVariant>
@@ -73,13 +74,7 @@ public:
 
     /// Return a subsystem world (OgreWorld, PhysicsWorld)
     template <class T>
-    shared_ptr<T> GetWorld() const
-    {
-        QVariant pr = this->property(T::PropertyName());
-        QObject *qo = pr.value<QObject*>();
-        T* rawPtr = checked_static_cast<T*>(qo);
-        return rawPtr ? rawPtr->shared_from_this() : shared_ptr<T>();
-    }
+    shared_ptr<T> GetWorld() const;
 
     /// Forcibly changes id of an existing entity. If there already is an entity with the new id, it will be purged
     /** @note Called by scenesync. This will not trigger any signals
@@ -196,6 +191,10 @@ public:
     /// Emits a notification of a component creation acked by the server, and the component ID changing as a result. Called by SyncManager
     void EmitComponentAcked(IComponent* component, component_id_t oldId);
 
+    /// Returns all components of type T (and additionally with specific name) in the scene.
+    template <typename T>
+    std::vector<shared_ptr<T> > Components(const QString &name = "") const;
+
 public slots:
     /// Creates new entity that contains the specified components.
     /** Entities should never be created directly, but instead created with this function.
@@ -285,6 +284,9 @@ public slots:
         @note O(n) */
     EntityList EntitiesWithComponent(const QString &typeName, const QString &name = "") const;
 
+    /// Returns all components of specific type (and additionally with specific name) in the scene.
+    Entity::ComponentVector Components(const QString &typeName, const QString &name = "") const;
+
     /// Performs a regular expression matching through the entities, and returns a list of the matched entities
     /** @param pattern Regular expression to be matched
         @note Wildcards can be escaped with '\' character*/
@@ -333,7 +335,7 @@ public slots:
         @param saveTemporary Are temporary entities wanted to be included.
         @param saveLocal Are local entities wanted to be included.
         @return true if successful */
-    bool SaveSceneBinary(const QString& filename, bool saveTemporary, bool saveLocal);
+    bool SaveSceneBinary(const QString& filename, bool saveTemporary, bool saveLocal) const;
 
     /// Creates scene content from XML.
     /** @param xml XML document as string.
@@ -362,9 +364,9 @@ public slots:
     bool AllowModifyEntity(UserConnection *user, Entity *entity);
 
     /// Emits a notification of an entity having been created
-    /** Creates are also automatically signalled at the end of frame, so you do not necessarily need to call this.
+    /** Creates are also automatically signaled at the end of frame, so you do not necessarily need to call this.
         @param entity Entity pointer
-        @param change Change signalling mode */
+        @param change Change signaling mode */
     void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
 
     // DEPRECATED function signatures
@@ -439,7 +441,6 @@ private slots:
     void OnUpdated(float frameTime);
 
 private:
-    Q_DISABLE_COPY(Scene);
     friend class ::SceneAPI;
     
     /// Constructor.
@@ -472,3 +473,5 @@ private:
     std::vector<AttributeInterpolation> interpolations_; ///< Running attribute interpolations.
     std::vector<std::pair<EntityWeakPtr, AttributeChange::Type> > entitiesCreatedThisFrame_; ///< Entities to signal for creation at frame end.
 };
+
+#include "Scene.inl"

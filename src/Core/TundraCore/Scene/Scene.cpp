@@ -127,14 +127,11 @@ EntityPtr Scene::EntityByName(const QString &name) const
 {
     if (name.isEmpty())
         return EntityPtr();
-    EntityMap::const_iterator it = entities_.begin();
-    while(it != entities_.end())
-    {
+
+    for(const_iterator it = begin(); it != end(); ++it)
         if (it->second->Name() == name)
             return it->second;
-        ++it;
-    }
-    
+
     return EntityPtr();
 }
 
@@ -142,14 +139,11 @@ bool Scene::IsUniqueName(const QString& name) const
 {
     if (name.isEmpty())
         return false;
-    EntityMap::const_iterator it = entities_.begin();
-    while(it != entities_.end())
-    {
+
+    for(const_iterator it = begin(); it != end(); ++it)
         if (it->second->Name() == name)
             return false;
-        ++it;
-    }
-    
+
     return true;
 }
 
@@ -205,11 +199,10 @@ void Scene::RemoveAllEntities(bool signal, AttributeChange::Type change)
     // Gather entity ids to call RemoveEntity, as it modifies 
     // the entities_ map we should not call RemoveEntity while iterating it.
     std::list<entity_id_t> entIds;
-    for (EntityMap::iterator it = entities_.begin(); it != entities_.end(); ++it)
-    {
-        if (it->second.get())
+    for(const_iterator it = begin(); it != end(); ++it)
+        if (it->second)
             entIds.push_back(it->second->Id());
-    }
+
     while(entIds.size() > 0)
     {
         RemoveEntity(entIds.back(), change);
@@ -238,29 +231,37 @@ entity_id_t Scene::NextFreeIdLocal()
 
 EntityList Scene::EntitiesWithComponent(const QString &typeName, const QString &name) const
 {
-    std::list<EntityPtr> entities;
-    EntityMap::const_iterator it = entities_.begin();
-    while(it != entities_.end())
+    EntityList entities;
+    for(EntityMap::const_iterator it = begin(); it != end(); ++it)
     {
         EntityPtr entity = it->second;
         if ((name.isEmpty() && entity->GetComponent(typeName)) || entity->GetComponent(typeName, name))
             entities.push_back(entity);
-        ++it;
     }
 
     return entities;
 }
 
+Entity::ComponentVector Scene::Components(const QString &typeName, const QString &name) const
+{
+    Entity::ComponentVector components;
+    for(EntityMap::const_iterator it = begin(); it != end(); ++it)
+    {
+        ComponentPtr component = (name.isEmpty() ? it->second->GetComponent(typeName) : it->second->GetComponent(typeName, name));
+        if (component)
+            components.push_back(component);
+    }
+
+    return components;
+}
+
 EntityList Scene::GetAllEntities() const
 {
     LogWarning("Scene::GetAllEntities: this function is deprecated and will be removed. Use Scene::Entities instead");
+
     std::list<EntityPtr> entities;
-    EntityMap::const_iterator it = entities_.begin();
-    while(it != entities_.end())
-    {
+    for(const_iterator it = begin(); it != end(); ++it)
         entities.push_back(it->second);
-        ++it;
-    }
 
     return entities;
 }
@@ -412,7 +413,7 @@ QByteArray Scene::GetSceneXML(bool gettemporary, bool getlocal) const
     QDomDocument scene_doc("Scene");
     QDomElement scene_elem = scene_doc.createElement("scene");
 
-    for(EntityMap::const_iterator iter = entities_.begin(); iter != entities_.end(); ++iter) 
+    for(const_iterator iter = begin(); iter != end(); ++iter)
     {
         bool serialize = true;
         if (iter->second->IsLocal() && !getlocal)
@@ -487,7 +488,7 @@ QList<Entity *> Scene::LoadSceneBinary(const QString& filename, bool clearScene,
     return CreateContentFromBinary(bytes.data(), bytes.size(), useEntityIDsFromFile, change);
 }
 
-bool Scene::SaveSceneBinary(const QString& filename, bool getTemporary, bool getLocal)
+bool Scene::SaveSceneBinary(const QString& filename, bool getTemporary, bool getLocal) const
 {
     QByteArray bytes;
     // Assume 4MB max for now
@@ -496,7 +497,7 @@ bool Scene::SaveSceneBinary(const QString& filename, bool getTemporary, bool get
     
     // Count number of entities we accept
     uint num_entities = 0;
-    for(EntityMap::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
+    for(const_iterator iter = begin(); iter != end(); ++iter)
     {
         bool serialize = true;
         if (iter->second->IsLocal() && !getLocal)
@@ -509,7 +510,7 @@ bool Scene::SaveSceneBinary(const QString& filename, bool getTemporary, bool get
     
     dest.Add<u32>(num_entities);
 
-    for(EntityMap::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
+    for(const_iterator iter = begin(); iter != end(); ++iter)
     {
         bool serialize = true;
         if (iter->second->IsLocal() && !getLocal)
@@ -1383,8 +1384,7 @@ void Scene::UpdateAttributeInterpolations(float frametime)
                     finished = true;
             }
         }
-        else
-            // Component pointer has expired, abort this interpolation
+        else // Component pointer has expired, abort this interpolation
             finished = true;
         
         // Remove interpolation (& delete start/endpoints) when done
@@ -1432,16 +1432,11 @@ EntityList Scene::FindEntities(const QRegExp &pattern) const
     if (pattern.isEmpty() || !pattern.isValid())
         return entities;
 
-    EntityMap::const_iterator it = entities_.begin();
-
-    while(it != entities_.end())
+    for(const_iterator it = begin(); it != end(); ++it)
     {
         EntityPtr entity = it->second;
-
         if (pattern.exactMatch(entity->Name()))
             entities.push_back(entity);
-
-        ++it;
     }
 
     return entities;
@@ -1453,15 +1448,11 @@ EntityList Scene::FindEntitiesContaining(const QString &substring) const
     if (substring.isEmpty())
         return entities;
 
-    EntityMap::const_iterator it = entities_.begin();
-
-    while(it != entities_.end())
+    for(const_iterator it = begin(); it != end(); ++it)
     {
         EntityPtr entity = it->second;
         if (entity->Name().contains(substring, Qt::CaseSensitive))
             entities.push_back(entity);
-
-        ++it;
     }
 
     return entities;
