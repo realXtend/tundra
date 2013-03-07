@@ -264,8 +264,8 @@ fi
 cd $build
 what=bullet
 urlbase=http://bullet.googlecode.com/files
-unzipped=bullet-2.78
-pkgbase=bullet-2.78-r2387
+unzipped=bullet-2.81
+pkgbase=bullet-2.81-rev2613
 dlurl=$urlbase/$pkgbase.tgz
 if test -f $tags/$what-done; then
     echoInfo "$what is done"
@@ -277,7 +277,7 @@ else
 
     cd $unzipped
     echoInfo "Building $what:"
-    cmake . -DCMAKE_INSTALL_PREFIX=$prefix
+    cmake . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_DEBUG_POSTFIX= -DCMAKE_MINSIZEREL_POSTFIX= -DCMAKE_RELWITHDEBINFO_POSTFIX=
     make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
