@@ -12,12 +12,24 @@ shared_ptr<T> Scene::GetWorld() const
 template <typename T>
 std::vector<shared_ptr<T> > Scene::Components(const QString &name) const
 {
-    std::vector<shared_ptr<T> > components;
-    for(const_iterator it = begin(); it != end(); ++it)
+    std::vector<shared_ptr<T> > ret;
+    if (name.isEmpty())
     {
-        shared_ptr<T> component = (name.isEmpty() ? it->second->GetComponent<T>() : it->second->GetComponent<T>(name));
-        if (component)
-            components.push_back(component);
+        for(const_iterator it = begin(); it != end(); ++it)
+        {
+            std::vector<shared_ptr<T> > components =  it->second->ComponentsOfType<T>();
+            if (!components.empty())
+                ret.insert(ret.end(), components.begin(), components.end());
+        }
     }
-    return components;
+    else
+    {
+        for(const_iterator it = begin(); it != end(); ++it)
+        {
+            shared_ptr<T> component = it->second->GetComponent<T>(name);
+            if (component)
+                ret.push_back(component);
+        }
+    }
+    return ret;
 }

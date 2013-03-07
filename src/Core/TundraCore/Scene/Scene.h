@@ -273,9 +273,11 @@ public slots:
     void RemoveAllEntities(bool signal = true, AttributeChange::Type change = AttributeChange::Default);
 
     /// Gets and allocates the next free entity id.
+    /** @sa NextFreeIdLocal */
     entity_id_t NextFreeId();
 
     /// Gets and allocates the next free entity id.
+    /** @sa NextFreeId */
     entity_id_t NextFreeIdLocal();
 
     /// Returns list of entities with a specific component present.
@@ -285,16 +287,22 @@ public slots:
     EntityList EntitiesWithComponent(const QString &typeName, const QString &name = "") const;
 
     /// Returns all components of specific type (and additionally with specific name) in the scene.
+    /*  @param typeId Component type ID.
+        @param name Arbitrary name of the component (optional). */
+    Entity::ComponentVector Components(u32 typeId, const QString &name = "") const;
+    /// overload
+    /** @param typeName Component type name.
+        @note The overload taking in type ID is more efficient than this overload. */
     Entity::ComponentVector Components(const QString &typeName, const QString &name = "") const;
 
-    /// Performs a regular expression matching through the entities, and returns a list of the matched entities
-    /** @param pattern Regular expression to be matched
-        @note Wildcards can be escaped with '\' character*/
+    /// Performs a regular expression matching through the entities, and returns a list of the matched entities.
+    /** @param pattern Regular expression to be matched.
+        @note Wildcards can be escaped with '\' character. */
     EntityList FindEntities(const QRegExp &pattern) const;
-    EntityList FindEntities(const QString &pattern) const; /**< @overload @param pattern String pattern with wildcards*/
+    EntityList FindEntities(const QString &pattern) const; /**< @overload @param pattern String pattern with wildcards. */
 
-    /// Performs a search through the entities, and returns a list of all the entities that contain 'substring' in their names
-    /** @param substring String to be searched*/
+    /// Performs a search through the entities, and returns a list of all the entities that contain 'substring' in their names.
+    /** @param substring String to be searched. */
     EntityList FindEntitiesContaining(const QString &substring) const;
 
     /// Loads the scene from XML.
