@@ -233,15 +233,31 @@ EntityList Scene::EntitiesWithComponent(const QString &typeName, const QString &
 
 Entity::ComponentVector Scene::Components(const QString &typeName, const QString &name) const
 {
-    Entity::ComponentVector components;
-    for(EntityMap::const_iterator it = begin(); it != end(); ++it)
-    {
-        ComponentPtr component = (name.isEmpty() ? it->second->GetComponent(typeName) : it->second->GetComponent(typeName, name));
-        if (component)
-            components.push_back(component);
-    }
+    return Components(framework_->Scene()->GetComponentTypeId(typeName), name);
+}
 
-    return components;
+Entity::ComponentVector Scene::Components(u32 typeId, const QString &name) const
+{
+    Entity::ComponentVector ret;
+    if (name.isEmpty())
+    {
+        for(const_iterator it = begin(); it != end(); ++it)
+        {
+            Entity::ComponentVector components =  it->second->ComponentsOfType(typeId);
+            if (!components.empty())
+                ret.insert(ret.end(), components.begin(), components.end());
+        }
+    }
+    else
+    {
+        for(const_iterator it = begin(); it != end(); ++it)
+        {
+            ComponentPtr component = it->second->GetComponent(typeId, name);
+            if (component)
+                ret.push_back(component);
+        }
+    }
+    return ret;
 }
 
 EntityList Scene::GetAllEntities() const
