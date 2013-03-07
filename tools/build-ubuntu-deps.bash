@@ -19,9 +19,6 @@ prefix=$deps/install
 build=$deps/build
 tarballs=$deps/tarballs
 tags=$deps/tags
-
-
-
 # -j<n> param for make, for how many processes to run concurrently
 
 nprocs=`grep -c "^processor" /proc/cpuinfo`
@@ -40,20 +37,28 @@ export CC="ccache gcc"
 export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 export TUNDRA_PYTHON_ENABLED=TRUE
+export BOOSTUSE148=false
+
+if $BOOSTUSE148 ; then
+    boostpackage=libboost1.48-all-dev
+else
+    boostpackage=libboost-all-dev
+fi
+
 
 if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|katya|julia|isadora|quantal|nadia" && tty >/dev/null; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
-	sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
-	 build-essential g++ libboost-all-dev libois-dev \
-	 ccache libqt4-dev python-dev freeglut3-dev \
-	 libxml2-dev cmake libalut-dev libtheora-dev ed \
-	 liboil0.3-dev mercurial unzip xsltproc libois-dev libxrandr-dev \
-	 libspeex-dev nvidia-cg-toolkit subversion \
-	 libfreetype6-dev libfreeimage-dev libzzip-dev \
-	 libxaw7-dev libgl1-mesa-dev libglu1-mesa-dev \
-	 libvlc-dev libspeexdsp-dev libprotobuf-dev \
-	 libprotobuf-c0 libprotobuf-c0-dev \
-	 protobuf-c-compiler protobuf-compiler \
+    sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
+     build-essential g++ $boostpackage libois-dev \
+     ccache libqt4-dev python-dev freeglut3-dev \
+     libxml2-dev cmake libalut-dev libtheora-dev ed \
+     liboil0.3-dev mercurial unzip xsltproc libois-dev libxrandr-dev \
+     libspeex-dev nvidia-cg-toolkit subversion \
+     libfreetype6-dev libfreeimage-dev libzzip-dev \
+     libxaw7-dev libgl1-mesa-dev libglu1-mesa-dev \
+     libvlc-dev libspeexdsp-dev libprotobuf-dev \
+     libprotobuf-c0 libprotobuf-c0-dev \
+     protobuf-c-compiler protobuf-compiler \
      libqt4-opengl-dev libqtwebkit-dev \
      libspeexdsp-dev libprotobuf-dev \
      libvlc-dev
@@ -145,20 +150,20 @@ cp -lf $build/$what/plugins/script/* $viewer/bin/qtplugins/script/
 
 what=assimp--3.0.1270-source-only
 if test -f $tags/$what-done; then
-	echo $what is done
+    echo $what is done
 else
-	cd $build
-	rm -rf $what
+    cd $build
+    rm -rf $what
     test -f $tarballs/$what.zip || wget -P $tarballs http://downloads.sourceforge.net/project/assimp/assimp-3.0/assimp--3.0.1270-source-only.zip
     unzip $tarballs/$what.zip
-	#git clone git://github.com/assimp/assimp.git $what
-	cd $what
-	#sed -e "s/string_type::size_type/typename string_type::size_type/" < code/ObjTools.h > x
-	#mv x code/ObjTools.h
-	cmake -DCMAKE_INSTALL_PREFIX=$prefix .
-	make -j $nprocs
-	make install
-	touch $tags/$what-done
+    #git clone git://github.com/assimp/assimp.git $what
+    cd $what
+    #sed -e "s/string_type::size_type/typename string_type::size_type/" < code/ObjTools.h > x
+    #mv x code/ObjTools.h
+    cmake -DCMAKE_INSTALL_PREFIX=$prefix .
+    make -j $nprocs
+    make install
+    touch $tags/$what-done
 fi
 
 what=kNet
@@ -258,7 +263,7 @@ else
    cd $build/$depdir/skyx
    my_ogre_home=$OGRE_HOME
    if [ -z "$my_ogre_home" ]; then
-	    my_ogre_home=`pkg-config --variable=prefix OGRE`
+        my_ogre_home=`pkg-config --variable=prefix OGRE`
        if [ -z "$my_ogre_home" ]; then
            echo "OGRE_HOME not defined, check your pkg-config or set OGRE_HOME manually.";
            exit 0;
@@ -284,12 +289,12 @@ else
     qmake
     if ! make -j $nprocs; then
     # work around PythonQt vs Qt 4.8 incompatibility
-	cd src
-	rm -f moc_PythonQtStdDecorators.cpp
-	make moc_PythonQtStdDecorators.cpp
-	sed -i -e 's/void PythonQtStdDecorators::qt_static_metacall/#undef emit\nvoid PythonQtStdDecorators::qt_static_metacall/'  moc_PythonQtStdDecorators.cpp
-	cd ..
-	make -j $nprocs
+    cd src
+    rm -f moc_PythonQtStdDecorators.cpp
+    make moc_PythonQtStdDecorators.cpp
+    sed -i -e 's/void PythonQtStdDecorators::qt_static_metacall/#undef emit\nvoid PythonQtStdDecorators::qt_static_metacall/'  moc_PythonQtStdDecorators.cpp
+    cd ..
+    make -j $nprocs
     fi
     rm -f $prefix/lib/libPythonQt*
     cp -a lib/libPythonQt* $prefix/lib/
