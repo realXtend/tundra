@@ -15,7 +15,7 @@ Extension::Extension(const QString &name) :
 {
 }
 
-void Extension::Update(f64 frametime)
+void Extension::Update(f64 /*frametime*/)
 {
 }
 

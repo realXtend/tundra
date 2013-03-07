@@ -82,9 +82,9 @@ namespace XMPP
         }
     }
 
-    void UserItem::UpdateRosterItem(const QXmppRosterIq::Item &item)
+    void UserItem::UpdateRosterItem(const QXmppRosterIq::Item & /*item*/)
     {
-        /// \note do we really need this at all?
+        /// \todo do we really need this at all?
     }
 
     void UserItem::UpdateVCard(const QXmppVCardIq &vcard)
