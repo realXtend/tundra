@@ -60,6 +60,8 @@ class EC_Terrain;
     <div>@copydoc collisionLayer</div>
     <li>int: collisionMask
     <div>@copydoc collisionMask</div>
+    <li>float: rollingFriction
+    <div>@copydoc rollingFriction</div>
     </ul>
 
     <b>Exposes the following scriptable functions:</b>
@@ -140,10 +142,6 @@ public:
     Q_PROPERTY(float friction READ getfriction WRITE setfriction);
     DEFINE_QPROPERTY_ATTRIBUTE(float, friction);
 
-    /// Rolling friction coefficient between 0.0 - 1.0.
-    Q_PROPERTY(float rollingFriction READ getrollingFriction WRITE setrollingFriction);
-    DEFINE_QPROPERTY_ATTRIBUTE(float, rollingFriction);
-
     /// Restitution coefficient between 0.0 - 1.0.
     Q_PROPERTY(float restitution READ getrestitution WRITE setrestitution);
     DEFINE_QPROPERTY_ATTRIBUTE(float, restitution);
@@ -192,6 +190,10 @@ public:
     /// Tells with which collision layers this rigidbody collides with (a bitmask). 0 is default (all bits set)
     Q_PROPERTY(int collisionMask READ getcollisionMask WRITE setcollisionMask)
     DEFINE_QPROPERTY_ATTRIBUTE(int, collisionMask)
+
+    /// Rolling friction coefficient between 0.0 - 1.0.
+    Q_PROPERTY(float rollingFriction READ getrollingFriction WRITE setrollingFriction);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, rollingFriction);
 
     /// btMotionState override. Called when Bullet wants us to tell the body's initial transform
     virtual void getWorldTransform(btTransform &worldTrans) const;
