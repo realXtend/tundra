@@ -59,16 +59,16 @@ if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|kat
      libvlc-dev
 fi
 
-what=bullet-2.79-rev2440
-whatdir=bullet-2.79
+what=bullet-2.81-rev2613
 if test -f $tags/$what-done; then
     echo $what is done
 else
     cd $build
+    whatdir=${what%%-rev*}
     rm -rf $whatdir
     test -f $tarballs/$what.tgz || wget -P $tarballs http://bullet.googlecode.com/files/$what.tgz
     tar zxf $tarballs/$what.tgz
-    cd $whatdir
+    cd $what
     cmake -DCMAKE_INSTALL_PREFIX=$prefix -DBUILD_DEMOS=OFF -DBUILD_{NVIDIA,AMD,MINICL}_OPENCL_DEMOS=OFF -DBUILD_CPU_DEMOS=OFF -DINSTALL_EXTRA_LIBS=ON -DCMAKE_CXX_FLAGS_RELEASE="-O2 -g -fPIC" .
     make -j $nprocs
     make install
@@ -303,12 +303,16 @@ what=qtpropertybrowser
 if test -f $tags/$what-done; then
     echo $what is done
 else
-    pkgbase=${what}-2.5_1-opensource
-    rm -rf $pkgbase
-    zip=../tarballs/$pkgbase.tar.gz
-    test -f $zip || wget -O $zip http://ftp.heanet.ie/mirrors/ftp.trolltech.com/pub/qt/solutions/lgpl/$pkgbase.tar.gz
-    tar zxf $zip
-    cd $pkgbase
+    if test -f $build/qt-solutions; then
+        echo Updating QtPropertyBrowser in "$build/qt-solutions".
+        cd $build/qt-solutions
+        git pull
+    else
+        echo Cloning QtPropertyBrowser into "$build/qt-solutions".
+        cd $build
+        git clone https://git.gitorious.org/qt-solutions/qt-solutions.git
+    fi
+    cd $build/qt-solutions/qtpropertybrowser
     echo yes | ./configure -library
     qmake
     make -j$nprocs

@@ -302,16 +302,21 @@ IF NOT EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
    del /Q "%TUNDRA_BIN%\QtDesigner*.dll"
 )
 
+
+
+:: Bullet physics engine
+:: version 2.81 sp1, svn rev 2613
+
 IF NOT EXIST "%DEPS%\bullet\". (
     cecho {0D}Cloning Bullet into "%DEPS%\bullet".{# #}{\n}
     cd "%DEPS%"
-    svn checkout http://bullet.googlecode.com/svn/tags/bullet-2.78 bullet
+    svn checkout http://bullet.googlecode.com/svn/trunk@2613 bullet
     IF NOT EXIST "%DEPS%\bullet\.svn" GOTO :ERROR
     cd bullet
     IF NOT EXIST BULLET_PHYSICS.sln. (
         cecho {0D}Running CMake for Bullet.{# #}{\n}
         IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
-        cmake . -G %GENERATOR% -DBUILD_DEMOS:BOOL=OFF -DBUILD_EXTRAS:BOOL=OFF -DBUILD_MINICL_OPENCL_DEMOS:BOOL=OFF
+         cmake . -G %GENERATOR% -DBUILD_DEMOS:BOOL=OFF -DBUILD_EXTRAS:BOOL=OFF -DBUILD_INTEL_OPENCL_DEMOS:BOOL=OFF -DBUILD_MINICL_OPENCL_DEMOS:BOOL=OFF -DBUILD_NVIDIA_OPENCL_DEMOS:BOOL=OFF -DBUILD_UNIT_TESTS:BOOL=OFF -DUSE_DX11:BOOL=OFF -DBUILD_CPU_DEMOS:BOOL=OFF -DBUILD_AMD_OPENCL_DEMOS:BOOL=OFF
         IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     )
 
