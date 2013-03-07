@@ -264,7 +264,7 @@ fi
 cd $build
 what=bullet
 urlbase=http://bullet.googlecode.com/files
-unzipped=bullet-2.81
+unzipped=bullet-2.81-rev2613
 pkgbase=bullet-2.81-rev2613
 dlurl=$urlbase/$pkgbase.tgz
 if test -f $tags/$what-done; then
