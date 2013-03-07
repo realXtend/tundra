@@ -71,6 +71,10 @@ private: // Return the class visibility specifier to the strictest form so that 
     A Component consists of a list of Attributes, which are automatically replicatable instances of scene data.
     See IAttribute for more details.
 
+    To retain network protocol compatibility between Tundra versions, only add any new static attributes to
+    the end of the Component's existing attributes. Note that the order in the header is what matters, not
+    the order they are initialized in the constructor, but the two should still match.
+
     Every Component has a state variable updateMode that specifies a default setting for managing which objects
     get notified whenever an Attribute change event occurs. This is used to create "Local Only"-objects as well
     as when doing batch updates of Attributes (for performance or correctness). */
