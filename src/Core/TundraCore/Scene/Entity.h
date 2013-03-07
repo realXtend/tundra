@@ -69,7 +69,7 @@ public:
         @param T Component class type.
         @return List of components with certain class type, or empty list if no components was found. */
     template <class T>
-    std::vector<shared_ptr<T> > GetComponents() const;
+    std::vector<shared_ptr<T> > ComponentsOfType() const;
 
     /// Returns a component with certain type and name, already cast to correct type, or empty pointer if component was not found
     /** @param name name of the component */
@@ -141,6 +141,9 @@ public:
 
     /// Returns actions map for introspection/reflection.
     const ActionMap &Actions() const { return actions_; }
+
+    // DEPRECATED
+    template <class T> std::vector<shared_ptr<T> > GetComponents() const { return ComponentsOfType<T>(); } /**< @deprecated Use ComponentsOfType<T> instead. @todo Add deprecationg warning print. @todo Remove.*/
 
 public slots:
     /// Returns a component by ID. This is the fastest way to query, as the components are stored in a map by id.

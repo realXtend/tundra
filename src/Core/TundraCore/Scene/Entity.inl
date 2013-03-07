@@ -7,7 +7,7 @@ shared_ptr<T> Entity::GetComponent() const
 }
 
 template <class T>
-std::vector<shared_ptr<T> > Entity::GetComponents() const
+std::vector<shared_ptr<T> > Entity::ComponentsOfType() const
 {
     std::vector<shared_ptr<T> > ret;
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
