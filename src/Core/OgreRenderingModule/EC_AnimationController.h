@@ -77,6 +77,9 @@ public:
     Q_PROPERTY(QString animationState READ getanimationState WRITE setanimationState);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, animationState);
 
+    Q_PROPERTY(bool drawDebug READ getdrawDebug WRITE setdrawDebug);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, drawDebug);
+
     /// Gets mesh entity component
     EC_Mesh *GetMeshEntity() const { return mesh; }
     
@@ -144,6 +147,9 @@ public slots:
     
     /// Updates animation(s) by elapsed time
     void Update(float frametime);
+
+    /// Draws the mesh skeleton
+    void DrawSkeleton(float frametime);
     
     /// Enables animation with optional fade-in time
     /* @param name Animation name

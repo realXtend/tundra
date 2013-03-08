@@ -1,4 +1,6 @@
-// A freelook camera script. Upon run, creates necessary components if they don't exist yet
+/** For conditions of distribution and use, see copyright notice in LICENSE
+
+    freelookcamera.js - A free look camera script. Upon run, creates necessary components if they don't exist yet. */
 
 // Global application data
 var _g =
@@ -21,16 +23,16 @@ var _g =
 
 var inputContext;
 
-// Entry point
-if (!framework.IsHeadless())
-    Initialize();
-
 function OnScriptDestroyed()
 {
+    if (framework.IsHeadless() || framework.IsExiting())
+        return;
     input.UnregisterInputContextRaw("FreeLookCamera");
+    renderer.MainCameraChanged.disconnect(ActiveCameraChanged);
 }
 
-function Initialize()
+// Entry point
+if (!framework.IsHeadless())
 {
     engine.ImportExtension("qt.core");
     // Connect to camera changed signal. This disconnects frame updates when camera is not active
@@ -210,11 +212,6 @@ function GestureUpdated(gestureEvent)
             HandleMouseLookY(delta.y());
             gestureEvent.Accept();
         }
-}
-
-function OnScriptDestroyed() 
-{
-    renderer.MainCameraChanged.disconnect(ActiveCameraChanged);
 }
 
 function DisconnectApplication()

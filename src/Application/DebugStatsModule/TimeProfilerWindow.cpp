@@ -2371,13 +2371,13 @@ void TimeProfilerWindow::PopulateBulletStats()
     if (!scene)
         return;
     boost::shared_ptr<Physics::PhysicsWorld> physics = scene->GetWorld<Physics::PhysicsWorld>();
-    const std::set<std::pair<btCollisionObject*, btCollisionObject*> > &collisions = physics->PreviousFrameCollisions();
+    const std::set<std::pair<const btCollisionObject*, const btCollisionObject*> > &collisions = physics->PreviousFrameCollisions();
 
     treeBulletStats->clear();
-    for(std::set<std::pair<btCollisionObject*, btCollisionObject*> >::const_iterator iter = collisions.begin(); iter != collisions.end(); ++iter)
+    for(std::set<std::pair<const btCollisionObject*, const btCollisionObject*> >::const_iterator iter = collisions.begin(); iter != collisions.end(); ++iter)
     {
-        btCollisionObject* objectA = iter->first;
-        btCollisionObject* objectB = iter->second;
+        const btCollisionObject* objectA = iter->first;
+        const btCollisionObject* objectB = iter->second;
         EC_RigidBody* bodyA = static_cast<EC_RigidBody*>(objectA->getUserPointer());
         EC_RigidBody* bodyB = static_cast<EC_RigidBody*>(objectB->getUserPointer());
         if (!bodyA || !bodyB)

@@ -1,8 +1,8 @@
 # Set project name
 project(tundra)
 
-# CMake version requirement
-cmake_minimum_required(VERSION 2.4)
+# CMake version requirement, >= 2.5.5 to ensure that ProtoBuf is found ok.
+cmake_minimum_required(VERSION 2.5.5)
 
 macro (PrintUsedEnvVariables)
     # Print out the resolved variables. Note that this does not print the env variables

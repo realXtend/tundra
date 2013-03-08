@@ -798,9 +798,10 @@ void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
                     rigidBody->linearVelocity.Set(r.interpEnd.vel, AttributeChange::LocalOnly);
                     rigidBody->angularVelocity.Set(r.interpEnd.angVel, AttributeChange::LocalOnly);
                 }
-                r.interpolatorActive = false;
             }
+            r.interpolatorActive = false;
             ++iter;
+            
             // Could remove the interpolation structure here, as inter/extrapolation it is no longer active. However, it is currently
             // used to store most recently received entity position  & velocity data.
             //iter = state->entityInterpolations.erase(iter); // Finished interpolation.
@@ -1785,22 +1786,37 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
             unsigned numStaticAttrs = comp->NumStaticAttributes();
             const AttributeVector& attrs = comp->Attributes();
             for (uint i = 0; i < numStaticAttrs; ++i)
-                attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
-            
-            // Create any dynamic attributes
-            while (attrDs.BitsLeft() > 2 * 8)
             {
-                u8 index = attrDs.Read<u8>();
-                u8 typeId = attrDs.Read<u8>();
-                QString name = QString::fromStdString(attrDs.ReadString());
-                IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
-                if (!newAttr)
+                // Allow component version mismatches (adding more attributes to the end of static attributes list), break if no more data present.
+                // All attributes (including bool) are at least 8 bits.
+                if (attrDs.BitsLeft() >= 8)
+                    attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
+                else
                 {
-                    LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
+                    LogWarning("Not enough static attribute data in component " + comp->TypeName() + " (version mismatch)");
                     break;
                 }
-                newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
             }
+
+            if (comp->SupportsDynamicAttributes())
+            {
+                // Create any dynamic attributes
+                while (attrDs.BitsLeft() > 2 * 8)
+                {
+                    u8 index = attrDs.Read<u8>();
+                    u8 typeId = attrDs.Read<u8>();
+                    QString name = QString::fromStdString(attrDs.ReadString());
+                    IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
+                    if (!newAttr)
+                    {
+                        LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
+                        break;
+                    }
+                    newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
+                }
+            }
+            else if (attrDs.BitsLeft())
+                LogWarning("Extra static attribute data in component " + comp->TypeName() + " (version mismatch)");
         }
     } catch(kNet::NetException &/*e*/)
     {
@@ -1920,22 +1936,37 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
             unsigned numStaticAttrs = comp->NumStaticAttributes();
             const AttributeVector& attrs = comp->Attributes();
             for (uint i = 0; i < numStaticAttrs; ++i)
-                attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
-            
-            // Create any dynamic attributes
-            while (attrDs.BitsLeft() > 2 * 8)
             {
-                u8 index = attrDs.Read<u8>();
-                u8 typeId = attrDs.Read<u8>();
-                QString name = QString::fromStdString(attrDs.ReadString());
-                IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
-                if (!newAttr)
+                // Allow component version mismatches (adding more attributes to the end of static attributes list), break if no more data present.
+                // All attributes (including bool) are at least 8 bits.
+                if (attrDs.BitsLeft() >= 8)
+                    attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
+                else
                 {
-                    LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
+                    LogWarning("Not enough static attribute data in component " + comp->TypeName() + " (version mismatch)");
                     break;
                 }
-                newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
             }
+            
+            if (comp->SupportsDynamicAttributes())
+            {
+                // Create any dynamic attributes
+                while (attrDs.BitsLeft() > 2 * 8)
+                {
+                    u8 index = attrDs.Read<u8>();
+                    u8 typeId = attrDs.Read<u8>();
+                    QString name = QString::fromStdString(attrDs.ReadString());
+                    IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
+                    if (!newAttr)
+                    {
+                        LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
+                        break;
+                    }
+                    newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
+                }
+            }
+            else if (attrDs.BitsLeft())
+                LogWarning("Extra static attribute data in component " + comp->TypeName() + " (version mismatch)");
         }
     } catch(kNet::NetException &/*e*/)
     {
@@ -2313,6 +2344,10 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
             // Method 2: bitmask
             for (unsigned i = 0; i < attributes.size(); ++i)
             {
+                // Break if component version inconsistency and no more data
+                if (attrDs.BitsLeft() == 0)
+                    break;
+                
                 int changed = attrDs.Read<kNet::bit>();
                 if (changed)
                 {

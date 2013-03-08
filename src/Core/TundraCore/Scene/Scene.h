@@ -15,6 +15,7 @@
 #include <QVariant>
 
 #include <boost/enable_shared_from_this.hpp>
+#include <map>
 
 class Framework;
 /// @todo Not nice: UserConnection is a class from TundraProtocolModule, so Scene core API "depends" on it currently.
