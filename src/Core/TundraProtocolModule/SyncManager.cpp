@@ -95,9 +95,56 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
     connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), 
         this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::packet_id_t, kNet::message_id_t, const char*, size_t)));
-    
+
     if (framework_->HasCommandLineParameter("--noclientphysics"))
         noClientPhysicsHandoff_ = true;
+
+    /*Parse through possible Interest Management parameterṣ*/
+    if (framework_->CommandLineParameters("--im").size() == 1)
+    {
+        bool ok = false;
+        QStringList params = framework_->CommandLineParameters("--im").first().split(';');
+
+        if(params.first() == "EA3" && params.size() == 5)
+        {
+            int critical_radius =  params.at(1).toUInt(&ok);
+            int relevance_radius = params.at(2).toUInt(&ok);
+            int raycast_interval = params.at(3).toUInt(&ok);
+            int relevance_interval = params.at(4).toUInt(&ok);
+
+            if(ok)
+            {
+                if(relevance_radius <= critical_radius) relevance_radius = critical_radius + 1; //Check that relevance_radius is not lower than critical area
+                UpdateInterestManagerSettings(true, true, true, true, critical_radius, relevance_radius, relevance_interval, raycast_interval);
+            }
+        }
+        else if(params.first() == "A3" && params.size() == 4)
+        {
+            int critical_radius = params.at(1).toUInt(&ok);
+            int relevance_radius = params.at(2).toUInt(&ok);
+            int relevance_interval = params.at(3).toUInt(&ok);
+
+            if(ok)
+            {
+                if(relevance_radius <= critical_radius) relevance_radius = critical_radius + 1;
+                UpdateInterestManagerSettings(true, true, false, true, critical_radius, relevance_radius, relevance_interval, 0);
+            }
+        }
+        else if(params.first() == "Euclidean" && params.size() == 2)
+        {
+            int critical_radius = params.at(1).toUInt(&ok);
+
+            if(ok)
+                UpdateInterestManagerSettings(true, true, false, false, critical_radius, 0, 0, 0);
+        }
+
+        if(!ok)
+            LogError("TundraLogicModule: Invalid parameters for --im.");
+
+    }
+    else
+        LogError("TundraLogicModule: --im commandline switch given but no parameters supplied.");
+
     
     GetClientExtrapolationTime();
 }
@@ -125,25 +172,26 @@ void SyncManager::SendCameraUpdateRequest(UserConnectionPtr conn, bool enabled)
 
 void SyncManager::UpdateInterestManagerSettings(bool enabled, bool eucl, bool ray, bool rel, int critrange, int relrange, int updateint, int raycastint)
 {
-    Scene *scene = framework_->Scene()->MainCameraScene();
-
-    if(scene == NULL)
-        return;
-
-    if(owner_->IsServer())
+    if(framework_->HasCommandLineParameter("--server"))
     {
         // Loop through all connections and send the CameraOrientationRequest messages to the clients.
-        UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
 
-        for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
-            if ((*i)->syncState)
-            {
-                SendCameraUpdateRequest((*i), enabled);
-                (*i)->syncState->visibleEntities.clear();
-                (*i)->syncState->relevanceFactors.clear();
-                (*i)->syncState->lastUpdatedEntitys_.clear();
-                (*i)->syncState->lastRaycastedEntitys_.clear();
-            }
+        KristalliProtocolModule* kristalli = owner_->GetKristalliModule();
+
+        if(kristalli)
+        {
+            UserConnectionList& users = kristalli->GetUserConnections();
+
+            for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+                if ((*i)->syncState)
+                {
+                    SendCameraUpdateRequest((*i), enabled);
+                    (*i)->syncState->visibleEntities.clear();
+                    (*i)->syncState->relevanceFactors.clear();
+                    (*i)->syncState->lastUpdatedEntitys_.clear();
+                    (*i)->syncState->lastRaycastedEntitys_.clear();
+                }
+        }
 
         InterestManager *IM = 0;
         MessageFilter *filter = 0;
@@ -157,8 +205,15 @@ void SyncManager::UpdateInterestManagerSettings(bool enabled, bool eucl, bool ra
         IM = GetInterestManager();
 
         if(eucl && ray && rel)          //In other words the EA3 algorithm
-            filter = new EA3Filter(IM, critrange, relrange, raycastint, updateint, true);
-
+        {
+            if(framework_->IsHeadless())    //If running in headless mode, do not enable EA3. Instead, use A3. Raycasting cannot be done in headless mode at the moment.
+            {
+                LogError("[InterestManager] EA3 algorithm cannot be used in headless mode. Fallbacking to A3 algorithm.");
+                filter = new A3Filter(IM, critrange, relrange, updateint, true);
+            }
+            else
+                filter = new EA3Filter(IM, critrange, relrange, raycastint, updateint, true);
+        }
         else if(eucl && rel && !ray)    //Combination that the A3 uses
             filter = new A3Filter(IM, critrange, relrange, updateint, true);
 
@@ -169,7 +224,7 @@ void SyncManager::UpdateInterestManagerSettings(bool enabled, bool eucl, bool ra
 
         SetInterestManager(IM);
 
-        LogInfo("InterestManager Settings Updated. Using " + filter->ToString() + " to filter out unnecessary network messages");
+        LogInfo("[InterestManager] Settings Updated. Using " + filter->ToString() + " to filter out unnecessary network messages.");
     }
 }
 
