@@ -302,7 +302,7 @@ template<> inline void ArgumentType<bool>::FromString(const QString &str)
 template<> inline QWidget *ArgumentType<unsigned int>::CreateEditor(QWidget *parent)
 {
     editor = new QSpinBox(parent);
-    static_cast<QSpinBox *>(editor)->setRange(0, std::numeric_limits<unsigned int>::max());
+    static_cast<QSpinBox *>(editor)->setRange(0, UINT_MAX);
     return editor;
 }
 
@@ -334,7 +334,7 @@ template<> inline void ArgumentType<unsigned int>::FromString(const QString &str
 template<> inline QWidget *ArgumentType<unsigned short>::CreateEditor(QWidget *parent)
 {
     editor = new QSpinBox(parent);
-    static_cast<QSpinBox *>(editor)->setRange(0, std::numeric_limits<unsigned short>::max());
+    static_cast<QSpinBox *>(editor)->setRange(0, USHRT_MAX);
     return editor;
 }
 
@@ -366,7 +366,7 @@ template<> inline void ArgumentType<unsigned short>::FromString(const QString &s
 template<> inline QWidget *ArgumentType<short>::CreateEditor(QWidget *parent)
 {
     editor = new QSpinBox(parent);
-    static_cast<QSpinBox *>(editor)->setRange(-std::numeric_limits<short>::max(), std::numeric_limits<short>::max());
+    static_cast<QSpinBox *>(editor)->setRange(SHRT_MIN, SHRT_MAX);
     return editor;
 }
 
@@ -398,7 +398,7 @@ template<> inline void ArgumentType<short>::FromString(const QString &str)
 template<> inline QWidget *ArgumentType<int>::CreateEditor(QWidget *parent)
 {
     editor = new QSpinBox(parent);
-    static_cast<QSpinBox *>(editor)->setRange(-std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
+    static_cast<QSpinBox *>(editor)->setRange(INT_MIN, INT_MAX);
     return editor;
 }
 
@@ -430,7 +430,7 @@ template<> inline void ArgumentType<int>::FromString(const QString &str)
 template<> inline QWidget *ArgumentType<unsigned long>::CreateEditor(QWidget *parent)
 {
     editor = new QSpinBox(parent);
-    static_cast<QSpinBox *>(editor)->setRange(0, std::numeric_limits<unsigned long>::max());
+    static_cast<QSpinBox *>(editor)->setRange(0, ULONG_MAX);
     return editor;
 }
 
@@ -462,7 +462,7 @@ template<> inline void ArgumentType<unsigned long>::FromString(const QString &st
 template<> inline QWidget *ArgumentType<long>::CreateEditor(QWidget *parent)
 {
     editor = new QSpinBox(parent);
-    static_cast<QSpinBox *>(editor)->setRange(-std::numeric_limits<long>::max(), std::numeric_limits<long>::max());
+    static_cast<QSpinBox *>(editor)->setRange(LONG_MIN, LONG_MAX);
     return editor;
 }
 
@@ -494,7 +494,7 @@ template<> inline void ArgumentType<long>::FromString(const QString &str)
 template<> inline QWidget *ArgumentType<float>::CreateEditor(QWidget *parent)
 {
     editor = new QDoubleSpinBox(parent);
-    static_cast<QDoubleSpinBox *>(editor)->setRange(-std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+    static_cast<QDoubleSpinBox *>(editor)->setRange(-FLT_MAX, FLT_MAX);
     return editor;
 }
 
@@ -526,7 +526,7 @@ template<> inline void ArgumentType<float>::FromString(const QString &str)
 template<> inline QWidget *ArgumentType<double>::CreateEditor(QWidget *parent)
 {
     editor = new QDoubleSpinBox(parent);
-    static_cast<QDoubleSpinBox *>(editor)->setRange(-std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
+    static_cast<QDoubleSpinBox *>(editor)->setRange(-DBL_MAX, DBL_MAX);
     return editor;
 }
 
