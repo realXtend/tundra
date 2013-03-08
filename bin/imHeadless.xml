@@ -1,5 +1,0 @@
-<?xml version="1.0"?>
-<Tundra>
-  <!-- Loads up a script file which sets the InterestManager Settings via commandline -->
-  <jsplugin path="IMSettings.js" />
-</Tundra>
