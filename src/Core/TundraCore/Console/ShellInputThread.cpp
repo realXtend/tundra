@@ -14,7 +14,6 @@ ShellInputThread::ShellInputThread()
 
 ShellInputThread::~ShellInputThread()
 {
-    terminate();
 }
 
 void ShellInputThread::run()
