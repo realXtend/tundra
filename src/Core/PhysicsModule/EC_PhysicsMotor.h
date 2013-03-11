@@ -74,7 +74,7 @@ private slots:
     
 private:
     /// Cached rigidbody pointer
-    boost::weak_ptr<EC_RigidBody> rigidBody_;
+    weak_ptr<EC_RigidBody> rigidBody_;
     /// Cached placeable pointer
-    boost::weak_ptr<EC_Placeable> placeable_;
+    weak_ptr<EC_Placeable> placeable_;
 };

@@ -156,3 +156,128 @@ void AssetTreeWidget::Upload(const QStringList &files)
     addContent->AddAssets(files);
     addContent->show();
 }
+
+void AssetTreeWidget::OpenFileLocation()
+{
+    QList<AssetItem *> selection = SelectedItems().assets;
+    if (selection.isEmpty() || selection.size() < 1)
+        return;
+
+    AssetItem *item = selection.first();
+    if (item->Asset() && !item->Asset()->DiskSource().isEmpty())
+    {
+        bool success = false;
+#ifdef _WINDOWS
+        // Custom code for Windows, as we want to use explorer.exe with the /select switch.
+        // Craft command line string, use the full filename, not directory.
+        QString path = QDir::toNativeSeparators(item->Asset()->DiskSource());
+        WCHAR commandLineStr[256] = {};
+        WCHAR wcharPath[256] = {};
+        mbstowcs(wcharPath, path.toStdString().c_str(), 254);
+        wsprintf(commandLineStr, L"explorer.exe /select,%s", wcharPath);
+
+        STARTUPINFO startupInfo;
+        memset(&startupInfo, 0, sizeof(STARTUPINFO));
+        startupInfo.cb = sizeof(STARTUPINFO);
+        PROCESS_INFORMATION processInfo;
+        memset(&processInfo, 0, sizeof(PROCESS_INFORMATION));
+        success = CreateProcessW(NULL, commandLineStr, NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS,
+            NULL, NULL, &startupInfo, &processInfo);
+
+        CloseHandle(processInfo.hProcess);
+        CloseHandle(processInfo.hThread);
+#else
+        QString path = QDir::toNativeSeparators(QFileInfo(item->Asset()->DiskSource()).dir().path());
+        success = QDesktopServices::openUrl(QUrl("file:///" + path, QUrl::TolerantMode));
+#endif
+        if (!success)
+            LogError("AssetTreeWidget::OpenFileLocation: failed to open " + path);
+    }
+}
+
+void AssetTreeWidget::OpenInExternalEditor()
+{
+    QList<AssetItem *> selection = SelectedItems().assets;
+    if (selection.isEmpty() || selection.size() < 1)
+        return;
+
+    AssetItem *item = selection.first();
+    if (item->Asset() && !item->Asset()->DiskSource().isEmpty())
+        if (!QDesktopServices::openUrl(QUrl("file:///" + item->Asset()->DiskSource(), QUrl::TolerantMode)))
+            LogError("AssetTreeWidget::OpenInExternalEditor: failed to open " + item->Asset()->DiskSource());
+}
+
+void AssetTreeWidget::OpenFunctionDialog()
+{
+    AssetTreeWidgetSelection sel = SelectedItems();
+    if (sel.HasAssets() && sel.HasStorages())
+        return;
+
+    QObjectWeakPtrList objs;
+    if (sel.HasAssets())
+        foreach(AssetItem *item, SelectedItems().assets)
+            objs << dynamic_pointer_cast<QObject>(item->Asset());
+    else if (sel.HasStorages())
+        foreach(AssetStorageItem *item, SelectedItems().storages)
+            objs << dynamic_pointer_cast<QObject>(item->Storage());
+
+    if (objs.size())
+    {
+        FunctionDialog *d = new FunctionDialog(objs, this);
+        connect(d, SIGNAL(finished(int)), SLOT(FunctionDialogFinished(int)));
+        d->show();
+    }
+}
+
+void AssetTreeWidget::FunctionDialogFinished(int result)
+{
+    FunctionDialog *dialog = qobject_cast<FunctionDialog *>(sender());
+    if (!dialog)
+        return;
+
+    if (result == QDialog::Rejected)
+        return;
+
+    // Get the list of parameters we will pass to the function we are invoking,
+    // and update the latest values to them from the editor widgets the user inputted.
+    QVariantList params;
+    foreach(IArgumentType *arg, dialog->Arguments())
+    {
+        arg->UpdateValueFromEditor();
+        params << arg->ToQVariant();
+    }
+
+    // Clear old return value from the dialog.
+    dialog->SetReturnValueText("");
+
+    foreach(const QObjectWeakPtr &o, dialog->Objects())
+        if (!o.expired())
+        {
+            QObject *obj = o.lock().get();
+
+            QString objName = obj->metaObject()->className();
+            QString objNameWithId = objName;
+            IAsset *asset = dynamic_cast<IAsset *>(obj);
+            if (asset)
+                objNameWithId.append('(' + asset->Name() + ')');
+
+            QString errorMsg;
+            QVariant ret;
+            FunctionInvoker::Invoke(obj, dialog->Function(), params, &ret, &errorMsg);
+
+            QString retValStr;
+            ///\todo For some reason QVariant::toString() cannot convert QStringList to QString properly.
+            /// Convert it manually here.
+            if (ret.type() == QVariant::StringList)
+                foreach(QString s, ret.toStringList())
+                    retValStr.append("\n" + s);
+            else
+                retValStr = ret.toString();
+
+            if (errorMsg.isEmpty())
+                dialog->AppendReturnValueText(objNameWithId + ' ' + retValStr);
+            else
+                dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
+        }
+}
+

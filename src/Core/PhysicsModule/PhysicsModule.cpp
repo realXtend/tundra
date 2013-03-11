@@ -191,7 +191,7 @@ void PhysicsModule::OnSceneAdded(const QString& name)
         return;
     }
     
-    boost::shared_ptr<PhysicsWorld> newWorld = boost::make_shared<PhysicsWorld>(scene, !scene->IsAuthority());
+    shared_ptr<PhysicsWorld> newWorld = MAKE_SHARED(PhysicsWorld, scene, !scene->IsAuthority());
     newWorld->SetGravity(scene->UpVector() * -9.81f);
     newWorld->SetPhysicsUpdatePeriod(defaultPhysicsUpdatePeriod_);
     newWorld->SetMaxSubSteps(defaultMaxSubSteps_);
@@ -230,9 +230,9 @@ void PhysicsModule::OnScriptEngineCreated(QScriptEngine* engine)
     qScriptRegisterQObjectMetaType<PhysicsRaycastResult*>(engine);
 }
 
-boost::shared_ptr<btTriangleMesh> PhysicsModule::GetTriangleMeshFromOgreMesh(Ogre::Mesh* mesh)
+shared_ptr<btTriangleMesh> PhysicsModule::GetTriangleMeshFromOgreMesh(Ogre::Mesh* mesh)
 {
-    boost::shared_ptr<btTriangleMesh> ptr;
+    shared_ptr<btTriangleMesh> ptr;
     if (!mesh)
         return ptr;
     
@@ -243,7 +243,7 @@ boost::shared_ptr<btTriangleMesh> PhysicsModule::GetTriangleMeshFromOgreMesh(Ogr
     
     // Create new, then interrogate the Ogre mesh
 #include "DisableMemoryLeakCheck.h"
-    ptr = boost::make_shared<btTriangleMesh>();
+    ptr = MAKE_SHARED(btTriangleMesh);
 #include "EnableMemoryLeakCheck.h"
     GenerateTriangleMesh(mesh, ptr.get());
     
@@ -252,9 +252,9 @@ boost::shared_ptr<btTriangleMesh> PhysicsModule::GetTriangleMeshFromOgreMesh(Ogr
     return ptr;
 }
 
-boost::shared_ptr<ConvexHullSet> PhysicsModule::GetConvexHullSetFromOgreMesh(Ogre::Mesh* mesh)
+shared_ptr<ConvexHullSet> PhysicsModule::GetConvexHullSetFromOgreMesh(Ogre::Mesh* mesh)
 {
-    boost::shared_ptr<ConvexHullSet> ptr;
+    shared_ptr<ConvexHullSet> ptr;
     if (!mesh)
         return ptr;
     
@@ -264,7 +264,7 @@ boost::shared_ptr<ConvexHullSet> PhysicsModule::GetConvexHullSetFromOgreMesh(Ogr
         return iter->second;
     
     // Create new, then interrogate the Ogre mesh
-    ptr = boost::make_shared<ConvexHullSet>();
+    ptr = MAKE_SHARED(ConvexHullSet);
     GenerateConvexHullSet(mesh, ptr.get());
 
     convexHullSets_[mesh->getName()] = ptr;

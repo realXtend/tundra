@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef incl_OgreRenderingModule_CaveViewSettingsAdvanced_h
-#define incl_OgreRenderingModule_CaveViewSettingsAdvanced_h
+#pragma once
 
 #include "ui_CaveSettingsDialogAdvanced.h"
 #include <QDialog>
@@ -13,7 +12,6 @@ namespace Ogre
 
 namespace CAVEStereo
 {
-
     class CAVEViewSettingsAdvanced: public QDialog, private Ui::CaveViewSettingsDialogAdvanced
     {
         Q_OBJECT
@@ -22,12 +20,5 @@ namespace CAVEStereo
         void setCaveProjectionSettings(Ogre::Vector3 &eye_pos, Ogre::Vector3 &bottom_left, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_right);
         CAVEViewSettingsAdvanced( QWidget* parent=0 );
         ~CAVEViewSettingsAdvanced();
-
-
     };
-
 }
-
-
-
-#endif

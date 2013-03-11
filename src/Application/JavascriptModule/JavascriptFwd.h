@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "boost/shared_ptr.hpp"
+#include "CoreTypes.h"
 
 class QScriptEngine;
 class QScriptContext;
@@ -15,5 +15,4 @@ class JavascriptModule;
 class JavascriptInstance;
 class ScriptAsset;
 
-typedef boost::shared_ptr<ScriptAsset> ScriptAssetPtr;
-
+typedef shared_ptr<ScriptAsset> ScriptAssetPtr;

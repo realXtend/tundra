@@ -7,6 +7,8 @@
 #include "Math/float3.h"
 #include "PhysicsModuleFwd.h"
 
+#include <map>
+
 /// Physics volume trigger component
 /** <table class="header">
     <tr>
@@ -163,10 +165,16 @@ private:
     void AttributesChanged();
 
     /// Rigid body component that is needed for collision signals
-    boost::weak_ptr<EC_RigidBody> rigidbody_;
+    weak_ptr<EC_RigidBody> rigidbody_;
 
+    /// As C++ standard weak_ptr doesn't provide less than operator (or any comparison operators for that matter), we need to provide it ourselves.
+    struct EntityWeakPtrLessThan
+    {
+        bool operator() (const EntityWeakPtr &a, const EntityWeakPtr &b) const { return WEAK_PTR_LESS_THAN(a, b); }
+    };
+    typedef std::map<EntityWeakPtr, bool, EntityWeakPtrLessThan> EntitiesWithinVolumeMap;
     /// Map of entities inside this volume. 
     /** The value is used in physics update to see if the entity is still inside
         this volume or if it left the volume during last physics update. */
-    QMap<EntityWeakPtr, bool> entities_;
+    EntitiesWithinVolumeMap entities_;
 };

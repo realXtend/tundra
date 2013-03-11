@@ -117,61 +117,60 @@ static const float MAX_FRAME_TIME = 0.1f;
 class ShaderGeneratorTechniqueResolverListener : public Ogre::MaterialManager::Listener
 {
 public:
+    ShaderGeneratorTechniqueResolverListener(Ogre::RTShader::ShaderGenerator* pShaderGenerator)
+    {
+        mShaderGenerator = pShaderGenerator;
+    }
 
-	ShaderGeneratorTechniqueResolverListener(Ogre::RTShader::ShaderGenerator* pShaderGenerator)
-	{
-		mShaderGenerator = pShaderGenerator;			
-	}
+    /** This is the hook point where shader based technique will be created.
+    It will be called whenever the material manager won't find appropriate technique
+    that satisfy the target scheme name. If the scheme name is out target RT Shader System
+    scheme name we will try to create shader generated technique for it. 
+    */
+    virtual Ogre::Technique* handleSchemeNotFound(unsigned short schemeIndex, 
+        const Ogre::String& schemeName, Ogre::Material* originalMaterial, unsigned short lodIndex, 
+        const Ogre::Renderable* rend)
+    {    
+        Ogre::Technique* generatedTech = NULL;
 
-	/** This is the hook point where shader based technique will be created.
-	It will be called whenever the material manager won't find appropriate technique
-	that satisfy the target scheme name. If the scheme name is out target RT Shader System
-	scheme name we will try to create shader generated technique for it. 
-	*/
-	virtual Ogre::Technique* handleSchemeNotFound(unsigned short schemeIndex, 
-		const Ogre::String& schemeName, Ogre::Material* originalMaterial, unsigned short lodIndex, 
-		const Ogre::Renderable* rend)
-	{	
-		Ogre::Technique* generatedTech = NULL;
+        // Case this is the default shader generator scheme.
+        if (schemeName == Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME)
+        {
+            bool techniqueCreated;
 
-		// Case this is the default shader generator scheme.
-		if (schemeName == Ogre::RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME)
-		{
-			bool techniqueCreated;
+            // Create shader generated technique for this material.
+            techniqueCreated = mShaderGenerator->createShaderBasedTechnique(
+                originalMaterial->getName(),
+                Ogre::MaterialManager::DEFAULT_SCHEME_NAME,
+                schemeName);
 
-			// Create shader generated technique for this material.
-			techniqueCreated = mShaderGenerator->createShaderBasedTechnique(
-				originalMaterial->getName(), 
-				Ogre::MaterialManager::DEFAULT_SCHEME_NAME, 
-				schemeName);	
+            // Case technique registration succeeded.
+            if (techniqueCreated)
+            {
+                // Force creating the shaders for the generated technique.
+                mShaderGenerator->validateMaterial(schemeName, originalMaterial->getName());
+                
+                // Grab the generated technique.
+                Ogre::Material::TechniqueIterator itTech = originalMaterial->getTechniqueIterator();
 
-			// Case technique registration succeeded.
-			if (techniqueCreated)
-			{
-				// Force creating the shaders for the generated technique.
-				mShaderGenerator->validateMaterial(schemeName, originalMaterial->getName());
-				
-				// Grab the generated technique.
-				Ogre::Material::TechniqueIterator itTech = originalMaterial->getTechniqueIterator();
+                while (itTech.hasMoreElements())
+                {
+                    Ogre::Technique* curTech = itTech.getNext();
 
-				while (itTech.hasMoreElements())
-				{
-					Ogre::Technique* curTech = itTech.getNext();
+                    if (curTech->getSchemeName() == schemeName)
+                    {
+                        generatedTech = curTech;
+                        break;
+                    }
+                }
+            }
+        }
 
-					if (curTech->getSchemeName() == schemeName)
-					{
-						generatedTech = curTech;
-						break;
-					}
-				}				
-			}
-		}
+        return generatedTech;
+    }
 
-		return generatedTech;
-	}
-
-protected:	
-	Ogre::RTShader::ShaderGenerator*	mShaderGenerator;			// The shader generator instance.		
+protected:
+    Ogre::RTShader::ShaderGenerator* mShaderGenerator; // The shader generator instance.
 };
 #endif
 
@@ -248,7 +247,7 @@ namespace OgreRenderer
         dummyDefaultCamera(0),
         mainViewport(0),
 #ifdef ANDROID
-	shaderGenerator(0),
+        shaderGenerator(0),
         overlaySystem(0),
 #endif
         uniqueObjectId(0),
@@ -289,7 +288,7 @@ namespace OgreRenderer
             defaultScene->destroyCamera(dummyDefaultCamera);
             dummyDefaultCamera = 0;
 #ifdef ANDROID
-	    if (shaderGenerator)
+            if (shaderGenerator)
                 shaderGenerator->removeSceneManager(defaultScene);
 #endif
             ogreRoot->destroySceneManager(defaultScene);
@@ -297,8 +296,8 @@ namespace OgreRenderer
         }
 
 #ifdef ANDROID
-	SAFE_DELETE(overlaySystem);
-	Ogre::RTShader::ShaderGenerator::finalize();
+        SAFE_DELETE(overlaySystem);
+        Ogre::RTShader::ShaderGenerator::finalize();
 #endif
 
         ogreRoot.reset();
@@ -442,7 +441,7 @@ namespace OgreRenderer
             ogreRoot->setRenderSystem(rendersystem);
 
 #ifdef ANDROID
-	    // On Android (static Ogre linking) create overlaysystem now
+            // On Android (static Ogre linking) create overlaysystem now
             overlaySystem = new Ogre::OverlaySystem();
 #endif
 
@@ -511,7 +510,7 @@ namespace OgreRenderer
             /// Create the default scene manager, which is used for nothing but rendering emptiness in case we have no framework scenes
             defaultScene = ogreRoot->createSceneManager(Ogre::ST_GENERIC, "DefaultEmptyScene");
 #ifdef ANDROID
-	    if (shaderGenerator)
+            if (shaderGenerator)
                 shaderGenerator->addSceneManager(defaultScene);
 #endif
             dummyDefaultCamera = defaultScene->createCamera("DefaultCamera");
@@ -562,7 +561,7 @@ namespace OgreRenderer
     {
         QStringList loadedPlugins;
 
-        #ifndef ANDROID
+#ifndef ANDROID
         Ogre::ConfigFile file;
         try
         {
@@ -594,14 +593,12 @@ namespace OgreRenderer
                 LogError("Plugin " + plugins[i] + " failed to load");
             }
         }
-        #else
-            // On Android, load Ogre plugins statically
-            staticPluginLoader = new Ogre::StaticPluginLoader();
-            staticPluginLoader->load();
-        #endif
-
+#else
+        // On Android, load Ogre plugins statically
+        staticPluginLoader = new Ogre::StaticPluginLoader();
+        staticPluginLoader->load();
+#endif
         return loadedPlugins;
-
     }
 
     void Renderer::SetupResources()
@@ -644,13 +641,11 @@ namespace OgreRenderer
         }
 
         Ogre::ResourceGroupManager::getSingleton().addResourceLocation(shadowPath, "FileSystem", "General");
-
 #if ANDROID
-	// Initialize RTShader resources
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/RTShaderLib", "FileSystem", "General");
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/RTShaderLib/materials", "FileSystem", "General");
+        // Initialize RTShader resources
+        Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/RTShaderLib", "FileSystem", "General");
+        Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/RTShaderLib/materials", "FileSystem", "General");
 #endif
-
         Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
     }
 
@@ -681,8 +676,8 @@ namespace OgreRenderer
         if (framework->IsHeadless())
             return;
 
-	if (!renderWindow->OgreOverlay())
-	    return;
+        if (!renderWindow->OgreOverlay())
+            return;
 
         PROFILE(Renderer_DoFullUIRedraw);
 
@@ -942,8 +937,8 @@ namespace OgreRenderer
         Ogre::Overlay* overlay = renderWindow->OgreOverlay();
         if (overlay)
         {
-	    if (framework->Input()->IsKeyDown(Qt::Key_F8))
-	        renderWindow->OgreOverlay()->hide();
+            if (framework->Input()->IsKeyDown(Qt::Key_F8))
+                renderWindow->OgreOverlay()->hide();
             else
                 renderWindow->OgreOverlay()->show();
         }
@@ -1017,7 +1012,7 @@ namespace OgreRenderer
 
     void Renderer::SetMainCamera(Entity *mainCameraEntity)
     {
-        activeMainCamera = mainCameraEntity ? mainCameraEntity->shared_from_this() : boost::shared_ptr<Entity>();
+        activeMainCamera = mainCameraEntity ? mainCameraEntity->shared_from_this() : shared_ptr<Entity>();
 
         Ogre::Camera *newActiveCamera = 0;
         EC_Camera *cameraComponent = mainCameraEntity ? mainCameraEntity->GetComponent<EC_Camera>().get() : 0;
@@ -1101,7 +1096,7 @@ namespace OgreRenderer
 
     std::string Renderer::GetUniqueObjectName(const std::string &prefix)
     {
-        return prefix + "_" + ToString<uint>(uniqueObjectId++);
+        return QString("%1_%2").arg(prefix.c_str()).arg(uniqueObjectId++).toStdString();
     }
 
     void Renderer::AddResourceDirectory(const QString &qdirectory)
@@ -1115,7 +1110,7 @@ namespace OgreRenderer
 
         Ogre::ResourceGroupManager& resgrpmgr = Ogre::ResourceGroupManager::getSingleton();
 
-        std::string groupname = "grp" + ToString<uint>(uniqueGroupId++);
+        std::string groupname = "grp" + QString::number(uniqueGroupId++).toStdString();
 
         // Check if resource group already exists (should not).
         bool exists = false;

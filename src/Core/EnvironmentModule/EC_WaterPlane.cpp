@@ -475,7 +475,9 @@ void EC_WaterPlane::SetOrientation()
 
 ComponentPtr EC_WaterPlane::FindPlaceable() const
 {
-    return ParentEntity() ? ParentEntity()->GetComponent<EC_Placeable>() : ComponentPtr();
+    /// @todo The static_pointer_cast should not be necessary here, but without it when compiling TUNDRA_NO_BOOST build with VC9 we get:
+    /// "error C2664: 'void std::tr1::_Ptr_base<_Ty>::_Reset(_Ty *,std::tr1::_Ref_count_base *)' : cannot convert parameter 1 from 'IComponent *const ' to 'EC_Placeable *'"
+    return ParentEntity() ? static_pointer_cast<IComponent>(ParentEntity()->GetComponent<EC_Placeable>()) : ComponentPtr();
 }
 
 void EC_WaterPlane::AttachEntity()

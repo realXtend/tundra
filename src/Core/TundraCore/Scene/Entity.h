@@ -10,8 +10,6 @@
 #include "EntityAction.h"
 #include "UniqueIdGenerator.h"
 
-#include <boost/enable_shared_from_this.hpp>
-
 #include <kNetFwd.h>
 
 #include <QObject>
@@ -42,7 +40,7 @@ class QDomElement;
             the component names are unique.
 
     \ingroup Scene_group */
-class TUNDRACORE_API Entity : public QObject, public boost::enable_shared_from_this<Entity>
+class TUNDRACORE_API Entity : public QObject, public enable_shared_from_this<Entity>
 {
     Q_OBJECT
     Q_PROPERTY(entity_id_t id READ Id) /**< @copydoc Id */
@@ -65,18 +63,18 @@ public:
     /// Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
     /** If there are several components with the specified type, returns the first component found (arbitrary). */
     template <class T>
-    boost::shared_ptr<T> GetComponent() const;
+    shared_ptr<T> GetComponent() const;
 
     /** Returns list of components with certain class type, already cast to correct type.
         @param T Component class type.
         @return List of components with certain class type, or empty list if no components was found. */
     template <class T>
-    std::vector<boost::shared_ptr<T> > GetComponents() const;
+    std::vector<shared_ptr<T> > GetComponents() const;
 
     /// Returns a component with certain type and name, already cast to correct type, or empty pointer if component was not found
     /** @param name name of the component */
     template <class T>
-    boost::shared_ptr<T> GetComponent(const QString& name) const;
+    shared_ptr<T> GetComponent(const QString& name) const;
 
    /** Returns pointer to the first attribute with specific name.
         @param T Type name/class of the attribute.

@@ -191,7 +191,7 @@ bool EC_MediaPlayer::SeekMedia(float timeInSeconds)
     {
         if (timeInSeconds < 0.0)
             timeInSeconds = 0.0;
-        boost::uint_least64_t seekTimeMsec = timeInSeconds * 1000.0;
+        uint_least64_t seekTimeMsec = timeInSeconds * 1000.0;
         return mediaPlayer_->GetVideoWidget()->Seek(seekTimeMsec);
     }
     return false;
@@ -216,7 +216,7 @@ float EC_MediaPlayer::GetMediaLenght()
     if (!mediaPlayer_ || !mediaPlayer_->GetVideoWidget())
         return 0.0;
 
-    boost::uint_least64_t lenMsecs = mediaPlayer_->GetVideoWidget()->GetMediaLenght();
+    uint_least64_t lenMsecs = mediaPlayer_->GetVideoWidget()->GetMediaLenght();
     return (lenMsecs / 1000.0);
 }
 
@@ -225,7 +225,7 @@ float EC_MediaPlayer::GetMediaTime()
     if (!mediaPlayer_ || !mediaPlayer_->GetVideoWidget())
         return 0.0;
 
-    boost::uint_least64_t timeMsecs = mediaPlayer_->GetVideoWidget()->GetMediaTime();
+    uint_least64_t timeMsecs = mediaPlayer_->GetVideoWidget()->GetMediaTime();
     return (timeMsecs / 1000.0);
 }
 

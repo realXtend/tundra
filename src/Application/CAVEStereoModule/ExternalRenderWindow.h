@@ -1,7 +1,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#ifndef incl_OgreRenderingModule_ExternalRenderWindow_h
-#define incl_OgreRenderingModule_ExternalRenderWindow_h
+#pragma once
 
 #include <QWidget>
 
@@ -43,6 +42,3 @@ namespace CAVEStereo
         Ogre::RenderWindow* render_window_;
     };
 }
-
-
-#endif

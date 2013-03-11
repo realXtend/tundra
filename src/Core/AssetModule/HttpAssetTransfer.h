@@ -13,4 +13,4 @@ public:
 
 };
 
-typedef boost::shared_ptr<HttpAssetTransfer> HttpAssetTransferPtr;
+typedef shared_ptr<HttpAssetTransfer> HttpAssetTransferPtr;

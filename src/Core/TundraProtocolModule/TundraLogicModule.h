@@ -34,13 +34,13 @@ public:
     KristalliProtocolModule *GetKristalliModule() const { return kristalliModule_; }
 
     /// Returns syncmanager
-    const boost::shared_ptr<SyncManager>& GetSyncManager() const { return syncManager_; }
+    const shared_ptr<SyncManager>& GetSyncManager() const { return syncManager_; }
 
     /// Returns client
-    const boost::shared_ptr<Client>& GetClient() const { return client_; }
+    const shared_ptr<Client>& GetClient() const { return client_; }
 
     /// Returns server
-    const boost::shared_ptr<Server>& GetServer() const { return server_; }
+    const shared_ptr<Server>& GetServer() const { return server_; }
 
 public slots:
     /// Saves scene to an XML file
@@ -87,9 +87,9 @@ private:
     /// Loads the startup scene(s) specified by --file command line parameter.
     void LoadStartupScene();
 
-    boost::shared_ptr<SyncManager> syncManager_; ///< Sync manager
-    boost::shared_ptr<Client> client_; ///< Client
-    boost::shared_ptr<Server> server_; ///< Server
+    shared_ptr<SyncManager> syncManager_; ///< Sync manager
+    shared_ptr<Client> client_; ///< Client
+    shared_ptr<Server> server_; ///< Server
     KristalliProtocolModule *kristalliModule_; ///< KristalliProtocolModule pointer
     bool autoStartServer_; ///< Whether to autostart the server
     unsigned short autoStartServerPort_; ///< Autostart server port

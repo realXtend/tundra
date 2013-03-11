@@ -10,7 +10,7 @@
 #include "AssetFwd.h"
 
 /// An OpenAL sound channel (source).
-class TUNDRACORE_API SoundChannel : public QObject, public boost::enable_shared_from_this<SoundChannel>
+class TUNDRACORE_API SoundChannel : public QObject, public enable_shared_from_this<SoundChannel>
 {
     Q_OBJECT
     Q_ENUMS(SoundState)
@@ -180,4 +180,4 @@ private:
     sound_id_t channelId;
 };
 
-typedef boost::shared_ptr<SoundChannel> SoundChannelPtr;
+typedef shared_ptr<SoundChannel> SoundChannelPtr;

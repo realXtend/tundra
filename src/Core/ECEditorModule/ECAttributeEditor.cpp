@@ -1630,10 +1630,10 @@ template<> void ECAttributeEditor<QVariantList>::Initialize()
             QVariantList variantArray = attribute->Get();
             for(uint i = 0; i < (uint)variantArray.size(); ++i)
             {
-                childProperty = stringManager->addProperty(QString::fromStdString("[" + ::ToString<uint>(i) + "]"));
+                childProperty = stringManager->addProperty(QString("[%1]").arg(i));
                 rootProperty_->addSubProperty(childProperty);
             }
-            childProperty = stringManager->addProperty(QString::fromStdString("[" + ::ToString<uint>(variantArray.size()) + "]"));
+            childProperty = stringManager->addProperty(QString("[%1]").arg(variantArray.size()));
             rootProperty_->addSubProperty(childProperty);
 
             Update();
@@ -1854,7 +1854,7 @@ void AssetReferenceAttributeEditor::OpenAssetsWindow()
             {
                 Attribute<AssetReference> *ref = FindAttribute<AssetReference>(c.lock());
                 if (ref)
-                    originalValues.insert(c, ref->Get());
+                    originalValues[c] = ref->Get();
             }
     }
 }
@@ -1875,13 +1875,9 @@ void AssetReferenceAttributeEditor::RestoreOriginalValue()
     if (!assetRef)
         return;
 
-    QMapIterator<ComponentWeakPtr, AssetReference> it(originalValues);
-    while(it.hasNext())
-    {
-        ComponentWeakPtr c = it.next().key();
-        if (!c.expired())
-            SetValue(c.lock(), it.value());
-    }
+    for(std::map<ComponentWeakPtr, AssetReference, ComponentWeakPtrLessThan>::iterator it =  originalValues.begin(); it != originalValues.end(); ++it)
+        if (!it->first.expired())
+            SetValue(it->first.lock(), it->second);
 
     originalValues.clear();
 
@@ -1992,11 +1988,11 @@ template<> void ECAttributeEditor<AssetReferenceList>::Initialize()
             const AssetReferenceList &refList = attribute->Get();
             for(uint i = 0; i < (uint)refList.Size(); ++i)
             {
-                childProperty = stringManager->addProperty(QString::fromStdString("[" + ::ToString<uint>(i) + "]"));
+                childProperty = stringManager->addProperty(QString("[%1]").arg(i));
                 rootProperty_->addSubProperty(childProperty);
             }
 
-            childProperty = stringManager->addProperty(QString::fromStdString("[" + ::ToString<uint>(refList.Size()) + "]"));
+            childProperty = stringManager->addProperty(QString("[%1]").arg(refList.Size()));
             rootProperty_->addSubProperty(childProperty);
 
             Update();
@@ -2122,7 +2118,7 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
             assetType = components_[0].lock()->GetFramework()->Asset()->GetResourceTypeFromAssetRef(refList->Get()[0]);
     }
 
-    LogDebug("OpenAssetsWindow, index " + ToString(currentIndex));
+    LogDebug("OpenAssetsWindow, index " + QString::number(currentIndex));
     LogDebug("Creating AssetsWindow for asset type " + assetType);
     AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
     connect(assetsWindow, SIGNAL(SelectedAssetChanged(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
@@ -2140,7 +2136,7 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
         {
             Attribute<AssetReferenceList> *refs = FindAttribute<AssetReferenceList>(c.lock());
             if (refs)
-                originalValues.insert(c, refs->Get());
+                originalValues[c] = refs->Get();
         }
 }
 
@@ -2177,15 +2173,9 @@ void AssetReferenceListAttributeEditor::RestoreOriginalValue()
 {
     Attribute<AssetReferenceList> *refList = FindAttribute<AssetReferenceList>(components_[0].lock());
     if (refList)
-    {
-        QMapIterator<ComponentWeakPtr, AssetReferenceList> it(originalValues);
-        while(it.hasNext())
-        {
-            ComponentWeakPtr c = it.next().key();
-            if (c.lock())
-                SetValue(c.lock(), it.value());
-        }
-    }
+        for(std::map<ComponentWeakPtr, AssetReferenceList, ComponentWeakPtrLessThan>::iterator it = originalValues.begin(); it != originalValues.end(); ++it)
+            if (!it->first.expired())
+                SetValue(it->first.lock(), it->second);
 
     originalValues.clear();
 

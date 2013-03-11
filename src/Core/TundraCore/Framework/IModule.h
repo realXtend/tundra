@@ -10,12 +10,12 @@
 #include "CoreDefines.h"
 #include "CoreTypes.h"
 #include "FrameworkFwd.h"
-#include <boost/enable_shared_from_this.hpp>
+
 #include <QObject>
 
 /// Interface for modules. When creating new modules, inherit from this class.
 /** See @ref ModuleArchitecture for details. */
-class TUNDRACORE_API IModule : public QObject, public boost::enable_shared_from_this<IModule>
+class TUNDRACORE_API IModule : public QObject, public enable_shared_from_this<IModule>
 {
     Q_OBJECT
 

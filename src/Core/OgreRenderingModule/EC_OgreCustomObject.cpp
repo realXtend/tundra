@@ -101,8 +101,8 @@ bool EC_OgreCustomObject::CommitChanges(Ogre::ManualObject* object)
             ::LogError("Could not create entity from manualobject mesh");
             return false;
         }
-    }   
-    catch(Ogre::Exception& e)
+    }
+    catch(const Ogre::Exception& e)
     {
         ::LogError("Could not convert manualobject to mesh: " + std::string(e.what()));
         return false;
@@ -132,7 +132,7 @@ bool EC_OgreCustomObject::SetMaterial(uint index, const std::string& material_na
     
     if (index >= entity_->getNumSubEntities())
     {
-        ::LogError("Could not set material " + material_name + ": illegal submesh index " + ToString<uint>(index));
+        ::LogError("Could not set material " + material_name + ": illegal submesh index " + QString::number(index).toStdString());
         return false;
     }
     
@@ -140,7 +140,7 @@ bool EC_OgreCustomObject::SetMaterial(uint index, const std::string& material_na
     {
         entity_->getSubEntity(index)->setMaterialName(material_name);
     }
-    catch(Ogre::Exception& e)
+    catch(const Ogre::Exception& e)
     {
         ::LogError("Could not set material " + material_name + ": " + std::string(e.what()));
         return false;
@@ -168,11 +168,11 @@ const std::string& EC_OgreCustomObject::GetMaterialName(uint index) const
         return empty;
     
     return entity_->getSubEntity(index)->getMaterialName();
-}    
-       
+}
+
 void EC_OgreCustomObject::AttachEntity()
 {
-    if ((placeable_) && (!attached_) && (entity_))
+    if (placeable_ && !attached_ && entity_)
     {
         EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
         Ogre::SceneNode* node = placeable->GetSceneNode();
@@ -183,7 +183,7 @@ void EC_OgreCustomObject::AttachEntity()
 
 void EC_OgreCustomObject::DetachEntity()
 {
-    if ((placeable_) && (attached_) && (entity_))
+    if (placeable_ && attached_ && entity_)
     {
         EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
         Ogre::SceneNode* node = placeable->GetSceneNode();
@@ -230,4 +230,3 @@ void EC_OgreCustomObject::GetBoundingBox(float3& min, float3& max) const
     min = float3(bboxmin.x, bboxmin.y, bboxmin.z);
     max = float3(bboxmax.x, bboxmax.y, bboxmax.z);
 }
-

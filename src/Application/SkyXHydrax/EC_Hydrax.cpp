@@ -52,7 +52,7 @@ struct EC_Hydrax::EC_HydraxImpl
     Hydrax::Hydrax *hydrax;
     Hydrax::Module::Module *module;
 #ifdef SKYX_ENABLED
-    boost::weak_ptr<EC_SkyX> skyX;
+    weak_ptr<EC_SkyX> skyX;
 #endif
 };
 
@@ -276,7 +276,7 @@ void EC_Hydrax::Update(float frameTime)
         }
 
         // Set Hydrax's sun position to use either sun or moon, depending which is visible.
-        boost::shared_ptr<EC_SkyX> skyX = impl->skyX.lock();
+        shared_ptr<EC_SkyX> skyX = impl->skyX.lock();
         if (skyX && impl->hydrax->isCreated())
         {
             // Decrease sun strength for moonlight. Otherwise the light projection on the water surface looks unnaturally.

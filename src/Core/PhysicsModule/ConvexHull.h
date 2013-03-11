@@ -13,7 +13,7 @@ namespace Physics
 struct ConvexHull
 {
     float3 position_;
-    boost::shared_ptr<btConvexHullShape> hull_;
+    shared_ptr<btConvexHullShape> hull_;
 };
 
 struct ConvexHullSet

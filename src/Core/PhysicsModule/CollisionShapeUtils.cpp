@@ -65,7 +65,7 @@ void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr)
     ConvexHull hull;
     hull.position_ = float3(0,0,0);
     /// \todo StanHull always produces only 1 hull. Therefore using a hull set is unnecessary and could be optimized away
-    hull.hull_ = boost::shared_ptr<btConvexHullShape>(new btConvexHullShape((const btScalar*)&result.mOutputVertices[0], result.mNumOutputVertices, 3 * sizeof(float)));
+    hull.hull_ = shared_ptr<btConvexHullShape>(new btConvexHullShape((const btScalar*)&result.mOutputVertices[0], result.mNumOutputVertices, 3 * sizeof(float)));
     ptr->hulls_.push_back(hull);
     
     lib.ReleaseResult(result);

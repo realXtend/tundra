@@ -831,7 +831,7 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
         EntityPtr entity = scene.lock()->GetEntity(entities[i]);
         if (!entity)
         {
-            LogWarning("Fail to add new component to entity, since couldn't find a entity with ID:" + ::ToString<entity_id_t>(entities[i]));
+            LogWarning("Fail to add new component to entity, since couldn't find a entity with ID:" + QString::number(entities[i]));
             continue;
         }
 
@@ -1104,14 +1104,14 @@ void SceneTreeWidget::OpenFunctionDialog()
         {
             EntityPtr e = eItem->Entity();
             if (e)
-                objs.append(boost::dynamic_pointer_cast<QObject>(e));
+                objs.append(dynamic_pointer_cast<QObject>(e));
         }
     else if(sel.HasComponents())
         foreach(ComponentItem *cItem, sel.components)
         {
             ComponentPtr c = cItem->Component();
             if (c)
-                objs.append(boost::dynamic_pointer_cast<QObject>(c));
+                objs.append(dynamic_pointer_cast<QObject>(c));
         }
 
     FunctionDialog *d = new FunctionDialog(objs, this);
@@ -1480,14 +1480,14 @@ void SceneTreeWidget::InvokeActionTriggered()
         {
             entities << eItem->Entity();
             objects << eItem->Entity().get();
-            objectPtrs << boost::dynamic_pointer_cast<QObject>(eItem->Entity());
+            objectPtrs << dynamic_pointer_cast<QObject>(eItem->Entity());
         }
 
     foreach(ComponentItem *cItem, sel.components)
         if (cItem->Component())
         {
             objects << cItem->Component().get();
-            objectPtrs << boost::dynamic_pointer_cast<QObject>(cItem->Component());
+            objectPtrs << dynamic_pointer_cast<QObject>(cItem->Component());
         }
 
     // Shift+click opens existing invoke history item editable in dialog.

@@ -54,7 +54,7 @@ public:
 
     /// Sets used item expand memory. Expand memory is used to load and save the expanded items in the tree widget.
     /** @param expandMem Tree widget item expand memory. */
-    void SetItemExpandMemory(boost::shared_ptr<TreeWidgetItemExpandMemory> expandMem) { expandMemory_ = expandMem; }
+    void SetItemExpandMemory(shared_ptr<TreeWidgetItemExpandMemory> expandMem) { expandMemory_ = expandMem; }
 
     /// Reads selected components from ComponentGroup and return them as QObjectList.
     QObjectList SelectedComponents() const;
@@ -190,5 +190,5 @@ private:
     QMenu *menu_;
     QTreeWidget *treeWidget_;
     Framework *framework_;
-    boost::weak_ptr<TreeWidgetItemExpandMemory> expandMemory_;
+    weak_ptr<TreeWidgetItemExpandMemory> expandMemory_;
 };

@@ -4,12 +4,9 @@
 
 #include "TundraCoreApi.h"
 #include "CoreTypes.h"
+#include "Win.h"
 
 #include <QDateTime>
-#if defined(_WINDOWS)
-#include <WinSock2.h>
-#include <Windows.h>
-#endif
 
 #if defined(_POSIX_C_SOURCE) && !defined(Q_WS_MAC)
 #include <time.h>

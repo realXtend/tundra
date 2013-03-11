@@ -34,6 +34,7 @@ SET VLC_ROOT=%DEPS%\vlc
 SET QXMPP_ROOT=%DEPS%\qxmpp
 SET ZZIPLIB_ROOT=%DEPS%\zziplib
 SET CRUNCH_ROOT=%DEPS%\crunch
+set TBB_HOME=%DEPS%\ogre-safe-nocrashes\Dependencies\tbb
 
 :: Disable python until it has been fixed to windows-build-deps.cmd!
 SET TUNDRA_PYTHON_ENABLED=FALSE
@@ -41,7 +42,7 @@ IF %TUNDRA_PYTHON_ENABLED%==FALSE cecho {0E}Disabling Python from the build unti
 echo.
 
 IF NOT EXIST Tundra.sln. (
-   del /Q CMakeCache.txt
+   IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
    cecho {0D}Running CMake for Tundra.{# #}{\n}
    cmake.exe -G %GENERATOR%
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR

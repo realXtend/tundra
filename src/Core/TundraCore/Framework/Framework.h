@@ -4,13 +4,10 @@
 
 #include "TundraCoreApi.h"
 #include "FrameworkFwd.h"
+#include "CoreTypes.h"
 
 #include <QObject>
 #include <QStringList>
-
-#include <boost/smart_ptr.hpp>
-
-#include <vector>
 
 #ifdef ANDROID
 #include <jni.h>
@@ -38,7 +35,7 @@ public:
     /// Returns module by class T.
     /** @param T class type of the module.
         @return The module, or null if the module doesn't exist. Always remember to check for null pointer.
-        @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it. */
+        @note Do not store the returned raw module pointer anywhere or make a weak_ptr/shared_ptr out of it. */
     template <class T>
     T *GetModule() const;
 
@@ -144,7 +141,7 @@ public slots:
 
     /// Returns raw module pointer.
     /** @param name Name of the module.
-        @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it. */
+        @note Do not store the returned raw module pointer anywhere or make a weak_ptr/shared_ptr out of it. */
     IModule *GetModuleByName(const QString &name) const;
 
     /// Returns if we're running the application in headless or not.
@@ -208,7 +205,7 @@ private:
     VersionInfo *apiVersionInfo, *applicationVersionInfo;
 
     /// Framework owns the memory of all the modules in the system. These are freed when Framework is exiting.
-    std::vector<boost::shared_ptr<IModule> > modules;
+    std::vector<shared_ptr<IModule> > modules;
 
     static Framework *instance;
     int argc; ///< Command line argument count as supplied by the operating system.

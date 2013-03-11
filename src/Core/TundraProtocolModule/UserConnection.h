@@ -9,16 +9,13 @@
 #include <kNet/SharedPtr.h>
 #include <kNet/MessageConnection.h>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
-
 #include <QObject>
 
 class Entity;
 class SceneSyncState;
 
 /// Represents a client connection on the server side.
-class TUNDRAPROTOCOL_MODULE_API UserConnection : public QObject, public boost::enable_shared_from_this<UserConnection>
+class TUNDRAPROTOCOL_MODULE_API UserConnection : public QObject, public enable_shared_from_this<UserConnection>
 {
     Q_OBJECT
     Q_PROPERTY(int id READ ConnectionId)
@@ -38,7 +35,7 @@ public:
     /// Property map
     LoginPropertyMap properties;
     /// Scene sync state, created and used by the SyncManager
-    boost::shared_ptr<SceneSyncState> syncState;
+    shared_ptr<SceneSyncState> syncState;
 
 public slots:
     /// Execute an action on an entity, sent only to the specific user

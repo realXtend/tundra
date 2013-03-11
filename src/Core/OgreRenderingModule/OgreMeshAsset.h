@@ -3,7 +3,6 @@
 #pragma once
 
 #include "Math/MathNamespace.h"
-#include <boost/shared_ptr.hpp>
 #include "IAsset.h"
 #include "OgreModuleApi.h"
 

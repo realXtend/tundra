@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <boost/smart_ptr.hpp>
+#include "CoreTypes.h"
 
 namespace Ogre
 {
@@ -33,14 +33,14 @@ namespace Ogre
     class Bone;
 }
 
-typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
+typedef shared_ptr<Ogre::Root> OgreRootPtr;
 
 namespace OgreRenderer
 {
     class OgreRenderingModule;
     class Renderer;
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
+    typedef shared_ptr<Renderer> RendererPtr;
+    typedef weak_ptr<Renderer> RendererWeakPtr;
 }
 
 class OgreCompositionHandler;
@@ -55,11 +55,11 @@ class OgreMaterialAsset;
 class OgreSkeletonAsset;
 class OgreParticleAsset;
 
-typedef boost::shared_ptr<TextureAsset> TextureAssetPtr;
-typedef boost::shared_ptr<OgreMeshAsset> OgreMeshAssetPtr;
-typedef boost::shared_ptr<OgreMaterialAsset> OgreMaterialAssetPtr;
-typedef boost::shared_ptr<OgreSkeletonAsset> OgreSkeletonAssetPtr;
-typedef boost::shared_ptr<OgreParticleAsset> OgreParticleAssetPtr;
+typedef shared_ptr<TextureAsset> TextureAssetPtr;
+typedef shared_ptr<OgreMeshAsset> OgreMeshAssetPtr;
+typedef shared_ptr<OgreMaterialAsset> OgreMaterialAssetPtr;
+typedef shared_ptr<OgreSkeletonAsset> OgreSkeletonAssetPtr;
+typedef shared_ptr<OgreParticleAsset> OgreParticleAssetPtr;
 
 class EC_AnimationController;
 class EC_Camera;
@@ -75,5 +75,5 @@ class EC_Sky;
 class EC_EnvironmentLight;
 class EC_Fog;
 
-typedef boost::shared_ptr<OgreWorld> OgreWorldPtr;
-typedef boost::weak_ptr<OgreWorld> OgreWorldWeakPtr;
+typedef shared_ptr<OgreWorld> OgreWorldPtr;
+typedef weak_ptr<OgreWorld> OgreWorldWeakPtr;

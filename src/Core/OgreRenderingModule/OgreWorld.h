@@ -12,8 +12,6 @@
 #include <QObject>
 #include <QList>
 
-#include <boost/enable_shared_from_this.hpp>
-
 #include <set>
 
 class Framework;
@@ -24,7 +22,7 @@ class Color;
 class QRect;
 
 /// Contains the Ogre representation of a scene, ie. the Ogre Scene
-class OGRE_MODULE_API OgreWorld : public QObject, public boost::enable_shared_from_this<OgreWorld>
+class OGRE_MODULE_API OgreWorld : public QObject, public enable_shared_from_this<OgreWorld>
 {
     Q_OBJECT
 

@@ -125,8 +125,8 @@ private:
     };
 
     InputContextPtr input; ///< Input context for the gizmo.
-    boost::shared_ptr<EC_Placeable> placeable; ///< Placeable component.
-    boost::shared_ptr<EC_Mesh> mesh; ///< Mesh component.
+    shared_ptr<EC_Placeable> placeable; ///< Placeable component.
+    shared_ptr<EC_Mesh> mesh; ///< Mesh component.
     GizmoType gizmoType; ///< Current gizmo type.
     float3x4 worldTM; ///< Transform used for the gizmo rays. Based on the placeable; updated in inactive & hovering states, but not in active state
     float3 worldPos; ///< Gizmo's remembered world position. Based on the placeable; updated in inactive & hovering states, but not in active state

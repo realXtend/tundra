@@ -12,8 +12,6 @@
 #include "AttributeChangeType.h"
 #include "SceneFwd.h"
 
-#include <boost/enable_shared_from_this.hpp>
-
 namespace kNet
 {
     class DataSerializer;
@@ -25,7 +23,7 @@ class QVariant;
 
 /// Abstract base class for entity-component attributes.
 /** Concrete attribute classes will be subclassed out of this. */
-class TUNDRACORE_API IAttribute : public boost::enable_shared_from_this<IAttribute>
+class TUNDRACORE_API IAttribute : public enable_shared_from_this<IAttribute>
 {
 public:
     /// Constructor
