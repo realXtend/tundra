@@ -102,6 +102,7 @@ private:
     QPointer<AssetsWindow> assetsWindow;
     QPointer<KeyBindingsConfigWindow> keyBindingsWindow;
     QPointer<ECEditorWindow> syncedECEditor;
+    QPointer<AssetItemMenuHandler> assetItemMenuHandler;
     shared_ptr<InputContext> inputContext;
 
     SceneMaterialDropData materialDropData;
