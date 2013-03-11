@@ -139,10 +139,14 @@ using CORETYPES_NAMESPACE::wsmatch;
     owner_before function, but mysteriously named _Cmp instead. _Cmp performs also ownership-based comparison so it's compliant
     with the original use cases.
     Recommended reading regarding this topic: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2004/n1590.html */
-#if defined(TUNDRA_NO_BOOST) && defined(_MSC_VER) && (_MSC_VER == 1500)
-#define WEAK_PTR_LESS_THAN(a, b) a._Cmp(b)
+#ifdef TUNDRA_NO_BOOST
+    #if defined(_MSC_VER) && (_MSC_VER == 1500)
+        #define WEAK_PTR_LESS_THAN(a, b) a._Cmp(b)
+    #else
+        #define WEAK_PTR_LESS_THAN(a, b) a.owner_before(b)
+    #endif
 #else
-#define WEAK_PTR_LESS_THAN(a, b) a.owner_before(b)
+    #define WEAK_PTR_LESS_THAN(a, b) a < b
 #endif
 
 typedef std::vector<std::string> StringVector;
