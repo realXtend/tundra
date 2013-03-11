@@ -33,6 +33,7 @@ public:                                                                         
     {                                                                                   \
         return componentTypeId;                                                         \
     }                                                                                   \
+    enum { ComponentTypeId = componentTypeId };                                         \
 public slots:                                                                           \
     virtual const QString &TypeName() const                                             \
     {                                                                                   \
