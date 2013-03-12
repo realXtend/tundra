@@ -65,18 +65,18 @@ public:
     /// Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
     /** If there are several components with the specified type, returns the first component found (arbitrary). */
     template <class T>
-    shared_ptr<T> GetComponent() const;
+    shared_ptr<T> Component() const;
+
+    /// Returns a component with certain type and name, already cast to correct type, or empty pointer if component was not found
+    /** @param name name of the component */
+    template <class T>
+    shared_ptr<T> Component(const QString& name) const;
 
     /** Returns list of components with certain class type, already cast to correct type.
         @param T Component class type.
         @return List of components with certain class type, or empty list if no components was found. */
     template <class T>
     std::vector<shared_ptr<T> > ComponentsOfType() const;
-
-    /// Returns a component with certain type and name, already cast to correct type, or empty pointer if component was not found
-    /** @param name name of the component */
-    template <class T>
-    shared_ptr<T> GetComponent(const QString& name) const;
 
    /** Returns pointer to the first attribute with specific name.
         @param T Type name/class of the attribute.
@@ -134,7 +134,7 @@ public:
     /** @param name Name of the attribute.
         @return IAttribute pointer to the attribute.
         @note Always remember to check for null pointer. */
-    IAttribute *GetAttribute(const QString  &name) const;
+    IAttribute *GetAttribute(const QString &name) const;
 
     /// Returns list of attributes with specific name.
     /** @param name Name of the attribute.
@@ -143,9 +143,6 @@ public:
 
     /// Returns actions map for introspection/reflection.
     const ActionMap &Actions() const { return actions_; }
-
-    // DEPRECATED
-    template <class T> std::vector<shared_ptr<T> > GetComponents() const { return ComponentsOfType<T>(); } /**< @deprecated Use ComponentsOfType<T> instead. @todo Add deprecationg warning print. @todo Remove.*/
 
     /// @cond PRIVATE
     /// Constructor
@@ -160,23 +157,28 @@ public:
     Entity(const HideMe &, Framework* framework, entity_id_t id, Scene* scene);
     /// @endcond
 
+    // DEPRECATED
+    template <class T> std::vector<shared_ptr<T> > GetComponents() const { return ComponentsOfType<T>(); } /**< @deprecated Use ComponentsOfType<T> instead. @todo Add deprecation warning print. @todo Remove. */
+    template <class T> shared_ptr<T> GetComponent() const { return Component<T>(); } /**< @deprecated Use Component<T> instead. @todo Add deprecation warning print. @todo Remove. */
+    template <class T> shared_ptr<T> GetComponent(const QString& name) const { return Component<T>(name); }/**< @deprecated Use Component<T>(name) instead. @todo Add deprecation warning print. @todo Remove. */
+
 public slots:
     /// Returns a component by ID. This is the fastest way to query, as the components are stored in a map by id.
-    ComponentPtr GetComponentById(component_id_t id) const;
+    ComponentPtr ComponentById(component_id_t id) const;
     /// Returns a component with type 'typeName' or empty pointer if component was not found
     /** If there are several components with the specified type, returns the first component found (arbitrary).
         @param typeName type of the component */
-    ComponentPtr GetComponent(const QString &typeName) const;
+    ComponentPtr Component(const QString &typeName) const;
     /// @overload
     /** @param typeId Component type ID. */
-    ComponentPtr GetComponent(u32 typeId) const;
+    ComponentPtr Component(u32 typeId) const;
     /// @overload
     /** @param name Specifies the name of the component to fetch. This can be used to distinguish between multiple instances of components of same type. */
-    ComponentPtr GetComponent(const QString &typeName, const QString &name) const;
+    ComponentPtr Component(const QString &typeName, const QString &name) const;
     /// @overload
     /** @param typeId The type id of the component to get.
         @param name name of the component */
-    ComponentPtr GetComponent(u32 typeId, const QString &name) const;
+    ComponentPtr Component(u32 typeId, const QString &name) const;
 
     /// Returns a component with type 'typeName' or creates & adds it if not found. If could not create, returns empty pointer
     /** @param typeName The type string of the component to create, obtained from IComponent::TypeName().
@@ -202,9 +204,9 @@ public slots:
 
     /// Creates a new component and attaches it to this entity. 
     /** @param typeName type of the component
-        @param change Change signalling mode, in case component has to be created
+        @param change Change signaling mode, in case component has to be created
         @param replicated Whether new component will be replicated through network
-        @return Retuns a pointer to the newly created component, or null if creation failed. Common causes for failing to create an component
+        @return Returns a pointer to the newly created component, or null if creation failed. Common causes for failing to create an component
         is that a component with the same (typename, name) pair exists, or that components of the given typename are not recognized by the system. */
     ComponentPtr CreateComponent(const QString &typeName, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
     /// @overload
@@ -378,6 +380,11 @@ public slots:
     Scene* ParentScene() const { return scene_; }
 
     // DEPRECATED:
+    ComponentPtr GetComponentById(component_id_t id) const { return ComponentById(id); } /**< @deprecated Use ComponentById instead. @todo Add deprecation warning print. @todo Remove. */
+    ComponentPtr GetComponent(const QString &typeName) const { return Component(typeName); } /**< @deprecated Use Component instead. @todo Add deprecation warning print. @todo Remove. */
+    ComponentPtr GetComponent(u32 typeId) const { return Component(typeId); } /**< @deprecated Use Component instead. @todo Add deprecation warning print. @todo Remove. */
+    ComponentPtr GetComponent(const QString &typeName, const QString &name) const { return Component(typeName, name); } /**< @deprecated Use Component instead. @todo Add deprecation warning print. @todo Remove. */
+    ComponentPtr GetComponent(u32 typeId, const QString &name) const { return Component(typeId, name); } /**< @deprecated Use Component instead. @todo Add deprecation warning print. @todo Remove. */
     QObjectList ComponentsList() const; /**< @deprecated Use Components @todo Remove */
     QObjectList GetComponentsRaw(const QString &typeName) const; /**< @deprecated Use GetComponents or Components instead */
     void RemoveComponentRaw(QObject* comp); /**< @deprecated Use RemoveComponent or RemoveComponentById. */
