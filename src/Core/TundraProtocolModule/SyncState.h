@@ -279,6 +279,23 @@ public:
     /// Entity interpolations
     std::map<entity_id_t, RigidBodyInterpolationState> entityInterpolations;
 
+    /// Maps containing the relevance factors and visibility data
+    /// @remarks InterestManager functionality
+    std::map<entity_id_t, bool> visibleEntities;
+    std::map<entity_id_t, float> relevanceFactors;
+
+    /// Couple of maps containing the timestamps of last updates and raycasts
+    /// @remarks InterestManager functionality
+    std::map<entity_id_t, float> lastUpdatedEntitys_;
+    std::map<entity_id_t, float> lastRaycastedEntitys_;
+
+    /// @remarks InterestManager functionality
+    Quat clientOrientation;
+    Quat initialOrientation;
+    float3 clientLocation;  //Clients current pos
+    float3 initialLocation; //Clients initial pos
+    bool locationInitialized;
+
 signals:
     /// This signal is emitted when a entity is being added to the client sync state.
     /// All needed data for evaluation logic is in the StateChangeRequest parameter object.
