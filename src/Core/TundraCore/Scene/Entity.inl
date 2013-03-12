@@ -3,7 +3,7 @@
 template <class T>
 shared_ptr<T> Entity::Component() const
 {
-    return dynamic_pointer_cast<T>(Component(T::TypeNameStatic()));
+    return dynamic_pointer_cast<T>(Component(T::TypeIdStatic()));
 }
 
 template <class T>
@@ -22,7 +22,7 @@ std::vector<shared_ptr<T> > Entity::ComponentsOfType() const
 template <class T>
 shared_ptr<T> Entity::Component(const QString& name) const
 {
-    return dynamic_pointer_cast<T>(Component(T::TypeNameStatic(), name));
+    return dynamic_pointer_cast<T>(Component(T::TypeIdStatic(), name));
 }
 
 template<typename T>
