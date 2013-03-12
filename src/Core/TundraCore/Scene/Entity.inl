@@ -1,9 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 template <class T>
-shared_ptr<T> Entity::GetComponent() const
+shared_ptr<T> Entity::Component() const
 {
-    return dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic()));
+    return dynamic_pointer_cast<T>(Component(T::TypeNameStatic()));
 }
 
 template <class T>
@@ -20,9 +20,9 @@ std::vector<shared_ptr<T> > Entity::ComponentsOfType() const
 }
 
 template <class T>
-shared_ptr<T> Entity::GetComponent(const QString& name) const
+shared_ptr<T> Entity::Component(const QString& name) const
 {
-    return dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic(), name));
+    return dynamic_pointer_cast<T>(Component(T::TypeNameStatic(), name));
 }
 
 template<typename T>
