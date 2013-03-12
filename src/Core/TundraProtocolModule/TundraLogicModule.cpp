@@ -23,6 +23,7 @@
 #include "AssetAPI.h"
 #include "CoreException.h"
 #include "LoggingFunctions.h"
+#include "InterestManager.h"
 
 #include "EC_Name.h"
 #include "EC_DynamicComponent.h"

@@ -27,6 +27,10 @@ const unsigned long cEntityActionMessage = 120;
 const unsigned long cAssetDiscoveryMessage = 121;
 const unsigned long cAssetDeletedMessage = 122;
 
+// Camera
+const unsigned long cCameraOrientationUpdate = 104;
+const unsigned long cCameraOrientationRequest = 105;
+
 // In case of network message structs are regenerated and descriptions get deleted., saving their descriptions here.
 // MsgAssetDeleted: Network message informing that asset has been deleted from storage.
 // MsgAssetDiscovery: Network message informing that new asset has been discovered in storage.
