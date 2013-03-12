@@ -66,7 +66,7 @@ QStringList EC_VolumeTrigger::GetEntityNamesInside() const
 {
     QStringList entitynames;
     for(EntitiesWithinVolumeMap::const_iterator it = entities_.begin(); it != entities_.end(); ++it)
-        if (it->first.expired())
+        if (!it->first.expired())
             entitynames.append(it->first.lock()->Name());
     return entitynames;
 }
@@ -195,34 +195,46 @@ void EC_VolumeTrigger::CheckForRigidBody()
 void EC_VolumeTrigger::OnPhysicsUpdate()
 {
     PROFILE(EC_VolumeTrigger_OnPhysicsUpdate);
-    for(EntitiesWithinVolumeMap::iterator it = entities_.begin(); it != entities_.end(); ++it)
+    
+    for(EntitiesWithinVolumeMap::iterator it = entities_.begin(); it != entities_.end();)
     {
-        if (!it->first.expired())
+        bool remove = false;
+        
+        // Entity was destroyed without us knowing? Remove from map in that case
+        if (it->first.expired())
+            remove = true;
+        else
         {
-            EntityPtr entity = it->first.lock();
-            bool active = true;
-            // inactive rigid bodies don't generate collisions, so before emitting EntityLeave -event, make sure the body is active.
-            if (entity)
+            // If collision is old, remove the entity if its rigidbody is active
+            // (inactive rigidbodies do not refresh the collision, so we would remove the entity mistakenly)
+            if (!it->second)
             {
+                EntityPtr entity = it->first.lock();
+                bool active = true;
                 shared_ptr<EC_RigidBody> rigidbody = entity->GetComponent<EC_RigidBody>();
                 if (rigidbody)
                     active = rigidbody->IsActive();
-            }
-            if (active)
-            {
-                entities_.erase(it);
-                
-                if (entity)
+                if (active)
                 {
+                    remove = true;
                     emit entityLeave(entity.get());
                     disconnect(entity.get(), SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Entity*)));
                 }
-                continue;
             }
-        } else
+            else
+            {
+                // Age the collision from new to old
+                it->second = false;
+            }
+        }
+        
+        if (!remove)
+            ++it;
+        else
         {
-            // Age the internal bool from true to false to signal that this collision is now an old one.
-            entities_[it->first] = false;
+            EntitiesWithinVolumeMap::iterator current = it;
+            ++it;
+            entities_.erase(current);
         }
     }
 }
@@ -252,6 +264,7 @@ void EC_VolumeTrigger::OnPhysicsCollision(Entity* otherEntity, const float3& pos
             connect(otherEntity, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Entity*)), Qt::UniqueConnection);
         }
     }
+    // Refresh the collision status to new
     entities_[entity] = true;
 }
 
