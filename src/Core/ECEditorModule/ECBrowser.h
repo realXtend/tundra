@@ -191,7 +191,6 @@ private:
     QMenu *menu_;
     QTreeWidget *treeWidget_;
     Framework *framework_;
-    weak_ptr<TreeWidgetItemExpandMemory> expandMemory_;
     ECEditorWindow *editorWindow_;
-    boost::weak_ptr<TreeWidgetItemExpandMemory> expandMemory_;
+    weak_ptr<TreeWidgetItemExpandMemory> expandMemory_;
 };
