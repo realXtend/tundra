@@ -102,7 +102,6 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(Color, specColor);
 
     /// If true, this light casts dynamically calculated shadows on the scene.
-    /** @todo Unused; remove? */
     Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
 
