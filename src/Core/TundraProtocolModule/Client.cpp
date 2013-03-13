@@ -354,7 +354,6 @@ void Client::GetCameraOrientation()
 
 void Client::SendCameraOrientation(kNet::DataSerializer ds, kNet::NetworkMessage *msg)
 {
-    ::LogInfo("SendCamera!");
     Ptr(kNet::MessageConnection) connection = GetConnection();
 
     if (ds.BytesFilled() > 0)
