@@ -22,7 +22,7 @@ QString RelevanceFilter::ToString()
     return QString("Relevance");
 }
 
-bool RelevanceFilter::Filter(IMParameters params)
+bool RelevanceFilter::Filter(const IMParameters& params)
 {   
     if(enabled_)
     {

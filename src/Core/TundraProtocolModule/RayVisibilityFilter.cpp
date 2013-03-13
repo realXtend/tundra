@@ -29,7 +29,7 @@ QString RayVisibilityFilter::ToString()
     return QString("Rayvisibility");
 }
 
-bool RayVisibilityFilter::Filter(IMParameters params)
+bool RayVisibilityFilter::Filter(const IMParameters& params)
 {
     if(enabled_)
     {

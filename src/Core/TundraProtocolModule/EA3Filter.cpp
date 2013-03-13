@@ -31,7 +31,7 @@ QString EA3Filter::ToString()
     return QString("EA3");
 }
 
-bool EA3Filter::Filter(IMParameters params)
+bool EA3Filter::Filter(const IMParameters& params)
 {  
     if(enabled_)
     {

@@ -458,6 +458,8 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
             {
                 /// Check here if the attribute should be updated to which client?
                 /// @remarks InterestManager functionality
+                /// \bug The attribute should be marked dirty, but sending should be deferred until entity is relevant
+                /// With this logic, the dirty attributes from the non-relevant period will simply be forgotten
                 if(interestmanager_ && !interestmanager_->CheckRelevance((*i), entity, scene_, framework_->IsHeadless()))
                     continue;
 

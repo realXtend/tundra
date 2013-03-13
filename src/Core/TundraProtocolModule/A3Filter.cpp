@@ -28,7 +28,7 @@ QString A3Filter::ToString()
     return QString("A3");
 }
 
-bool A3Filter::Filter(IMParameters params)
+bool A3Filter::Filter(const IMParameters& params)
 {
     if(enabled_)
     {

@@ -41,8 +41,8 @@ Client::Client(TundraLogicModule* owner) :
     loginstate_(NotConnected),
     reconnect_(false),
     cameraUpdateTimer(0),
-    sendCameraUpdates_(0),
-    sendInitialCameraUpdate_(1),
+    sendCameraUpdates_(false),
+    firstCameraUpdateSent_(false),
     client_id_(0)
 {
 }
@@ -169,6 +169,7 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
     owner_->GetKristalliModule()->Connect(address.toStdString().c_str(), port, protocol);
     loginstate_ = ConnectionPending;
     client_id_ = 0;
+    firstCameraUpdateSent_ = false;
 }
 
 void Client::Logout()
@@ -285,9 +286,7 @@ void Client::CheckLogin()
 
 void Client::GetCameraOrientation()
 {
-    if(sendInitialCameraUpdate_)
-        sendCameraUpdates_ = true;
-
+    // This should not get called if sendCameraUpdates_ = false
     if(!sendCameraUpdates_)
         return;
 
@@ -312,7 +311,7 @@ void Client::GetCameraOrientation()
     Quat orientation = camera_placeable->WorldOrientation();
     float3 location = camera_placeable->WorldPosition();
 
-    if(orientation == currentcameraorientation_ && location.Equals(currentcameralocation_)) //If the position and orientation of the client has not changed. Do not send anything
+    if(firstCameraUpdateSent_ && orientation == currentcameraorientation_ && location.Equals(currentcameralocation_)) //If the position and orientation of the client has not changed. Do not send anything
         return;
 
     const int maxMessageSizeBytes = 1400;
@@ -340,19 +339,22 @@ void Client::GetCameraOrientation()
     //Update the current location and orientation of the client.
     currentcameraorientation_ = orientation;
     currentcameralocation_ = location;
+    
+    if (!firstCameraUpdateSent_)
+    {
+        firstCameraUpdateSent_ = true;
+        // Update faster after the initial delay
+        if (cameraUpdateTimer)
+            cameraUpdateTimer->start(500);
+    }
 
     // Finally send the message
     SendCameraOrientation(ds, msg);
-
-    if(sendInitialCameraUpdate_)
-    {
-        sendInitialCameraUpdate_ = false;
-        sendCameraUpdates_ = false;
-    }
 }
 
 void Client::SendCameraOrientation(kNet::DataSerializer ds, kNet::NetworkMessage *msg)
 {
+    ::LogInfo("SendCamera!");
     Ptr(kNet::MessageConnection) connection = GetConnection();
 
     if (ds.BytesFilled() > 0)
@@ -430,11 +432,22 @@ void Client:: HandleCameraOrientationRequest(MessageConnection* source, const Ms
 {
     sendCameraUpdates_ = msg.enableCameraUpdates;
 
-    if(!cameraUpdateTimer)
+    if (sendCameraUpdates_)
     {
-        cameraUpdateTimer = new QTimer(this);
-        connect(cameraUpdateTimer, SIGNAL(timeout()), this, SLOT(GetCameraOrientation()));
-        cameraUpdateTimer->start(500);
+        if (!cameraUpdateTimer)
+        {
+            cameraUpdateTimer = new QTimer(this);
+            connect(cameraUpdateTimer, SIGNAL(timeout()), this, SLOT(GetCameraOrientation()), Qt::UniqueConnection);
+        }
+        firstCameraUpdateSent_ = false;
+        /// \bug If the initial 2000 ms delay is to ensure that the client avatar has been created before applying IM,
+        /// it is not foolproof. Instead there should be a way to mark entities as always relevant to a specific client
+        cameraUpdateTimer->start(2000);
+    }
+    else
+    {
+        if (cameraUpdateTimer)
+            cameraUpdateTimer->stop();
     }
 }
 
@@ -460,11 +473,6 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
                 responseData.responseData.setContent(QByteArray((const char *)&msg.loginReplyData[0], (int)msg.loginReplyData.size()));
 
             emit Connected(&responseData);
-
-            if(!framework_->IsHeadless())
-            {
-                QTimer::singleShot(2000, this, SLOT(GetCameraOrientation()));
-            }
         }
         else
         {

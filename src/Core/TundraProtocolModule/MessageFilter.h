@@ -43,7 +43,7 @@ public:
     MessageFilter(IMFilter type, bool enabled) : type_(type), enabled_(enabled) {}
     virtual ~MessageFilter() {}
 
-    virtual bool Filter(IMParameters params) = 0;
+    virtual bool Filter(const IMParameters& params) = 0;
 
     virtual void SetEnabled(bool e)     { enabled_ = e; }
     virtual bool Enabled()              { return enabled_; }

@@ -15,7 +15,7 @@ public:
 
     ~RelevanceFilter() {}
 
-    bool Filter(IMParameters params);
+    bool Filter(const IMParameters& params);
 
     QString ToString();
 

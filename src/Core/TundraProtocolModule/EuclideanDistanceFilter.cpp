@@ -18,7 +18,7 @@ QString EuclideanDistanceFilter::ToString()
     return QString("Euclidean distance");
 }
 
-bool EuclideanDistanceFilter::Filter(IMParameters params)
+bool EuclideanDistanceFilter::Filter(const IMParameters& params)
 {
     if(enabled_)
     {
