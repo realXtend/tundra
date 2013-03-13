@@ -5,6 +5,7 @@
 
 #include "ECComponentEditor.h"
 #include "ECEditorModule.h"
+#include "ECEditorWindow.h"
 
 #include "IAttribute.h"
 #include "ECAttributeEditor.h"
@@ -81,7 +82,9 @@ void ECComponentEditor::CreateAttributeEditors(ComponentPtr component)
 
         attributeEditors_[attr->Name()] = attributeEditor;
         groupProperty_->setToolTip("Component type is " + component->TypeName());
-        groupProperty_->addSubProperty(attributeEditor->GetProperty()); 
+        groupProperty_->addSubProperty(attributeEditor->GetProperty());
+        connect(attributeEditor, SIGNAL(AttributeAboutToBeEdited(IAttribute*)), this, SIGNAL(AttributeAboutToBeEdited(IAttribute *)));
+
         connect(attributeEditor, SIGNAL(EditorChanged(const QString &)), this, SLOT(OnEditorChanged(const QString &)));
     }
 }

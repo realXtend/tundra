@@ -91,6 +91,7 @@ signals:
     void EditorChanged(const QString &name);
     void OnComponentAdded(QtProperty*, IComponent *comp);
     void OnComponentRemoved(QtProperty*, IComponent *comp);
+    void AttributeAboutToBeEdited(IAttribute * attr);
 
 private slots:
     /// Called when user has picked one of the multiselect values.
