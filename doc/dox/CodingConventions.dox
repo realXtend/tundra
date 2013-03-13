@@ -72,7 +72,7 @@ The following identifiers are written in <b>title case</b>:
 \verbatim
 class Entity;
 struct AssetReference;
-typedef boost::shared_ptr<Entity> EntityPtr;
+typedef shared_ptr<Entity> EntityPtr;
 QString Entity::Name() const;
 \endverbatim
 
@@ -144,7 +144,7 @@ Some of the existing code do not follow these naming conventions, largely due to
 before this document was written. Still, when in doubt, observe the existing code. Ambiguities will be resolved here later
 if and when necessary.
 
-The RealXtend Tundra architecture uses <b>Qt</b> (http://doc.qt.nokia.com/), <b>STL</b> and <b>Boost</b> (http://www.boost.org/) as the major frameworks. Please prefer using the containers
+The RealXtend Tundra architecture uses <b>Qt</b> (http://doc.qt.nokia.com/) and <b>STL</b> as the major frameworks. Please prefer using the containers
 and algorithms found in those wherever it is sensible. <b>Prefer Qt over the other major frameworks.</b> Avoid being too smart,
 there is no need to spend time figuring out how to achieve something using a stl back_inserter_iterator combined with a mem_fun_ref
 and a bind2nd if writing it using a simple loop would only take you a moment.
@@ -152,7 +152,7 @@ and a bind2nd if writing it using a simple loop would only take you a moment.
 If you need to use code from other dependency libraries in an unexpected context, make sure to document the dependency
 clearly. Some of the dependencies are evolving and might be changed out later on.
 
-The core architecture uses <b>boost::shared_ptr</b> and <b>boost::weak_ptr</b> extensively. Be sure to understand how to use these and what their
+The core architecture uses <b>shared_ptr</b> and <b>weak_ptr</b> extensively. Be sure to understand how to use these and what their
 differences are.
 
 Use <b>assert</b>s to check for conditions that should never occur and that clearly indicate a programming error. Do not use
