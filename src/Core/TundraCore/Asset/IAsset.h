@@ -7,12 +7,11 @@
 #include "AssetFwd.h"
 #include "AssetReference.h"
 
-#include <boost/enable_shared_from_this.hpp>
 #include <QObject>
 #include <vector>
 
 /// Base class for all assets loaded in the system.
-class TUNDRACORE_API IAsset : public QObject, public boost::enable_shared_from_this<IAsset>
+class TUNDRACORE_API IAsset : public QObject, public enable_shared_from_this<IAsset>
 {
     Q_OBJECT
     Q_ENUMS(SourceType)

@@ -56,6 +56,7 @@ EC_RigidBody::EC_RigidBody(Scene* scene) :
     drawDebug(this, "Draw Debug", false),
     collisionLayer(this, "Collision Layer", -1),
     collisionMask(this, "Collision Mask", -1),
+    rollingFriction(this, "Rolling friction", 0.5f),
     body_(0),
     world_(0),
     shape_(0),
@@ -268,7 +269,7 @@ void EC_RigidBody::CheckForPlaceableAndTerrain()
     
     if (!placeable_.lock())
     {
-        boost::shared_ptr<EC_Placeable> placeable = parent->GetComponent<EC_Placeable>();
+        shared_ptr<EC_Placeable> placeable = parent->GetComponent<EC_Placeable>();
         if (placeable)
         {
             placeable_ = placeable;
@@ -277,7 +278,7 @@ void EC_RigidBody::CheckForPlaceableAndTerrain()
     }
     if (!terrain_.lock())
     {
-        boost::shared_ptr<EC_Terrain> terrain = parent->GetComponent<EC_Terrain>();
+        shared_ptr<EC_Terrain> terrain = parent->GetComponent<EC_Terrain>();
         if (terrain)
         {
             terrain_ = terrain;
@@ -553,6 +554,9 @@ void EC_RigidBody::AttributesChanged()
     if (friction.ValueChanged())
         body_->setFriction(friction.Get());
     
+    if (rollingFriction.ValueChanged())
+        body_->setRollingFriction(rollingFriction.Get());
+    
     if (restitution.ValueChanged())
         body_->setRestitution(friction.Get());
     
@@ -775,7 +779,7 @@ void EC_RigidBody::RequestMesh()
     QString collisionMesh = collisionMeshRef.Get().ref.trimmed();
     if (collisionMesh.isEmpty() && parent) // We use the mesh ref in EC_Mesh as the collision mesh ref if no collision mesh is set in EC_RigidBody.
     {
-        boost::shared_ptr<EC_Mesh> mesh = parent->GetComponent<EC_Mesh>();
+        shared_ptr<EC_Mesh> mesh = parent->GetComponent<EC_Mesh>();
         if (!mesh)
             return;
         collisionMesh = mesh->meshRef.Get().ref.trimmed();

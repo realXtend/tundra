@@ -19,8 +19,6 @@
 #include <algorithm>
 #include <utility>
 
-#include <boost/make_shared.hpp>
-
 #include "MemoryLeakCheck.h"
 
 using namespace kNet;
@@ -202,7 +200,7 @@ void KristalliProtocolModule::Update(f64 /*frametime*/)
             }
             else
             {
-                ::LogInfo("Failed to connect to " + serverIp + ":" + ToString(serverPort));
+                ::LogInfo(QString("Failed to connect to %1:%2").arg(serverIp.c_str()).arg(serverPort));
                 emit ConnectionAttemptFailed();
 
                 reconnectTimer.Stop();
@@ -245,7 +243,7 @@ void KristalliProtocolModule::PerformConnection()
     serverConnection = network.Connect(serverIp.c_str(), serverPort, serverTransport, this);
     if (!serverConnection)
     {
-        ::LogError("Unable to connect to " + serverIp + ":" + ToString(serverPort));
+        ::LogInfo(QString("Unable to connect to %1:%2").arg(serverIp.c_str()).arg(serverPort));
         return;
     }
 
@@ -280,8 +278,9 @@ bool KristalliProtocolModule::StartServer(unsigned short port, SocketTransportLa
     server = network.StartServer(port, transport, this, allowAddressReuse);
     if (!server)
     {
-        ::LogError("Failed to start server on port " + ToString((int)port));
-        throw Exception(("Failed to start server on port " + ToString((int)port) + ". Please make sure that the port is free and not used by another application. The program will now abort.").c_str());
+        const QString error = "Failed to start server on port " + QString::number(port) + ".";
+        ::LogError(error);
+        throw Exception((error + "Please make sure that the port is free and not used by another application. The program will now abort.").toStdString().c_str());
     }
     
     ::LogInfo("Server started");
@@ -313,7 +312,7 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
 
     source->RegisterInboundMessageHandler(this);
     
-    UserConnectionPtr connection = boost::make_shared<UserConnection>();
+    UserConnectionPtr connection = MAKE_SHARED(UserConnection);
     connection->userID = AllocateNewConnectionID();
     connection->connection = source;
     connections.push_back(connection);
@@ -322,8 +321,8 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
     if (source->GetSocket() && source->GetSocket()->TransportLayer() == kNet::SocketOverTCP)
         source->GetSocket()->SetNaglesAlgorithmEnabled(false);
 
-    ::LogInfo("User connected from " + source->RemoteEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
-    
+    ::LogInfo(QString("User connected from %1, connection ID %2.").arg(source->RemoteEndPoint().ToString().c_str()).arg(connection->userID));
+
     emit ClientConnectedEvent(connection.get());
 }
 
@@ -335,7 +334,7 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
         {
             emit ClientDisconnectedEvent(iter->get());
             
-            ::LogInfo("User disconnected, connection ID " + ToString((int)(*iter)->userID));
+            ::LogInfo("User disconnected, connection ID " + QString::number((*iter)->userID));
             connections.erase(iter);
             return;
         }
@@ -351,10 +350,11 @@ void KristalliProtocolModule::HandleMessage(kNet::MessageConnection *source, kNe
     try
     {
         emit NetworkMessageReceived(source, packetId, messageId, data, numBytes);
-    } catch(std::exception &e)
+    }
+    catch(std::exception &e)
     {
-        ::LogError("KristalliProtocolModule: Exception \"" + std::string(e.what()) + "\" thrown when handling network message id " +
-            ToString(messageId) + " size " + ToString((int)numBytes) + " from client " + source->ToString());
+        ::LogError("KristalliProtocolModule: Exception \"" + QString(e.what()) + "\" thrown when handling network message id " +
+            QString::number(messageId) + " size " + QString::number(numBytes) + " from client " + source->ToString().c_str());
 
         // Kill the connection. For debugging purposes, don't disconnect the client if the server is running a debug build.
 #ifndef _DEBUG

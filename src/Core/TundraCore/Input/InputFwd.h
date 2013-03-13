@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <boost/shared_ptr.hpp>
+#include "CoreTypes.h"
 
 class InputAPI;
 class InputContext;
@@ -14,4 +14,4 @@ class GestureEvent;
 
 class QGraphicsItem;
 class QGraphicsView;
-typedef boost::shared_ptr<InputContext> InputContextPtr;
+typedef shared_ptr<InputContext> InputContextPtr;

@@ -28,8 +28,6 @@
 
 #include <cstring>
 
-#include <boost/make_shared.hpp>
-
 #include "MemoryLeakCheck.h"
 
 // This variable is used for the interpolation stop check
@@ -251,7 +249,7 @@ void SyncManager::NewUserConnected(const UserConnectionPtr &user)
         this, SLOT(OnUserActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)));
     
     // Mark all entities in the sync state as new so we will send them
-    user->syncState = boost::make_shared<SceneSyncState>(user->ConnectionId(), owner_->IsServer());
+    user->syncState = MAKE_SHARED(SceneSyncState, user->ConnectionId(), owner_->IsServer());
     user->syncState->SetParentScene(scene_);
 
     if (owner_->IsServer())
@@ -564,7 +562,7 @@ void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
         iter != state->entityInterpolations.end();)
     {
         EntityPtr e = scene->GetEntity(iter->first);
-        boost::shared_ptr<EC_Placeable> placeable = e ? e->GetComponent<EC_Placeable>() : boost::shared_ptr<EC_Placeable>();
+        shared_ptr<EC_Placeable> placeable = e ? e->GetComponent<EC_Placeable>() : shared_ptr<EC_Placeable>();
         if (!placeable.get())
         {
             std::map<entity_id_t, RigidBodyInterpolationState>::iterator del = iter++;
@@ -572,7 +570,7 @@ void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
             continue;
         }
 
-        boost::shared_ptr<EC_RigidBody> rigidBody = e->GetComponent<EC_RigidBody>();
+        shared_ptr<EC_RigidBody> rigidBody = e->GetComponent<EC_RigidBody>();
 
         RigidBodyInterpolationState &r = iter->second;
         if (!r.interpolatorActive)
@@ -634,9 +632,10 @@ void SyncManager::InterpolateRigidBodies(f64 frametime, SceneSyncState* state)
                     rigidBody->linearVelocity.Set(r.interpEnd.vel, AttributeChange::LocalOnly);
                     rigidBody->angularVelocity.Set(r.interpEnd.angVel, AttributeChange::LocalOnly);
                 }
-                r.interpolatorActive = false;
             }
+            r.interpolatorActive = false;
             ++iter;
+            
             // Could remove the interpolation structure here, as inter/extrapolation it is no longer active. However, it is currently
             // used to store most recently received entity position  & velocity data.
             //iter = state->entityInterpolations.erase(iter); // Finished interpolation.
@@ -742,7 +741,7 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
             continue; // Newly created and removed entities are handled through the traditional sync mechanism.
 
         EntityPtr e = scene->GetEntity(ess.id);
-        boost::shared_ptr<EC_Placeable> placeable = e->GetComponent<EC_Placeable>();
+        shared_ptr<EC_Placeable> placeable = e->GetComponent<EC_Placeable>();
         if (!placeable.get())
             continue;
 
@@ -761,7 +760,7 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
         bool velocityDirty = false;
         bool angularVelocityDirty = false;
         
-        boost::shared_ptr<EC_RigidBody> rigidBody = e->GetComponent<EC_RigidBody>();
+        shared_ptr<EC_RigidBody> rigidBody = e->GetComponent<EC_RigidBody>();
         if (rigidBody)
         {
             std::map<component_id_t, ComponentSyncState>::iterator rigidBodyComp = ess.components.find(rigidBody->Id());
@@ -974,8 +973,8 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, kNet::
     {
         u32 entityID = dd.ReadVLE<kNet::VLE8_16_32>();
         EntityPtr e = scene->GetEntity(entityID);
-        boost::shared_ptr<EC_Placeable> placeable = e ? e->GetComponent<EC_Placeable>() : boost::shared_ptr<EC_Placeable>();
-        boost::shared_ptr<EC_RigidBody> rigidBody = e ? e->GetComponent<EC_RigidBody>() : boost::shared_ptr<EC_RigidBody>();
+        shared_ptr<EC_Placeable> placeable = e ? e->GetComponent<EC_Placeable>() : shared_ptr<EC_Placeable>();
+        shared_ptr<EC_RigidBody> rigidBody = e ? e->GetComponent<EC_RigidBody>() : shared_ptr<EC_RigidBody>();
         Transform t = e ? placeable->transform.Get() : Transform();
 
         float3 newLinearVel = rigidBody ? rigidBody->linearVelocity.Get() : float3::zero;
@@ -1585,22 +1584,37 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
             unsigned numStaticAttrs = comp->NumStaticAttributes();
             const AttributeVector& attrs = comp->Attributes();
             for (uint i = 0; i < numStaticAttrs; ++i)
-                attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
-            
-            // Create any dynamic attributes
-            while (attrDs.BitsLeft() > 2 * 8)
             {
-                u8 index = attrDs.Read<u8>();
-                u8 typeId = attrDs.Read<u8>();
-                QString name = QString::fromStdString(attrDs.ReadString());
-                IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
-                if (!newAttr)
+                // Allow component version mismatches (adding more attributes to the end of static attributes list), break if no more data present.
+                // All attributes (including bool) are at least 8 bits.
+                if (attrDs.BitsLeft() >= 8)
+                    attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
+                else
                 {
-                    LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
+                    LogWarning("Not enough static attribute data in component " + comp->TypeName() + " (version mismatch)");
                     break;
                 }
-                newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
             }
+
+            if (comp->SupportsDynamicAttributes())
+            {
+                // Create any dynamic attributes
+                while (attrDs.BitsLeft() > 2 * 8)
+                {
+                    u8 index = attrDs.Read<u8>();
+                    u8 typeId = attrDs.Read<u8>();
+                    QString name = QString::fromStdString(attrDs.ReadString());
+                    IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
+                    if (!newAttr)
+                    {
+                        LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
+                        break;
+                    }
+                    newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
+                }
+            }
+            else if (attrDs.BitsLeft())
+                LogWarning("Extra static attribute data in component " + comp->TypeName() + " (version mismatch)");
         }
     } catch(kNet::NetException &/*e*/)
     {
@@ -1720,22 +1734,37 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
             unsigned numStaticAttrs = comp->NumStaticAttributes();
             const AttributeVector& attrs = comp->Attributes();
             for (uint i = 0; i < numStaticAttrs; ++i)
-                attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
-            
-            // Create any dynamic attributes
-            while (attrDs.BitsLeft() > 2 * 8)
             {
-                u8 index = attrDs.Read<u8>();
-                u8 typeId = attrDs.Read<u8>();
-                QString name = QString::fromStdString(attrDs.ReadString());
-                IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
-                if (!newAttr)
+                // Allow component version mismatches (adding more attributes to the end of static attributes list), break if no more data present.
+                // All attributes (including bool) are at least 8 bits.
+                if (attrDs.BitsLeft() >= 8)
+                    attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
+                else
                 {
-                    LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
+                    LogWarning("Not enough static attribute data in component " + comp->TypeName() + " (version mismatch)");
                     break;
                 }
-                newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
             }
+            
+            if (comp->SupportsDynamicAttributes())
+            {
+                // Create any dynamic attributes
+                while (attrDs.BitsLeft() > 2 * 8)
+                {
+                    u8 index = attrDs.Read<u8>();
+                    u8 typeId = attrDs.Read<u8>();
+                    QString name = QString::fromStdString(attrDs.ReadString());
+                    IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
+                    if (!newAttr)
+                    {
+                        LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
+                        break;
+                    }
+                    newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
+                }
+            }
+            else if (attrDs.BitsLeft())
+                LogWarning("Extra static attribute data in component " + comp->TypeName() + " (version mismatch)");
         }
     } catch(kNet::NetException &/*e*/)
     {
@@ -2113,6 +2142,10 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
             // Method 2: bitmask
             for (unsigned i = 0; i < attributes.size(); ++i)
             {
+                // Break if component version inconsistency and no more data
+                if (attrDs.BitsLeft() == 0)
+                    break;
+                
                 int changed = attrDs.Read<kNet::bit>();
                 if (changed)
                 {

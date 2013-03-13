@@ -1,18 +1,18 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 template <class T>
-boost::shared_ptr<T> Entity::GetComponent() const
+shared_ptr<T> Entity::GetComponent() const
 {
-    return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic()));
+    return dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic()));
 }
 
 template <class T>
-std::vector<boost::shared_ptr<T> > Entity::GetComponents() const
+std::vector<shared_ptr<T> > Entity::GetComponents() const
 {
-    std::vector<boost::shared_ptr<T> > ret;
+    std::vector<shared_ptr<T> > ret;
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
     {
-        boost::shared_ptr<T> t = boost::dynamic_pointer_cast<T>(i->second);
+        shared_ptr<T> t = dynamic_pointer_cast<T>(i->second);
         if (t)
             ret.push_back(t);
     }
@@ -20,9 +20,9 @@ std::vector<boost::shared_ptr<T> > Entity::GetComponents() const
 }
 
 template <class T>
-boost::shared_ptr<T> Entity::GetComponent(const QString& name) const
+shared_ptr<T> Entity::GetComponent(const QString& name) const
 {
-    return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic(), name));
+    return dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic(), name));
 }
 
 template<typename T>

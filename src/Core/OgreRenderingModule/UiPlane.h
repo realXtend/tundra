@@ -128,8 +128,8 @@ private:
     int anchorX;
     int anchorY;
 
-    boost::weak_ptr<OgreMaterialAsset> materialAsset;
-    boost::weak_ptr<TextureAsset> textureAsset;
+    weak_ptr<OgreMaterialAsset> materialAsset;
+    weak_ptr<TextureAsset> textureAsset;
 
     ///\note Ideally, would not want to cache this, but directly query the material.
     float alpha;

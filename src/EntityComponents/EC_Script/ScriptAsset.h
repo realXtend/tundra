@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <boost/shared_ptr.hpp>
 #include "IAsset.h"
 
 /// Contains data of a script file loaded to the system.
@@ -44,4 +43,4 @@ private slots:
     void ParseReferences();
 };
 
-typedef boost::shared_ptr<ScriptAsset> ScriptAssetPtr;
+typedef shared_ptr<ScriptAsset> ScriptAssetPtr;

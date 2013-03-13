@@ -88,7 +88,7 @@ fi
 
 if [ ! -d ogre/.hg ]; then
 	echo "Cloning OGRE.."
-	hg clone -r v1-9 https://bitbucket.org/sinbad/ogre ogre
+	hg clone -r dd56c87 https://bitbucket.org/sinbad/ogre ogre
 else
 	echo "OGRE already cloned. Skipping.."
 fi

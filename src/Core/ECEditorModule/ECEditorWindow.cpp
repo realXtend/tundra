@@ -46,7 +46,10 @@
 
 #include "MemoryLeakCheck.h"
 
-const QString cEcEditorHighlight("EcEditorHighlight");
+namespace
+{
+
+const char *cEcEditorHighlight = "EcEditorHighlight";
 
 uint AddUniqueListItem(const EntityPtr &entity, QListWidget* list, const QString& name)
 {
@@ -61,11 +64,7 @@ uint AddUniqueListItem(const EntityPtr &entity, QListWidget* list, const QString
     return list->count() - 1;
 }
 
-/// Function that is used by std::sort algorithm to sort entities by their ids.
-bool CmpEntityById(const EntityPtr &a, const EntityPtr &b)
-{
-    return a->Id() < b->Id();
-}
+} // ~unnamed namespace
 
 ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     QWidget(parent),
@@ -236,7 +235,7 @@ void ECEditorWindow::RemoveEntity(entity_id_t entity_id, bool udpate_ui)
     EntityPtr entity = framework->Scene()->MainCameraScene()->GetEntity(entity_id);
     if (!entity)
     {
-        LogError("Fail to remove entity, since scene don't contain entity by ID:" + ToString<entity_id_t>(entity_id));
+        LogError("Failed to remove entity, since scene doesn't contain entity with ID: " + QString::number(entity_id));
         return;
     }
 
@@ -619,7 +618,7 @@ void ECEditorWindow::OpenFunctionDialog()
 {
     QObjectWeakPtrList objs;
     foreach(const EntityPtr &entity, SelectedEntities())
-        objs << boost::dynamic_pointer_cast<QObject>(entity);
+        objs << dynamic_pointer_cast<QObject>(entity);
 
     if (objs.size())
     {
@@ -656,8 +655,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
     undoManager_->Clear();
 
     QList<EntityPtr> entities = SelectedEntities();
-    // If any of entities was not selected clear the browser window.
-    if (!entities.size())
+    if (entities.empty()) // If any of entities was not selected clear the browser window.
     {
         ecBrowser->clear();
         transformEditor->SetGizmoVisible(false);
@@ -665,8 +663,8 @@ void ECEditorWindow::RefreshPropertyBrowser()
     }
 
     QList<EntityPtr> old_entities = ecBrowser->GetEntities();
-    qStableSort(entities.begin(), entities.end(), CmpEntityById);
-    qStableSort(old_entities.begin(), old_entities.end(), CmpEntityById);
+    qStableSort(entities.begin(), entities.end());
+    qStableSort(old_entities.begin(), old_entities.end());
 
     // Check what entities need to get removed/added to browser.
     QList<EntityPtr>::iterator iter1 = old_entities.begin(), iter2 = entities.begin();
@@ -919,7 +917,7 @@ void ECEditorWindow::HighlightEntity(const EntityPtr &entity, bool highlight)
         // absolutely nothing if there is no mesh. Granted it listens when EC_Mesh is added, but if you
         // are going to add meshes you might as well reselect your entities to get a highlight.
         // Creating the EC_Highlight to the entity is a major time spender if we are talking of large amount of entities.
-        if (!entity->GetComponent(EC_Mesh::TypeNameStatic()).get())
+        if (!entity->GetComponent<EC_Mesh>())
             return;
 
         // If component already has an EC_Highlight, that is not ours, do nothing, as the highlights would conflict
@@ -1024,7 +1022,7 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
     Scene *scene = framework->Scene()->MainCameraScene();
     if (!scene)
     {
-        LogWarning("Fail to add new component to entity, since default world scene was null");
+        LogWarning("Failed to add new component to entity, since main camera scene was null");
         return;
     }
 
@@ -1035,7 +1033,7 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
         EntityPtr entity = scene->GetEntity(id);
         if (!entity)
         {
-            LogWarning("Fail to add new component to entity, since couldn't find a entity with ID:" + ::ToString<entity_id_t>(id));
+            LogWarning("Failed to add a new component to an entity, since couldn't find a entity with ID: " + QString::number(id));
             continue;
         }
 
@@ -1043,7 +1041,7 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
         ComponentPtr comp = entity->GetComponent(dialog->TypeName(), dialog->Name());
         if (comp)
         {
-            LogWarning("Fail to add a new component, cause there was already a component with a same name and a type");
+            LogWarning("Failed to add a new component, because there was already a component with the same type and the same name.");
             continue;
         }
 

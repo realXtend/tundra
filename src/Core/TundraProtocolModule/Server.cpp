@@ -180,7 +180,7 @@ QVariantList Server::GetConnectionIDs() const
 //    LogWarning("Server::GetConnectionIDs: This function signature is deprecated will be removed. Migrate to using AuthenticatedUsers instead.");
     QVariantList ret;
     foreach(const UserConnectionPtr &user, AuthenticatedUsers())
-        ret.push_back(QVariant(user->userID));
+        ret.push_back(QVariant((uint)user->userID)); /**< @todo The uint cast should not be necessary here, but without it when compiling TUNDRA_NO_BOOST build with VC9 we get error C2440: '<function-style-cast>' : cannot convert from 'u32' to 'QVariant' */
     return ret;
 }
 

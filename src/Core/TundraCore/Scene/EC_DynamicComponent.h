@@ -96,6 +96,9 @@ public:
     virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
 public slots:
+    /// IComponent override
+    virtual bool SupportsDynamicAttributes() const { return true; }
+    
     /// A factory method that constructs a new attribute of a given the type name.
     /** @param typeName Type name of the attribute.
         @param name Name of the attribute.

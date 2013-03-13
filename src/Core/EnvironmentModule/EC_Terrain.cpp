@@ -26,7 +26,6 @@
 
 #include <Ogre.h>
 #include <utility>
-#include <boost/make_shared.hpp>
 
 #include "MemoryLeakCheck.h"
 
@@ -54,7 +53,7 @@ EC_Terrain::EC_Terrain(Scene* scene) :
     patches.resize(1);
     MakePatchFlat(0, 0, 0.f);
 
-    heightMapAsset = boost::make_shared<AssetRefListener>();
+    heightMapAsset = MAKE_SHARED(AssetRefListener);
     connect(heightMapAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(TerrainAssetLoaded(AssetPtr)));
 }
 
@@ -204,8 +203,8 @@ void EC_Terrain::MaterialAssetLoaded(AssetPtr asset_)
 
 void EC_Terrain::TerrainAssetLoaded(AssetPtr asset_)
 {
-    BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(asset_);
-    TextureAssetPtr textureData = boost::dynamic_pointer_cast<TextureAsset>(asset_);
+    BinaryAssetPtr assetData = dynamic_pointer_cast<BinaryAsset>(asset_);
+    TextureAssetPtr textureData = dynamic_pointer_cast<TextureAsset>(asset_);
     if ((!assetData.get() || assetData->data.size() == 0) && !textureData)
     {
         LogError("Failed to load terrain asset from file!");
@@ -1181,7 +1180,7 @@ void EC_Terrain::AttachTerrainRootNode()
         rootNode->getParentSceneNode()->removeChild(rootNode);
 
     // If this entity has an EC_Placeable, make sure it is the parent of this terrain component.
-    boost::shared_ptr<EC_Placeable> pos = ParentEntity()->GetComponent<EC_Placeable>();
+    shared_ptr<EC_Placeable> pos = ParentEntity()->GetComponent<EC_Placeable>();
     if (pos)
     {
         Ogre::SceneNode *parent = pos->GetSceneNode();

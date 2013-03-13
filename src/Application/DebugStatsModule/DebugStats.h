@@ -52,7 +52,7 @@ private:
 
     std::vector<std::pair<u64, double> > frameTimes; ///< A history of estimated frame times.
     QPointer<TimeProfilerWindow> profilerWindow_; /// Profiler window
-    boost::shared_ptr<InputContext> inputContext; ///< InputContext for Shift-P - Profiler window shortcut.
+    shared_ptr<InputContext> inputContext; ///< InputContext for Shift-P - Profiler window shortcut.
     tick_t lastCallTime;
     tick_t lastProfilerDumpTime;
     int profilerLogDumpElapsedFrames;

@@ -10,4 +10,4 @@ echo.
 cecho {0A}Tundra build finished.{# #}{\n}
 
 :: Finish in same directory we started in.
-cd TOOLS
+cd tools

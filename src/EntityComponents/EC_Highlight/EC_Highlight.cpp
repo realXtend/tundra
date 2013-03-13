@@ -25,6 +25,8 @@
 #include <OgreMaterial.h>
 #include <OgreTechnique.h>
 #include <OgrePass.h>
+#include <OgreEntity.h>
+#include <OgreSubEntity.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -62,6 +64,8 @@ void  EC_Highlight::Show()
     EC_Mesh* mesh = mesh_.lock().get();
     AssetAPI* assetAPI = framework->Asset();
     
+    originalMaterials_.clear();
+
     // Clone all valid material assets that we can find from the mesh
     /// \todo Currently will clone the same material several times if used on several submeshes
     /// \todo What if the material is yet pending, or is not an asset (LitTextured)
@@ -79,8 +83,22 @@ void  EC_Highlight::Show()
                 {
                     OgreMaterialAsset* matAsset = dynamic_cast<OgreMaterialAsset*>(clone.get());
                     CreateHighlightToOgreMaterial(matAsset);
-                    mesh->SetMaterial(i, clone->Name());
+
+                    try
+                    {
+                        if ((mesh) && (mesh->GetEntity()) && (mesh->GetEntity()->getSubEntity(i)))
+                            mesh->GetEntity()->getSubEntity(i)->setMaterial(matAsset->ogreMaterial);
+                    }
+                    catch(Ogre::Exception& e)
+                    {
+                        LogError("EC_Highlight::Show: Could not set material " + matAsset->Name() + " to subentity " + i + ":" + e.what());
+                        continue;
+                    }
+
                     materials_.push_back(clone);
+
+                    // Store original ref to be restored in Hide()
+                    originalMaterials_[i] = materialList[i].ref;
                 }
             }
         }
@@ -91,9 +109,30 @@ void EC_Highlight::Hide()
 {
     if (!mesh_.expired())
     {
-        // Restore mesh component's original materials to hide highlight effect
+        // Restore mesh component's original materials to hide highlight effect.
+        // Use AttributeChange::LocalOnly to ensure all editors will show the real refs.
+        AssetAPI * assetAPI = framework->Asset();
         EC_Mesh* mesh = mesh_.lock().get();
-        mesh->ApplyMaterial();
+        foreach(uint index, originalMaterials_.keys())
+        {
+            QString fullName = assetAPI->ResolveAssetRef("", originalMaterials_[index]);
+            AssetPtr asset = assetAPI->GetAsset(fullName);
+            if ((asset) && (asset->IsLoaded()) && (dynamic_cast<OgreMaterialAsset*>(asset.get())))
+            {
+                OgreMaterialAsset *matAsset = dynamic_cast<OgreMaterialAsset*> (asset.get());
+                try
+                {
+                    if ((mesh) && (mesh->GetEntity()) && (mesh->GetEntity()->getSubEntity(index)))
+                        mesh->GetEntity()->getSubEntity(index)->setMaterial(matAsset->ogreMaterial);
+                }
+                catch(Ogre::Exception& e)
+                {
+                    LogError("EC_Highlight::Hide: Could not set material " + matAsset->Name() + " to subentity " + index + ":" + e.what());
+                    continue;
+                }
+            }
+        }
+        originalMaterials_.clear();
     }
     
     // Destroy all the highlight materials

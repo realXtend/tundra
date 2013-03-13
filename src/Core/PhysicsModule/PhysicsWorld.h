@@ -14,8 +14,6 @@
 #include <set>
 #include <QObject>
 
-#include <boost/enable_shared_from_this.hpp>
-
 class OgreWorld;
 
 /// Result of a raycast to the physical representation of a scene.
@@ -45,7 +43,7 @@ public:
 namespace Physics
 {
 /// A physics world that encapsulates a Bullet physics world
-class PHYSICS_MODULE_API PhysicsWorld : public QObject, public btIDebugDraw, public boost::enable_shared_from_this<PhysicsWorld>
+class PHYSICS_MODULE_API PhysicsWorld : public QObject, public btIDebugDraw, public enable_shared_from_this<PhysicsWorld>
 {
     Q_OBJECT
     Q_PROPERTY(float updatePeriod READ PhysicsUpdatePeriod WRITE SetPhysicsUpdatePeriod)
@@ -93,7 +91,7 @@ public:
     
     /// Returns the set of collisions that occurred during the previous frame.
     /// \important Use this function only for debugging, the availability of this set data structure is not guaranteed in the future.
-    const std::set<std::pair<btCollisionObject*, btCollisionObject*> > &PreviousFrameCollisions() const { return previousCollisions_; }
+    const std::set<std::pair<const btCollisionObject*, const btCollisionObject*> > &PreviousFrameCollisions() const { return previousCollisions_; }
 
     /// Set physics update period (= length of each simulation step.) By default 1/60th of a second.
     /** @param updatePeriod Update period */
@@ -197,7 +195,7 @@ private:
     SceneWeakPtr scene_;
     
     /// Previous frame's collisions. We store these to know whether the collision was new or "ongoing"
-    std::set<std::pair<btCollisionObject*, btCollisionObject*> > previousCollisions_;
+    std::set<std::pair<const btCollisionObject*, const btCollisionObject*> > previousCollisions_;
     
     /// Draw physics debug geometry, if debug drawing enabled
     void DrawDebugGeometry();

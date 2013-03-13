@@ -1,27 +1,39 @@
 # Set project name
 project(tundra)
 
-# CMake version requirement
-cmake_minimum_required(VERSION 2.4)
+# CMake version requirement, >= 2.5.5 to ensure that ProtoBuf is found ok.
+cmake_minimum_required(VERSION 2.5.5)
 
-macro (PrintUsedEnvVariables)
+# TUNDRA_NO_BOOST defines whether we want to replace usage of Boost with the C++ (TR1) standard equivalents.
+# Setting TUNDRA_NO_BOOST to TRUE, i.e. disabling usage of Boost in the Tundra codebase, requires compiler
+# with up-to-date C++ TR1 and preferably the C99 standard cstdint header. Also if the used compiler has C++11 
+# make_shared function available, it is used.
+# If TUNDRA_NO_BOOST is set to TRUE, kNet must also be built without Boost dependecy. In order to make the
+# Tundra build fully free of Boost, you must also build Ogre and AssImp, which depend on Boost by default,
+# with Boost disabled. See the dependencies scripts for instructions how to control this.
+option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." FALSE)
+
+macro(PrintUsedEnvVariables)
     # Print out the resolved variables. Note that this does not print the env variables
     # in most cases as they should be resolved to our cmake variables and get cached.
     # This way this printed list wont lie if ran without env variables and we are still
     # succesfully finding all the deps from our cacher (or in bad cases assumed) dirs.
-    message ("\n=========== Used Environment Variables ===========\n")
-    message (STATUS "TUNDRA_DEP_PATH  = " ${ENV_TUNDRA_DEP_PATH})
-    message (STATUS "QTDIR            = " ${ENV_QT_DIR})
-    message (STATUS "BOOST_ROOT       = " ${BOOST_ROOT})
-    message (STATUS "OGRE_HOME        = " ${OGRE_DIR}) # OGRE_DIR is our internal OGRE_HOME
-    message (STATUS "SKYX_HOME        = " ${SKYX_HOME})
-    message (STATUS "HYDRAX_HOME      = " ${HYDRAX_HOME})
-    message (STATUS "KNET_DIR         = " ${KNET_DIR})
-    message (STATUS "BULLET_DIR       = " ${BULLET_DIR})
-endmacro ()
+    message("\n=========== Used Environment Variables ===========\n")
+    message(STATUS "TUNDRA_DEP_PATH  = " ${ENV_TUNDRA_DEP_PATH})
+    message(STATUS "QTDIR            = " ${ENV_QT_DIR})
+    if (NOT TUNDRA_NO_BOOST)
+        message (STATUS "BOOST_ROOT       = " ${BOOST_ROOT})
+    endif()
+    message(STATUS "OGRE_HOME        = " ${OGRE_DIR}) # OGRE_DIR is our internal OGRE_HOME
+    message(STATUS "SKYX_HOME        = " ${SKYX_HOME})
+    message(STATUS "HYDRAX_HOME      = " ${HYDRAX_HOME})
+    message(STATUS "KNET_DIR         = " ${KNET_DIR})
+    message(STATUS "BULLET_DIR       = " ${BULLET_DIR})
+endmacro()
 
 macro (PrintUsedBuildConfig)
     message ("\n=========== Used Build Configuration =============\n")
+    message (STATUS "TUNDRA_NO_BOOST            = " ${TUNDRA_NO_BOOST})
     message (STATUS "TUNDRACORE_SHARED          = " ${TUNDRACORE_SHARED})
     message (STATUS "BUILD_SDK_ONLY             = " ${BUILD_SDK_ONLY})
     message (STATUS "BUILDING_INSTALLER         = " ${BUILDING_INSTALLER})
@@ -174,24 +186,19 @@ if (COMMAND cmake_policy)
     cmake_policy(SET CMP0005 NEW)
 endif()
 
-# Detect what compiler we are using on windows
-set (VC90 FALSE)
-set (VC100 FALSE)
+# Detect what compiler we are using on Windows
+# TODO Remove these as redundant.
+set(VC90 FALSE)
+set(VC100 FALSE)
 if (MSVC)
-    message ("")
-    message (STATUS "Detecting Visual Studio compiler")
-    if (${CMAKE_GENERATOR} STREQUAL "Visual Studio 10" OR ${CMAKE_GENERATOR} STREQUAL "Visual Studio 10 Win64")
-        set (VC100 TRUE)
-        message (STATUS "-- VC100 detected")
-    endif ()
-    if (${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008" OR ${CMAKE_GENERATOR} STREQUAL "Visual Studio 9 2008 Win64")
-        set (VC90 TRUE)
-        message (STATUS "-- VC90 detected")
-    endif ()
-    if (NOT VC90 AND NOT VC100)
-        message (STATUS "-- Warning: Could not determine compiler from cmake generator name. We support 'officially' Visual Studio 2008 and 2010")
-    endif ()
-endif ()
+    if (MSVC90)
+        set(VC90 TRUE)
+    elseif(MSVC10)
+        set(VC100 TRUE)
+    else()
+        message(STATUS "-- Warning: Unsupported Visual Studio version detected. Currently Visual Studio 2008 and 2010 are supported".)
+    endif()
+endif()
 
 # Set compiler warning levels.
 # On MSVC, use warning level 4 but disable the following warnings:
@@ -282,7 +289,9 @@ endif ()
 message ("\n\n=========== Configuring Dependencies ===========\n")
 
 # Find needed external libraries, abort on error
-configure_boost()
+if (NOT TUNDRA_NO_BOOST)
+    configure_boost()
+endif()
 configure_qt4()
 if (NOT APPLE) # Python and PythonQt are not available currently on Mac.
     if ("$ENV{TUNDRA_PYTHON_ENABLED}" STREQUAL "TRUE") 

@@ -11,6 +11,9 @@
 #include "Color.h"
 #include "OgreModuleFwd.h"
 
+#include <QHash>
+#include <QString>
+
 /// Enables visual highlighting effect for scene entity.
 /** <table class="header">
     <tr>
@@ -105,7 +108,7 @@ private:
     void ApplyHighlightColors();
         
     /// Mesh component pointer
-    boost::weak_ptr<EC_Mesh> mesh_;
+    weak_ptr<EC_Mesh> mesh_;
     
     /// Ogre World
     OgreWorldWeakPtr world_;
@@ -113,6 +116,9 @@ private:
     /// Highlight material assets, cloned from the mesh component's materials
     std::vector<AssetPtr> materials_;
     
+    /// Store original materials from EC_Mesh for restoring later.
+    QHash<uint, QString> originalMaterials_;
+
     /// Delayed reapply already pending -flag
     bool reapplyPending_;
 };

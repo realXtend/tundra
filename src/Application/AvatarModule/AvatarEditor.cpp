@@ -470,7 +470,7 @@ void AvatarEditor::HandleAssetPicked(AssetPtr avatarAsset)
 
 void AvatarEditor::OnAssetTransferSucceeded(AssetPtr asset)
 {
-    AvatarDescAssetPtr avatarAsset = boost::dynamic_pointer_cast<AvatarDescAsset>(asset);
+    AvatarDescAssetPtr avatarAsset = dynamic_pointer_cast<AvatarDescAsset>(asset);
 
     if (avatarAsset)
         SetAsset(avatarAsset);
@@ -606,14 +606,14 @@ void AvatarEditor::AddAttachment(AssetPtr assetPtr)
     }
 
     // Check that the assetPtr is a BinaryAssetPtr
-    BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(assetPtr);
+    BinaryAssetPtr assetData = dynamic_pointer_cast<BinaryAsset>(assetPtr);
     if (!assetData)
     {
         LogError("AvatarEditor::AddAttachment: Cannot add asset '" + assetPtr->Name() + "' as attachment, it is not a binary asset!");
         return;
     }
     
-    boost::shared_ptr<AvatarDescAsset> avatar = avatarAsset_.lock();
+    shared_ptr<AvatarDescAsset> avatar = avatarAsset_.lock();
     if (!avatar)
     {
         LogError("AvatarEditor::AddAttachment: Cannot add attachment '" + assetPtr->Name() + "' to avatar: no avatar to attach to!");

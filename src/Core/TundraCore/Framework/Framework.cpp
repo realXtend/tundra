@@ -22,7 +22,6 @@
 #include "SceneAPI.h"
 #include "UiAPI.h"
 
-
 #ifndef _WINDOWS
 #include <sys/ioctl.h>
 #endif
@@ -31,6 +30,8 @@
 #include <termios.h>
 #endif
 #include <iostream>
+#include <sstream>
+
 #include <QDir>
 #include <QDomDocument>
 
@@ -132,14 +133,14 @@ Framework::Framework(int argc_, char** argv_) :
     // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
     instance = this;
 
-    #ifdef ANDROID
+#ifdef ANDROID
     LoadCommandLineFromFile();
-    #else
+#else
     // Remember all startup command line options.
     // Skip argv[0], since it is the program name.
     for(int i = 1; i < argc; ++i)
         startupOptions << argv[i];
-    #endif
+#endif
 
     //  Load additional command line options from each config XML file.
     QStringList cmdLineParams = CommandLineParameters("--config");
@@ -546,7 +547,7 @@ void Framework::RegisterRenderer(IRenderer *renderer_)
 void Framework::RegisterModule(IModule *module)
 {
     module->SetFramework(this);
-    modules.push_back(boost::shared_ptr<IModule>(module));
+    modules.push_back(shared_ptr<IModule>(module));
     module->Load();
 }
 
@@ -646,16 +647,14 @@ QStringList Framework::CommandLineParameters(const QString &key) const
             QString quotedParam = startupOptions[i+1];
             if (quotedParam.startsWith("\""))
             {
-                // End quote is in the argv
-                if (quotedParam.endsWith("\""))
+                if (quotedParam.endsWith("\"")) // End quote is in the argv
                 {
                     // Remove quotes and append to the return list.
                     quotedParam = quotedParam.right(quotedParam.length() -1);
                     quotedParam.chop(1);
                     ret.append(quotedParam);
                 }
-                // End quote is not in the same argv
-                else
+                else // End quote is not in the same argv
                 {
                     for(int pi=i+2; pi+1 < startupOptions.size(); ++pi)
                     {
@@ -682,14 +681,12 @@ QStringList Framework::CommandLineParameters(const QString &key) const
                             ret.append(quotedParam);
                             break;
                         }
-                        // Append to param.
-                        else
+                        else // Append to param.
                             quotedParam += " " + param;
                     }
                 }
             }
-            // No quote start, push as is
-            else
+            else // No quote start, push as is
                 ret.append(startupOptions[++i]);
         }
     }

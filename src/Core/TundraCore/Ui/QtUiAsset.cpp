@@ -10,8 +10,6 @@
 #include "UiAPI.h"
 #include "LoggingFunctions.h"
 
-#include <boost/regex.hpp>
-
 #include <QUiLoader>
 #include <QByteArrayMatcher>
 #include <QUrl>
@@ -61,12 +59,12 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool /*allo
     const std::string::const_iterator end = uiAssetFile.end();
     while(found)
     {
-        boost::smatch r;
+        smatch r;
         // Try to find lines of form 'url(http://myserver.com/asset.png)' or 'url(someotherkindofassetref)'
         // There may be double-quotes in the form of '"' or '&quot;', which the regex needs to take into account.
         // The regex ignores all redundant whitespace, i.e. 'url(   "   local://myasset.png &quot;  )' is also matched.
-        boost::regex e("url\\(\\s*((&quot;)|\\\")?\\s*(.*?)\\s*((&quot;)|\\\")?\\s*\\)");
-        found = boost::regex_search(start, end, r, e);
+        regex e("url\\(\\s*((&quot;)|\\\")?\\s*(.*?)\\s*((&quot;)|\\\")?\\s*\\)");
+        found = regex_search(start, end, r, e);
         if (found)
         {
             AssetRef ref;
@@ -92,16 +90,16 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool /*allo
     start = uiAssetFile.begin();
     while(found)
     {
-        boost::smatch r;
+        smatch r;
         // Try to find lines of form '<pixmap>http://myserver.com/asset.png</pixmap>' or '<pixmap>someotherkindofassetref</pixmap>'
         // There may be double-quotes in the form of '"' or '&quot;', which the regex needs to take into account.
         // The regex ignores all redundant whitespace, i.e. '< pixmap > local://myasset.png </ pixmap >' is also matched.
-//        boost::regex e("\\<\\s*(pixmap|normaloff|normalon|disabledoff|disabledon|activeoff|activeon|selectedoff|selectedon)\\s*\\>\\s*((&quot;)|\")?\\s*(.*?)\\s*((&quot;)|\")?\\s*\\<\\s*/(pixmap|normaloff|normalon|disabledoff|disabledon|activeoff|activeon|selectedoff|selectedon)\\s*\\>");
+//        regex e("\\<\\s*(pixmap|normaloff|normalon|disabledoff|disabledon|activeoff|activeon|selectedoff|selectedon)\\s*\\>\\s*((&quot;)|\")?\\s*(.*?)\\s*((&quot;)|\")?\\s*\\<\\s*/(pixmap|normaloff|normalon|disabledoff|disabledon|activeoff|activeon|selectedoff|selectedon)\\s*\\>");
 
         // Parse all <pixmap>imagefile.png</pixmap>, or <normalon>imagefile.png</normalon>, and other tags (pixmap, normalon, normaloff, disabledon, disabledoff, activeoff, activeon, selectedon, selectedoff).
         // Note that this mechanism has been detected to not support alpha for the images, so better to use CSS styling for them instead (i.e. QPushButton:hover and QPushButton:pressed).
-        boost::regex e(">([^<>]+?\\.png)<");
-        found = boost::regex_search(start, end, r, e);
+        regex e(">([^<>]+?\\.png)<");
+        found = regex_search(start, end, r, e);
         if (found)
         {
             AssetRef ref;

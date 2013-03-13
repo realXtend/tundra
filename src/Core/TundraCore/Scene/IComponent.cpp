@@ -171,6 +171,12 @@ int IComponent::NumStaticAttributes() const
 
 IAttribute* IComponent::CreateAttribute(u8 index, u32 typeID, const QString& name, AttributeChange::Type change)
 {
+    if (!SupportsDynamicAttributes())
+    {
+        LogError("CreateAttribute called on a component that does not support dynamic attributes");
+        return 0;
+    }
+    
     // If this message should be sent with the default attribute change mode specified in the IComponent,
     // take the change mode from this component.
     if (change == AttributeChange::Default)
@@ -200,6 +206,12 @@ IAttribute* IComponent::CreateAttribute(u8 index, u32 typeID, const QString& nam
 
 void IComponent::RemoveAttribute(u8 index, AttributeChange::Type change)
 {
+    if (!SupportsDynamicAttributes())
+    {
+        LogError("RemoveAttribute called on a component that does not support dynamic attributes");
+        return;
+    }
+    
     // If this message should be sent with the default attribute change mode specified in the IComponent,
     // take the change mode from this component.
     if (change == AttributeChange::Default)

@@ -525,7 +525,7 @@ void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type)
         comp_ptr = comp->shared_from_this();
     } catch(...)
     {
-        LogError("Fail to add new component to ECBroser. Make sure that component's parent entity is set.");
+        LogError("Fail to add new component to ECBrowser. Make sure that component's parent entity is set.");
         return;
     }
 
@@ -557,7 +557,7 @@ void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type type)
         comp_ptr = comp->shared_from_this();
     } catch(...)
     {
-        LogError("Fail to remove component from ECBroser. Make sure that component's parent entity is set.");
+        LogError("Fail to remove component from ECBrowser. Make sure that component's parent entity is set.");
         return;
     } 
 

@@ -251,7 +251,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 float3x4 worldToLocal = localToWorld.Inverted();
 
                 EC_Mesh *mesh = entity->GetComponent<EC_Mesh>().get();
-                boost::shared_ptr<OgreMeshAsset> ogreMeshAsset = mesh ? mesh->MeshAsset() : boost::shared_ptr<OgreMeshAsset>();
+                shared_ptr<OgreMeshAsset> ogreMeshAsset = mesh ? mesh->MeshAsset() : shared_ptr<OgreMeshAsset>();
                 if (ogreMeshAsset)
                 {
                     Ray localRay = worldToLocal * ray;
@@ -531,62 +531,68 @@ void OgreWorld::OnUpdated(float timeStep)
 
 void OgreWorld::SetupShadows()
 {
-    Ogre::SceneManager* sceneManager = sceneManager_;
     // Debug mode Ogre might assert due to illegal shadow camera AABB, with empty scene. Disable shadows in debug mode.
 #ifdef _DEBUG
-        sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
+        sceneManager_->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
         return;
 #else
-    OgreRenderer::Renderer::ShadowQualitySetting quality = renderer_->ShadowQuality();
-    bool using_pssm = (quality == OgreRenderer::Renderer::Shadows_High);
-    bool soft_shadow = framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "soft shadow").toBool();
-    
-    //unsigned short shadowTextureSize = settings.value("depthmap_size", "1024").toInt();  */
-    float shadowFarDist = 50;
-    unsigned short shadowTextureSize = 2048;
-    unsigned short shadowTextureCount = 1;
-    
-    if(using_pssm)
+
+    OgreRenderer::Renderer::ShadowQualitySetting shadowQuality = renderer_->ShadowQuality();
+    if (shadowQuality == OgreRenderer::Renderer::Shadows_Off)
     {
-        shadowTextureSize = 1024;
+        sceneManager_->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
+        return;
+    }
+    
+    bool pssmEnabled = (shadowQuality == OgreRenderer::Renderer::Shadows_High);    
+    unsigned short shadowTextureFSAA = static_cast<unsigned short>(framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "shadow texture antialias", 0).toInt());
+    unsigned short shadowTextureSize = static_cast<unsigned short>(framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "shadow texture size", 2048).toInt());
+    unsigned short shadowTextureCount = 1;
+    float shadowFarDist = 50;
+
+    if (pssmEnabled)
+    {
+        shadowTextureSize = static_cast<unsigned short>(framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "shadow texture size pssm", 1024).toInt());
         shadowTextureCount = 3;
     }
     
-    Ogre::ColourValue shadowColor(0.6f, 0.6f, 0.6f);
+    LogDebug(QString("[OgreWorld]: Shadow quality       : %1").arg((shadowQuality == OgreRenderer::Renderer::Shadows_Low ? "Low" : "High")));
+    LogDebug(QString("[OgreWorld]: Shadow texture size  : %1x%2").arg(shadowTextureSize).arg(shadowTextureSize));
+    LogDebug(QString("[OgreWorld]: Shadow texture count : %1").arg(shadowTextureCount));
+    LogDebug(QString("[OgreWorld]: Shadow texture FSAA  : %1").arg(shadowTextureFSAA));
 
-    // This is the default material to use for shadow buffer rendering pass, overridable in script.
-    // Note that we use the same single material (vertex program) for each object, so we're relying on
-    // that we use Ogre software skinning. Hardware skinning would require us to do different vertex programs
-    // for skinned/nonskinned geometry.
-    std::string ogreShadowCasterMaterial = "rex/ShadowCaster";
-    
-    if (quality == OgreRenderer::Renderer::Shadows_Off)
-    {
-        sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
-        return;
-    }
-    
-    sceneManager->setShadowColour(shadowColor);
-    sceneManager->setShadowTextureCountPerLightType(Ogre::Light::LT_DIRECTIONAL, shadowTextureCount);
-    sceneManager->setShadowTextureSettings(shadowTextureSize, shadowTextureCount, Ogre::PF_FLOAT32_R);
-    sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
-    sceneManager->setShadowTextureCasterMaterial(ogreShadowCasterMaterial.c_str());
-    sceneManager->setShadowTextureSelfShadow(true);
-    
+    /** "rex/ShadowCaster" is the default material to use for shadow buffer rendering pass, can be overridden in user materials.
+        @note We use the same single material (vertex program) for each object, so we're relying on that we use Ogre software skinning. 
+        Hardware skinning would require us to do different vertex programs for skinned/nonskinned geometry. */
+    sceneManager_->setShadowColour(Ogre::ColourValue(0.6f, 0.6f, 0.6f));
+    sceneManager_->setShadowTextureCountPerLightType(Ogre::Light::LT_DIRECTIONAL, shadowTextureCount);
+    sceneManager_->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
+    sceneManager_->setShadowTextureCasterMaterial("rex/ShadowCaster");
+    sceneManager_->setShadowTextureSelfShadow(true);
+    sceneManager_->setShadowTextureFSAA(shadowTextureFSAA);
+
+    /** On DirectX/Windows PF_FLOAT32_R format produces a blue tinted shadow. This occurs 
+        at least when the basic "rex/ShadowCaster" is enabled (default for materials). */
+#ifdef DIRECTX_ENABLED
+    sceneManager_->setShadowTextureSettings(shadowTextureSize, shadowTextureCount, Ogre::PF_R8G8B8A8);
+#else
+    sceneManager_->setShadowTextureSettings(shadowTextureSize, shadowTextureCount, Ogre::PF_FLOAT32_R);
+#endif
+
     Ogre::ShadowCameraSetupPtr shadowCameraSetup;
-    
-    if(using_pssm)
+    if (pssmEnabled)
     {
-#include "DisableMemoryLeakCheck.h"
-        OgreShadowCameraSetupFocusedPSSM* pssmSetup = new OgreShadowCameraSetupFocusedPSSM();
-#include "EnableMemoryLeakCheck.h"
-
+        /** The splitpoints are hardcoded also to the shaders. 
+            If you modify these, also change them to the shaders. */
         OgreShadowCameraSetupFocusedPSSM::SplitPointList splitpoints;
         splitpoints.push_back(0.1f); // Default nearclip
-        //these splitpoints are hardcoded also to the shaders. If you modify these, also change them to shaders.
         splitpoints.push_back(3.5);
         splitpoints.push_back(11);
         splitpoints.push_back(shadowFarDist);
+        
+#include "DisableMemoryLeakCheck.h"
+        OgreShadowCameraSetupFocusedPSSM* pssmSetup = new OgreShadowCameraSetupFocusedPSSM();
+#include "EnableMemoryLeakCheck.h"
         pssmSetup->setSplitPoints(splitpoints);
         shadowCameraSetup = Ogre::ShadowCameraSetupPtr(pssmSetup);
     }
@@ -598,24 +604,22 @@ void OgreWorld::SetupShadows()
         shadowCameraSetup = Ogre::ShadowCameraSetupPtr(focusedSetup);
     }
     
-    sceneManager->setShadowCameraSetup(shadowCameraSetup);
-    sceneManager->setShadowFarDistance(shadowFarDist);
+    sceneManager_->setShadowCameraSetup(shadowCameraSetup);
+    sceneManager_->setShadowFarDistance(shadowFarDist);
+    sceneManager_->setShadowCasterRenderBackFaces(false); // If set to true, problems with objects that clip into the ground
     
-    // If set to true, problems with objects that clip into the ground
-    sceneManager->setShadowCasterRenderBackFaces(false);
-    
-    //DEBUG
-    /*if(renderer_.expired())
+    // Debug overlays for shadow textures
+    /*
+    if(renderer_.expired())
         return;
-    Ogre::SceneManager *mngr = renderer_.lock()->OgreSceneManager();
     Ogre::TexturePtr shadowTex;
     Ogre::String str("shadowDebug");
     Ogre::Overlay* debugOverlay = Ogre::OverlayManager::getSingleton().getByName(str);
-    if(!debugOverlay)
+    if (!debugOverlay)
         debugOverlay= Ogre::OverlayManager::getSingleton().create(str);
     for(int i = 0; i<shadowTextureCount;i++)
     {
-            shadowTex = mngr->getShadowTexture(i);
+            shadowTex = sceneManager_->getShadowTexture(i);
 
             // Set up a debug panel to display the shadow
             Ogre::MaterialPtr debugMat = Ogre::MaterialManager::getSingleton().create(
@@ -635,14 +639,16 @@ void OgreWorld::SetupShadows()
             debugPanel->setMaterialName(debugMat->getName());
             debugOverlay->add2D(debugPanel);
     }
-    debugOverlay->show();*/
+    debugOverlay->show();
+    */
 
-    if(soft_shadow)
+    bool softShadowEnabled = framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "soft shadow", false).toBool();
+    if (softShadowEnabled)
     {
         for(size_t i=0;i<shadowTextureCount;i++)
         {
             ::GaussianListener* gaussianListener = new GaussianListener();
-            Ogre::TexturePtr shadowTex = sceneManager->getShadowTexture(0);
+            Ogre::TexturePtr shadowTex = sceneManager_->getShadowTexture(0);
             Ogre::RenderTarget* shadowRtt = shadowTex->getBuffer()->getRenderTarget();
             Ogre::Viewport* vp = shadowRtt->getViewport(0);
             Ogre::CompositorInstance *instance = Ogre::CompositorManager::getSingleton().addCompositor(vp, "Gaussian Blur");

@@ -6,11 +6,9 @@
 
 #pragma once
 
-#include <boost/smart_ptr.hpp>
-#include <list>
-#include <vector>
+#include "CoreTypes.h"
+
 #include <map>
-#include <QString>
 
 class SceneAPI;
 class Scene;
@@ -28,13 +26,13 @@ struct AttributeDesc;
 struct AssetDesc;
 struct EntityReference;
 
-typedef boost::shared_ptr<Scene> ScenePtr;
-typedef boost::weak_ptr<Scene> SceneWeakPtr;
-typedef boost::weak_ptr<Entity> EntityWeakPtr;
-typedef boost::shared_ptr<Entity> EntityPtr;
+typedef shared_ptr<Scene> ScenePtr;
+typedef weak_ptr<Scene> SceneWeakPtr;
+typedef weak_ptr<Entity> EntityWeakPtr;
+typedef shared_ptr<Entity> EntityPtr;
 typedef std::list<EntityPtr> EntityList;
-typedef boost::shared_ptr<IComponent> ComponentPtr;
-typedef boost::weak_ptr<IComponent> ComponentWeakPtr;
-typedef boost::shared_ptr<IComponentFactory> ComponentFactoryPtr;
+typedef shared_ptr<IComponent> ComponentPtr;
+typedef weak_ptr<IComponent> ComponentWeakPtr;
+typedef shared_ptr<IComponentFactory> ComponentFactoryPtr;
 typedef std::vector<IAttribute*> AttributeVector;
 typedef std::map<QString, ScenePtr> SceneMap;
