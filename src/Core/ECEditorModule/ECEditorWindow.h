@@ -39,7 +39,7 @@ class UndoManager;
 /// List widget item representing entity.
 /** Holds a weak pointer to the represented entity.
     @ingroup ECEditorModuleClient. */
-class EntityListWidgetItem : public QListWidgetItem
+class ECEDITOR_MODULE_API EntityListWidgetItem : public QListWidgetItem
 {
 public:
     EntityListWidgetItem(const QString &name, QListWidget *list, const EntityPtr &e) :
