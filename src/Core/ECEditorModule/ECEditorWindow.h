@@ -21,14 +21,6 @@ class QListWidget;
 class QTreeWidget;
 class QPoint;
 
-/// @cond PRIVATE
-struct EntityComponentSelection
-{
-    EntityPtr entity;
-    std::vector<ComponentPtr> components;
-};
-/// @endcond
-
 class Framework;
 class ECBrowser;
 class TransformEditor;
@@ -232,6 +224,12 @@ private slots:
     void AddComponentDialogFinished(int result);
 
 private:
+    struct EntityComponentSelection
+    {
+        EntityPtr entity;
+        std::vector<ComponentPtr> components;
+    };
+
     /// Bold all given entities from the entity_list_ QListWidget object.
     /** @note Will unbold previous selection. */
     void BoldEntityListItems(const QSet<entity_id_t> &bolded_entities);
