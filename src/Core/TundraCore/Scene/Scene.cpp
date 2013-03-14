@@ -220,14 +220,15 @@ entity_id_t Scene::NextFreeIdLocal()
 
 EntityList Scene::EntitiesWithComponent(const QString &typeName, const QString &name) const
 {
-    EntityList entities;
-    for(EntityMap::const_iterator it = begin(); it != end(); ++it)
-    {
-        EntityPtr entity = it->second;
-        if ((name.isEmpty() && entity->GetComponent(typeName)) || entity->GetComponent(typeName, name))
-            entities.push_back(entity);
-    }
+    return EntitiesWithComponent(framework_->Scene()->GetComponentTypeId(typeName), name);
+}
 
+EntityList Scene::EntitiesWithComponent(u32 typeId, const QString &name) const
+{
+    EntityList entities;
+    for(const_iterator it = begin(); it != end(); ++it)
+        if ((name.isEmpty() && it->second->Component(typeId)) || it->second->Component(typeId, name))
+            entities.push_back(it->second);
     return entities;
 }
 
@@ -1320,10 +1321,9 @@ bool Scene::StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, 
         attr->CopyValue(endvalue, AttributeChange::LocalOnly);
     
     AttributeInterpolation newInterp;
-    newInterp.comp = comp->shared_from_this();
-    newInterp.dest = attr;
-    newInterp.start = attr->Clone();
-    newInterp.end = endvalue;
+    newInterp.dest = AttributeWeakPtr(comp->shared_from_this(), attr);
+    newInterp.start = AttributeWeakPtr(comp->shared_from_this(), attr->Clone());
+    newInterp.end = AttributeWeakPtr(comp->shared_from_this(), endvalue);
     newInterp.length = length;
     
     interpolations_.push_back(newInterp);
@@ -1335,10 +1335,10 @@ bool Scene::EndAttributeInterpolation(IAttribute* attr)
     for(uint i = 0; i < interpolations_.size(); ++i)
     {
         AttributeInterpolation& interp = interpolations_[i];
-        if (interp.dest == attr)
+        if (interp.dest.Get() == attr)
         {
-            delete interp.start;
-            delete interp.end;
+            delete interp.start.Get();
+            delete interp.end.Get();
             interpolations_.erase(interpolations_.begin() + i);
             return true;
         }
@@ -1351,8 +1351,8 @@ void Scene::EndAllAttributeInterpolations()
     for(uint i = 0; i < interpolations_.size(); ++i)
     {
         AttributeInterpolation& interp = interpolations_[i];
-        delete interp.start;
-        delete interp.end;
+        delete interp.start.Get();
+        delete interp.end.Get();
     }
     
     interpolations_.clear();
@@ -1369,8 +1369,8 @@ void Scene::UpdateAttributeInterpolations(float frametime)
         AttributeInterpolation& interp = interpolations_[i];
         bool finished = false;
         
-        // Check that the component still exists ie. it's safe to access the attribute
-        if (!interp.comp.expired())
+        // Check that the component still exists i.e. it's safe to access the attribute
+        if (interp.start.owner.expired())
         {
             // Allow the interpolation to persist for 2x time, though we are no longer setting the value
             // This is for the continuous/discontinuous update detection in StartAttributeInterpolation()
@@ -1380,7 +1380,7 @@ void Scene::UpdateAttributeInterpolations(float frametime)
                 float t = interp.time / interp.length;
                 if (t > 1.0f)
                     t = 1.0f;
-                interp.dest->Interpolate(interp.start, interp.end, t, AttributeChange::LocalOnly);
+                interp.dest.Get()->Interpolate(interp.start.Get(), interp.end.Get(), t, AttributeChange::LocalOnly);
             }
             else
             {
@@ -1395,8 +1395,8 @@ void Scene::UpdateAttributeInterpolations(float frametime)
         // Remove interpolation (& delete start/endpoints) when done
         if (finished)
         {
-            delete interp.start;
-            delete interp.end;
+            delete interp.start.Get();
+            delete interp.end.Get();
             interpolations_.erase(interpolations_.begin() + i);
         }
     }

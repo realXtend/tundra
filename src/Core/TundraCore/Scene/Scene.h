@@ -144,38 +144,38 @@ public:
     /// Emits notification of an attribute changing. Called by IComponent.
     /** @param comp Component pointer
         @param attribute Attribute pointer
-        @param change Change signalling mode */
+        @param change Change signaling mode */
     void EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Emits notification of an attribute having been created. Called by IComponent's with dynamic structure
     /** @param comp Component pointer
         @param attribute Attribute pointer
-        @param change Change signalling mode */
+        @param change Change signaling mode */
     void EmitAttributeAdded(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Emits notification of an attribute about to be deleted. Called by IComponent's with dynamic structure
     /** @param comp Component pointer
         @param attribute Attribute pointer
-        @param change Change signalling mode */
+        @param change Change signaling mode */
      void EmitAttributeRemoved(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Emits a notification of a component being added to entity. Called by the entity
     /** @param entity Entity pointer
         @param comp Component pointer
-        @param change Change signalling mode */
+        @param change Change signaling mode */
     void EmitComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
 
     /// Emits a notification of a component being removed from entity. Called by the entity
     /** @param entity Entity pointer
         @param comp Component pointer
-        @param change Change signalling mode
+        @param change Change signaling mode
         @note This is emitted before just before the component is removed. */
     void EmitComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change);
 
     /// Emits a notification of an entity being removed.
     /** @note the entity pointer will be invalid shortly after!
         @param entity Entity pointer
-        @param change Change signalling mode */
+        @param change Change signaling mode */
     void EmitEntityRemoved(Entity* entity, AttributeChange::Type change);
 
     /// Emits a notification of an entity action being triggered.
@@ -194,6 +194,12 @@ public:
     /// Returns all components of type T (and additionally with specific name) in the scene.
     template <typename T>
     std::vector<shared_ptr<T> > Components(const QString &name = "") const;
+
+    /// Returns list of entities with a specific component present.
+    /** @param name Name of the component, optional.
+        @note O(n) */
+    template <typename T>
+    EntityList EntitiesWithComponent(const QString &name = "") const;
 
 public slots:
     /// Creates new entity that contains the specified components.
@@ -249,7 +255,7 @@ public slots:
         @note Returns a shared pointer, but it is preferable to use a weak pointer, EntityWeakPtr,
               to avoid dangling references that prevent entities from being properly destroyed.
         @note @note O(n)
-        @sa EntityByName */
+        @sa EntityById */
     EntityPtr EntityByName(const QString &name) const;
 
     /// Returns whether name is unique within the scene, ie. is only encountered once, or not at all.
@@ -281,9 +287,13 @@ public slots:
     entity_id_t NextFreeIdLocal();
 
     /// Returns list of entities with a specific component present.
-    /** @param typeName Type name of the component
+    /** @param typeId Type ID of the component
         @param name Name of the component, optional.
         @note O(n) */
+    EntityList EntitiesWithComponent(u32 typeId, const QString &name = "") const;
+    /// @overload
+    /** @param typeName typeName Type name of the component.
+        @note The overload taking type ID is more efficient than this overload. */
     EntityList EntitiesWithComponent(const QString &typeName, const QString &name = "") const;
 
     /// Returns all components of specific type (and additionally with specific name) in the scene.
@@ -292,7 +302,7 @@ public slots:
     Entity::ComponentVector Components(u32 typeId, const QString &name = "") const;
     /// overload
     /** @param typeName Component type name.
-        @note The overload taking in type ID is more efficient than this overload. */
+        @note The overload taking type ID is more efficient than this overload. */
     Entity::ComponentVector Components(const QString &typeName, const QString &name = "") const;
 
     /// Performs a regular expression matching through the entities, and returns a list of the matched entities.
@@ -455,18 +465,14 @@ private:
     /** @param name Name of the scene.
         @param fw Parent framework.
         @param viewEnabled Whether the scene is view enabled.
-        @param authority Whether the scene has authority ie. a singleuser or server scene, false for network client scenes */
+        @param authority Whether the scene has authority i.e. a single user or server scene, false for network client scenes */
     Scene(const QString &name, Framework *fw, bool viewEnabled, bool authority);
 
     /// Container for an ongoing attribute interpolation
     struct AttributeInterpolation
     {
-        AttributeInterpolation() : dest(0), start(0), end(0), time(0.0f), length(0.0f) {}
-        ///\todo The raw IAttribute pointers are unsafe. Access to them must be guarded by first checking if the component weak pointer has not expired.
-        IAttribute* dest;
-        IAttribute* start;
-        IAttribute* end;
-        ComponentWeakPtr comp;
+        AttributeInterpolation() : time(0.0f), length(0.0f) {}
+        AttributeWeakPtr dest, start, end;
         float time;
         float length;
     };
