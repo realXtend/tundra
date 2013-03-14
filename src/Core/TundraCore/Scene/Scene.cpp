@@ -1370,7 +1370,7 @@ void Scene::UpdateAttributeInterpolations(float frametime)
         bool finished = false;
         
         // Check that the component still exists i.e. it's safe to access the attribute
-        if (interp.start.owner.expired())
+        if (!interp.start.owner.expired())
         {
             // Allow the interpolation to persist for 2x time, though we are no longer setting the value
             // This is for the continuous/discontinuous update detection in StartAttributeInterpolation()
