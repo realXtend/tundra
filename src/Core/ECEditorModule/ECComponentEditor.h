@@ -54,6 +54,9 @@ public slots:
     /// This ensures that newly createated attribute eidtor will get displayed on the ECBrowser.
     void OnEditorChanged(const QString &name);
 
+signals:
+    void AttributeAboutToBeEdited(IAttribute * attr);
+
 private:
     /// Factory method for creating attribute editors.
     static ECAttributeEditorBase *CreateAttributeEditor(QtAbstractPropertyBrowser *browser, ECComponentEditor *editor,

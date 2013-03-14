@@ -17,10 +17,10 @@ void ECAttributeEditor<T>::SetValue(const ComponentPtr &comp, const T &value)
     if(attr)
     {
         listenEditorChangedSignal_ = false;
+        emit AttributeAboutToBeEdited(attr);
         attr->Set(value, AttributeChange::Default);
         listenEditorChangedSignal_ = true;
     }
-
 }
 
 template<typename T>
