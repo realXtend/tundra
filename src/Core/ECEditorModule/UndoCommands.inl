@@ -1,10 +1,8 @@
 #pragma once
 
-#ifdef __APPLE__
 #include "IAttribute.h"
 #include "IComponent.h"
 #include "Entity.h"
-#endif
 
 template <typename T>
 EditAttributeCommand<T>::EditAttributeCommand(IAttribute * attr, const T& value, QUndoCommand *parent) :
