@@ -70,7 +70,7 @@ namespace Mumble
     }
 
 #if defined(Q_OS_WIN)
-    #include <windows.h>
+#include "Win.h" // Tundra include
     quint64 Timer::now() {
 	    static double scale = 0;
 
