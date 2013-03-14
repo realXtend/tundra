@@ -33,3 +33,9 @@ std::vector<shared_ptr<T> > Scene::Components(const QString &name) const
     }
     return ret;
 }
+
+template <typename T>
+EntityList Scene::EntitiesWithComponent(const QString &name) const
+{
+    return EntitiesWithComponent(T::ComponentTypeId, name);
+}
