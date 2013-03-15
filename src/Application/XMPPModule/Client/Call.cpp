@@ -122,8 +122,7 @@ void Call::HandleCallConnected()
 
     framework_->Audio()->StartRecording("", channel->payloadType().clockrate(), true, stereo, buffer_size);
 
-    bool ok = QObject::connect(channel, SIGNAL(readyRead()), this, SLOT(HandleInboundVoice()));
-    Q_ASSERT(ok);
+    connect(channel, SIGNAL(readyRead()), this, SLOT(HandleInboundVoice()));
 }
 
 void Call::HandleInboundVoice()
@@ -163,7 +162,7 @@ void Call::HandleOutboundVoice()
     QXmppRtpAudioChannel *channel = call_->audioChannel();
     QByteArray buffer;
 
-    int buffer_size = (channel->payloadType().clockrate() * channel->payloadType().channels() * (16 / 8) * 160) / 1000;
+    uint buffer_size = (channel->payloadType().clockrate() * channel->payloadType().channels() * (16 / 8) * 160) / 1000;
 
     while (framework_->Audio()->GetRecordedSoundSize() > buffer_size)
     {

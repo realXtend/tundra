@@ -32,7 +32,6 @@ SceneWidgetComponents::SceneWidgetComponents() :
     IModule("SceneWidgetComponents"),
     networkManager_(0)
 {
-    Reset();
 }
 
 SceneWidgetComponents::~SceneWidgetComponents()

@@ -19,13 +19,13 @@ static void ReadBytes(u8* dest, const u8* src, uint& index, unsigned int numByte
     index += numBytes;
 }
 
-/// @todo Dead code, evalue if this function is needed
-static u8 ReadU8(const u8* src, uint& index)
+/// @note The following function was dead code. Bring back if needed.
+/*static u8 ReadU8(const u8* src, uint& index)
 {
     u8 ret = src[index];
     index += sizeof(u8);
     return ret;
-}
+}*/
 
 static u16 ReadU16(const u8* src, uint& index)
 {

@@ -56,6 +56,3 @@ IF %GENERATOR%==%GENERATOR_VS2008% (
 )
 
 cd %TOOLS%
-
-:: Make sure deps folder exists.
-IF NOT EXIST "%DEPS%". mkdir "%DEPS%"

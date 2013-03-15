@@ -25,32 +25,47 @@
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4245)
-#endif
+#endif // _MSC_VER
 #include <boost/date_time/local_time/local_time.hpp>
 #ifdef _MSC_VER
 #pragma warning(pop)
-#endif
-#endif // TUNDRA_NO_BOOST
+#endif // _MSC_VER
 
-#include "MemoryLeakCheck.h"
+#else // TUNDRA_NO_BOOST
+
+#if defined _MSC_VER
+#ifndef strcasecmp
+#define strcasecmp _stricmp
+#endif
+#endif
 
 static int MonthNameToInt(const char *month)
 {
     if (!month) return 0;
-    if (!_stricmp(month, "Jan") || !_stricmp(month, "Janunary")) return 1;
-    if (!_stricmp(month, "Feb") || !_stricmp(month, "February")) return 2;
-    if (!_stricmp(month, "Mar") || !_stricmp(month, "March")) return 3;
-    if (!_stricmp(month, "Apr") || !_stricmp(month, "April")) return 4;
-    if (!_stricmp(month, "May") || !_stricmp(month, "May")) return 5;
-    if (!_stricmp(month, "Jun") || !_stricmp(month, "June")) return 6;
-    if (!_stricmp(month, "Jul") || !_stricmp(month, "July")) return 7;
-    if (!_stricmp(month, "Aug") || !_stricmp(month, "August")) return 8;
-    if (!_stricmp(month, "Sep") || !_stricmp(month, "September")) return 9;
-    if (!_stricmp(month, "Oct") || !_stricmp(month, "October")) return 10;
-    if (!_stricmp(month, "Nov") || !_stricmp(month, "November")) return 11;
-    if (!_stricmp(month, "Dec") || !_stricmp(month, "December")) return 12;
+    if (!strcasecmp(month, "Jan") || !strcasecmp(month, "January")) return 1;
+    if (!strcasecmp(month, "Feb") || !strcasecmp(month, "February")) return 2;
+    if (!strcasecmp(month, "Mar") || !strcasecmp(month, "March")) return 3;
+    if (!strcasecmp(month, "Apr") || !strcasecmp(month, "April")) return 4;
+    if (!strcasecmp(month, "May") || !strcasecmp(month, "May")) return 5;
+    if (!strcasecmp(month, "Jun") || !strcasecmp(month, "June")) return 6;
+    if (!strcasecmp(month, "Jul") || !strcasecmp(month, "July")) return 7;
+    if (!strcasecmp(month, "Aug") || !strcasecmp(month, "August")) return 8;
+    if (!strcasecmp(month, "Sep") || !strcasecmp(month, "September")) return 9;
+    if (!strcasecmp(month, "Oct") || !strcasecmp(month, "October")) return 10;
+    if (!strcasecmp(month, "Nov") || !strcasecmp(month, "November")) return 11;
+    if (!strcasecmp(month, "Dec") || !strcasecmp(month, "December")) return 12;
     return 0;
 }
+
+#if defined _MSC_VER
+#ifdef strcasecmp
+#undef strcasecmp
+#endif
+#endif
+
+#endif // TUNDRA_NO_BOOST
+
+#include "MemoryLeakCheck.h"
 
 HttpAssetProvider::HttpAssetProvider(Framework *framework_) :
     framework(framework_),

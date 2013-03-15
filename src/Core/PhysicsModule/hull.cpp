@@ -1861,7 +1861,7 @@ ConvexH *ConvexHCrop(ConvexH &convex,const Plane &slice)
 		else {
 			assert(vertflag[i].planetest == OVER);
 			vertflag[i].overmap  = vertcountover++;
-			vertflag[i].undermap = -1; // for debugging purposes
+			vertflag[i].undermap = /*-1*/UCHAR_MAX; // for debugging purposes
 		}
 	}
 	int vertcountunderold = vertcountunder; // for debugging only

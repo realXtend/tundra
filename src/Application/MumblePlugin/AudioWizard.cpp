@@ -484,7 +484,7 @@ namespace MumbleAudio
     {
     }
     
-    void AudioLevelWidget::closeEvent(QCloseEvent *e)
+    void AudioLevelWidget::closeEvent(QCloseEvent * /*e*/)
     {
         state = Completed;
         if (tickTimer_.isActive())

@@ -10,6 +10,7 @@
 #include "UniqueIdGenerator.h"
 #include "Math/float3.h"
 #include "SceneDesc.h"
+#include "Entity.h"
 
 #include <QObject>
 #include <QVariant>
@@ -73,13 +74,7 @@ public:
 
     /// Return a subsystem world (OgreWorld, PhysicsWorld)
     template <class T>
-    shared_ptr<T> GetWorld() const
-    {
-        QVariant pr = this->property(T::PropertyName());
-        QObject *qo = pr.value<QObject*>();
-        T* rawPtr = checked_static_cast<T*>(qo);
-        return rawPtr ? rawPtr->shared_from_this() : shared_ptr<T>();
-    }
+    shared_ptr<T> GetWorld() const;
 
     /// Forcibly changes id of an existing entity. If there already is an entity with the new id, it will be purged
     /** @note Called by scenesync. This will not trigger any signals
@@ -149,38 +144,38 @@ public:
     /// Emits notification of an attribute changing. Called by IComponent.
     /** @param comp Component pointer
         @param attribute Attribute pointer
-        @param change Change signalling mode */
+        @param change Change signaling mode */
     void EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Emits notification of an attribute having been created. Called by IComponent's with dynamic structure
     /** @param comp Component pointer
         @param attribute Attribute pointer
-        @param change Change signalling mode */
+        @param change Change signaling mode */
     void EmitAttributeAdded(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Emits notification of an attribute about to be deleted. Called by IComponent's with dynamic structure
     /** @param comp Component pointer
         @param attribute Attribute pointer
-        @param change Change signalling mode */
+        @param change Change signaling mode */
      void EmitAttributeRemoved(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
     /// Emits a notification of a component being added to entity. Called by the entity
     /** @param entity Entity pointer
         @param comp Component pointer
-        @param change Change signalling mode */
+        @param change Change signaling mode */
     void EmitComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
 
     /// Emits a notification of a component being removed from entity. Called by the entity
     /** @param entity Entity pointer
         @param comp Component pointer
-        @param change Change signalling mode
+        @param change Change signaling mode
         @note This is emitted before just before the component is removed. */
     void EmitComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change);
 
     /// Emits a notification of an entity being removed.
     /** @note the entity pointer will be invalid shortly after!
         @param entity Entity pointer
-        @param change Change signalling mode */
+        @param change Change signaling mode */
     void EmitEntityRemoved(Entity* entity, AttributeChange::Type change);
 
     /// Emits a notification of an entity action being triggered.
@@ -195,6 +190,16 @@ public:
 
     /// Emits a notification of a component creation acked by the server, and the component ID changing as a result. Called by SyncManager
     void EmitComponentAcked(IComponent* component, component_id_t oldId);
+
+    /// Returns all components of type T (and additionally with specific name) in the scene.
+    template <typename T>
+    std::vector<shared_ptr<T> > Components(const QString &name = "") const;
+
+    /// Returns list of entities with a specific component present.
+    /** @param name Name of the component, optional.
+        @note O(n) */
+    template <typename T>
+    EntityList EntitiesWithComponent(const QString &name = "") const;
 
 public slots:
     /// Creates new entity that contains the specified components.
@@ -250,7 +255,7 @@ public slots:
         @note Returns a shared pointer, but it is preferable to use a weak pointer, EntityWeakPtr,
               to avoid dangling references that prevent entities from being properly destroyed.
         @note @note O(n)
-        @sa EntityByName */
+        @sa EntityById */
     EntityPtr EntityByName(const QString &name) const;
 
     /// Returns whether name is unique within the scene, ie. is only encountered once, or not at all.
@@ -274,25 +279,40 @@ public slots:
     void RemoveAllEntities(bool signal = true, AttributeChange::Type change = AttributeChange::Default);
 
     /// Gets and allocates the next free entity id.
+    /** @sa NextFreeIdLocal */
     entity_id_t NextFreeId();
 
     /// Gets and allocates the next free entity id.
+    /** @sa NextFreeId */
     entity_id_t NextFreeIdLocal();
 
     /// Returns list of entities with a specific component present.
-    /** @param typeName Type name of the component
+    /** @param typeId Type ID of the component
         @param name Name of the component, optional.
         @note O(n) */
+    EntityList EntitiesWithComponent(u32 typeId, const QString &name = "") const;
+    /// @overload
+    /** @param typeName typeName Type name of the component.
+        @note The overload taking type ID is more efficient than this overload. */
     EntityList EntitiesWithComponent(const QString &typeName, const QString &name = "") const;
 
-    /// Performs a regular expression matching through the entities, and returns a list of the matched entities
-    /** @param pattern Regular expression to be matched
-        @note Wildcards can be escaped with '\' character*/
-    EntityList FindEntities(const QRegExp &pattern) const;
-    EntityList FindEntities(const QString &pattern) const; /**< @overload @param pattern String pattern with wildcards*/
+    /// Returns all components of specific type (and additionally with specific name) in the scene.
+    /*  @param typeId Component type ID.
+        @param name Arbitrary name of the component (optional). */
+    Entity::ComponentVector Components(u32 typeId, const QString &name = "") const;
+    /// overload
+    /** @param typeName Component type name.
+        @note The overload taking type ID is more efficient than this overload. */
+    Entity::ComponentVector Components(const QString &typeName, const QString &name = "") const;
 
-    /// Performs a search through the entities, and returns a list of all the entities that contain 'substring' in their names
-    /** @param substring String to be searched*/
+    /// Performs a regular expression matching through the entities, and returns a list of the matched entities.
+    /** @param pattern Regular expression to be matched.
+        @note Wildcards can be escaped with '\' character. */
+    EntityList FindEntities(const QRegExp &pattern) const;
+    EntityList FindEntities(const QString &pattern) const; /**< @overload @param pattern String pattern with wildcards. */
+
+    /// Performs a search through the entities, and returns a list of all the entities that contain 'substring' in their names.
+    /** @param substring String to be searched. */
     EntityList FindEntitiesContaining(const QString &substring) const;
 
     /// Loads the scene from XML.
@@ -333,7 +353,7 @@ public slots:
         @param saveTemporary Are temporary entities wanted to be included.
         @param saveLocal Are local entities wanted to be included.
         @return true if successful */
-    bool SaveSceneBinary(const QString& filename, bool saveTemporary, bool saveLocal);
+    bool SaveSceneBinary(const QString& filename, bool saveTemporary, bool saveLocal) const;
 
     /// Creates scene content from XML.
     /** @param xml XML document as string.
@@ -362,9 +382,9 @@ public slots:
     bool AllowModifyEntity(UserConnection *user, Entity *entity);
 
     /// Emits a notification of an entity having been created
-    /** Creates are also automatically signalled at the end of frame, so you do not necessarily need to call this.
+    /** Creates are also automatically signaled at the end of frame, so you do not necessarily need to call this.
         @param entity Entity pointer
-        @param change Change signalling mode */
+        @param change Change signaling mode */
     void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
 
     // DEPRECATED function signatures
@@ -439,25 +459,20 @@ private slots:
     void OnUpdated(float frameTime);
 
 private:
-    Q_DISABLE_COPY(Scene);
     friend class ::SceneAPI;
     
     /// Constructor.
     /** @param name Name of the scene.
         @param fw Parent framework.
         @param viewEnabled Whether the scene is view enabled.
-        @param authority Whether the scene has authority ie. a singleuser or server scene, false for network client scenes */
+        @param authority Whether the scene has authority i.e. a single user or server scene, false for network client scenes */
     Scene(const QString &name, Framework *fw, bool viewEnabled, bool authority);
 
     /// Container for an ongoing attribute interpolation
     struct AttributeInterpolation
     {
-        AttributeInterpolation() : dest(0), start(0), end(0), time(0.0f), length(0.0f) {}
-        ///\todo The raw IAttribute pointers are unsafe. Access to them must be guarded by first checking if the component weak pointer has not expired.
-        IAttribute* dest;
-        IAttribute* start;
-        IAttribute* end;
-        ComponentWeakPtr comp;
+        AttributeInterpolation() : time(0.0f), length(0.0f) {}
+        AttributeWeakPtr dest, start, end;
         float time;
         float length;
     };
@@ -472,3 +487,5 @@ private:
     std::vector<AttributeInterpolation> interpolations_; ///< Running attribute interpolations.
     std::vector<std::pair<EntityWeakPtr, AttributeChange::Type> > entitiesCreatedThisFrame_; ///< Entities to signal for creation at frame end.
 };
+
+#include "Scene.inl"

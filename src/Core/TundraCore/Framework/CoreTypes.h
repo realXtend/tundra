@@ -102,9 +102,9 @@ typedef unsigned int component_id_t;
     The namespace from which C++ TR1 functionalities are used (boost, std::tr1 or std). */
 #ifndef TUNDRA_NO_BOOST
 #define CORETYPES_NAMESPACE boost
-#elif defined(_MSC_VER) && (_MSC_VER == 1500) /**< @todo Find out which GCC version has the TR1 features Tundra uses. */
+#elif defined(_MSC_VER) && (_MSC_VER == 1500) || (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 2)
 #define CORETYPES_NAMESPACE std::tr1
-#elif defined(_MSC_VER) && (_MSC_VER >= 1600) /**< @todo Find out which GCC version has TR1 functionality moved to std namespace. */
+#elif defined(_MSC_VER) && (_MSC_VER >= 1600) || (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 8)
 #define CORETYPES_NAMESPACE std
 #endif
 
@@ -127,7 +127,7 @@ using CORETYPES_NAMESPACE::wsmatch;
     If make_shared is not available, the shared_ptr is constructed using the old-fashioned way.
     @todo Although make_shared is a nice little optimization, consider if this macro workaround
     is worth the trouble and worth keeping. */
-#if !defined(TUNDRA_NO_BOOST) || (defined(_MSC_VER) && (_MSC_VER >= 1600)) /**< @todo Find out which GCC version has make_shared. */
+#if !defined(TUNDRA_NO_BOOST) || (defined(_MSC_VER) && (_MSC_VER >= 1600)) || (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 8)
 #define MAKE_SHARED(type, ...) CORETYPES_NAMESPACE::make_shared<type>(__VA_ARGS__)
 #else
 #define MAKE_SHARED(type, ...) shared_ptr<type>(new type(__VA_ARGS__))

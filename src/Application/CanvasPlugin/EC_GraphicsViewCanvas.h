@@ -27,11 +27,9 @@ class RedirectedPaintWidget;
     <td>
     <h2>GraphicsViewCanvas</h2>
     Makes possible to to embed arbitrary Qt UI elements into a 3D model.
-    The mouse input to the 3D object is passed to the actual UI element.
+    The mouse and keyboard input to the 3D object is passed to the actual UI element.
 
     Registered by CanvasPlugin.
-
-    @todo Implement keyboard input.
 
     <b>Attributes</b>:
     <ul>
@@ -99,6 +97,7 @@ private slots:
 private slots:
     void OnGraphicsSceneChanged(const QList<QRectF> &);
     void OnMouseEventReceived(MouseEvent *e);
+    void OnKeyEventReceived(KeyEvent *e);
     void OnDragEnterEvent(QDragEnterEvent *e);
     void OnDragLeaveEvent(QDragLeaveEvent *e);
     void OnDragMoveEvent(QDragMoveEvent *e);
@@ -109,6 +108,7 @@ private slots:
 private:
     void AttributesChanged();
     void SendMouseEvent(QEvent::Type type, const QPointF &point, MouseEvent *e);
+    void SendKeyEvent(QEvent::Type type, KeyEvent *e);
     void SendMouseScrollEvent(MouseEvent *e, const QPointF &ptOnScene);
     Ogre::MaterialPtr OgreMaterial() const;
 

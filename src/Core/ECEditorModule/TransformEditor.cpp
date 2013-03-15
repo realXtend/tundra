@@ -70,7 +70,7 @@ void TransformEditor::AppendSelection(const QList<EntityPtr> &entities)
         {
             Entity *parentPlaceableEntity = p->ParentPlaceableEntity();
             EntityPtr parent = (parentPlaceableEntity ? parentPlaceableEntity ->shared_from_this() : EntityPtr());
-            targets.append(AttributeWeakPtr(p, p->GetAttribute(p->transform.Name()), parent));
+            targets.append(TransformAttributeWeakPtr(p, p->GetAttribute(p->transform.Name()), parent));
         }
     }
 }
@@ -89,7 +89,7 @@ void TransformEditor::RemoveFromSelection(const QList<EntityPtr> &entities)
         {
             Entity *parentPlaceableEntity = p->ParentPlaceableEntity();
             EntityPtr parent = (parentPlaceableEntity ? parentPlaceableEntity ->shared_from_this() : EntityPtr());
-            targets.append(AttributeWeakPtr(p, p->GetAttribute(p->transform.Name()), parent));
+            targets.append(TransformAttributeWeakPtr(p, p->GetAttribute(p->transform.Name()), parent));
         }
     }
 }
@@ -143,7 +143,7 @@ void TransformEditor::FocusGizmoPivotToAabbCenter()
     Quat pivotRot = Quat::identity;
     bool useLocalAxisRotation = localAxes;
     
-    foreach(const AttributeWeakPtr &attr, targets)
+    foreach(const TransformAttributeWeakPtr &attr, targets)
     {
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
@@ -208,7 +208,7 @@ float3 TransformEditor::GizmoPos() const
 void TransformEditor::TranslateTargets(const float3 &offset)
 {
     PROFILE(TransformEditor_TranslateTargets);
-    foreach(const AttributeWeakPtr &attr, targets)
+    foreach(const TransformAttributeWeakPtr &attr, targets)
     {
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
@@ -238,7 +238,7 @@ void TransformEditor::RotateTargets(const Quat &delta)
     float3 gizmoPos = GizmoPos();
     float3x4 rotation = float3x4::Translate(gizmoPos) * float3x4(delta) * float3x4::Translate(-gizmoPos);
     
-    foreach(const AttributeWeakPtr &attr, targets)
+    foreach(const TransformAttributeWeakPtr &attr, targets)
     {
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
@@ -266,7 +266,7 @@ void TransformEditor::RotateTargets(const Quat &delta)
 void TransformEditor::ScaleTargets(const float3 &offset)
 {
     PROFILE(TransformEditor_ScaleTargets);
-    foreach(const AttributeWeakPtr &attr, targets)
+    foreach(const TransformAttributeWeakPtr &attr, targets)
     {
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
@@ -284,13 +284,13 @@ void TransformEditor::ScaleTargets(const float3 &offset)
     FocusGizmoPivotToAabbCenter();
 }
 
-bool TransformEditor::TargetsContainAlsoParent(const AttributeWeakPtr &attr) const
+bool TransformEditor::TargetsContainAlsoParent(const TransformAttributeWeakPtr &attr) const
 {
     Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
     if (!parentPlaceableEntity)
         return false; // Not parented, ignore.
 
-    foreach(const AttributeWeakPtr &target, targets)
+    foreach(const TransformAttributeWeakPtr &target, targets)
         if (target.Get() && target.Get() != attr.Get() && target.Get()->Owner()->ParentEntity() == parentPlaceableEntity)
             return true;
 

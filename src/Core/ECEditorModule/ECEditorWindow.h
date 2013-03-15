@@ -21,14 +21,6 @@ class QListWidget;
 class QTreeWidget;
 class QPoint;
 
-/// @cond PRIVATE
-struct EntityComponentSelection
-{
-    EntityPtr entity;
-    std::vector<ComponentPtr> components;
-};
-/// @endcond
-
 class Framework;
 class ECBrowser;
 class TransformEditor;
@@ -36,7 +28,7 @@ class TransformEditor;
 /// List widget item representing entity.
 /** Holds a weak pointer to the represented entity.
     @ingroup ECEditorModuleClient. */
-class EntityListWidgetItem : public QListWidgetItem
+class ECEDITOR_MODULE_API EntityListWidgetItem : public QListWidgetItem
 {
 public:
     EntityListWidgetItem(const QString &name, QListWidget *list, const EntityPtr &e) :
@@ -232,6 +224,12 @@ private slots:
     void AddComponentDialogFinished(int result);
 
 private:
+    struct EntityComponentSelection
+    {
+        EntityPtr entity;
+        std::vector<ComponentPtr> components;
+    };
+
     /// Bold all given entities from the entity_list_ QListWidget object.
     /** @note Will unbold previous selection. */
     void BoldEntityListItems(const QSet<entity_id_t> &bolded_entities);

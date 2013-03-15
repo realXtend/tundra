@@ -238,7 +238,7 @@ namespace XMPP
         emit RosterChanged();
     }
 
-    void Client::HandleMessageReceived(const QXmppMessage &message)
+    void Client::HandleMessageReceived(const QXmppMessage & /*message*/)
     {
     }
 
