@@ -62,6 +62,10 @@ public:
     /// If entity has components that are still alive, they become free-floating.
     ~Entity();
 
+    /// Creates and returns a component with certain type and name (optional), already cast to the correct type.
+    template <typename T>
+    shared_ptr<T> CreateComponent(const QString &name = "", AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
+
     /// Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
     /** If there are several components with the specified type, returns the first component found (arbitrary). */
     template <class T>
@@ -132,13 +136,14 @@ public:
 
     /// Returns attribute interface pointer to attribute with specific name.
     /** @param name Name of the attribute.
-        @return IAttribute pointer to the attribute.
-        @note Always remember to check for null pointer. */
+        @note Always remember to check for null pointer.
+        @todo Remove, attributes should be accessed via components. */
     IAttribute *GetAttribute(const QString &name) const;
 
     /// Returns list of attributes with specific name.
     /** @param name Name of the attribute.
-        @return List of attribute interface pointers, or empty list if no attributes are found. */
+        @return List of attribute interface pointers, or empty list if no attributes are found.
+        @todo Remove, attributes should be accessed via components. */
     AttributeVector GetAttributes(const QString &name) const;
 
     /// Returns actions map for introspection/reflection.
