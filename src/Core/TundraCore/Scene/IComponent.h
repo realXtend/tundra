@@ -94,6 +94,8 @@ class TUNDRACORE_API IComponent : public QObject, public enable_shared_from_this
 
 public:
     /// Constructor.
+    /** @note scene - and consecutively framework - can be null if component is created unparented
+        intentionally, so always remember to perform null checks from them even in the ctor. */
     explicit IComponent(Scene* scene);
 
     /// Deletes potential dynamic attributes.
