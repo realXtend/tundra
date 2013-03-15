@@ -10,11 +10,13 @@
 #include "Server.h"
 #include "TundraMessages.h"
 #include "MsgEntityAction.h"
+#include "OgreWorld.h"
 
 #include "Scene/Scene.h"
 #include "Entity.h"
 #include "CoreStringUtils.h"
 #include "EC_DynamicComponent.h"
+#include "EC_Camera.h"
 #include "AssetAPI.h"
 #include "IAssetStorage.h"
 #include "AttributeMetadata.h"
@@ -83,6 +85,7 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     owner_(owner),
     framework_(owner->GetFramework()),
     updatePeriod_(1.0f / 20.0f),
+    interestmanager_(0),
     updateAcc_(0.0),
     maxLinExtrapTime_(3.0f),
     noClientPhysicsHandoff_(false)
@@ -90,15 +93,160 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
     connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), 
         this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::packet_id_t, kNet::message_id_t, const char*, size_t)));
-    
+
     if (framework_->HasCommandLineParameter("--noclientphysics"))
         noClientPhysicsHandoff_ = true;
+
+    /*Parse through possible Interest Management parameterṣ*/
+    if (framework_->CommandLineParameters("--im").size() == 1)
+    {
+        bool ok = false;
+        QStringList params = framework_->CommandLineParameters("--im").first().split(';');
+
+        if(params.first() == "EA3" && params.size() == 5)
+        {
+            int critical_radius =  params.at(1).toUInt(&ok);
+            int relevance_radius = params.at(2).toUInt(&ok);
+            int raycast_interval = params.at(3).toUInt(&ok);
+            int relevance_interval = params.at(4).toUInt(&ok);
+
+            if(ok)
+            {
+                if(relevance_radius <= critical_radius) relevance_radius = critical_radius + 1; //Check that relevance_radius is not lower than critical area
+                UpdateInterestManagerSettings(true, true, true, true, critical_radius, relevance_radius, relevance_interval, raycast_interval);
+            }
+        }
+        else if(params.first() == "A3" && params.size() == 4)
+        {
+            int critical_radius = params.at(1).toUInt(&ok);
+            int relevance_radius = params.at(2).toUInt(&ok);
+            int relevance_interval = params.at(3).toUInt(&ok);
+
+            if(ok)
+            {
+                if(relevance_radius <= critical_radius) relevance_radius = critical_radius + 1;
+                UpdateInterestManagerSettings(true, true, false, true, critical_radius, relevance_radius, relevance_interval, 0);
+            }
+        }
+        else if(params.first() == "Euclidean" && params.size() == 2)
+        {
+            int critical_radius = params.at(1).toUInt(&ok);
+
+            if(ok)
+                UpdateInterestManagerSettings(true, true, false, false, critical_radius, 0, 0, 0);
+        }
+
+        if(!ok)
+            LogError("TundraLogicModule: Invalid parameters for --im.");
+
+    }
+    else
+        LogError("TundraLogicModule: --im commandline switch given but no parameters supplied.");
+
     
     GetClientExtrapolationTime();
 }
 
 SyncManager::~SyncManager()
 {
+}
+
+void SyncManager::SendCameraUpdateRequest(UserConnectionPtr conn, bool enabled)
+{
+    const int maxMessageSizeBytes = 1400;
+
+    kNet::NetworkMessage *msg = conn->connection->StartNewMessage(cCameraOrientationRequest, maxMessageSizeBytes);
+
+    msg->contentID = 0;
+    msg->inOrder = true;
+    msg->reliable = true;
+
+    kNet::DataSerializer ds(msg->data, maxMessageSizeBytes);
+
+    ds.Add<u8>(enabled);
+
+    QueueMessage(conn->connection, cCameraOrientationRequest, true, true, ds);
+}
+
+void SyncManager::UpdateInterestManagerSettings(bool enabled, bool eucl, bool ray, bool rel, int critrange, int relrange, int updateint, int raycastint)
+{
+    if(framework_->HasCommandLineParameter("--server"))
+    {
+        // Loop through all connections and send the CameraOrientationRequest messages to the clients.
+
+        KristalliProtocolModule* kristalli = owner_->GetKristalliModule();
+
+        if(kristalli)
+        {
+            UserConnectionList& users = kristalli->GetUserConnections();
+
+            for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+                if ((*i)->syncState)
+                {
+                    SendCameraUpdateRequest((*i), enabled);
+                    (*i)->syncState->visibleEntities.clear();
+                    (*i)->syncState->relevanceFactors.clear();
+                    (*i)->syncState->lastUpdatedEntitys_.clear();
+                    (*i)->syncState->lastRaycastedEntitys_.clear();
+                }
+        }
+
+        InterestManager *IM = 0;
+        MessageFilter *filter = 0;
+
+        if(enabled == false)    //If IM is not enabled, delete the IM
+        {
+            SetInterestManager(0);
+            return;
+        }
+
+        IM = GetInterestManager();
+
+        if(eucl && ray && rel)          //In other words the EA3 algorithm
+        {
+            if(framework_->IsHeadless())    //If running in headless mode, do not enable EA3. Instead, use A3. Raycasting cannot be done in headless mode at the moment.
+            {
+                LogError("[InterestManager] EA3 algorithm cannot be used in headless mode. Fallbacking to A3 algorithm.");
+                filter = new A3Filter(IM, critrange, relrange, updateint, true);
+            }
+            else
+                filter = new EA3Filter(IM, critrange, relrange, raycastint, updateint, true);
+        }
+        else if(eucl && rel && !ray)    //Combination that the A3 uses
+            filter = new A3Filter(IM, critrange, relrange, updateint, true);
+
+        else                            //As a last resort enable Euclidean Distance Filter
+            filter = new EuclideanDistanceFilter(IM, critrange, true);
+
+        IM->AssignFilter(filter);
+
+        SetInterestManager(IM);
+
+        LogInfo("[InterestManager] Settings Updated. Using " + filter->ToString() + " to filter out unnecessary network messages.");
+    }
+}
+
+InterestManager* SyncManager::GetInterestManager()
+{
+    if(!interestmanager_)
+        interestmanager_ = InterestManager::getInstance();
+
+    return interestmanager_;
+}
+
+void SyncManager::SetInterestManager(InterestManager *im)
+{
+    if(!im && !interestmanager_)
+        return;
+
+    else if(!im && interestmanager_)
+    {
+        delete interestmanager_;
+        interestmanager_ = 0;
+    }
+
+    else
+        interestmanager_ = im;
 }
 
 void SyncManager::SetUpdatePeriod(float period)
@@ -187,6 +335,9 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
     {
         switch(messageId)
         {
+        case cCameraOrientationUpdate:
+            HandleCameraOrientation(source, data, numBytes);
+            break;
         case cCreateEntityMessage:
             HandleCreateEntity(source, data, numBytes);
             break;
@@ -252,6 +403,9 @@ void SyncManager::NewUserConnected(const UserConnectionPtr &user)
     user->syncState = MAKE_SHARED(SceneSyncState, user->ConnectionId(), owner_->IsServer());
     user->syncState->SetParentScene(scene_);
 
+    if(interestmanager_) //If the server is running InterestManager, inform the connected user that the server wants camera updates
+        SendCameraUpdateRequest(user, true);
+
     if (owner_->IsServer())
         emit SceneStateCreated(user.get(), user->syncState.get());
 
@@ -299,8 +453,20 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         // clients on the next network sync iteration.
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        {
             if ((*i)->syncState)
-                (*i)->syncState->MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
+            {
+                /// Check here if the attribute should be updated to which client?
+                /// @remarks InterestManager functionality
+                /// \bug The attribute should be marked dirty, but sending should be deferred until entity is relevant
+                /// With this logic, the dirty attributes from the non-relevant period will simply be forgotten
+                if(interestmanager_ && !interestmanager_->CheckRelevance((*i), entity, scene_, framework_->IsHeadless()))
+                    continue;
+
+                else    //If IM is not available, accept the update
+                    (*i)->syncState->MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
+            }
+        }
     }
     else
     {
@@ -1475,6 +1641,42 @@ bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messa
     return true;
 }
 
+void SyncManager::HandleCameraOrientation(kNet::MessageConnection* source, const char* data, size_t numBytes)
+{
+    assert(source);
+
+    ScenePtr scene = scene_.lock();
+
+    if (!scene)
+        return;
+
+    kNet::DataDeserializer dd(data, numBytes);
+    UserConnectionPtr user = owner_->GetKristalliModule()->GetUserConnection(source);
+
+    Quat orientation;
+    float3 clientpos;
+
+    //Read the position of the client from the message
+    orientation.x = dd.ReadSignedFixedPoint(11, 8);
+    orientation.y = dd.ReadSignedFixedPoint(11, 8);
+    orientation.z = dd.ReadSignedFixedPoint(11, 8);
+    orientation.w = dd.ReadSignedFixedPoint(11, 8);
+
+    clientpos.x = dd.ReadSignedFixedPoint(11, 8);
+    clientpos.y = dd.ReadSignedFixedPoint(11, 8);
+    clientpos.z = dd.ReadSignedFixedPoint(11, 8);
+
+    if(!user->syncState->locationInitialized) //If this is the first camera update, save it to the initialPosition variable
+    {
+        user->syncState->initialLocation = clientpos;
+        user->syncState->initialOrientation = orientation;
+        user->syncState->locationInitialized = true;
+    }
+
+    user->syncState->clientOrientation = orientation;
+    user->syncState->clientLocation = clientpos;
+}
+
 void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char* data, size_t numBytes)
 {
     assert(source);
@@ -1584,22 +1786,37 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
             unsigned numStaticAttrs = comp->NumStaticAttributes();
             const AttributeVector& attrs = comp->Attributes();
             for (uint i = 0; i < numStaticAttrs; ++i)
-                attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
-            
-            // Create any dynamic attributes
-            while (attrDs.BitsLeft() > 2 * 8)
             {
-                u8 index = attrDs.Read<u8>();
-                u8 typeId = attrDs.Read<u8>();
-                QString name = QString::fromStdString(attrDs.ReadString());
-                IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
-                if (!newAttr)
+                // Allow component version mismatches (adding more attributes to the end of static attributes list), break if no more data present.
+                // All attributes (including bool) are at least 8 bits.
+                if (attrDs.BitsLeft() >= 8)
+                    attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
+                else
                 {
-                    LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
+                    LogWarning("Not enough static attribute data in component " + comp->TypeName() + " (version mismatch)");
                     break;
                 }
-                newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
             }
+
+            if (comp->SupportsDynamicAttributes())
+            {
+                // Create any dynamic attributes
+                while (attrDs.BitsLeft() > 2 * 8)
+                {
+                    u8 index = attrDs.Read<u8>();
+                    u8 typeId = attrDs.Read<u8>();
+                    QString name = QString::fromStdString(attrDs.ReadString());
+                    IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
+                    if (!newAttr)
+                    {
+                        LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
+                        break;
+                    }
+                    newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
+                }
+            }
+            else if (attrDs.BitsLeft())
+                LogWarning("Extra static attribute data in component " + comp->TypeName() + " (version mismatch)");
         }
     } catch(kNet::NetException &/*e*/)
     {
@@ -1719,22 +1936,37 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
             unsigned numStaticAttrs = comp->NumStaticAttributes();
             const AttributeVector& attrs = comp->Attributes();
             for (uint i = 0; i < numStaticAttrs; ++i)
-                attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
-            
-            // Create any dynamic attributes
-            while (attrDs.BitsLeft() > 2 * 8)
             {
-                u8 index = attrDs.Read<u8>();
-                u8 typeId = attrDs.Read<u8>();
-                QString name = QString::fromStdString(attrDs.ReadString());
-                IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
-                if (!newAttr)
+                // Allow component version mismatches (adding more attributes to the end of static attributes list), break if no more data present.
+                // All attributes (including bool) are at least 8 bits.
+                if (attrDs.BitsLeft() >= 8)
+                    attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
+                else
                 {
-                    LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
+                    LogWarning("Not enough static attribute data in component " + comp->TypeName() + " (version mismatch)");
                     break;
                 }
-                newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
             }
+            
+            if (comp->SupportsDynamicAttributes())
+            {
+                // Create any dynamic attributes
+                while (attrDs.BitsLeft() > 2 * 8)
+                {
+                    u8 index = attrDs.Read<u8>();
+                    u8 typeId = attrDs.Read<u8>();
+                    QString name = QString::fromStdString(attrDs.ReadString());
+                    IAttribute* newAttr = comp->CreateAttribute(index, typeId, name, change);
+                    if (!newAttr)
+                    {
+                        LogWarning("Failed to create dynamic attribute. Skipping rest of the attributes for this component.");
+                        break;
+                    }
+                    newAttr->FromBinary(attrDs, AttributeChange::Disconnected);
+                }
+            }
+            else if (attrDs.BitsLeft())
+                LogWarning("Extra static attribute data in component " + comp->TypeName() + " (version mismatch)");
         }
     } catch(kNet::NetException &/*e*/)
     {
@@ -2112,6 +2344,10 @@ void SyncManager::HandleEditAttributes(kNet::MessageConnection* source, const ch
             // Method 2: bitmask
             for (unsigned i = 0; i < attributes.size(); ++i)
             {
+                // Break if component version inconsistency and no more data
+                if (attrDs.BitsLeft() == 0)
+                    break;
+                
                 int changed = attrDs.Read<kNet::bit>();
                 if (changed)
                 {

@@ -25,6 +25,7 @@ class QDropEvent;
 class SceneStructureWindow;
 class AssetsWindow;
 class KeyBindingsConfigWindow;
+class AssetItemMenuHandler;
 
 class EC_Mesh;
 class ECEditorWindow;
@@ -101,6 +102,7 @@ private:
     QPointer<AssetsWindow> assetsWindow;
     QPointer<KeyBindingsConfigWindow> keyBindingsWindow;
     QPointer<ECEditorWindow> syncedECEditor;
+    QPointer<AssetItemMenuHandler> assetItemMenuHandler;
     shared_ptr<InputContext> inputContext;
 
     SceneMaterialDropData materialDropData;

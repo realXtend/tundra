@@ -21,6 +21,7 @@ class ECEditorWindow;
 class IArgumentType;
 class IAssetTransfer;
 class EntityItem;
+class UndoManager;
 
 struct InvokeItem;
 struct SceneTreeWidgetSelection;
@@ -67,6 +68,8 @@ public:
 
     /// Do we show components in the tree widget or not.
     bool showComponents;
+
+    UndoManager * GetUndoManager() const;
 
 protected:
     /// QAbstractItemView override.
@@ -120,6 +123,7 @@ private:
     QPointer<QFileDialog> fileDialog; ///< Keeps track of the latest opened file save/open dialog.
     QList<InvokeItem> invokeHistory; ///< Keeps track of recently invoked entity actions and functions.
     QPointer<Menu> contextMenu; ///< Context menu.
+    UndoManager * undoManager_;
 
     /// Used when saving multiple assets, can be used to retrieve a matching filename where to save asset data from asset transfer.
     QMap<QString, QString> fileSaves;

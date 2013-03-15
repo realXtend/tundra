@@ -112,6 +112,4 @@ Running Tundra
 
 - Tundra on Android will currently use the fixed directory Download/Tundra on the Android device's internal memory (/sdcard/Download/Tundra) as its "Bin" folder. Copy the contents of your Tundra Bin directory there as applicable.
 
-- Qt's .so files (in the Necessitas build's 'lib' directory, as well as in 'plugins/platforms/android' directory) and .jar files (in Necessitas build's 'jar' directory) need also to be placed in Download/Tundra.
-
 - If it exists, Tundra will use the file commandline.txt in the Download/Tundra folder for its command line parameters. Use this to configure eg. the scene to load.

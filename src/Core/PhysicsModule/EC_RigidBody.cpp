@@ -56,6 +56,7 @@ EC_RigidBody::EC_RigidBody(Scene* scene) :
     drawDebug(this, "Draw Debug", false),
     collisionLayer(this, "Collision Layer", -1),
     collisionMask(this, "Collision Mask", -1),
+    rollingFriction(this, "Rolling friction", 0.5f),
     body_(0),
     world_(0),
     shape_(0),
@@ -552,6 +553,9 @@ void EC_RigidBody::AttributesChanged()
     
     if (friction.ValueChanged())
         body_->setFriction(friction.Get());
+    
+    if (rollingFriction.ValueChanged())
+        body_->setRollingFriction(rollingFriction.Get());
     
     if (restitution.ValueChanged())
         body_->setRestitution(friction.Get());

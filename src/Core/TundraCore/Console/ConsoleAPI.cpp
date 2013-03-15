@@ -197,12 +197,11 @@ void ConsoleAPI::Print(const QString &message)
     ///\todo Temporary hack which appends line ending in case it's not there (output of console commands in headless mode)
     if (!message.endsWith("\n"))
     {
-        #ifndef ANDROID
-            printf("%s\n", message.toStdString().c_str());
-        #else
-            __android_log_print(ANDROID_LOG_INFO, "Tundra", "%s\n", message.toStdString().c_str());
-        #endif
+#ifndef ANDROID
         printf("%s\n", message.toStdString().c_str());
+#else
+        __android_log_print(ANDROID_LOG_INFO, "Tundra", "%s\n", message.toStdString().c_str());
+#endif
         if (logFileText)
         {
             (*logFileText) << message << "\n";
@@ -217,11 +216,11 @@ void ConsoleAPI::Print(const QString &message)
     }
     else
     {
-        #ifndef ANDROID
-            printf("%s", message.toStdString().c_str());
-        #else
-            __android_log_print(ANDROID_LOG_INFO, "Tundra", "%s", message.toStdString().c_str());
-        #endif
+#ifndef ANDROID
+        printf("%s", message.toStdString().c_str());
+#else
+        __android_log_print(ANDROID_LOG_INFO, "Tundra", "%s", message.toStdString().c_str());
+#endif
         if (logFileText)
         {
             (*logFileText) << message;

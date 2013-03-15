@@ -20,10 +20,13 @@ class QPushButton;
 class QListWidget;
 class QTreeWidget;
 class QPoint;
+class QUndoStack;
+class QToolButton;
 
 class Framework;
 class ECBrowser;
 class TransformEditor;
+class UndoManager;
 
 /// List widget item representing entity.
 /** Holds a weak pointer to the represented entity.
@@ -104,6 +107,8 @@ public:
     /** @note The visibility state is not stored within this class. ECEditorModule is authorative for this state. */
     void SetGizmoVisible(bool show);
 
+    UndoManager * GetUndoManager() { return undoManager_; }
+
 public slots:
     /// Deletes selected entity entries from the list (does not delete the entity itself).
     void DeleteEntitiesFromList();
@@ -160,6 +165,8 @@ public slots:
         @param entity Entity to be highlighted.
         @param highlight Do we want to show highlight or hide it. */
     void HighlightEntity(const EntityPtr &entity, bool highlight);
+
+    void OnAboutToEditAttribute(IAttribute *attr);
 
 signals:
     /// Emitted user wants to edit entity's EC attributes in XML editor.
@@ -223,6 +230,9 @@ private slots:
     /// Called by add component dialog when it's finished.
     void AddComponentDialogFinished(int result);
 
+    void OnUndoChanged(bool canUndo);
+    void OnRedoChanged(bool canRedo);
+
 private:
     struct EntityComponentSelection
     {
@@ -240,4 +250,8 @@ private:
     ECBrowser *ecBrowser;
     bool hasFocus; ///< To track if this editor has a focus.
     TransformEditor *transformEditor;
+
+    QToolButton *undoButton_;
+    QToolButton *redoButton_;
+    UndoManager * undoManager_;
 };

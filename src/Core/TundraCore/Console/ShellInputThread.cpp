@@ -14,7 +14,6 @@ ShellInputThread::ShellInputThread()
 
 ShellInputThread::~ShellInputThread()
 {
-    terminate();
 }
 
 void ShellInputThread::run()
@@ -26,7 +25,6 @@ void ShellInputThread::run()
         if (std::cin.fail())
         {
             std::cout << "ShellInputThread cin failed! Killing thread!" << std::endl;
-            terminate();
             return;
         }
 

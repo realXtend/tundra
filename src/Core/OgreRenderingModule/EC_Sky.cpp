@@ -39,8 +39,7 @@ EC_Sky::EC_Sky(Scene* scene) :
     orientation(this, "Orientation", Quat::identity),
     distance(this, "Distance", 999.0), /**< @todo 5000 is the Ogre's default value, but for some reason value geater than 999 makes the sky box black. */
     drawFirst(this, "Draw first", true),
-    enabled(true)
-//    enabled(this, "Enabled", true)
+    enabled(this, "Enabled", true)
 {
     if (scene)
         ogreWorld = scene->GetWorld<OgreWorld>();
@@ -51,10 +50,9 @@ EC_Sky::EC_Sky(Scene* scene) :
 
 EC_Sky::~EC_Sky()
 {
-    enabled = false;
+    enabled.Set(false, AttributeChange::LocalOnly);
     Update();
-//    enabled.Set(false, AttributeChange::LocalOnly);
-
+    
     while(textureAssets.size() > cSkyBoxTextureCount)
         textureAssets.pop_back();
 }
@@ -100,7 +98,7 @@ void EC_Sky::AttributesChanged()
         }
     }
 
-    if (distance.ValueChanged() || drawFirst.ValueChanged() || orientation.ValueChanged() /*|| enabled.ValueChanged()*/)
+    if (distance.ValueChanged() || drawFirst.ValueChanged() || orientation.ValueChanged() || enabled.ValueChanged())
         Update();
 }
 
@@ -111,12 +109,12 @@ void EC_Sky::Update()
 
     try
     {
-        if (!enabled || (enabled/*.Get()*/ && !currentMaterial.isEmpty())) // If enabled == true, do not allow passing empty material name (material not loaded yet).
-            ogreWorld.lock()->OgreSceneManager()->setSkyBox(enabled/*.Get()*/, currentMaterial.toStdString(), distance.Get(), drawFirst.Get(), orientation.Get());
+        if (!enabled.Get() || (enabled.Get() && !currentMaterial.isEmpty())) // If enabled == true, do not allow passing empty material name (material not loaded yet).
+            ogreWorld.lock()->OgreSceneManager()->setSkyBox(enabled.Get(), currentMaterial.toStdString(), distance.Get(), drawFirst.Get(), orientation.Get());
     }
     catch(const Ogre::Exception &e)
     {
-        LogError("EC_Sky::Update: Could not set sky box " + BoolToString(enabled/*.Get()*/) + ": " + QString(e.what()));
+        LogError("EC_Sky::Update: Could not set sky box " + BoolToString(enabled.Get()) + ": " + QString(e.what()));
     }
 }
 

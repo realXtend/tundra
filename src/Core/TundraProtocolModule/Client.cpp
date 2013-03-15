@@ -12,7 +12,12 @@
 #include "MsgLoginReply.h"
 #include "MsgClientJoined.h"
 #include "MsgClientLeft.h"
+#include "MsgCameraOrientationRequest.h"
 #include "UserConnectedResponseData.h"
+#include "EC_Placeable.h"
+#include "Entity.h"
+#include "Renderer.h"
+#include "OgreRenderingModule.h"
 
 #include "LoggingFunctions.h"
 #include "CoreStringUtils.h"
@@ -35,6 +40,9 @@ Client::Client(TundraLogicModule* owner) :
     framework_(owner->GetFramework()),
     loginstate_(NotConnected),
     reconnect_(false),
+    cameraUpdateTimer(0),
+    sendCameraUpdates_(false),
+    firstCameraUpdateSent_(false),
     client_id_(0)
 {
 }
@@ -161,6 +169,7 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
     owner_->GetKristalliModule()->Connect(address.toStdString().c_str(), port, protocol);
     loginstate_ = ConnectionPending;
     client_id_ = 0;
+    firstCameraUpdateSent_ = false;
 }
 
 void Client::Logout()
@@ -275,6 +284,85 @@ void Client::CheckLogin()
     }
 }
 
+void Client::GetCameraOrientation()
+{
+    // This should not get called if sendCameraUpdates_ = false
+    if(!sendCameraUpdates_)
+        return;
+
+    if(framework_->IsHeadless())
+        return;
+
+    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+
+    if(!renderer)
+        return;
+
+    Entity *parentEntity = renderer->MainCamera();
+
+    if(!parentEntity)
+        return;
+
+    EC_Placeable *camera_placeable = parentEntity->GetComponent<EC_Placeable>().get();
+
+    if(!camera_placeable)
+        return;
+
+    Quat orientation = camera_placeable->WorldOrientation();
+    float3 location = camera_placeable->WorldPosition();
+
+    if(firstCameraUpdateSent_ && orientation == currentcameraorientation_ && location.Equals(currentcameralocation_)) //If the position and orientation of the client has not changed. Do not send anything
+        return;
+
+    const int maxMessageSizeBytes = 1400;
+
+    Ptr(kNet::MessageConnection) connection = GetConnection();
+
+    kNet::NetworkMessage *msg = connection->StartNewMessage(cCameraOrientationUpdate, maxMessageSizeBytes);
+
+    msg->contentID = 0;
+    msg->inOrder = true;
+    msg->reliable = true;
+
+    kNet::DataSerializer ds(msg->data, maxMessageSizeBytes);
+
+    //Serialize the position of the client inside the message. Sends 57 bits.
+    ds.AddSignedFixedPoint(11, 8, orientation.x);
+    ds.AddSignedFixedPoint(11, 8, orientation.y);
+    ds.AddSignedFixedPoint(11, 8, orientation.z);
+    ds.AddSignedFixedPoint(11, 8, orientation.w);
+
+    ds.AddSignedFixedPoint(11, 8, location.x);
+    ds.AddSignedFixedPoint(11, 8, location.y);
+    ds.AddSignedFixedPoint(11, 8, location.z);
+
+    //Update the current location and orientation of the client.
+    currentcameraorientation_ = orientation;
+    currentcameralocation_ = location;
+    
+    if (!firstCameraUpdateSent_)
+    {
+        firstCameraUpdateSent_ = true;
+        // Update faster after the initial delay
+        if (cameraUpdateTimer)
+            cameraUpdateTimer->start(500);
+    }
+
+    // Finally send the message
+    SendCameraOrientation(ds, msg);
+}
+
+void Client::SendCameraOrientation(kNet::DataSerializer ds, kNet::NetworkMessage *msg)
+{
+    Ptr(kNet::MessageConnection) connection = GetConnection();
+
+    if (ds.BytesFilled() > 0)
+        connection->EndAndQueueMessage(msg, ds.BytesFilled());
+
+    else
+        connection->FreeMessage(msg);
+}
+
 kNet::MessageConnection* Client::GetConnection()
 {
     return owner_->GetKristalliModule()->GetMessageConnection();
@@ -311,6 +399,12 @@ void Client::HandleKristalliMessage(MessageConnection* source, packet_id_t packe
     
     switch(messageId)
     {
+    case MsgCameraOrientationRequest::messageID:
+        {
+            MsgCameraOrientationRequest msg(data, numBytes);
+            HandleCameraOrientationRequest(source, msg);
+        }
+        break;
     case MsgLoginReply::messageID:
         {
             MsgLoginReply msg(data, numBytes);
@@ -331,6 +425,29 @@ void Client::HandleKristalliMessage(MessageConnection* source, packet_id_t packe
         break;
     }
     emit NetworkMessageReceived(packetId, messageId, data, numBytes);
+}
+
+void Client:: HandleCameraOrientationRequest(MessageConnection* source, const MsgCameraOrientationRequest& msg)
+{
+    sendCameraUpdates_ = msg.enableCameraUpdates;
+
+    if (sendCameraUpdates_)
+    {
+        if (!cameraUpdateTimer)
+        {
+            cameraUpdateTimer = new QTimer(this);
+            connect(cameraUpdateTimer, SIGNAL(timeout()), this, SLOT(GetCameraOrientation()), Qt::UniqueConnection);
+        }
+        firstCameraUpdateSent_ = false;
+        /// \bug If the initial 2000 ms delay is to ensure that the client avatar has been created before applying IM,
+        /// it is not foolproof. Instead there should be a way to mark entities as always relevant to a specific client
+        cameraUpdateTimer->start(2000);
+    }
+    else
+    {
+        if (cameraUpdateTimer)
+            cameraUpdateTimer->stop();
+    }
 }
 
 void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& msg)

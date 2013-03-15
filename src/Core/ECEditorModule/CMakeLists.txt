@@ -13,7 +13,7 @@ file(GLOB MOC_FILES ECEditorModule.h ECEditorWindow.h ECAttributeEditor.h ECBrow
     FunctionDialog.h TreeWidgetItemExpandMemory.h SceneStructureModule.h SceneStructureWindow.h
     SceneTreeWidget.h AddContentWindow.h AssetsWindow.h AssetTreeWidget.h RequestNewAssetDialog.h
     CloneAssetDialog.h EditorButtonFactory.h TransformEditor.h NewEntityDialog.h AddAttributeDialog.h
-    KeyBindingsConfigWindow.h)
+    KeyBindingsConfigWindow.h UndoCommands.h UndoManager.h EntityIdChangeTracker.h AssetItemMenuHandler.h)
 
 set(SOURCE_FILES ${CPP_FILES} ${H_FILES})
 

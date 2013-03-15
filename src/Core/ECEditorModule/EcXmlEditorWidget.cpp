@@ -10,6 +10,7 @@
 
 #include "EcXmlEditorWidget.h"
 #include "ECEditorModule.h"
+#include "ECEditorWindow.h"
 
 #include "Framework.h"
 #include "SceneAPI.h"
@@ -17,7 +18,8 @@
 #include "IComponent.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
-#include <QDomDocument>
+#include "UndoCommands.h"
+#include "UndoManager.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -138,7 +140,7 @@ void EcXmlEditorWidget::Refresh()
                 temp_doc.appendChild(entity_elem);
         }
     }
-
+    unsavedState_ = temp_doc;
     xmlEdit->setText(temp_doc.toString());
 }
 
@@ -166,6 +168,7 @@ void EcXmlEditorWidget::Save()
             return;
         }
 */
+
     QString text = xmlEdit->toPlainText();
     if (!text.length())
     {
@@ -202,41 +205,20 @@ void EcXmlEditorWidget::Save()
     while(!entity_elem.isNull())
     {
         entity_found = true;
-        entity_id_t id = (entity_id_t)entity_elem.attribute("id").toInt();
-        EntityPtr entity = scene->GetEntity(id);
-        if (entity)
-        {
-            QDomElement comp_elem = entity_elem.firstChildElement("component");
-            while(!comp_elem.isNull())
-            {
-                QString typeName = comp_elem.attribute("type");
-                QString name = comp_elem.attribute("name");
-                ComponentPtr comp = entity->GetComponent(typeName, name);
-                if (comp)
-                    comp->DeserializeFrom(comp_elem, AttributeChange::Default);
-
-                comp_elem = comp_elem.nextSiblingElement("component");
-            }
-        }
-        else
-        {
-            LogWarning("EcXmlEditorWidget::Save: Could not find entity " + QString::number(id) + " in scene!");
-        }
-
         entity_elem = entity_elem.nextSiblingElement("entity");
     }
 
     // Refresh immediately after, so that any extra stuff is stripped out, and illegal parameters are (hopefully) straightened
     if (entity_found)
     {
-        LogInfo("ENTITY FOUND");
+        ECEditorWindow * activeEditor = framework->GetModule<ECEditorModule>()->ActiveEditor();
+        if (activeEditor)
+            activeEditor->GetUndoManager()->Push(new EditXMLCommand(scene, unsavedState_, edited_doc));
         Refresh();
         emit Saved();
     }
     else
         LogWarning("No entity elements in XML data");
-    LogInfo("ENTITY FOUND");
-
 }
 
 void EcXmlEditorWidget::changeEvent(QEvent *event)
