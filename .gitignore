@@ -122,6 +122,7 @@ src/Application/Adminotech*
 src/admino*
 bin/7za.exe
 bin/crunch.exe
+bin/OgreXMLConverter*
 bin/viewer-admino.xml
 bin/asmo.xml
 bin/*client.bat
