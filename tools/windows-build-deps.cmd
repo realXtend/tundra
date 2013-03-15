@@ -1034,15 +1034,26 @@ IF NOT EXIST "%DEPS%\zlib". (
    cecho {0D}Building zlib 1.2.7{# #}{\n}
    cd zlib
    mkdir lib
+   mkdir lib\Release
+   mkdir lib\Debug
    mkdir include
    cd zlib-1.2.7
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
    cd contrib\masmx86
    call bld_ml32.bat
+
    cd ..\..
-   nmake -f win32/Makefile.msc LOC="-DASMV -DASMINF" OBJA="inffas32.obj match686.obj"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   copy /Y zlib.lib ..\lib\
+   cd contrib\vstudio\%VC_VER%
+
+   MSBuild zlibvc.sln /p:configuration="Release" /p:Platform="Win32" /nologo /m:%NUMBER_OF_PROCESSORS%
+   MSBuild zlibvc.sln /p:configuration="Debug" /p:Platform="Win32" /nologo /m:%NUMBER_OF_PROCESSORS%
+
+   REM IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
+   cd ..\..\..
+   copy /Y contrib\vstudio\%VC_VER%\x86\ZlibStatRelease\zlibstat.lib ..\lib\Release
+   copy /Y contrib\vstudio\%VC_VER%\x86\ZlibStatDebug\zlibstat.lib ..\lib\Debug
    copy /Y *.h ..\include\
 ) ELSE (
    cecho {0D}zlib 1.2.7 already built. Skipping.{# #}{\n}

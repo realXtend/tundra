@@ -58,16 +58,15 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				AdditionalIncludeDirectories="C:\lib\zziplib"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="zlib.lib"
+				AdditionalDependencies="zlibstat.lib"
 				OutputFile="zziplibd.lib"
-				AdditionalLibraryDirectories="../msvc/zlib/lib;../../../zlib/lib"
+				AdditionalLibraryDirectories="../msvc/zlib/lib;../../../zlib/lib/Debug"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -138,9 +137,9 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="zlib.lib"
+				AdditionalDependencies="zlibstat.lib"
 				OutputFile="zziplib.lib"
-				AdditionalLibraryDirectories="../msvc/zlib/lib;../../../zlib/lib"
+				AdditionalLibraryDirectories="../msvc/zlib/lib;../../../zlib/lib/Release"
 			/>
 			<Tool
 				Name="VCALinkTool"
