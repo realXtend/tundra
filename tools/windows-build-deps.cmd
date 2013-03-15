@@ -6,10 +6,11 @@ setlocal EnableDelayedExpansion
 
 :: Make sure we're running in Visual Studio Command Prompt
 IF "%VSINSTALLDIR%"=="" (
-   cecho {0C}Batch file not executed from Visual Studio Command Prompt - cannot proceed!{# #}{\n}
+   utils-windows\cecho {0C}Batch file not executed from Visual Studio Command Prompt - cannot proceed!{# #}{\n}
    GOTO :ERROR
 )
 
+:: Set up variables depending on the used Visual Studio version
 call VSConfig.cmd %1
 
 :: User-defined variables
@@ -52,9 +53,6 @@ IF %BUILD_RELEASE%==TRUE (
 ) ELSE (
     set BUILD_TYPE=%BUILD_TYPE_RELWITHDEBINFO%
 )
-
-:: Set up variables depending on the used Visual Studio version
-call VSConfig.cmd %1
 
 IF %GENERATOR%=="" (
    cecho {0C}GENERATOR not specified - cannot proceed!{# #}{\n}
@@ -1107,7 +1105,7 @@ GOTO :EOF
 
 :ERROR
 echo.
-cecho {0C}An error occurred! Aborting!{# #}{\n}
+utils-windows\cecho {0C}An error occurred! Aborting!{# #}{\n}
 set PATH=%ORIGINAL_PATH%
 cd %TOOLS%
 pause
