@@ -516,6 +516,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             LogError("Http upload to address \"" + reply->url().toString() + "\" failed with an error: \"" + reply->errorString() + "\"");
             ///\todo Call the following when implemented:
 //            framework->Asset()->AssetUploadTransferFailed(transfer);
+            transfer->EmitTransferFailed();
         }
         uploadTransfers.erase(iter);
         break;
