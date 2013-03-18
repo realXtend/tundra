@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   AssetItemMenuHandler.h
- *  @brief  Handles populating of assets and asset storages context menus and their chosen actions
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   AssetItemMenuHandler.h
+    @brief  Handles populating of assets and asset storages context menus and their chosen actions. */
 
 #pragma once
 
