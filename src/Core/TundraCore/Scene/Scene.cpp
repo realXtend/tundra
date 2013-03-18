@@ -192,6 +192,9 @@ bool Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
 
 void Scene::RemoveAllEntities(bool signal, AttributeChange::Type change)
 {
+    ///\todo This code should not be needed, but it is required to resolve a mysterious crash bug
+    ///      Contact Jonne for more info. -cs
+
     // If we don't want to emit signals, make sure the change mode is disconnected.
     if (!signal && change != AttributeChange::Disconnected)
         change = AttributeChange::Disconnected;
