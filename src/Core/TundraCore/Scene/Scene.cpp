@@ -192,15 +192,15 @@ bool Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
 
 void Scene::RemoveAllEntities(bool signal, AttributeChange::Type change)
 {
-    ///\todo This code should not be needed, but it is required to resolve a mysterious crash bug
-    ///      Contact Jonne for more info. -cs
-
     // If we don't want to emit signals, make sure the change mode is disconnected.
     if (!signal && change != AttributeChange::Disconnected)
         change = AttributeChange::Disconnected;
 
     // Gather entity ids to call RemoveEntity, as it modifies 
     // the entities_ map we should not call RemoveEntity while iterating it.
+    ///\todo The following code was done to resolve a mysterious crash bug.
+    ///      See https://github.com/Adminotech/tundra/commit/cb051bb270be3ce6e64a822593f1e14675bbf922
+    ///      Contact Jonne for more info. -cs
     std::list<entity_id_t> entIds;
     for (EntityMap::iterator it = entities_.begin(); it != entities_.end(); ++it)
     {
