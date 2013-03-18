@@ -2,17 +2,17 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   UndoCommands.h
-    @brief  A collection of QUndoCommand-derived classes which apply to the operations in EC editor and Scene structure windows 
-*/
+    @brief  A collection of QUndoCommand-derived classes which apply to the
+            operations in EC editor and Scene structure windows  */
 
 #pragma once
+
 #include "SceneFwd.h"
+#include "Color.h"
 
 #include <QDomDocument>
 #include <QDomElement>
 #include <QUndoCommand>
-
-#include "Color.h"
 
 typedef QList<entity_id_t> EntityIdList;
 
@@ -100,7 +100,6 @@ public:
     RemoveAttributeCommand(IAttribute * attr, QUndoCommand * parent = 0);
     
     /// Returns this command's ID
-    /* @returns This command's ID */
     int id () const;
     /// QUndoCommand override
     void undo();
@@ -134,7 +133,6 @@ public:
     AddComponentCommand(SceneWeakPtr scene, EntityIdChangeTracker * tracker, EntityIdList entities, const QString compType, const QString compName, bool sync, bool temp, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
-    /* @returns This command's ID */
     int id () const;
     /// QUndoCommand override
     void undo();
@@ -160,7 +158,6 @@ public:
     EditXMLCommand(Scene * scene, const QDomDocument oldDoc, const QDomDocument newDoc, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
-    /* @returns This command's ID */
     int id () const;
     /// QUndoCommand override
     void undo();
@@ -195,7 +192,6 @@ public:
     AddEntityCommand(Scene * scene, EntityIdChangeTracker * tracker, const QString name, bool sync, bool temp, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
-    /* @returns This command's ID */
     int id () const;
     /// QUndoCommand override
     void undo();
@@ -225,7 +221,6 @@ public:
     RemoveCommand(Scene * scene, EntityIdChangeTracker * tracker, QList<EntityWeakPtr> entityList, QList<ComponentWeakPtr> componentList, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
-    /* @returns This command's ID */
     int id () const;
     /// QUndoCommand override
     void undo();
@@ -263,7 +258,6 @@ public:
     RenameCommand(EntityWeakPtr entity, EntityIdChangeTracker * tracker, const QString oldName, const QString newName, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
-    /* @returns This command's ID */
     int id () const;
     /// QUndoCommand override
     void undo();
@@ -292,7 +286,6 @@ public:
     ToggleTemporaryCommand(QList<EntityWeakPtr> entities, EntityIdChangeTracker * tracker, bool temporary, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
-    /* @returns This command's ID */
     int id () const;
     /// QUndoCommand override
     void undo();
