@@ -270,9 +270,9 @@ void EC_Hydrax::Update(float frameTime)
         // Find out if we have SkyX in the scene. If yes, use its sun position.
         if (impl->skyX.expired())
         {
-            EntityList entities = ParentEntity()->ParentScene()->GetEntitiesWithComponent(EC_SkyX::TypeNameStatic());
-            if (!entities.empty())
-                impl->skyX = (*entities.begin())->GetComponent<EC_SkyX>();
+            std::vector<shared_ptr<EC_SkyX> > skies = ParentEntity()->ParentScene()->Components<EC_SkyX>();
+            if (!skies.empty())
+                impl->skyX = *skies.begin();
         }
 
         // Set Hydrax's sun position to use either sun or moon, depending which is visible.

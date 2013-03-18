@@ -129,6 +129,8 @@ if (ENABLE_HYDRAX)
     use_package_hydrax() # Windows
 endif()
 
+add_definitions(-DSKYX_HYDRAX_EXPORTS)
+
 UseTundraCore()
 use_core_modules(TundraCore Math OgreRenderingModule)
 
