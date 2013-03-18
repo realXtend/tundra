@@ -132,25 +132,25 @@ IF %BUILD_OPENSSL%==FALSE (
 
 IF NOT EXIST "%DEPS%\openssl\src". (
    cd "%DEPS%"
-   IF NOT EXIST openssl-0.9.8u.tar.gz. (
-      cecho {0D}Downloading OpenSSL 0.9.8u.{# #}{\n}
-      wget http://www.openssl.org/source/openssl-0.9.8u.tar.gz
+   IF NOT EXIST openssl-0.9.8x.tar.gz. (
+      cecho {0D}Downloading OpenSSL 0.9.8x.{# #}{\n}
+      wget http://www.openssl.org/source/openssl-0.9.8x.tar.gz
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
    mkdir openssl
-   cecho {0D}Extracting OpenSSL 0.9.8u sources to "%DEPS%\openssl\src".{# #}{\n}
-   7za e -y openssl-0.9.8u.tar.gz
-   7za x -y -oopenssl openssl-0.9.8u.tar
+   cecho {0D}Extracting OpenSSL 0.9.8x sources to "%DEPS%\openssl\src".{# #}{\n}
+   7za e -y openssl-0.9.8x.tar.gz
+   7za x -y -oopenssl openssl-0.9.8x.tar
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cd openssl
-   ren openssl-0.9.8u src
+   ren openssl-0.9.8x src
    cd ..
    IF NOT EXIST "%DEPS%\openssl\src". (
-      cecho {0E}Failed to rename %DEPS%\openssl\openssl-0.9.8u to %DEPS%\openssl\src. Permission denied for your account?{# #}{\n}
+      cecho {0E}Failed to rename %DEPS%\openssl\openssl-0.9.8x to %DEPS%\openssl\src. Permission denied for your account?{# #}{\n}
       GOTO :ERROR
    )
-   del openssl-0.9.8u.tar
+   del openssl-0.9.8x.tar
 ) ELSE (
    cecho {0D}OpenSSL already downloaded. Skipping.{# #}{\n}
 )
