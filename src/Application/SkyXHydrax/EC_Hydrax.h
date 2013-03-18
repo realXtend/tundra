@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "SkyXHydraxApi.h"
 #include "IComponent.h"
 #include "AssetFwd.h"
 #include "AssetReference.h"
@@ -16,7 +17,7 @@
 /** This is a singleton type component and only one component per scene is allowed.
     Provides means of creating photorealistic environments together with EC_SkyX.
     @note Requires Hydrax Ogre add-on. */
-class EC_Hydrax : public IComponent
+class SKYX_HYDRAX_API EC_Hydrax : public IComponent
 {
     Q_OBJECT
     COMPONENT_NAME("EC_Hydrax", 39)
