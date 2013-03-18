@@ -9,7 +9,7 @@
 
 struct BoneModifier;
 class AvatarDescAsset;
-typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
+typedef shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
 
 /// Avatar component.
 /** <table class="header">
@@ -91,5 +91,5 @@ private:
     /// Ref listener for the avatar asset
     AssetRefListenerPtr avatarAssetListener_;
     /// Last set avatar asset
-    boost::weak_ptr<AvatarDescAsset> avatarAsset_;
+    weak_ptr<AvatarDescAsset> avatarAsset_;
 };

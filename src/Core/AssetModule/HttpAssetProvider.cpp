@@ -19,15 +19,51 @@
 #include <QNetworkReply>
 #include <QLocale>
 
+/// @todo Remove the boost::local_time stuff for good when the TUNDRA_NO_BOOST code path is tested thoroughly.
+#ifndef TUNDRA_NO_BOOST
 // Disable C4245 warning (signed/unsigned mismatch) coming from boost
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4245)
-#endif
+#endif // _MSC_VER
 #include <boost/date_time/local_time/local_time.hpp>
 #ifdef _MSC_VER
 #pragma warning(pop)
+#endif // _MSC_VER
+
+#else // TUNDRA_NO_BOOST
+
+#if defined _MSC_VER
+#ifndef strcasecmp
+#define strcasecmp _stricmp
 #endif
+#endif
+
+static int MonthNameToInt(const char *month)
+{
+    if (!month) return 0;
+    if (!strcasecmp(month, "Jan") || !strcasecmp(month, "January")) return 1;
+    if (!strcasecmp(month, "Feb") || !strcasecmp(month, "February")) return 2;
+    if (!strcasecmp(month, "Mar") || !strcasecmp(month, "March")) return 3;
+    if (!strcasecmp(month, "Apr") || !strcasecmp(month, "April")) return 4;
+    if (!strcasecmp(month, "May") || !strcasecmp(month, "May")) return 5;
+    if (!strcasecmp(month, "Jun") || !strcasecmp(month, "June")) return 6;
+    if (!strcasecmp(month, "Jul") || !strcasecmp(month, "July")) return 7;
+    if (!strcasecmp(month, "Aug") || !strcasecmp(month, "August")) return 8;
+    if (!strcasecmp(month, "Sep") || !strcasecmp(month, "September")) return 9;
+    if (!strcasecmp(month, "Oct") || !strcasecmp(month, "October")) return 10;
+    if (!strcasecmp(month, "Nov") || !strcasecmp(month, "November")) return 11;
+    if (!strcasecmp(month, "Dec") || !strcasecmp(month, "December")) return 12;
+    return 0;
+}
+
+#if defined _MSC_VER
+#ifdef strcasecmp
+#undef strcasecmp
+#endif
+#endif
+
+#endif // TUNDRA_NO_BOOST
 
 #include "MemoryLeakCheck.h"
 
@@ -73,47 +109,38 @@ bool HttpAssetProvider::IsValidRef(QString assetRef, QString)
 {
     QString protocol;
     AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(assetRef.trimmed(), &protocol);
-    if (refType == AssetAPI::AssetRefExternalUrl && 
-        (protocol == "http" || protocol == "https"))
-        return true;
-    else
-        return false;
+    return (refType == AssetAPI::AssetRefExternalUrl && (protocol == "http" || protocol == "https"));
 }
 
-QDateTime HttpAssetProvider::FromHttpDate(const QByteArray &value)
+QDateTime HttpAssetProvider::ParseHttpDate(const QByteArray &value)
 {
     if (value.isEmpty())
         return QDateTime();
 
     int dayNamePos = value.indexOf(',');
     std::string timeFacetFormat;
-
-    // Sun Nov 6 08:49:37 1994 - ANSI C's asctime() format
-    if (dayNamePos == -1)
+    if (dayNamePos == -1) // "Sun Nov 6 08:49:37 1994" - ANSI C's asctime() format
         timeFacetFormat = "%a %b %e %H:%M:%S %Y";
-    // Sun, 06 Nov 1994 08:49:37 GMT - RFC 822, updated by RFC 1123
-    else if (dayNamePos == 3)
+    else if (dayNamePos == 3) // "Sun, 06 Nov 1994 08:49:37 GMT" - RFC 822, updated by RFC 1123
         timeFacetFormat = "%a, %d %b %Y %H:%M:%S GMT";
-    // Sunday, 06-Nov-94 08:49:37 GMT - RFC 850, obsoleted by RFC 1036
-    else if (dayNamePos > 3)
+    else if (dayNamePos > 3) // "Sunday, 06-Nov-94 08:49:37 GMT" - RFC 850, obsoleted by RFC 1036
         timeFacetFormat = "%A, %d-%b-%y %H:%M:%S GMT";
+
     if (timeFacetFormat.empty())
     {
-        LogError("HttpAssetProvider: Failed to detect date format from header " + QString(value.data()));
+        LogError("HttpAssetProvider::ParseHttpDate: Failed to detect date format from header " + QString(value.data()));
         return QDateTime();
     }
 
     QDateTime qDateTime;
-
+/// @todo Remove the boost::local_time stuff for good when the TUNDRA_NO_BOOST code path is tested thoroughly.
+#ifndef TUNDRA_NO_BOOST
     try
     {
         using namespace boost::local_time;
 #include "DisableMemoryLeakCheck.h"
-        local_time_input_facet *timeFacet(new local_time_input_facet(timeFacetFormat));
+        local_time_input_facet *timeFacet(new local_time_input_facet(timeFacetFormat)); // Not a memory leak, the locale object takes over responsibility of deleting the facet object
 #include "EnableMemoryLeakCheck.h"
-
-        // This is not a memory leak. 'timeFacet' is destoryed by the std::local object, from a c++ reference guide:
-        // "The locale object takes over responsibility of deleting this facet object."
         std::stringstream stringStream;
         stringStream.exceptions(std::ios_base::failbit);
         stringStream.imbue(std::locale(std::locale::classic(), timeFacet));
@@ -121,10 +148,9 @@ QDateTime HttpAssetProvider::FromHttpDate(const QByteArray &value)
 
         local_date_time dateTime(local_sec_clock::local_time(time_zone_ptr()));
         stringStream >> dateTime;
-
         if (dateTime.is_not_a_date_time())
         {
-            LogError("HttpAssetProvider: Failed to parse date from header " + QString(value.data()));
+            LogError("HttpAssetProvider::ParseHttpDate: Failed to parse date from header " + QString(value.data()));
             return QDateTime();
         }
 
@@ -137,14 +163,39 @@ QDateTime HttpAssetProvider::FromHttpDate(const QByteArray &value)
     }
     catch(std::exception &e)
     {
-        LogError("HttpAssetProvider: Exception while parsing date from header " + QString(value.data()) + " - " + e.what());
+        LogError("HttpAssetProvider::ParseHttpDate: Exception while parsing date from header " + QString(value.data()) + " - " + e.what());
         return QDateTime();
     }
-
+#else
+    int hour = 0, min = 0, sec = 0, day = 0, year = 0;
+    char month[4];
+    /// @todo regrex validation for the string in order to prevent possible sscanf crashes.
+    if (dayNamePos == -1) // "Sun Nov 6 08:49:37 1994" - ANSI C's asctime() format
+    {
+        sscanf(value.data(), "%*s %[a-z,A-Z] %d %d:%d:%d %d", month, &day, &hour, &min, &sec, &year);
+        qDateTime = QDateTime(QDate(year, MonthNameToInt(month), day), QTime(hour, min, sec), Qt::UTC);
+    }
+    else if (dayNamePos == 3) // "Sun, 06 Nov 1994 08:49:37 GMT" - RFC 822, updated by RFC 1123
+    {
+        sscanf(value.data(), "%*s %d %[a-z,A-Z] %d %d:%d%:%d", &day, month, &year, &hour, &min, &sec);
+        qDateTime = QDateTime(QDate(year, MonthNameToInt(month), day), QTime(hour, min, sec), Qt::UTC);
+    }
+    else if (dayNamePos > 3) // "Sunday, 06-Nov-94 08:49:37 GMT" - RFC 850, obsoleted by RFC 1036
+    {
+        sscanf(value.data(), "%*s %d-%[a-z,A-Z]-%d %d:%d%:%d", &day, month, &year, &hour, &min, &sec);
+        if (year >= 70 && year <= 99)
+            year += 1900;
+        else if (year >= 0 && year < 70)
+            year += 2000;
+        qDateTime = QDateTime(QDate(year, MonthNameToInt(month), day), QTime(hour, min, sec), Qt::UTC);
+    }
+    if (!qDateTime.isValid())
+        LogError("HttpAssetProvider::ParseHttpDate: Failed to parse date from header " + QString(value.data()));
+#endif
     return qDateTime;
 }
 
-QByteArray HttpAssetProvider::ToHttpDate(const QDateTime &dateTime)
+QByteArray HttpAssetProvider::CreateHttpDate(const QDateTime &dateTime)
 {
     if (!dateTime.isValid())
         return "";
@@ -229,7 +280,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
         // Server can then reply with 304 Not Modified.
         QDateTime cacheLastModified = framework->Asset()->GetAssetCache()->LastModified(assetRef);
         if (cacheLastModified.isValid())
-            request.setRawHeader("If-Modified-Since", ToHttpDate(cacheLastModified));
+            request.setRawHeader("If-Modified-Since", CreateHttpDate(cacheLastModified));
         
         QNetworkReply *reply = networkAccessManager->get(request);
         transfers[QPointer<QNetworkReply>(reply)] = transfer;
@@ -455,7 +506,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
                         QByteArray header = reply->rawHeader("Last-Modified");
                         if (!header.isEmpty())
                         {
-                            QDateTime sourceLastModified = FromHttpDate(header);
+                            QDateTime sourceLastModified = ParseHttpDate(header);
                             if (sourceLastModified.isValid())
                                 cache->SetLastModified(sourceRef, sourceLastModified);
                         }

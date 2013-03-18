@@ -7,23 +7,26 @@ Licensed under the MIT license:
 
 #pragma once
 
-#include "CoreTypes.h"
-#include "AssetAPI.h"
-#include "IAssetTransfer.h"
-#include "IAsset.h"
-#include "AssetFwd.h"
 #include "OpenAssetImportApi.h"
+#include "CoreTypes.h"
+#include "AssetFwd.h"
 
-#include <string>
 #include <OgreMesh.h>
 #include <OgreMeshSerializer.h>
 
-#include <assimp/cimport.h>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+#include <assimp/vector3.h>
+#include <assimp/matrix4x4.h>
+
 #include <map>
 #include <QString>
 #include <QObject>
+
+struct aiNode;
+struct aiBone;
+struct aiMesh;
+struct aiMaterial;
+struct aiScene;
+struct aiAnimation;
 
 struct boneNode
 {
@@ -45,7 +48,7 @@ class OPENASSETIMPORT_API OpenAssetImport : public QObject
     Q_OBJECT
 
 public:
-    OpenAssetImport(AssetAPI *assetApi);
+    explicit OpenAssetImport(AssetAPI *assetApi);
     ~OpenAssetImport();
     /// Converts collada files to ogre meshes, also parses and genarates ogre materials.
     void Convert(const u8 *data_, size_t numBytes, const QString &fileName, const QString &diskSource, Ogre::MeshPtr mesh);
@@ -105,5 +108,4 @@ private:
 private slots:
     void OnTextureLoaded(IAssetTransfer* assetTransfer);
     void OnTextureLoadFailed(IAssetTransfer* assetTransfer, QString reason);
-
 };

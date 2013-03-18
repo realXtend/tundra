@@ -103,7 +103,7 @@ private:
     QPointer<KeyBindingsConfigWindow> keyBindingsWindow;
     QPointer<ECEditorWindow> syncedECEditor;
     QPointer<AssetItemMenuHandler> assetItemMenuHandler;
-    boost::shared_ptr<InputContext> inputContext;
+    shared_ptr<InputContext> inputContext;
 
     SceneMaterialDropData materialDropData;
     QHash<QString, float3> urlToDropPos;

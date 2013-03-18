@@ -184,7 +184,7 @@ void OgreRenderingModule::Initialize()
 
     std::string windowTitle = Application::FullIdentifier().toStdString();
 
-    renderer = boost::make_shared<OgreRenderer::Renderer>(framework_, ogreConfigFilename, pluginsFilename, windowTitle);
+    renderer = MAKE_SHARED(OgreRenderer::Renderer, framework_, ogreConfigFilename, pluginsFilename, windowTitle);
     assert(renderer);
     assert(!renderer->IsInitialized());
 
@@ -277,7 +277,7 @@ void OgreRenderingModule::OnSceneAdded(const QString& name)
     }
     
     // Add an OgreWorld to the scene
-    OgreWorldPtr newWorld = boost::make_shared<OgreWorld>(renderer.get(), scene);
+    OgreWorldPtr newWorld = MAKE_SHARED(OgreWorld, renderer.get(), scene);
     renderer->ogreWorlds[scene.get()] = newWorld;
     scene->setProperty(OgreWorld::PropertyName(), QVariant::fromValue<QObject*>(newWorld.get()));
 }

@@ -13,7 +13,7 @@
 #include "LocalAssetStorage.h"
 #include "ConsoleAPI.h"
 #include "Application.h"
-
+#include "CoreTypes.h"
 #include "KristalliProtocolModule.h"
 #include "TundraLogicModule.h"
 #include "TundraMessages.h"
@@ -44,11 +44,11 @@ AssetModule::~AssetModule()
 
 void AssetModule::Initialize()
 {
-    boost::shared_ptr<HttpAssetProvider> http = boost::shared_ptr<HttpAssetProvider>(new HttpAssetProvider(framework_));
-    framework_->Asset()->RegisterAssetProvider(boost::dynamic_pointer_cast<IAssetProvider>(http));
+    shared_ptr<HttpAssetProvider> http = MAKE_SHARED(HttpAssetProvider, framework_);
+    framework_->Asset()->RegisterAssetProvider(http);
     
-    boost::shared_ptr<LocalAssetProvider> local = boost::shared_ptr<LocalAssetProvider>(new LocalAssetProvider(framework_));
-    framework_->Asset()->RegisterAssetProvider(boost::dynamic_pointer_cast<IAssetProvider>(local));
+    shared_ptr<LocalAssetProvider> local = MAKE_SHARED(LocalAssetProvider, framework_);
+    framework_->Asset()->RegisterAssetProvider(local);
     
     QString systemAssetDir = Application::InstallationDirectory() + "data/assets";
     AssetStoragePtr storage = local->AddStorageDirectory(systemAssetDir, "System", true, false);

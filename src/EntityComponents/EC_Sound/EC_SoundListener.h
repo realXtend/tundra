@@ -59,7 +59,7 @@ public:
 
 private:
     /// Parent entity's placeable component.
-    boost::weak_ptr<EC_Placeable> placeable_;
+    weak_ptr<EC_Placeable> placeable_;
     
 private slots:
     /// Called when component changes.

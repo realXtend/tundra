@@ -65,7 +65,7 @@ void TransformEditor::AppendSelection(const QList<EntityPtr> &entities)
         CreateGizmo();
     foreach(const EntityPtr &e, entities)
     {
-        boost::shared_ptr<EC_Placeable> p = e->GetComponent<EC_Placeable>();
+        shared_ptr<EC_Placeable> p = e->GetComponent<EC_Placeable>();
         if (p)
         {
             Entity *parentPlaceableEntity = p->ParentPlaceableEntity();
@@ -84,7 +84,7 @@ void TransformEditor::RemoveFromSelection(const QList<EntityPtr> &entities)
 {
     foreach(const EntityPtr &e, entities)
     {
-        boost::shared_ptr<EC_Placeable> p = e->GetComponent<EC_Placeable>();
+        shared_ptr<EC_Placeable> p = e->GetComponent<EC_Placeable>();
         if (p)
         {
             Entity *parentPlaceableEntity = p->ParentPlaceableEntity();
@@ -199,7 +199,7 @@ float3 TransformEditor::GizmoPos() const
 {
     if (!gizmo)
         return float3::zero;
-    boost::shared_ptr<EC_Placeable> placeable = gizmo->GetComponent<EC_Placeable>();
+    shared_ptr<EC_Placeable> placeable = gizmo->GetComponent<EC_Placeable>();
     if (!placeable)
         return float3::zero;
     return placeable->transform.Get().pos;

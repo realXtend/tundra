@@ -16,6 +16,7 @@ class QMenu;
 class QMimeData;
 
 class Framework;
+class ECEditorWindow;
 class TreeWidgetItemExpandMemory;
 struct ComponentGroup;
 
@@ -37,7 +38,7 @@ class ECBrowser : public QtTreePropertyBrowser
     Q_OBJECT
 
 public:
-    ECBrowser(Framework *framework, QWidget *parent = 0);
+    ECBrowser(Framework *framework, ECEditorWindow *editorWindow, QWidget *parent = 0);
     virtual ~ECBrowser();
 
     /// Insert new entity to browser.
@@ -54,7 +55,7 @@ public:
 
     /// Sets used item expand memory. Expand memory is used to load and save the expanded items in the tree widget.
     /** @param expandMem Tree widget item expand memory. */
-    void SetItemExpandMemory(boost::shared_ptr<TreeWidgetItemExpandMemory> expandMem) { expandMemory_ = expandMem; }
+    void SetItemExpandMemory(shared_ptr<TreeWidgetItemExpandMemory> expandMem) { expandMemory_ = expandMem; }
 
     /// Reads selected components from ComponentGroup and return them as QObjectList.
     QObjectList SelectedComponents() const;
@@ -190,5 +191,6 @@ private:
     QMenu *menu_;
     QTreeWidget *treeWidget_;
     Framework *framework_;
-    boost::weak_ptr<TreeWidgetItemExpandMemory> expandMemory_;
+    ECEditorWindow *editorWindow_;
+    weak_ptr<TreeWidgetItemExpandMemory> expandMemory_;
 };

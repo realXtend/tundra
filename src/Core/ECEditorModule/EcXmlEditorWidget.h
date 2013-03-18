@@ -10,6 +10,7 @@
 #include "SceneFwd.h"
 
 #include <QWidget>
+#include <QDomDocument>
 
 class QTextEdit;
 
@@ -58,6 +59,7 @@ protected:
 private:
     Framework *framework; ///< Framework.
     QTextEdit *xmlEdit; ///< XML text edit field.
+    QDomDocument unsavedState_;
     QList<EntityWeakPtr> targetEntities; ///< Entities whose EC's we're editing.
     QList<ComponentWeakPtr > targetComponents; ///< Components which we're editing.
 };

@@ -215,7 +215,7 @@ QString JavascriptInstance::LoadScript(const QString &fileName)
     // First check if the include was supposed to go through the Asset API.
     if (module_)
     {
-        ScriptAssetPtr asset = boost::dynamic_pointer_cast<ScriptAsset>(module_->GetFramework()->Asset()->GetAsset(fileName));
+        ScriptAssetPtr asset = dynamic_pointer_cast<ScriptAsset>(module_->GetFramework()->Asset()->GetAsset(fileName));
         if (asset)
             return asset->scriptContent;
     }

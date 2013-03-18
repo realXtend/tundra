@@ -18,6 +18,7 @@
 class QTreeWidgetItem;
 class SceneTreeWidget;
 class Framework;
+class QToolButton;
 
 /// Window with tree view showing every entity in a scene.
 /** This class will only handle adding and removing of entities and components and updating
@@ -90,6 +91,8 @@ private:
     bool showAssets; ///< Do we show asset references also in the tree view.
     QLineEdit *searchField; ///< Search field line edit.
     QPushButton *expandAndCollapseButton; ///< Expand/collapse all button.
+    QToolButton * undoButton_; ///< Undo button with drop-down menu
+    QToolButton * redoButton_; ///< Redo button with drop-down menu
 
 private slots:
     /// Adds the entity to the tree widget.
@@ -160,4 +163,7 @@ private slots:
 
     /// Removes entity from the tree widget by ID
     void RemoveEntityById(entity_id_t id);
+
+    void OnUndoChanged(bool canUndo);
+    void OnRedoChanged(bool canRedo);
 };

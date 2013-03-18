@@ -165,7 +165,7 @@ void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::T
         while(scriptAssets.size() > (size_t)scripts.Size())
             scriptAssets.pop_back();
         while(scriptAssets.size() < (size_t)scripts.Size())
-            scriptAssets.push_back(boost::shared_ptr<AssetRefListener>(new AssetRefListener));
+            scriptAssets.push_back(shared_ptr<AssetRefListener>(new AssetRefListener));
 
         if (scripts.Size() > 0)
         {
@@ -222,7 +222,7 @@ void EC_Script::OnScriptAssetLoaded(AssetPtr asset_)
     {
         if (scriptAssets[i]->Asset())
         {
-            ScriptAssetPtr asset = boost::dynamic_pointer_cast<ScriptAsset>(scriptAssets[i]->Asset());
+            ScriptAssetPtr asset = dynamic_pointer_cast<ScriptAsset>(scriptAssets[i]->Asset());
             if (!asset)
             {
                 LogError("EC_Script::ScriptAssetLoaded: Loaded asset of type other than ScriptAsset!");

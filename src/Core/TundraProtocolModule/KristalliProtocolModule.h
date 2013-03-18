@@ -71,7 +71,7 @@ public:
     
     /// Gets user by message connection. Returns null if no such connection
     UserConnectionPtr GetUserConnection(kNet::MessageConnection* source) const;
-    UserConnectionPtr GetUserConnection(u32 id) const; ///< @overload @param id Connection ID.
+    UserConnectionPtr GetUserConnection(u32 id) const; /**< @overload @param id Connection ID. */
 
     /// What trasport layer to use. Read on startup from "--protocol <udp|tcp>". Defaults to UDP if no start param was given.
     kNet::SocketTransportLayer defaultTransport;

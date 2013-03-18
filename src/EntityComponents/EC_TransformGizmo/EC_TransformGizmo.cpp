@@ -122,7 +122,7 @@ void EC_TransformGizmo::Initialize()
 
     ParentEntity()->SetName("TransformGizmo");
 
-    placeable = boost::dynamic_pointer_cast<EC_Placeable>(ParentEntity()->CreateLocalComponent(
+    placeable = dynamic_pointer_cast<EC_Placeable>(ParentEntity()->CreateLocalComponent(
         EC_Placeable::TypeNameStatic(), "TransformGizmoPlaceable"));
     if (!placeable)
     {
@@ -134,7 +134,7 @@ void EC_TransformGizmo::Initialize()
 //    placeable->selectionLayer.Set(0, AttributeChange::Default); // ignore raycast
     placeable->visible.Set(false, AttributeChange::Default);
 
-    mesh = boost::dynamic_pointer_cast<EC_Mesh>(ParentEntity()->CreateLocalComponent(
+    mesh = dynamic_pointer_cast<EC_Mesh>(ParentEntity()->CreateLocalComponent(
         EC_Mesh::TypeNameStatic(), "TransformGizmoMesh"));
     if (!mesh)
     {
@@ -431,7 +431,7 @@ float EC_TransformGizmo::DesiredGizmoScale()
     Entity *cam = world->Renderer()->MainCamera();
     if (!cam)
         return 1.f;
-    boost::shared_ptr<EC_Placeable> placeable = cam->GetComponent<EC_Placeable>();
+    shared_ptr<EC_Placeable> placeable = cam->GetComponent<EC_Placeable>();
     if (!placeable)
         return 1.f;
     if (!mesh->HasMesh())

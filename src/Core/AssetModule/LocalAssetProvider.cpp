@@ -467,7 +467,7 @@ AssetStoragePtr LocalAssetProvider::GetStorageForAssetRef(const QString &assetRe
 
     LocalAssetStoragePtr storage;
     GetPathForAsset(assetRef, &storage);
-    return boost::static_pointer_cast<IAssetStorage>(storage);
+    return static_pointer_cast<IAssetStorage>(storage);
 }
 
 void LocalAssetProvider::CompletePendingFileUploads()
@@ -478,7 +478,7 @@ void LocalAssetProvider::CompletePendingFileUploads()
         AssetUploadTransferPtr transfer = pendingUploads.back();
         pendingUploads.pop_back();
 
-        LocalAssetStoragePtr storage = boost::dynamic_pointer_cast<LocalAssetStorage>(transfer->destinationStorage.lock());
+        LocalAssetStoragePtr storage = dynamic_pointer_cast<LocalAssetStorage>(transfer->destinationStorage.lock());
         if (!storage)
         {
             LogError("Invalid IAssetStorage specified for file upload in LocalAssetProvider!");

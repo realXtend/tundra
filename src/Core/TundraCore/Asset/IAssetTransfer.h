@@ -8,13 +8,12 @@
 #include "AssetReference.h"
 #include "IAsset.h"
 
-#include <boost/enable_shared_from_this.hpp>
 #include <QObject>
 #include <vector>
 #include <QByteArray>
 
 /// Represents a currently ongoing asset download operation.
-class TUNDRACORE_API IAssetTransfer : public QObject, public boost::enable_shared_from_this<IAssetTransfer>
+class TUNDRACORE_API IAssetTransfer : public QObject, public enable_shared_from_this<IAssetTransfer>
 {
 Q_OBJECT
 
