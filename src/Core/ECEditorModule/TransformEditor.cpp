@@ -2,7 +2,7 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   TransformEditor.cpp
-    @brief  Controls Transform attributes for groups of entities. */
+    @brief  Controls Transform attributes for group of entities. */
 
 #include "StableHeaders.h"
 #include "TransformEditor.h"
@@ -30,23 +30,32 @@
 
 static const char *cTransformEditorWindowPos = "transform editor window pos";
 
-TransformEditor::TransformEditor(const ScenePtr &scene) :
+TransformEditor::TransformEditor(const ScenePtr &editedScene) :
     editorSettings(0),
-    localAxes(false)
+    localAxes(false),
+    scene(editedScene)
 {
-    if (scene)
+    if (!scene.expired())
     {
-        this->scene = scene;
-        QString uniqueName("TransformEditor" + scene->GetFramework()->Asset()->GenerateUniqueAssetName("",""));
-        input = scene->GetFramework()->Input()->RegisterInputContext(uniqueName, 100);
+        QString uniqueName("TransformEditor" + scene.lock()->GetFramework()->Asset()->GenerateUniqueAssetName("",""));
+        input = scene.lock()->GetFramework()->Input()->RegisterInputContext(uniqueName, 100);
         connect(input.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
-        connect(scene->GetFramework()->Frame(), SIGNAL(Updated(float)), SLOT(OnUpdated(float)));
+        connect(scene.lock()->GetFramework()->Frame(), SIGNAL(Updated(float)), SLOT(OnUpdated(float)));
     }
 }
 
 TransformEditor::~TransformEditor()
 {
     DeleteGizmo();
+}
+
+QList<EntityPtr> TransformEditor::Selection() const
+{
+    QList<EntityPtr> ret;
+    foreach(const TransformAttributeWeakPtr &attr, targets)
+        if (!attr.owner.expired() && attr.owner.lock()->ParentEntity())
+            ret.append(attr.owner.lock()->ParentEntity()->shared_from_this());
+    return ret;
 }
 
 void TransformEditor::SetSelection(const QList<EntityPtr> &entities)
