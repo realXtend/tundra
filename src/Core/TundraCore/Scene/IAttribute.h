@@ -46,6 +46,10 @@ public:
     virtual void FromString(const std::string& str, AttributeChange::Type change) = 0;
 
     /// Returns the type name of the data stored in this attribute.
+    /** @note As attribute type names are handled case-insensitively internally by the SceneAPI,
+        a case-insensitive comparison is recommended when comparing attribute type names.
+        In general, comparing by type ID, instead of type name, is recommended for efficiency.
+        @sa TypeId */
     virtual const QString &TypeName() const = 0;
     
     /// Returns the type ID of this attribute.
@@ -265,6 +269,9 @@ struct AttributeWeakPtr
     }
 
     bool operator !=(const AttributeWeakPtr &rhs) const { return !(*this == rhs); }
+
+    /// Returns if the owner of the attribute is expired, i.e. it's not safe to access the attribute.
+    bool Expired() const { return owner.expired(); }
 
     ComponentWeakPtr owner; ///< Owner component.
     IAttribute *attribute; ///< The actual attribute.

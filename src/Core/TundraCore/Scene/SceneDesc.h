@@ -85,7 +85,10 @@ struct TUNDRACORE_API ComponentDesc
 /// Description of an attribute (IAttribute).
 struct TUNDRACORE_API AttributeDesc
 {
-    QString typeName; ///< Type name.
+    /// Type name.
+    /** @note As attribute type names are handled case-insensitively internally by the SceneAPI,
+        a case-insensitive comparison is recommended when comparing attribute type names. */
+    QString typeName;
     QString name; ///< Name.
     QString value; ///< Value.
 
