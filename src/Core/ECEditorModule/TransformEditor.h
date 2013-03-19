@@ -2,7 +2,7 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   TransformEditor.h
-    @brief  Controls Transform attributes for groups of entities. */
+    @brief  Controls Transform attributes for group of entities. */
 
 #pragma once
 
@@ -17,7 +17,7 @@
 
 class OgreWorld;
 
-/// Controls Transform attributes for groups of entities.
+/// Controls Transform attributes for group of entities.
 /** Can be used to alter transforms of entities even without the visual gizmo (EC_TransformGizmo).*/
 class ECEDITOR_MODULE_API TransformEditor : public QObject
 {
@@ -26,12 +26,15 @@ class ECEDITOR_MODULE_API TransformEditor : public QObject
 public:
     /// Constructs the editor.
     /** Creates EC_TransformGizmo if it is available.
-        @param scene Scene in which the edited entities reside. */
-    TransformEditor(const ScenePtr &scene);
+        @param editedScene Scene in which the edited entities reside. */
+    explicit TransformEditor(const ScenePtr &editedScene);
 
     /// Destroys the editor.
     /** Destroys the EC_TransformGizmo if it was created. */
     ~TransformEditor();
+
+    /// Returns the current selection
+    QList<EntityPtr> Selection() const;
 
     /// Sets new selection of entities, clears possible previous selection.
     /** @param entities Entities to be added. */
@@ -40,12 +43,12 @@ public:
     /// Appends selection with new entities.
     /** @param entities Entities to be added. */
     void AppendSelection(const QList<EntityPtr> &entities);
-    void AppendSelection(const EntityPtr &entity); ///< @overload
+    void AppendSelection(const EntityPtr &entity); /**< @overload */
 
     /// Removes entities from selection.
     /** @param entities Entities to be removed. */
     void RemoveFromSelection(const QList<EntityPtr> &entities);
-    void RemoveFromSelection(const EntityPtr &entity); ///< @overload
+    void RemoveFromSelection(const EntityPtr &entity); /**< @overload */
 
     /// Clears the selection.
     void ClearSelection();
@@ -58,6 +61,9 @@ public:
 
     /// Returns position of the editing gizmo.
     float3 GizmoPos() const;
+
+    /// Returns the transform gizmo editor settings widget.
+    QWidget *EditorSettingsWidget() const { return editorSettings; }
 
 public slots:
     /// Translates current target transforms.
@@ -77,8 +83,13 @@ private:
     struct TransformAttributeWeakPtr : public AttributeWeakPtr
     {
         /** @param p If the placeable component is parented, pointer to the parent placeable entity. */
-        TransformAttributeWeakPtr(const ComponentPtr &c, IAttribute *a, const EntityPtr &p) : AttributeWeakPtr(c, a), parentPlaceableEntity(p) {}
-        EntityWeakPtr parentPlaceableEntity; ///< If the placeable component is parented, points to the parent placeable entity.
+        TransformAttributeWeakPtr(const ComponentPtr &c, IAttribute *a, const EntityPtr &p) :
+            AttributeWeakPtr(c, a),
+            parentPlaceableEntity(p)
+        {
+        }
+        /// If the placeable component is parented, points to the parent placeable entity.
+        EntityWeakPtr parentPlaceableEntity;
     };
 
     /// Returns whether or not transform attribute @attr is parented and current selection of targets contain also the parent.
