@@ -179,10 +179,10 @@ void EC_WebView::ServerInitialize(TundraLogic::Server *server)
 {
     if (!server || !server->IsRunning())
         return;
-    connect(server, SIGNAL(UserDisconnected(int, UserConnection*)), SLOT(ServerHandleDisconnect(int, UserConnection*)), Qt::UniqueConnection);
+    connect(server, SIGNAL(UserDisconnected(unsigned int, UserConnection*)), SLOT(ServerHandleDisconnect(unsigned int, UserConnection*)), Qt::UniqueConnection);
 }
 
-void EC_WebView::ServerHandleDisconnect(int connectionID, UserConnection* connection)
+void EC_WebView::ServerHandleDisconnect(unsigned int connectionID, UserConnection* connection)
 {
     // Server will release the control of a EC_Webview if the controlling user disconnects.
     // This will ensure that a webview wont be left in a state that no one can take control of it.

@@ -166,7 +166,7 @@ protected:
 
 private slots:
     /// Server side handler for user disconnects.
-    void ServerHandleDisconnect(int connectionID, UserConnection *connection);
+    void ServerHandleDisconnect(unsigned int connectionID, UserConnection *connection);
 
     /** Server side handler for checking controller id against connected clients. 
         The id must never be set in any component to a connection id that is not connected.
