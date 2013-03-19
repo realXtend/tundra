@@ -18,8 +18,10 @@ class QDragEnterEvent;
 class QDragMoveEvent;
 class QDragLeaveEvent;
 class QDropEvent;
-
+class float2;
 class RedirectedPaintWidget;
+
+const QString cMaterialBaseName = "GraphicsViewCanvas";
 
 /// Makes possible to to embed arbitrary Qt UI elements into a 3D model.
 /** <table class="header">
@@ -110,11 +112,17 @@ private:
     void SendMouseEvent(QEvent::Type type, const QPointF &point, MouseEvent *e);
     void SendKeyEvent(QEvent::Type type, KeyEvent *e);
     void SendMouseScrollEvent(MouseEvent *e, const QPointF &ptOnScene);
-    Ogre::MaterialPtr OgreMaterial() const;
+    Ogre::MaterialPtr OgreMaterial();
+    bool IsMouseOnTopOfMainUI();
+    bool IsMouseOnTopOfCanvas(QPoint & mousePos, float2 & uv);
+    QPointF GetPointOnView(QPoint & mousePos);
+
 
     QGraphicsScene *graphicsScene;
     QGraphicsView *graphicsView;
     RedirectedPaintWidget *paintTarget;
     InputContextPtr inputContext;
     bool isActivated;
+
+    std::map<std::string, OgreMaterialAssetPtr> defaultMaterialAssets;
 };
