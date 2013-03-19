@@ -420,8 +420,8 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
     }
     else if (attr == &time || attr == &sunsetTime || attr == &sunriseTime)
     {
-        // Ignore local changes as it's updated constantly from SkyX when the time multiplier is > 0.
-        if (change == AttributeChange::Replicate)
+        // Ignore local time changes as time is driven by SkyX when the time multiplier is != 0.
+        if (change != AttributeChange::LocalOnly)
             impl->controller->setTime(Ogre::Vector3(time.Get(), sunriseTime.Get(), sunsetTime.Get()));
 
         if (attr == &time)
