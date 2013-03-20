@@ -40,7 +40,9 @@ public:
     Q_PROPERTY(int cloudType READ getcloudType WRITE setcloudType);
 
     /// The time multiplier can be a also a negative number, 0 will disable auto-updating.
-    /** @note If time multiplier is altered on a headless Tundra, the changes to the time attribute are *not* made accordingly. */
+    /** @note If time multiplier is altered on a headless Tundra, the changes to the time attribute
+              are *not* made accordingly. If you want to guarantee the same time between all participants,
+              do not use timeMultiplier, but instead drive the time changes manually from a script. */
     DEFINE_QPROPERTY_ATTRIBUTE(float, timeMultiplier);
     Q_PROPERTY(float timeMultiplier READ gettimeMultiplier WRITE settimeMultiplier);
 
