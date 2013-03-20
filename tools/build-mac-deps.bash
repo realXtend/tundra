@@ -228,10 +228,10 @@ if [ "$RELWITHDEBINFO" == "1" ]; then
     export CMAKE_C_FLAGS="-gdwarf-2 -O2"
     export CMAKE_CXX_FLAGS="-gdwarf-2 -O2"
 else
-    export CFLAGS="-03"
-    export CXXFLAGS="-03"
-    export CMAKE_C_FLAGS="-03"
-    export CMAKE_CXX_FLAGS="-03"
+    export CFLAGS="-O3"
+    export CXXFLAGS="-O3"
+    export CMAKE_C_FLAGS="-O3"
+    export CMAKE_CXX_FLAGS="-O3"
 fi
 
 export PATH=$prefix/bin:$QTDIR/bin:$PATH
