@@ -33,14 +33,72 @@ public:
     EditAttributeCommand(IAttribute * attr, const T& value, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
-    int id() const;
+    int id() const { return Id; }
 
     /// QUndoCommand override
-    void undo();
+    void undo()
+    {
+        EntityPtr ent = entity_.lock();
+        if (!ent.get())
+            return;
+
+        ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
+        if (comp.get())
+        {
+            IAttribute *attr = comp->GetAttribute(name_);
+            Attribute<T> *attribute = dynamic_cast<Attribute<T> *>(attr);
+            if (attribute)
+            {
+                newValue_ = attribute->Get();
+                attribute->Set(oldValue_, AttributeChange::Default);
+            }
+        }
+    }
+
     /// QUndoCommand override
-    void redo();
+    void redo()
+    {
+        if (dontCallRedo_)
+        {
+            dontCallRedo_ = false;
+            return;
+        }
+
+        EntityPtr ent = entity_.lock();
+        if (!ent.get())
+            return;
+
+        ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
+        if (comp.get())
+        {   
+            IAttribute *attr = comp->GetAttribute(name_);
+            Attribute<T> *attribute = dynamic_cast<Attribute<T> *>(attr);
+            if (attribute)
+                attribute->Set(newValue_, AttributeChange::Default);
+        }
+    }
+
     /// QUndoCommand override
-    virtual bool mergeWith(const QUndoCommand * other);
+    /** @todo Should we make a specialization for certain types of attributes that their 'Edit attribute' commands are merged,
+            or should we keep each atomic change to the attributes in the stack?
+            (e.g. if 'Transform' attribute for each of the components of each pos, rot, and scale float3s are edited, it 
+            will push 9 commands into the undo stack) */
+    virtual bool mergeWith(const QUndoCommand * other)
+    {
+        // Don't merge commands yet. This is only for the 'Color' attribute specialization
+        return false;
+
+        /*
+        if (id() != other->id())
+            return false;
+
+        const EditAttributeCommand<T> *otherCommand = dynamic_cast<const EditAttributeCommand<T> *>(other);
+        if (!otherCommand)
+            return false;
+
+        return true;
+        */
+    }
 
 private:
     EntityWeakPtr entity_; ///< A weak pointer to this attribute's parent entity
@@ -56,7 +114,20 @@ private:
 #include "UndoCommands.inl"
 
 /// Merges two EditAttributeCommand<Color> objects, since editing 'Color' triggers two changes 
-template<> bool EditAttributeCommand<Color>::mergeWith(const QUndoCommand *other);
+template<> bool EditAttributeCommand<Color>::mergeWith(const QUndoCommand *other)
+{
+    if (id() != other->id())
+        return false;
+
+    const EditAttributeCommand<Color> *otherCommand = dynamic_cast<const EditAttributeCommand<Color> *>(other);
+    if (!otherCommand)
+        return false;
+
+    if (oldValue_ != otherCommand->oldValue_)
+        return false;
+
+    return true;
+}
 
 /// AddAttributeCommand represents adding an attribute to a dynamic component
 class AddAttributeCommand : public QUndoCommand
