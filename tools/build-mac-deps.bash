@@ -27,12 +27,15 @@ fnDisplayHelpAndExit()
     echo " "
     echo " -rwdi | --release-with-debug-info    Enables debugging information to be included in compile-time"
     echo " "
+    echo " -x | --xcode                         Make Xcode project instead of Makefiles                                      "
+    echo " "
     echo " -nc | --no-run-cmake                 Do not run 'cmake .' after the dependencies are built. (The default is that  "
     echo "                                      'cmake .' is executed to generate Makefiles after all dependencies have been "
     echo "                                      built)."
     echo " "
-    echo " -nm | --no-run-make                  Do not run 'make' after the dependencies are built. (The default is that     "
-    echo "                                      'make' is executed to start the compile process)."
+    echo " -nm | --no-run-make                  Do not run 'make' after the dependencies are built. If --xcode is specified  "
+    echo "                                      this option has no effect (The default is that 'make' is executed to start   "
+    echo "                                      the compile process).                                                        "
     echo " "
     echo " -np | --number-of-processes <NUMBER> The number of processes to be run simultaneously, recommended for multi-core "
     echo "                                      or processors with hyper-threading technology for a faster compile process."
@@ -94,6 +97,7 @@ ERRORS_OCCURED="0"
 RELWITHDEBINFO="0"
 RUN_CMAKE="1"
 RUN_MAKE="1"
+MAKE_XCODE="0"
 NPROCS=`sysctl -n hw.ncpu`
 viewer=
 
@@ -152,6 +156,10 @@ while [ "$1" != "" ]; do
                                                 continue
                                             fi
                                             export OGRE_HOME=$1
+                                            ;;
+
+         -x | --xcode                       MAKE_XCODE="1"
+                                            RUN_MAKE="0"
                                             ;;
 
         -nc | --no-run-cmake )              RUN_CMAKE="0"
@@ -679,9 +687,14 @@ export BOOST_ROOT=$DEPS/include
 export BOOST_INCLUDEDIR=$DEPS/include/boost
 export BOOST_LIBRARYDIR=$DEPS/lib
 
+XCODE_SUFFIX=
+if [ "$MAKE_XCODE" == "1" ]; then
+    XCODE_SUFFIX="-G Xcode"
+fi
+
 cd $viewer
 if [ "$RUN_CMAKE" == "1" ]; then
-    TUNDRA_DEP_PATH=$prefix cmake .
+    TUNDRA_DEP_PATH=$prefix cmake . $XCODE_SUFFIX
 fi
 
 if [ "$RUN_MAKE" == "1" ]; then
