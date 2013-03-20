@@ -138,6 +138,8 @@ SceneTreeWidget::~SceneTreeWidget()
         fileDialog->close();
 
     SaveInvokeHistory();
+
+    SAFE_DELETE(undoManager_);
 }
 
 void SceneTreeWidget::SetScene(const ScenePtr &s)

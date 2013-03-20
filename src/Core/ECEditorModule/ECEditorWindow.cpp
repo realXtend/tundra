@@ -182,6 +182,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
 ECEditorWindow::~ECEditorWindow()
 {
     SAFE_DELETE(transformEditor);
+    SAFE_DELETE(undoManager_);
     //DeselectAllEntities(); the list is already cleared here
 }
 
