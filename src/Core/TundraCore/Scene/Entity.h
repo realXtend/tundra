@@ -52,8 +52,6 @@ class TUNDRACORE_API Entity : public QObject, public enable_shared_from_this<Ent
     Q_PROPERTY(bool temporary READ IsTemporary WRITE SetTemporary) /**< @copydoc IsTemporary */
     Q_PROPERTY(ComponentMap components READ Components) /**< @copydoc Components */
 
-    struct HideMe {}; // Workaround for the fact the make_shared cannot be used for classes with private constructor, http://stackoverflow.com/a/7521822
-
 public:
     typedef std::map<component_id_t, ComponentPtr> ComponentMap; ///< Component container.
     typedef std::vector<ComponentPtr> ComponentVector; ///< Component vector container.
@@ -150,16 +148,16 @@ public:
     const ActionMap &Actions() const { return actions_; }
 
     /// @cond PRIVATE
-    /// Constructor
+    /// Do not directly allocate new entities using operator new, but use the factory-based Scene::CreateEntity functions instead.
     /** @param framework Framework
         @param scene Scene this entity belongs to */
-    Entity(const HideMe &, Framework* framework, Scene* scene);
+    Entity(Framework* framework, Scene* scene);
 
-    /// Constructor that takes an id for the entity
+    /// Do not directly allocate new entities using operator new, but use the factory-based Scene::CreateEntity functions instead.
     /** @param framework Framework
         @param id unique id for the entity.
         @param scene Scene this entity belongs to */
-    Entity(const HideMe &, Framework* framework, entity_id_t id, Scene* scene);
+    Entity(Framework* framework, entity_id_t id, Scene* scene);
     /// @endcond
 
     // DEPRECATED
@@ -419,8 +417,6 @@ signals:
 
 private:
     friend class Scene;
-    static EntityPtr Instantiate(Framework* framework, Scene* scene) { return MAKE_SHARED(Entity, HideMe(), framework, scene); }
-    static EntityPtr Instantiate(Framework* framework, entity_id_t id, Scene* scene) { return MAKE_SHARED(Entity, HideMe(), framework, id, scene); }
 
     /// Set new id
     void SetNewId(entity_id_t id) { id_ = id; }

@@ -21,14 +21,14 @@
 
 #include "MemoryLeakCheck.h"
 
-Entity::Entity(const HideMe &, Framework* framework, Scene* scene) :
+Entity::Entity(Framework* framework, Scene* scene) :
     framework_(framework),
     scene_(scene),
     temporary_(false)
 {
 }
 
-Entity::Entity(const HideMe &, Framework* framework, entity_id_t id, Scene* scene) :
+Entity::Entity(Framework* framework, entity_id_t id, Scene* scene) :
     framework_(framework),
     id_(id),
     scene_(scene),

@@ -46,7 +46,7 @@ Scene::Scene(const QString &name, Framework *framework, bool viewEnabled, bool a
     // In headless mode only view disabled-scenes can be created
     viewEnabled_ = framework->IsHeadless() ? false : viewEnabled;
 
-    // Connect to frame update to handle signalling entities created on this frame
+    // Connect to frame update to handle signaling entities created on this frame
     connect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(OnUpdated(float)));
 }
 
@@ -96,8 +96,8 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
         }
     }
 
-    EntityPtr entity = Entity::Instantiate(framework_, id, this);
-    for(size_t i=0 ; i<(size_t)components.size() ; ++i)
+    EntityPtr entity = MAKE_SHARED(Entity, framework_, id, this);
+    for(size_t i = 0 ; i < (size_t)components.size(); ++i)
     {
         ComponentPtr newComp = framework_->Scene()->CreateComponentByName(this, components[i]);
         if (newComp)
