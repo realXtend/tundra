@@ -97,7 +97,7 @@ class EC_Terrain;
     <b>Depends on the component @ref EC_Placeable "Placeable", and optionally on @ref EC_Mesh "Mesh" 
     and @ref EC_Terrain "Terrain" to copy the collision shape from them</b>.
     </table> */
-class PHYSICS_MODULE_API EC_RigidBody : public IComponent, public btMotionState
+class PHYSICS_MODULE_API EC_RigidBody : public IComponent, public btMotionState /**< @todo pimpl */
 {
     Q_OBJECT
     COMPONENT_NAME("EC_RigidBody", 23)
