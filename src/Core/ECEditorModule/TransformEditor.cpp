@@ -28,6 +28,8 @@
 #include "Application.h"
 #include <QUiLoader>
 
+#include "MemoryLeakCheck.h"
+
 static const char *cTransformEditorWindowPos = "transform editor window pos";
 
 TransformEditor::TransformEditor(const ScenePtr &scene) :

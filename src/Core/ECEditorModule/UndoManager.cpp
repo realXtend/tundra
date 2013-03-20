@@ -5,6 +5,8 @@
 #include <QUndoCommand>
 #include <QAction>
 
+#include "MemoryLeakCheck.h"
+
 UndoManager::UndoManager(Scene * scene, QObject * parent) :
     QObject(parent)
 {

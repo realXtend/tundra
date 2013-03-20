@@ -14,6 +14,8 @@
 #include "Entity.h"
 #include "EC_DynamicComponent.h"
 
+#include "MemoryLeakCheck.h"
+
 template<> bool EditAttributeCommand<Color>::mergeWith(const QUndoCommand * other)
 {
     if (id() != other->id())

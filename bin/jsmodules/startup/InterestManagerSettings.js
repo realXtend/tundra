@@ -39,7 +39,7 @@ function OnScriptDestroyed()
     }
 }
 
-// Renderer IM widget usable only in headful mode.
+// Renderer IM widget and menu usable only in headful mode.
 if (!framework.IsHeadless())
 {
     engine.ImportExtension("qt.core");
@@ -50,12 +50,14 @@ if (!framework.IsHeadless())
 
     var configWinPos = "im settings windows pos"
     var IMWidget = null;
+
+    CreateMenu();
 }
 
-CreateMenu();
+
 // Add menu entry to Settings menu
 function CreateMenu()
-{    
+{
     var IMMenu = findChild(ui.MainWindow().menuBar(), "SettingsMenu");
 
     if (IMMenu == null)

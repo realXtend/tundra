@@ -4,6 +4,7 @@
 #include "Scene.h"
 #include "Entity.h"
 
+#include "MemoryLeakCheck.h"
 
 EntityIdChangeTracker::EntityIdChangeTracker(Scene * scene, QObject * parent) :
     scene_(scene->shared_from_this()),
