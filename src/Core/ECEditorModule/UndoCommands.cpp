@@ -14,21 +14,6 @@
 #include "Entity.h"
 #include "EC_DynamicComponent.h"
 
-template<> bool EditAttributeCommand<Color>::mergeWith(const QUndoCommand * other)
-{
-    if (id() != other->id())
-        return false;
-
-    const EditAttributeCommand<Color> *otherCommand = dynamic_cast<const EditAttributeCommand<Color> *>(other);
-    if (!otherCommand)
-        return false;
-
-    if (oldValue_ != otherCommand->oldValue_)
-        return false;
-
-    return true;
-}
-
 AddAttributeCommand::AddAttributeCommand(IComponent * comp, const QString typeName, const QString name, QUndoCommand * parent) : 
     entity_(comp->ParentEntity()->shared_from_this()),
     componentName_(comp->Name()),
