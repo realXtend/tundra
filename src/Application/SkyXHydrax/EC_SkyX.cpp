@@ -410,6 +410,11 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
         float skyxMultiplier = timeMultiplier.Get() / 2.0f;
         impl->skyX->setTimeMultiplier(skyxMultiplier);
 
+        /// @todo Ideally, when timeMultiplier would be set to 0, we would sync the value of the current
+        /// time over network. However this is probably not possible to do on a headless Tundra, and currently
+        /// would cause the time to be rolled back to the original time before it was speeded up with a time
+        /// multiplier. Investigate if SkyX can be driven on a headless Tundra sensibly.
+
         // Sometimes volumetric clouds bug out and speed up when a new time 
         // multiplier is defined. Set autoupdate again so it won't happen.
         if ((CloudType)cloudType.Get() == Volumetric)
@@ -420,8 +425,8 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
     }
     else if (attr == &time || attr == &sunsetTime || attr == &sunriseTime)
     {
-        // Ignore local time changes as time is driven by SkyX when the time multiplier is != 0.
-        if (change != AttributeChange::LocalOnly)
+        // Ignore internal time changes when the time multiplier is != 0 and time is driven by SkyX.
+        if (!EqualAbs(time.Get(), 0.f))
             impl->controller->setTime(Ogre::Vector3(time.Get(), sunriseTime.Get(), sunsetTime.Get()));
 
         if (attr == &time)

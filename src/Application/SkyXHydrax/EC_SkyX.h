@@ -40,14 +40,15 @@ public:
     Q_PROPERTY(int cloudType READ getcloudType WRITE setcloudType);
 
     /// The time multiplier can be a also a negative number, 0 will disable auto-updating.
+    /** @note If time multiplier is altered on a headless Tundra, the changes to the time attribute are *not* made accordingly. */
     DEFINE_QPROPERTY_ATTRIBUTE(float, timeMultiplier);
     Q_PROPERTY(float timeMultiplier READ gettimeMultiplier WRITE settimeMultiplier);
 
-    /// Time of day in [0,24]h range, 
+    /// Time of day in [0,24]h range.
     DEFINE_QPROPERTY_ATTRIBUTE(float, time);
     Q_PROPERTY(float time READ gettime WRITE settime);
 
-    /// Sunrise time in [0,24]h range
+    /// Sunrise time in [0,24]h range.
     DEFINE_QPROPERTY_ATTRIBUTE(float, sunriseTime);
     Q_PROPERTY(float sunriseTime READ getsunriseTime WRITE setsunriseTime);
 
@@ -55,11 +56,11 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float, sunsetTime);
     Q_PROPERTY(float sunsetTime READ getsunsetTime WRITE setsunsetTime);
 
-    /// Cloud coverage with range [0,100]. (Volumetric clouds only)
+    /// Cloud coverage with range [0,100] (Volumetric clouds only).
     DEFINE_QPROPERTY_ATTRIBUTE(float, cloudCoverage);
     Q_PROPERTY(float cloudCoverage READ getcloudCoverage WRITE setcloudCoverage);
 
-    /// Average cloud size with range [0,100]. (Volumetric clouds only)
+    /// Average cloud size with range [0,100] (Volumetric clouds only).
     DEFINE_QPROPERTY_ATTRIBUTE(float, cloudAverageSize);
     Q_PROPERTY(float cloudAverageSize READ getcloudAverageSize WRITE setcloudAverageSize);
 
