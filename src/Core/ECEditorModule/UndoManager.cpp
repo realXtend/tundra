@@ -29,6 +29,15 @@ UndoManager::UndoManager(Scene * scene, QObject * parent) :
     connect(undoViewAction_, SIGNAL(triggered(bool)), undoView_, SLOT(show()));
 }
 
+UndoManager::~UndoManager()
+{
+    SAFE_DELETE(undoMenu_);
+    SAFE_DELETE(redoMenu_);
+    SAFE_DELETE(undoViewAction_);
+    SAFE_DELETE(tracker_);
+    SAFE_DELETE(undoStack_);
+}
+
 QMenu * UndoManager::UndoMenu() const
 {
     return undoMenu_;

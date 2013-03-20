@@ -28,6 +28,9 @@ public:
        @param parent This object's parent (optional) */
     UndoManager(Scene * scene, QObject * parent);
 
+    /// Destructor;
+    ~UndoManager();
+
     /// Pushes new command to the undo stack
     /* @param command The command to be pushed. */
     void Push(QUndoCommand * command);
