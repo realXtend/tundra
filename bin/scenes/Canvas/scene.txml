@@ -1,20 +1,6 @@
 <!DOCTYPE Scene>
 <scene>
  <entity id="1">
-  <component type="EC_Script" sync="true">
-   <attribute value="local://freelookcamera.js" name="Script ref"/>
-   <attribute value="true" name="Run on load"/>
-   <attribute value="0" name="Run mode"/>
-   <attribute value="" name="Script application name"/>
-   <attribute value="" name="Script class name"/>
-  </component>
-  <component type="EC_Camera" sync="true">
-   <attribute value="0.000000 1.000000 0.000000" name="Up vector"/>
-   <attribute value="0.100000001" name="Near plane"/>
-   <attribute value="2000" name="Far plane"/>
-   <attribute value="45" name="Vertical FOV"/>
-   <attribute value="" name="Aspect ratio"/>
-  </component>
   <component type="EC_Placeable" sync="true">
    <attribute value="-66.685356,43.672966,-41.316483,-12.000015,-126.599899,0.000000,1.000000,1.000000,1.000000" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
@@ -26,21 +12,6 @@
   <component type="EC_Name" sync="true">
    <attribute value="FreeLookCameraSpawnPos" name="name"/>
    <attribute value="" name="description"/>
-  </component>
-  <component type="EC_InputMapper" sync="true">
-   <attribute value="EC_InputMapper" name="Input context name"/>
-   <attribute value="101" name="Input context priority"/>
-   <attribute value="false" name="Take keyboard events over Qt"/>
-   <attribute value="true" name="Take mouse events over Qt"/>
-   <attribute value="1" name="Action execution type"/>
-   <attribute value="false" name="Key modifiers enable"/>
-   <attribute value="true" name="Enable actions"/>
-   <attribute value="true" name="Trigger on keyrepeats"/>
-   <attribute value="false" name="Suppress used keyboard events"/>
-   <attribute value="false" name="Suppress used mouse events"/>
-  </component>
-  <component type="EC_SoundListener" sync="false">
-   <attribute value="true" name="active"/>
   </component>
  </entity>
  <entity id="2">
