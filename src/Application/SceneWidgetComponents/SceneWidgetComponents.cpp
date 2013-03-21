@@ -57,15 +57,17 @@ void SceneWidgetComponents::Uninitialize()
 {
     Reset();
 
-    if (networkManager_)
+#ifdef SCENEWIDGET_BROWSER_SHARED_DATA
+    if (networkManager_) // Reset parent of cache and cookie jar.
     {
-        // Reset parent of cache and cookie jar.
         if (networkManager_->cache())
             networkManager_->cache()->setParent(0);
         if (networkManager_->cookieJar())
             networkManager_->cookieJar()->setParent(0);
-        SAFE_DELETE(networkManager_)
     }
+#endif
+
+    SAFE_DELETE(networkManager_)
 }
 
 QImage SceneWidgetComponents::DrawMessageTexture(QString message, bool error)
@@ -88,8 +90,6 @@ QImage SceneWidgetComponents::DrawMessageTexture(QString message, bool error)
 
 void SceneWidgetComponents::OnMouseEvent(MouseEvent *mEvent)
 {
-    MouseEvent::EventType et = mEvent->eventType;
-
     if (framework_->IsHeadless())
         return;
     if (!framework_->Scene()->MainCameraScene())
@@ -99,36 +99,27 @@ void SceneWidgetComponents::OnMouseEvent(MouseEvent *mEvent)
 
     OgreWorldPtr world = framework_->Scene()->MainCameraScene()->GetWorld<OgreWorld>();
     RaycastResult *raycast = world->Raycast(mEvent->x, mEvent->y);
-    IComponent* hitComponent = raycast != 0 ? raycast->component : 0;
-    EC_Billboard *hitBillboard = hitComponent != 0 ? dynamic_cast<EC_Billboard*>(hitComponent) : 0;
+    EC_Billboard *hitBillboard = dynamic_cast<EC_Billboard*>(raycast->component);
     EC_WidgetBillboard *hitWidgetBillboard = 0;
     if (hitBillboard && hitBillboard->ParentEntity())
         hitWidgetBillboard = hitBillboard->ParentEntity()->GetComponent<EC_WidgetBillboard>().get();
     
-    EntityList ents = framework_->Scene()->MainCameraScene()->GetEntitiesWithComponent(EC_WidgetBillboard::TypeNameStatic());
-    for (EntityList::const_iterator iter = ents.begin(); iter != ents.end(); ++iter)
+    std::vector<shared_ptr<EC_WidgetBillboard> > widgetBillboards = framework_->Scene()->MainCameraScene()->Components<EC_WidgetBillboard>();
+    for(size_t i = 0; i < widgetBillboards.size(); ++i)
     {
-        EntityPtr ent = *iter;
-        if (!ent.get())
-            continue;
-
-        EC_WidgetBillboard *widgetBillboard = dynamic_cast<EC_WidgetBillboard*>(ent->GetComponent(EC_WidgetBillboard::TypeNameStatic()).get());
-        if (!widgetBillboard)
-            continue;
-        
-        if (!raycast || !hitWidgetBillboard || mEvent->handled || mEvent->IsRightButtonDown() || et == MouseEvent::MouseScroll)
+        if (!hitWidgetBillboard || mEvent->handled || mEvent->IsRightButtonDown() || mEvent->Type() == MouseEvent::MouseScroll)
         {
-            widgetBillboard->CheckMouseState();
+            widgetBillboards[i]->CheckMouseState();
             continue;
         }
         
-        if (hitWidgetBillboard == widgetBillboard)
+        if (hitWidgetBillboard == widgetBillboards[i].get())
         {
             mEvent->handled = true;
-            widgetBillboard->OnMouseEvent(mEvent, raycast);
+            widgetBillboards[i]->OnMouseEvent(mEvent, raycast);
         }
         else
-            widgetBillboard->CheckMouseState();
+            widgetBillboards[i]->CheckMouseState();
     }
 }
 
@@ -315,10 +306,8 @@ void SceneWidgetComponents::OnWebViewSslErrors(QNetworkReply *reply, const QList
     if (errors.isEmpty())
         LogWarning("- Unknown SSL error");
     else
-    {
         foreach(QSslError err, errors)
             LogWarning("- " + err.errorString());
-    }
 }
 #endif
 
@@ -339,11 +328,7 @@ void WebRenderRequest::Reset()
 
 bool WebRenderRequest::IsIdentical(WebRenderRequest request)
 {
-    if (client.data() == request.client.data() &&
-        url == request.url &&
-        resolution == request.resolution)
-        return true;
-    return false;
+    return (client.data() == request.client.data() && url == request.url && resolution == request.resolution);
 }
 
 bool WebRenderRequest::operator==(const WebRenderRequest &other) const
