@@ -493,27 +493,34 @@ AttributeVector Entity::GetAttributes(const QString &name) const
     return ret;
 }
 
-EntityPtr Entity::Clone(bool local, bool temporary) const
+EntityPtr Entity::Clone(bool local, bool temporary, const QString &cloneName, AttributeChange::Type changeType) const
 {
     QDomDocument doc("Scene");
     QDomElement sceneElem = doc.createElement("scene");
     QDomElement entityElem = doc.createElement("entity");
     entityElem.setAttribute("sync", BoolToString(!local));
     entityElem.setAttribute("id", local ? scene_->NextFreeIdLocal() : scene_->NextFreeId());
-    for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
+    // Set the temporary status in advance so it's valid when Scene::CreateContentFromXml signals changes in the scene
+    entityElem.setAttribute("temporary", BoolToString(temporary));
+    // Setting of a new name for the clone is a bit clumsy, but this is the best way to do it currently.
+    const bool setNameForClone = !cloneName.isEmpty();
+    bool cloneNameWritten = false;
+    for(ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
+    {
         i->second->SerializeTo(doc, entityElem);
-
+        if (setNameForClone && !cloneNameWritten && i->second->TypeId() == EC_Name::ComponentTypeId)
+        {
+            // Now that we've serialized the Name component, overwrite value of the "name" attribute.
+            QDomElement nameComponentElem = entityElem.lastChildElement();
+            nameComponentElem.firstChildElement().setAttribute("value", cloneName);
+            cloneNameWritten = true;
+        }
+    }
     sceneElem.appendChild(entityElem);
     doc.appendChild(sceneElem);
 
-    QList<Entity *> entities = scene_->CreateContentFromXml(doc, true, AttributeChange::Default);
-    if (entities.size() && entities.first())
-    {
-        entities.first()->SetTemporary(temporary);
-        return entities.first()->shared_from_this();
-    }
-    else
-        return EntityPtr();
+    QList<Entity *> newEntities = scene_->CreateContentFromXml(doc, true, changeType);
+    return (!newEntities.isEmpty() && newEntities.first() ? newEntities.first()->shared_from_this() : EntityPtr());
 }
 
 void Entity::SetName(const QString &name)
