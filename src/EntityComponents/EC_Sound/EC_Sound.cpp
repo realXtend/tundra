@@ -196,18 +196,17 @@ EntityPtr EC_Sound::GetActiveSoundListener()
 #endif
     
     EntityPtr activeSoundListener;
-    EntityList listeners = parentEntity->ParentScene()->GetEntitiesWithComponent("EC_SoundListener");
-    foreach(EntityPtr listener, listeners)
+    std::vector<shared_ptr<EC_SoundListener> > listeners = parentEntity->ParentScene()->Components<EC_SoundListener>();
+    foreach(const shared_ptr<EC_SoundListener> & listener, listeners)
     {
-        EC_SoundListener *ec = listener->GetComponent<EC_SoundListener>().get();
-        if (ec->active.Get())
+        if (listener->active.Get())
         {
 #ifndef _DEBUG
-            assert(ec->ParentEntity());
-            return ec->ParentEntity()->shared_from_this();
+            assert(listener->ParentEntity());
+            return listener->ParentEntity()->shared_from_this();
 #else
             ++numActiveListeners;
-            activeSoundListener = ec->ParentEntity()->shared_from_this();
+            activeSoundListener = listener->ParentEntity()->shared_from_this();
             assert(activeSoundListener.get());
 #endif
         }
