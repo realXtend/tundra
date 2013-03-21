@@ -271,10 +271,12 @@ public slots:
     ComponentVector ComponentsOfType(const QString &typeName) const;
 
     /// Creates clone of the entity.
-    /** @param local If true, the new entity will be local entity. If false, the entity will be replicated.
-        @param temporary Will the new entity be temporary.
+    /** @param createAsLocal If true, the new entity will be local entity. If false, the entity will be replicated.
+        @param createAsTemporary Will the new entity be temporary.
+        @param name cloneName for the new entity.
+        @param changeType Change signaling mode.
         @return Pointer to the new entity, or null pointer if the cloning fails. */
-    EntityPtr Clone(bool local, bool temporary) const;
+    EntityPtr Clone(bool createAsLocal, bool createAsTemporary, const QString &cloneName= "", AttributeChange::Type changeType = AttributeChange::Default) const;
 
     /// Serializes this entity and its' components to the given XML document
     /** @param doc The XML document to serialize this entity to.
