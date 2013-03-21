@@ -64,6 +64,10 @@ public:
     template <typename T>
     shared_ptr<T> CreateComponent(const QString &name = "", AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
 
+    /// Creates, or returns, if already existing, a component with certain type and name (optional), already casted to the correct type.
+    template<typename T>
+    shared_ptr<T> GetOrCreateComponent(const QString &name = "", AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
+
     /// Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
     /** If there are several components with the specified type, returns the first component found (arbitrary). */
     template <class T>
