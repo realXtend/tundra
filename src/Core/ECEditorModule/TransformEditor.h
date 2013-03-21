@@ -79,19 +79,6 @@ public slots:
     void ScaleTargets(const float3 &offset);
 
 private:
-    /// Represents weak pointer to Transform attribute.
-    struct TransformAttributeWeakPtr : public AttributeWeakPtr
-    {
-        /** @param p If the placeable component is parented, pointer to the parent placeable entity. */
-        TransformAttributeWeakPtr(const ComponentPtr &c, IAttribute *a, const EntityPtr &p) :
-            AttributeWeakPtr(c, a),
-            parentPlaceableEntity(p)
-        {
-        }
-        /// If the placeable component is parented, points to the parent placeable entity.
-        EntityWeakPtr parentPlaceableEntity;
-    };
-
     /// Returns whether or not transform attribute @attr is parented and current selection of targets contain also the parent.
     bool TargetsContainAlsoParent(const TransformAttributeWeakPtr &attr) const;
 
