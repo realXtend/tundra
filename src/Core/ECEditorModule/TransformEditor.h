@@ -16,6 +16,7 @@
 #include <QObject>
 
 class OgreWorld;
+class UndoManager;
 
 /// Controls Transform attributes for group of entities.
 /** Can be used to alter transforms of entities even without the visual gizmo (EC_TransformGizmo).*/
@@ -27,7 +28,7 @@ public:
     /// Constructs the editor.
     /** Creates EC_TransformGizmo if it is available.
         @param editedScene Scene in which the edited entities reside. */
-    explicit TransformEditor(const ScenePtr &editedScene);
+    explicit TransformEditor(const ScenePtr &editedScene, UndoManager * undoManager);
 
     /// Destroys the editor.
     /** Destroys the EC_TransformGizmo if it was created. */
@@ -97,6 +98,7 @@ private:
     InputContextPtr input; ///< Input context for controlling gizmo mode.
     QWidget* editorSettings; ///< Editor settings window
     bool localAxes; ///< Whether to show object local axes instead of global world axes.
+    UndoManager * undoManager_; ///< The same undo manager as this TransformEditor's parent ECEditorWindow
 
 private slots:
     /// Handles KeyEvents and changes gizmo's mode.

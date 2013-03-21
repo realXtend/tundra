@@ -13,6 +13,8 @@
 #include "UiMainWindow.h"
 #include "Entity.h"
 #include "EC_DynamicComponent.h"
+#include "Transform.h"
+#include "EC_Placeable.h"
 
 AddAttributeCommand::AddAttributeCommand(IComponent * comp, const QString typeName, const QString name, QUndoCommand * parent) : 
     entity_(comp->ParentEntity()->shared_from_this()),
@@ -586,6 +588,170 @@ void ToggleTemporaryCommand::ToggleTemporary(bool temporary)
             entity->SetTemporary(temporary);
     }
 }
+
+TransformCommand::TransformCommand(TransformAttributeWeakPtrList attributes, int numberOfItems, Action action, const float3 & offset, QUndoCommand * parent) : 
+    targets_(attributes),
+    nItems_(numberOfItems),
+    action_(action),
+    offset_(offset),
+    rotation_(float3x4::identity),
+    QUndoCommand(parent)
+{
+    SetCommandText();
+}
+
+TransformCommand::TransformCommand(TransformAttributeWeakPtrList attributes, int numberOfItems, const float3x4 & rotation, QUndoCommand * parent) :
+    targets_(attributes),
+    nItems_(numberOfItems),
+    action_(TransformCommand::Rotate),
+    rotation_(rotation),
+    offset_(float3::zero),
+    QUndoCommand(parent)
+{
+    SetCommandText();
+}
+
+int TransformCommand::id() const
+{
+    return Id;
+}
+
+void TransformCommand::SetCommandText()
+{
+    QString text;
+    switch(action_)
+    {
+        case Translate:
+            text += "translate";
+            break;
+        case Rotate:
+            text += "rotate";
+            break;
+        case Scale:
+            text += "scale";
+            break;
+    }
+    text += QString(" %1 ").arg(nItems_);
+    text += (nItems_ == 1 ? "item" : "items");
+    setText(text);
+}
+
+void TransformCommand::undo()
+{
+    switch(action_)
+    {
+        case Translate:
+            DoTranslate(true);
+            break;
+        case Rotate:
+            DoRotate(true);
+            break;
+        case Scale:
+            DoScale(true);
+            break;
+    }
+}
+
+void TransformCommand::redo()
+{
+    switch(action_)
+    {
+        case Translate:
+            DoTranslate(false);
+            break;
+        case Rotate:
+            DoRotate(false);
+            break;
+        case Scale:
+            DoScale(false);
+            break;
+    }
+}
+
+void TransformCommand::DoTranslate(bool isUndo)
+{
+    float3 offset = (isUndo ? offset = offset_.Neg() : offset = offset_);
+
+    foreach(const TransformAttributeWeakPtr &attr, targets_)
+    {
+        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
+        if (transform)
+        {
+            Transform t = transform->Get();
+            // If we have parented transform, translate the changes to parent's world space.
+            Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
+            EC_Placeable *parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
+            if (parentPlaceable)
+                t.pos += parentPlaceable->WorldToLocal().MulDir(offset);
+            else
+                t.pos += offset;
+            transform->Set(t, AttributeChange::Default);
+        }
+    }
+}
+
+void TransformCommand::DoRotate(bool isUndo)
+{
+    float3x4 rotation = (isUndo ? rotation_.Inverted() : rotation_);
+
+    foreach(const TransformAttributeWeakPtr &attr, targets_)
+    {
+        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
+        if (transform)
+        {
+            Transform t = transform->Get();
+            // If we have parented transform, translate the changes to parent's world space.
+            Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
+            EC_Placeable* parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
+            if (parentPlaceable)
+                t.FromFloat3x4(parentPlaceable->WorldToLocal() * rotation * parentPlaceable->LocalToWorld() * t.ToFloat3x4());
+            else
+                t.FromFloat3x4(rotation * t.ToFloat3x4());
+
+            transform->Set(t, AttributeChange::Default);
+        }
+    }
+}
+
+void TransformCommand::DoScale(bool isUndo)
+{
+    float3 offset = (isUndo ? offset = offset_.Neg() : offset = offset_);
+
+    foreach(const TransformAttributeWeakPtr &attr, targets_)
+    {
+        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
+        if (transform)
+        {
+            Transform t = transform->Get();
+            t.scale += offset;
+            transform->Set(t, AttributeChange::Default);
+        }
+    }
+}
+
+bool TransformCommand::mergeWith(const QUndoCommand * other)
+{
+    if (id() != other->id())
+        return false;
+
+    const TransformCommand * otherCommand = dynamic_cast<const TransformCommand*> (other);
+    if (!otherCommand)
+        return false;
+
+    if (action_ != otherCommand->action_)
+        return false;
+
+    if (targets_ != otherCommand->targets_)
+        return false;
+
+    if (action_ != Rotate)
+        offset_ += otherCommand->offset_;
+    else
+        rotation_ = otherCommand->rotation_.Mul(rotation_);
+
+    return true;
+}
+
 
 /*
 PasteCommand::PasteCommand(QUndoCommand *parent) :

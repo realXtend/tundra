@@ -19,6 +19,8 @@
 #include "AssetAPI.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
+#include "UndoCommands.h"
+#include "UndoManager.h"
 #ifdef EC_TransformGizmo_ENABLED
 #include "EC_TransformGizmo.h"
 #endif
@@ -30,10 +32,11 @@
 
 static const char *cTransformEditorWindowPos = "transform editor window pos";
 
-TransformEditor::TransformEditor(const ScenePtr &editedScene) :
+TransformEditor::TransformEditor(const ScenePtr &editedScene, UndoManager * manager) :
     editorSettings(0),
     localAxes(false),
-    scene(editedScene)
+    scene(editedScene),
+    undoManager_(manager)
 {
     if (!scene.expired())
     {
@@ -217,27 +220,18 @@ float3 TransformEditor::GizmoPos() const
 void TransformEditor::TranslateTargets(const float3 &offset)
 {
     PROFILE(TransformEditor_TranslateTargets);
+    TransformAttributeWeakPtrList targetAttrs;
+
     foreach(const TransformAttributeWeakPtr &attr, targets)
     {
-        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
-        if (transform)
-        {
-            // If selected object's parent is also selected, do not apply changes to the child object.
-            if (TargetsContainAlsoParent(attr))
-                continue;
+        // If selected object's parent is also selected, do not apply changes to the child object.
+        if (TargetsContainAlsoParent(attr))
+            continue;
 
-            Transform t = transform->Get();
-            // If we have parented transform, translate the changes to parent's world space.
-            Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
-            EC_Placeable *parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
-            if (parentPlaceable)
-                t.pos += parentPlaceable->WorldToLocal().MulDir(offset);
-            else
-                t.pos += offset;
-            transform->Set(t, AttributeChange::Default);
-        }
+        targetAttrs << attr;
     }
 
+    undoManager_->Push(new TransformCommand(targetAttrs, targets.size(), TransformCommand::Translate, offset));
     FocusGizmoPivotToAabbCenter();
 }
 
@@ -246,50 +240,35 @@ void TransformEditor::RotateTargets(const Quat &delta)
     PROFILE(TransformEditor_RotateTargets);
     float3 gizmoPos = GizmoPos();
     float3x4 rotation = float3x4::Translate(gizmoPos) * float3x4(delta) * float3x4::Translate(-gizmoPos);
-    
+    TransformAttributeWeakPtrList targetAttrs;
+
     foreach(const TransformAttributeWeakPtr &attr, targets)
     {
-        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
-        if (transform)
-        {
-            // If selected object's parent is also selected, do not apply changes to the child object.
-            if (TargetsContainAlsoParent(attr))
-                continue;
+        // If selected object's parent is also selected, do not apply changes to the child object.
+        if (TargetsContainAlsoParent(attr))
+            continue;
 
-            Transform t = transform->Get();
-            // If we have parented transform, translate the changes to parent's world space.
-            Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
-            EC_Placeable* parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
-            if (parentPlaceable)
-                t.FromFloat3x4(parentPlaceable->WorldToLocal() * rotation * parentPlaceable->LocalToWorld() * t.ToFloat3x4());
-            else
-                t.FromFloat3x4(rotation * t.ToFloat3x4());
-            
-            transform->Set(t, AttributeChange::Default);
-        }
+        targetAttrs << attr;
     }
 
+    undoManager_->Push(new TransformCommand(targetAttrs, targets.size(), rotation));
     FocusGizmoPivotToAabbCenter();
 }
 
 void TransformEditor::ScaleTargets(const float3 &offset)
 {
     PROFILE(TransformEditor_ScaleTargets);
+    TransformAttributeWeakPtrList targetAttrs;
     foreach(const TransformAttributeWeakPtr &attr, targets)
     {
-        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
-        if (transform)
-        {
-            // If selected object's parent is also selected, do not apply changes to the child object.
-            if (TargetsContainAlsoParent(attr))
-                continue;
+        // If selected object's parent is also selected, do not apply changes to the child object.
+        if (TargetsContainAlsoParent(attr))
+            continue;
 
-            Transform t = transform->Get();
-            t.scale += offset;
-            transform->Set(t, AttributeChange::Default);
-        }
+        targetAttrs << attr;
     }
 
+    undoManager_->Push(new TransformCommand(targetAttrs, targets.size(), TransformCommand::Scale, offset));
     FocusGizmoPivotToAabbCenter();
 }
 
