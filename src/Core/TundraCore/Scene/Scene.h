@@ -201,6 +201,15 @@ public:
     template <typename T>
     EntityList EntitiesWithComponent(const QString &name = "") const;
 
+    /// @cond PRIVATE
+    /// Do not directly allocate new scenes using operator new, but use the factory-based SceneAPI::CreateScene functions instead.
+    /** @param name Name of the scene.
+        @param fw Parent framework.
+        @param viewEnabled Whether the scene is view enabled.
+        @param authority Whether the scene has authority i.e. a single user or server scene, false for network client scenes */
+    Scene(const QString &name, Framework *fw, bool viewEnabled, bool authority);
+    /// @endcond
+
 public slots:
     /// Creates new entity that contains the specified components.
     /** Entities should never be created directly, but instead created with this function.
@@ -460,13 +469,6 @@ private slots:
 
 private:
     friend class ::SceneAPI;
-    
-    /// Constructor.
-    /** @param name Name of the scene.
-        @param fw Parent framework.
-        @param viewEnabled Whether the scene is view enabled.
-        @param authority Whether the scene has authority i.e. a single user or server scene, false for network client scenes */
-    Scene(const QString &name, Framework *fw, bool viewEnabled, bool authority);
 
     /// Container for an ongoing attribute interpolation
     struct AttributeInterpolation
