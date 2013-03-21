@@ -16,7 +16,8 @@ namespace Ogre { class Camera; }
 /// A Sky component using SkyX, http://www.ogre3d.org/tikiwiki/SkyX
 /** This is a singleton type component and only one component per scene is allowed.
     Provides means of creating photorealistic environments together with EC_Hydrax.
-    @note Requires SkyX Ogre add-on. */
+    @note Requires SkyX Ogre add-on.
+    @note SkyX and EnvironmentLight components can be considered somewhat mutually exclusive. */
 class SKYX_HYDRAX_API EC_SkyX : public IComponent
 {
     Q_OBJECT
@@ -105,6 +106,10 @@ public:
     /// Specular color of the moonlight.
     DEFINE_QPROPERTY_ATTRIBUTE(Color, moonlightSpecularColor);
     Q_PROPERTY(Color moonlightSpecularColor READ getmoonlightSpecularColor WRITE setmoonlightSpecularColor);
+
+    /// Scene's ambient light color.
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, ambientLightColor);
+    Q_PROPERTY(Color ambientLightColor READ getambientLightColor WRITE setambientLightColor);
 
 public slots:
     /// Returns whether or not the sun is visible (above horizon).

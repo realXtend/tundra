@@ -140,6 +140,7 @@ EC_SkyX::EC_SkyX(Scene* scene) :
     sunlightSpecularColor(this, "Sunlight specular color"), // defaults to black
     moonlightDiffuseColor(this, "Moonlight color", Color(0.639f,0.639f,0.639f, 0.25f)), /**< @todo Nicer color for moonlight */
     moonlightSpecularColor(this, "Moonlight specular color"), // defaults to black
+    ambientLightColor(this, "Ambient light color", OgreWorld::DefaultSceneAmbientLightColor()), // Ambient and sun diffuse color copied from EC_EnvironmentLight
     impl(0)
 {
     static AttributeMetadata cloudTypeMd, cloudHeightMd, timeMd, zeroToHundredMd, mediumStepMd, smallStepMd;
@@ -271,11 +272,10 @@ void EC_SkyX::CreateLights()
 {
     if (impl)
     {
-        // Ambient and sun diffuse color copied from EC_EnvironmentLight
         OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
         Ogre::SceneManager *sm = w->OgreSceneManager();
         impl->originalAmbientColor = sm->getAmbientLight();
-        sm->setAmbientLight(OgreWorld::DefaultSceneAmbientLightColor());
+        sm->setAmbientLight(ambientLightColor.Get());
 
         impl->sunlight = sm->createLight(w->Renderer()->GetUniqueObjectName("SkyXSunlight"));
         impl->sunlight->setType(Ogre::Light::LT_DIRECTIONAL);
@@ -561,6 +561,10 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
     else if (attr == &moonlightSpecularColor && impl->moonlight)
     {
         impl->moonlight->setSpecularColour(moonlightSpecularColor.Get());
+    }
+    else if (attr == &ambientLightColor && impl->skyX->getSceneManager())
+    {
+        impl->skyX->getSceneManager()->setAmbientLight(ambientLightColor.Get());
     }
 }
 
