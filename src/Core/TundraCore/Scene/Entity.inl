@@ -6,6 +6,16 @@ shared_ptr<T> Entity::CreateComponent(const QString &name, AttributeChange::Type
     return dynamic_pointer_cast<T>(CreateComponent(T::ComponentTypeId, name, change, replicated)); /**< @todo static_pointer_cast should be ok here. */
 }
 
+template<typename T>
+shared_ptr<T> Entity::GetOrCreateComponent(const QString &name, AttributeChange::Type change, bool replicated)
+{
+    shared_ptr<T> existing = name.isEmpty() ? Component<T>() : Component<T>(name);
+    if (existing)
+        return existing;
+
+    return CreateComponent<T>(name, change, replicated);
+}
+
 template <class T>
 shared_ptr<T> Entity::Component() const
 {

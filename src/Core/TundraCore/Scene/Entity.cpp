@@ -525,34 +525,28 @@ EntityPtr Entity::Clone(bool local, bool temporary, const QString &cloneName, At
 
 void Entity::SetName(const QString &name)
 {
-    ComponentPtr comp = GetOrCreateComponent(EC_Name::TypeNameStatic(), AttributeChange::Default, true);
-    EC_Name * ecName = checked_static_cast<EC_Name*>(comp.get());
-    ecName->name.Set(name, AttributeChange::Default);
+    shared_ptr<EC_Name> comp = GetOrCreateComponent<EC_Name>();
+    assert(comp);
+    comp->name.Set(name, AttributeChange::Default);
 }
 
 QString Entity::Name() const
 {
-    shared_ptr<EC_Name> name = GetComponent<EC_Name>();
-    if (name)
-        return name->name.Get();
-    else
-        return QString();
+    shared_ptr<EC_Name> name = Component<EC_Name>();
+    return name ? name->name.Get() : "";
 }
 
 void Entity::SetDescription(const QString &desc)
 {
-    ComponentPtr comp = GetOrCreateComponent(EC_Name::TypeNameStatic(), AttributeChange::Default, true);
-    EC_Name * ecName = checked_static_cast<EC_Name*>(comp.get());
-    ecName->description.Set(desc, AttributeChange::Default);
+    shared_ptr<EC_Name> comp = GetOrCreateComponent<EC_Name>();
+    assert(comp);
+    comp->description.Set(desc, AttributeChange::Default);
 }
 
 QString Entity::Description() const
 {
-    shared_ptr<EC_Name> name = GetComponent<EC_Name>();
-    if (name)
-        return name->description.Get();
-    else
-        return QString();
+    shared_ptr<EC_Name> name = Component<EC_Name>();
+    return name ? name->description.Get() : "";
 }
 
 EntityAction *Entity::Action(const QString &name)
