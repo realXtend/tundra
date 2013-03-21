@@ -60,12 +60,9 @@ void EC_SoundListener::AttributesChanged()
         if (!scene)
             return;
         // Disable all the other listeners, only one can be active at a time.
-        foreach(const EntityPtr &listener, scene->EntitiesWithComponent(TypeName()))
-        {
-            EC_SoundListener *ec = listener->GetComponent<EC_SoundListener>().get();
-            if (ec != this)
-                ec->active.Set(false, AttributeChange::Default);
-        }
+        foreach(const shared_ptr<EC_SoundListener> &listener, scene->Components<EC_SoundListener>())
+            if (listener.get() != this)
+                listener->active.Set(false, AttributeChange::Default);
     }
 }
 
@@ -74,9 +71,7 @@ void EC_SoundListener::RegisterActions()
     Entity *entity = ParentEntity();
     assert(entity);
     if (entity)
-    {
         entity->ConnectAction("Active", this, SLOT(AttributesChanged()));
-    }
     else
         LogError("EC_SoundListener::RegisterActions: Failed to register actions because component's parent entity is null.");
 }
