@@ -72,8 +72,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     toggleEntitiesButton(0),
     entityList(0),
     ecBrowser(0),
-    hasFocus(true),
-    transformEditor(new TransformEditor(fw->Scene()->MainCameraScene()->shared_from_this()))
+    hasFocus(true)
 {
     QUiLoader loader;
     loader.setLanguageChangeEnabled(true);
@@ -95,6 +94,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     file.close();
 
     undoManager_ = new UndoManager(fw->Scene()->MainCameraScene(), this);
+    transformEditor = new TransformEditor(fw->Scene()->MainCameraScene()->shared_from_this(), undoManager_);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     undoButton_ = findChild<QToolButton *>("undoButton");
@@ -181,8 +181,8 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
 
 ECEditorWindow::~ECEditorWindow()
 {
-    SAFE_DELETE(transformEditor);
     SAFE_DELETE(undoManager_);
+    SAFE_DELETE(transformEditor);
     //DeselectAllEntities(); the list is already cleared here
 }
 

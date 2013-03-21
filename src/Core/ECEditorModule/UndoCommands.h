@@ -8,13 +8,18 @@
 #pragma once
 
 #include "SceneFwd.h"
+#include "IAttribute.h"
 #include "Color.h"
+#include "Math/float3.h"
+#include "Math/float3x4.h"
 
 #include <QDomDocument>
 #include <QDomElement>
 #include <QUndoCommand>
 
 typedef QList<entity_id_t> EntityIdList;
+typedef QList<TransformAttributeWeakPtr> TransformAttributeWeakPtrList;
+
 
 class EntityIdChangeTracker;
 
@@ -368,6 +373,44 @@ public:
     EntityIdChangeTracker * tracker_; ///< Pointer to the tracker object, taken from an undo manager
     EntityIdList entityIds_; ///< List of target entity IDs
     bool temporary_; ///< Temporary state
+};
+
+class TransformCommand : public QUndoCommand
+{
+public:
+    /// Internal QUnodCommand unique ID
+    enum { Id = 109 };
+
+    enum Action
+    {
+        Translate,
+        Rotate,
+        Scale
+    };
+
+    TransformCommand(TransformAttributeWeakPtrList attributes, int numberOfItems, Action action, const float3 & offset, QUndoCommand * parent = 0);
+    TransformCommand(TransformAttributeWeakPtrList attributes, int numberOfItems, const float3x4 & rotation, QUndoCommand * parent = 0);
+
+    /// Returns this command's ID
+    int id() const;
+    /// QUndoCommand override
+    void undo();
+    /// QUndoCommand override
+    void redo();
+    /// QUndoCommand override
+    bool mergeWith(const QUndoCommand *other);
+
+    void SetCommandText();
+
+    void DoTranslate(bool isUndo);
+    void DoRotate(bool isUndo);
+    void DoScale(bool isUndo);
+
+    TransformAttributeWeakPtrList targets_;
+    Action action_;
+    float3 offset_;
+    float3x4 rotation_;
+    int nItems_;
 };
 
 /*
