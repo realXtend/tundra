@@ -75,8 +75,6 @@ TundraLogicModule::TundraLogicModule() :
     IModule("TundraLogic"),
     kristalliModule_(0)
 {
-    // Read startup params when application event loop starts.
-    QTimer::singleShot(0, this, SLOT(ReadStartupParameters()));
 }
 
 TundraLogicModule::~TundraLogicModule()
@@ -165,6 +163,9 @@ void TundraLogicModule::Initialize()
     kristalliModule_ = framework_->GetModule<KristalliProtocolModule>();
     if (!kristalliModule_)
         throw Exception("Fatal: could not get KristalliProtocolModule");
+
+    // Read startup params when application event loop starts.
+    QTimer::singleShot(0, this, SLOT(ReadStartupParameters()));
 }
 
 void TundraLogicModule::Uninitialize()
