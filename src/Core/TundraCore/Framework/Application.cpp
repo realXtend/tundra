@@ -657,6 +657,33 @@ QString Application::Platform()
 int generate_dump(EXCEPTION_POINTERS* pExceptionPointers);
 #endif
 
+#if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK) && defined(_DEBUG)
+
+int FilterMemoryLeaks(int reportType, char* message, int* retVal)
+{
+    static int allowLineCount = 0;
+    
+    // To make the report more readable, print only leaks that originate from own debug allocation functions
+    if (strstr(message, ".cpp"))
+        allowLineCount = 4;
+    
+    if (allowLineCount)
+    {
+        allowLineCount--;
+        return FALSE;
+    }
+    else
+        return TRUE;
+}
+
+void DumpMemoryLeaks()
+{
+    // Uncomment this line to only print allocations that came through our debug allocation functions
+    //_CrtSetReportHook(FilterMemoryLeaks);
+    _CrtDumpMemoryLeaks();
+}
+#endif
+
 int TUNDRACORE_API run(int argc, char **argv)
 {
     // set up a debug flag for memory leaks. Output the results to file when the app exits.
@@ -711,12 +738,17 @@ int TUNDRACORE_API run(int argc, char **argv)
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK) && defined(_DEBUG)
     if (hLogFile != INVALID_HANDLE_VALUE)
     {
-       _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
-       _CrtSetReportFile(_CRT_WARN, hLogFile);
-       _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-       _CrtSetReportFile(_CRT_ERROR, hLogFile);
-       _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
-       _CrtSetReportFile(_CRT_ASSERT, hLogFile);
+        _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
+        _CrtSetReportFile(_CRT_WARN, hLogFile);
+        _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
+        _CrtSetReportFile(_CRT_ERROR, hLogFile);
+        _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
+        _CrtSetReportFile(_CRT_ASSERT, hLogFile);
+       
+        // The DLL version of the CRT skips the call to _CrtDumpMemoryLeaks() at exit.
+        // Add it as an atexit function instead. Note: we may get false positives due to static objects
+        // and external libraries having not released their heap memory yet.
+        atexit(DumpMemoryLeaks);
     }
 #endif
 
