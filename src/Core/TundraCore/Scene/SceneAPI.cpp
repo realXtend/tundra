@@ -45,7 +45,7 @@ void SceneAPI::Reset()
     componentFactoriesByTypeid.clear();
 }
 
-ScenePtr SceneAPI::GetScene(const QString &name) const
+ScenePtr SceneAPI::SceneByName(const QString &name) const
 {
     SceneMap::const_iterator scene = scenes.find(name);
     if (scene != scenes.end())
@@ -62,33 +62,30 @@ Scene *SceneAPI::MainCameraScene()
 
 ScenePtr SceneAPI::CreateScene(const QString &name, bool viewenabled, bool authority)
 {
-    if (HasScene(name))
+    if (SceneByName(name))
         return ScenePtr();
 
-    ScenePtr newScene = ScenePtr(new Scene(name, framework, viewenabled, authority));
-    if (newScene.get())
-    {
-        scenes[name] = newScene;
+    ScenePtr newScene = MAKE_SHARED(Scene, name, framework, viewenabled, authority);
+    scenes[name] = newScene;
 
-        // Emit signal of creation
-        emit SceneAdded(newScene->Name());
-    }
+    // Emit signal of creation
+    emit SceneAdded(newScene->Name());
     return newScene;
 }
 
-void SceneAPI::RemoveScene(const QString &name)
+bool SceneAPI::RemoveScene(const QString &name)
 {
     SceneMap::iterator sceneIter = scenes.find(name);
-    if (sceneIter != scenes.end())
-    {
-        // Remove entities before the scene subsystems or worlds are erased by various modules
-        sceneIter->second->RemoveAllEntities(false);
-        
-        // Emit signal about removed scene
-        emit SceneRemoved(name);
-        
-        scenes.erase(sceneIter);
-    }
+    if (sceneIter == scenes.end())
+        return false;
+    // Remove entities before the scene subsystems or worlds are erased by various modules
+    sceneIter->second->RemoveAllEntities(false);
+    
+    // Emit signal about removed scene
+    emit SceneRemoved(name);
+
+    scenes.erase(sceneIter);
+    return true;
 }
 
 const SceneMap &SceneAPI::Scenes() const
