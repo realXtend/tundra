@@ -276,3 +276,17 @@ struct AttributeWeakPtr
     ComponentWeakPtr owner; ///< Owner component.
     IAttribute *attribute; ///< The actual attribute.
 };
+
+/// Represents weak pointer to Transform attribute.
+struct TransformAttributeWeakPtr : public AttributeWeakPtr
+{
+    /** @param p If the placeable component is parented, pointer to the parent placeable entity. */
+    TransformAttributeWeakPtr(const ComponentPtr &c, IAttribute *a, const EntityPtr &p) :
+    AttributeWeakPtr(c, a),
+    parentPlaceableEntity(p)
+    {
+    }
+    /// If the placeable component is parented, points to the parent placeable entity.
+    EntityWeakPtr parentPlaceableEntity;
+};
+
