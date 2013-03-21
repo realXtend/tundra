@@ -560,6 +560,7 @@ void EC_WebView::ResetWebView(bool ignoreVisibility)
             }
         }
 
+#ifdef SCENEWIDGET_BROWSER_SHARED_DATA
         // Reset parent of shard cache and cookie jar.
         QNetworkAccessManager *networkManager =  webview_->page() != 0 ? webview_->page()->networkAccessManager() : 0;
         if (networkManager)
@@ -567,7 +568,7 @@ void EC_WebView::ResetWebView(bool ignoreVisibility)
             if (networkManager->cache()) networkManager->cache()->setParent(0);
             if (networkManager->cookieJar()) networkManager->cookieJar()->setParent(0);
         }
-
+#endif
         // Disconnect existing widgets signal connections, 
         // stop its networking, 
         // mark it for Qt cleanup and
