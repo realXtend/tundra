@@ -323,7 +323,7 @@ public:
     ProfilerNodeTree *GetRoot() { return &root_; }
 
     ProfilerNodeTree *FindBlockByName(ProfilerNodeTree *parent, const char *name);
-    ProfilerNodeTree *Profiler::FindBlockByName(const char *name);
+    ProfilerNodeTree *FindBlockByName(const char *name);
     
     /// Returns the currently topmost active node on the profiler tree.
     /// Only used internally, *NOT* for public use.
