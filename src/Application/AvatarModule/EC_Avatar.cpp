@@ -76,11 +76,10 @@ void EC_Avatar::OnAvatarAppearanceLoaded(AssetPtr asset)
     
     // Create components the avatar needs, with network sync disabled, if they don't exist yet
     // Note: the mesh is created non-syncable on purpose, as each client's EC_Avatar should execute this code upon receiving the appearance
-    ComponentPtr mesh = entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), AttributeChange::LocalOnly, false);
-    EC_Mesh *mesh_ptr = checked_static_cast<EC_Mesh*>(mesh.get());
+    shared_ptr<EC_Mesh> mesh = entity->GetOrCreateComponent<EC_Mesh>("", AttributeChange::LocalOnly, false);
     // Attach to placeable if not yet attached
-    if (mesh_ptr && !mesh_ptr->GetPlaceable())
-        mesh_ptr->SetPlaceable(entity->GetComponent(EC_Placeable::TypeNameStatic()));
+    if (mesh && !mesh->GetPlaceable())
+        mesh->SetPlaceable(entity->Component<EC_Placeable>());
     
     SetupAppearance();
 }
