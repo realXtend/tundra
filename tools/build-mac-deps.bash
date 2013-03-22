@@ -158,7 +158,7 @@ while [ "$1" != "" ]; do
                                             export OGRE_HOME=$1
                                             ;;
 
-         -x | --xcode                       MAKE_XCODE="1"
+         -x | --xcode )                     MAKE_XCODE="1"
                                             RUN_MAKE="0"
                                             ;;
 
