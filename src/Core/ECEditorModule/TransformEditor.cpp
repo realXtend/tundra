@@ -32,11 +32,11 @@
 
 static const char *cTransformEditorWindowPos = "transform editor window pos";
 
-TransformEditor::TransformEditor(const ScenePtr &editedScene, UndoManager * manager) :
+TransformEditor::TransformEditor(const ScenePtr &editedScene, UndoManager *manager) :
     editorSettings(0),
     localAxes(false),
     scene(editedScene),
-    undoManager_(manager)
+    undoManager(manager)
 {
     if (!scene.expired())
     {
@@ -231,7 +231,9 @@ void TransformEditor::TranslateTargets(const float3 &offset)
         targetAttrs << attr;
     }
 
-    undoManager_->Push(new TransformCommand(targetAttrs, targets.size(), TransformCommand::Translate, offset));
+    if (undoManager)
+        undoManager->Push(new TransformCommand(targetAttrs, targets.size(), TransformCommand::Translate, offset));
+
     FocusGizmoPivotToAabbCenter();
 }
 
@@ -251,7 +253,9 @@ void TransformEditor::RotateTargets(const Quat &delta)
         targetAttrs << attr;
     }
 
-    undoManager_->Push(new TransformCommand(targetAttrs, targets.size(), rotation));
+    if (undoManager)
+        undoManager->Push(new TransformCommand(targetAttrs, targets.size(), rotation));
+
     FocusGizmoPivotToAabbCenter();
 }
 
@@ -268,7 +272,9 @@ void TransformEditor::ScaleTargets(const float3 &offset)
         targetAttrs << attr;
     }
 
-    undoManager_->Push(new TransformCommand(targetAttrs, targets.size(), TransformCommand::Scale, offset));
+    if (undoManager)
+        undoManager->Push(new TransformCommand(targetAttrs, targets.size(), TransformCommand::Scale, offset));
+
     FocusGizmoPivotToAabbCenter();
 }
 
