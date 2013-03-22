@@ -35,7 +35,7 @@ public:
     }
 
     /// Returns a list of all attribute type names that can be used in the CreateAttribute function to create an attribute.
-    /** @note Unlike the available component types, the avaialble attribute type set is static and cannot change at runtime. */
+    /** @note Unlike the available component types, the available attribute type set is static and cannot change at runtime. */
     static const QStringList &AttributeTypes();
 
     /// Returns the scene map for self reflection / introspection.
@@ -56,7 +56,8 @@ public slots:
 
     /// Returns the Scene the current active main camera is in.
     /** If there is no active main camera, this function returns the first found scene.
-        If no scenes have been created, returns 0. */
+        If no scenes have been created, returns 0.
+        @todo Refactor into ScenePtr MainCameraScene() const; */
     Scene *MainCameraScene();
 
     /// Creates new empty scene.

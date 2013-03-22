@@ -16,6 +16,19 @@
 #include "Transform.h"
 #include "EC_Placeable.h"
 
+/// Merges two EditAttributeCommand<Color> objects, since editing 'Color' triggers two changes 
+template<> bool EditAttributeCommand<Color>::mergeWith(const QUndoCommand *other)
+{
+    if (id() != other->id())
+        return false;
+
+    const EditAttributeCommand<Color> *otherCommand = dynamic_cast<const EditAttributeCommand<Color> *>(other);
+    if (!otherCommand)
+        return false;
+
+    return (oldValue_ == otherCommand->oldValue_);
+}
+
 AddAttributeCommand::AddAttributeCommand(IComponent * comp, const QString &typeName, const QString &name, QUndoCommand * parent) :
     entity_(comp->ParentEntity()->shared_from_this()),
     componentName_(comp->Name()),
@@ -130,8 +143,7 @@ void RemoveAttributeCommand::redo()
     }
 }
 
-
-AddComponentCommand::AddComponentCommand(SceneWeakPtr scene, EntityIdChangeTracker * tracker, EntityIdList entities, const QString compType, const QString compName, bool sync, bool temp, QUndoCommand * parent) :
+AddComponentCommand::AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, EntityIdList entities, const QString compType, const QString compName, bool sync, bool temp, QUndoCommand * parent) :
     scene_(scene),
     tracker_(tracker),
     entityIds_(entities),
@@ -195,8 +207,8 @@ void AddComponentCommand::redo()
     }
 }
 
-EditXMLCommand::EditXMLCommand(Scene * scene, const QDomDocument oldDoc, const QDomDocument newDoc, QUndoCommand * parent) : 
-    scene_(scene->shared_from_this()),
+EditXMLCommand::EditXMLCommand(const ScenePtr &scene, const QDomDocument oldDoc, const QDomDocument newDoc, QUndoCommand * parent) : 
+    scene_(scene),
     oldState_(oldDoc),
     newState_(newDoc),
     QUndoCommand(parent)
@@ -275,8 +287,8 @@ void EditXMLCommand::Deserialize(const QDomDocument docState)
     }
 }
 
-AddEntityCommand::AddEntityCommand(Scene * scene, EntityIdChangeTracker * tracker, const QString name, bool sync, bool temp, QUndoCommand *parent) :
-    scene_(scene->shared_from_this()),
+AddEntityCommand::AddEntityCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QString &name, bool sync, bool temp, QUndoCommand *parent) :
+    scene_(scene),
     tracker_(tracker),
     entityName_(name),
     entityId_(0),
@@ -325,8 +337,8 @@ void AddEntityCommand::redo()
     entity->SetTemporary(temp_);
 }
 
-RemoveCommand::RemoveCommand(Scene * scene, EntityIdChangeTracker * tracker, const QList<EntityWeakPtr> &entityList, const QList<ComponentWeakPtr> &componentList, QUndoCommand * parent) :
-    scene_(scene->shared_from_this()),
+RemoveCommand::RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QList<EntityWeakPtr> &entityList, const QList<ComponentWeakPtr> &componentList, QUndoCommand * parent) :
+    scene_(scene),
     tracker_(tracker),
     QUndoCommand(parent)
 {

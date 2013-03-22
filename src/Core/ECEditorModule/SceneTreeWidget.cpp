@@ -86,10 +86,9 @@ SceneTreeWidget::SceneTreeWidget(Framework *fw, QWidget *parent) :
     showComponents(false),
     historyMaxItemCount(100),
     numberOfInvokeItemsVisible(5),
-    fetchReferences(false)
+    fetchReferences(false),
+    undoManager_(0)
 {
-    undoManager_ = new UndoManager(fw->Scene()->MainCameraScene(), this);
-
     setEditTriggers(/*QAbstractItemView::EditKeyPressed*/QAbstractItemView::NoEditTriggers/*EditKeyPressed*/);
     setDragDropMode(QAbstractItemView::DropOnly/*DragDrop*/);
 //    setDragEnabled(true);
@@ -110,15 +109,13 @@ SceneTreeWidget::SceneTreeWidget(Framework *fw, QWidget *parent) :
     QShortcut *deleteShortcut = new QShortcut(KEY_DELETE_SHORTCUT, this);
     QShortcut *copyShortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_C), this);
     QShortcut *pasteShortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_V), this);
-    QShortcut *undoShortcut = new QShortcut(QKeySequence::Undo, this);
-    QShortcut *redoShortcut = new QShortcut(QKeySequence::Redo, this);
+    undoShortcut = new QShortcut(QKeySequence::Undo, this);
+    redoShortcut = new QShortcut(QKeySequence::Redo, this);
 
     connect(renameShortcut, SIGNAL(activated()), SLOT(Rename()));
     connect(deleteShortcut, SIGNAL(activated()), SLOT(Delete()));
     connect(copyShortcut, SIGNAL(activated()), SLOT(Copy()));
     connect(pasteShortcut, SIGNAL(activated()), SLOT(Paste()));
-    connect(undoShortcut, SIGNAL(activated()), undoManager_, SLOT(Undo()));
-    connect(redoShortcut, SIGNAL(activated()), undoManager_, SLOT(Redo()));
 
 //    disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *, int)));
 
@@ -145,6 +142,13 @@ SceneTreeWidget::~SceneTreeWidget()
 void SceneTreeWidget::SetScene(const ScenePtr &s)
 {
     scene = s;
+    SAFE_DELETE(undoManager_);
+    if (s)
+    {
+        undoManager_ = new UndoManager(s, this);
+        connect(undoShortcut, SIGNAL(activated()), undoManager_, SLOT(Undo()), Qt::UniqueConnection);
+        connect(redoShortcut, SIGNAL(activated()), undoManager_, SLOT(Redo()), Qt::UniqueConnection);
+    }
 }
 
 void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
@@ -799,8 +803,8 @@ void SceneTreeWidget::NewEntity()
     QString name = newEntDialog.EntityName().trimmed();
     bool replicated = newEntDialog.IsReplicated();
     bool temporary = newEntDialog.IsTemporary();
-
-    undoManager_->Push(new AddEntityCommand(scene.lock().get(), undoManager_->GetTracker(), name, replicated, temporary));
+    if (undoManager_)
+        undoManager_->Push(new AddEntityCommand(scene.lock(), undoManager_->GetTracker(), name, replicated, temporary));
 }
 
 void SceneTreeWidget::NewComponent()
@@ -854,8 +858,8 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
         targetEntities << entities[i];
     }
 
-    if (!targetEntities.isEmpty())
-        undoManager_->Push(new AddComponentCommand(scene, undoManager_->GetTracker(), targetEntities, dialog->TypeName(), dialog->Name(), dialog->IsReplicated(), dialog->IsTemporary()));
+    if (undoManager_ && !targetEntities.isEmpty())
+        undoManager_->Push(new AddComponentCommand(scene.lock(), undoManager_->Tracker(), targetEntities, dialog->TypeName(), dialog->Name(), dialog->IsReplicated(), dialog->IsTemporary()));
 }
 
 void SceneTreeWidget::Delete()
@@ -882,7 +886,8 @@ void SceneTreeWidget::Delete()
         foreach(EntityItem *eItem, SelectedItems().entities)
             entities << eItem->Entity();
 
-    undoManager_->Push(new RemoveCommand(scene.lock().get(), undoManager_->GetTracker(), entities, components));
+    if (undoManager_)
+        undoManager_->Push(new RemoveCommand(scene.lock(), undoManager_->Tracker(), entities, components));
 }
 
 void SceneTreeWidget::Copy()
@@ -966,7 +971,8 @@ void SceneTreeWidget::Paste()
         }
     }
 
-    undoManager_->Clear(); // Unsupported action, clear undo stack
+    if (undoManager_)
+        undoManager_->Clear(); // Unsupported action, clear undo stack
     scene.lock()->CreateContentFromXml(sceneDoc, false, AttributeChange::Replicate);
 }
 
@@ -1666,7 +1672,8 @@ void SceneTreeWidget::ConvertEntityToLocal()
                     scn->RemoveEntity(orgEntity->Id()); // Creation successful, remove the original.
             }
         }
-        undoManager_->Clear(); // Unsupported action, clear the undo stack
+        if (undoManager_)
+            undoManager_->Clear(); // Unsupported action, clear the undo stack
     }
 }
 
@@ -1685,7 +1692,8 @@ void SceneTreeWidget::ConvertEntityToReplicated()
                     scn->RemoveEntity(orgEntity->Id()); // Creation successful, remove the original.
             }
         }
-        undoManager_->Clear(); // Unsupported action, clear the undo stack
+        if (undoManager_)
+            undoManager_->Clear(); // Unsupported action, clear the undo stack
     }
 }
 
@@ -1695,6 +1703,6 @@ void SceneTreeWidget::SetAsTemporary(bool temporary)
     foreach(EntityItem *item, SelectedItems().entities)
         if (item->Entity())
             entities << item->Entity();
-
-    undoManager_->Push(new ToggleTemporaryCommand(entities, undoManager_->GetTracker(), temporary));
+    if (undoManager_)
+        undoManager_->Push(new ToggleTemporaryCommand(entities, undoManager_->Tracker(), temporary));
 }
