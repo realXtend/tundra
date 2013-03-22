@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   SceneStructureWindow.cpp
- *  @brief  Window with tree view of contents of scene.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   SceneStructureWindow.cpp
+    @brief  Window with tree view of contents of scene. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -21,11 +20,10 @@
 #include "EC_Name.h"
 #include "AssetReference.h"
 #include "EC_DynamicComponent.h"
+#include "LoggingFunctions.h"
 
 #include <QTreeWidgetItemIterator>
 #include <QToolButton>
-
-#include "LoggingFunctions.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -75,9 +73,6 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     undoButton_->setIcon(QIcon(Application::InstallationDirectory() + "data/ui/images/icon/undo-icon.png"));
     redoButton_->setIcon(QIcon(Application::InstallationDirectory() + "data/ui/images/icon/redo-icon.png"));
 
-    undoButton_->setMenu(treeWidget->GetUndoManager()->UndoMenu());
-    redoButton_->setMenu(treeWidget->GetUndoManager()->RedoMenu());
-
     // Fill layouts
     QHBoxLayout *undoRedoLayout = new QHBoxLayout;
     undoRedoLayout->addWidget(undoButton_);
@@ -125,7 +120,7 @@ void SceneStructureWindow::SetScene(const ScenePtr &newScene)
     if (!scene.expired() && (newScene == scene.lock()))
         return;
 
-    if (newScene == 0)
+    if (!newScene)
     {
         disconnect(scene.lock().get());
         Clear();
@@ -134,6 +129,8 @@ void SceneStructureWindow::SetScene(const ScenePtr &newScene)
 
     scene = newScene;
     treeWidget->SetScene(newScene);
+    undoButton_->setMenu(treeWidget->GetUndoManager()->UndoMenu());
+    redoButton_->setMenu(treeWidget->GetUndoManager()->RedoMenu());
 
     Scene *scenePtr = scene.lock().get();
     connect(scenePtr, SIGNAL(EntityAcked(Entity *, entity_id_t)), SLOT(AckEntity(Entity *, entity_id_t)));
