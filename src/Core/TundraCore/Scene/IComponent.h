@@ -19,14 +19,14 @@ class QDomElement;
 
 class Framework;
 
-/// Specifies the name and ID of this component.
+/// Specifies unique type name and unique type ID of this component.
 /** This #define should be instantiated inside the public slots: section of the component.
     Warning: This #define alters the current visibility specifier in the class file. */
-#define COMPONENT_NAME(componentName, componentTypeId)                                  \
+#define COMPONENT_NAME(componentTypeName, componentTypeId)                              \
 public:                                                                                 \
     static const QString &TypeNameStatic()                                              \
     {                                                                                   \
-        static const QString name(componentName);                                       \
+        static const QString name(componentTypeName);                                       \
         return name;                                                                    \
     }                                                                                   \
     static u32 TypeIdStatic()                                                           \
@@ -59,7 +59,9 @@ private: // Return the class visibility specifier to the strictest form so that 
     void set##attribute(type value) { attribute.Set((type)value, AttributeChange::Default); }
 
 /// The common interface for all components, which are the building blocks the scene entities are formed of.
-/** Inherit your own components from this class.
+/** Inherit your own components from this class. Never directly allocate new components using operator new,
+    but use the factory-based SceneAPI::CreateComponent functions instead.
+
     Each Component has a compile-time specified type name that identifies the class-name of the Component.
     This differentiates different derived implementations of the IComponent class. Each implemented Component
     must have a unique type name.
@@ -67,7 +69,7 @@ private: // Return the class visibility specifier to the strictest form so that 
     Additionally, each Component has a Name string, which identifies different instances of the same Component,
     if more than one is added to an Entity.
 
-    A Component consists of a list of Attributes, which are automatically replicatable instances of scene data.
+    A Component consists of a list of Attributes, which are automatically replicable instances of scene data.
     See IAttribute for more details.
 
     To retain network protocol compatibility between Tundra versions, only add any new static attributes to
@@ -93,18 +95,22 @@ class TUNDRACORE_API IComponent : public QObject, public enable_shared_from_this
     Q_PROPERTY(bool networkSyncEnabled READ IsReplicated)
 
 public:
+    /// @cond PRIVATE
     /// Constructor.
     /** @note scene - and consecutively framework - can be null if component is created unparented
-        intentionally, so always remember to perform null checks from them even in the ctor. */
+        intentionally, so always remember to perform null checks for them even in the ctor. The ParentEntitySet
+        signal can used internally to know when accessing parent scene, parent entity, or framework is possible. */
     explicit IComponent(Scene* scene);
+    /// @endcond PRIVATE
 
     /// Deletes potential dynamic attributes.
     virtual ~IComponent();
 
     /// Returns the typename of this component.
     /** The typename is the "class" type of the component,
-        e.g. "EC_Mesh" or "EC_DynamicComponent". The typename of a component cannot be an empty string.
-        The typename of a component never changes at runtime. */
+        e.g. "EC_Mesh" or "EC_DynamicComponent". The type name of a component cannot be an empty string.
+        The type name of a component never changes at runtime.
+        @note Prefer TypeId over TypeName when inspecting the component type (performance). */
     virtual const QString &TypeName() const = 0;
 
     /// Returns the unique type ID of this component.
@@ -164,12 +170,12 @@ public:
     virtual void DeserializeFrom(QDomElement& element, AttributeChange::Type change);
 
     /// Serialize attributes to binary
-    /** @note does not include syncmode, typename or name. These are left for higher-level logic, and
+    /** @note does not include syncmode, type name or name. These are left for higher-level logic, and
         it depends on the situation if they are needed or not */
     virtual void SerializeToBinary(kNet::DataSerializer& dest) const;
 
     /// Deserialize attributes from binary
-    /** @note does not include syncmode, typename or name. These are left for higher-level logic, and
+    /** @note does not include syncmode, type name or name. These are left for higher-level logic, and
         it depends on the situation if they are needed or not. */
     virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
@@ -179,9 +185,8 @@ public:
         @return A pointer to the attribute, or null if no attribute with the given name exists. */
     IAttribute* GetAttribute(const QString &name) const;
     
-    /// Create an attribute with specifed index, type and name. Return it if successful or null if not. Called by SyncManager.
-    /** Component must override SupportsDynamicAttributes() to allow creating attributes.
-     */
+    /// Create an attribute with specified index, type and name. Return it if successful or null if not. Called by SyncManager.
+    /** Component must override SupportsDynamicAttributes() to allow creating attributes. */
     IAttribute* CreateAttribute(u8 index, u32 typeID, const QString& name, AttributeChange::Type change = AttributeChange::Default);
     
     /// Remove an attribute at the specified index. Called by network sync.
@@ -191,10 +196,10 @@ public:
     /** True by default. Can only be changed before the component is added to an entity, because the replication determines the ID range to use. */
     void SetReplicated(bool enable);
 
-public slots:
     /// Returns a pointer to the Framework instance.
     Framework *GetFramework() const { return framework; }
 
+public slots:
     /// Returns true if network synchronization of the attributes of this component is enabled.
     /// A component is always either local or replicated, but not both.
     /// @todo Doesn't need to be a slot, exposed as Q_PROPERTY.
@@ -231,7 +236,7 @@ public slots:
     /// Returns the total number of attributes in this component. Does not count holes in the attribute vector
     int NumAttributes() const;
 
-    /// Returns the number of static (ie. not dynamically allocated) attributes in this component. These are always in the beginning of the attribute vector.
+    /// Returns the number of static (i.e. not dynamically allocated) attributes in this component. These are always in the beginning of the attribute vector.
     int NumStaticAttributes() const;
 
     /// Informs this component that the value of a member Attribute of this component has changed.
@@ -260,7 +265,8 @@ public slots:
     /// Returns the Entity this Component is part of.
     /** @note Calling this function will return null if it is called in the ctor or dtor of this Component.
         This is because the parent entity has not yet been set with a call to SetParentEntity at that point,
-        and parent entity is set to null before the actual Component is destroyed. */
+        and parent entity is set to null before the actual Component is destroyed.
+        @sa ParentScene */
     Entity* ParentEntity() const;
 
     /// Returns the scene this Component is part of.
@@ -325,13 +331,13 @@ protected:
         If serializeTemporary is true, the attribute 'temporary' is added to the XML element. Default is false. */
     QDomElement BeginSerialization(QDomDocument& doc, QDomElement& baseElement, bool serializeTemporary = false) const;
 
-    /// Helper function for adding an attribute to the component xml serialization.
+    /// Helper function for adding an attribute to the component XML serialization.
     void WriteAttribute(QDomDocument& doc, QDomElement& compElement, const QString& name, const QString& value) const;
 
-    /// Helper function for adding an attribute and it's type to the component xml serialization.
+    /// Helper function for adding an attribute and it's type to the component XML serialization.
     void WriteAttribute(QDomDocument& doc, QDomElement& compElement, const QString& name, const QString& value, const QString &type) const;
 
-    /// Helper function for starting deserialization. 
+    /// Helper function for starting deserialization.
     /** Checks that XML element contains the right kind of EC, and if it is right, sets the component name.
         Otherwise returns false and does nothing. */
     bool BeginDeserialization(QDomElement& compElement);
@@ -348,29 +354,14 @@ protected:
     /// Add attribute to this component at specified index, creating new holes if necessary. Static attributes can not be overwritten. Return true if successful
     bool AddAttribute(IAttribute* attr, u8 index);
 
-    /// Points to the Entity this Component is part of, or null if this Component is not attached to any Entity.
-    Entity* parentEntity;
-
-    /// The name of this component, by default an empty string.
-    QString name;
-
-    /// Attribute list for introspection/reflection.
-    AttributeVector attributes;
-
-    /// Component id, unique within the parent entity
-    component_id_t id;
-    
-    /// Network sync enable flag
-    bool replicated;
-
-    /// Default update mode for attribute changes
-    AttributeChange::Type updateMode;
-
-    /// Framework pointer. Needed to be able to perform important uninitialization etc. even when not in an entity.
-    Framework* framework;
-
-    /// Temporary-flag
-    bool temporary;
+    Entity* parentEntity; ///< The Entity this Component is part of, or null if this Component is not attached to any Entity.
+    QString name; ///< The name of this component, by default an empty string.
+    AttributeVector attributes; ///< Attributes of the component.
+    component_id_t id; ///< Component id, unique within the parent entity
+    bool replicated; ///< Network sync enabled -flag
+    AttributeChange::Type updateMode; ///< Default update mode for attribute changes
+    Framework* framework; ///< Needed to be able to perform important uninitialization etc. even when not in an entity.
+    bool temporary; ///< Temporary-flag
 
 private:
     friend class ::IAttribute;
