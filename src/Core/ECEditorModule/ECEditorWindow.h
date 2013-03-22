@@ -45,7 +45,9 @@ private:
 };
 
 /// Entity-component editor window.
-/** @ingroup ECEditorModuleClient. */
+/** @ingroup ECEditorModuleClient.
+    @todo Currently EC Editor is hardcoded to edit the main camera scene.
+          Enhance the API so that the scene can be set by the user. */
 class ECEDITOR_MODULE_API ECEditorWindow : public QWidget
 {
     Q_OBJECT
@@ -83,7 +85,7 @@ public:
     void ClearEntities();
 
     /// Returns components that are currently selected.
-    /** @return If any components aren't selected return emtpy list. */
+    /** @return If any components aren't selected return empty list. */
     QObjectList SelectedComponents() const;
 
     /// Returns list of selected entities.
@@ -99,12 +101,12 @@ public:
     EntityListWidgetItem *FindItem(entity_id_t id) const;
 
     /// Sets highlighting of selected entities for this editor window (if applicable).
-    /** @note The visibility state is not stored within this class. ECEditorModule is authorative for this state.
+    /** @note The visibility state is not stored within this class. ECEditorModule is authoritative for this state.
         @param show Do we want to show or hide the visual editing aids. */
     void SetHighlightingEnabled(bool show);
 
     /// Sets visibility of editing gizmo for this editor window (if applicable).
-    /** @note The visibility state is not stored within this class. ECEditorModule is authorative for this state. */
+    /** @note The visibility state is not stored within this class. ECEditorModule is authoritative for this state. */
     void SetGizmoVisible(bool show);
 
     UndoManager * GetUndoManager() { return undoManager_; }
@@ -113,7 +115,7 @@ public slots:
     /// Deletes selected entity entries from the list (does not delete the entity itself).
     void DeleteEntitiesFromList();
 
-    /// Remove coponent from entity and refresh property browser.
+    /// Remove component from entity and refresh property browser.
     void DeleteComponent(const QString &componentType, const QString &name);
 
     /// Opens a dialog that will handle new entity creation.
@@ -151,7 +153,7 @@ public slots:
 
     /// Set focus to this editor window.
     /** When window has focus it should accept entity select actions and add clicked entities from the scene.
-        Also when windows if unfocues, its transform gizmo (if applicable) is hidden. */
+        Also, when window is unfocused, its transform gizmo (if applicable) is hidden. */
     void SetFocus(bool focus);
 
     /// QWidget override.
@@ -221,11 +223,6 @@ private slots:
 
     /// Highlights all entities from the entities_list that own an instance of given component.
     void HighlightEntities(const QString &type, const QString &name);
-
-    ///\todo Do we want to EC editor listen to scene changed signals, or is editor "dedicated" to the scene that was active when the editor was created?
-    /// Listens when default world scene changes and clears the editor window.
-    /** @param scene new default world scene. */
-//    void OnDefaultSceneChanged(Scene *scene);
 
     /// Called by add component dialog when it's finished.
     void AddComponentDialogFinished(int result);

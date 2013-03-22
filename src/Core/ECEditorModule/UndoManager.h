@@ -7,10 +7,10 @@
 #pragma once
 
 #include "ECEditorModuleApi.h"
+#include "SceneFwd.h"
 
 #include <QObject>
 
-class Scene;
 class EntityIdChangeTracker;
 
 class QMenu;
@@ -26,9 +26,9 @@ class ECEDITOR_MODULE_API UndoManager : public QObject
 
 public:
     /// Constructor
-    /* @param scene A raw pointer to the main camera scene
+    /* @param scene Scene of which entities we're tracking.
        @param parent This object's parent (optional) */
-    UndoManager(Scene * scene, QObject * parent = 0);
+    UndoManager(const ScenePtr &scene, QObject * parent = 0);
 
     ~UndoManager();
 

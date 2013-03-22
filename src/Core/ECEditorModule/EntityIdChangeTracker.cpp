@@ -1,17 +1,22 @@
+/**
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EntityIdChangeTracker.cpp
+    @brief  EntityIdChangeTracker helper class stores entity id changes that result from QUndoCommand manipulations. */
+
 #include "StableHeaders.h"
 
 #include "EntityIdChangeTracker.h"
 #include "Scene.h"
 #include "Entity.h"
 
-
-EntityIdChangeTracker::EntityIdChangeTracker(Scene * scene, QObject * parent) :
-    scene_(scene->shared_from_this()),
+EntityIdChangeTracker::EntityIdChangeTracker(const ScenePtr &scene, QObject * parent) :
+    scene_(scene),
     QObject(parent)
 {
     //connect(scene, SIGNAL(EntityCreated(Entity*, AttributeChange::Type)), this, SLOT(OnEntityCreated(Entity*, AttributeChange::Type)));
     //connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Entity*, AttributeChange::Type)));
-    connect(scene, SIGNAL(EntityAcked(Entity*, entity_id_t)), this, SLOT(OnEntityAcked(Entity*, entity_id_t)));
+    connect(scene.get(), SIGNAL(EntityAcked(Entity*, entity_id_t)), this, SLOT(OnEntityAcked(Entity*, entity_id_t)));
 }
 
 /*

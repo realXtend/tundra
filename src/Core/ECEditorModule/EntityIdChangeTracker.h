@@ -2,26 +2,27 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   EntityIdChangeTracker.h
-    @brief  EntityIdChangeTracker helper class stores entity id changes that result from QUndoCommand manipulations
-*/
+    @brief  EntityIdChangeTracker helper class stores entity id changes that result from QUndoCommand manipulations. */
 
 #pragma once
 
 #include "SceneFwd.h"
 #include "CoreTypes.h"
-#include <QObject>
-#include <QMap>
 #include "AttributeChangeType.h"
 
+#include <QObject>
+#include <QMap>
+
+/// Stores entity id changes that result from QUndoCommand manipulations.
 class EntityIdChangeTracker : public QObject
 {
     Q_OBJECT
 
 public:
     /// Constructor
-    /* @param scene A raw pointer to the main camera scene
+    /* @param scene Scene of which entities we're tracking.
        @param parent The parent object to this instance */
-    EntityIdChangeTracker(Scene * scene, QObject * parent = 0);
+    EntityIdChangeTracker(const ScenePtr &scene, QObject * parent = 0);
 
     /// Appends an unacked ID to unackedToAckedIds_ map
     /* @param oldId The ID to be appended. Could be an unacked ID or local

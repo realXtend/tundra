@@ -124,6 +124,8 @@ private:
     QList<InvokeItem> invokeHistory; ///< Keeps track of recently invoked entity actions and functions.
     QPointer<Menu> contextMenu; ///< Context menu.
     UndoManager * undoManager_;
+    QShortcut *undoShortcut;
+    QShortcut *redoShortcut;
 
     /// Used when saving multiple assets, can be used to retrieve a matching filename where to save asset data from asset transfer.
     QMap<QString, QString> fileSaves;

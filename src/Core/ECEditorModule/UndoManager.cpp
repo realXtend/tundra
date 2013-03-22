@@ -1,3 +1,9 @@
+/**
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   UndoManager.cpp
+    @brief  UndoManager class which manages the undo stack and provides drop-down menus with the most recent undo/redo commands.*/
+
 #include "StableHeaders.h"
 #include "UndoManager.h"
 #include "EntityIdChangeTracker.h"
@@ -5,7 +11,7 @@
 #include <QUndoCommand>
 #include <QAction>
 
-UndoManager::UndoManager(Scene * scene, QObject * parent) :
+UndoManager::UndoManager(const ScenePtr &scene, QObject * parent) :
     QObject(parent)
 {
     undoStack_ = new QUndoStack(parent);

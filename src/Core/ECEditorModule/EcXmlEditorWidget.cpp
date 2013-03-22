@@ -213,7 +213,7 @@ void EcXmlEditorWidget::Save()
     {
         ECEditorWindow * activeEditor = framework->GetModule<ECEditorModule>()->ActiveEditor();
         if (activeEditor)
-            activeEditor->GetUndoManager()->Push(new EditXMLCommand(scene, unsavedState_, edited_doc));
+            activeEditor->GetUndoManager()->Push(new EditXMLCommand(scene->shared_from_this(), unsavedState_, edited_doc));
         Refresh();
         emit Saved();
     }

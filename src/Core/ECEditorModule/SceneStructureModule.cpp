@@ -322,7 +322,8 @@ void SceneStructureModule::CleanReference(QString &fileRef)
 
 void SceneStructureModule::ToggleSceneStructureWindow()
 {
-    if (!GetFramework()->Scene()->MainCameraScene())
+    Scene *scene = GetFramework()->Scene()->MainCameraScene();
+    if (!scene)
     {
         LogError("SceneStructureModule::ToggleSceneStructureWindow: Main camera scene is null.");
         return;
@@ -342,7 +343,7 @@ void SceneStructureModule::ToggleSceneStructureWindow()
         sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
         sceneWindow->setAttribute(Qt::WA_DeleteOnClose);
         sceneWindow->setWindowFlags(Qt::Tool);
-        sceneWindow->SetScene(GetFramework()->Scene()->MainCameraScene()->shared_from_this());
+        sceneWindow->SetScene(scene->shared_from_this());
         LoadWindowPosition(sceneWindow.data(), cSceneWindowPos);
         sceneWindow->show();
 
