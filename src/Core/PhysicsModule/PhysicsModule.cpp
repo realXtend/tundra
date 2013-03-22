@@ -158,13 +158,13 @@ void PhysicsModule::AutoCollisionMesh()
         // Only assign to entities that don't have a rigidbody yet, but have a mesh and a placeable
         if (!entity->GetComponent<EC_RigidBody>() && entity->GetComponent<EC_Placeable>() && entity->GetComponent<EC_Mesh>())
         {
-            EC_RigidBody* body = checked_static_cast<EC_RigidBody*>(entity->GetOrCreateComponent(EC_RigidBody::TypeNameStatic(), "", AttributeChange::Default).get());
+            shared_ptr<EC_RigidBody> body = entity->GetOrCreateComponent<EC_RigidBody>();
             body->SetShapeFromVisibleMesh();
         }
         // Terrain mode: assign if no rigid body, but there is a terrain component
         if (!entity->GetComponent<EC_RigidBody>() && entity->GetComponent<EC_Terrain>())
         {
-            EC_RigidBody* body = checked_static_cast<EC_RigidBody*>(entity->GetOrCreateComponent(EC_RigidBody::TypeNameStatic(), "", AttributeChange::Default).get());
+            shared_ptr<EC_RigidBody> body = entity->GetOrCreateComponent<EC_RigidBody>();
             body->shapeType.Set(EC_RigidBody::Shape_HeightField, AttributeChange::Default);
         }
     }

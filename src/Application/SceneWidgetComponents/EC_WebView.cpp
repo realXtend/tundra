@@ -462,8 +462,7 @@ void EC_WebView::PrepareComponent()
         sceneCanvasName_ = "WebViewCanvas-" + QUuid::createUuid().toString().replace("{", "").replace("}", "");
 
     // Get or create local EC_WidgetCanvas component
-    ComponentPtr iComponent = parent->GetOrCreateComponent(EC_WidgetCanvas::TypeNameStatic(), sceneCanvasName_, AttributeChange::LocalOnly, false);
-    EC_WidgetCanvas *sceneCanvas = dynamic_cast<EC_WidgetCanvas*>(iComponent.get());
+    shared_ptr<EC_WidgetCanvas> sceneCanvas = parent->GetOrCreateComponent<EC_WidgetCanvas>(sceneCanvasName_, AttributeChange::LocalOnly, false);
     if (!sceneCanvas)
     {
         LogError("PrepareComponent: Could not get or create EC_WidgetCanvas component!");

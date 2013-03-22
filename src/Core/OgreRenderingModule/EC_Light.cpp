@@ -118,7 +118,7 @@ void EC_Light::OnComponentRemoved(IComponent* component, AttributeChange::Type c
         SetPlaceable(ComponentPtr());
 }
 
-void EC_Light::SetPlaceable(ComponentPtr placeable)
+void EC_Light::SetPlaceable(const ComponentPtr &placeable)
 {
     if (!light_)
         return;

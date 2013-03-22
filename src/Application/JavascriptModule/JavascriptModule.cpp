@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   JavascriptModule.cpp
- *  @brief  Enables Javascript execution and scripting by using QtScript.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   JavascriptModule.cpp
+    @brief  Enables Javascript execution and scripting by using QtScript. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -120,27 +119,21 @@ void JavascriptModule::RunString(const QString &codestr, const QVariantMap &cont
 
 void JavascriptModule::DumpScriptInfo()
 {
-    if (!framework_->Scene()->MainCameraScene())
+    Scene *scene = framework_->Scene()->MainCameraScene();
+    if (!scene)
     {
         LogInfo("Scene is null, no scripts running.");
         return;
     }
-    EntityList scripts = framework_->Scene()->MainCameraScene()->GetEntitiesWithComponent(EC_Script::TypeNameStatic());
+    std::vector<shared_ptr<EC_Script> > scripts = scene->Components<EC_Script>();
     if (scripts.empty())
     {
         LogInfo("No scripts running in the scene");
         return;
     }
-    for(EntityList::iterator iter=scripts.begin(); iter!=scripts.end(); iter++)
+    for(unsigned i = 0; i < scripts.size(); ++i)
     {
-        EntityPtr ent = (*iter);
-        if (!ent.get())
-            continue;
-
-        EC_Script *script = ent->GetComponent<EC_Script>().get();
-        if (!script)
-            continue;
-        JavascriptInstance *jsInstance = dynamic_cast<JavascriptInstance*>(script->ScriptInstance());
+        JavascriptInstance *jsInstance = dynamic_cast<JavascriptInstance*>(scripts[i]->ScriptInstance());
         if (!jsInstance)
             continue;
         if (!jsInstance->IsEvaluated())
@@ -154,7 +147,7 @@ void JavascriptModule::DumpScriptInfo()
             .arg(dump["Functions"], 3, 10, QLatin1Char('0')).arg(dump["QObjects"], 3, 10, QLatin1Char('0')).arg(dump["QObject methods"], 3, 10, QLatin1Char('0'))
             .arg(dump["Objects"], 3, 10, QLatin1Char('0'));
 
-        LogInfo(QString("Entity: %1 %2\n  { ").arg(ent->Id()).arg(ent->Name()) + dumpStr + " }");
+        LogInfo(scripts[i]->ParentEntity()->ToString() + " { " + dumpStr + " }");
     }
 }
 

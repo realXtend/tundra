@@ -218,7 +218,7 @@ EC_Billboard *EC_WidgetBillboard::GetBillboardComponent()
         return 0;
     if (billboardCompName_.isEmpty())
         return 0;
-    return dynamic_cast<EC_Billboard*>(ParentEntity()->GetComponent(EC_Billboard::TypeNameStatic(), billboardCompName_).get());
+    return ParentEntity()->Component<EC_Billboard>(billboardCompName_).get();
 }
 
 void EC_WidgetBillboard::PrepareComponent()
@@ -237,8 +237,7 @@ void EC_WidgetBillboard::PrepareComponent()
     {
         billboardCompName_ = "SceneWidget-Billboard-" + QUuid::createUuid().toString().replace("{", "").replace("}", "");
 
-        bb = dynamic_cast<EC_Billboard*>(ParentEntity()->GetOrCreateComponent(
-            EC_Billboard::TypeNameStatic(), billboardCompName_, AttributeChange::LocalOnly, false).get());
+        bb = ParentEntity()->GetOrCreateComponent<EC_Billboard>(billboardCompName_, AttributeChange::LocalOnly, false).get();
         if (!bb)
         {
             LogError("EC_WidgetBillboard: Failed to create needed EC_Billboard to parent entity!");

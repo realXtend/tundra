@@ -197,13 +197,12 @@ void EC_WaterPlane::Update()
     {
         // Restore current scene fog settings, if existing.
         /// @todo Optimize
-        EntityList entities = ParentScene()->GetEntitiesWithComponent(EC_Fog::TypeNameStatic());
-        if (!entities.empty())
+        std::vector<shared_ptr<EC_Fog> > fogs = ParentScene()->Components<EC_Fog>();
+        if (!fogs.empty())
         {
-            EC_Fog *sceneFog = (*entities.begin())->GetComponent<EC_Fog>().get();
-            world->OgreSceneManager()->setFog((Ogre::FogMode)sceneFog->mode.Get(),sceneFog->color.Get(),
-                sceneFog->expDensity.Get(), sceneFog->startDistance.Get(), sceneFog->endDistance.Get());
-            world->Renderer()->MainViewport()->setBackgroundColour(sceneFog->color.Get());
+            world->OgreSceneManager()->setFog((Ogre::FogMode)fogs[0]->mode.Get(), fogs[0]->color.Get(),
+                fogs[0]->expDensity.Get(), fogs[0]->startDistance.Get(), fogs[0]->endDistance.Get());
+            world->Renderer()->MainViewport()->setBackgroundColour(fogs[0]->color.Get());
         }
         else // No scene fog, set the default ineffective fog.
         {
