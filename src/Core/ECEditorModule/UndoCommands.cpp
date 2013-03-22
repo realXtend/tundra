@@ -16,7 +16,7 @@
 #include "Transform.h"
 #include "EC_Placeable.h"
 
-AddAttributeCommand::AddAttributeCommand(IComponent * comp, const QString typeName, const QString name, QUndoCommand * parent) : 
+AddAttributeCommand::AddAttributeCommand(IComponent * comp, const QString &typeName, const QString &name, QUndoCommand * parent) :
     entity_(comp->ParentEntity()->shared_from_this()),
     componentName_(comp->Name()),
     componentType_(comp->TypeName()),
@@ -325,7 +325,7 @@ void AddEntityCommand::redo()
     entity->SetTemporary(temp_);
 }
 
-RemoveCommand::RemoveCommand(Scene * scene, EntityIdChangeTracker * tracker, QList<EntityWeakPtr> entityList, QList<ComponentWeakPtr> componentList, QUndoCommand * parent) :
+RemoveCommand::RemoveCommand(Scene * scene, EntityIdChangeTracker * tracker, const QList<EntityWeakPtr> &entityList, const QList<ComponentWeakPtr> &componentList, QUndoCommand * parent) :
     scene_(scene->shared_from_this()),
     tracker_(tracker),
     QUndoCommand(parent)
@@ -337,7 +337,7 @@ RemoveCommand::RemoveCommand(Scene * scene, EntityIdChangeTracker * tracker, QLi
 
     if (!entityList.isEmpty())
     {
-        for (QList<EntityWeakPtr>::iterator i = entityList.begin(); i != entityList.end(); ++i)
+        for (QList<EntityWeakPtr>::const_iterator i = entityList.begin(); i != entityList.end(); ++i)
         {
             entityList_ << (*i).lock()->Id();
 
@@ -354,7 +354,7 @@ RemoveCommand::RemoveCommand(Scene * scene, EntityIdChangeTracker * tracker, QLi
 
     if (!componentList.isEmpty())
     {
-        for (QList<ComponentWeakPtr>::iterator i = componentList.begin(); i != componentList.end(); ++i)
+        for (QList<ComponentWeakPtr>::const_iterator i = componentList.begin(); i != componentList.end(); ++i)
         {
             ComponentPtr comp = (*i).lock();
             if (comp.get())
@@ -541,7 +541,7 @@ void RenameCommand::redo()
         entity->SetName(newName_);
 }
 
-ToggleTemporaryCommand::ToggleTemporaryCommand(QList<EntityWeakPtr> entities, EntityIdChangeTracker * tracker, bool temporary, QUndoCommand *parent) :
+ToggleTemporaryCommand::ToggleTemporaryCommand(const QList<EntityWeakPtr> &entities, EntityIdChangeTracker * tracker, bool temporary, QUndoCommand *parent) :
     tracker_(tracker),
     temporary_(temporary),
     QUndoCommand(parent)
@@ -556,7 +556,7 @@ ToggleTemporaryCommand::ToggleTemporaryCommand(QList<EntityWeakPtr> entities, En
 
     scene_ = entities.at(0).lock()->ParentScene()->shared_from_this();
 
-    for (QList<EntityWeakPtr>::iterator i = entities.begin(); i != entities.end(); ++i)
+    for(QList<EntityWeakPtr>::const_iterator i = entities.begin(); i != entities.end(); ++i)
         entityIds_ << (*i).lock()->Id();
 }
 
@@ -589,7 +589,7 @@ void ToggleTemporaryCommand::ToggleTemporary(bool temporary)
     }
 }
 
-TransformCommand::TransformCommand(TransformAttributeWeakPtrList attributes, int numberOfItems, Action action, const float3 & offset, QUndoCommand * parent) : 
+TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3 & offset, QUndoCommand * parent) : 
     targets_(attributes),
     nItems_(numberOfItems),
     action_(action),
@@ -600,7 +600,7 @@ TransformCommand::TransformCommand(TransformAttributeWeakPtrList attributes, int
     SetCommandText();
 }
 
-TransformCommand::TransformCommand(TransformAttributeWeakPtrList attributes, int numberOfItems, const float3x4 & rotation, QUndoCommand * parent) :
+TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, const float3x4 & rotation, QUndoCommand * parent) :
     targets_(attributes),
     nItems_(numberOfItems),
     action_(TransformCommand::Rotate),

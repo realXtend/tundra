@@ -2,23 +2,25 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   UndoManager.h
-    @brief  UndoManager class which manages the undo stack and provides drop-down menus with the most recent undo/redo commands 
-*/
+    @brief  UndoManager class which manages the undo stack and provides drop-down menus with the most recent undo/redo commands.*/
 
 #pragma once
+
+#include "ECEditorModuleApi.h"
 
 #include <QObject>
 
 class Scene;
+class EntityIdChangeTracker;
 
 class QMenu;
 class QUndoStack;
 class QUndoCommand;
 class QUndoView;
 class QAction;
-class EntityIdChangeTracker;
 
-class UndoManager : public QObject
+/// Manages the undo stack and provides drop-down menus with the most recent undo/redo commands.
+class ECEDITOR_MODULE_API UndoManager : public QObject
 {
     Q_OBJECT
 
@@ -26,9 +28,8 @@ public:
     /// Constructor
     /* @param scene A raw pointer to the main camera scene
        @param parent This object's parent (optional) */
-    UndoManager(Scene * scene, QObject * parent);
+    UndoManager(Scene * scene, QObject * parent = 0);
 
-    /// Destructor;
     ~UndoManager();
 
     /// Pushes new command to the undo stack
@@ -36,16 +37,14 @@ public:
     void Push(QUndoCommand * command);
 
     /// Returns a pointer to the undo menu containing actions that can be undo-ed
-    /* @returns Undo menu */
     QMenu * UndoMenu() const;
 
     /// Returns a pointer to the redo menu containing actions that can be redo-ed
-    /* @returns Redo menu */
     QMenu * RedoMenu() const;
 
     /// Returns a pointer to the entity ID change tracker
-    /* @returns Entity ID change tracker */
-    EntityIdChangeTracker * GetTracker();
+    EntityIdChangeTracker *Tracker() const;
+    EntityIdChangeTracker * GetTracker() const { return Tracker(); }
 
 public slots:
     /// Calls the undo stack's undo() method
