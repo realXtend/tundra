@@ -8,8 +8,6 @@
 #include "Framework.h"
 #include "HighPerfClock.h"
 
-#include <QMutex>
-
 // Allows short-timed block tracing
 #define TRACESTART(x) kNet::PolledTimer polledTimer_##x;
 #define TRACEEND(x) std::cout << #x << " finished in " << polledTimer_##x.MSecsElapsed() << " msecs." << std::endl;
@@ -27,11 +25,10 @@
 /** Use when you wish to end a profiling block before it goes out of scope. */
 #define ELIFORP(x) x ## __profiler__.Destruct();
 
-/// Resets profiling data per frame. Must be called at end of each frame in each thread, otherwise profiling data may be inaccurate or unavailable.
-/// \todo Currently RESETPROFILER is called in modules at end of Update(), but that will probably cause mismatched timing data if things are profiled
-///       after the Update() call but still in the same frame, f.ex. when handling events. All profiling data in the main thread should be reset
-///       at the same time, at the end of the main loop. Threads are free to reset whenever they choose, as they have their own frame. -cm
-#define RESETPROFILER { ProfilerSection::GetProfiler()->ThreadedReset(); }
+/// Resets profiling data per frame and prepares the next frame.
+/// \todo Currently this is not called at any point in the code, as DebugStatsModule implements its own profiler frame counting via the custom 
+/// fields in the profiler nodes.
+#define RESETPROFILER { ProfilerSection::GetProfiler()->ResetValues(); }
 
 #define STARTTIMEDBLOCK(name) tick_t timedBlock##name = GetCurrentClockTime();
 #define LOGTIMEDBLOCK(name) { float elapsed = (float)(GetCurrentClockTime() - timedBlock##name) / GetCurrentClockFreq(); printf("%s: Took %f seconds.\n", #name, elapsed); }
@@ -108,17 +105,13 @@ public:
     typedef std::list<shared_ptr<ProfilerNodeTree> > NodeList;
 
     /// constructor that takes a name for the node
-    explicit ProfilerNodeTree(const std::string &name) : name_(name), parent_(0), recursion_(0), owner_(0) {}
+    explicit ProfilerNodeTree(const std::string &name) : name_(name), parent_(0), recursion_(0) {}
 
     /// destructor
     virtual ~ProfilerNodeTree()
     {
-        if (owner_)
-            RemoveThreadRootBlock();
     }
     
-    void RemoveThreadRootBlock();
-
     /// Resets this node and all child nodes
     virtual void ResetValues()
     {
@@ -167,19 +160,13 @@ public:
     const NodeList &GetChildren() const { return children_; }
     NodeList &GetChildren(){ return children_; }
 
-    void MarkAsRootBlock(Profiler *owner) { owner_ = owner; }
-
 private:
     friend class Profiler;
-//        ProfilerNodeTree(); // N/I
-    Q_DISABLE_COPY(ProfilerNodeTree) // N/I
-
+    
     /// list of all children for this node
     NodeList children_;
     /// cached parent node for easy access
     ProfilerNodeTree *parent_;
-    /// If non-null, this node is a root block owned by the given profiler.
-    Profiler *owner_;
     /// Name of this node
     const std::string name_;
 
@@ -263,8 +250,6 @@ public:
 
 private:
     friend class Profiler;
-    ProfilerNode(); // N/I
-    Q_DISABLE_COPY(ProfilerNode) // N/I
 
     unsigned long num_called_current_;
     double elapsed_current_;
@@ -273,12 +258,6 @@ private:
 
     ProfilerBlock block_;
 };
-
-namespace
-{
-    /// For shared_ptr, we don't want it doing automatic deletion
-    void EmptyDeletor(ProfilerNodeTree * UNUSED_PARAM(node)) {}
-}
 
 /// Provides profiling access for scripts.
 class TUNDRACORE_API ProfilerQObj : public QObject
@@ -300,29 +279,16 @@ public slots:
 /** Do not use this class directly for profiling, use instead PROFILE
     and ELIFORP macros.
 
-    Threadsafety: all profiling related functions are re-entrant so can
-    be safely used from any thread. Profiling data needs to be reset
-    per frame, so ThreadedReset() should be called from within the 
-    profiled thread. The profiling data won't show up otherwise.
+    Threadsafety: Can *only* be used from the main thread.
 
-    Lock() and Release() functions should not be used, they are for
-    reporting profiling data. They are threadsafe because the
-    variables that are accessed during reporting are ones that are only
-    written to during Reset() or ResetThread and that is protected by a lock.
-
-    Locks are not used when dealing with profiling blocks, as they might skew
-    the data too much.
-
-    \todo A memory leak around here somewhere of several kilobytes. */
+ */
 class TUNDRACORE_API Profiler
 {
 public:
-    Profiler() :current_node_(0), root_("Root"), thread_specific_root_(0)
-    {
-    }
+    Profiler();
 
     ~Profiler();
-
+    
     /// Start a profiling block.
     /** Normally you don't use this directly, instead you use the macro PROFILE.
         However if you want profiling that lasts out of scope, you can use this directly,
@@ -339,58 +305,35 @@ public:
         Re-entrant. */
     void EndBlock(const std::string &name);
 
-    /// Reset profiling data for the current thread. Don't call directly, use RESETPROFILER macro instead.
-    void ThreadedReset();
+    /// Reset profiling data for the current frame. Don't call directly, use RESETPROFILER macro instead.
+    void ResetValues();
 
-    ProfilerNodeTree *CreateThreadRootBlock();
-    void RemoveThreadRootBlock(ProfilerNodeTree *rootBlock);
 
-    ProfilerNodeTree *GetThreadRootBlock();
-
-    std::string GetThisThreadRootBlockName();
-
-    ProfilerNodeTree *FindBlockByName(const char *name);
-
-    /// Returns root profiling node for the current thread only, re-entrant
-    ProfilerNodeTree *GetOrCreateThreadRootBlock();
-
-    /// Returns root profiling node for all threads.
+    /// Returns root profiling node. \todo Deprecated, the actual locking is a no-op
     ProfilerNodeTree *Lock()
     {
-        mutex_.lock();
         return &root_;
     }
 
+	/// \todo Deprecated, no-op
     void Release()
     {
-        mutex_.unlock();
     }
 
     ProfilerNodeTree *GetRoot() { return &root_; }
 
-    void Reset();
-
+    ProfilerNodeTree *FindBlockByName(ProfilerNodeTree *parent, const char *name);
+    ProfilerNodeTree *Profiler::FindBlockByName(const char *name);
+    
     /// Returns the currently topmost active node on the profiler tree.
     /// Only used internally, *NOT* for public use.
     ProfilerNodeTree *CurrentNode() { return current_node_; }
 private:
     /// The single global root node object.
-    /// This is a dummy root node that doesn't track any  timing statistics, but just contains
-    /// all the root blocks of each thread as its children.
-    /// This root_ node doesn't own any of the memory of any of its children, those are owned 
-    /// and freed by each thread separately Namely, freeing all instances inside the 
-    /// thread_specific_root_ will cause all blocks to be freed.
     ProfilerNodeTree root_;
 
-    /// Contains the root profile block for each thread.
-    ProfilerNodeTree *thread_specific_root_;
-    /// Points to the current topmost profile block in the stack for each thread.
+    /// Points to the current topmost profile block in the stack.
     ProfilerNodeTree *current_node_;
-
-    /// container for all the root profile nodes for each thread.
-    std::list<ProfilerNodeTree*> thread_root_nodes_;
-
-    QMutex mutex_;
 
     friend class ProfilerQObj;
 };
@@ -432,9 +375,6 @@ public:
     }
 
 private:
-    ProfilerSection(); // N/I
-    Q_DISABLE_COPY(ProfilerSection)
-
     /// Name of this profiling section
     const std::string name_;
 
