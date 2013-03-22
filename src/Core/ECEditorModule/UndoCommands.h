@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "ECEditorModuleApi.h"
 #include "SceneFwd.h"
 #include "IAttribute.h"
 #include "Color.h"
@@ -134,8 +135,8 @@ template<> bool EditAttributeCommand<Color>::mergeWith(const QUndoCommand *other
     return true;
 }
 
-/// AddAttributeCommand represents adding an attribute to a dynamic component
-class AddAttributeCommand : public QUndoCommand
+/// Represents adding an attribute to a dynamic component
+class ECEDITOR_MODULE_API AddAttributeCommand : public QUndoCommand
 {
 public:
     /// Internal QUndoCommand unique ID
@@ -146,7 +147,7 @@ public:
        @param typeName The type of the attribute being added
        @param name The name of the attribute being added
        @param parent The parent command of this command (optional) */
-    AddAttributeCommand(IComponent * comp, const QString typeName, const QString name, QUndoCommand * parent = 0);
+    AddAttributeCommand(IComponent * comp, const QString &typeName, const QString &name, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
     /* @returns This command's ID */
@@ -163,8 +164,8 @@ public:
     const QString attributeName_; ///< Name of this attribute
 };
 
-/// RemoveAttributeCommand represents removing an existing attribute of a dynamic component
-class RemoveAttributeCommand : public QUndoCommand
+/// Represents removing an existing attribute of a dynamic component
+class ECEDITOR_MODULE_API RemoveAttributeCommand : public QUndoCommand
 {
 public:
     /// Internal QUndoCommand unique ID
@@ -190,8 +191,8 @@ public:
     QString value_; ///< Value of this attribute represented as string
 };
 
-/// AddComponentCommand represents adding a component to an entity or more entities
-class AddComponentCommand : public QUndoCommand
+/// Represents adding a component to an entity or more entities
+class ECEDITOR_MODULE_API AddComponentCommand : public QUndoCommand
 {
 public:
     /// Internal QUndoCommand unique ID
@@ -201,7 +202,7 @@ public:
     /* @param scene A weak pointer to the main camera scene
        @param tracker Pointer to the EntityIdChangeTracker object
        @param entities A list of IDs of entities that a component is being added to
-       @param compType Typename of the component being added
+       @param compType Type name of the component being added
        @param compName Name of the component being added
        @param sync Sync state of the component being added
        @param temp Temporary state of the component being added
@@ -224,8 +225,8 @@ public:
     bool temp_; ///< Temporary state of the component
 };
 
-/// EditXMLCommand represents editing entities and/or components as XML
-class EditXMLCommand : public QUndoCommand
+/// Represents editing entities and/or components as XML
+class ECEDITOR_MODULE_API EditXMLCommand : public QUndoCommand
 {
 public:
     /// Internal QUndoCommand unique ID
@@ -251,8 +252,8 @@ public:
     QDomDocument newState_; ///< New state of the XML document
 };
 
-/// AddEntityCommand represents adding an entity to the scene
-class AddEntityCommand : public QUndoCommand
+/// Represents adding an entity to the scene
+class ECEDITOR_MODULE_API AddEntityCommand : public QUndoCommand
 {
 public:
     /// Internal QUndoCommand unique ID
@@ -282,7 +283,7 @@ public:
     bool temp_; ///< Temporary state of the entity
 };
 
-class RemoveCommand : public QUndoCommand
+class ECEDITOR_MODULE_API RemoveCommand : public QUndoCommand
 {
 public:
     /// Internal QUndoCommand unique ID
@@ -294,7 +295,7 @@ public:
        @param entityList A weak pointer list of the entity/entities about to be removed
        @param componentList A weak pointer list of the component(s) about to be removed
        @param parent The parent command of this command (optional) */
-    RemoveCommand(Scene * scene, EntityIdChangeTracker * tracker, QList<EntityWeakPtr> entityList, QList<ComponentWeakPtr> componentList, QUndoCommand * parent = 0);
+    RemoveCommand(Scene * scene, EntityIdChangeTracker * tracker, const QList<EntityWeakPtr> &entityList, const QList<ComponentWeakPtr> &componentList, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
     int id () const;
@@ -318,8 +319,8 @@ public:
     QDomDocument componentsDocument_; ///< XML document containing data about the components to be removed
 };
 
-/// RenameCommand represents a rename operation over an entity or a component
-class RenameCommand : public QUndoCommand
+/// Represents a rename operation over an entity or a component
+class ECEDITOR_MODULE_API RenameCommand : public QUndoCommand
 {
 public:
     /// Internal QUndoCommand unique ID
@@ -347,8 +348,8 @@ public:
     QString newName_; ///< New entity name
 };
 
-/// ToggleTemporaryCommand represents toggling the temporary state of entity / entities
-class ToggleTemporaryCommand : public QUndoCommand
+/// Represents toggling the temporary state of entity / entities
+class ECEDITOR_MODULE_API ToggleTemporaryCommand : public QUndoCommand
 {
 public:
     /// Internal QUndoCommand unique ID
@@ -359,7 +360,7 @@ public:
        @param tracker Pointer to the EntityIdChangeTracker object
        @param temporary The desired temporary state to be set
        @param parent The parent command of this command (optional) */
-    ToggleTemporaryCommand(QList<EntityWeakPtr> entities, EntityIdChangeTracker * tracker, bool temporary, QUndoCommand * parent = 0);
+    ToggleTemporaryCommand(const QList<EntityWeakPtr> &entities, EntityIdChangeTracker * tracker, bool temporary, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
     int id () const;
@@ -375,7 +376,7 @@ public:
     bool temporary_; ///< Temporary state
 };
 
-class TransformCommand : public QUndoCommand
+class ECEDITOR_MODULE_API TransformCommand : public QUndoCommand
 {
 public:
     /// Internal QUnodCommand unique ID
@@ -388,8 +389,8 @@ public:
         Scale
     };
 
-    TransformCommand(TransformAttributeWeakPtrList attributes, int numberOfItems, Action action, const float3 & offset, QUndoCommand * parent = 0);
-    TransformCommand(TransformAttributeWeakPtrList attributes, int numberOfItems, const float3x4 & rotation, QUndoCommand * parent = 0);
+    TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3 & offset, QUndoCommand * parent = 0);
+    TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, const float3x4 & rotation, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
     int id() const;
@@ -414,7 +415,7 @@ public:
 };
 
 /*
-class PasteCommand : public QUndoCommand
+class ECEDITOR_MODULE_API PasteCommand : public QUndoCommand
 {
 public:
     /// Internal QUndoCommand unique ID

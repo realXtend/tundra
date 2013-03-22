@@ -638,17 +638,13 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e, QGraphicsItem *widget)
         if (!res->entity)
         {
             // No entity hit, use camera's position with hard-coded offset.
-            foreach(const EntityPtr &cam, scene->EntitiesWithComponent(EC_Camera::TypeNameStatic()))
-                if (cam->GetComponent<EC_Camera>()->IsActive())
-                {
-                    EC_Placeable *placeable = cam->GetComponent<EC_Placeable>().get();
-                    if (placeable)
-                    {
-                        float3 dir = placeable->WorldOrientation() * scene->ForwardVector();
-                        worldPos = placeable->Position() + dir * 20;
-                        break;
-                    }
-                }
+            Entity *cameraEntity = world->Renderer()->MainCamera();
+            EC_Placeable *placeable = (cameraEntity ? cameraEntity->GetComponent<EC_Placeable>().get() : 0);
+            if (placeable)
+            {
+                float3 dir = placeable->WorldOrientation() * scene->ForwardVector();
+                worldPos = placeable->Position() + dir * 20;
+            }
         }
         else
             worldPos = res->pos;

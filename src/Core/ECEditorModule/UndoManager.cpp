@@ -48,7 +48,7 @@ QMenu * UndoManager::RedoMenu() const
     return redoMenu_;
 }
 
-EntityIdChangeTracker * UndoManager::GetTracker()
+EntityIdChangeTracker * UndoManager::Tracker() const
 {
     return tracker_;
 }
