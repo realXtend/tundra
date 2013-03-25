@@ -9,6 +9,8 @@
 
 #include "ECEditorModuleApi.h"
 #include "SceneFwd.h"
+#include "Entity.h"
+#include "IComponent.h"
 #include "IAttribute.h"
 #include "Color.h"
 #include "Math/float3.h"

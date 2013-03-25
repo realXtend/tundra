@@ -13,6 +13,7 @@
 #include <QTreeWidget>
 #include <QPointer>
 #include <QMenu>
+#include <QShortcut>
 
 class QWidget;
 class QFileDialog;
