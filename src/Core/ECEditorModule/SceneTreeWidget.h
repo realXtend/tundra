@@ -71,7 +71,7 @@ public:
     bool showComponents;
 
     /// @note Available only after the scene is set.
-    UndoManager * GetUndoManager() const;
+    UndoManager *GetUndoManager() const;
 
 protected:
     /// QAbstractItemView override.
