@@ -29,7 +29,7 @@ Tundra uses [CMake] as its build system and depends on various other open source
 
 Visual Studio 2008 and 2010 build environments are currently supported. However, be advised that some of the optional dependencies (f.ex. VLC) are not usable with the newer Visual Studio versions. Make sure that you have the latest Visual Studio Service Packs installed.
 
-The Tundra dependencies are acquired and built using an automated build script:
+The Tundra dependencies are acquired and built using an automated build script:  
 1. `cd tools` and run `BuildDepsVSXXX.cmd` (depending on the used Visual Studio version). The build script needs to be run in the Visual Studio Command Prompt for build tools and have several other utilities in your PATH. This script will print information what you need to proceed, follow the instructions carefully. You can abort the script with Ctrl+C at this point and setup your environment.  
 2. Once you are done setting up your build environment, hit any key to continue the script as it instructs. The full depedency build will take about 2-3 hours.  
 3. After the script has completed, the dependencies can be found from /deps (for VS2008), or deps-vsXXXX (for newer VS versions). The needed runtime libraries are automatically copied to /bin.  
@@ -40,7 +40,7 @@ The Tundra dependencies are acquired and built using an automated build script:
 
 See [tools] for distro-specific build scripts.
 
-### Mac OS X
+### OS X
 
 See [tools/build-mac-deps.bash] for automated dependency and Tundra build script.
 
@@ -60,7 +60,7 @@ Contributing
 1. Fork Tundra.
 2. Preferably create a feature branch for your work.
 3. Make sure to follow the coding conventions (doc/dox/CodingConventions.dox).
-4. Make a pull request
+4. Make a pull request.
 
 Contact Information
 -------------------
@@ -70,7 +70,7 @@ You can find Tundra developers from IRC `#realxtend-dev @ freenode`. Also check 
 Releases
 --------
 
-New releases are announced on the mailing lists and at the [realXtend blog]. The releases are uploaded to Google Code project site, that is used for hosting downloads. http://code.google.com/p/realxtend-naali/downloads/list
+New releases are announced on the mailing lists and at the [realXtend blog]. The releases are available at the [realXtend Tundra Google Code] project site.
 
 [Qt]:          http://qt.nokia.com/                            "Qt homepage"
 [Ogre3D]:      http://www.ogre3d.org/                          "Ogre3D homepage"
@@ -81,4 +81,4 @@ New releases are announced on the mailing lists and at the [realXtend blog]. The
 [tools/build-mac-deps.bash]: https://github.com/realXtend/naali/blob/tundra2/tools/build-mac-deps.bash "tools/build-mac-deps.bash"
 [tools]: https://github.com/realXtend/naali/tree/tundra2/tools "tools"
 [Doxygen]:  http://www.stack.nl/~dimitri/doxygen/ "doxygen homepage"
-
+[realXtend Tundra Google Code]: http://code.google.com/p/realxtend-naali/downloads/list
