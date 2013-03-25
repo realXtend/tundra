@@ -21,7 +21,7 @@ See the `scenes` folder for example demo scenes and applications. F.e.x. `Tundra
 Compiling from Sources
 ----------------------
 
-Tundra source code is available at the [realXtend github repository]. This repository hosts various branches for current and deprecated developmnet lines from the realXtend team, so be sure to checkout `tundra2` branch after cloning.
+Tundra source code is available at the [realXtend github repository]. This repository hosts various branches for current and deprecated development lines from the realXtend team, so be sure to checkout `tundra2` branch after cloning.
 
 Tundra uses [CMake] as its build system and depends on various other open source projects. See more from `doc/dependencies.txt`.
 
@@ -29,25 +29,12 @@ Tundra uses [CMake] as its build system and depends on various other open source
 
 Visual Studio 2008 and 2010 build environments are currently supported. However, be advised that some of the optional dependencies (f.ex. VLC) are not usable with the newer Visual Studio versions. Make sure that you have the latest Visual Studio Service Packs installed.
 
- There are two ways of acquiring the dependencies **1)** Automated script to build them from sources **2)** Use prebuilt dependencies from an SVN repository.
-
-**1) Building with Full Dependencies**
-
-1. `cd tools` and run `BuildDepsVSXXX.cmd`, depending on your choice of Visual Studio version. The build script needs to be run in the Visual Studio Command Prompt for build tools and have several other utilities in your PATH. This script will print information what you need to proceed, follow the instructions carefully. You can abort the script with Ctrl+C at this point and setup your environment.
-2. Once you are done setting up your build environment hit any key to continue the script as it instructs. Full depedency build will take about 2-3 hours.
-3. After the script completes dependencies can be found from /deps (for VS2008), or deps-vsXXX (for newer VS versions). The needed runtime libraries are automatically copied to /bin.
-
-Now run `windows-build-tundra.cmd`. This script will setup the needed build environment variables for CMake. Next it will run CMake to generate a tundra.sln solution file and build it.
-
-If you want the script to build Tundra you need to run it in the Visual Studio Command Prompt as it needs MSBuild. However you can hit Ctrl+C after the CMake step finishes and open the solution file with the Visual Studio IDE, if that is what you prefer.
-
-**2) Building with Prebuilt Dependencies**
-
-Prebuilt dependencies are only available for Visual Studio 2008 at the moment.
-
-1. `cd tools` and run `windows-fetch-prebuilt-deps.cmd`.
-2. This will download the prebuilt dependency package, extract it to /deps-prebuilt, copies the needed runtime libraries to /bin and runs CMake against the prebuilt dependencies.
-3. `cd ..`, open up tundra.sln and build.
+The Tundra dependencies are acquired and built using an automated build script.
+1. `cd tools` and run `BuildDepsVSXXX.cmd` (depending on the used Visual Studio version). The build script needs to be run in the Visual Studio Command Prompt for build tools and have several other utilities in your PATH. This script will print information what you need to proceed, follow the instructions carefully. You can abort the script with Ctrl+C at this point and setup your environment.
+2. Once you are done setting up your build environment, hit any key to continue the script as it instructs. The full depedency build will take about 2-3 hours.
+3. After the script has completed, the dependencies can be found from /deps (for VS2008), or deps-vsXXXX (for newer VS versions). The needed runtime libraries are automatically copied to /bin.
+4. Now run `CMakeVSXXXX.bat` which resides in the Tundra's root folder. This script will set up the needed build environment variables for CMake and invoke CMake to generate a tundra.sln solution.
+5. Build Tundra using the solution file.
 
 ### Linux
 
