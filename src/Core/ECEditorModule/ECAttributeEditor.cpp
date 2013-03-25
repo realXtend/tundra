@@ -48,7 +48,8 @@ ECAttributeEditorBase::ECAttributeEditorBase(QtAbstractPropertyBrowser *owner,
     propertyMgr_(0),
     listenEditorChangedSignal_(false),
     useMultiEditor_(false),
-    metaDataFlag_(0)
+    metaDataFlag_(0),
+    updated_(false)
 {
     AddComponent(component);
 }
@@ -1735,6 +1736,14 @@ template<> void ECAttributeEditor<AssetReference>::Update(IAttribute *attr)
         if (!stringManager)
             return;
 
+        if (!updated_)
+        {
+            updated_ = true;
+
+            UnInitialize();
+            Initialize();
+        }
+
         stringManager->setValue(rootProperty_, attribute->Get().ref);
     }
 }
@@ -1864,6 +1873,9 @@ void AssetReferenceAttributeEditor::HandleAssetPicked(AssetPtr asset)
     if (asset)
     {
         LogDebug("AssetReferenceAttributeEditor: Setting new value " + asset->Name());
+
+        updated_ = false;
+
         SetValue(AssetReference(asset->Name()));
         Update();
     }
@@ -1941,8 +1953,10 @@ template<> void ECAttributeEditor<AssetReferenceList>::Update(IAttribute *attr)
         const AssetReferenceList &value = attribute->Get();
         /// @todo It tends to be heavy operation to reinitialize all ui elements when new parameters have been added.
         /// replace this so that only single vector's element is added/deleted from the editor.
-        if (value.Size() + 1 != children.size())
+        if (value.Size() + 1 != children.size() || !updated_)
         {
+            updated_ = true;
+
             UnInitialize();
             Initialize();
         }
@@ -2158,6 +2172,9 @@ void AssetReferenceListAttributeEditor::HandleAssetPicked(AssetPtr asset)
     if (asset)
     {
         LogDebug("AssetReferenceListAttributeEditor: Setting new value " + asset->Name() + " for index " + QString::number(currentIndex));
+
+        updated_ = false;
+
         AssetReferenceList newRefList = refList->Get();
         if (newRefList.IsEmpty())
             newRefList.Append(AssetReference(asset->Name()));

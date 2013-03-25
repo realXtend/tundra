@@ -198,11 +198,15 @@ void Scene::RemoveAllEntities(bool signal, AttributeChange::Type change)
 
     // Gather entity ids to call RemoveEntity, as it modifies 
     // the entities_ map we should not call RemoveEntity while iterating it.
+    ///\todo The following code was done to resolve a mysterious crash bug.
+    ///      See https://github.com/Adminotech/tundra/commit/cb051bb270be3ce6e64a822593f1e14675bbf922
+    ///      Contact Jonne for more info. -cs
     std::list<entity_id_t> entIds;
-    for(const_iterator it = begin(); it != end(); ++it)
-        if (it->second)
+    for (EntityMap::iterator it = entities_.begin(); it != entities_.end(); ++it)
+    {
+        if (it->second.get())
             entIds.push_back(it->second->Id());
-
+    }
     while(entIds.size() > 0)
     {
         RemoveEntity(entIds.back(), change);
@@ -570,6 +574,10 @@ QList<Entity *> Scene::CreateContentFromXml(const QString &xml,  bool useEntityI
 
 QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
+    /// @todo Make server fix any broken parenting when it changes the entity IDs from unacked to replicated!
+    if (!IsAuthority() && !useEntityIDsFromFile)
+        LogWarning("Scene: The created entitity IDs need to be verified from the server. This will break EC_Placeable parenting.");
+
     std::vector<EntityWeakPtr> entities;
     
     // Check for existence of the scene element before we begin
@@ -737,20 +745,35 @@ QList<Entity *> Scene::CreateContentFromBinary(const QString &filename, bool use
 
 QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
+    /// @todo Make server fix any broken parenting when it changes the entity IDs from unacked to replicated!
+    if (!IsAuthority() && !useEntityIDsFromFile)
+        LogWarning("Scene: The created entitity IDs need to be verified from the server. This will break EC_Placeable parenting.");
+
     std::vector<EntityWeakPtr> entities;
     assert(data);
     assert(numBytes > 0);
+    QHash<entity_id_t, entity_id_t> oldToNewIds;
     try
     {
         DataDeserializer source(data, numBytes);
-        
+
         uint num_entities = source.Read<u32>();
         for(uint i = 0; i < num_entities; ++i)
         {
             entity_id_t id = source.Read<u32>();
             bool replicated = source.Read<u8>() ? true : false;
             if (!useEntityIDsFromFile || id == 0)
+            {
+                entity_id_t originalId = id;
                 id = replicated ? NextFreeId() : NextFreeIdLocal();
+                if (originalId != 0 && !oldToNewIds.contains(originalId))
+                    oldToNewIds[originalId] = id;
+            }
+            else if (useEntityIDsFromFile && HasEntity(id))
+            {
+                entity_id_t newID = replicated ? NextFreeId() : NextFreeIdLocal();
+                ChangeEntityId(id, newID);
+            }
 
             if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
             {
@@ -821,7 +844,26 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
             EntityPtr entityShared = entities[i].lock();
             const Entity::ComponentMap &components = entityShared->Components();
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+            {
+                if (!useEntityIDsFromFile && i->second->TypeName() == "EC_Placeable")
+                {
+                    // Go and fix parent ref of EC_Placeable if new entity IDs were generated
+                    IAttribute *iAttr = i->second->GetAttribute("Parent entity ref");
+                    Attribute<EntityReference> *parentRef = iAttr != 0 ? dynamic_cast<Attribute<EntityReference> *>(iAttr) : 0;
+                    if (parentRef && !parentRef->Get().IsEmpty())
+                    {
+                        QString ref = parentRef->Get().ref;
+
+                        // We only need to fix the id parent refs.
+                        // Ones with entity names should work as expected.
+                        bool isNumber = false;
+                        entity_id_t refId = ref.toUInt(&isNumber);
+                        if (isNumber && refId > 0 && oldToNewIds.contains(refId))
+                            parentRef->Set(EntityReference(oldToNewIds[refId]), change);
+                    }
+                }
                 i->second->ComponentChanged(change);
+            }
         }
     }
     
