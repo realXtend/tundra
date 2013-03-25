@@ -70,6 +70,7 @@ public:
     /// Do we show components in the tree widget or not.
     bool showComponents;
 
+    /// @note Available only after the scene is set.
     UndoManager * GetUndoManager() const;
 
 protected:
