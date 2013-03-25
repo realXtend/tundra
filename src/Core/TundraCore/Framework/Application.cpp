@@ -355,6 +355,18 @@ QString Application::InstallationDirectory()
 #elif defined(ANDROID)
     /// \todo Implement a proper file access mechanism. Hardcoded internal storage access is used for now
     return "/sdcard/Download/Tundra/";
+#elif defined(__linux__)
+    char exeName[1024];
+    memset(exeName, 0, 1024);
+    pid_t pid = getpid();
+    QString link = "/proc/" + QString::number(pid) + "/exe";
+    readlink(link.toStdString().c_str(), exeName, 1024);
+    // The returned path also contains the executable name, so strip that off from the path name.
+    QString p(exeName);
+    int lastSlash = p.lastIndexOf("/");
+    if (lastSlash != -1)
+        p = p.left(lastSlash+1);
+    return p;     
 #else
     LogError("Application::InstallationDirectory not implemented for this platform. Returning './'");
     return "./";
@@ -707,6 +719,7 @@ int TUNDRACORE_API run(int argc, char **argv)
         // Initialization prints
         LogInfo("Starting up Tundra.");
         LogInfo("* Working directory: " + QDir::currentPath());
+        LogInfo("* Tundra installation directory: " + Application::InstallationDirectory());
 
     // Create application object
 #if !defined(_DEBUG) || !defined (_MSC_VER)
