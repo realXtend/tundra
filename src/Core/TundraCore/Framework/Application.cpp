@@ -678,7 +678,7 @@ int FilterMemoryLeaks(int reportType, char* message, int* retVal)
 
 void DumpMemoryLeaks()
 {
-    // Uncomment this line to only print allocations that came through our debug allocation functions
+    // Uncomment the next line to only print allocations that came through our debug allocation functions
     //_CrtSetReportHook(FilterMemoryLeaks);
     _CrtDumpMemoryLeaks();
 }
