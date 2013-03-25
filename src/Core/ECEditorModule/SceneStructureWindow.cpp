@@ -104,10 +104,6 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     connect(expandAndCollapseButton, SIGNAL(clicked()), SLOT(ExpandOrCollapseAll()));
     connect(treeWidget, SIGNAL(itemCollapsed(QTreeWidgetItem*)), SLOT(CheckTreeExpandStatus(QTreeWidgetItem*)));
     connect(treeWidget, SIGNAL(itemExpanded(QTreeWidgetItem*)), SLOT(CheckTreeExpandStatus(QTreeWidgetItem*)));
-    connect(treeWidget->GetUndoManager(), SIGNAL(CanUndoChanged(bool)), this, SLOT(OnUndoChanged(bool)));
-    connect(treeWidget->GetUndoManager(), SIGNAL(CanRedoChanged(bool)), this, SLOT(OnRedoChanged(bool)));
-    connect(undoButton_, SIGNAL(clicked()), treeWidget->GetUndoManager(), SLOT(Undo()));
-    connect(redoButton_, SIGNAL(clicked()), treeWidget->GetUndoManager(), SLOT(Redo()));
 }
 
 SceneStructureWindow::~SceneStructureWindow()
@@ -120,29 +116,39 @@ void SceneStructureWindow::SetScene(const ScenePtr &newScene)
     if (!scene.expired() && (newScene == scene.lock()))
         return;
 
-    if (!newScene)
+    ScenePtr previous = scene.lock();
+    if (previous)
     {
-        disconnect(scene.lock().get());
+        disconnect(previous.get());
         Clear();
-        return;
     }
 
     scene = newScene;
     treeWidget->SetScene(newScene);
-    undoButton_->setMenu(treeWidget->GetUndoManager()->UndoMenu());
-    redoButton_->setMenu(treeWidget->GetUndoManager()->RedoMenu());
 
-    Scene *scenePtr = scene.lock().get();
-    connect(scenePtr, SIGNAL(EntityAcked(Entity *, entity_id_t)), SLOT(AckEntity(Entity *, entity_id_t)));
-    connect(scenePtr, SIGNAL(EntityCreated(Entity *, AttributeChange::Type)), SLOT(AddEntity(Entity *)));
-    connect(scenePtr, SIGNAL(EntityTemporaryStateToggled(Entity *)), SLOT(UpdateEntityTemporaryState(Entity *)));
-    connect(scenePtr, SIGNAL(EntityRemoved(Entity *, AttributeChange::Type)), SLOT(RemoveEntity(Entity *)));
-    connect(scenePtr, SIGNAL(ComponentAdded(Entity *, IComponent *, AttributeChange::Type)),
-        SLOT(AddComponent(Entity *, IComponent *)));
-    connect(scenePtr, SIGNAL(ComponentRemoved(Entity *, IComponent *, AttributeChange::Type)),
-        SLOT(RemoveComponent(Entity *, IComponent *)));
+    if (newScene)
+    {
+        // Now that treeWidget has scene, it also has UndoManager.
+        UndoManager *undoMgr = treeWidget->GetUndoManager();
+        undoButton_->setMenu(undoMgr->UndoMenu());
+        redoButton_->setMenu(undoMgr->RedoMenu());
+        connect(undoMgr, SIGNAL(CanUndoChanged(bool)), this, SLOT(OnUndoChanged(bool)), Qt::UniqueConnection);
+        connect(undoMgr, SIGNAL(CanRedoChanged(bool)), this, SLOT(OnRedoChanged(bool)), Qt::UniqueConnection);
+        connect(undoButton_, SIGNAL(clicked()), undoMgr, SLOT(Undo()), Qt::UniqueConnection);
+        connect(redoButton_, SIGNAL(clicked()), undoMgr, SLOT(Redo()), Qt::UniqueConnection);
 
-    Populate();
+        Scene *scenePtr = scene.lock().get();
+        connect(scenePtr, SIGNAL(EntityAcked(Entity *, entity_id_t)), SLOT(AckEntity(Entity *, entity_id_t)));
+        connect(scenePtr, SIGNAL(EntityCreated(Entity *, AttributeChange::Type)), SLOT(AddEntity(Entity *)));
+        connect(scenePtr, SIGNAL(EntityTemporaryStateToggled(Entity *)), SLOT(UpdateEntityTemporaryState(Entity *)));
+        connect(scenePtr, SIGNAL(EntityRemoved(Entity *, AttributeChange::Type)), SLOT(RemoveEntity(Entity *)));
+        connect(scenePtr, SIGNAL(ComponentAdded(Entity *, IComponent *, AttributeChange::Type)),
+            SLOT(AddComponent(Entity *, IComponent *)));
+        connect(scenePtr, SIGNAL(ComponentRemoved(Entity *, IComponent *, AttributeChange::Type)),
+            SLOT(RemoveComponent(Entity *, IComponent *)));
+
+        Populate();
+    }
 }
 
 void SceneStructureWindow::ShowComponents(bool show)
