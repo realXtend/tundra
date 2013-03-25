@@ -153,7 +153,7 @@ endif()
 
 #AddProject(Application KinectModule)           # Reads Kinect for video, depth and skeleton data and emits it from the 'kinect' dynamic object. Only works on Windows with Visual Studio 10 with VC100 compiler.
 if (NOT ANDROID)
-    AddProject(Application CAVEStereoModule)        # Provides multi-windowed rendering views for CAVE setups and stereoscopy view modes.
+    #AddProject(Application CAVEStereoModule)        # Provides multi-windowed rendering views for CAVE setups and stereoscopy view modes.
     AddProject(Application OgreAssetEditorModule)   # Enables various asset editors. Depends on OgreRenderingModule.
 endif()
 
