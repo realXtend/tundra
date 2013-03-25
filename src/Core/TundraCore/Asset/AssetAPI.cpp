@@ -280,9 +280,9 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
 
     wstring ref = QStringToWString(assetRef);
 
-    wregex expression1(L"(.*?)://(.*)"); // a): protocolSpecifier://pathToAsset
-    wregex expression2(L"([A-Za-z]:[/\\\\].*?)"); // b2): X:\windowsPathToAsset or X:/windowsPathToAsset
-    wregex expression3(L"(.*?):(.*)"); // b3): X:\windowsPathToAsset or X:/windowsPathToAsset
+    static const wregex expression1(L"(.*?)://(.*)"); // a): protocolSpecifier://pathToAsset
+    static const wregex expression2(L"([A-Za-z]:[/\\\\].*?)"); // b2): X:\windowsPathToAsset or X:/windowsPathToAsset
+    static const wregex expression3(L"(.*?):(.*)"); // b3): X:\windowsPathToAsset or X:/windowsPathToAsset
     wsmatch what;
     wstring fullPath; // Contains the url without the "protocolPart://" prefix.
     AssetRefType refType = AssetRefInvalid;
@@ -354,7 +354,7 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
 
     // Parse subAssetName if it exists.
     QString subAssetName = "";
-    wregex expression4(L"(.*?)\\s*[#,]\\s*\"?\\s*(.*?)\\s*\"?\\s*"); // assetRef, "subAssetName". Note: this regex does not parse badly matched '"' signs, but it's a minor issue. (e.g. 'assetRef, ""jeejee' is incorrectly accepted) .
+    static const wregex expression4(L"(.*?)\\s*[#,]\\s*\"?\\s*(.*?)\\s*\"?\\s*"); // assetRef, "subAssetName". Note: this regex does not parse badly matched '"' signs, but it's a minor issue. (e.g. 'assetRef, ""jeejee' is incorrectly accepted) .
     if (regex_match(fullPath, what, expression4))
     {
         wstring assetRef = what[1].str();

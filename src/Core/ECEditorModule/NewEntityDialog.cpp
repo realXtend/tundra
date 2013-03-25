@@ -11,6 +11,8 @@
 #include <QCheckBox>
 #include <QPushButton>
 
+#include "MemoryLeakCheck.h"
+
 AddEntityDialog::AddEntityDialog(QWidget *parent, Qt::WindowFlags flags) :
     QDialog(parent, flags)
 {

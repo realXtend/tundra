@@ -14,6 +14,16 @@
 #include <iostream>
 #include <utility>
 
+Profiler::Profiler() : root_("Root"), current_node_(0)
+{
+    // Check timer availability
+    ProfilerBlock::QueryCapability();
+}
+    
+Profiler::~Profiler()
+{
+}
+
 bool ProfilerBlock::QueryCapability()
 {
 #if defined(_WINDOWS)
@@ -31,16 +41,9 @@ bool ProfilerBlock::QueryCapability()
 void Profiler::StartBlock(const std::string &name)
 {
 #ifdef PROFILING
-    // Get the current topmost profiling node in the stack, or 
-    // if none exists, get the root node or create a new root node.
+    // Get the current topmost profiling node in the stack.
     // This will be the parent node of the new block we're starting.
-    ProfilerNodeTree *parent = current_node_;
-    if (!parent)
-    {
-        parent = GetOrCreateThreadRootBlock();
-        current_node_ = parent;
-    }
-    assert(parent);
+    ProfilerNodeTree *parent = current_node_ ? current_node_ : &root_;
 
     // If parent name == new block name, we assume that we're
     // recursively re-entering the same function (with a single
@@ -133,27 +136,6 @@ void ProfilerQObj::EndBlock()
 #endif
 }
 
-ProfilerNodeTree *Profiler::GetThreadRootBlock()
-{
-    return thread_specific_root_;
-}
-
-ProfilerNodeTree *Profiler::GetOrCreateThreadRootBlock()
-{
-#ifdef PROFILING // If not profiling, never create the root block so the getter will always return 0.
-    if (!thread_specific_root_)
-        return CreateThreadRootBlock();
-#endif
-    return thread_specific_root_;
-}
-
-std::string Profiler::GetThisThreadRootBlockName()
-{
-    char str[256];
-    sprintf(str, "Thread%p", QThread::currentThreadId());
-    return str;
-}
-
 ProfilerNodeTree *FindBlockByName(ProfilerNodeTree *parent, const char *name)
 {
     if (!parent)
@@ -172,7 +154,7 @@ ProfilerNodeTree *FindBlockByName(ProfilerNodeTree *parent, const char *name)
 
 ProfilerNodeTree *Profiler::FindBlockByName(const char *name)
 {
-    return ::FindBlockByName(GetThreadRootBlock(), name);
+    return ::FindBlockByName(&root_, name);
 }
 
 float ProfilerNode::TotalCustomSpentInChildren() const
@@ -197,77 +179,7 @@ float ProfilerNode::TotalCustomSpentInChildren() const
     return timeSpentInChildren;
 }
 
-ProfilerNodeTree *Profiler::CreateThreadRootBlock()
+void Profiler::ResetValues()
 {
-#ifdef PROFILING
-    ProfilerBlock::QueryCapability();
-    
-    std::string rootObjectName = GetThisThreadRootBlockName();
-
-    ProfilerNodeTree *root = new ProfilerNodeTree(rootObjectName);
-    assert(!thread_specific_root_);
-    thread_specific_root_ = root;
-
-    // Each thread root block is added as a child of a dummy node root_ owned by
-    // this Profiler. The root_ object doesn't own the memory of its children,
-    // but just weakly refers to them an allows easy access for printing the
-    // profiling data in each thread.
-    mutex_.lock();
-    root_.AddChild(shared_ptr<ProfilerNodeTree>(root, &EmptyDeletor));
-    root->MarkAsRootBlock(this);
-    thread_root_nodes_.push_back(root);
-    mutex_.unlock();
-    return root;
-#else
-    return 0;
-#endif
-}
-
-void Profiler::RemoveThreadRootBlock(ProfilerNodeTree *rootBlock)
-{
-#ifdef PROFILING
-    mutex_.lock();
-    for(std::list<ProfilerNodeTree*>::iterator iter = thread_root_nodes_.begin(); iter != thread_root_nodes_.end(); ++iter)
-        if (*iter == rootBlock)
-        {
-            thread_root_nodes_.erase(iter);
-            mutex_.unlock();
-            return;
-        }
-
-    std::cout << "Warning: Tried to delete a nonexisting thread root block!" << std::endl;
-    mutex_.unlock();
-#endif
-}
-
-void Profiler::ThreadedReset()
-{
-    ProfilerNodeTree *root = GetThreadRootBlock();
-    if (!root)
-        return;
-
-    mutex_.lock();
-    root->ResetValues();
-    mutex_.unlock();
-}
-
-void ProfilerNodeTree::RemoveThreadRootBlock()
-{
-    if (owner_)
-        owner_->RemoveThreadRootBlock(this);
-}
-
-void Profiler::Reset()
-{
-    // We are going down.. tell all root blocks that they don't need to notify back to the Profiler that they've been deleted.
-    // i.e. 'detach' all the (thread specific) root blocks so that they delete themselves at their leisure when their threads die.
-    mutex_.lock();
-    for(std::list<ProfilerNodeTree*>::iterator iter = thread_root_nodes_.begin(); iter != thread_root_nodes_.end(); ++iter)
-        (*iter)->MarkAsRootBlock(0);
-    mutex_.unlock();
-}
-
-Profiler::~Profiler()
-{
-    Reset();
+    root_.ResetValues();
 }

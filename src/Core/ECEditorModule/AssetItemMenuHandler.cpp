@@ -309,10 +309,8 @@ void AssetItemMenuHandler::OpenFileDialogClosed(int result)
     
     if (dialog->selectedFiles().isEmpty())
         return;
-
-    Scene *scene = framework_->Scene()->MainCameraScene();
-    assert(scene);
-    AddContentWindow *addContent = new AddContentWindow(scene->shared_from_this(), framework_->Ui()->MainWindow());
+    
+    AddContentWindow *addContent = new AddContentWindow(framework_->Scene()->MainCameraScene()->shared_from_this(), framework_->Ui()->MainWindow());
     addContent->setWindowFlags(Qt::Tool);
     addContent->AddAssets(dialog->selectedFiles());
     addContent->show();
