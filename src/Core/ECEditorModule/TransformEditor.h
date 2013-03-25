@@ -99,7 +99,7 @@ private:
     InputContextPtr input; ///< Input context for controlling gizmo mode.
     QWidget* editorSettings; ///< Editor settings window
     bool localAxes; ///< Whether to show object local axes instead of global world axes.
-    UndoManager * undoManager; ///< The same undo manager as this TransformEditor's parent ECEditorWindow
+    UndoManager *undoManager; ///< Undo manager, if undo functionality used.
 
 private slots:
     /// Handles KeyEvents and changes gizmo's mode.
