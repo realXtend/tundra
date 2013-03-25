@@ -717,9 +717,9 @@ int TUNDRACORE_API run(int argc, char **argv)
         int return_value = EXIT_SUCCESS;
 
         // Initialization prints
-        LogInfo("Starting up Tundra.");
+        LogInfo("Starting up " + QString(Application::ApplicationName()));
         LogInfo("* Working directory: " + QDir::currentPath());
-        LogInfo("* Tundra installation directory: " + Application::InstallationDirectory());
+        LogInfo("* Installation directory: " + Application::InstallationDirectory());
 
     // Create application object
 #if !defined(_DEBUG) || !defined (_MSC_VER)
