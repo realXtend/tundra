@@ -11,10 +11,9 @@
 #include <QUndoCommand>
 #include <QAction>
 
-UndoManager::UndoManager(const ScenePtr &scene, QObject * parent) :
-    QObject(parent)
+UndoManager::UndoManager(const ScenePtr &scene, QWidget * parent)
 {
-    undoStack_ = new QUndoStack(parent);
+    undoStack_ = new QUndoStack();
 
     undoMenu_ = new QMenu();
     redoMenu_ = new QMenu();
@@ -22,8 +21,7 @@ UndoManager::UndoManager(const ScenePtr &scene, QObject * parent) :
 
     tracker_ = new EntityIdChangeTracker(scene);
 
-    QWidget * parentWidget = qobject_cast<QWidget *>(parent);
-    undoView_ = new QUndoView(undoStack_, parentWidget);
+    undoView_ = new QUndoView(undoStack_, parent);
     undoView_->setWindowFlags(Qt::Tool);
     undoView_->setWindowTitle("Editor - Undo stack");
 
@@ -37,6 +35,7 @@ UndoManager::UndoManager(const ScenePtr &scene, QObject * parent) :
 
 UndoManager::~UndoManager()
 {
+    SAFE_DELETE(undoView_);
     SAFE_DELETE(undoMenu_);
     SAFE_DELETE(redoMenu_);
     SAFE_DELETE(undoViewAction_);

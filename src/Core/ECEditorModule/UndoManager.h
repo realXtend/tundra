@@ -28,7 +28,7 @@ public:
     /// Constructor
     /* @param scene Scene of which entities we're tracking.
        @param parent This object's parent (optional) */
-    UndoManager(const ScenePtr &scene, QObject * parent = 0);
+    UndoManager(const ScenePtr &scene, QWidget * parent = 0);
 
     ~UndoManager();
 
