@@ -41,7 +41,7 @@ class TUNDRACORE_API Scene : public QObject, public enable_shared_from_this<Scen
 public:
     ~Scene();
 
-    typedef std::map<entity_id_t, EntityPtr> EntityMap; ///< Typedef for an entity map.
+    typedef std::map<entity_id_t, EntityPtr> EntityMap; ///< Maps entities to their unique IDs.
     typedef EntityMap::iterator iterator; ///< entity iterator, see begin() and end()
     typedef EntityMap::const_iterator const_iterator;///< const entity iterator. see begin() and end()
 
@@ -74,7 +74,7 @@ public:
 
     /// Return a subsystem world (OgreWorld, PhysicsWorld)
     template <class T>
-    shared_ptr<T> GetWorld() const;
+    shared_ptr<T> Subsystem() const;
 
     /// Forcibly changes id of an existing entity. If there already is an entity with the new id, it will be purged
     /** @note Called by scenesync. This will not trigger any signals
@@ -209,6 +209,9 @@ public:
         @param authority Whether the scene has authority i.e. a single user or server scene, false for network client scenes */
     Scene(const QString &name, Framework *fw, bool viewEnabled, bool authority);
     /// @endcond
+
+    // DEPRECATED
+    template <class T> shared_ptr<T> GetWorld() const { return Subsystem<T>(); } /**< @deprecated Use Subsystem instead. @todo Remove. */
 
 public slots:
     /// Creates new entity that contains the specified components.
