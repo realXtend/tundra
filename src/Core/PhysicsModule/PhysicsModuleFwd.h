@@ -17,12 +17,17 @@ namespace Physics
     struct ConvexHullSet;
 }
 
+using Physics::PhysicsModule;
+using Physics::PhysicsWorld;
+using Physics::ConvexHull;
+using Physics::ConvexHullSet;
+
 class PhysicsRaycastResult;
 class EC_RigidBody;
 class EC_VolumeTrigger;
 
-typedef shared_ptr<Physics::PhysicsWorld> PhysicsWorldPtr;
-typedef weak_ptr<Physics::PhysicsWorld> PhysicsWorldWeakPtr;
+typedef shared_ptr<PhysicsWorld> PhysicsWorldPtr;
+typedef weak_ptr<PhysicsWorld> PhysicsWorldWeakPtr;
 
 // From Bullet:
 class btTriangleMesh;
