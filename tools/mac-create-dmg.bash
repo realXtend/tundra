@@ -20,7 +20,7 @@ echo "Mounted temp disk image to $device"
 echo "Adding background for installer."
 backgroundPictureName="splash.png"
 mkdir -p /Volumes/${title}/.background
-cp tools/installers/mac/Resources/splash.png /Volumes/${title}/.background/
+cp tools/OSX/Installer/Resources/splash.png /Volumes/${title}/.background/
 
 applicationName="Tundra"
 

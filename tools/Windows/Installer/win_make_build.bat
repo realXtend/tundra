@@ -2,15 +2,15 @@
 @rem You should have VS2008 redistributable (vcredist_x86.exe) in your <TundraRoot>\tools\installer
 @rem as well as OpenAL installer (oalinst.exe)
 @echo off
-cd ..\..
+cd ..\..\..
 rmdir build /S /Q
 md build
 copy README.md build
 copy LICENSE build\LICENSE.txt
 copy WhatsNew.txt build
-copy tools\installers\vcredist_x86.exe build
-copy tools\installers\oalinst.exe build
-copy tools\installers\dxwebsetup.exe build
+copy tools\Windows\Installer\vcredist_x86.exe build
+copy tools\Windows\Installer\oalinst.exe build
+copy tools\Windows\Installer\dxwebsetup.exe build
 xcopy bin\*.* build /S /C /Y
 
 :: NOTE! This script only copies content to the build\ folder. If you want to make a full development build with all the content
