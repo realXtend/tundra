@@ -22,8 +22,8 @@ RequestExecutionLevel admin
 Section ""
   SetOutPath $INSTDIR
 
-  # We are inside tools\installers
-  File /r ..\..\build\*.*
+  # We are inside tools\Windows\Installer
+  File /r ..\..\..\build\*.*
 
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tundra" \
                    "DisplayName" "Tundra ${VERSION}"

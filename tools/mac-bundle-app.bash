@@ -37,9 +37,9 @@ mkdir -p $bundledir/Contents/Resources/Scripts
 
 echo "Deploying Tundra files to app bundle in $bundledir."
 cp -R bin/* $bundledir/Contents/MacOS
-cp -R tools/installers/mac/* $bundledir/Contents
-cp tools/mac-tundra-launcher.app/Contents/MacOS/applet $bundledir/Contents/MacOS
-cp tools/mac-tundra-launcher.app/Contents/Resources/Scripts/main.scpt $bundledir/Contents/Resources/Scripts
+cp -R tools/OSX/Installer/mac/* $bundledir/Contents
+cp tools/OSX/TundraLauncher.app/Contents/MacOS/applet $bundledir/Contents/MacOS
+cp tools/OSX/TundraLauncher.app/Contents/Resources/Scripts/main.scpt $bundledir/Contents/Resources/Scripts
 
 echo "Deploying Qt frameworks from $qtlibdir to app bundle."
 cp -R $qtlibdir/QtCore.framework $frameworksdir

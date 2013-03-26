@@ -1,7 +1,7 @@
 :: This bat will clean all telepathy related files from ./build run this after makebuild.bat
 :: Also makes sure no unneeded qt libraries are not included
 @echo off
-cd ..\..\build
+cd ..\..\..\build
 
 :: Delete temporary developer content
 del *.bat
