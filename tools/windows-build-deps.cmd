@@ -346,7 +346,8 @@ IF NOT EXIST "%DEPS%\bullet\". (
 
     cecho {0D}Building Bullet. Please be patient, this will take a while.{# #}{\n}
     MSBuild BULLET_PHYSICS.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-    MSBuild BULLET_PHYSICS.sln /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild BULLET_PHYSICS.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild BULLET_PHYSICS.sln /p:configuration=RelWithDebInfo /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
     cecho {0D}Bullet already built. Skipping.{# #}{\n}
