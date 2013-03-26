@@ -135,29 +135,7 @@ void Entity::RemoveComponent(const ComponentPtr &component, AttributeChange::Typ
         ComponentMap::iterator iter = components_.find(component->Id());
         if (iter != components_.end())
         {
-            QString componentTypeName = component->TypeName();
-            componentTypeName.replace(0, 3, "");
-            componentTypeName = componentTypeName.toLower();
-            
-            if(property(componentTypeName.toStdString().c_str()).isValid())
-            {
-                QObject *obj = property(componentTypeName.toStdString().c_str()).value<QObject*>();
-                //Make sure that QObject is inherited by the IComponent.
-                if (obj && dynamic_cast<IComponent*>(obj))
-                {
-                    //Make sure that name is matching incase there are many of same type of components in entity.
-                    if (dynamic_cast<IComponent*>(obj)->Name() == component->Name())
-                        setProperty(componentTypeName.toStdString().c_str(), QVariant());
-                }
-            }
-            
-            if (change != AttributeChange::Disconnected)
-                emit ComponentRemoved(iter->second.get(), change == AttributeChange::Default ? component->UpdateMode() : change);
-            if (scene_)
-                scene_->EmitComponentRemoved(this, iter->second.get(), change);
-
-            iter->second->SetParentEntity(0);
-            components_.erase(iter);
+            RemoveComponent(iter, change);
         }
         else
         {
@@ -165,6 +143,46 @@ void Entity::RemoveComponent(const ComponentPtr &component, AttributeChange::Typ
         }
     }
 }
+
+void Entity::RemoveAllComponents(AttributeChange::Type change)
+{
+    while (components_.size())
+    {
+        if (components_.begin()->first != components_.begin()->second->Id())
+            LogWarning("Component ID mismatch on RemoveAllComponents: map key " + QString::number(components_.begin()->first) + " component ID " + QString::number(components_.begin()->second->Id()));
+        RemoveComponent(components_.begin(), change);
+    }
+}
+
+void Entity::RemoveComponent(ComponentMap::iterator iter, AttributeChange::Type change)
+{
+    const ComponentPtr& component = iter->second;
+    
+    QString componentTypeName = component->TypeName();
+    componentTypeName.replace(0, 3, "");
+    componentTypeName = componentTypeName.toLower();
+    
+    if(property(componentTypeName.toStdString().c_str()).isValid())
+    {
+        QObject *obj = property(componentTypeName.toStdString().c_str()).value<QObject*>();
+        //Make sure that QObject is inherited by the IComponent.
+        if (obj && dynamic_cast<IComponent*>(obj))
+        {
+            //Make sure that name is matching incase there are many of same type of components in entity.
+            if (dynamic_cast<IComponent*>(obj)->Name() == component->Name())
+                setProperty(componentTypeName.toStdString().c_str(), QVariant());
+        }
+    }
+    
+    if (change != AttributeChange::Disconnected)
+        emit ComponentRemoved(iter->second.get(), change == AttributeChange::Default ? component->UpdateMode() : change);
+    if (scene_)
+        scene_->EmitComponentRemoved(this, iter->second.get(), change);
+
+    iter->second->SetParentEntity(0);
+    components_.erase(iter);
+}
+
 
 void Entity::RemoveComponentById(component_id_t id, AttributeChange::Type change)
 {
