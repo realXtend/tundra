@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 template <class T>
-shared_ptr<T> Scene::GetWorld() const
+shared_ptr<T> Scene::Subsystem() const
 {
     QVariant pr = this->property(T::PropertyName());
     QObject *qo = pr.value<QObject*>();
