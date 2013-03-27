@@ -260,6 +260,7 @@ void EC_SkyX::Create()
         connect(w->Renderer(), SIGNAL(MainCameraChanged(Entity*)), SLOT(OnActiveCameraChanged(Entity*)), Qt::UniqueConnection);
 
         CreateLights();
+        UpdateLightsAndPositions();
     }
     catch(Ogre::Exception &e)
     {
@@ -440,12 +441,7 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
 
             if (EqualAbs(timeMultiplier.Get(), 0.0f)) // time multiplier not used, update light directions
             {
-                Ogre::Camera *camera = FindOgreCamera(GetFramework()->Renderer()->MainCamera());
-                if (camera)
-                {
-                    impl->UpdateLightPositions(camera);
-                    impl->UpdateLights();
-                }
+                UpdateLightsAndPositions();
             }
         }
     }
@@ -574,16 +570,9 @@ void EC_SkyX::Update(float frameTime)
         return;
    if (EqualAbs(timeMultiplier.Get(), 0.0f))
         return;
-    Ogre::Camera *camera = FindOgreCamera(GetFramework()->Renderer()->MainCamera());
-    if (!camera)
-        return;
-
-    PROFILE(EC_SkyX_Update);
-    // Update our sunlight and moonlight
-    impl->UpdateLightPositions(camera);
-    /// @todo Animate dim the light down and up
-    impl->UpdateLights();
-
+    
+    UpdateLightsAndPositions();
+    
     // Do not replicate constant time attribute updates as SkyX internals are authoritative for it.
     time.Set(impl->controller->getTime().x, AttributeChange::LocalOnly);
 }
@@ -628,6 +617,19 @@ void EC_SkyX::UnregisterListeners()
         window->removeListener(impl->skyX);
     else
         LogError("EC_SkyX: Failed to unregister listener from render window.");
+}
+
+void EC_SkyX::UpdateLightsAndPositions()
+{
+    Ogre::Camera *camera = FindOgreCamera(GetFramework()->Renderer()->MainCamera());
+    if (!camera)
+        return;
+
+    PROFILE(EC_SkyX_Update);
+    // Update our sunlight and moonlight
+    impl->UpdateLightPositions(camera);
+    /// @todo Animate dim the light down and up
+    impl->UpdateLights();
 }
 
 void EC_SkyX::RegisterCamera(Ogre::Camera *camera)
