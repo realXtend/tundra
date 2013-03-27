@@ -212,7 +212,12 @@ void Scene::RemoveAllEntities(bool signal, AttributeChange::Type change)
         RemoveEntity(entIds.back(), change);
         entIds.pop_back();
     }
-    entities_.clear();
+    
+    if (entities_.size())
+    {
+        LogWarning("Scene::RemoveAllEntities: entity map was not clear after removing all entities, clearing manually");
+        entities_.clear();
+    }
     
     if (signal)
         emit SceneCleared(this);

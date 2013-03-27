@@ -138,7 +138,8 @@ private:
     void CreateLights();
     void RegisterListeners();
     void UnregisterListeners();
-
+    void UpdateLightsAndPositions();
+    
     // VCloudManager register/unregister functions.
     // If input camera is null, Tundra's active camera is used.
     void RegisterCamera(Ogre::Camera *camera = 0); /**< @todo SkyX internal logic, move to Impl. */
