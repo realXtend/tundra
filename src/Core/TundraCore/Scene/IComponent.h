@@ -229,8 +229,7 @@ public slots:
     /// Returns whether this component supports adding dynamic attributes. False by default.
     /** Components that do *not* support dynamic attributes (most of them) are resilient to versioning mismatches between client/server
         as long as the new attributes are added to the end of the static attributes list. In contrast, components with dynamic attributes
-        are not resilient to mismatches, except if they use *only* dynamic attributes, like EC_DynamicComponent.
-     */
+        are not resilient to mismatches, except if they use *only* dynamic attributes, like EC_DynamicComponent. */
     virtual bool SupportsDynamicAttributes() const { return false; }
     
     /// Returns the total number of attributes in this component. Does not count holes in the attribute vector
@@ -298,6 +297,11 @@ public slots:
     /** @deprecated Currently a no-op, as replication mode can not be changed after adding to an entity.
         @todo Removed once scripts converted to not call this */
     void SetNetworkSyncEnabled(bool enable);
+
+    /// Crafts a component type name string that is guaranteed not to thave the "EC_" prefix.
+    static QString EnsureTypeNameWithoutPrefix(const QString &tn) { return (tn.startsWith("EC_", Qt::CaseInsensitive) ? tn.mid(3) : tn); }
+    /// Crafts a component type name string that is guaranteed to have the "EC_" prefix.
+    static QString EnsureTypeNameWithPrefix(const QString &tn) { return (tn.startsWith("EC_", Qt::CaseInsensitive) ? tn : "EC_" + tn); }
 
 signals:
     /// This signal is emitted when an Attribute of this Component has changed. 
