@@ -151,7 +151,9 @@ AssetTreeWidgetSelection AssetTreeWidget::SelectedItems() const
 
 void AssetTreeWidget::Upload(const QStringList &files)
 {
-    AddContentWindow *addContent = new AddContentWindow(framework->Scene()->MainCameraScene()->shared_from_this(), framework->Ui()->MainWindow());
+    Scene *scene = framework->Scene()->MainCameraScene();
+    assert(scene);
+    AddContentWindow *addContent = new AddContentWindow(scene->shared_from_this(), framework->Ui()->MainWindow());
     addContent->setWindowFlags(Qt::Tool);
     addContent->AddAssets(files);
     addContent->show();

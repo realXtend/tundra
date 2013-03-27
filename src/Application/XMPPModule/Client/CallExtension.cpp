@@ -64,7 +64,7 @@ bool CallExtension::AcceptCall(QString peerJid)
 }
 
 // callType is ignored becouse videochannel is not implemented in QXmpp 0.3.0
-bool CallExtension::CallUser(QString peerJid, QString peerResource, int callType)
+bool CallExtension::CallUser(QString peerJid, QString peerResource, int /*callType*/)
 {
     if(!client_ || !client_->GetUser(peerJid))
         return false;
@@ -83,8 +83,7 @@ bool CallExtension::CallUser(QString peerJid, QString peerResource, int callType
     /// \todo Check if we miss a signal becouse QXmppCall signals are suscribed inside XMPP::Call constructor
     Call *call = new Call(framework_, qxmpp_call);
 
-    bool check = connect(call, SIGNAL(StateChanged(Call::State)), this, SLOT(HandleCallStateChanged(Call::State)));
-    Q_ASSERT(check);
+    connect(call, SIGNAL(StateChanged(Call::State)), this, SLOT(HandleCallStateChanged(Call::State)));
 
     calls_.insert(peerJid, call);
     return true;

@@ -2,7 +2,7 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   TransformEditor.cpp
-    @brief  Controls Transform attributes for groups of entities. */
+    @brief  Controls Transform attributes for group of entities. */
 
 #include "StableHeaders.h"
 #include "TransformEditor.h"
@@ -19,6 +19,8 @@
 #include "AssetAPI.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
+#include "UndoCommands.h"
+#include "UndoManager.h"
 #ifdef EC_TransformGizmo_ENABLED
 #include "EC_TransformGizmo.h"
 #endif
@@ -32,23 +34,33 @@
 
 static const char *cTransformEditorWindowPos = "transform editor window pos";
 
-TransformEditor::TransformEditor(const ScenePtr &scene) :
+TransformEditor::TransformEditor(const ScenePtr &editedScene, UndoManager *manager) :
     editorSettings(0),
-    localAxes(false)
+    localAxes(false),
+    scene(editedScene),
+    undoManager(manager)
 {
-    if (scene)
+    if (!scene.expired())
     {
-        this->scene = scene;
-        QString uniqueName("TransformEditor" + scene->GetFramework()->Asset()->GenerateUniqueAssetName("",""));
-        input = scene->GetFramework()->Input()->RegisterInputContext(uniqueName, 100);
+        QString uniqueName("TransformEditor" + scene.lock()->GetFramework()->Asset()->GenerateUniqueAssetName("",""));
+        input = scene.lock()->GetFramework()->Input()->RegisterInputContext(uniqueName, 100);
         connect(input.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
-        connect(scene->GetFramework()->Frame(), SIGNAL(Updated(float)), SLOT(OnUpdated(float)));
+        connect(scene.lock()->GetFramework()->Frame(), SIGNAL(Updated(float)), SLOT(OnUpdated(float)));
     }
 }
 
 TransformEditor::~TransformEditor()
 {
     DeleteGizmo();
+}
+
+QList<EntityPtr> TransformEditor::Selection() const
+{
+    QList<EntityPtr> ret;
+    foreach(const TransformAttributeWeakPtr &attr, targets)
+        if (!attr.owner.expired() && attr.owner.lock()->ParentEntity())
+            ret.append(attr.owner.lock()->ParentEntity()->shared_from_this());
+    return ret;
 }
 
 void TransformEditor::SetSelection(const QList<EntityPtr> &entities)
@@ -72,7 +84,7 @@ void TransformEditor::AppendSelection(const QList<EntityPtr> &entities)
         {
             Entity *parentPlaceableEntity = p->ParentPlaceableEntity();
             EntityPtr parent = (parentPlaceableEntity ? parentPlaceableEntity ->shared_from_this() : EntityPtr());
-            targets.append(AttributeWeakPtr(p, p->GetAttribute(p->transform.Name()), parent));
+            targets.append(TransformAttributeWeakPtr(p, p->GetAttribute(p->transform.Name()), parent));
         }
     }
 }
@@ -91,7 +103,7 @@ void TransformEditor::RemoveFromSelection(const QList<EntityPtr> &entities)
         {
             Entity *parentPlaceableEntity = p->ParentPlaceableEntity();
             EntityPtr parent = (parentPlaceableEntity ? parentPlaceableEntity ->shared_from_this() : EntityPtr());
-            targets.append(AttributeWeakPtr(p, p->GetAttribute(p->transform.Name()), parent));
+            targets.append(TransformAttributeWeakPtr(p, p->GetAttribute(p->transform.Name()), parent));
         }
     }
 }
@@ -145,7 +157,7 @@ void TransformEditor::FocusGizmoPivotToAabbCenter()
     Quat pivotRot = Quat::identity;
     bool useLocalAxisRotation = localAxes;
     
-    foreach(const AttributeWeakPtr &attr, targets)
+    foreach(const TransformAttributeWeakPtr &attr, targets)
     {
         Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
         if (transform)
@@ -210,26 +222,19 @@ float3 TransformEditor::GizmoPos() const
 void TransformEditor::TranslateTargets(const float3 &offset)
 {
     PROFILE(TransformEditor_TranslateTargets);
-    foreach(const AttributeWeakPtr &attr, targets)
-    {
-        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
-        if (transform)
-        {
-            // If selected object's parent is also selected, do not apply changes to the child object.
-            if (TargetsContainAlsoParent(attr))
-                continue;
+    TransformAttributeWeakPtrList targetAttrs;
 
-            Transform t = transform->Get();
-            // If we have parented transform, translate the changes to parent's world space.
-            Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
-            EC_Placeable *parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
-            if (parentPlaceable)
-                t.pos += parentPlaceable->WorldToLocal().MulDir(offset);
-            else
-                t.pos += offset;
-            transform->Set(t, AttributeChange::Default);
-        }
+    foreach(const TransformAttributeWeakPtr &attr, targets)
+    {
+        // If selected object's parent is also selected, do not apply changes to the child object.
+        if (TargetsContainAlsoParent(attr))
+            continue;
+
+        targetAttrs << attr;
     }
+
+    if (undoManager)
+        undoManager->Push(new TransformCommand(targetAttrs, targets.size(), TransformCommand::Translate, offset));
 
     FocusGizmoPivotToAabbCenter();
 }
@@ -239,28 +244,19 @@ void TransformEditor::RotateTargets(const Quat &delta)
     PROFILE(TransformEditor_RotateTargets);
     float3 gizmoPos = GizmoPos();
     float3x4 rotation = float3x4::Translate(gizmoPos) * float3x4(delta) * float3x4::Translate(-gizmoPos);
-    
-    foreach(const AttributeWeakPtr &attr, targets)
-    {
-        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
-        if (transform)
-        {
-            // If selected object's parent is also selected, do not apply changes to the child object.
-            if (TargetsContainAlsoParent(attr))
-                continue;
+    TransformAttributeWeakPtrList targetAttrs;
 
-            Transform t = transform->Get();
-            // If we have parented transform, translate the changes to parent's world space.
-            Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
-            EC_Placeable* parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
-            if (parentPlaceable)
-                t.FromFloat3x4(parentPlaceable->WorldToLocal() * rotation * parentPlaceable->LocalToWorld() * t.ToFloat3x4());
-            else
-                t.FromFloat3x4(rotation * t.ToFloat3x4());
-            
-            transform->Set(t, AttributeChange::Default);
-        }
+    foreach(const TransformAttributeWeakPtr &attr, targets)
+    {
+        // If selected object's parent is also selected, do not apply changes to the child object.
+        if (TargetsContainAlsoParent(attr))
+            continue;
+
+        targetAttrs << attr;
     }
+
+    if (undoManager)
+        undoManager->Push(new TransformCommand(targetAttrs, targets.size(), rotation));
 
     FocusGizmoPivotToAabbCenter();
 }
@@ -268,31 +264,29 @@ void TransformEditor::RotateTargets(const Quat &delta)
 void TransformEditor::ScaleTargets(const float3 &offset)
 {
     PROFILE(TransformEditor_ScaleTargets);
-    foreach(const AttributeWeakPtr &attr, targets)
+    TransformAttributeWeakPtrList targetAttrs;
+    foreach(const TransformAttributeWeakPtr &attr, targets)
     {
-        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
-        if (transform)
-        {
-            // If selected object's parent is also selected, do not apply changes to the child object.
-            if (TargetsContainAlsoParent(attr))
-                continue;
+        // If selected object's parent is also selected, do not apply changes to the child object.
+        if (TargetsContainAlsoParent(attr))
+            continue;
 
-            Transform t = transform->Get();
-            t.scale += offset;
-            transform->Set(t, AttributeChange::Default);
-        }
+        targetAttrs << attr;
     }
+
+    if (undoManager)
+        undoManager->Push(new TransformCommand(targetAttrs, targets.size(), TransformCommand::Scale, offset));
 
     FocusGizmoPivotToAabbCenter();
 }
 
-bool TransformEditor::TargetsContainAlsoParent(const AttributeWeakPtr &attr) const
+bool TransformEditor::TargetsContainAlsoParent(const TransformAttributeWeakPtr &attr) const
 {
     Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
     if (!parentPlaceableEntity)
         return false; // Not parented, ignore.
 
-    foreach(const AttributeWeakPtr &target, targets)
+    foreach(const TransformAttributeWeakPtr &target, targets)
         if (target.Get() && target.Get() != attr.Get() && target.Get()->Owner()->ParentEntity() == parentPlaceableEntity)
             return true;
 

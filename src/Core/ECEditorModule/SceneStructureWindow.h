@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   SceneStructureWindow.h
- *  @brief  Window with tree view showing every entity in a scene.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   SceneStructureWindow.h
+    @brief  Window with tree view showing every entity in a scene. */
 
 #pragma once
 
@@ -11,13 +10,13 @@
 #include "CoreTypes.h"
 
 #include <QWidget>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QMap>
 
-class QTreeWidgetItem;
 class SceneTreeWidget;
 class Framework;
+
+class QLineEdit;
+class QPushButton;
+class QTreeWidgetItem;
 class QToolButton;
 
 /// Window with tree view showing every entity in a scene.

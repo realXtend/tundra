@@ -46,6 +46,10 @@ public:
     virtual void FromString(const std::string& str, AttributeChange::Type change) = 0;
 
     /// Returns the type name of the data stored in this attribute.
+    /** @note As attribute type names are handled case-insensitively internally by the SceneAPI,
+        a case-insensitive comparison is recommended when comparing attribute type names.
+        In general, comparing by type ID, instead of type name, is recommended for efficiency.
+        @sa TypeId */
     virtual const QString &TypeName() const = 0;
     
     /// Returns the type ID of this attribute.
@@ -98,7 +102,7 @@ public:
     /// Interpolates the value of this attribute based on two values, and a lerp factor between 0 and 1
     /** The attributes given must be of the same type for the result to be defined.
         Is a no-op if the attribute (for example string) does not support interpolation.
-        The value will be set using the given changetype. */
+        The value will be set using the given change type. */
     virtual void Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change) = 0;
 
     /// Returns whether the value of this attribute is dirty and pending an update by the component that owns this attribute.
@@ -245,3 +249,44 @@ static const QString cAttributeQVariantTypeName = "qvariant"; /**< @todo "QVaria
 static const QString cAttributeQVariantListTypeName = "qvariantlist"; /**< @todo "QVariantList" */
 static const QString cAttributeTransformTypeName = "transform"; /**< @todo "Transform" */
 static const QString cAttributeQPointTypeName = "qpoint"; /**< @todo "QPoint" */
+
+/// Represents weak pointer to Transform attribute.
+struct AttributeWeakPtr
+{
+    AttributeWeakPtr() : attribute(0) {}
+    /// Constructor.
+    /** @param c Owner component.
+        @param a The actual attribute. */
+    AttributeWeakPtr(const ComponentPtr &c, IAttribute *a) : owner(c), attribute(a) {}
+
+    /// Returns pointer to the attribute or null if the owner component doesn't exist anymore.
+    IAttribute *Get() const { return !owner.expired() ? attribute : 0; }
+
+    bool operator ==(const AttributeWeakPtr &rhs) const
+    {
+        ComponentPtr ownerPtr = owner.lock();
+        return rhs.owner.lock() == ownerPtr && (rhs.attribute == attribute || !ownerPtr);
+    }
+
+    bool operator !=(const AttributeWeakPtr &rhs) const { return !(*this == rhs); }
+
+    /// Returns if the owner of the attribute is expired, i.e. it's not safe to access the attribute.
+    bool Expired() const { return owner.expired(); }
+
+    ComponentWeakPtr owner; ///< Owner component.
+    IAttribute *attribute; ///< The actual attribute.
+};
+
+/// Represents weak pointer to Transform attribute.
+struct TransformAttributeWeakPtr : public AttributeWeakPtr
+{
+    /** @param p If the placeable component is parented, pointer to the parent placeable entity. */
+    TransformAttributeWeakPtr(const ComponentPtr &c, IAttribute *a, const EntityPtr &p) :
+    AttributeWeakPtr(c, a),
+    parentPlaceableEntity(p)
+    {
+    }
+    /// If the placeable component is parented, points to the parent placeable entity.
+    EntityWeakPtr parentPlaceableEntity;
+};
+

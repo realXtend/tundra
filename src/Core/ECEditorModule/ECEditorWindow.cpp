@@ -32,17 +32,16 @@
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "LoggingFunctions.h"
+#include "Math/float2.h"
+#include "Math/float3.h"
+#include "Math/float4.h"
+#include "Math/Quat.h"
 #ifdef EC_Highlight_ENABLED
 #include "EC_Highlight.h"
 #endif
 
 #include <QUiLoader>
 #include <QDomDocument>
-
-#include "Math/float2.h"
-#include "Math/float3.h"
-#include "Math/float4.h"
-#include "Math/Quat.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -72,8 +71,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     toggleEntitiesButton(0),
     entityList(0),
     ecBrowser(0),
-    hasFocus(true),
-    transformEditor(new TransformEditor(fw->Scene()->MainCameraScene()->shared_from_this()))
+    hasFocus(true)
 {
     QUiLoader loader;
     loader.setLanguageChangeEnabled(true);
@@ -94,7 +92,10 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     contents->installEventFilter(this);
     file.close();
 
-    undoManager_ = new UndoManager(fw->Scene()->MainCameraScene(), this);
+    Scene *scene = fw->Scene()->MainCameraScene();
+    assert(scene);
+    undoManager_ = new UndoManager(scene->shared_from_this(), this);
+    transformEditor = new TransformEditor(scene->shared_from_this(), undoManager_);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     undoButton_ = findChild<QToolButton *>("undoButton");
@@ -158,16 +159,9 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     if (expandOrCollapseButton && ecBrowser)
         connect(expandOrCollapseButton, SIGNAL(clicked()), ecBrowser, SLOT(ExpandOrCollapseAll()));
 
-    ///\todo Do we want to EC editor listen to scene changed signals, or is editor "dedicated" to the scene that was active when the editor was created?
-    //connect(framework->Scene(), SIGNAL(DefaultWorldSceneChanged(Scene *)), SLOT(OnDefaultSceneChanged(Scene *)));
-
-    Scene *scene = framework->Scene()->MainCameraScene();
-    if (scene)
-    {
-        connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), SLOT(RemoveEntity(Entity*)), Qt::UniqueConnection);
-        connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecTypeField)),
-            SLOT(OnActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
-    }
+    connect(scene, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), SLOT(RemoveEntity(Entity*)), Qt::UniqueConnection);
+    connect(scene, SIGNAL(ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecTypeField)),
+        SLOT(OnActionTriggered(Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
 
     connect(this, SIGNAL(FocusChanged(ECEditorWindow *)), ecEditorModule, SLOT(ECEditorFocusChanged(ECEditorWindow*)));
     connect(this, SIGNAL(EditEntityXml(const QList<EntityPtr> &)), ecEditorModule, SLOT(CreateXmlEditor(const QList<EntityPtr> &)));
@@ -181,6 +175,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
 
 ECEditorWindow::~ECEditorWindow()
 {
+    SAFE_DELETE(undoManager_);
     SAFE_DELETE(transformEditor);
     //DeselectAllEntities(); the list is already cleared here
 }
@@ -670,7 +665,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
     QList<EntityPtr>::iterator iter1 = old_entities.begin(), iter2 = entities.begin();
     while(iter1 != old_entities.end() || iter2 != entities.end())
     {
-        // No point to continue the iteration if old_entities list is empty. We can just push all new entitites into the browser.
+        // No point to continue the iteration if old_entities list is empty. We can just push all new entities into the browser.
         if (iter1 == old_entities.end())
         {
             for(;iter2 != entities.end(); ++iter2)

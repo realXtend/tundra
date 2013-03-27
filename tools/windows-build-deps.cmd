@@ -6,10 +6,11 @@ setlocal EnableDelayedExpansion
 
 :: Make sure we're running in Visual Studio Command Prompt
 IF "%VSINSTALLDIR%"=="" (
-   cecho {0C}Batch file not executed from Visual Studio Command Prompt - cannot proceed!{# #}{\n}
+   utils-windows\cecho {0C}Batch file not executed from Visual Studio Command Prompt - cannot proceed!{# #}{\n}
    GOTO :ERROR
 )
 
+:: Set up variables depending on the used Visual Studio version
 call VSConfig.cmd %1
 :: Make sure deps folder exists.
 IF NOT EXIST "%DEPS%". mkdir "%DEPS%"
@@ -54,9 +55,6 @@ IF %BUILD_RELEASE%==TRUE (
 ) ELSE (
     set BUILD_TYPE=%BUILD_TYPE_RELWITHDEBINFO%
 )
-
-:: Set up variables depending on the used Visual Studio version
-call VSConfig.cmd %1
 
 IF %GENERATOR%=="" (
    cecho {0C}GENERATOR not specified - cannot proceed!{# #}{\n}
@@ -1037,15 +1035,26 @@ IF NOT EXIST "%DEPS%\zlib". (
    cecho {0D}Building zlib 1.2.7{# #}{\n}
    cd zlib
    mkdir lib
+   mkdir lib\Release
+   mkdir lib\Debug
    mkdir include
    cd zlib-1.2.7
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
    cd contrib\masmx86
    call bld_ml32.bat
+
    cd ..\..
-   nmake -f win32/Makefile.msc LOC="-DASMV -DASMINF" OBJA="inffas32.obj match686.obj"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   copy /Y zlib.lib ..\lib\
+   cd contrib\vstudio\%VC_VER%
+
+   MSBuild zlibvc.sln /p:configuration="Release" /p:Platform="Win32" /nologo /m:%NUMBER_OF_PROCESSORS%
+   MSBuild zlibvc.sln /p:configuration="Debug" /p:Platform="Win32" /nologo /m:%NUMBER_OF_PROCESSORS%
+
+   REM IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
+   cd ..\..\..
+   copy /Y contrib\vstudio\%VC_VER%\x86\ZlibStatRelease\zlibstat.lib ..\lib\Release
+   copy /Y contrib\vstudio\%VC_VER%\x86\ZlibStatDebug\zlibstat.lib ..\lib\Debug
    copy /Y *.h ..\include\
 ) ELSE (
    cecho {0D}zlib 1.2.7 already built. Skipping.{# #}{\n}
@@ -1099,7 +1108,7 @@ GOTO :EOF
 
 :ERROR
 echo.
-cecho {0C}An error occurred! Aborting!{# #}{\n}
+utils-windows\cecho {0C}An error occurred! Aborting!{# #}{\n}
 set PATH=%ORIGINAL_PATH%
 cd %TOOLS%
 pause

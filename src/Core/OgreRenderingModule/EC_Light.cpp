@@ -118,7 +118,7 @@ void EC_Light::OnComponentRemoved(IComponent* component, AttributeChange::Type c
         SetPlaceable(ComponentPtr());
 }
 
-void EC_Light::SetPlaceable(ComponentPtr placeable)
+void EC_Light::SetPlaceable(const ComponentPtr &placeable)
 {
     if (!light_)
         return;
@@ -194,7 +194,7 @@ void EC_Light::AttributesChanged()
         }
         
         light_->setType(ogreType);
-        
+        light_->setCastShadows(castShadows.Get());
         light_->setDiffuseColour(diff);
         light_->setSpecularColour(spec);
         light_->setAttenuation(range.Get(), constAtten.Get() / b , linearAtten.Get() / b, quadraAtten.Get() / b);
@@ -202,7 +202,7 @@ void EC_Light::AttributesChanged()
         if (ogreType == Ogre::Light::LT_SPOTLIGHT)
             light_->setSpotlightRange(Ogre::Degree(innerAngle.Get()), Ogre::Degree(outerAngle.Get()));
     }
-    catch(Ogre::Exception& e)
+    catch(const Ogre::Exception& e)
     {
         LogError("Exception while setting EC_Light parameters to Ogre: " + std::string(e.what()));
     }

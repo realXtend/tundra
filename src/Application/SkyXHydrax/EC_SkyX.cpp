@@ -29,9 +29,9 @@
 #include "MemoryLeakCheck.h"
 
 /// @cond PRIVATE
-struct EC_SkyXImpl
+struct EC_SkyX::Impl
 {
-    EC_SkyXImpl() :
+    Impl() :
         skyX(0),
         controller(0),
         sunlight(0),
@@ -42,7 +42,7 @@ struct EC_SkyXImpl
         controller = new SkyX::BasicController(true);
     }
 
-    ~EC_SkyXImpl()
+    ~Impl()
     {
         if (skyX)
         {
@@ -69,7 +69,7 @@ struct EC_SkyXImpl
                 sm->setAmbientLight(originalAmbientColor);
             }
 
-            SAFE_DELETE(skyX) // Deletes controller
+            SAFE_DELETE(skyX); // Deletes controller
         }
 
         sunlight = 0;
@@ -79,7 +79,32 @@ struct EC_SkyXImpl
         cloudLayerTop = 0;
     }
 
-    operator bool () const { return skyX != 0; }
+    /// @todo Consider merging UpdateLightPositions and UpdateLights?
+    void UpdateLightPositions(Ogre::Camera *camera)
+    {
+        sunPosition = camera->getDerivedPosition() + controller->getSunDirection() * skyX->getMeshManager()->getSkydomeRadius(camera);
+        moonPosition = camera->getDerivedPosition() + controller->getMoonDirection() * skyX->getMeshManager()->getSkydomeRadius(camera);
+    }
+
+    void UpdateLights()
+    {
+        if (sunlight && moonlight)
+        {
+            if (sunPosition.y < 0 && sunlight->isVisible() && !moonlight->isVisible())
+            {
+                sunlight->setVisible(false);
+                moonlight->setVisible(true);
+            }
+            else if (sunPosition.y > 0 && !sunlight->isVisible() && moonlight->isVisible())
+            {
+                sunlight->setVisible(true);
+                moonlight->setVisible(false);
+            }
+
+            sunlight->setDirection(-controller->getSunDirection()); // -(Earth-to-Sun direction)
+            moonlight->setDirection(-controller->getMoonDirection()); // -(Earth-to-Moon direction)
+        }
+    }
 
     SkyX::SkyX *skyX;
     SkyX::BasicController *controller;
@@ -100,58 +125,57 @@ EC_SkyX::EC_SkyX(Scene* scene) :
     IComponent(scene),
     cloudType(this, "Cloud type", Normal),
     timeMultiplier(this, "Time multiplier", 0.0f),
-    time(this, "Time [0-24]", 14.f), 
-    sunriseTime(this, "Time sunrise [0-24]", 7.5f),
-    sunsetTime(this, "Time sunset [0-24]", 20.5f),
-    cloudCoverage(this, "Cloud coverage [0-100]", 50),
-    cloudAverageSize(this, "Cloud average size [0-100]", 50),
+    time(this, "Time [0-24]", 14.f), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
+    sunriseTime(this, "Time sunrise [0-24]", 7.5f), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
+    sunsetTime(this, "Time sunset [0-24]", 20.5f), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
+    cloudCoverage(this, "Cloud coverage [0-100]", 50), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
+    cloudAverageSize(this, "Cloud average size [0-100]", 50), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
     cloudHeight(this, "Cloud height", 100),
-    moonPhase(this, "Moon phase [0-100]", 50),
+    moonPhase(this, "Moon phase [0-100]", 50), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
     windDirection(this, "Wind direction", 0.0f),
     windSpeed(this, "Wind speed", 5.0f),
     sunInnerRadius(this, "Sun inner radius", 9.75f),
     sunOuterRadius(this, "Sun outer radius", 10.25f),
+    sunlightDiffuseColor(this, "Sunlight diffuse color", Color(0.639f,0.639f,0.639f)),
+    sunlightSpecularColor(this, "Sunlight specular color"), // defaults to black
+    moonlightDiffuseColor(this, "Moonlight color", Color(0.639f,0.639f,0.639f, 0.25f)), /**< @todo Nicer color for moonlight */
+    moonlightSpecularColor(this, "Moonlight specular color"), // defaults to black
+    ambientLightColor(this, "Ambient light color", OgreWorld::DefaultSceneAmbientLightColor()), // Ambient and sun diffuse color copied from EC_EnvironmentLight
     impl(0)
 {
-    static AttributeMetadata cloudTypeMetadata;
-    static AttributeMetadata cloudHeightMetadata;
-    static AttributeMetadata timeMetadata;
-    static AttributeMetadata zeroToHundredMetadata;
-    static AttributeMetadata mediumStepMetadata;
-    static AttributeMetadata smallStepMetadata;
+    static AttributeMetadata cloudTypeMd, cloudHeightMd, timeMd, zeroToHundredMd, mediumStepMd, smallStepMd;
     static bool metadataInitialized = false;
     if (!metadataInitialized)
     {
-        cloudTypeMetadata.enums[None] = "None";
-        cloudTypeMetadata.enums[Normal] = "Normal";
-        cloudTypeMetadata.enums[Volumetric] = "Volumetric";
-        timeMetadata.minimum = "0.0";
-        timeMetadata.maximum = "24.0";
-        timeMetadata.step = "0.5";
-        zeroToHundredMetadata.minimum = "0.0";
-        zeroToHundredMetadata.maximum = "100.0";
-        zeroToHundredMetadata.step = "10.0";
-        cloudHeightMetadata.minimum = "0.0";
-        cloudHeightMetadata.maximum = "10000.0";
-        cloudHeightMetadata.step = "10.0";
-        mediumStepMetadata.step = "0.1";
-        smallStepMetadata.step = "0.01";
+        cloudTypeMd.enums[None] = "None";
+        cloudTypeMd.enums[Normal] = "Normal";
+        cloudTypeMd.enums[Volumetric] = "Volumetric";
+        timeMd.minimum = "0.0";
+        timeMd.maximum = "24.0";
+        timeMd.step = "0.5";
+        zeroToHundredMd.minimum = "0.0";
+        zeroToHundredMd.maximum = "100.0";
+        zeroToHundredMd.step = "10.0";
+        cloudHeightMd.minimum = "0.0";
+        cloudHeightMd.maximum = "10000.0";
+        cloudHeightMd.step = "10.0";
+        mediumStepMd.step = "0.1";
+        smallStepMd.step = "0.01";
         metadataInitialized = true;
     }
-    cloudType.SetMetadata(&cloudTypeMetadata);
-    time.SetMetadata(&timeMetadata);
-    sunriseTime.SetMetadata(&timeMetadata);
-    sunsetTime.SetMetadata(&timeMetadata);
-    cloudCoverage.SetMetadata(&zeroToHundredMetadata);
-    cloudAverageSize.SetMetadata(&zeroToHundredMetadata);
-    cloudHeight.SetMetadata(&cloudHeightMetadata);
-    moonPhase.SetMetadata(&zeroToHundredMetadata);
-    timeMultiplier.SetMetadata(&smallStepMetadata);
-    sunInnerRadius.SetMetadata(&mediumStepMetadata);
-    sunOuterRadius.SetMetadata(&mediumStepMetadata);
+    cloudType.SetMetadata(&cloudTypeMd);
+    time.SetMetadata(&timeMd);
+    sunriseTime.SetMetadata(&timeMd);
+    sunsetTime.SetMetadata(&timeMd);
+    cloudCoverage.SetMetadata(&zeroToHundredMd);
+    cloudAverageSize.SetMetadata(&zeroToHundredMd);
+    cloudHeight.SetMetadata(&cloudHeightMd);
+    moonPhase.SetMetadata(&zeroToHundredMd);
+    timeMultiplier.SetMetadata(&smallStepMd);
+    sunInnerRadius.SetMetadata(&mediumStepMd);
+    sunOuterRadius.SetMetadata(&mediumStepMd);
 
-    if (!framework->IsHeadless())
-        connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
 }
 
 EC_SkyX::~EC_SkyX()
@@ -166,7 +190,7 @@ bool EC_SkyX::IsSunVisible() const
 
 float3 EC_SkyX::SunPosition() const
 {
-    return impl ? impl->sunPosition : float3();
+    return impl ? impl->sunPosition : float3::nan;
 }
 
 bool EC_SkyX::IsMoonVisible() const
@@ -176,7 +200,7 @@ bool EC_SkyX::IsMoonVisible() const
 
 float3 EC_SkyX::MoonPosition() const
 {
-    return impl ? impl->moonPosition : float3();
+    return impl ? impl->moonPosition : float3::nan;
 }
 
 void EC_SkyX::Remove()
@@ -208,8 +232,8 @@ void EC_SkyX::Create()
     disconnect(w->Renderer(), SIGNAL(MainCameraChanged(Entity*)), this, SLOT(Create()));
 
     // SkyX is a singleton component, refuse to add multiple in a scene!
-    EntityList entities = ParentEntity()->ParentScene()->GetEntitiesWithComponent(TypeName());
-    if (!entities.empty() && (*entities.begin())->GetComponent<EC_SkyX>().get() != this)
+    std::vector<shared_ptr<EC_SkyX> > skies = ParentEntity()->ParentScene()->Components<EC_SkyX>();
+    if (!skies.empty() && (*skies.begin()).get() != this)
     {
         LogError("EC_SkyX: Scene already has SkyX component, refusing to create a new one.");
         return;
@@ -220,7 +244,7 @@ void EC_SkyX::Create()
     {
         Remove();
 
-        impl = new EC_SkyXImpl();
+        impl = new Impl;
         impl->skyX = new SkyX::SkyX(w->OgreSceneManager(), impl->controller);
         impl->skyX->create();
 
@@ -248,23 +272,22 @@ void EC_SkyX::CreateLights()
 {
     if (impl)
     {
-        // Ambient and sun diffuse color copied from EC_EnvironmentLight
         OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
         Ogre::SceneManager *sm = w->OgreSceneManager();
         impl->originalAmbientColor = sm->getAmbientLight();
-        sm->setAmbientLight(OgreWorld::DefaultSceneAmbientLightColor());
+        sm->setAmbientLight(ambientLightColor.Get());
 
         impl->sunlight = sm->createLight(w->Renderer()->GetUniqueObjectName("SkyXSunlight"));
         impl->sunlight->setType(Ogre::Light::LT_DIRECTIONAL);
-        impl->sunlight->setDiffuseColour(Color(0.639f,0.639f,0.639f));
-        impl->sunlight->setSpecularColour(0.f,0.f,0.f);
+        impl->sunlight->setDiffuseColour(sunlightDiffuseColor.Get());
+        impl->sunlight->setSpecularColour(sunlightSpecularColor.Get());
         impl->sunlight->setDirection(impl->controller->getSunDirection());
         impl->sunlight->setCastShadows(true);
 
         impl->moonlight = sm->createLight(w->Renderer()->GetUniqueObjectName("SkyXMoonlight"));
         impl->moonlight->setType(Ogre::Light::LT_DIRECTIONAL);
-        impl->moonlight->setDiffuseColour(Color(0.639f,0.639f,0.639f, 0.25f)); ///< @todo Nicer color for moonlight
-        impl->moonlight->setSpecularColour(0.f,0.f,0.f);
+        impl->moonlight->setDiffuseColour(moonlightDiffuseColor.Get());
+        impl->moonlight->setSpecularColour(moonlightSpecularColor.Get());
         impl->moonlight->setDirection(impl->controller->getMoonDirection());
         impl->moonlight->setCastShadows(true);
         impl->moonlight->setVisible(false); // Hide moonlight by default
@@ -275,15 +298,14 @@ void EC_SkyX::OnActiveCameraChanged(Entity *camEntity)
 {
     if (!impl || !impl->skyX)
         return;
- 
+
     if (impl->skyX->getCamera())
         UnregisterCamera(impl->skyX->getCamera());
 
     // Only initialize the SkyX component if this EC_SkyX component is in the same scene as the new active camera entity.
     if (camEntity && camEntity->ParentScene() == ParentScene())
     {
-        EC_Camera *cameraComp = camEntity->GetComponent<EC_Camera>().get();
-        Ogre::Camera *camera = cameraComp != 0 ? cameraComp->GetCamera() : 0;
+        Ogre::Camera *camera = FindOgreCamera(camEntity);
         if (camera)
             RegisterCamera(camera);
     }
@@ -305,8 +327,7 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
         {
             UnloadNormalClouds();
             UnloadVolumetricClouds();
-            EC_Camera *cameraComp = GetFramework()->Renderer()->MainCameraComponent();
-            Ogre::Camera *camera = cameraComp != 0 ? cameraComp->GetCamera() : 0;
+            Ogre::Camera *camera = FindOgreCamera(GetFramework()->Renderer()->MainCamera());
             if (!camera)
             {
                 LogError("EC_SkyX: Cannot create volumetric clouds without main camera!");
@@ -385,11 +406,17 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
     {
         // Make the time multiplier scale not be so steep.
         // Our minimum value in EC editor 0.01 is still quite fast.
+        /// @todo Not nice. Usability issued should be resolved at UI level and/or by using AttributeMetadata. Remove this. */
         float skyxMultiplier = timeMultiplier.Get() / 2.0f;
         impl->skyX->setTimeMultiplier(skyxMultiplier);
 
+        /// @todo Ideally, when timeMultiplier would be set to 0, we would sync the value of the current
+        /// time over network. However this is probably not possible to do on a headless Tundra, and currently
+        /// would cause the time to be rolled back to the original time before it was speeded up with a time
+        /// multiplier. Investigate if SkyX can be driven on a headless Tundra sensibly.
+
         // Sometimes volumetric clouds bug out and speed up when a new time 
-        // multiplier is defined. Set autoupdate again so it wont happen.
+        // multiplier is defined. Set autoupdate again so it won't happen.
         if ((CloudType)cloudType.Get() == Volumetric)
         {
             impl->skyX->getVCloudsManager()->setAutoupdate(false);
@@ -398,16 +425,28 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
     }
     else if (attr == &time || attr == &sunsetTime || attr == &sunriseTime)
     {
-        // Ignore local changes as its updated constantly 
-        // from SkyX when a time multiplier in > 0.
-        if (change == AttributeChange::Replicate)
+        // Ignore internal time changes when the time multiplier is != 0 and time is driven by SkyX.
+        if (!EqualAbs(time.Get(), 0.f))
             impl->controller->setTime(Ogre::Vector3(time.Get(), sunriseTime.Get(), sunsetTime.Get()));
 
-        // Update moon phase if time changed
-        if (attr == &time && change == AttributeChange::LocalOnly)
+        if (attr == &time)
         {
-            /// @todo Do smarter logic that takes sunrise and sunset into account
-            moonPhase.Set(time.Get() * (100.f / 24.f), AttributeChange::LocalOnly); // [0,24] -> [0,100]
+            // Update moon phase if time changed
+            if (AttributeChange::LocalOnly)
+            {
+                /// @todo Do smarter logic that takes sunrise and sunset into account
+                moonPhase.Set(time.Get() * (100.f / 24.f), AttributeChange::LocalOnly); // [0,24] -> [0,100]
+            }
+
+            if (EqualAbs(timeMultiplier.Get(), 0.0f)) // time multiplier not used, update light directions
+            {
+                Ogre::Camera *camera = FindOgreCamera(GetFramework()->Renderer()->MainCamera());
+                if (camera)
+                {
+                    impl->UpdateLightPositions(camera);
+                    impl->UpdateLights();
+                }
+            }
         }
     }
     else if (attr == &cloudCoverage || attr == &cloudAverageSize)
@@ -507,39 +546,43 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
     {
         ApplyAtmosphereOptions();
     }
+    else if (attr == &sunlightDiffuseColor && impl->sunlight)
+    {
+        impl->sunlight->setDiffuseColour(sunlightDiffuseColor.Get());
+    }
+    else if (attr == &sunlightSpecularColor && impl->moonlight)
+    {
+        impl->sunlight->setSpecularColour(sunlightSpecularColor.Get());
+    }
+    else if (attr == &moonlightDiffuseColor && impl->moonlight)
+    {
+        impl->moonlight->setDiffuseColour(moonlightDiffuseColor.Get());
+    }
+    else if (attr == &moonlightSpecularColor && impl->moonlight)
+    {
+        impl->moonlight->setSpecularColour(moonlightSpecularColor.Get());
+    }
+    else if (attr == &ambientLightColor && impl->skyX->getSceneManager())
+    {
+        impl->skyX->getSceneManager()->setAmbientLight(ambientLightColor.Get());
+    }
 }
 
 void EC_SkyX::Update(float frameTime)
 {
     if (!impl)
         return;
-   
-    EC_Camera *cameraComp = GetFramework()->Renderer()->MainCameraComponent();
-    Ogre::Camera *camera = cameraComp != 0 ? cameraComp->GetCamera() : 0;
+   if (EqualAbs(timeMultiplier.Get(), 0.0f))
+        return;
+    Ogre::Camera *camera = FindOgreCamera(GetFramework()->Renderer()->MainCamera());
     if (!camera)
         return;
 
     PROFILE(EC_SkyX_Update);
     // Update our sunlight and moonlight
-    impl->sunPosition = camera->getDerivedPosition() + impl->controller->getSunDirection() * impl->skyX->getMeshManager()->getSkydomeRadius(camera);
-    impl->moonPosition = camera->getDerivedPosition() + impl->controller->getMoonDirection() * impl->skyX->getMeshManager()->getSkydomeRadius(camera);
-    if (impl->sunlight && impl->moonlight)
-    {
-        /// @todo Animate dim the light down and up
-        if (impl->sunPosition.y < 0 && impl->sunlight->isVisible() && !impl->moonlight->isVisible())
-        {
-            impl->sunlight->setVisible(false);
-            impl->moonlight->setVisible(true);
-        }
-        else if (impl->sunPosition.y > 0 && !impl->sunlight->isVisible() && impl->moonlight->isVisible())
-        {
-            impl->sunlight->setVisible(true);
-            impl->moonlight->setVisible(false);
-        }
-
-        impl->sunlight->setDirection(-impl->controller->getSunDirection()); // -(Earth-to-Sun direction)
-        impl->moonlight->setDirection(-impl->controller->getMoonDirection()); // -(Earth-to-Moon direction)
-    }
+    impl->UpdateLightPositions(camera);
+    /// @todo Animate dim the light down and up
+    impl->UpdateLights();
 
     // Do not replicate constant time attribute updates as SkyX internals are authoritative for it.
     time.Set(impl->controller->getTime().x, AttributeChange::LocalOnly);
@@ -604,7 +647,7 @@ void EC_SkyX::HandleVCloudsCamera(Ogre::Camera *camera, bool registerCamera)
     if (!camera)
     {
         EC_Camera *cameraComp = GetFramework()->Renderer()->MainCameraComponent();
-        camera = cameraComp != 0 ? cameraComp->GetCamera() : 0;
+        camera = cameraComp != 0 ? cameraComp->OgreCamera() : 0;
     }
     if (camera)
     {
@@ -647,4 +690,10 @@ void EC_SkyX::UnloadVolumetricClouds()
         UnregisterCamera();
         impl->skyX->getVCloudsManager()->remove();
     }
+}
+
+Ogre::Camera *EC_SkyX::FindOgreCamera(Entity *cameraEntity) const
+{
+    EC_Camera *ec = cameraEntity->Component<EC_Camera>().get();
+    return (ec != 0 ? ec->OgreCamera() : 0);
 }

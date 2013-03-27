@@ -6,6 +6,9 @@
 
 #pragma once
 
+#include "CoreTypes.h"
+
+/// @todo Remove the Physics namespace.
 namespace Physics
 {
     class PhysicsModule;
@@ -17,6 +20,9 @@ namespace Physics
 class PhysicsRaycastResult;
 class EC_RigidBody;
 class EC_VolumeTrigger;
+
+typedef shared_ptr<Physics::PhysicsWorld> PhysicsWorldPtr;
+typedef weak_ptr<Physics::PhysicsWorld> PhysicsWorldWeakPtr;
 
 // From Bullet:
 class btTriangleMesh;

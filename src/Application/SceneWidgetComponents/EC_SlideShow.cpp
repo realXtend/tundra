@@ -358,8 +358,7 @@ void EC_SlideShow::PrepareComponent()
         sceneCanvasName_ = "SlideShowCanvas-" + QUuid::createUuid().toString().replace("{", "").replace("}", "");
 
     // Get or create local EC_WidgetCanvas component
-    ComponentPtr iComponent = parent->GetOrCreateComponent(EC_WidgetCanvas::TypeNameStatic(), sceneCanvasName_, AttributeChange::LocalOnly, false);
-    EC_WidgetCanvas *sceneCanvas = dynamic_cast<EC_WidgetCanvas*>(iComponent.get());
+    shared_ptr<EC_WidgetCanvas> sceneCanvas = parent->GetOrCreateComponent<EC_WidgetCanvas>(sceneCanvasName_, AttributeChange::LocalOnly, false);
     if (!sceneCanvas)
     {
         LogError("EC_SlideShow: Could not get or create EC_WidgetCanvas component!");
@@ -550,6 +549,20 @@ void EC_SlideShow::ComponentRemoved(IComponent *component, AttributeChange::Type
 
 void EC_SlideShow::AttributesChanged()
 {
+    if (slideChangeInterval.ValueChanged())
+    {
+        if (isServer_)
+        {
+            int timerSec = getslideChangeInterval();
+            if (timerSec <= 0)
+                changeTimer_.stop();
+            else
+                changeTimer_.start(timerSec * 1000);
+        }
+    }
+    if (framework->IsHeadless())
+        return;
+
     // Can handle before we are prepared
     if (slides.ValueChanged())
     {
@@ -589,11 +602,11 @@ void EC_SlideShow::AttributesChanged()
                 listener->setProperty("isTexture", false);
                 continue;
             }
-            
+
             // Connect signals
             connect(listener, SIGNAL(Loaded(AssetPtr)), SLOT(TextureLoaded(AssetPtr)));
             connect(listener, SIGNAL(TransferFailed(IAssetTransfer*, QString)), SLOT(TextureLoadFailed(IAssetTransfer*, QString)));
-            
+
             // Request the asset only for the current index
             if (i == getcurrentSlideIndex())
             {
@@ -602,18 +615,7 @@ void EC_SlideShow::AttributesChanged()
             }
         }
     }
-    if (slideChangeInterval.ValueChanged())
-    {
-        if (isServer_)
-        {
-            int timerSec = getslideChangeInterval();
-            if (timerSec <= 0)
-                changeTimer_.stop();
-            else
-                changeTimer_.start(timerSec * 1000);
-        }
-    }
-
+        
     // Cant handle yet, not prepared
     if (!IsPrepared())
         return;

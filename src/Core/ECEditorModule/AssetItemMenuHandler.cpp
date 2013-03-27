@@ -1,14 +1,13 @@
+/**
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   AssetItemMenuHandler.cpp
+    @brief  Handles populating of assets and asset storages context menus and their chosen actions. */
+
 #include "StableHeaders.h"
 
-#include "UiAPI.h"
-#include "AssetAPI.h"
-#include "SceneAPI.h"
-
-#include "Scene.h"
-#include "IAsset.h"
-#include "IAssetTypeFactory.h"
+#include "AssetItemMenuHandler.h"
 #include "ArgumentType.h"
-#include "AssetCache.h"
 #include "RequestNewAssetDialog.h"
 #include "CloneAssetDialog.h"
 #include "FunctionDialog.h"
@@ -16,12 +15,16 @@
 #include "AssetsWindow.h"
 #include "AddContentWindow.h"
 #include "SupportedFileTypes.h"
-#include "Win.h"
 
+#include "UiAPI.h"
+#include "AssetAPI.h"
+#include "SceneAPI.h"
+#include "Scene.h"
+#include "IAsset.h"
+#include "IAssetTypeFactory.h"
+#include "AssetCache.h"
 #include "UiMainWindow.h"
 #include "FileUtils.h"
-
-#include "AssetItemMenuHandler.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -308,8 +311,10 @@ void AssetItemMenuHandler::OpenFileDialogClosed(int result)
     
     if (dialog->selectedFiles().isEmpty())
         return;
-    
-    AddContentWindow *addContent = new AddContentWindow(framework_->Scene()->MainCameraScene()->shared_from_this(), framework_->Ui()->MainWindow());
+
+    Scene *scene = framework_->Scene()->MainCameraScene();
+    assert(scene);
+    AddContentWindow *addContent = new AddContentWindow(scene->shared_from_this(), framework_->Ui()->MainWindow());
     addContent->setWindowFlags(Qt::Tool);
     addContent->AddAssets(dialog->selectedFiles());
     addContent->show();
@@ -452,10 +457,10 @@ void AssetItemMenuHandler::OpenFunctionDialog()
     QObjectWeakPtrList objs;
     if (!targets_.assets.isEmpty())
         foreach(IAsset *item, targets_.assets)
-            objs << boost::dynamic_pointer_cast<QObject>(item->shared_from_this());
+            objs << dynamic_pointer_cast<QObject>(item->shared_from_this());
     else if (!targets_.storages.isEmpty())
         foreach(IAssetStorage *item, targets_.storages)
-            objs << boost::dynamic_pointer_cast<QObject>(item->shared_from_this());
+            objs << dynamic_pointer_cast<QObject>(item->shared_from_this());
     
     if (objs.size())
     {

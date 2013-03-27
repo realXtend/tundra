@@ -167,7 +167,7 @@ void MumbleNetworkHandler::run()
     // Note that tcp and udp objects are freed by Qt parenting.
 }
 
-void MumbleNetworkHandler::timerEvent(QTimerEvent *event)
+void MumbleNetworkHandler::timerEvent(QTimerEvent * /*event*/)
 {
     QMutexLocker tcpPendingLock(&mutexPendingTCP);
     if (!pedingTCP.empty())
@@ -342,7 +342,7 @@ void MumbleNetworkHandler::OnError(QAbstractSocket::SocketError socketError)
     quit();
 }
 
-void MumbleNetworkHandler::OnSslErrors(const QList<QSslError>& errors)
+void MumbleNetworkHandler::OnSslErrors(const QList<QSslError>& /*errors*/)
 {
     /** In mumble client ssl errors are always ignored as well.
         The only difference is that it pops a "do you accept" dialog where you can inspect the

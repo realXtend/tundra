@@ -24,14 +24,18 @@ public:
     ~SceneAPI();
 
     /// Creates new component of the type @c T.
-    /** @param newComponentName Name for the component (optional). */
+    /** @param newComponentName Name for the component (optional).
+        @note Important: if creating a non-parented component (parentScene == 0), do not get() the raw pointer immediately
+        upon this function call as the reference count of the shared_ptr goes to zero and the object is deleted. */
     template<typename T>
     shared_ptr<T> CreateComponent(Scene* parentScene, const QString &newComponentName = "") const
     {
+        /// @todo static_pointer_cast should be ok here
         return dynamic_pointer_cast<T>(CreateComponentById(parentScene, T::TypeIdStatic(), newComponentName));
     }
 
     /// Returns a list of all attribute type names that can be used in the CreateAttribute function to create an attribute.
+    /** @note Unlike the available component types, the available attribute type set is static and cannot change at runtime. */
     static const QStringList &AttributeTypes();
 
     /// Returns the scene map for self reflection / introspection.
@@ -48,11 +52,12 @@ public slots:
 
         @param name Name of the scene to return
         @return The scene, or empty pointer if the scene with the specified name could not be found. */
-    ScenePtr GetScene(const QString &name) const;
+        ScenePtr SceneByName(const QString &name) const;
 
     /// Returns the Scene the current active main camera is in.
     /** If there is no active main camera, this function returns the first found scene.
-        If no scenes have been created, returns 0. */
+        If no scenes have been created, returns 0.
+        @todo Refactor into ScenePtr MainCameraScene() const; */
     Scene *MainCameraScene();
 
     /// Creates new empty scene.
@@ -69,8 +74,9 @@ public slots:
 
         Does nothing if scene with the specified name doesn't exist.
 
-        @param name name of the scene to delete */
-    void RemoveScene(const QString &name);
+        @param name name of the scene to delete
+        @return True if the scene was found and removed, false otherwise. */
+    bool RemoveScene(const QString &name);
 
     /// Return if a component factory has been registered for a type name.
     bool IsComponentFactoryRegistered(const QString &typeName) const;
@@ -114,6 +120,7 @@ public slots:
 
     // DEPRECATED
     bool HasScene(const QString &name) const { return scenes.find(name) != scenes.end(); } /**< @deprecated Use GetScene instead @todo Remove */
+    ScenePtr GetScene(const QString &name) const { return SceneByName(name); } /**< @deprecated Use SceneByName instead @todo Remove */
 
 signals:
     /// Emitted after new scene has been added to framework.

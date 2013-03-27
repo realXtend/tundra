@@ -16,8 +16,8 @@
   <widget class="QRadioButton" name="radioApples">
    <property name="geometry">
     <rect>
-     <x>170</x>
-     <y>30</y>
+     <x>160</x>
+     <y>10</y>
      <width>361</width>
      <height>61</height>
     </rect>
@@ -35,8 +35,8 @@
   <widget class="QRadioButton" name="radioOranges">
    <property name="geometry">
     <rect>
-     <x>180</x>
-     <y>100</y>
+     <x>160</x>
+     <y>70</y>
      <width>171</width>
      <height>71</height>
     </rect>
@@ -51,8 +51,8 @@
   <widget class="QPushButton" name="pushButton">
    <property name="geometry">
     <rect>
-     <x>27</x>
-     <y>70</y>
+     <x>10</x>
+     <y>20</y>
      <width>131</width>
      <height>91</height>
     </rect>
@@ -63,6 +63,19 @@
    </property>
    <property name="text">
     <string>Boom!</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>160</y>
+     <width>321</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Click and edit!</string>
    </property>
   </widget>
  </widget>

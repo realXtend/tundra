@@ -46,7 +46,7 @@
     <li> None.
     </ul>
 
-    <b>Reacts on the following actions:</b>
+    <b>Reacts on the following (Placeable) actions:</b>
     <ul>
     <li>"Hide": Disables the light from affecting the scene.
     <li>"Show": Enables the light in the scene.
@@ -77,18 +77,18 @@ public:
         LT_Spot,
         LT_Directional
     };
-        
-    /// Gets placeable component
-    ComponentPtr GetPlaceable() const { return placeable_; }
+
+    /// Returns  placeable component
+    const ComponentPtr &Placeable() const { return placeable_; }
     
     /// Sets placeable component
     /** Set a null placeable (or do not set a placeable) to have a detached light
         @param placeable placeable component */
-    void SetPlaceable(ComponentPtr placeable);
+    void SetPlaceable(const ComponentPtr &placeable);
     
-    /// @return Ogre light pointer
-    Ogre::Light* GetLight() const { return light_; }
-    
+    /// Returns Ogre light pointer
+    Ogre::Light* OgreLight() const { return light_; }
+
     /// Light type, see Type.
     Q_PROPERTY(int type READ gettype WRITE settype)
     DEFINE_QPROPERTY_ATTRIBUTE(int, type);
@@ -102,7 +102,6 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(Color, specColor);
 
     /// If true, this light casts dynamically calculated shadows on the scene.
-    /** @todo Unused; remove? */
     Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
 
@@ -134,6 +133,10 @@ public:
     Q_PROPERTY(float outerAngle READ getouterAngle WRITE setouterAngle)
     DEFINE_QPROPERTY_ATTRIBUTE(float, outerAngle);
 
+    // DEPRECATED
+    ComponentPtr GetPlaceable() const { return Placeable(); } /**< @deprecated Use Placeable instead. */
+    Ogre::Light* GetLight() const { return OgreLight(); } /**< @deprecated Use OgreLight instead. */
+
 private slots:
     /// Called when the parent entity has been set.
     void UpdateSignals();
@@ -143,7 +146,7 @@ private slots:
     
     /// Called when component has been removed from the parent entity. Checks if the component removed was the placeable, and autodissociates it.
     void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
-    
+
 private:
     /// Update light attributes to the Ogre light object.
     void AttributesChanged();
@@ -158,13 +161,7 @@ private:
     void DetachLight();
     
     ComponentPtr placeable_;
-    
-    /// Ogre world ptr
     OgreWorldWeakPtr world_;
-    
-    /// Ogre light
     Ogre::Light* light_;
-    
-    /// Attached to placeable -flag
-    bool attached_;
+    bool attached_; ///< Attached to placeable -flag (Ogre crappiness)
 };

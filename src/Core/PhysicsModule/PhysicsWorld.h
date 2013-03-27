@@ -43,7 +43,7 @@ public:
 namespace Physics
 {
 /// A physics world that encapsulates a Bullet physics world
-class PHYSICS_MODULE_API PhysicsWorld : public QObject, public btIDebugDraw, public enable_shared_from_this<PhysicsWorld>
+class PHYSICS_MODULE_API PhysicsWorld : public QObject, public btIDebugDraw /** @todo pimpl */, public enable_shared_from_this<PhysicsWorld>
 {
     Q_OBJECT
     Q_PROPERTY(float updatePeriod READ PhysicsUpdatePeriod WRITE SetPhysicsUpdatePeriod)

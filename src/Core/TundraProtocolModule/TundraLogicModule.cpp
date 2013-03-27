@@ -69,8 +69,6 @@ static const unsigned short cDefaultPort = 2345;
 
 TundraLogicModule::TundraLogicModule() :
     IModule("TundraLogic"),
-    autoStartServer_(false),
-    autoStartServerPort_(cDefaultPort),
     kristalliModule_(0)
 {
 }
@@ -159,48 +157,8 @@ void TundraLogicModule::Initialize()
     if (!kristalliModule_)
         throw Exception("Fatal: could not get KristalliProtocolModule");
 
-    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_SERVER, "port", cDefaultPort, cDefaultPort);
-    // Write default values to config if not present.
-    if (!framework_->Config()->HasValue(configData))
-        framework_->Config()->Set(configData);
-
-    // Check whether server should be auto started.
-    if (framework_->HasCommandLineParameter("--server"))
-    {
-        autoStartServer_ = true;
-        // Use parameter port or default to config value
-        QStringList portParam = framework_->CommandLineParameters("--port");
-        if (portParam.size() > 0)
-        {
-            bool ok;
-            unsigned short port = portParam.first().toUShort(&ok);
-            if (ok)
-            {
-                autoStartServerPort_ = port;
-            }
-            else
-            {
-                LogError("--port parameter is not a valid unsigned short.");
-                GetFramework()->Exit();
-            }
-        }
-        else
-            autoStartServerPort_ = GetFramework()->Config()->Get(configData).toInt();
-    }
-    
-    if (framework_->HasCommandLineParameter("--netrate"))
-    {
-        QStringList rateParam = framework_->CommandLineParameters("--netrate");
-        if (rateParam.size() > 0)
-        {
-            bool ok;
-            int rate = rateParam.first().toInt(&ok);
-            if (ok && rate > 0)
-                syncManager_->SetUpdatePeriod(1.f / (float)rate);
-            else
-                LogError("--netrate parameter is not a valid integer.");
-        }
-    }
+    // Read startup params when application event loop starts.
+    QTimer::singleShot(0, this, SLOT(ReadStartupParameters()));
 }
 
 void TundraLogicModule::Uninitialize()
@@ -214,51 +172,6 @@ void TundraLogicModule::Uninitialize()
 void TundraLogicModule::Update(f64 frametime)
 {
     PROFILE(TundraLogicModule_Update);
-    ///\todo Remove this hack and find a better solution
-    static bool checkDefaultServerStart = true;
-    if (checkDefaultServerStart)
-    {
-        if (autoStartServer_)
-            server_->Start(autoStartServerPort_); 
-        if (framework_->HasCommandLineParameter("--file")) // Load startup scene here (if we have one)
-            LoadStartupScene();
-        checkDefaultServerStart = false;
-    }
-    ///\todo Remove this hack and find a better solution
-    static bool checkLoginStart = true;
-    if (checkLoginStart)
-    {
-        // Web login handling, if we are on a server the request will be ignored down the chain.
-        QStringList cmdLineParams = framework_->CommandLineParameters("--login");
-        if (cmdLineParams.size() > 0)
-        {
-            // Do not use QUrl::TolerantMode as it will do things to percent encoding
-            // we don't want a t this point, see http://doc.trolltech.com/4.7/qurl.html#ParsingMode-enum
-            QUrl loginUrl(cmdLineParams.first(), QUrl::StrictMode);
-            if (loginUrl.isValid())
-                client_->Login(loginUrl);
-            else
-                LogError("TundraLogicModule: Login URL is not valid after strict parsing: " + cmdLineParams.first());
-        }
-
-        checkLoginStart = false;
-    }
-    ///\todo Remove this hack and find a better solution
-    static bool checkConnectStart = true;
-    if (checkConnectStart)
-    {
-        if (framework_->CommandLineParameters("--connect").size() == 1)
-        {
-            QStringList params = framework_->CommandLineParameters("--connect").first().split(';');
-            if (params.size() >= 4)
-                client_->Login(/*addr*/params[0], /*port*/params[1].toInt(), /*username*/params[3],
-                    /*optional passwd*/ params.size() >= 5 ? params[4] : "", /*protocol*/params[2]);
-            else
-                LogError("TundraLogicModule: Not enought parameters for --connect. Usage '--connect serverIp;port;protocol;name;password'. Password is optional.");
-        }
-        checkConnectStart = false;
-    }
-
     // Update client & server
     if (client_)
         client_->Update(frametime);
@@ -319,6 +232,88 @@ void TundraLogicModule::LoadStartupScene()
     }
 }
 
+void TundraLogicModule::ReadStartupParameters()
+{
+    // Check whether server should be auto started.
+    const bool autoStartServer = framework_->HasCommandLineParameter("--server");
+    const bool hasPortParam = framework_->HasCommandLineParameter("--port");
+    ushort autoStartServerPort = cDefaultPort;
+    if (hasPortParam && !autoStartServer)
+        LogWarning("TundraLogicModule::ReadStartupParameters: --port parameter given, but --server parameter is not present. Server will not be started.");
+
+    // Write default values to config if not present.
+    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_SERVER, "port", cDefaultPort, cDefaultPort);
+    if (!framework_->Config()->HasValue(configData))
+        framework_->Config()->Set(configData);
+
+    if (autoStartServer)
+    {
+        // Use parameter port or default to config value
+        const QStringList portParam = framework_->CommandLineParameters("--port");
+        if (hasPortParam && portParam.empty())
+        {
+            LogWarning("TundraLogicModule::ReadStartupParameters: --port parameter given without value. Using the default from config.");
+            autoStartServerPort = GetFramework()->Config()->Get(configData).toInt();
+        }
+        else if (!portParam.empty())
+        {
+            bool ok;
+            autoStartServerPort = portParam.first().toUShort(&ok);
+            if (!ok)
+            {
+                LogError("TundraLogicModule::ReadStartupParameters: --port parameter is not a valid unsigned short.");
+                GetFramework()->Exit();
+            }
+        }
+    }
+
+    /// @todo Move --netRate handling to SyncManager.
+    const bool hasNetRate = framework_->HasCommandLineParameter("--netrate");
+    const QStringList rateParam = framework_->CommandLineParameters("--netrate");
+    if (hasNetRate && rateParam.empty())
+        LogWarning("TundraLogicModule::ReadStartupParameters: --netrate parameter given without value.");
+    if (!rateParam.empty())
+    {
+        bool ok;
+        int rate = rateParam.first().toInt(&ok);
+        if (ok && rate > 0)
+            syncManager_->SetUpdatePeriod(1.f / (float)rate);
+        else
+            LogError("TundraLogicModule::ReadStartupParameters: --netrate parameter is not a valid integer.");
+    }
+
+    if (autoStartServer)
+        server_->Start(autoStartServerPort); 
+    if (framework_->HasCommandLineParameter("--file")) // Load startup scene here (if we have one)
+        LoadStartupScene();
+
+    // Web login handling, if we are on a server the request will be ignored down the chain.
+    QStringList cmdLineParams = framework_->CommandLineParameters("--login");
+    if (cmdLineParams.size() > 0)
+    {
+        // Do not use QUrl::TolerantMode as it will do things to percent encoding
+        // we don't want a t this point, see http://doc.trolltech.com/4.7/qurl.html#ParsingMode-enum
+        QUrl loginUrl(cmdLineParams.first(), QUrl::StrictMode);
+        if (loginUrl.isValid())
+            client_->Login(loginUrl);
+        else
+            LogError("TundraLogicModule::ReadStartupParameters: Login URL is not valid after strict parsing: " + cmdLineParams.first());
+    }
+
+    QStringList connectArgs = framework_->CommandLineParameters("--connect");
+    if (connectArgs.size() > 1) /**< @todo If/when multi-connection support is on place, this should be changed! */
+        LogWarning("TundraLogicModule::ReadStartupParameters: multiple --connect parameters given, ignoring all of them!");
+    if (connectArgs.size() == 1)
+    {
+        QStringList params = connectArgs.first().split(';');
+        if (params.size() >= 4)
+            client_->Login(/*addr*/params[0], /*port*/params[1].toInt(), /*username*/params[3],
+            /*optional passwd*/ params.size() >= 5 ? params[4] : "", /*protocol*/params[2]);
+        else
+            LogError("TundraLogicModule::ReadStartupParameters: Not enought parameters for --connect. Usage '--connect serverIp;port;protocol;name;password'. Password is optional.");
+    }
+}
+
 void TundraLogicModule::StartupSceneTransfedSucceeded(AssetPtr asset)
 {
     QString sceneDiskSource = asset->DiskSource();
@@ -348,12 +343,10 @@ bool TundraLogicModule::SaveScene(QString filename, bool asBinary, bool saveTemp
         return false;
     }
     
-    bool success = false;
     if (asBinary)
-        success = scene->SaveSceneBinary(filename, saveTemporaryEntities, saveLocalEntities);
+        return scene->SaveSceneBinary(filename, saveTemporaryEntities, saveLocalEntities);
     else
-        success = scene->SaveSceneXML(filename, saveTemporaryEntities, saveLocalEntities);
-    return success;
+        return scene->SaveSceneXML(filename, saveTemporaryEntities, saveLocalEntities);
 }
 
 bool TundraLogicModule::LoadScene(QString filename, bool clearScene, bool useEntityIDsFromFile)

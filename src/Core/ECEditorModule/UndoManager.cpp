@@ -1,3 +1,9 @@
+/**
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   UndoManager.cpp
+    @brief  UndoManager class which manages the undo stack and provides drop-down menus with the most recent undo/redo commands.*/
+
 #include "StableHeaders.h"
 #include "UndoManager.h"
 #include "EntityIdChangeTracker.h"
@@ -7,10 +13,9 @@
 
 #include "MemoryLeakCheck.h"
 
-UndoManager::UndoManager(Scene * scene, QObject * parent) :
-    QObject(parent)
+UndoManager::UndoManager(const ScenePtr &scene, QWidget *parent)
 {
-    undoStack_ = new QUndoStack(parent);
+    undoStack_ = new QUndoStack();
 
     undoMenu_ = new QMenu();
     redoMenu_ = new QMenu();
@@ -18,8 +23,7 @@ UndoManager::UndoManager(Scene * scene, QObject * parent) :
 
     tracker_ = new EntityIdChangeTracker(scene);
 
-    QWidget * parentWidget = qobject_cast<QWidget *>(parent);
-    undoView_ = new QUndoView(undoStack_, parentWidget);
+    undoView_ = new QUndoView(undoStack_, parent);
     undoView_->setWindowFlags(Qt::Tool);
     undoView_->setWindowTitle("Editor - Undo stack");
 
@@ -29,6 +33,28 @@ UndoManager::UndoManager(Scene * scene, QObject * parent) :
     connect(undoMenu_, SIGNAL(triggered(QAction *)), this, SLOT(OnActionTriggered(QAction *)));
     connect(redoMenu_, SIGNAL(triggered(QAction *)), this, SLOT(OnActionTriggered(QAction *)));
     connect(undoViewAction_, SIGNAL(triggered(bool)), undoView_, SLOT(show()));
+}
+
+UndoManager::~UndoManager()
+{
+    if (undoStack_)
+    {
+        disconnect(undoStack_, SIGNAL(indexChanged(int)), this, SLOT(OnIndexChanged(int)));
+        disconnect(undoStack_, SIGNAL(canUndoChanged(bool)), this, SLOT(OnCanUndoChanged(bool)));
+        disconnect(undoStack_, SIGNAL(canRedoChanged(bool)), this, SLOT(OnCanRedoChanged(bool)));
+    }
+    SAFE_DELETE(undoStack_);
+
+    // Parented, don't delete
+    if (undoView_ && undoView_->parent())
+        undoView_ = 0;
+    else
+        SAFE_DELETE(undoView_);
+    
+    SAFE_DELETE(undoMenu_);
+    SAFE_DELETE(redoMenu_);
+    SAFE_DELETE(undoViewAction_);
+    SAFE_DELETE(tracker_);
 }
 
 QMenu * UndoManager::UndoMenu() const
@@ -41,7 +67,7 @@ QMenu * UndoManager::RedoMenu() const
     return redoMenu_;
 }
 
-EntityIdChangeTracker * UndoManager::GetTracker()
+EntityIdChangeTracker * UndoManager::Tracker() const
 {
     return tracker_;
 }

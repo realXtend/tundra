@@ -13,6 +13,7 @@
 #include <QTreeWidget>
 #include <QPointer>
 #include <QMenu>
+#include <QShortcut>
 
 class QWidget;
 class QFileDialog;
@@ -69,7 +70,8 @@ public:
     /// Do we show components in the tree widget or not.
     bool showComponents;
 
-    UndoManager * GetUndoManager() const;
+    /// @note Available only after the scene is set.
+    UndoManager *GetUndoManager() const;
 
 protected:
     /// QAbstractItemView override.
@@ -124,6 +126,8 @@ private:
     QList<InvokeItem> invokeHistory; ///< Keeps track of recently invoked entity actions and functions.
     QPointer<Menu> contextMenu; ///< Context menu.
     UndoManager * undoManager_;
+    QShortcut *undoShortcut;
+    QShortcut *redoShortcut;
 
     /// Used when saving multiple assets, can be used to retrieve a matching filename where to save asset data from asset transfer.
     QMap<QString, QString> fileSaves;

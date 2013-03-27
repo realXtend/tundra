@@ -3,13 +3,12 @@
 #pragma once
 
 // If PCH is disabled, leave the contents of this whole file empty to avoid any compilation unit getting any unnecessary headers.
-///\todo Refactor the above #include inside this #ifdef as well.
 #ifdef PCH_ENABLED
-
+#include "CoreTypes.h"
 #include "CoreDefines.h"
 #include "Framework.h"
+#include "LoggingFunctions.h"
 
 #include <QtCore>
 #include <QtGui>
-
 #endif

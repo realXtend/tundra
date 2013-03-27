@@ -2,7 +2,7 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   TransformEditor.h
-    @brief  Controls Transform attributes for groups of entities. */
+    @brief  Controls Transform attributes for group of entities. */
 
 #pragma once
 
@@ -11,44 +11,14 @@
 #include "Math/float3.h"
 #include "Math/Quat.h"
 #include "InputFwd.h"
+#include "IAttribute.h"
 
 #include <QObject>
 
 class OgreWorld;
+class UndoManager;
 
-/// Represents weak pointer to Transform attribute.
-/// @cond PRIVATE
-struct AttributeWeakPtr
-{
-    /// Constructor.
-    /** @param c Owner component.
-        @param a The actual attribute.
-        @param If the placeable component is parented, pointer to the parent placeable entity. */
-    AttributeWeakPtr(const ComponentPtr &c, IAttribute *a, const EntityPtr &p) :
-        owner(c),
-        attribute(a),
-        parentPlaceableEntity(p)
-    {
-    }
-
-    /// Returns pointer to the attribute or null if the owner component doens't exist anymore.
-    IAttribute *Get() const { return owner.lock() ? attribute : 0; }
-
-    bool operator ==(const AttributeWeakPtr &rhs) const
-    {
-        ComponentPtr ownerPtr = owner.lock();
-        return rhs.owner.lock() == ownerPtr && (rhs.attribute == attribute || !ownerPtr);
-    }
-
-    bool operator !=(const AttributeWeakPtr &rhs) const { return !(*this == rhs); }
-
-    ComponentWeakPtr owner; ///< Owner component.
-    IAttribute *attribute; ///< The actual attribute.
-    EntityWeakPtr parentPlaceableEntity; ///< If the placeable component is parented, points to the parent placeable entity.
-};
-///endcond
-
-/// Controls Transform attributes for groups of entities.
+/// Controls Transform attributes for group of entities.
 /** Can be used to alter transforms of entities even without the visual gizmo (EC_TransformGizmo).*/
 class ECEDITOR_MODULE_API TransformEditor : public QObject
 {
@@ -57,12 +27,16 @@ class ECEDITOR_MODULE_API TransformEditor : public QObject
 public:
     /// Constructs the editor.
     /** Creates EC_TransformGizmo if it is available.
-        @param scene Scene in which the edited entities reside. */
-    TransformEditor(const ScenePtr &scene);
+        @param editedScene Scene in which the edited entities reside.
+        @param undoManager If you wish to perform undo and redo operations, pass in your UndoManager instance. */
+    explicit TransformEditor(const ScenePtr &editedScene, UndoManager *undoManager = 0);
 
     /// Destroys the editor.
     /** Destroys the EC_TransformGizmo if it was created. */
     ~TransformEditor();
+
+    /// Returns the current selection
+    QList<EntityPtr> Selection() const;
 
     /// Sets new selection of entities, clears possible previous selection.
     /** @param entities Entities to be added. */
@@ -71,12 +45,12 @@ public:
     /// Appends selection with new entities.
     /** @param entities Entities to be added. */
     void AppendSelection(const QList<EntityPtr> &entities);
-    void AppendSelection(const EntityPtr &entity); ///< @overload
+    void AppendSelection(const EntityPtr &entity); /**< @overload */
 
     /// Removes entities from selection.
     /** @param entities Entities to be removed. */
     void RemoveFromSelection(const QList<EntityPtr> &entities);
-    void RemoveFromSelection(const EntityPtr &entity); ///< @overload
+    void RemoveFromSelection(const EntityPtr &entity); /**< @overload */
 
     /// Clears the selection.
     void ClearSelection();
@@ -89,6 +63,9 @@ public:
 
     /// Returns position of the editing gizmo.
     float3 GizmoPos() const;
+
+    /// Returns the transform gizmo editor settings widget.
+    QWidget *EditorSettingsWidget() const { return editorSettings; }
 
 public slots:
     /// Translates current target transforms.
@@ -105,7 +82,7 @@ public slots:
 
 private:
     /// Returns whether or not transform attribute @attr is parented and current selection of targets contain also the parent.
-    bool TargetsContainAlsoParent(const AttributeWeakPtr &attr) const;
+    bool TargetsContainAlsoParent(const TransformAttributeWeakPtr &attr) const;
 
     /// Creates transform gizmo for the editor.
     void CreateGizmo();
@@ -118,10 +95,11 @@ private:
 
     SceneWeakPtr scene; ///< Scene in which the edited entities reside.
     EntityPtr gizmo; ///< Gizmo entity.
-    QList<AttributeWeakPtr> targets; ///< Current target transform attributes.
+    QList<TransformAttributeWeakPtr> targets; ///< Current target transform attributes.
     InputContextPtr input; ///< Input context for controlling gizmo mode.
     QWidget* editorSettings; ///< Editor settings window
     bool localAxes; ///< Whether to show object local axes instead of global world axes.
+    UndoManager *undoManager; ///< Undo manager, if undo functionality used.
 
 private slots:
     /// Handles KeyEvents and changes gizmo's mode.

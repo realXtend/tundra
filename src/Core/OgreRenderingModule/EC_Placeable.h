@@ -91,7 +91,7 @@ public:
     explicit EC_Placeable(Scene* scene);
     virtual ~EC_Placeable();
 
-    /// Stores the position, rotation and scale of this sceene node in the coordinate space of its parent.
+    /// Stores the position, rotation and scale of this scene node in the coordinate space of its parent.
     Q_PROPERTY(Transform transform READ gettransform WRITE settransform);
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, transform);
 
@@ -119,7 +119,10 @@ public:
 
     /// Returns the Ogre scene node for attaching geometry.
     /** Do not manipulate the pos/orientation/scale of this node directly, but instead use the Transform property. */
-    Ogre::SceneNode* GetSceneNode() const { return sceneNode_; }
+    Ogre::SceneNode* OgreSceneNode() const { return sceneNode_; }
+
+    // DEPRECATED
+    Ogre::SceneNode* GetSceneNode() const { return OgreSceneNode(); } /**< @deprecated Use OgreSceneNode instead @todo Remove */
 
 public slots:
     /// Sets the translation part of this placeable's transform.
@@ -187,7 +190,10 @@ public slots:
     /// @note Logically, the order of transformations is T * R * S * v.
     void SetWorldTransform(const Quat &orientation, const float3 &pos, const float3 &scale);
 
-    /// Returns the position of this placable node in world space.
+    /// Returns the world-space transform this scene node.
+    float3x4 WorldTransform() const { return float3x4(WorldOrientation(), WorldPosition()); }
+
+    /// Returns the position of this placeable node in world space.
     float3 WorldPosition() const;
 
     /// Returns the orientation of this placeable node in world space.
@@ -277,7 +283,7 @@ public slots:
         @note Each entity is its own grand child. */
     bool IsGrandchildOf(EC_Placeable *placeable) const;
 
-    /// Returns flat list consisting of the whole parent-child hierachy for @c entity.
+    /// Returns flat list consisting of the whole parent-child hierarchy for @c entity.
     /** @param entity Entity to be inspected. */
     EntityList Grandchildren(Entity *entity) const;
 

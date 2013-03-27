@@ -52,11 +52,11 @@ void Entity::ChangeComponentId(component_id_t old_id, component_id_t new_id)
     if (old_id == new_id)
         return;
     
-    ComponentPtr old_comp = GetComponentById(old_id);
+    ComponentPtr old_comp = ComponentById(old_id);
     if (!old_comp)
         return;
     
-    if (GetComponentById(new_id))
+    if (ComponentById(new_id))
     {
         LogWarning("Purged component " + QString::number(new_id) + " to make room for a ChangeComponentId request. This should not happen.");
         RemoveComponentById(new_id, AttributeChange::LocalOnly);
@@ -186,7 +186,7 @@ void Entity::RemoveComponent(ComponentMap::iterator iter, AttributeChange::Type 
 
 void Entity::RemoveComponentById(component_id_t id, AttributeChange::Type change)
 {
-    ComponentPtr comp = GetComponentById(id);
+    ComponentPtr comp = ComponentById(id);
     if (comp)
         RemoveComponent(comp, change);
 }
@@ -197,14 +197,14 @@ void Entity::RemoveComponentRaw(QObject* comp)
     IComponent* compPtr = dynamic_cast<IComponent*>(comp);
     if (compPtr)
     {
-        ComponentPtr ptr = GetComponent(compPtr->TypeName(), compPtr->Name()); //the shared_ptr to this component
+        ComponentPtr ptr = Component(compPtr->TypeName(), compPtr->Name()); //the shared_ptr to this component
         RemoveComponent(ptr);
     }
 }
 
 ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change, bool replicated)
 {
-    ComponentPtr existing = GetComponent(type_name);
+    ComponentPtr existing = Component(type_name);
     if (existing)
         return existing;
 
@@ -213,7 +213,7 @@ ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, AttributeCha
 
 ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change, bool replicated)
 {
-    ComponentPtr existing = GetComponent(type_name, name);
+    ComponentPtr existing = Component(type_name, name);
     if (existing)
         return existing;
 
@@ -222,7 +222,7 @@ ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, const QStrin
 
 ComponentPtr Entity::GetOrCreateComponent(u32 typeId, AttributeChange::Type change, bool replicated)
 {
-    ComponentPtr existing = GetComponent(typeId);
+    ComponentPtr existing = Component(typeId);
     if (existing)
         return existing;
 
@@ -231,7 +231,7 @@ ComponentPtr Entity::GetOrCreateComponent(u32 typeId, AttributeChange::Type chan
 
 ComponentPtr Entity::GetOrCreateComponent(u32 typeId, const QString &name, AttributeChange::Type change, bool replicated)
 {
-    ComponentPtr new_comp = GetComponent(typeId, name);
+    ComponentPtr new_comp = Component(typeId, name);
     if (new_comp)
         return new_comp;
 
@@ -343,16 +343,13 @@ ComponentPtr Entity::CreateLocalComponent(const QString &type_name, const QStrin
     return CreateComponent(type_name, name, AttributeChange::LocalOnly, false);
 }
 
-ComponentPtr Entity::GetComponentById(component_id_t id) const
+ComponentPtr Entity::ComponentById(component_id_t id) const
 {
     ComponentMap::const_iterator i = components_.find(id);
-    if (i != components_.end())
-        return i->second;
-    else
-        return ComponentPtr();
+    return (i != components_.end() ? i->second : ComponentPtr());
 }
 
-ComponentPtr Entity::GetComponent(const QString &type_name) const
+ComponentPtr Entity::Component(const QString &type_name) const
 {
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
         if (i->second->TypeName() == type_name)
@@ -361,7 +358,7 @@ ComponentPtr Entity::GetComponent(const QString &type_name) const
     return ComponentPtr();
 }
 
-ComponentPtr Entity::GetComponent(u32 typeId) const
+ComponentPtr Entity::Component(u32 typeId) const
 {
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
         if (i->second->TypeId() == typeId)
@@ -370,16 +367,21 @@ ComponentPtr Entity::GetComponent(u32 typeId) const
     return ComponentPtr();
 }
 
-Entity::ComponentVector Entity::GetComponents(const QString &type_name) const
+Entity::ComponentVector Entity::ComponentsOfType(const QString &typeName) const
+{
+    return ComponentsOfType(framework_->Scene()->GetComponentTypeId(typeName));
+}
+
+Entity::ComponentVector Entity::ComponentsOfType(u32 typeId) const
 {
     ComponentVector ret;
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
-        if (i->second->TypeName() == type_name)
+        if (i->second->TypeId() == typeId)
             ret.push_back(i->second);
     return ret;
 }
 
-ComponentPtr Entity::GetComponent(const QString &type_name, const QString& name) const
+ComponentPtr Entity::Component(const QString &type_name, const QString& name) const
 {
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
         if (i->second->TypeName() == type_name && i->second->Name() == name)
@@ -388,7 +390,7 @@ ComponentPtr Entity::GetComponent(const QString &type_name, const QString& name)
     return ComponentPtr();
 }
 
-ComponentPtr Entity::GetComponent(u32 typeId, const QString& name) const
+ComponentPtr Entity::Component(u32 typeId, const QString& name) const
 {
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
         if (i->second->TypeId() == typeId && i->second->Name() == name)
@@ -509,59 +511,60 @@ AttributeVector Entity::GetAttributes(const QString &name) const
     return ret;
 }
 
-EntityPtr Entity::Clone(bool local, bool temporary) const
+EntityPtr Entity::Clone(bool local, bool temporary, const QString &cloneName, AttributeChange::Type changeType) const
 {
     QDomDocument doc("Scene");
     QDomElement sceneElem = doc.createElement("scene");
     QDomElement entityElem = doc.createElement("entity");
     entityElem.setAttribute("sync", BoolToString(!local));
     entityElem.setAttribute("id", local ? scene_->NextFreeIdLocal() : scene_->NextFreeId());
-    for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
+    // Set the temporary status in advance so it's valid when Scene::CreateContentFromXml signals changes in the scene
+    entityElem.setAttribute("temporary", BoolToString(temporary));
+    // Setting of a new name for the clone is a bit clumsy, but this is the best way to do it currently.
+    const bool setNameForClone = !cloneName.isEmpty();
+    bool cloneNameWritten = false;
+    for(ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
+    {
         i->second->SerializeTo(doc, entityElem);
-
+        if (setNameForClone && !cloneNameWritten && i->second->TypeId() == EC_Name::ComponentTypeId)
+        {
+            // Now that we've serialized the Name component, overwrite value of the "name" attribute.
+            QDomElement nameComponentElem = entityElem.lastChildElement();
+            nameComponentElem.firstChildElement().setAttribute("value", cloneName);
+            cloneNameWritten = true;
+        }
+    }
     sceneElem.appendChild(entityElem);
     doc.appendChild(sceneElem);
 
-    QList<Entity *> entities = scene_->CreateContentFromXml(doc, true, AttributeChange::Default);
-    if (entities.size() && entities.first())
-    {
-        entities.first()->SetTemporary(temporary);
-        return entities.first()->shared_from_this();
-    }
-    else
-        return EntityPtr();
+    QList<Entity *> newEntities = scene_->CreateContentFromXml(doc, true, changeType);
+    return (!newEntities.isEmpty() && newEntities.first() ? newEntities.first()->shared_from_this() : EntityPtr());
 }
 
 void Entity::SetName(const QString &name)
 {
-    ComponentPtr comp = GetOrCreateComponent(EC_Name::TypeNameStatic(), AttributeChange::Default, true);
-    EC_Name * ecName = checked_static_cast<EC_Name*>(comp.get());
-    ecName->name.Set(name, AttributeChange::Default);
+    shared_ptr<EC_Name> comp = GetOrCreateComponent<EC_Name>();
+    assert(comp);
+    comp->name.Set(name, AttributeChange::Default);
 }
 
 QString Entity::Name() const
 {
-    shared_ptr<EC_Name> name = GetComponent<EC_Name>();
-    if (name)
-        return name->name.Get();
-    else
-        return QString();
+    shared_ptr<EC_Name> name = Component<EC_Name>();
+    return name ? name->name.Get() : "";
 }
 
 void Entity::SetDescription(const QString &desc)
 {
-    ComponentPtr comp = GetOrCreateComponent(EC_Name::TypeNameStatic(), AttributeChange::Default, true);
-    EC_Name * ecName = checked_static_cast<EC_Name*>(comp.get());
-    ecName->description.Set(desc, AttributeChange::Default);
+    shared_ptr<EC_Name> comp = GetOrCreateComponent<EC_Name>();
+    assert(comp);
+    comp->description.Set(desc, AttributeChange::Default);
 }
 
 QString Entity::Description() const
 {
-    shared_ptr<EC_Name> name = GetComponent<EC_Name>();
-    if (name)
-        return name->description.Get();
-    else
-        return QString();
+    shared_ptr<EC_Name> name = Component<EC_Name>();
+    return name ? name->description.Get() : "";
 }
 
 EntityAction *Entity::Action(const QString &name)

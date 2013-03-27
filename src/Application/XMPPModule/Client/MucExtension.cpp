@@ -43,8 +43,7 @@ void MucExtension::Initialize(Client *client)
 
     client_->GetQxmppClient()->addExtension(qxmpp_muc_manager_);
 
-    bool check = connect(qxmpp_muc_manager_, SIGNAL(invitationReceived(QString,QString,QString)), this, SLOT(HandleInvitationReceived(QString,QString,QString)));
-    Q_ASSERT(check);
+    connect(qxmpp_muc_manager_, SIGNAL(invitationReceived(QString,QString,QString)), this, SLOT(HandleInvitationReceived(QString,QString,QString)));
 }
 
 void MucExtension::HandleMessageReceived(const QXmppMessage &message)
@@ -172,8 +171,7 @@ bool MucExtension::JoinRoom(QString roomJid, QString nickname, QString password)
     room->setNickName(nickname);
     room->setPassword(password);
 
-    bool check = connect(room, SIGNAL(joined()), this, SLOT(HandleRoomJoined()));
-    Q_ASSERT(check);
+    connect(room, SIGNAL(joined()), this, SLOT(HandleRoomJoined()));
 
     return room->join();
 }

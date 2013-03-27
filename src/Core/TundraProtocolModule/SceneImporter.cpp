@@ -109,7 +109,7 @@ EntityPtr SceneImporter::ImportMesh(const QString &filename, const QString &in_a
     }
 
     // Fill the placeable attributes
-    shared_ptr<EC_Placeable> placeablePtr = dynamic_pointer_cast<EC_Placeable>(newentity->GetOrCreateComponent(EC_Placeable::TypeNameStatic(), change));
+    shared_ptr<EC_Placeable> placeablePtr = newentity->GetOrCreateComponent<EC_Placeable>("", change);
     if (placeablePtr)
         placeablePtr->transform.Set(worldtransform, AttributeChange::Disconnected);
     else
@@ -120,7 +120,7 @@ EntityPtr SceneImporter::ImportMesh(const QString &filename, const QString &in_a
     foreach(QString matName, material_names)
         materials.Append(AssetReference(prefix + matName + ".material"));
 
-    shared_ptr<EC_Mesh> meshPtr = dynamic_pointer_cast<EC_Mesh>(newentity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change));
+    shared_ptr<EC_Mesh> meshPtr = newentity->GetOrCreateComponent<EC_Mesh>("", change);
     if (meshPtr)
     {
         meshPtr->meshRef.Set(AssetReference(prefix + meshleafname), AttributeChange::Disconnected);
@@ -137,7 +137,7 @@ EntityPtr SceneImporter::ImportMesh(const QString &filename, const QString &in_a
         LogError("No EC_Mesh was created!");
 
     // Fill the name attributes
-    shared_ptr<EC_Name> namePtr = dynamic_pointer_cast<EC_Name>(newentity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change));
+    shared_ptr<EC_Name> namePtr = newentity->GetOrCreateComponent<EC_Name>("", change);
     if (namePtr)
         ///\todo Use name of scenedesc?
         namePtr->name.Set(meshleafname.replace(".mesh", ""), AttributeChange::Disconnected);
@@ -700,15 +700,11 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
                 LogInfo("Updating existing entity " + node_name);
             }
 
-            shared_ptr<EC_Mesh> meshPtr;
-            shared_ptr<EC_Name> namePtr;
-            shared_ptr<EC_Placeable> placeablePtr;
-
             if (entity)
             {
-                meshPtr = dynamic_pointer_cast<EC_Mesh>(entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change));
-                namePtr = dynamic_pointer_cast<EC_Name>(entity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change));
-                placeablePtr = dynamic_pointer_cast<EC_Placeable>(entity->GetOrCreateComponent(EC_Placeable::TypeNameStatic(), change));
+                shared_ptr<EC_Mesh> meshPtr = entity->GetOrCreateComponent<EC_Mesh>("", change);
+                shared_ptr<EC_Name> namePtr = entity->GetOrCreateComponent<EC_Name>("", change);
+                shared_ptr<EC_Placeable> placeablePtr = entity->GetOrCreateComponent<EC_Placeable>("", change);
                 assert(meshPtr && namePtr && placeablePtr);
                 if (meshPtr && namePtr && placeablePtr)
                 {

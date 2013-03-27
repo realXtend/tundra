@@ -6,17 +6,19 @@
 
 #pragma once
 
+#include "SkyXHydraxApi.h"
 #include "IComponent.h"
 #include "Math/float3.h"
+#include "Color.h"
 
 namespace Ogre { class Camera; }
-struct EC_SkyXImpl;
 
 /// A Sky component using SkyX, http://www.ogre3d.org/tikiwiki/SkyX
 /** This is a singleton type component and only one component per scene is allowed.
     Provides means of creating photorealistic environments together with EC_Hydrax.
-    @note Requires SkyX Ogre add-on. */
-class EC_SkyX : public IComponent
+    @note Requires SkyX Ogre add-on.
+    @note SkyX and EnvironmentLight components can be considered somewhat mutually exclusive. */
+class SKYX_HYDRAX_API EC_SkyX : public IComponent
 {
     Q_OBJECT
     COMPONENT_NAME("EC_SkyX", 38)
@@ -39,14 +41,17 @@ public:
     Q_PROPERTY(int cloudType READ getcloudType WRITE setcloudType);
 
     /// The time multiplier can be a also a negative number, 0 will disable auto-updating.
+    /** @note If time multiplier is altered on a headless Tundra, the changes to the time attribute
+              are *not* made accordingly. If you want to guarantee the same time between all participants,
+              do not use timeMultiplier, but instead drive the time changes manually from a script. */
     DEFINE_QPROPERTY_ATTRIBUTE(float, timeMultiplier);
     Q_PROPERTY(float timeMultiplier READ gettimeMultiplier WRITE settimeMultiplier);
 
-    /// Time of day in [0,24]h range, 
+    /// Time of day in [0,24]h range.
     DEFINE_QPROPERTY_ATTRIBUTE(float, time);
     Q_PROPERTY(float time READ gettime WRITE settime);
 
-    /// Sunrise time in [0,24]h range
+    /// Sunrise time in [0,24]h range.
     DEFINE_QPROPERTY_ATTRIBUTE(float, sunriseTime);
     Q_PROPERTY(float sunriseTime READ getsunriseTime WRITE setsunriseTime);
 
@@ -54,11 +59,11 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float, sunsetTime);
     Q_PROPERTY(float sunsetTime READ getsunsetTime WRITE setsunsetTime);
 
-    /// Cloud coverage with range [0,100]. (Volumetric clouds only)
+    /// Cloud coverage with range [0,100] (Volumetric clouds only).
     DEFINE_QPROPERTY_ATTRIBUTE(float, cloudCoverage);
     Q_PROPERTY(float cloudCoverage READ getcloudCoverage WRITE setcloudCoverage);
 
-    /// Average cloud size with range [0,100]. (Volumetric clouds only)
+    /// Average cloud size with range [0,100] (Volumetric clouds only).
     DEFINE_QPROPERTY_ATTRIBUTE(float, cloudAverageSize);
     Q_PROPERTY(float cloudAverageSize READ getcloudAverageSize WRITE setcloudAverageSize);
 
@@ -86,17 +91,37 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float, windSpeed);
     Q_PROPERTY(float windSpeed READ getwindSpeed WRITE setwindSpeed);
 
+    /// Diffuse color of the sunlight.
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, sunlightDiffuseColor);
+    Q_PROPERTY(Color sunlightDiffuseColor READ getsunlightDiffuseColor WRITE setsunlightDiffuseColor);
+
+    /// Specular color of the sunlight.
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, sunlightSpecularColor);
+    Q_PROPERTY(Color sunlightSpecularColor READ getsunlightSpecularColor WRITE setsunlightSpecularColor);
+
+    /// Diffuse color of the moonlight.
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, moonlightDiffuseColor);
+    Q_PROPERTY(Color moonlightDiffuseColor READ getmoonlightDiffuseColor WRITE setmoonlightDiffuseColor);
+
+    /// Specular color of the moonlight.
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, moonlightSpecularColor);
+    Q_PROPERTY(Color moonlightSpecularColor READ getmoonlightSpecularColor WRITE setmoonlightSpecularColor);
+
+    /// Scene's ambient light color.
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, ambientLightColor);
+    Q_PROPERTY(Color ambientLightColor READ getambientLightColor WRITE setambientLightColor);
+
 public slots:
     /// Returns whether or not the sun is visible (above horizon).
     bool IsSunVisible() const;
 
-    /// Returns position of the sun.
+    /// Returns position of the sun, or nan if not applicable.
     float3 SunPosition() const;
 
     /// Returns whether or not the moon is visible (above horizon).
     bool IsMoonVisible() const;
 
-    /// Returns position of the moon.
+    /// Returns position of the moon, or nan if not applicable.
     float3 MoonPosition() const;
 
 private slots:
@@ -106,7 +131,8 @@ private slots:
     void Update(float frameTime);
 
 private:
-    EC_SkyXImpl *impl;
+    struct Impl;
+    Impl *impl;
 
     void Remove();
     void CreateLights();
@@ -114,11 +140,13 @@ private:
     void UnregisterListeners();
 
     // VCloudManager register/unregister functions.
-    // If input camera is null, Tundras active camera is used.
-    void RegisterCamera(Ogre::Camera *camera = 0);
-    void UnregisterCamera(Ogre::Camera *camera = 0);
-    void HandleVCloudsCamera(Ogre::Camera *camera, bool registerCamera);
+    // If input camera is null, Tundra's active camera is used.
+    void RegisterCamera(Ogre::Camera *camera = 0); /**< @todo SkyX internal logic, move to Impl. */
+    void UnregisterCamera(Ogre::Camera *camera = 0); /**< @todo SkyX internal logic, move to Impl. */
+    void HandleVCloudsCamera(Ogre::Camera *camera, bool registerCamera); /**< @todo SkyX internal logic, move to Impl. */
     void ApplyAtmosphereOptions();
-    void UnloadNormalClouds();
-    void UnloadVolumetricClouds();
+    void UnloadNormalClouds(); /**< @todo SkyX internal logic, move to Impl. */
+    void UnloadVolumetricClouds(); /**< @todo SkyX internal logic, move to Impl. */
+
+    Ogre::Camera *FindOgreCamera(Entity *cameraEntity) const;
 };

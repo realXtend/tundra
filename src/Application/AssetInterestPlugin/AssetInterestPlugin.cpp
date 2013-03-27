@@ -301,7 +301,7 @@ void AssetInterestPlugin::Update(f64 frametime)
 
                 int texUnloaded = 0;
                 std::vector<AssetReference> matDeps = matAsset->FindReferences();
-                for(int iDep=0; iDep<matDeps.size(); iDep++)
+                for(uint iDep=0; iDep<matDeps.size(); iDep++)
                 {
                     QString depRef = matDeps[iDep].ref;
                     if (GetFramework()->Asset()->GetResourceTypeFromAssetRef(depRef) == "Texture")

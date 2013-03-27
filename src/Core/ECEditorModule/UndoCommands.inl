@@ -17,6 +17,9 @@ EditAttributeCommand<T>::EditAttributeCommand(IAttribute * attr, const T& value,
     setText("edit " + attr->Name());
 }
 
+/// @note Had to move the implementations of virtual functions to UndoCommands.h due to bogus MSVC warnings:
+/// http://connect.microsoft.com/VisualStudio/feedback/details/778490/implicit-instantiation-of-virtual-template-method-causes-confusing-warning
+#if 0
 template <typename T>
 int EditAttributeCommand<T>::id() const
 {
@@ -88,3 +91,4 @@ bool EditAttributeCommand<T>::mergeWith(const QUndoCommand * other)
     return true;
     */
 }
+#endif

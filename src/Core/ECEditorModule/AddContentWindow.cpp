@@ -984,6 +984,7 @@ void AddContentWindow::GenerateStorageComboBoxContents()
 
 void AddContentWindow::RewriteDestinationNames()
 {
+    uploadProgressBar->setValue(0);
     uploadStatusLabel->setText("");
     uploadStatusLabel->hide();
 
@@ -1032,7 +1033,7 @@ void AddContentWindow::HandleUploadProgress(bool successful, IAssetUploadTransfe
         ++numFailedUploads;
 
     uploadStatusLabel->setText(successful ? "Uploaded " : "Upload failed for " + transfer->AssetRef());
-    uploadProgressBar->setValue(uploadProgressBar->value() + uploadProgressStep);
+    uploadProgressBar->setValue(successful ? uploadProgressBar->value() + uploadProgressStep : 0);
 
     const QColor statusColor = successful ? QColor(0, 255, 0, 75) :  QColor(255, 0, 0, 75);
 
@@ -1053,11 +1054,23 @@ void AddContentWindow::HandleUploadProgress(bool successful, IAssetUploadTransfe
 
     if (numSuccessfulUploads + numFailedUploads == numTotalUploads)
     {
-        uploadStatusLabel->setText(QString(tr("%1/%2 uploads completed successfully")).arg(numSuccessfulUploads).arg(numTotalUploads));
-        // Save most recently used storage to config.
-        ConfigData c(ConfigAPI::FILE_FRAMEWORK, cAddContentDialogSetting, cRecentStorageSetting, CurrentStorageName());
-        framework->Config()->Set(c);
-        // Emit AssetUploadCompleted which initiates CreateEntities
-        emit AssetUploadCompleted(CurrentStorage(), numSuccessfulUploads, numFailedUploads);
+        if (numSuccessfulUploads > 0)
+        {
+            uploadStatusLabel->setText(QString(tr("%1/%2 uploads completed successfully")).arg(numSuccessfulUploads).arg(numTotalUploads));
+            // Save most recently used storage to config.
+            ConfigData c(ConfigAPI::FILE_FRAMEWORK, cAddContentDialogSetting, cRecentStorageSetting, CurrentStorageName());
+            framework->Config()->Set(c);
+            // Emit AssetUploadCompleted which initiates CreateEntities
+            emit AssetUploadCompleted(CurrentStorage(), numSuccessfulUploads, numFailedUploads);
+        }
+        if (numFailedUploads > 0)
+        {
+            QString existingNotification("");
+            if (uploadStatusLabel->text().length() > 0)
+            {
+                existingNotification += uploadStatusLabel->text() + "\n";
+            }
+            uploadStatusLabel->setText(existingNotification + QString(tr("%1/%2 uploads failed")).arg(numFailedUploads).arg(numTotalUploads));
+        }
     }
 }

@@ -60,21 +60,29 @@ public:
     /// If entity has components that are still alive, they become free-floating.
     ~Entity();
 
+    /// Creates and returns a component with certain type and name (optional), already cast to the correct type.
+    template <typename T>
+    shared_ptr<T> CreateComponent(const QString &name = "", AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
+
+    /// Creates, or returns, if already existing, a component with certain type and name (optional), already casted to the correct type.
+    template<typename T>
+    shared_ptr<T> GetOrCreateComponent(const QString &name = "", AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
+
     /// Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
     /** If there are several components with the specified type, returns the first component found (arbitrary). */
     template <class T>
-    shared_ptr<T> GetComponent() const;
+    shared_ptr<T> Component() const;
+
+    /// Returns a component with certain type and name, already cast to correct type, or empty pointer if component was not found
+    /** @param name name of the component */
+    template <class T>
+    shared_ptr<T> Component(const QString& name) const;
 
     /** Returns list of components with certain class type, already cast to correct type.
         @param T Component class type.
         @return List of components with certain class type, or empty list if no components was found. */
     template <class T>
-    std::vector<shared_ptr<T> > GetComponents() const;
-
-    /// Returns a component with certain type and name, already cast to correct type, or empty pointer if component was not found
-    /** @param name name of the component */
-    template <class T>
-    shared_ptr<T> GetComponent(const QString& name) const;
+    std::vector<shared_ptr<T> > ComponentsOfType() const;
 
    /** Returns pointer to the first attribute with specific name.
         @param T Type name/class of the attribute.
@@ -93,7 +101,7 @@ public:
 
     /// In the following, deserialization functions are now disabled since deserialization can't safely
     /// process the exact same data that was serialized, or it risks receiving entity ID conflicts in the scene.
-    /// \todo Implement a deserialization flow that takes that into account. In the meanwhile, use Scene
+    /// @todo Implement a deserialization flow that takes that into account. In the meanwhile, use Scene
     /// functions for achieving the same.
 
     void SerializeToBinary(kNet::DataSerializer &dst) const;
@@ -130,39 +138,58 @@ public:
 
     /// Returns attribute interface pointer to attribute with specific name.
     /** @param name Name of the attribute.
-        @return IAttribute pointer to the attribute.
-        @note Always remember to check for null pointer. */
-    IAttribute *GetAttribute(const QString  &name) const;
+        @note Always remember to check for null pointer.
+        @todo Remove, attributes should be accessed via components. */
+    IAttribute *GetAttribute(const QString &name) const;
 
     /// Returns list of attributes with specific name.
     /** @param name Name of the attribute.
-        @return List of attribute interface pointers, or empty list if no attributes are found. */
+        @return List of attribute interface pointers, or empty list if no attributes are found.
+        @todo Remove, attributes should be accessed via components. */
     AttributeVector GetAttributes(const QString &name) const;
 
     /// Returns actions map for introspection/reflection.
     const ActionMap &Actions() const { return actions_; }
 
+    /// @cond PRIVATE
+    /// Do not directly allocate new entities using operator new, but use the factory-based Scene::CreateEntity functions instead.
+    /** @param framework Framework
+        @param scene Scene this entity belongs to */
+    Entity(Framework* framework, Scene* scene);
+
+    /// Do not directly allocate new entities using operator new, but use the factory-based Scene::CreateEntity functions instead.
+    /** @param framework Framework
+        @param id unique id for the entity.
+        @param scene Scene this entity belongs to */
+    Entity(Framework* framework, entity_id_t id, Scene* scene);
+    /// @endcond
+
+    // DEPRECATED
+    template <class T> std::vector<shared_ptr<T> > GetComponents() const { return ComponentsOfType<T>(); } /**< @deprecated Use ComponentsOfType<T> instead. @todo Add deprecation warning print. @todo Remove. */
+    template <class T> shared_ptr<T> GetComponent() const { return Component<T>(); } /**< @deprecated Use Component<T> instead. @todo Add deprecation warning print. @todo Remove. */
+    template <class T> shared_ptr<T> GetComponent(const QString& name) const { return Component<T>(name); }/**< @deprecated Use Component<T>(name) instead. @todo Add deprecation warning print. @todo Remove. */
+
 public slots:
     /// Returns a component by ID. This is the fastest way to query, as the components are stored in a map by id.
-    ComponentPtr GetComponentById(component_id_t id) const;
+    ComponentPtr ComponentById(component_id_t id) const;
     /// Returns a component with type 'typeName' or empty pointer if component was not found
     /** If there are several components with the specified type, returns the first component found (arbitrary).
         @param typeName type of the component */
-    ComponentPtr GetComponent(const QString &typeName) const;
+    ComponentPtr Component(const QString &typeName) const;
     /// @overload
-    /** @param typeId Unique type ID. */
-    ComponentPtr GetComponent(u32 typeId) const;
+    /** @param typeId Component type ID. */
+    ComponentPtr Component(u32 typeId) const;
     /// @overload
     /** @param name Specifies the name of the component to fetch. This can be used to distinguish between multiple instances of components of same type. */
-    ComponentPtr GetComponent(const QString &typeName, const QString &name) const;
+    ComponentPtr Component(const QString &typeName, const QString &name) const;
     /// @overload
     /** @param typeId The type id of the component to get.
         @param name name of the component */
-    ComponentPtr GetComponent(u32 typeId, const QString &name) const;
+    ComponentPtr Component(u32 typeId, const QString &name) const;
 
     /// Returns a component with type 'typeName' or creates & adds it if not found. If could not create, returns empty pointer
     /** @param typeName The type string of the component to create, obtained from IComponent::TypeName().
-        @param change Change signalling mode, in case component has to be created
+        @param change Change signaling mode, in case component has to be created
         @param replicated Whether new component will be replicated through network
         @return Pointer to the component, or an empty pointer if the component could be retrieved or created. */
     ComponentPtr GetOrCreateComponent(const QString &typeName, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
@@ -184,9 +211,9 @@ public slots:
 
     /// Creates a new component and attaches it to this entity. 
     /** @param typeName type of the component
-        @param change Change signalling mode, in case component has to be created
+        @param change Change signaling mode, in case component has to be created
         @param replicated Whether new component will be replicated through network
-        @return Retuns a pointer to the newly created component, or null if creation failed. Common causes for failing to create an component
+        @return Returns a pointer to the newly created component, or null if creation failed. Common causes for failing to create an component
         is that a component with the same (typename, name) pair exists, or that components of the given typename are not recognized by the system. */
     ComponentPtr CreateComponent(const QString &typeName, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
     /// @overload
@@ -205,7 +232,7 @@ public slots:
     /// Creates a local component with type 'typeName' and name 'name' and adds it to the entity. If could not create, return empty pointer
     ComponentPtr CreateLocalComponent(const QString &typeName, const QString &name);
     
-    /// Attachs an existing parentless component to this entity.
+    /// Attaches an existing parentless component to this entity.
     /** A component ID will be allocated.
         Entities can contain any number of components of any type.
         It is also possible to have several components of the same type,
@@ -218,7 +245,7 @@ public slots:
 
         @param component The component to add to this entity. The component must be parentless, i.e.
                       previously created using SceneAPI::CreateComponent.
-        @param change Change signalling mode */
+        @param change Change signaling mode */
     void AddComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default);
     /// @overload
     /** Attaches an existing parentless component to this entity, using the specific ID. This variant is used by SyncManager. */
@@ -241,16 +268,22 @@ public slots:
 
     /// Removes all components from the entity.
     void RemoveAllComponents(AttributeChange::Type change = AttributeChange::Default);
-    
-    /// Returns list of components with type 'typeName' or empty list if no components were found.
-    /** @param typeName type of the component */
-    ComponentVector GetComponents(const QString &typeName) const;
+
+    /// Returns list of components with specific type or an empty list if no components were found.
+    /** @param typeId Component type ID. */
+    ComponentVector ComponentsOfType(u32 typeId) const;
+    /// @overload
+    /** @param typeName Type name of the component
+        @note The overload taking component type ID is more efficient than this overload. */
+    ComponentVector ComponentsOfType(const QString &typeName) const;
 
     /// Creates clone of the entity.
-    /** @param local If true, the new entity will be local entity. If false, the entity will be replicated.
-        @param temporary Will the new entity be temporary.
+    /** @param createAsLocal If true, the new entity will be local entity. If false, the entity will be replicated.
+        @param createAsTemporary Will the new entity be temporary.
+        @param name cloneName for the new entity.
+        @param changeType Change signaling mode.
         @return Pointer to the new entity, or null pointer if the cloning fails. */
-    EntityPtr Clone(bool local, bool temporary) const;
+    EntityPtr Clone(bool createAsLocal, bool createAsTemporary, const QString &cloneName= "", AttributeChange::Type changeType = AttributeChange::Default) const;
 
     /// Serializes this entity and its' components to the given XML document
     /** @param doc The XML document to serialize this entity to.
@@ -267,20 +300,20 @@ public slots:
 
     /// Sets name of the entity to EC_Name component. If the component doesn't exist, it will be created.
     /** @param name Name. */
-    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
+    ///@todo Doesn't need to be slot, exposed as Q_PROPERTY
     void SetName(const QString &name);
 
     /// Returns name of this entity if EC_Name is available, empty string otherwise.
-    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
+    ///@todo Doesn't need to be slot, exposed as Q_PROPERTY
     QString Name() const;
 
     /// Sets description of the entity to EC_Name component. If the component doesn't exist, it will be created.
     /** @param desc Description. */
-    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
+    ///@todo Doesn't need to be slot, exposed as Q_PROPERTY
     void SetDescription(const QString &desc);
 
     /// Returns description of this entity if EC_Name is available, empty string otherwise.
-    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
+    ///@todo Doesn't need to be slot, exposed as Q_PROPERTY
     QString Description() const;
 
     /// Creates and registers new action for this entity, or returns an existing action.
@@ -319,26 +352,26 @@ public slots:
 
     /// Sets whether entity is temporary. Temporary entities won't be saved when the scene is saved.
     /** By definition, all components of a temporary entity are temporary as well. */
-    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
+    ///@todo Doesn't need to be slot, exposed as Q_PROPERTY
     void SetTemporary(bool enable);
 
     /// Returns whether entity is temporary. Temporary entities won't be saved when the scene is saved.
     /** By definition, all components of a temporary entity are temporary as well. */
-    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
+    ///@todo Doesn't need to be slot, exposed as Q_PROPERTY
     bool IsTemporary() const { return temporary_; }
 
     /// Returns if this entity's changes will NOT be sent over the network.
     /// An Entity is always either local or replicated, but not both.
-    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
+    ///@todo Doesn't need to be slot, exposed as Q_PROPERTY
     bool IsLocal() const { return id_ >= UniqueIdGenerator::FIRST_LOCAL_ID; }
 
     /// Returns if this entity's changes will be sent over the network.
     /// An Entity is always either local or replicated, but not both.
-    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
+    ///@todo Doesn't need to be slot, exposed as Q_PROPERTY
     bool IsReplicated() const { return id_ < UniqueIdGenerator::FIRST_LOCAL_ID; }
 
     /// Returns if this entity is pending a proper ID assignment from the server.
-    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
+    ///@todo Doesn't need to be slot, exposed as Q_PROPERTY
     bool IsUnacked() const { return id_ >= UniqueIdGenerator::FIRST_UNACKED_ID && id_ < UniqueIdGenerator::FIRST_LOCAL_ID; }
 
     /// Returns the identifier string for the entity.
@@ -349,7 +382,7 @@ public slots:
     QString toString() const { return ToString(); }
 
     /// Returns the unique id of this entity
-    ///\todo Doesn't need to be slot, exposed as Q_PROPERTY
+    ///@todo Doesn't need to be slot, exposed as Q_PROPERTY
     entity_id_t Id() const { return id_; }
 
     /// Returns framework
@@ -359,10 +392,16 @@ public slots:
     Scene* ParentScene() const { return scene_; }
 
     // DEPRECATED:
+    ComponentPtr GetComponentById(component_id_t id) const { return ComponentById(id); } /**< @deprecated Use ComponentById instead. @todo Add deprecation warning print. @todo Remove. */
+    ComponentPtr GetComponent(const QString &typeName) const { return Component(typeName); } /**< @deprecated Use Component instead. @todo Add deprecation warning print. @todo Remove. */
+    ComponentPtr GetComponent(u32 typeId) const { return Component(typeId); } /**< @deprecated Use Component instead. @todo Add deprecation warning print. @todo Remove. */
+    ComponentPtr GetComponent(const QString &typeName, const QString &name) const { return Component(typeName, name); } /**< @deprecated Use Component instead. @todo Add deprecation warning print. @todo Remove. */
+    ComponentPtr GetComponent(u32 typeId, const QString &name) const { return Component(typeId, name); } /**< @deprecated Use Component instead. @todo Add deprecation warning print. @todo Remove. */
     QObjectList ComponentsList() const; /**< @deprecated Use Components @todo Remove */
     QObjectList GetComponentsRaw(const QString &typeName) const; /**< @deprecated Use GetComponents or Components instead */
     void RemoveComponentRaw(QObject* comp); /**< @deprecated Use RemoveComponent or RemoveComponentById. */
     ComponentMap Components() /*non-const intentionally*/ { return components_; } /**< @deprecated use const version Components or 'components' instead. @todo Add deprecation print. @todo Remove. */
+    ComponentVector GetComponents(const QString &typeName) const { return ComponentsOfType(typeName); } /**< @deprecated use ComponentsOfType instead. @todo Add deprecation print. @todo Remove. */
 
 signals:
     /// A component has been added to the entity
@@ -387,17 +426,6 @@ signals:
 
 private:
     friend class Scene;
-
-    /// Constructor
-    /** @param framework Framework
-        @param scene Scene this entity belongs to */
-    Entity(Framework* framework, Scene* scene);
-
-    /// Constructor that takes an id for the entity
-    /** @param framework Framework
-        @param id unique id for the entity.
-        @param scene Scene this entity belongs to */
-    Entity(Framework* framework, entity_id_t id, Scene* scene);
 
     /// Set new id
     void SetNewId(entity_id_t id) { id_ = id; }
