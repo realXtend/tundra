@@ -22,6 +22,8 @@ namespace TundraLogic
     class SyncManager;
 }
 
+using TundraLogic::TundraLogicModule;
+
 class UserConnection;
 typedef shared_ptr<UserConnection> UserConnectionPtr;
 typedef weak_ptr<UserConnection> UserConnectionWeakPtr;
