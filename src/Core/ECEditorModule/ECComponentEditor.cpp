@@ -93,10 +93,9 @@ void ECComponentEditor::UpdateGroupPropertyText()
 {
     if(!groupProperty_ || !components_.size())
         return;
-    QString componentName = typeName_;
-    componentName.replace("EC_", "");
-    QString groupPropertyName = componentName;
-    
+
+    QString groupPropertyName = IComponent::EnsureTypeNameWithoutPrefix(typeName_);
+
     if(!name_.isEmpty())
         groupPropertyName += ": " + name_;
     if(components_.size() > 1)
