@@ -29,10 +29,13 @@ namespace OgreRenderer
         virtual void Uninitialize();
 
         /// Returns the renderer.
-        const RendererPtr &GetRenderer() const { return renderer; }
+        const RendererPtr &Renderer() const { return renderer; }
 
         /// Ogre resource group for cached asset files.
         static std::string CACHE_RESOURCE_GROUP;
+
+        // DEPRECATED
+        const RendererPtr &GetRenderer() const { return Renderer(); } /**< @deprecated Use Renderer() instead. @todo Remove. */
 
     public slots:
         /// Prints renderer stats to console.
