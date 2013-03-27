@@ -13,7 +13,8 @@
 #include "InputFwd.h"
 #include "IAttribute.h"
 
-#include <QObject>
+#include <QWidget>
+#include <QPointer>
 
 class OgreWorld;
 class UndoManager;
@@ -65,7 +66,7 @@ public:
     float3 GizmoPos() const;
 
     /// Returns the transform gizmo editor settings widget.
-    QWidget *EditorSettingsWidget() const { return editorSettings; }
+    QPointer<QWidget> EditorSettingsWidget() const { return editorSettings; }
 
 public slots:
     /// Translates current target transforms.
@@ -97,7 +98,7 @@ private:
     EntityPtr gizmo; ///< Gizmo entity.
     QList<TransformAttributeWeakPtr> targets; ///< Current target transform attributes.
     InputContextPtr input; ///< Input context for controlling gizmo mode.
-    QWidget* editorSettings; ///< Editor settings window
+    QPointer<QWidget> editorSettings; ///< Editor settings window
     bool localAxes; ///< Whether to show object local axes instead of global world axes.
     UndoManager *undoManager; ///< Undo manager, if undo functionality used.
 
