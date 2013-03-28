@@ -46,12 +46,6 @@ public slots:                                                                   
 private: // Return the class visibility specifier to the strictest form so that the user most likely catches that this macro had to change the visibility.
 
 //Q_PROPERTY(type attribute READ get##attribute WRITE set##attribute)
-/// Exposes an existing 'Attribute<type> attribute' member as an automatically generated QProperty of name 'attribute'.
-#define EXPOSE_ATTRIBUTE_AS_QPROPERTY(type, attribute) \
-    type get##attribute() const { return (type)attribute.Get(); } \
-    void set##atribute(type value) { attribute.Set((type)value, AttributeChange::Default); }
-
-//Q_PROPERTY(type attribute READ get##attribute WRITE set##attribute)
 /// Defines a new 'Attribute<type> attribute' member as an automatically generated QProperty of name 'attribute'.
 #define DEFINE_QPROPERTY_ATTRIBUTE(type, attribute) \
     Attribute<type > attribute; \
