@@ -1,6 +1,6 @@
-call windows-run-cmake.cmd
+call RunCMake.cmd
 
-cd ..
+cd ..\..
 
 cecho {0D}Building Tundra.{# #}{\n}
 msbuild tundra.sln /p:Configuration=Debug %1 %2 %3 %4 %5 %6 %7 %8 %9
@@ -10,4 +10,4 @@ echo.
 cecho {0A}Tundra build finished.{# #}{\n}
 
 :: Finish in same directory we started in.
-cd tools
+cd tools\Windows
