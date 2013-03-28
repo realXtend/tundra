@@ -6,7 +6,7 @@ setlocal EnableDelayedExpansion
 
 :: Make sure we're running in Visual Studio Command Prompt
 IF "%VSINSTALLDIR%"=="" (
-   utils-windows\cecho {0C}Batch file not executed from Visual Studio Command Prompt - cannot proceed!{# #}{\n}
+   Windows\Utils\cecho {0C}Batch file not executed from Visual Studio Command Prompt - cannot proceed!{# #}{\n}
    GOTO :ERROR
 )
 
@@ -1108,7 +1108,7 @@ GOTO :EOF
 
 :ERROR
 echo.
-utils-windows\cecho {0C}An error occurred! Aborting!{# #}{\n}
+Windows\Utils\cecho {0C}An error occurred! Aborting!{# #}{\n}
 set PATH=%ORIGINAL_PATH%
 cd %TOOLS%
 pause

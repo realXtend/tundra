@@ -12,7 +12,7 @@ set GENERATOR_DEFAULT=%GENERATOR_VS2008%
 set GENERATOR=%1
 IF "!GENERATOR!"=="" (
     set GENERATOR=%GENERATOR_DEFAULT%
-    utils-windows\cecho {0E}VSConfig.cmd: Warning: Generator not passed - using the default %GENERATOR_DEFAULT%.{# #}{\n}
+    Windows\Utils\cecho {0E}VSConfig.cmd: Warning: Generator not passed - using the default %GENERATOR_DEFAULT%.{# #}{\n}
 )
 :: VS_VER and VC_VER are convenience variables used f.ex. for filenames
 ::IF %GENERATOR%==%GENERATOR_VS2012% (
@@ -41,7 +41,7 @@ IF %GENERATOR%==%GENERATOR_VS2010% set QT_PLATFORM=win32-msvc2010
 :: Populate path variables
 cd ..
 set ORIGINAL_PATH=%PATH%
-set PATH=%PATH%;"%CD%\tools\utils-windows"
+set PATH=%PATH%;"%CD%\tools\Windows\Utils"
 set TOOLS=%CD%\tools
 set TUNDRA_DIR="%CD%"
 set TUNDRA_BIN=%CD%\bin
