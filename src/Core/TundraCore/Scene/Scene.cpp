@@ -13,7 +13,6 @@
 #include "AttributeMetadata.h"
 #include "ChangeRequest.h"
 #include "EntityReference.h"
-
 #include "Framework.h"
 #include "Application.h"
 #include "AssetAPI.h"
@@ -137,14 +136,7 @@ EntityPtr Scene::EntityByName(const QString &name) const
 
 bool Scene::IsUniqueName(const QString& name) const
 {
-    if (name.isEmpty())
-        return false;
-
-    for(const_iterator it = begin(); it != end(); ++it)
-        if (it->second->Name() == name)
-            return false;
-
-    return true;
+    return !EntityByName(name);
 }
 
 void Scene::ChangeEntityId(entity_id_t old_id, entity_id_t new_id)
@@ -152,11 +144,11 @@ void Scene::ChangeEntityId(entity_id_t old_id, entity_id_t new_id)
     if (old_id == new_id)
         return;
     
-    EntityPtr old_entity = GetEntity(old_id);
+    EntityPtr old_entity = EntityById(old_id);
     if (!old_entity)
         return;
     
-    if (GetEntity(new_id))
+    if (EntityById(new_id))
     {
         LogWarning("Purged entity " + QString::number(new_id) + " to make room for a ChangeEntityId request. This should not happen");
         RemoveEntity(new_id, AttributeChange::LocalOnly);
