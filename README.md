@@ -38,7 +38,7 @@ The Tundra dependencies are acquired and built using an automated build script:
 
 ### Linux
 
-See [tools] for distro-specific build scripts.
+Currently only Ubuntu is officially supported. See [tools/Ubuntu/build-deps.bash] for distro-specific build scripts. 
 
 ### OS X
 
@@ -79,6 +79,6 @@ New releases are announced on the mailing lists and at the [realXtend blog]. The
 [realXtend blog]: http://www.realxtend.org                     "realXtend blog"
 [realXtend github repository]: https://github.com/realXtend/naali/tree/tundra2 "realXtend Tundra repository"
 [tools/build-mac-deps.bash]: https://github.com/realXtend/naali/blob/tundra2/tools/build-mac-deps.bash "tools/build-mac-deps.bash"
-[tools]: https://github.com/realXtend/naali/tree/tundra2/tools "tools"
+[tools/Ubuntu/build-deps.bash]: https://github.com/realXtend/naali/tree/tundra2/tools/Ubuntu/build-deps.bash "tools/Ubuntu/build-deps.bash"
 [Doxygen]:  http://www.stack.nl/~dimitri/doxygen/ "doxygen homepage"
 [realXtend Tundra Google Code]: http://code.google.com/p/realxtend-naali/downloads/list

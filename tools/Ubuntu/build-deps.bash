@@ -1,15 +1,17 @@
 #!/bin/bash
-# script to build naali and most deps.
+# Script to build Tundra and most deps.
 
 set -e
 set -x
 
-# script to build naali and most deps.
+# Script to build Tundra and most deps.
 #
 # note: you need to enable the universe and multiverse software sources
 # as this script attempts to get part of the deps using apt-get
 
-viewer=$(dirname $(readlink -f $0))/..
+# TODO rename viewer to tundra
+viewer=$(dirname $(readlink -f $0))/../..
+# TODO rename naali-deps to tundra-deps
 deps=$viewer/../naali-deps
 mkdir -p $deps
 deps=$(cd $deps && pwd)
@@ -28,6 +30,7 @@ mkdir -p $tarballs $build $prefix/{lib,share,etc,include} $tags
 export OGRE_HOME=$prefix
 export PATH=$prefix/bin:$PATH
 export PKG_CONFIG_PATH=$prefix/lib/pkgconfig
+# TODO rename NAALI_DEP_PATH to TUNDRA_DEP_PATH
 export NAALI_DEP_PATH=$prefix
 export LDFLAGS="-L$prefix/lib -Wl,-rpath -Wl,$prefix/lib"
 export LIBRARY_PATH=$prefix/lib
