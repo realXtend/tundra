@@ -4,10 +4,10 @@ echo.
 set GENERATOR="Visual Studio 9 2008"
 
 :: Populate path variables
-cd ..
+cd ..\..
 set ORIGINAL_PATH=%PATH%
-set PATH=%PATH%;"%CD%\tools\utils-windows"
-set TOOLS=%CD%\tools
+set PATH=%PATH%;"%CD%\tools\Windows\Utils"
+set TOOLS=%CD%\tools\Windows\
 set TUNDRA_DIR="%CD%"
 set TUNDRA_BIN=%CD%\bin
 set DEPS=%CD%\deps-prebuilt
@@ -48,7 +48,7 @@ IF %GENERATOR%==Visual Studio 9 2008 (
     
     SET DEPS=%DEPS%\vs2008-32bit
     cecho {0D}Using %DEPS% as dependency path, running cmake.{# #}{\n}
-    call "%TOOLS%\utils-windows\copy-runtime-libraries.cmd"
+    call "%TOOLS%\Utils\CopyRuntimeLibraries.cmd"
     
     :: Run cmake. Todo: make this a generic thing below once more GENERATORs are supported.
     :: mind the @setlocal EnableDelayedExpansion thing, as without you cannot SET inside IF statements.    
@@ -67,7 +67,7 @@ IF %GENERATOR%==Visual Studio 9 2008 (
     SET SPEEX_ROOT=%DEPS%\speex
     SET VLC_ROOT=%DEPS%\vlc
 
-    :: Disable python untill it has been fixed to windows-build-deps.cmd!
+    :: Disable python untill it has been fixed to build-deps.cmd!
     SET TUNDRA_PYTHON_ENABLED=FALSE
     IF %TUNDRA_PYTHON_ENABLED%==FALSE cecho {0E}Disabling Python from the build until deps are automated!{# #}{\n}
     echo.

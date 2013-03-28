@@ -1,4 +1,4 @@
-:: This script makes copy of the dependencies that were built with windows-build-deps.cmd
+:: This script makes copy of the dependencies that were built with BuildDeps.cmd
 :: to a output folder. The aim is to make this folder deployable to our deps svn repo or
 :: making a compressed archive of it. This output folder should be a drop in replacement for
 :: <tundra_git>/deps so that our cmake scripts will run as it was the full built deps. This means
@@ -6,7 +6,7 @@
 ::
 :: Notes:
 :: - When copying libs/dlls we are excluding idb, ilk, idb and exp and most of the tim exe files,
-::   if you need these files please build the deps yourself with windows-build-deps.cmd.
+::   if you need these files please build the deps yourself with BuildDeps.cmd.
 :: - Default target is to have <dependency>/bin /lib and /include folders after we are done.
 :: - When copying headers from "src" folders, the destination will be called "include"
 :: - When copying .dll or .exe from "lib" folders, the destination will be called "bin"
@@ -22,7 +22,7 @@ set DEPLOY_VERSION=2.3.3.1
 set PREFER_RELEASE=FALSE
 
 :: Populate path variables
-cd ..
+cd ..\..
 set ORIGINAL_PATH=%PATH%
 set PATH=%PATH%;"%CD%\tools\Windows\Utils"
 set TOOLS=%CD%\tools

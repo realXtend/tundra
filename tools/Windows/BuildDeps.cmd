@@ -6,7 +6,7 @@ setlocal EnableDelayedExpansion
 
 :: Make sure we're running in Visual Studio Command Prompt
 IF "%VSINSTALLDIR%"=="" (
-   Windows\Utils\cecho {0C}Batch file not executed from Visual Studio Command Prompt - cannot proceed!{# #}{\n}
+   Utils\cecho {0C}Batch file not executed from Visual Studio Command Prompt - cannot proceed!{# #}{\n}
    GOTO :ERROR
 )
 
@@ -372,7 +372,7 @@ IF NOT EXIST "%DEPS%\boost". (
 ::
 ::   del user-config.jam
 ::   rename user-config.new.jam user-config.jam
-   copy /Y "%TOOLS%\Windows\Mods\boost-user-config-%VS_VER%.jam" "%DEPS%\boost\tools\build\v2\user-config.jam"
+   copy /Y "%TOOLS%\Mods\boost-user-config-%VS_VER%.jam" "%DEPS%\boost\tools\build\v2\user-config.jam"
 
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cd "%DEPS%\boost"
@@ -458,7 +458,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xmlpatterns.dll".
    :: http://stackoverflow.com/questions/2791525/stl-operator-behavior-change-with-visual-studio-2010
    :: Also cannot use QMake as it results in linker errors, so instead generate vcproj files and build using MSBuild.
    IF NOT %GENERATOR%==%GENERATOR_VS2008% (
-      copy /Y "%TOOLS%\Windows\Mods\QtScriptGenerator_pp-iterator.h" "%DEPS%\qtscriptgenerator\generator\parser\rpp\pp-iterator.h"
+      copy /Y "%TOOLS%\Mods\QtScriptGenerator_pp-iterator.h" "%DEPS%\qtscriptgenerator\generator\parser\rpp\pp-iterator.h"
       qmake -tp vc
       cecho {0D}Building qtscript plugins. Please be patient, this will take a while.{# #}{\n}
       MSBuild generator.vcxproj /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
@@ -496,7 +496,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xmlpatterns.dll".
    del "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit\qtscript_QWebPluginFactory.cpp"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    REM move "%DEPS%\qtscript_QWebPluginFactory.cpp" "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit"
-   copy /Y "%TOOLS%\Windows\Mods\qtscript_QWebPluginFactory.cpp" "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit"
+   copy /Y "%TOOLS%\Mods\qtscript_QWebPluginFactory.cpp" "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
    cecho {0D}Running qmake for qtbindings plugins.{# #}{\n}
@@ -562,7 +562,7 @@ IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\.hg". (
 IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\RenderSystems\RenderSystem_NULL". (
    cecho {0D}Attaching RenderSystem_NULL to be built with ogre-safe-nocrashes.{# #}{\n}
    mkdir "%DEPS%\ogre-safe-nocrashes\RenderSystems\RenderSystem_NULL"
-   copy /Y "%TOOLS%\Windows\Mods\Ogre_RenderSystems_CMakeLists.txt" "%DEPS%\ogre-safe-nocrashes\RenderSystems\CMakeLists.txt"
+   copy /Y "%TOOLS%\Mods\Ogre_RenderSystems_CMakeLists.txt" "%DEPS%\ogre-safe-nocrashes\RenderSystems\CMakeLists.txt"
 )
 
 REM Instead of the copying above, would like to do the line below, but IF () terminates prematurely on the ) below!
@@ -639,7 +639,7 @@ IF NOT EXIST OGRE.sln. (
    :: If not wanting to use Boost with Ogre, we need slightly tweaked version of Ogre's Dependencies.cmake
    :: which doesn't enforce usage of Boost if it's found regardless of the value of OGRE_USE_BOOST
    IF %USE_BOOST%==FALSE (
-      copy /Y "%TOOLS%\Windows\Mods\OgreNoBoost_Dependencies.cmake_" "%DEPS%\ogre-safe-nocrashes\CMake\Dependencies.cmake"
+      copy /Y "%TOOLS%\Mods\OgreNoBoost_Dependencies.cmake_" "%DEPS%\ogre-safe-nocrashes\CMake\Dependencies.cmake"
    )
    cecho {0D}Running cmake for ogre-safe-nocrashes.{# #}{\n}
 REM   cmake -G %GENERATOR% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1 -DOGRE_PROFILING:BOOL=ON
@@ -880,10 +880,10 @@ IF NOT EXIST "%DEPS%\protobuf\vsprojects\Debug\libprotobuf.lib". (
     ) ELSE (
         :: Command-line upgrading from VS2005 format to VS2010 (or newer) format fails,
         :: so must use files converted by the Visual Studio Conversion Wizard.
-        copy /Y "%TOOLS%\Windows\Mods\vs2010-protobuf.sln_" protobuf.sln
-        copy /Y "%TOOLS%\Windows\Mods\vs2010-libprotobuf.vcxproj_" libprotobuf.vcxproj
-        copy /Y "%TOOLS%\Windows\Mods\vs2010-libprotoc.vcxproj_" libprotoc.vcxproj
-        copy /Y "%TOOLS%\Windows\Mods\vs2010-protoc.vcxproj_" protoc.vcxproj
+        copy /Y "%TOOLS%\Mods\vs2010-protobuf.sln_" protobuf.sln
+        copy /Y "%TOOLS%\Mods\vs2010-libprotobuf.vcxproj_" libprotobuf.vcxproj
+        copy /Y "%TOOLS%\Mods\vs2010-libprotoc.vcxproj_" libprotoc.vcxproj
+        copy /Y "%TOOLS%\Mods\vs2010-protoc.vcxproj_" protoc.vcxproj
     )
     echo.
     cecho {0D}Building Google Protobuf. Please be patient, this will take a while.{# #}{\n}
@@ -917,7 +917,7 @@ IF NOT EXIST "%DEPS%\celt\lib\libcelt.lib" (
    IF %GENERATOR%==%GENERATOR_VS2008% (
       :: The project does not provide VS2008 solution file
       cecho {0D}Copying VS2008 project file to "%DEPS%\celt\libcelt\libcelt.vcproj."{# #}{\n}
-      copy /Y "%TOOLS%\Windows\Mods\libcelt.vcproj" "%DEPS%\celt\libcelt"
+      copy /Y "%TOOLS%\Mods\libcelt.vcproj" "%DEPS%\celt\libcelt"
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
    cecho {0D}Building Celt 0.11.1.{# #}{\n}
@@ -1086,8 +1086,8 @@ IF NOT EXIST "%DEPS%\zziplib". (
    :: Use a custom project file as zziblib does not ship with vs2008 project files.
    :: Additionally its include/lib paths are not proper for it to find our zlib build and it has weird lib name postfixes.
    :: It's nicer to use a tailored file rathern than copy duplicates under the zziblib source tree.
-   cecho {0D}Building zziplib from premade project %TOOLS%\Windows\Mods\vs2008-zziplib.vcproj{# #}{\n}
-   copy /Y "%TOOLS%\Windows\Mods\vs2008-zziplib.vcproj" zziplib.vcproj
+   cecho {0D}Building zziplib from premade project %TOOLS%\Mods\vs2008-zziplib.vcproj{# #}{\n}
+   copy /Y "%TOOLS%\Mods\vs2008-zziplib.vcproj" zziplib.vcproj
    IF NOT %GENERATOR%==%GENERATOR_VS2008% VCUpgrade /nologo zziplib.vcproj
    MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
    MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Debug /nologo  /m:%NUMBER_OF_PROCESSORS%
@@ -1108,7 +1108,7 @@ GOTO :EOF
 
 :ERROR
 echo.
-Windows\Utils\cecho {0C}An error occurred! Aborting!{# #}{\n}
+Utils\cecho {0C}An error occurred! Aborting!{# #}{\n}
 set PATH=%ORIGINAL_PATH%
 cd %TOOLS%
 pause
