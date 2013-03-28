@@ -24,7 +24,7 @@ set PREFER_RELEASE=FALSE
 :: Populate path variables
 cd ..
 set ORIGINAL_PATH=%PATH%
-set PATH=%PATH%;"%CD%\tools\utils-windows"
+set PATH=%PATH%;"%CD%\tools\Windows\Utils"
 set TOOLS=%CD%\tools
 set TUNDRA_DIR="%CD%"
 set TUNDRA_BIN=%CD%\bin
