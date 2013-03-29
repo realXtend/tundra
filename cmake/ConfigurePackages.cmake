@@ -86,7 +86,7 @@ macro (configure_qt4)
     if (NOT ANDROID)
         sagase_configure_package (QT4 
             NAMES Qt4 4.6.1
-            COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools QtDeclarative
+            COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools
 	    PREFIXES ${ENV_QT_DIR} ${ENV_TUNDRA_DEP_PATH})
     else()
         find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork QtScript QtUiTools)
