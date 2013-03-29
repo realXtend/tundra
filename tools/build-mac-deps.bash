@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 
 fnDisplayHelpAndExit()
 {
@@ -10,9 +11,6 @@ fnDisplayHelpAndExit()
     echo " "
     echo " -h | --help                          Displays this message"
     echo " "
-    echo " -d <PATH> | --deps-path <PATH>       Specifies the path in which the dependencies will be built. It is recommended"
-    echo "                                      that PATH points to an empty location. (REQUIRED)"
-    echo " " 
     echo " -c <PATH> | --client-path <PATH>     Specifies the path that points to the client path. If this is not specified, "
     echo "                                      it will be set as the same level as the 'deps' path with 'tundra2' as working"
     echo "                                      directory"
@@ -24,6 +22,9 @@ fnDisplayHelpAndExit()
     echo " "
     echo " -o <PATH> | --ogre-path <PATH>       Specifies the path where a custom Ogre root directory is located. If this is "
     echo "                                      not specified, the default-installed Ogre framework will be used.            "
+    echo " "
+    echo " -ub | --use-boost                    Build Tundra (and its dependencies where applicable) with boost." 
+    echo "                                      If this is not specified, Tundra will be built without boost"
     echo " "
     echo " -rwdi | --release-with-debug-info    Enables debugging information to be included in compile-time"
     echo " "
@@ -89,7 +90,7 @@ echo "==========================================================================
 
 # Some helper variables
 NO_ARGS="0"
-REQUIRED_ARGS=1
+REQUIRED_ARGS=0
 REQUIRED_ARGS_COUNT=0
 ERRORS_OCCURED="0"
 
@@ -98,6 +99,7 @@ RELWITHDEBINFO="0"
 RUN_CMAKE="1"
 RUN_MAKE="1"
 MAKE_XCODE="0"
+USE_BOOST="OFF"
 NPROCS=`sysctl -n hw.ncpu`
 viewer=
 
@@ -115,17 +117,6 @@ while [ "$1" != "" ]; do
                                             ;;
 
         -rwdi | --release-with-debug-info ) RELWITHDEBINFO="1"
-                                            ;;
-
-        -d | --deps-path )                  shift
-                                            if [ ! -d "$1" ]; then
-                                                echoError "Bad directory for --deps-path: $1"
-                                                ERRORS_OCCURED="1"
-                                                shift
-                                                continue
-                                            fi
-                                            REQUIRED_ARGS_COUNT=$((REQUIRED_ARGS_COUNT+1))
-                                            DEPS=$1
                                             ;;
 
         -c | --client-path )                shift
@@ -166,6 +157,9 @@ while [ "$1" != "" ]; do
                                             ;;
 
         -nm | --no-run-make )               RUN_MAKE="0"
+                                            ;;
+
+        -ub | --use-boost )                 USE_BOOST="ON"
                                             ;;
 
         -np | --number-of-processes )       shift
@@ -222,13 +216,14 @@ if [ ! -d "$QTDIR" ]; then
     fi
 fi
 
-prefix=$DEPS
+DEPS=$viewer/deps
+prefix=$DEPS/osx-64
 build=$DEPS/build
 tarballs=$DEPS/tarballs
 tags=$DEPS/tags
 frameworkpath=$DEPS/Frameworks
 
-mkdir -p $tarballs $build $prefix/{lib,share,etc,include} $tags $frameworkpath
+mkdir -p $tarballs $build $prefix $tags $frameworkpath
 
 if [ "$RELWITHDEBINFO" == "1" ]; then
     export CFLAGS="-gdwarf-2 -O2"
@@ -242,31 +237,36 @@ else
     export CMAKE_CXX_FLAGS="-O3"
 fi
 
-export PATH=$prefix/bin:$QTDIR/bin:$PATH
+export PATH=$QTDIR/bin:$PATH
 export PKG_CONFIG_PATH=$prefix/lib/pkgconfig
-export LDFLAGS="-L$prefix/lib -Wl,-rpath -Wl,$prefix/lib"
-export LIBRARY_PATH=$prefix/lib
-export C_INCLUDE_PATH=$prefix/include
-export CPLUS_INCLUDE_PATH=$prefix/include
+#export LDFLAGS="-L$prefix/lib -Wl,-rpath -Wl,$prefix/lib"
+#export LIBRARY_PATH=$prefix/lib
+#export C_INCLUDE_PATH=$prefix/include
+#export CPLUS_INCLUDE_PATH=$prefix/include
 
 cd $build
-what=boost    
-urlbase=http://downloads.sourceforge.net/project/boost/boost/1.46.1
-pkgbase=boost_1_46_1
-dlurl=$urlbase/$pkgbase.tar.gz    
-if test -f $tags/$what-done; then
-    echoInfo "$what is done"
-else
-    rm -rf $pkgbase
-    zip=$tarballs/$pkgbase.tar.gz
-    test -f $zip || echoInfo "Fetching $what, this may take a while... " && curl -L -o $zip $dlurl >> $logFile
-    tar xzf $zip
 
-    cd $pkgbase
-    echoInfo "Building $what"
-    ./bootstrap.sh --prefix=$prefix
-    ./bjam toolset=darwin link=static threading=multi --with-thread --with-regex install
-    touch $tags/$what-done
+if [ $USE_BOOST == "ON" ]; then
+    what=boost    
+    urlbase=http://downloads.sourceforge.net/project/boost/boost/1.46.1
+    pkgbase=boost_1_46_1
+    dlurl=$urlbase/$pkgbase.tar.gz    
+    if test -f $tags/$what-done; then
+        echoInfo "$what is done"
+    else
+        rm -rf $pkgbase
+        zip=$tarballs/$pkgbase.tar.gz
+        test -f $zip || echoInfo "Fetching $what, this may take a while... " && curl -L -o $zip $dlurl >> $logFile
+        tar xzf $zip
+
+        cd $pkgbase
+        echoInfo "Building $what"
+        ./bootstrap.sh --prefix=$prefix/$what
+        ./bjam toolset=darwin link=static threading=multi --with-thread --with-regex install
+        touch $tags/$what-done
+    fi
+else
+    echoInfo "'--use-boost' or '-ub' was not specified. Skipping boost."
 fi
 
 cd $build
@@ -285,7 +285,7 @@ else
 
     cd $unzipped
     echoInfo "Building $what:"
-    cmake . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_DEBUG_POSTFIX= -DCMAKE_MINSIZEREL_POSTFIX= -DCMAKE_RELWITHDEBINFO_POSTFIX=
+    cmake . -DCMAKE_INSTALL_PREFIX=$prefix/$what -DCMAKE_DEBUG_POSTFIX= -DCMAKE_MINSIZEREL_POSTFIX= -DCMAKE_RELWITHDEBINFO_POSTFIX=
     make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
@@ -315,7 +315,7 @@ else
     chmod +x configure
 
     echoInfo "Building $what:"
-    ./configure --prefix=$prefix
+    ./configure --prefix=$prefix/$what
     make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
@@ -336,7 +336,7 @@ else
 
     cd $pkgbase
     echoInfo "Building $what:"
-    ./configure --prefix=$prefix --with-ogg=$prefix --build=x86_64
+    ./configure --prefix=$prefix/$what --with-ogg=$prefix/ogg --build=x86_64
     make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
@@ -358,7 +358,7 @@ else
 
     echoInfo "Building $what:"
     cd $pkgbase
-    ./configure --prefix=$prefix --with-ogg=$prefix --with-vorbis=$prefix
+    ./configure --prefix=$prefix/$what --with-ogg=$prefix/ogg --with-vorbis=$prefix/vorbis
     make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
@@ -379,9 +379,11 @@ else
     ./configure -library
     qmake
     make VERBOSE=1 -j$NPROCS
-    cp ./lib/* $prefix/lib
-    cp ./src/*.h $prefix/include
-    cp ./src/Qt* $prefix/include
+
+    mkdir -p $prefix/$what/{lib,include}
+    cp ./lib/* $prefix/$what/lib
+    cp ./src/*.h $prefix/$what/include
+    cp ./src/Qt* $prefix/$what/include
     touch $tags/$what-done
 fi
 
@@ -400,7 +402,7 @@ else
 
     cd $pkgbase
     echoInfo "Building $what:"
-    ./configure --prefix=$prefix
+    ./configure --prefix=$prefix/$what
     make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
@@ -421,7 +423,7 @@ else
 
     cd $pkgbase
     echoInfo "Building $what:"
-    ./configure --prefix=$prefix
+    ./configure --prefix=$prefix/$what
     make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
@@ -442,7 +444,7 @@ else
 
     cd $pkgbase
     echoInfo "Building $what:"
-    ./configure --prefix=$prefix --enable-shared=NO
+    ./configure --prefix=$prefix/$what --enable-shared=NO
     make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
@@ -459,16 +461,16 @@ else
     svn checkout $urlbase $what
     cd $what
     echo "DEFINES += QXMPP_USE_SPEEX" >> src/src.pro
-    echo "INCLUDEPATH += $prefix/include" >> src/src.pro
-    echo "LIBS += -L$prefix/lib -lspeex" >> src/src.pro
+    echo "INCLUDEPATH += $prefix/speex/include" >> src/src.pro
+    echo "LIBS += -L$prefix/speex/lib -lspeex" >> src/src.pro
     echo "CONFIG += debug_and_release" >> src/src.pro
 
     echoInfo "Building $what:"
     qmake
     make sub-src-all-ordered -j$NPROCS
-    mkdir -p $prefix/include/qxmpp
-    cp src/*.h $prefix/include/qxmpp
-    cp lib/lib$what*.a $prefix/lib
+    mkdir -p $prefix/$what/include/qxmpp $prefix/$what/lib
+    cp src/*.h $prefix/$what/include/qxmpp
+    cp lib/lib$what*.a $prefix/$what/lib
     touch $tags/$what-done
 fi
 
@@ -516,8 +518,10 @@ else
     echoInfo "Building $what:"
     cmake . -DCMAKE_BUILD_TYPE=Debug
     make -j$NPROCS
-    cp lib/libkNet.dylib $prefix/lib/
-    rsync -r include/* $prefix/include/
+
+    mkdir -p $prefix/$what/{lib,include}
+    cp lib/libkNet.dylib $prefix/$what/lib/
+    rsync -r include/* $prefix/$what/include/
     touch $tags/$what-done
 fi
 
@@ -558,7 +562,7 @@ baseurl=https://bitbucket.org/clb
 ogredepszip=OgreDependencies_OSX_20120525.zip
 ogredepsurl=http://downloads.sourceforge.net/project/ogre/ogre-dependencies-mac/1.8/
 
-if test -d $frameworkpath/Ogre.framework; then
+if test -d $prefix/$what/lib/Ogre.framework; then
     echoInfo "$what is done"
     if [ ! -d "$OGRE_HOME" ]; then      # If OGRE_HOME points to invalid location, force it to deps/build/ogre-safe-nocrashes
         export OGRE_HOME=$build/$what # If Ogre is built, then Hydrax and SkyX might be not and OGRE_HOME is needed still
@@ -576,15 +580,14 @@ else
     tar xzf $ogredepszip
     export OGRE_HOME=$build/$what
     echoInfo "Building $what:"
-    cmake -G Xcode -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=0 -DOGRE_CONFIG_THREAD_PROVIDER=none
+    cmake -G Xcode -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DOGRE_USE_BOOST:BOOL=$USE_BOOST -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=0 -DOGRE_CONFIG_THREAD_PROVIDER=none
     xcodebuild -configuration RelWithDebInfo
 
-    cp -R $OGRE_HOME/lib/relwithdebinfo/Ogre.framework $frameworkpath
-    cp $OGRE_HOME/lib/relwithdebinfo/*.dylib $viewer/bin
+    mkdir -p $prefix/$what/{lib,include}
+    cp -R $OGRE_HOME/lib/release/* $prefix/$what/lib
     export PKG_CONFIG_PATH=$build/$what/pkgconfig
 fi
 
-echoInfo "Building SkyX and Hydrax with OGRE_HOME='$OGRE_HOME'"
 
 what=assimp
 baseurl=https://assimp.svn.sourceforge.net/svnroot/assimp/trunk
@@ -596,12 +599,20 @@ else
     echoInfo "Cloning $what repository, this may take a while..."
     svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk $what
     cd $what
-    # First sed statement: Apple's ld does not allow this version number, so override that
-    # Second sed statement: Force add boost include path (the same as Ogre's dependencies include path)
-    sed -e 's/(ASSIMP_SV_REVISION 1264)/(ASSIMP_SV_REVISION 1)/' -e 's/INCLUDE_DIRECTORIES( include )/INCLUDE_DIRECTORIES( include )\
-    set (BOOST_INCLUDEDIR "${ENV_OGRE_HOME}\/Dependencies\/include")/' < CMakeLists.txt > temp
-    mv temp CMakeLists.txt
-    cmake . -DCMAKE_INSTALL_PREFIX=$prefix
+    # Apple's ld does not allow this version number, so override that
+    sed -e 's/(ASSIMP_SV_REVISION 1264)/(ASSIMP_SV_REVISION 1)/' < CMakeLists.txt > temp
+
+    if [ "$USE_BOOST" == "ON" ]; then
+        # Force add boost include path (the same as Ogre's dependencies include path)
+        sed -e 's/INCLUDE_DIRECTORIES( include )/INCLUDE_DIRECTORIES( include )\
+        set (BOOST_INCLUDEDIR "${ENV_OGRE_HOME}\/Dependencies\/include")/' < temp > temp1
+    else
+        # Enable boost workaround
+        sed -e 's/SET ( ASSIMP_ENABLE_BOOST_WORKAROUND OFF CACHE BOOL/SET ( ASSIMP_ENABLE_BOOST_WORKAROUND ON CACHE BOOL/' < temp > temp1
+    fi
+
+    mv temp1 CMakeLists.txt
+    cmake . -DCMAKE_INSTALL_PREFIX=$prefix/$what
     make -j4
     make install
     touch $tags/$what-done
@@ -625,29 +636,33 @@ else
     cd $depdir
     git fetch https://code.google.com/p/realxtend-tundra-deps/ sources:refs/remotes/origin/sources
     if [ -z "`git merge sources origin/sources|grep "Already"`" ]; then
-        echoInfo "Changes in GIT detected, rebuilding HydraX, SkyX and PythonQT"
+        echoInfo "Changes in GIT detected, rebuilding HydraX and SkyX"
         rm -f $tags/hydrax-done $tags/skyx-done $tags/pythonqt-done
     else
         echoInfo "No changes in realxtend deps git."
     fi
 fi
 
+echoInfo "Building SkyX and Hydrax with OGRE_HOME='$OGRE_HOME'"
+
+what=hydrax
 # HydraX build:
-if test -f $tags/hydrax-done; then
+if test -f $tags/$what-done; then
     echoInfo "Hydrax is done"
 else
     echoInfo "Building Hydrax:"
     cd $build/$depdir/hydrax
 
     OSXMAKE="-f makefile.macosx"
-    make $OSXMAKE -j$NPROCS PREFIX=$prefix
-    make $OSXMAKE PREFIX=$prefix install
-    cp ./lib/Release/* $prefix/lib #for some reason, 'cp' that is invoked in the makefile does not copy the library. 
-    touch $tags/hydrax-done
+    make $OSXMAKE -j$NPROCS PREFIX=$prefix/$what
+    make $OSXMAKE PREFIX=$prefix/$what install
+    cp ./lib/Release/* $prefix/$what/lib #for some reason, 'cp' that is invoked in the makefile does not copy the library. 
+    touch $tags/$what-done
 fi
 
 # SkyX build:
-if test -f $tags/skyx-done; then
+what=skyx
+if test -f $tags/$what-done; then
     echoInfo "SkyX is done"
 else
     echoInfo "Building SkyX:"
@@ -655,10 +670,10 @@ else
     if test -f CMakeCache.txt; then
         rm CMakeCache.txt
     fi
-    cmake . -DSKYX_DEPENDENCIES_DIR=$OGRE_HOME/Dependencies -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DCMAKE_INSTALL_PREFIX=$prefix
+    cmake . -DSKYX_DEPENDENCIES_DIR=$OGRE_HOME/Dependencies -DUSE_BOOST:BOOL=$USE_BOOST -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DCMAKE_INSTALL_PREFIX=$prefix/$what
     make -j$NPROCS
     make install
-    touch $tags/skyx-done
+    touch $tags/$what-done
 fi
 
 what=zziplib
@@ -674,7 +689,7 @@ else
 
     cd $pkgbase
     echoInfo "Building $what:"
-    ./configure --prefix=$prefix
+    ./configure --prefix=$prefix/$what
     make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
@@ -683,9 +698,11 @@ fi
 # All deps are now fetched and built. Do the actual Tundra build.
 
 # Explicitly specify where the tundra deps boost resides, to allow cmake FindBoost pick it up.
-export BOOST_ROOT=$DEPS/include
-export BOOST_INCLUDEDIR=$DEPS/include/boost
-export BOOST_LIBRARYDIR=$DEPS/lib
+if [ "$USE_BOOST" == "ON" ]; then
+    export BOOST_ROOT=$prefix/$what/include
+    export BOOST_INCLUDEDIR=$prefix/$what/include/boost
+    export BOOST_LIBRARYDIR=$prefix/$what/lib
+fi
 
 XCODE_SUFFIX=
 if [ "$MAKE_XCODE" == "1" ]; then
