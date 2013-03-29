@@ -688,6 +688,33 @@ else
     touch $tags/$what-done
 fi
 
+what=vlc
+baseurl=http://download.videolan.org/pub/videolan/vlc/2.0.1/macosx
+dmgname=vlc-2.0.1-intel64.dmg
+if test -f $tags/$what-done; then
+    echoInfo "$what is done"
+else
+    dmg=$tarballs/$dmgname
+    tarballname=$what.tgz
+    rm -f $dmg
+    rm -rf $prefix/$what
+
+    echoInfo "Fetching $what, this may take a while... "
+    curl -L -o $dmg $baseurl/$dmgname
+    hdiutil attach $dmg
+
+    mountpoint=/Volumes/vlc-2.0.1
+    cd $mountpoint/VLC.app/Contents/MacOS
+    echoInfo "Installing $what into $prefix/$what:"
+
+    mkdir -p $prefix/$what
+    cp -R * $prefix/$what
+    rm $prefix/$what/VLC
+
+    touch $tags/$what-done
+    hdiutil detach $mountpoint
+fi
+
 what=zziplib
 pkgbase=zziplib-0.13.59
 dlurl=http://sourceforge.net/projects/zziplib/files/zziplib13/0.13.59/$pkgbase.tar.bz2/download
