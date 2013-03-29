@@ -99,6 +99,7 @@ RUN_CMAKE="1"
 RUN_MAKE="1"
 MAKE_XCODE="0"
 USE_BOOST="OFF"
+NO_BOOST="ON" # The variable used in Tundra is called TUNDRA_NO_BOOST, which is opposite of USE_BOOST
 NPROCS=`sysctl -n hw.ncpu`
 viewer=
 
@@ -159,6 +160,7 @@ while [ "$1" != "" ]; do
                                             ;;
 
         -ub | --use-boost )                 USE_BOOST="ON"
+                                            NO_BOOST="OFF"
                                             ;;
 
         -np | --number-of-processes )       shift
@@ -703,6 +705,8 @@ if [ "$USE_BOOST" == "ON" ]; then
     export BOOST_LIBRARYDIR=$prefix/$what/lib
 fi
 
+
+
 XCODE_SUFFIX=
 if [ "$MAKE_XCODE" == "1" ]; then
     XCODE_SUFFIX="-G Xcode"
@@ -710,7 +714,7 @@ fi
 
 cd $viewer
 if [ "$RUN_CMAKE" == "1" ]; then
-    TUNDRA_DEP_PATH=$prefix cmake . $XCODE_SUFFIX
+    TUNDRA_DEP_PATH=$prefix cmake . $XCODE_SUFFIX -DTUNDRA_NO_BOOST:BOOL=$NO_BOOST
 fi
 
 if [ "$RUN_MAKE" == "1" ]; then
