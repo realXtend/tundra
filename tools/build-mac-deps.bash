@@ -50,26 +50,22 @@ echoInfo()
 {
     COLOR="\033[32;1m"
     ENDCOLOR="\033[0m"
-    echo -e $COLOR INFO: $@ $ENDCOLOR | $logAndPrintThis
+    echo -e $COLOR INFO: $@ $ENDCOLOR
 }
 
 echoWarn()
 {
     COLOR="\033[33;1m"
     ENDCOLOR="\033[0m"
-    echo -e $COLOR WARNING: $@ $ENDCOLOR | $logAndPrintThis
+    echo -e $COLOR WARNING: $@ $ENDCOLOR
 }
 
 echoError()
 {
     COLOR="\033[31;1m"
     ENDCOLOR="\033[0m"
-    echo -e $COLOR ERROR: $@ $ENDCOLOR | $logAndPrintThis
+    echo -e $COLOR ERROR: $@ $ENDCOLOR
 }
-
-logFile=build-mac.log
-logAndPrintThis="tee -a $logFile"
-echo "" | tee $logFile
 
 echo " "
 echo "=============================== realXtend Tundra 2 dependency building script ==============================="
