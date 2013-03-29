@@ -245,6 +245,14 @@ export PKG_CONFIG_PATH=$prefix/lib/pkgconfig
 #export C_INCLUDE_PATH=$prefix/include
 #export CPLUS_INCLUDE_PATH=$prefix/include
 
+# Stupid workaround in case of Mountain Lion, where sed yields "invalid byte sequence" error
+OSX_VERSION=`sw_vers -productVersion`
+if [[ $OSX_VERSION == 10.8.* ]]; then
+    LC_CTYPE_BAK=$LC_CTYPE
+    LC_CTYPE_OVERRIDE='export LC_CTYPE="C"'
+    LC_CTYPE_RESTORE="export LC_CTYPE=$LC_CTYPE_BAK"
+fi
+
 cd $build
 
 if [ $USE_BOOST == "ON" ]; then
@@ -514,7 +522,11 @@ else
     echoInfo "Cloning $what repository, this may take a while... "
     git clone https://github.com/juj/kNet
     cd kNet
+
+    $LC_CTYPE_OVERRIDE
     sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" -e "s/USE_BOOST TRUE/USE_BOOST FALSE/" < CMakeLists.txt > x
+    $LC_CTYPE_RESTORE
+
     mv x CMakeLists.txt
     echoInfo "Building $what:"
     cmake . -DCMAKE_BUILD_TYPE=Debug
@@ -600,6 +612,8 @@ else
     echoInfo "Cloning $what repository, this may take a while..."
     svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk $what
     cd $what
+
+    $LC_CTYPE_OVERRIDE
     # Apple's ld does not allow this version number, so override that
     sed -e 's/(ASSIMP_SV_REVISION 1264)/(ASSIMP_SV_REVISION 1)/' < CMakeLists.txt > temp
 
@@ -611,6 +625,7 @@ else
         # Enable boost workaround
         sed -e 's/SET ( ASSIMP_ENABLE_BOOST_WORKAROUND OFF CACHE BOOL/SET ( ASSIMP_ENABLE_BOOST_WORKAROUND ON CACHE BOOL/' < temp > temp1
     fi
+    $LC_CTYPE_RESTORE
 
     mv temp1 CMakeLists.txt
     cmake . -DCMAKE_INSTALL_PREFIX=$prefix/$what
