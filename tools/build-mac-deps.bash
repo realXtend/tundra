@@ -594,6 +594,7 @@ else
 
     mkdir -p $prefix/$what/{lib,include}
     cp -R $OGRE_HOME/lib/relwithdebinfo/* $prefix/$what/lib
+    cp $prefix/$what/lib/*.dylib $viewer/bin
     export PKG_CONFIG_PATH=$build/$what/pkgconfig
 fi
 
