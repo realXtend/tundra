@@ -1,8 +1,20 @@
 macro(configure_speex)
+    if ("${SPEEX_ROOT}" STREQUAL "")
+        file (TO_CMAKE_PATH "$ENV{SPEEX_ROOT}" SPEEX_ROOT)
+    endif()
+    if ("${SPEEX_ROOT}" STREQUAL "")
+        SET(SPEEX_ROOT ${ENV_TUNDRA_DEP_PATH}/speex)
+    endif()
+
     sagase_configure_package(SPEEX
         NAMES speex
-        COMPONENTS libspeex
-        PREFIXES ${ENV_TUNDRA_DEP_PATH} "/usr")
+        COMPONENTS libspeex         # speex lib
+                   libspeexdsp      # speex audio processing lib
+                   speex            # speex.h to find include dir
+        PREFIXES ${SPEEX_ROOT}      # full prebuilt deps
+                 ${ENV_TUNDRA_DEP_PATH}
+                 ${SPEEX_ROOT}/lib/Release) # packaged prebuilt deps
+        
     sagase_configure_report (SPEEX)
 endmacro()
 

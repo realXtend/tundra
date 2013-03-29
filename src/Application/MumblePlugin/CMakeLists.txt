@@ -24,9 +24,9 @@ macro (configure_protobuf)
             NAMES protobuf
             COMPONENTS libprotobuf      # protobuf lib
                        service          # service.h to find include dir
-            PREFIXES ${ENV_TUNDRA_DEP_PATH}                      # Finding the libs
-                     ${ENV_TUNDRA_DEP_PATH}/bin                  # Protoc executable
-                     ${ENV_TUNDRA_DEP_PATH}/include/google)      # Finding the include
+            PREFIXES ${ENV_TUNDRA_DEP_PATH}/protobuf                      # Finding the libs
+                     ${ENV_TUNDRA_DEP_PATH}/protobuf/bin                  # Protoc executable
+                     ${ENV_TUNDRA_DEP_PATH}/protobuf/include/google)      # Finding the include
 
         # Remove FindProtobuf.cmake generated not found item
         list (REMOVE_ITEM PROTOBUF_LIBRARIES PROTOBUF_LIBRARY-NOTFOUND)
