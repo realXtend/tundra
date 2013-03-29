@@ -63,6 +63,7 @@ macro (final_target)
             # set target directory
             if (APPLE)
                 set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flat_namespace")
+                set_target_properties (${TARGET_NAME} PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR ${TARGET_DIR})
             endif()
             set_target_properties (${TARGET_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${TARGET_DIR})
             set_target_properties (${TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${TARGET_DIR})
