@@ -585,7 +585,7 @@ else
     xcodebuild -configuration RelWithDebInfo
 
     mkdir -p $prefix/$what/{lib,include}
-    cp -R $OGRE_HOME/lib/release/* $prefix/$what/lib
+    cp -R $OGRE_HOME/lib/relwithdebinfo/* $prefix/$what/lib
     export PKG_CONFIG_PATH=$build/$what/pkgconfig
 fi
 
