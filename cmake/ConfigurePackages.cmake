@@ -68,27 +68,25 @@ endif()
 
 # On Android, pthread library does not exist. Remove it if mistakenly added to boost libraries
 if (ANDROID)
-    list(REMOVE_ITEM Boost_LIBRARIES "pthread")   
+    list(REMOVE_ITEM Boost_LIBRARIES "pthread")
 endif()
 
 endmacro (configure_boost)
 
-macro (configure_qt4)
+macro(configure_qt4)
     if (NOT ANDROID)
-        sagase_configure_package (QT4 
+        sagase_configure_package(QT4
             NAMES Qt4 4.6.1
-            COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools QtDeclarative
-	    PREFIXES ${ENV_QT_DIR} ${ENV_TUNDRA_DEP_PATH})
+            COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools
+        PREFIXES ${ENV_QT_DIR} ${ENV_TUNDRA_DEP_PATH})
     else()
         find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork QtScript QtUiTools)
     endif()
 
     # FindQt4.cmake
     if (QT4_FOUND AND QT_USE_FILE)
-
-        include (${QT_USE_FILE})
-        
-        set (QT4_INCLUDE_DIRS 
+        include(${QT_USE_FILE})
+        set(QT4_INCLUDE_DIRS 
             ${QT_INCLUDE_DIR}
             ${QT_QTCORE_INCLUDE_DIR}
             ${QT_QTGUI_INCLUDE_DIR}
@@ -96,20 +94,17 @@ macro (configure_qt4)
             ${QT_QTNETWORK_INCLUDE_DIR}
             ${QT_QTXML_INCLUDE_DIR}
             ${QT_QTSCRIPT_INCLUDE_DIR}
-            ${QT_DECLARATIVE_INCLUDE_DIR}
             ${QT_QTWEBKIT_INCLUDE_DIR})
-            
+#            ${QT_DECLARATIVE_INCLUDE_DIR}
 #            ${QT_QTSCRIPTTOOLS_INCLUDE_DIR}
 #            ${QT_PHONON_INCLUDE_DIR}
         
-        set (QT4_LIBRARY_DIR  
-            ${QT_LIBRARY_DIR})
-        
-	if (ANDROID)
-            set (QT4_LIBRARIES 
-                ${QT_LIBRARIES})
-        else ()
-            set (QT4_LIBRARIES 
+        set(QT4_LIBRARY_DIR ${QT_LIBRARY_DIR})
+
+        if (ANDROID)
+            set(QT4_LIBRARIES ${QT_LIBRARIES})
+        else()
+            set(QT4_LIBRARIES 
                 ${QT_LIBRARIES}
                 ${QT_QTCORE_LIBRARY}
                 ${QT_QTGUI_LIBRARY}
@@ -117,18 +112,14 @@ macro (configure_qt4)
                 ${QT_QTNETWORK_LIBRARY}
                 ${QT_QTXML_LIBRARY}
                 ${QT_QTSCRIPT_LIBRARY}
-                ${QT_DECLARATIVE_LIBRARY}
-                ${QT_QTWEBKIT_LIBRARY})            
-
-#            ${QT_QTSCRIPTTOOLS_LIBRARY}
-#            ${QT_PHONON_LIBRARY}       
-
-	endif()
-
+                ${QT_QTWEBKIT_LIBRARY})
+#                ${QT_DECLARATIVE_LIBRARY}
+#                ${QT_QTSCRIPTTOOLS_LIBRARY}
+#                ${QT_PHONON_LIBRARY}
+        endif()
     endif ()
-    
-    sagase_configure_report (QT4)
-endmacro (configure_qt4)
+    sagase_configure_report(QT4)
+endmacro(configure_qt4)
 
 macro (configure_python)
     sagase_configure_package (PYTHON
