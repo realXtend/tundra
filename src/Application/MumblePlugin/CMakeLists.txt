@@ -20,16 +20,10 @@ endmacro (configure_speex)
 
 macro (configure_protobuf)
     if (APPLE)
-        sagase_configure_package(PROTOBUF
-            NAMES protobuf
-            COMPONENTS libprotobuf      # protobuf lib
-                       service          # service.h to find include dir
-            PREFIXES ${ENV_TUNDRA_DEP_PATH}/protobuf                      # Finding the libs
-                     ${ENV_TUNDRA_DEP_PATH}/protobuf/bin                  # Protoc executable
-                     ${ENV_TUNDRA_DEP_PATH}/protobuf/include/google)      # Finding the include
+	find_package(Protobuf REQUIRED)
 
-        # Remove FindProtobuf.cmake generated not found item
-        list (REMOVE_ITEM PROTOBUF_LIBRARIES PROTOBUF_LIBRARY-NOTFOUND)
+	set (PROTOBUF_LIBRARIES ${ENV_TUNDRA_DEP_PATH}/protobuf/lib/libprotobuf.7.dylib)
+	set (PROTOBUF_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/protobuf/include)
         
         if ("${PROTOBUF_PROTOC_EXECUTABLE}" STREQUAL "PROTOBUF_PROTOC_EXECUTABLE-NOTFOUND")
             set (PROTOBUF_PROTOC_EXECUTABLE ${ENV_TUNDRA_DEP_PATH}/bin/protoc)
@@ -169,7 +163,7 @@ if (NOT WIN32)
 
     #TODO This line should not be needed, as these libraries should be picked up by above link_package. However,
     # does not seem to be happening. Remove this line when the above link_packages have been fixed.
-    target_link_libraries(${TARGET_NAME} speex speexdsp protobuf)
+    target_link_libraries(${TARGET_NAME} speex speexdsp)
 endif ()
 
 if (WIN32)
