@@ -451,7 +451,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\.git". (
    cecho {0D}QtScriptGenerator already cloned. Skipping.{# #}{\n}
 )
 
-IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xmlpatterns.dll". (
+IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xml.dll". (
    cd "%DEPS%\qtscriptgenerator\generator"
    cecho {0D}Running qmake for QtScriptGenerator.{# #}{\n}
    :: We need to patch pp-iterator.h in order to make it compile with newer Visual Studio versions:
