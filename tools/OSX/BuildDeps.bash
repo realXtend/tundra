@@ -194,8 +194,8 @@ fi
 # If the path to the Tundra root directory was not specified, assume the script
 # is being run from (gittrunk)/tools, so viewer=(gittrunk).
 if [ ! -d "$viewer" ]; then
-    cwd=$(pwd)       # Temporarily save this path to the build script.
-    viewer=$(pwd)/.. # Assume the build script lies at gittrunk/tools.
+    cwd=$(pwd)          # Temporarily save this path to the build script.
+    viewer=$(pwd)/../.. # Assume the build script lies at gittrunk/tools/OSX.
     cd $viewer
     viewer=$(pwd)
     cd $cwd        # Go back to not alter cwd.
