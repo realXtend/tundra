@@ -61,11 +61,22 @@ macro (final_target)
             add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
         else ()
             # set target directory
-            if (APPLE)
-                set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flat_namespace")
-            endif()
             set_target_properties (${TARGET_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${TARGET_DIR})
             set_target_properties (${TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${TARGET_DIR})
+            if (APPLE)
+                # Avoid putting built targets in ./bin/[RelWithDebInfo | Release | Debug] and ./bin/plugins/[RelWithDebInfo | Release | Debug]
+                # Only one rule should be in place here, to avoid a bug (which is reported as fixed) in CMake where different build setups are used
+                # which results already built libs to be deleted and thus causing build errors in further modules.
+                # See  http://public.kitware.com/Bug/view.php?id=11844 for more info
+
+                #set_target_properties (${TARGET_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG ${TARGET_DIR})
+                #set_target_properties (${TARGET_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${TARGET_DIR})
+                set_target_properties (${TARGET_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${TARGET_DIR})
+                #set_target_properties (${TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${TARGET_DIR})
+                #set_target_properties (${TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${TARGET_DIR})
+                set_target_properties (${TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${TARGET_DIR})
+                set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flat_namespace")
+            endif()
         endif ()
     endif ()
     
