@@ -261,7 +261,7 @@ if [ $USE_BOOST == "ON" ]; then
     else
         rm -rf $pkgbase
         zip=$tarballs/$pkgbase.tar.gz
-        test -f $zip || echoInfo "Fetching $what, this may take a while... " && curl -L -o $zip $dlurl >> $logFile
+        test -f $zip || echoInfo "Fetching $what, this may take a while... " && curl -L -o $zip $dlurl
         tar xzf $zip
 
         cd $pkgbase
@@ -595,6 +595,12 @@ else
     mkdir -p $prefix/$what/{lib,include}
     cp -R $OGRE_HOME/lib/relwithdebinfo/* $prefix/$what/lib
     cp $prefix/$what/lib/*.dylib $viewer/bin
+
+    # Replace the install name with more suitable one to avoid link problems
+    if [ -f $viewer/bin/RenderSystem_GL.dylib ]; then
+        install_name_tool -id $viewer/bin/RenderSystem_GL.dylib $viewer/bin/RenderSystem_GL.dylib
+    fi
+
     export PKG_CONFIG_PATH=$build/$what/pkgconfig
 fi
 
@@ -686,6 +692,12 @@ else
     cmake . -DSKYX_DEPENDENCIES_DIR=$OGRE_HOME/Dependencies -DUSE_BOOST:BOOL=$USE_BOOST -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DCMAKE_INSTALL_PREFIX=$prefix/$what
     make -j$NPROCS
     make install
+
+    # Replace the install name with more suitable one to avoid link problems
+    # TODO: Fix this in realxtend-tundra-deps:sources repo!
+    if [ -f $prefix/$what/lib/libSkyX.0.dylib ]; then
+        install_name_tool -id $prefix/$what/lib/libSkyX.0.dylib $prefix/$what/lib/libSkyX.0.dylib
+    fi
     touch $tags/$what-done
 fi
 
@@ -739,9 +751,9 @@ fi
 
 # Explicitly specify where the tundra deps boost resides, to allow cmake FindBoost pick it up.
 if [ "$USE_BOOST" == "ON" ]; then
-    export BOOST_ROOT=$prefix/$what/include
-    export BOOST_INCLUDEDIR=$prefix/$what/include/boost
-    export BOOST_LIBRARYDIR=$prefix/$what/lib
+    export BOOST_ROOT=$prefix/boost/include
+    export BOOST_INCLUDEDIR=$prefix/boost/include/boost
+    export BOOST_LIBRARYDIR=$prefix/boost/lib
 fi
 
 
@@ -753,7 +765,7 @@ fi
 
 cd $viewer
 if [ "$RUN_CMAKE" == "1" ]; then
-    TUNDRA_DEP_PATH=$prefix cmake . $XCODE_SUFFIX -DTUNDRA_NO_BOOST:BOOL=$NO_BOOST
+    TUNDRA_DEP_PATH=$prefix cmake . $XCODE_SUFFIX -DCMAKE_OSX_ARCHITECTURES=x86_64 -DTUNDRA_NO_BOOST:BOOL=$NO_BOOST
 fi
 
 if [ "$RUN_MAKE" == "1" ]; then
