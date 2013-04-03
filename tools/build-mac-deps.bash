@@ -4,9 +4,9 @@ set -e
 fnDisplayHelpAndExit()
 {
     echo " "
-    echo " USAGE: $0 --deps-path <PATH> [--help --client-path <PATH> --qt-path <PATH> --release-with-debug-info --no-run-cmake"
-    echo "                               --no-run-make --number-of-processes <NUMBER>]"
-    echo "    or: $0          -d <PATH> [-h -c <PATH> -q <PATH> -rwdi -nc -nm -np <NUMBER>]"
+    echo " USAGE: $0 [--help --client-path <PATH> --qt-path <PATH> --ogre-path <PATH> --use-boost --release-with-debug-info"
+    echo "            --xcode --no-run-cmake --no-run-make --number-of-processes <NUMBER>]"
+    echo "    or: $0 [-h -c <PATH> -q <PATH> -o <PATH> -ub -rwdi -x -nc -nm -np <NUMBER>]"
     echo " "
     echo " -h | --help                          Displays this message"
     echo " "
@@ -33,9 +33,9 @@ fnDisplayHelpAndExit()
     echo "                                      'cmake .' is executed to generate Makefiles after all dependencies have been "
     echo "                                      built)."
     echo " "
-    echo " -nm | --no-run-make                  Do not run 'make' after the dependencies are built. If --xcode is specified  "
-    echo "                                      this option has no effect (The default is that 'make' is executed to start   "
-    echo "                                      the compile process).                                                        "
+    echo " -nm | --no-run-make                  Do not run 'make' after the dependencies are built, or if --xcode is defined,"
+    echo "                                      do not run 'xcodebuild' command (The default is that 'make' is executed to "
+    echo "                                      start the compile process)."
     echo " "
     echo " -np | --number-of-processes <NUMBER> The number of processes to be run simultaneously, recommended for multi-core "
     echo "                                      or processors with hyper-threading technology for a faster compile process."
@@ -146,7 +146,6 @@ while [ "$1" != "" ]; do
                                             ;;
 
          -x | --xcode )                     MAKE_XCODE="1"
-                                            RUN_MAKE="0"
                                             ;;
 
         -nc | --no-run-cmake )              RUN_CMAKE="0"
@@ -769,5 +768,9 @@ if [ "$RUN_CMAKE" == "1" ]; then
 fi
 
 if [ "$RUN_MAKE" == "1" ]; then
-    make -j$NPROCS VERBOSE=1
+    if [ "$MAKE_XCODE" == "1" ]; then
+        xcodebuild -configuration RelWithDebInfo VALID_ARCHS=x86_64 ONLY_ACTIVE_ARCH=YES
+    else
+        make -j$NPROCS VERBOSE=1
+    fi
 fi
