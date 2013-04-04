@@ -66,11 +66,11 @@ void AssetModule::Initialize()
     framework_->RegisterDynamicObject("assetModule", this);
 
     framework_->Console()->RegisterCommand(
-        "RequestAsset", "Request asset from server. Usage: RequestAsset(uuid,assettype)", 
+        "RequestAsset", "Request asset from server. Usage: RequestAsset(assetRef, assetType)",
         this, SLOT(ConsoleRequestAsset(const QString &, const QString &)));
 
     framework_->Console()->RegisterCommand(
-        "AddAssetStorage", "Usage: AddAssetStorage(storage string). For example: AddAssetStorage(name=MyAssets;type=HttpAssetStorage;src=http://www.myserver.com/;default;)", 
+        "AddAssetStorage", "Usage: AddAssetStorage(storageString). For example: AddAssetStorage(name=MyAssets;type=HttpAssetStorage;src=http://www.myserver.com/;default;)", 
         this, SLOT(AddAssetStorage(const QString &)));
 
     framework_->Console()->RegisterCommand(
@@ -110,8 +110,6 @@ void AssetModule::Initialize()
 
 void AssetModule::ProcessCommandLineOptions()
 {
-    assert(framework_);
-
     bool hasFile = framework_->HasCommandLineParameter("--file");
     bool hasStorage = framework_->HasCommandLineParameter("--storage");
     QStringList files = framework_->CommandLineParameters("--file");
