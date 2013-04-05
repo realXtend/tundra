@@ -26,7 +26,7 @@ DOXYFILE_ENCODING      = UTF-8
 # identify the project. Note that if you do not use Doxywizard you need 
 # to put quotes around the project name if it contains spaces.
 
-PROJECT_NAME           = "Meshmoon Tundra"
+PROJECT_NAME           = "Meshmoon SDK 2.5"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. 
 # This could be handy for archiving the generated documentation or 
@@ -740,6 +740,7 @@ EXCLUDE                = ../.git \
                          ../deps \
                          ../lib \
                          ../tools \
+                         ../android \
                          ../src/EntityComponents/EC_Ruler \
                          ../src/EntityComponents/EC_Gizmo \
                          ../src/Core/OgreRenderingModule/EC_SelectionBox.h \
@@ -751,35 +752,47 @@ EXCLUDE                = ../.git \
                          ../src/Application/MumblePlugin/mumble \
                          ../src/Application/MumblePlugin/Mumble.pb.h \
                          ../src/Application/MumblePlugin/Mumble.pb.cc \
-                         ../.git \
-                         ../deps \
-                         ..\src\Core\OgreRenderingModule\libcrunch \
-                         ..\deps \
-                         ..\.git \
-                         ..\src\Core\OgreRenderingModule\libsquish \
-                         ..\src\Application\AdminotechPlugin\updater \
-                         ..\src\Application\AdminotechPlugin\ui \
-                         ..\src\Application\AdminotechPlugin\deps \
-                         ..\src\Application\AdminotechPlugin\assets \
-                         ..\src\Application\AdminotechPlugin\AdminotechBackend.h \
-                         ..\src\Application\AdminotechPlugin\AdminotechAssetMonitor.h \
-                         ..\src\Application\AdminotechPlugin\AdminotechData.h \
-                         ..\src\Application\AdminotechPlugin\AdminotechDefines.h \
-                         ..\src\Application\AdminotechPlugin\AdminotechPortalWidget.h \
-                         ..\src\Application\AdminotechPlugin\AdminotechSceneWidgets.h \
-                         ..\src\Application\AdminotechPlugin\AdminotechScriptTypeDefines.h \
-                         ..\src\Application\AdminotechServerModule \
-                         ..\src\Application\AdminotechPlugin\AdminotechLayersWidget.h \
-                         ..\src\Application\AdminotechPlugin\AdminotechSettings.h \
-                         ..\src\Application\AdminotechPlugin\updater\*.h \
-                         ..\src\Application\AdminotechPlugin\updater\SparkleAutoUpdater.h \
-                         ..\src\Application\AdminotechPlugin\updater\SparkleAutoUpdater.mm \
-                         ..\src\Application\AdminotechPlugin\updater\CocoaInitializer.h \
-                         ..\src\Application\AdminotechPlugin\updater\CocoaInitializer.mm \
-                         ..\src\Application\AdminotechPlugin\updater\AutoUpdater.h \
-                         ..\src\Application\AdminotechPlugin\updater\AdminotechUpdater.h \
-                         ..\src\Application\AdminotechPlugin\avatar\AdminotechAvatarEditor.h \
-                         ..\src\Application\AdminotechPlugin\AdminotechCommon.h
+                         ../src/Core/OgreRenderingModule/libcrunch \
+                         ../src/Core/OgreRenderingModule/libsquish \
+                         ../src/Core/Math/Math/MathConstants.h \
+                         ../src/Core/Math/Math/BitOps.h \
+                         ../src/Core/PhysicsModule/hull.cpp \
+                         ../src/Core/TundraCore/Framework/ArgumentType.h \
+                         ../src/Application/VlcPlugin \
+                         ../src/Application/DebugStatsModule \
+                         ../src/Application/BrowserUiPlugin \
+                         ../src/Application/PythonScriptModule \
+                         ../src/Application/SerialDevicePlugin \
+                         ../src/Application/ArchivePlugin \
+                         ../src/Application/CAVEStereoModule \
+                         ../src/Application/XMPPModule \
+                         ../src/Application/OgreAssetEditorModule \
+                         ../src/admino-server \
+                         ../src/admino-plugins/Rocket \
+                         ../src/admino-plugins/RocketConsole \
+                         ../src/admino-plugins/AdminotechComponents/EC_WebBrowser_Protocol.h \
+                         ../src/admino-plugins/AdminotechComponents/rocketmediaplayer \
+                         ../src/admino-plugins/AdminotechComponents/rocketwebbrowser \
+                         ../src/admino-plugins/AdminotechComponents/ui \
+                         ../src/admino-plugins/AdminotechComponents/resources \
+                         ../src/admino-plugins/AdminotechComponents/deps \
+                         ../src/admino-plugins/AdminotechPlugin/AdminotechBackend.h \
+                         ../src/admino-plugins/AdminotechPlugin/AdminotechAssetMonitor.h \
+                         ../src/admino-plugins/AdminotechPlugin/AdminotechData.h \
+                         ../src/admino-plugins/AdminotechPlugin/AdminotechDefines.h \
+                         ../src/admino-plugins/AdminotechPlugin/AdminotechPortalWidget.h \
+                         ../src/admino-plugins/AdminotechPlugin/AdminotechSceneWidgets.h \
+                         ../src/admino-plugins/AdminotechPlugin/AdminotechScriptTypeDefines.h \
+                         ../src/admino-plugins/AdminotechPlugin/AdminotechLayersWidget.h \
+                         ../src/admino-plugins/AdminotechPlugin/AdminotechSettings.h \
+                         ../src/admino-plugins/AdminotechPlugin/AdminotechCommon.h \
+                         ../src/admino-plugins/AdminotechPlugin/ui \
+                         ../src/admino-plugins/AdminotechPlugin/media \
+                         ../src/admino-plugins/AdminotechPlugin/deps \
+                         ../src/admino-plugins/AdminotechPlugin/slideshow \
+                         ../src/admino-plugins/AdminotechPlugin/cave \
+                         ../src/admino-plugins/AdminotechPlugin/updater \
+                         ../src/admino-plugins/AdminotechPlugin/avatar/AdminotechAvatarEditor.h                   
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or 
 # directories that are symbolic links (a Unix file system feature) are excluded 
@@ -799,7 +812,15 @@ EXCLUDE_PATTERNS       = */.git* \
                          sqlite*.* \
                          moc_*.cxx \
                          *.py \
-                         *.cs
+                         *.cs \
+                         */src/Core/TundraCore/Framework/Profiler* \
+                         */src/Core/TundraProtocolModule/Msg* \
+                         */src/Core/TundraProtocolModule/*Filter* \
+                         */src/Core/ECEditorModule/* \
+                         */src/Application/AvatarModule/AvatarDescHelpers* \
+                         */src/Application/SceneWidgetComponents/EC_WebView* \
+                         */src/Application/JavascriptModule/jsprofiler* \
+                         */src/admino-plugins/AdminotechComponents/AdminotechOpenAsset*
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names 
 # (namespaces, classes, functions, etc.) that should be excluded from the 
