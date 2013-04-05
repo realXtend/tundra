@@ -56,8 +56,8 @@
    <attribute value="0.000199999995" name="V factor"/>
    <attribute value="10" name="Segments in x"/>
    <attribute value="10" name="Segments in y"/>
-   <attribute value="Ocean" name="Material"/>
-   <attribute value="" name="Material ref"/>
+   <attribute value="" name="Material"/>
+   <attribute value="Ogre Media:WaterPlane.material" name="Material ref"/>
    <attribute value="0.200000003 0.400000006 0.349999994 1" name="Fog color"/>
    <attribute value="100" name="Fog start dist."/>
    <attribute value="2000" name="Fog end dist."/>

@@ -10,6 +10,7 @@
 #include "Math/Quat.h"
 #include "OgreModuleFwd.h"
 #include "AssetReference.h"
+#include "AssetFwd.h"
 
 /// Makes the entity a water plane.
 /** <table class="header">
@@ -119,20 +120,13 @@ public:
     Q_PROPERTY(int ySegments READ getySegments WRITE setySegments);
     DEFINE_QPROPERTY_ATTRIBUTE(int, ySegments);
 
-    /// Material name
-    /// @todo Remove! Use only materialRef.
+    /// @deprecated Use materialRef instead. @todo Remove!
     Q_PROPERTY(QString materialName READ getmaterialName WRITE setmaterialName);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, materialName);
 
     /// The material used for the water plane.
-    /// @note Currently unused!
-    /// @todo Use instead of materialName!
     Q_PROPERTY(AssetReference materialRef READ getmaterialRef WRITE setmaterialRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, materialRef);
-
-    // Material texture, currently commented out, working feature.
-    //DEFINE_QPROPERTY_ATTRIBUTE(QString, textureNameAttr);
-    //Q_PROPERTY(QString textureNameAttr READ gettextureNameAttr WRITE settextureNameAttr);
 
     /// Color of underwater fog.
     Q_PROPERTY(Color fogColor READ getfogColor WRITE setfogColor);
@@ -182,6 +176,7 @@ public slots:
     void RemoveWaterPlane();
 
 private slots:
+    void OnMaterialAssetLoaded(const AssetPtr &mat);
 
     /// Called if parent entity has set.
     void Create();
@@ -219,6 +214,7 @@ private:
     void SetOrientation();
 
     void SetUnderwaterFog();
+    void UpdateMaterial();
 
     OgreWorldWeakPtr world_;
     Ogre::Entity* entity_;
@@ -226,10 +222,11 @@ private:
 
     bool attached_;
     bool attachedToRoot_;
-    int lastXsize_;
-    int lastYsize_;
 
     /// Used for caching whether or not the camera is inside this water plane.
     /// If it was last frame, but isn't anymore, the original scene fog is restored (if existent in the first place).
     bool cameraInsideWaterCube;
+
+    AssetRefListenerPtr materialAsset;
+    QString currentMaterial; ///< Ogre resource name for the currently used material.
 };
