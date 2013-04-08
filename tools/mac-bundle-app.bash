@@ -58,9 +58,14 @@ cp -R $qtlibdir/QtDeclarative.framework $frameworksdir
 
 echo "Deploying Qt plugins from $qtpluginsdir to app bundle."
 cp -R $qtpluginsdir/* $bundledir/Contents/Plugins
+mkdir $bundledir/Contents/MacOS/qtplugins
+mkdir $bundledir/Contents/MacOS/qtplugins/script
+cp -R $depsdir/build/qtscriptgenerator/plugins/script/*.dylib $bundledir/Contents/MacOS/qtplugins/script 
+debugplugins=`find $bundledir/Contents/MacOS/qtplugins/script -name "*_debug*.dylib"`
+rm $debugplugins
 
 echo "Deploying Ogre plugins from $ogredir to app bundle."
-cp $ogredir/*.dylib $bundledir/Contents/Plugins
+cp $ogredir/lib/relwithdebinfo/*.dylib $bundledir/Contents/Plugins
 cp $ogredir/lib* $bundledir/Contents/Components
 ogresamples=`find $bundledir/Contents/Plugins -name "Sample_*.dylib"`
 rm $ogresamples
