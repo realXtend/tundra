@@ -235,6 +235,7 @@ void TexturePreviewEditor::Open()
 
     // Create image of texture, and show it into label.
     QImage img = TextureAsset::ToQImage(tex);
+    imageSize_ = img.size();
 
     if(!img.isNull() && imageLabel_ != 0)
     {
