@@ -312,13 +312,13 @@ bool ECBrowser::dropMimeData(QTreeWidgetItem *item, int index, const QMimeData *
             }
             if(!attr)
                 continue;
-            if(attr->TypeName() == "string")
+            if(attr->TypeName().compare("string", Qt::CaseInsensitive) == 0)
             {
                 Attribute<QString> *attribute = dynamic_cast<Attribute<QString> *>(attr);
                 if(attribute)
                     attribute->Set(QString::fromStdString(asset_id.toStdString()), AttributeChange::Default);
             }
-            else if(attr->TypeName() == "qvariant")
+            else if(attr->TypeName()compare("qvariant", Qt::CaseInsensitive) == 0)
             {
                 Attribute<QVariant> *attribute = dynamic_cast<Attribute<QVariant> *>(attr);
                 if(attribute)
@@ -329,34 +329,7 @@ bool ECBrowser::dropMimeData(QTreeWidgetItem *item, int index, const QMimeData *
                     }
                 }
             }
-            else if(attr->TypeName() == "qvariantarray")
-            {
-                Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Attribute<std::vector<QVariant> > *>(attr);
-                if(attribute)
-                {
-                    // We asume that item's name is form of "[0]","[1]" etc. We need to cut down those first and last characters
-                    // to able to get real index number of that item that is cause sorting can make the item order a bit odd.
-                    QString indexText = "";
-                    QString itemText = item->text(0);
-                    for(uint i = 1; i < itemText.size() - 1; i++)
-                        indexText += itemText[i];
-                    bool ok;
-                    int index = indexText.toInt(&ok);
-                    if(!ok)
-                        return false;
-
-                    std::vector<QVariant> variants = attribute->Get();
-                    if ((int)variants.size() > index)
-                        variants[index] = asset_id;
-                    else if((int)variants.size() == index)
-                        variants.push_back(asset_id);
-                    else
-                        return false;
-
-                    attribute->Set(variants, AttributeChange::Default);
-                }
-            }
-            else if(attr->TypeName() == "qvariantlist")
+            else if(attr->TypeName().compare("qvariantlist", Qt::CaseInsensitive) == 0)
             {
                 Attribute<QVariantList > *attribute = dynamic_cast<Attribute<QVariantList > *>(attr);
                 if(attribute)
