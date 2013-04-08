@@ -736,8 +736,6 @@ RECURSIVE              = YES
 EXCLUDE                = ../.git \
                          ../bin \
                          ../cmake \
-                         ../CMakeFiles \
-                         ../deps \
                          ../lib \
                          ../tools \
                          ../android \
@@ -820,7 +818,9 @@ EXCLUDE_PATTERNS       = */.git* \
                          */src/Application/AvatarModule/AvatarDescHelpers* \
                          */src/Application/SceneWidgetComponents/EC_WebView* \
                          */src/Application/JavascriptModule/jsprofiler* \
-                         */src/admino-plugins/AdminotechComponents/AdminotechOpenAsset*
+                         */src/admino-plugins/AdminotechComponents/AdminotechOpenAsset* \
+                         */deps*/* \
+                         */CMakeFiles/*
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names 
 # (namespaces, classes, functions, etc.) that should be excluded from the 
