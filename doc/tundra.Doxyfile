@@ -643,8 +643,6 @@ EXCLUDE                = ../.git \
                          ../ALL_BUILD.dir \
                          ../bin \
                          ../cmake \
-                         ../CMakeFiles \
-                         ../deps \
                          ../lib \
                          ../tools \
                          ../ZERO_CHECK.dir \
@@ -678,7 +676,9 @@ EXCLUDE_PATTERNS       = *.git* \
                          sqlite*.* \
                          moc_*.cxx \
                          *.py \
-                         *.cs
+                         *.cs \
+                         */deps*/* \
+                         */CMakeFiles/*
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names 
 # (namespaces, classes, functions, etc.) that should be excluded from the 
