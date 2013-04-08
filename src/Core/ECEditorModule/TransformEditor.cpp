@@ -371,13 +371,9 @@ void TransformEditor::HandleKeyEvent(KeyEvent *e)
     ScenePtr scn = scene.lock();
     if (!scn)
         return;
-    EC_TransformGizmo *tg = 0;
-    if (gizmo && scn)
-    {
-        tg = gizmo->GetComponent<EC_TransformGizmo>().get();
-        if (!tg)
-            return;
-    }
+    EC_TransformGizmo *tg = (gizmo ? gizmo->Component<EC_TransformGizmo>().get() : 0);
+    if (!tg)
+        return;
 
     InputAPI *inputApi = scn->GetFramework()->Input();
     const QKeySequence translate= inputApi->KeyBinding("SetTranslateGizmo", QKeySequence(Qt::Key_1));
