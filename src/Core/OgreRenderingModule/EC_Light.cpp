@@ -26,17 +26,17 @@ EC_Light::EC_Light(Scene* scene) :
     IComponent(scene),
     light_(0),
     attached_(false),
-    type(this, "light type", LT_Point),
-    diffColor(this, "diffuse color", Color(1.0f, 1.0f, 1.0f)),
-    specColor(this, "specular color", Color(0.0f, 0.0f, 0.0f)),
-    castShadows(this, "cast shadows", false),
-    range(this, "light range", 25.0f),
-    brightness(this, "brightness", 1.0f),
-    constAtten(this, "constant atten", 0.0f),
-    linearAtten(this, "linear atten", 0.01f),
-    quadraAtten(this, "quadratic atten", 0.01f),
-    innerAngle(this, "light inner angle", 30.0f),
-    outerAngle(this, "light outer angle", 40.0f)
+    type(this, "Light type", LT_Point),
+    diffColor(this, "Diffuse color", Color(1.0f, 1.0f, 1.0f)),
+    specColor(this, "Specular color", Color(0.0f, 0.0f, 0.0f)),
+    castShadows(this, "Cast shadows", false),
+    range(this, "Light range", 25.0f),
+    brightness(this, "Brightness", 1.0f),
+    constAtten(this, "Constant atten", 0.0f),
+    linearAtten(this, "Linear atten", 0.01f),
+    quadraAtten(this, "Quadratic atten", 0.01f),
+    innerAngle(this, "Light inner angle", 30.0f),
+    outerAngle(this, "Light outer angle", 40.0f)
 {
     static AttributeMetadata typeAttrData;
     static bool metadataInitialized = false;

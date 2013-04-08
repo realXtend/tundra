@@ -36,12 +36,14 @@ class TUNDRACORE_API EC_Name : public IComponent
     COMPONENT_NAME("EC_Name", 26)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Name(Scene* scene) :
         IComponent(scene),
-        name(this, "name", ""),
-        description(this, "description", "")
+        name(this, "Name", ""),
+        description(this, "Description", "")
     {}
+    /// @endcond
 
     ~EC_Name() {}
 
