@@ -1,3 +1,19 @@
+v2.5 https://github.com/realXtend/naali/compare/tundra2.4.1...tundra2.5
+------
+- Undo/redo functionality in scene editing.
+- Optional interest management system implemented into server->client scene updates. Configurable from the command line or with the interest management settings dialog. Contributed by Kari Vatjus-Anttila.
+- Update to Bullet 2.8.1 and physics rolling friction support for EC_RigidBody. Contributed by Peter C.
+- Update to Qt 4.8.4 on Windows.
+- Update to OpenSSL 0.9.8x on Windows. Contributed by Peter C.
+- Official support for compiling on Visual Studio 2010 and cleanup of the Windows dependencies build script.
+- Support for compiling without Boost (TUNDRA_NO_BOOST CMake define). Cleanup of Tundra codebase of Boost-specific constructs.
+- Per-rigidbody gravity enable/disable.
+- Wire protocol resiliency for adding component attributes to the end of a component's attribute list while maintaining future version compatibility.
+  Unfortunately Tundra 2.4.x can not retroactively support this and is incompatible eg. with the EC_RigidBody component.
+- For consistency, signal individual component removals also when an entity is being removed from the scene. This may simplify eg. script code checking for removal of specific components.
+- Added a Javascript Tundra1 -> Tundra2 scene orientation converter.
+- Several bugfixes and convenience improvements in the API.
+
 v2.4.1 - https://github.com/realXtend/naali/compare/tundra2.4...tundra2.4.1
 ------
  - Add support for Crunch texture format (#532), see http://code.google.com/p/crunch/
