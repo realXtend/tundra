@@ -751,7 +751,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         mouseEvent.globalY = e->globalY();
 
         mouseEvent.otherButtons = e->buttons();
-
+        mouseEvent.modifiers = e->modifiers();
         //mouseEvent.heldKeys = heldKeys; ///\todo
         mouseEvent.handled = false;
 
@@ -884,7 +884,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         mouseEvent.globalY = e->globalY();
 
         mouseEvent.otherButtons = e->buttons(); ///\todo Can this be trusted?
-
+        mouseEvent.modifiers = e->modifiers();
         //mouseEvent.heldKeys = heldKeys; ///\todo
         mouseEvent.handled = false;
 
