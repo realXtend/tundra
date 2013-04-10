@@ -78,7 +78,7 @@ AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString asse
         }
     }
 
-    AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer);
+    AssetTransferPtr transfer = MAKE_SHARED(IAssetTransfer);
     transfer->source.ref = assetRef.trimmed();
     transfer->assetType = assetType;
     transfer->diskSourceType = IAsset::Original; // The disk source represents the original authoritative source for the asset.
@@ -289,7 +289,7 @@ AssetUploadTransferPtr LocalAssetProvider::UploadAssetFromFileInMemory(const u8 
         return AssetUploadTransferPtr();
     }
 
-    AssetUploadTransferPtr transfer = AssetUploadTransferPtr(new IAssetUploadTransfer());
+    AssetUploadTransferPtr transfer = MAKE_SHARED(IAssetUploadTransfer);
     transfer->sourceFilename = "";
     transfer->destinationName = assetName;
     transfer->destinationStorage = destination;
