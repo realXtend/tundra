@@ -724,7 +724,8 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
 
         mouseEvent.otherButtons = e->buttons();
         mouseEvent.modifiers = e->modifiers();
-        mouseEvent.heldKeys = heldKeys;
+        for (std::map<Qt::Key, KeyPressInformation>::const_iterator current = heldKeys.begin(); current != heldKeys.end(); ++ current)
+            mouseEvent.heldKeys.push_back((*current).first);
         mouseEvent.handled = false;
 
         // If the mouse press is going to the inworld scene, clear keyboard focus from the QGraphicsScene widget (if any had it) so key events also go to inworld scene.
@@ -801,7 +802,8 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         mouseEvent.globalX = e->globalX(); // Note that these may "jitter" when mouse is in relative movement mode.
         mouseEvent.globalY = e->globalY();
         mouseEvent.otherButtons = e->buttons();
-        mouseEvent.heldKeys = heldKeys;
+        for (std::map<Qt::Key, KeyPressInformation>::const_iterator current = heldKeys.begin(); current != heldKeys.end(); ++ current)
+            mouseEvent.heldKeys.push_back((*current).first);
         mouseEvent.handled = false;
 
         // Save the absolute coordinates to be able to compute the proper relative movement values in the next
@@ -857,7 +859,8 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
 
         mouseEvent.otherButtons = e->buttons(); ///\todo Can this be trusted?
         mouseEvent.modifiers = e->modifiers();
-        mouseEvent.heldKeys = heldKeys;
+        for (std::map<Qt::Key, KeyPressInformation>::const_iterator current = heldKeys.begin(); current != heldKeys.end(); ++ current)
+            mouseEvent.heldKeys.push_back((*current).first);
         mouseEvent.handled = false;
 
         TriggerMouseEvent(mouseEvent);
