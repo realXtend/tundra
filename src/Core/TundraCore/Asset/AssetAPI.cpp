@@ -41,7 +41,7 @@ AssetAPI::AssetAPI(Framework *framework, bool headless) :
     // The Asset API always understands at least this single built-in asset type "Binary".
     // You can use this type to request asset data as binary, without generating any kind of in-memory representation or loading for it.
     // Your module/component can then parse the content in a custom way.
-    RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Binary", "")));
+    RegisterAssetTypeFactory(MAKE_SHARED(BinaryAssetFactory, "Binary", ""));
 }
 
 AssetAPI::~AssetAPI()
@@ -84,7 +84,7 @@ void AssetAPI::RegisterAssetProvider(AssetProviderPtr provider)
 
 AssetStoragePtr AssetAPI::AssetStorageByName(const QString &name) const
 {
-    foreach(AssetProviderPtr provider, GetAssetProviders())
+    foreach(const AssetProviderPtr &provider, AssetProviders())
         foreach(AssetStoragePtr storage, provider->GetStorages())
             if (storage->Name().compare(name, Qt::CaseInsensitive) == 0)
                 return storage;
@@ -93,8 +93,8 @@ AssetStoragePtr AssetAPI::AssetStorageByName(const QString &name) const
 
 AssetStoragePtr AssetAPI::StorageForAssetRef(const QString &ref) const
 {
-    PROFILE(AssetAPI_GetStorageForAssetRef);
-    foreach(AssetProviderPtr provider, GetAssetProviders())
+    PROFILE(AssetAPI_StorageForAssetRef);
+    foreach(const AssetProviderPtr &provider, AssetProviders())
     {
         AssetStoragePtr storage = provider->GetStorageForAssetRef(ref);
         if (storage)
@@ -107,7 +107,7 @@ bool AssetAPI::RemoveAssetStorage(const QString &name)
 {
     ///\bug Currently it is possible to have e.g. a local storage with name "Foo" and a http storage with name "Foo", and it will
     /// not be possible to specify which storage to delete.
-    foreach(AssetProviderPtr provider, GetAssetProviders())
+    foreach(const AssetProviderPtr &provider, AssetProviders())
         if (provider->RemoveAssetStorage(name))
             return true;
 
@@ -139,7 +139,7 @@ AssetStoragePtr AssetAPI::DefaultAssetStorage() const
         return defStorage;
 
     // If no default storage set, return the first one on the list.
-    std::vector<AssetStoragePtr> storages = GetAssetStorages();
+    std::vector<AssetStoragePtr> storages = AssetStorages();
     if (storages.size() > 0)
         return storages[0];
 
@@ -168,7 +168,7 @@ std::vector<AssetStoragePtr> AssetAPI::AssetStorages() const
 {
     std::vector<AssetStoragePtr> storages;
 
-    std::vector<AssetProviderPtr> providers = GetAssetProviders();
+    std::vector<AssetProviderPtr> providers = AssetProviders();
     for(size_t i = 0; i < providers.size(); ++i)
     {
         std::vector<AssetStoragePtr> stores = providers[i]->GetStorages();
@@ -486,9 +486,9 @@ void AssetAPI::DeleteAssetFromStorage(QString assetRef)
 {
     AssetPtr asset = GetAsset(assetRef);
 
-    AssetProviderPtr provider = (asset.get() ? asset->GetAssetProvider() : AssetProviderPtr());
+    AssetProviderPtr provider = (asset.get() ? asset->AssetProvider() : AssetProviderPtr());
     if (!provider)
-        provider = GetProviderForAssetRef(assetRef); // If the actual AssetPtr didn't specify the originating provider, try to guess it from the assetRef string.
+        provider = ProviderForAssetRef(assetRef); // If the actual AssetPtr didn't specify the originating provider, try to guess it from the assetRef string.
 
     // We're erasing the asset from the storage, so also clean it from memory and disk source to avoid any leftovers from remaining in the system.
     if (asset)
@@ -515,7 +515,7 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const QString &filename, co
     QString newAssetName = assetName;
     if (newAssetName.isEmpty())
         newAssetName = file.fileName().split("/").last();
-    AssetStoragePtr storage = GetAssetStorageByName(storageName);
+    AssetStoragePtr storage = AssetStorageByName(storageName);
     if (!storage.get())
     {
         LogError("AssetAPI::UploadAssetFromFile failed! No storage found with name " + storageName + "! Please add a storage with this name.");
@@ -571,7 +571,7 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const QByteArray &d
         LogError("AssetAPI::UploadAssetFromFileInMemory failed! QByteArray data is empty and/or null for " + assetName + " asset upload request.");
         return AssetUploadTransferPtr();
     }
-    AssetStoragePtr storage = GetAssetStorageByName(storageName);
+    AssetStoragePtr storage = AssetStorageByName(storageName);
     if (!storage.get())
     {
         LogError("AssetAPI::UploadAssetFromFileInMemory failed! No storage found with name " + storageName + "! Please add a storage with this name.");
@@ -775,7 +775,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
                 AssetTransferPtr subTransfer = assetBundleMonitor->SubAssetTransfer(fullAssetRef);
                 if (!subTransfer.get())
                 {
-                    subTransfer = AssetTransferPtr(new VirtualAssetTransfer());
+                    subTransfer = MAKE_SHARED(VirtualAssetTransfer);
                     subTransfer->source.ref = fullAssetRef;
                     subTransfer->assetType = GetResourceTypeFromAssetRef(subTransfer->source.ref);
                     subTransfer->provider = transfer->provider;
@@ -820,7 +820,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
         // Null factories are used for not loading particular assets.
         // Having this option we can return a null transfer here to not
         // get lots of error logging eg. on a headless Tundra for UI assets.
-        if (dynamic_cast<NullAssetFactory*>(GetAssetTypeFactory(assetType).get()))
+        if (dynamic_cast<NullAssetFactory*>(AssetTypeFactory(assetType).get()))
             return AssetTransferPtr();
     }
     
@@ -832,12 +832,12 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
     {
         // The asset was already downloaded. Generate a 'virtual asset transfer' 
         // and return it to the client. Fill in the valid existing asset ptr to the transfer.
-        AssetTransferPtr transfer = AssetTransferPtr(new VirtualAssetTransfer());
+        AssetTransferPtr transfer = MAKE_SHARED(VirtualAssetTransfer);
         transfer->asset = existingAsset;
         transfer->source.ref = assetRef;
         transfer->assetType = assetType;
-        transfer->provider = transfer->asset->GetAssetProvider();
-        transfer->storage = transfer->asset->GetAssetStorage();
+        transfer->provider = transfer->asset->AssetProvider();
+        transfer->storage = transfer->asset->AssetStorage();
         transfer->diskSourceType = transfer->asset->DiskSourceType();
         
         // There is no asset provider processing this 'transfer' that would "push" the AssetTransferCompleted call. 
@@ -868,7 +868,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
                     return subTransfer;
             }
             // Create a loader for this sub asset.
-            AssetTransferPtr transfer = AssetTransferPtr(new VirtualAssetTransfer());
+            AssetTransferPtr transfer = MAKE_SHARED(VirtualAssetTransfer);
             transfer->asset = existingAsset;
             transfer->source.ref = fullAssetRef;
             readySubTransfers.push_back(SubAssetLoader(assetRef, transfer));
@@ -890,7 +890,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
         PendingDownloadRequest pendingRequest;
         pendingRequest.assetRef = assetRef;
         pendingRequest.assetType = assetType;
-        pendingRequest.transfer = AssetTransferPtr(new IAssetTransfer);
+        pendingRequest.transfer = MAKE_SHARED(IAssetTransfer);
 
         pendingDownloadRequests[assetRef] = pendingRequest;
 
@@ -943,7 +943,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
         else
         {
             // Create new bundle monitor.
-            bundleMonitor = AssetBundleMonitorPtr(new AssetBundleMonitor(this, transfer));
+            bundleMonitor = MAKE_SHARED(AssetBundleMonitor, this, transfer);
             bundleMonitors[assetRef] = bundleMonitor;
         }
         if (!bundleMonitor.get())
@@ -957,7 +957,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
         {
             // In this case we return a virtual transfer for the sub asset.
             // This transfer will be loaded once the bundle can provide the content.
-            subTransfer = AssetTransferPtr(new VirtualAssetTransfer());
+            subTransfer = MAKE_SHARED(VirtualAssetTransfer);
             subTransfer->source.ref = fullAssetRef;
             subTransfer->assetType = GetResourceTypeFromAssetRef(subTransfer->source.ref);
             subTransfer->provider = transfer->provider;
@@ -997,12 +997,12 @@ AssetProviderPtr AssetAPI::ProviderForAssetRef(QString assetRef, QString assetTy
     }
     else if (assetRefType == AssetRefNamedStorage) // The asset ref explicitly points to a named storage. Use the provider for that storage.
     {
-        AssetStoragePtr storage = GetAssetStorageByName(namedStorage);
+        AssetStoragePtr storage = AssetStorageByName(namedStorage);
         AssetProviderPtr provider = (storage ? storage->provider.lock() : AssetProviderPtr());
         return provider;
     }
 
-    std::vector<AssetProviderPtr> providers = GetAssetProviders();
+    std::vector<AssetProviderPtr> providers = AssetProviders();
     for(size_t i = 0; i < providers.size(); ++i)
         if (providers[i]->IsValidRef(assetRef, assetType))
             return providers[i];
@@ -1082,7 +1082,7 @@ QString AssetAPI::ResolveAssetRef(QString context, QString assetRef) const
         break;
     case AssetRefNamedStorage: // The asset ref explicitly points to a named storage. Use the provider for that storage.
         {
-            AssetStoragePtr storage = GetAssetStorageByName(namedStorage);
+            AssetStoragePtr storage = AssetStorageByName(namedStorage);
             if (!storage)
                 return assetRef; // Failed to find the provider, just use the ref as it was, and hope.
             return storage->GetFullAssetURL(assetPath);
@@ -1095,7 +1095,7 @@ QString AssetAPI::ResolveAssetRef(QString context, QString assetRef) const
 
 void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
 {
-    AssetTypeFactoryPtr existingFactory = GetAssetTypeFactory(factory->Type());
+    AssetTypeFactoryPtr existingFactory = AssetTypeFactory(factory->Type());
     if (existingFactory)
     {
         LogWarning("AssetAPI::RegisterAssetTypeFactory: Factory with type '" + factory->Type() + "' already registered.");
@@ -1108,7 +1108,7 @@ void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
 
 void AssetAPI::RegisterAssetBundleTypeFactory(AssetBundleTypeFactoryPtr factory)
 {
-    AssetBundleTypeFactoryPtr existingFactory = GetAssetBundleTypeFactory(factory->Type());
+    AssetBundleTypeFactoryPtr existingFactory = AssetBundleTypeFactory(factory->Type());
     if (existingFactory)
     {
         LogWarning("AssetAPI::RegisterAssetBundleTypeFactory: Factory with type '" + factory->Type() + "' already registered.");
@@ -1183,7 +1183,7 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name, AssetStoragePtr st
         return AssetPtr();
     }
 
-    AssetTypeFactoryPtr factory = GetAssetTypeFactory(type);
+    AssetTypeFactoryPtr factory = AssetTypeFactory(type);
     if (!factory)
     {
         // This spams too much with the server giving us storages, debug should be fine for things we dont have a factory.
@@ -1238,7 +1238,7 @@ AssetBundlePtr AssetAPI::CreateNewAssetBundle(QString type, QString name)
         return AssetBundlePtr();
     }
 
-    AssetBundleTypeFactoryPtr factory = GetAssetBundleTypeFactory(type);
+    AssetBundleTypeFactoryPtr factory = AssetBundleTypeFactory(type);
     if (!factory)
     {
         // This spams too much with the server giving us storages, debug should be fine for things we don't have a factory.
@@ -1355,20 +1355,21 @@ bool AssetAPI::LoadSubAssetToTransfer(AssetTransferPtr transfer, IAssetBundle *b
     return success;
 }
 
-AssetTypeFactoryPtr AssetAPI::AssetTypeFactory(QString typeName) const{
-    PROFILE(AssetAPI_GetAssetTypeFactory);
+AssetTypeFactoryPtr AssetAPI::AssetTypeFactory(const QString &typeName) const
+{
+    PROFILE(AssetAPI_AssetTypeFactory);
     for(size_t i = 0; i < assetTypeFactories.size(); ++i)
-        if (assetTypeFactories[i]->Type().toLower() == typeName.toLower())
+        if (assetTypeFactories[i]->Type().compare(typeName, Qt::CaseInsensitive) == 0)
             return assetTypeFactories[i];
 
     return AssetTypeFactoryPtr();
 }
 
-AssetBundleTypeFactoryPtr AssetAPI::GetAssetBundleTypeFactory(QString typeName) const
+AssetBundleTypeFactoryPtr AssetAPI::AssetBundleTypeFactory(const QString &typeName) const
 {
-    PROFILE(AssetAPI_GetAssetBundleTypeFactory);
+    PROFILE(AssetAPI_AssetBundleTypeFactory);
     for(size_t i = 0; i < assetBundleTypeFactories.size(); ++i)
-        if (assetBundleTypeFactories[i]->Type().toLower() == typeName.toLower())
+        if (assetBundleTypeFactories[i]->Type().compare(typeName, Qt::CaseInsensitive) == 0)
             return assetBundleTypeFactories[i];
 
     return AssetBundleTypeFactoryPtr();
@@ -1736,7 +1737,7 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
             // a storage known to Tundra and set liveupdate==true for that asset storage.
             // Note that this means that also local assets outside all storages with absolute path names like 
             // 'C:\mypath\asset.png' will always have liveupdate disabled.
-            AssetStoragePtr storage = asset->GetAssetStorage();
+            AssetStoragePtr storage = asset->AssetStorage();
             if (storage)
             {
                 bool shouldLiveUpdate = storage->HasLiveUpdate();
@@ -1962,7 +1963,7 @@ int AssetAPI::NumPendingDependencies(AssetPtr asset) const
             continue;
 
         // We silently ignore this dependency if the asset type in question is disabled.
-        if (dynamic_cast<NullAssetFactory*>(GetAssetTypeFactory(GetResourceTypeFromAssetRef(refs[i])).get()))
+        if (dynamic_cast<NullAssetFactory*>(AssetTypeFactory(GetResourceTypeFromAssetRef(refs[i])).get()))
             continue;
 
         AssetPtr existing = GetAsset(refs[i].ref);
@@ -2002,7 +2003,7 @@ bool AssetAPI::HasPendingDependencies(AssetPtr asset) const
             continue;
 
         // We silently ignore this dependency if the asset type in question is disabled.
-        if (dynamic_cast<NullAssetFactory*>(GetAssetTypeFactory(GetResourceTypeFromAssetRef(refs[i])).get()))
+        if (dynamic_cast<NullAssetFactory*>(AssetTypeFactory(ResourceTypeForAssetRef(refs[i])).get()))
             continue;
 
         AssetPtr existing = GetAsset(refs[i].ref);
@@ -2136,7 +2137,7 @@ void AssetAPI::OnAssetDiskSourceChanged(const QString &path_)
         if (!assetDiskSource.isEmpty() && QDir(assetDiskSource) == path && QFile::exists(assetDiskSource))
         {
             AssetPtr asset = iter->second;
-            AssetStoragePtr storage = asset->GetAssetStorage();
+            AssetStoragePtr storage = asset->AssetStorage();
             if (storage)
             {
                 if (storage->HasLiveUpdate())
@@ -2183,7 +2184,7 @@ void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStora
         return;
 
     QString assetRef = storage->GetFullAssetURL(localName);
-    QString assetType = GetResourceTypeFromAssetRef(assetRef);
+    QString assetType = ResourceTypeForAssetRef(assetRef);
     AssetPtr existing = GetAsset(assetRef);
     if (change == IAssetStorage::AssetCreate && existing)
     {
@@ -2271,15 +2272,15 @@ namespace
     }
 }
 
-QString AssetAPI::GetResourceTypeFromAssetRef(const AssetReference &ref) const
+QString AssetAPI::ResourceTypeForAssetRef(const AssetReference &ref) const
 {
     QString type = ref.type.trimmed();
     if (!type.isEmpty())
         return type;
-    return GetResourceTypeFromAssetRef(ref.ref);
+    return ResourceTypeForAssetRef(ref.ref);
 }
 
-QString AssetAPI::GetResourceTypeFromAssetRef(QString assetRef) const
+QString AssetAPI::ResourceTypeForAssetRef(QString assetRef) const
 {
     QString filenameParsed;
     QString subAssetFilename;
