@@ -113,7 +113,6 @@ public:
     unsigned long modifiers;
 
     /// Which keyboard keys were held down when this event occurred.
-    /// @todo Not implemented!
     std::vector<Qt::Key> heldKeys;
 
     /// The coordinates in window client coordinate space denoting where the mouse buttons were pressed down.
