@@ -175,7 +175,8 @@ public slots:
     void ApplyMouseCursorOverride();
 
     /// Return the item at coordinates. If the mouse cursor is hidden, always returns null
-    QGraphicsItem* ItemAtCoords(int x, int y) const;
+    QGraphicsItem *ItemAtCoords(int x, int y) const;
+    QGraphicsItem *ItemAtCoords(const QPoint &point) const { return ItemAtCoords(point.x(), point.y()); } /**< @overload */
 
     /// Explicitly defocus any widgets and return key focus to the 3D world
     void ClearFocus();
