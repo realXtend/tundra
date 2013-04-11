@@ -31,7 +31,6 @@ public:
     void Populate();
 
 private:
-    Q_DISABLE_COPY(OgreMaterialEditor);
     Framework *framework;
     AssetWeakPtr asset;
     QTabWidget *techniqueTabWidget;

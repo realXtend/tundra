@@ -32,9 +32,6 @@ public slots:
     /// Returns if asset of @type is supported for editing/previewing.
     bool IsSupportedAssetType(const QString &type) const;
 
-private:
-    Q_DISABLE_COPY(OgreAssetEditorModule);
-
 private slots:
     void OnContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
 

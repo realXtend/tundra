@@ -145,7 +145,6 @@ private:
     void PrepareString(QString &str) const;
 
 private:
-    Q_DISABLE_COPY(ConfigAPI)
     friend class Framework;
 
     /// @note Framework takes ownership of the object.

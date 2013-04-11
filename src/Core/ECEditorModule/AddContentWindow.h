@@ -86,8 +86,6 @@ protected:
     void showEvent(QShowEvent *e);
 
 private:
-    Q_DISABLE_COPY(AddContentWindow)
-
     /// Creates entity items to the entity tree widget.
     /** @param entityDescs List of entity descriptions. */
     void AddEntities(const QList<EntityDesc> &entityDescs);

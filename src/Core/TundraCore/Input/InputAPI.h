@@ -211,8 +211,6 @@ signals:
     void TouchEnd(QTouchEvent *touchEvent);
 
 private:
-    Q_DISABLE_COPY(InputAPI)
-
     /// Stores all InputContexts that have been registered from a script and can't hold strong refs on their own.
     std::list<InputContextPtr> untrackedInputContexts;
 
