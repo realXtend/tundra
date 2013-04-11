@@ -14,6 +14,16 @@
 #include <stdlib.h>
 //#include "MemoryLeakCheck.h"
 
+const Color Color::Red = Color(1.f, 0.f, 0.f, 1.f);
+const Color Color::Green = Color(0.f, 1.f, 0.f, 1.f);
+const Color Color::Blue = Color(0.f, 0.f, 1.f, 1.f);
+const Color Color::White = Color(1.f, 1.f, 1.f, 1.f);
+const Color Color::Black = Color(0.f, 0.f, 0.f, 1.f);
+const Color Color::Yellow = Color(1.f, 0.f, 0.f, 1.f);
+const Color Color::Cyan = Color(0.f, 1.f, 1.f, 1.f);
+const Color Color::Magenta = Color(1.f, 0.f, 1.f, 1.f);
+const Color Color::Gray = Color(0.5f, 0.5f, 0.5f, 1.f);
+
 #ifdef MATH_QT_INTEROP
 Color::operator QColor() const
 {
@@ -55,7 +65,6 @@ Color Color::FromString(const char *str)
     if (str && *str != '\0') // alpha optional
         c.a = (float)strtod(str, const_cast<char**>(&str));
     return c;
-
 }
 
 Color::operator float4() const
