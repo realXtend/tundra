@@ -1883,7 +1883,9 @@ void AssetReferenceAttributeEditor::HandleAssetSelected(AssetPtr asset)
     {
         LogDebug("AssetReferenceAttributeEditor: Setting new value " + asset->Name());
         SetValue(AssetReference(asset->Name()));
-        Update();
+        // Update() does not update immediately, need to reinit
+        UnInitialize();
+        Initialize();
     }
 }
 
@@ -2203,7 +2205,9 @@ void AssetReferenceListAttributeEditor::HandleAssetSelected(AssetPtr asset)
             newRefList.Set(currentIndex, AssetReference(asset->Name()));
 
         SetValue(newRefList);
-        Update();
+        // Update() does not update immediately, need to reinit
+        UnInitialize();
+        Initialize();
     }
 }
 
