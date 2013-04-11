@@ -25,9 +25,6 @@ public:
     /** The @c data will contain asset references in desanitated format. */
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const;
 
-    /// Unload material from ogre
-    virtual void DoUnload();
-
     /// Return references of this material, in most cases textures
     virtual std::vector<AssetReference> FindReferences() const;
 
@@ -224,6 +221,8 @@ private slots:
     void OnTransferFailed(IAssetTransfer *transfer, QString reason);
 
 private:
+    /// Unload material from ogre
+    virtual void DoUnload();
     void DependencyLoaded(AssetPtr dependee);
     bool CreateOgreMaterial();
     bool CreateOgreMaterial(const std::string& materialData);

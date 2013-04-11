@@ -18,7 +18,6 @@ public:
 
     ~AvatarDescAsset();
 
-    virtual void DoUnload();
     /// Deserialize from XML data
     virtual bool DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous);
     /// Serialize to XML data
@@ -31,6 +30,8 @@ public:
     bool IsLoaded() const;
 
 private:
+    virtual void DoUnload();
+
     /// Asset references have changed. (Re)request them and trigger appearance changed when all are loaded
     void AssetReferencesChanged();
     /// Parse from XML data. Return true if successful
