@@ -1733,7 +1733,10 @@ template<> void ECAttributeEditor<AssetReference>::Update(IAttribute *attr)
 
         QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(propertyMgr_);
         if (!stringManager)
+        {
+            LogWarning("Failed to update attribute value in ECEditor, couldn't find stringmanager");
             return;
+        }
 
         stringManager->setValue(rootProperty_, attribute->Get().ref);
     }
@@ -1841,25 +1844,40 @@ void AssetReferenceAttributeEditor::OpenAssetsWindow()
         QString assetType = components_[0].lock()->GetFramework()->Asset()->GetResourceTypeFromAssetRef(assetRef->Get());
         LogDebug("Creating AssetsWindow for asset type " + assetType);
         AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
-        connect(assetsWindow, SIGNAL(SelectedAssetChanged(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
+        connect(assetsWindow, SIGNAL(SelectedAssetChanged(AssetPtr)), SLOT(HandleAssetSelected(AssetPtr)));
         connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
         connect(assetsWindow, SIGNAL(PickCanceled()), SLOT(RestoreOriginalValue()));
         assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
         assetsWindow->setWindowFlags(Qt::Tool);
         assetsWindow->show();
 
-        // Save the original asset ref(s), if we decide to cancel
-        foreach(const ComponentWeakPtr &c, components_)
-            if (c.lock())
-            {
-                Attribute<AssetReference> *ref = FindAttribute<AssetReference>(c.lock());
-                if (ref)
-                    originalValues[c] = ref->Get();
-            }
+        SaveOriginalValue();
     }
 }
 
+void AssetReferenceAttributeEditor::SaveOriginalValue()
+{
+    originalValues.clear();
+    
+    // Save the original asset ref(s), if we decide to cancel
+    foreach(const ComponentWeakPtr &c, components_)
+        if (c.lock())
+        {
+            Attribute<AssetReference> *ref = FindAttribute<AssetReference>(c.lock());
+            if (ref)
+                originalValues[c] = ref->Get();
+        }
+}
+
 void AssetReferenceAttributeEditor::HandleAssetPicked(AssetPtr asset)
+{
+    // Choice was final, set new original values
+    originalValues.clear();
+    HandleAssetSelected(asset);
+    SaveOriginalValue();
+}
+
+void AssetReferenceAttributeEditor::HandleAssetSelected(AssetPtr asset)
 {
     if (asset)
     {
@@ -1868,6 +1886,7 @@ void AssetReferenceAttributeEditor::HandleAssetPicked(AssetPtr asset)
         Update();
     }
 }
+
 
 void AssetReferenceAttributeEditor::RestoreOriginalValue()
 {
@@ -1947,6 +1966,12 @@ template<> void ECAttributeEditor<AssetReferenceList>::Update(IAttribute *attr)
             Initialize();
         }
 
+        if (!stringManager)
+        {
+            LogWarning("Failed to update attribute value in ECEditor, couldn't find stringmanager");
+            return;
+        }
+        
         if (value.Size() <= children.size())
             for(uint i = 0; i < (uint)value.Size(); ++i)
                 stringManager->setValue(children[i], value[i].ref);
@@ -2121,13 +2146,18 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
     LogDebug("OpenAssetsWindow, index " + QString::number(currentIndex));
     LogDebug("Creating AssetsWindow for asset type " + assetType);
     AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
-    connect(assetsWindow, SIGNAL(SelectedAssetChanged(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
+    connect(assetsWindow, SIGNAL(SelectedAssetChanged(AssetPtr)), SLOT(HandleAssetSelected(AssetPtr)));
     connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
     connect(assetsWindow, SIGNAL(PickCanceled()), SLOT(RestoreOriginalValue()));
     assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
     assetsWindow->setWindowFlags(Qt::Tool);
     assetsWindow->show();
 
+    SaveOriginalValue();
+}
+
+void AssetReferenceListAttributeEditor::SaveOriginalValue()
+{
     originalValues.clear();
 
     // Save the original asset ref(s), if we decide to cancel
@@ -2141,6 +2171,14 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
 }
 
 void AssetReferenceListAttributeEditor::HandleAssetPicked(AssetPtr asset)
+{
+    // Choice was final, set new original values
+    originalValues.clear();
+    HandleAssetSelected(asset);
+    SaveOriginalValue();
+}
+
+void AssetReferenceListAttributeEditor::HandleAssetSelected(AssetPtr asset)
 {
     Attribute<AssetReferenceList> *refList = FindAttribute<AssetReferenceList>(components_[0].lock());
     if (!refList)
@@ -2252,7 +2290,10 @@ template<> void ECAttributeEditor<EntityReference>::Update(IAttribute *attr)
 
         QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(propertyMgr_);
         if (!stringManager)
+        {
+            LogWarning("Failed to update attribute value in ECEditor, couldn't find stringmanager");
             return;
+        }
 
         stringManager->setValue(rootProperty_, attribute->Get().ref);
     }

@@ -299,7 +299,9 @@ public:
 private slots:
     void OpenAssetsWindow();
     void HandleNewEditor(QtProperty *prop, QObject *);
+    void HandleAssetSelected(AssetPtr asset);
     void HandleAssetPicked(AssetPtr asset);
+    void SaveOriginalValue();
     void RestoreOriginalValue();
     void OpenEditor();
 
@@ -330,7 +332,9 @@ public:
 private slots:
     void OpenAssetsWindow();
     void HandleNewEditor(QtProperty *prop, QObject *);
+    void HandleAssetSelected(AssetPtr asset);
     void HandleAssetPicked(AssetPtr asset);
+    void SaveOriginalValue();
     void RestoreOriginalValue();
     void OpenEditor();
 
