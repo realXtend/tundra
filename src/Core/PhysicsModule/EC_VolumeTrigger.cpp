@@ -199,9 +199,10 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
     for(EntitiesWithinVolumeMap::iterator it = entities_.begin(); it != entities_.end();)
     {
         bool remove = false;
+        EntityPtr entity = it->first.lock();
         
         // Entity was destroyed without us knowing? Remove from map in that case
-        if (it->first.expired())
+        if (!entity)
             remove = true;
         else
         {
@@ -209,17 +210,12 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
             // (inactive rigidbodies do not refresh the collision, so we would remove the entity mistakenly)
             if (!it->second)
             {
-                EntityPtr entity = it->first.lock();
                 bool active = true;
                 shared_ptr<EC_RigidBody> rigidbody = entity->GetComponent<EC_RigidBody>();
                 if (rigidbody)
                     active = rigidbody->IsActive();
                 if (active)
-                {
                     remove = true;
-                    emit entityLeave(entity.get());
-                    disconnect(entity.get(), SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Entity*)));
-                }
             }
             else
             {
@@ -235,6 +231,11 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
             EntitiesWithinVolumeMap::iterator current = it;
             ++it;
             entities_.erase(current);
+            if (entity)
+            {
+                emit entityLeave(entity.get());
+                disconnect(entity.get(), SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Entity*)));
+            }
         }
     }
 }
@@ -255,17 +256,25 @@ void EC_VolumeTrigger::OnPhysicsCollision(Entity* otherEntity, const float3& pos
     if (byPivot.Get() && !IsPivotInside(entity.get()))
         return;
 
+    bool refreshed = false;
+    
     if (newCollision)
     {
         // make sure the entity isn't already inside the volume
         if (entities_.find(entity) == entities_.end())
         {
+            entities_[entity] = true;
+            refreshed = true;
             emit entityEnter(otherEntity);
             connect(otherEntity, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Entity*)), Qt::UniqueConnection);
         }
     }
-    // Refresh the collision status to new
-    entities_[entity] = true;
+
+    if (!refreshed)
+    {
+        // Refresh the collision status to new
+        entities_[entity] = true;
+    }
 }
 
 /** Called when the given entity is deleted from the scene. In that case, remove the Entity immediately from our tracking data structure (and signal listeners). */
