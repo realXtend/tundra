@@ -216,6 +216,7 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
                 if (active)
                 {
                     remove = true;
+                    emit EntityLeave(entity.get());
                     emit entityLeave(entity.get());
                     disconnect(entity.get(), SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Entity*)));
                 }
@@ -259,6 +260,7 @@ void EC_VolumeTrigger::OnPhysicsCollision(Entity* otherEntity, const float3& pos
         // make sure the entity isn't already inside the volume
         if (entities_.find(entity) == entities_.end())
         {
+            emit EntityEnter(otherEntity);
             emit entityEnter(otherEntity);
             connect(otherEntity, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Entity*)), Qt::UniqueConnection);
         }
@@ -275,6 +277,7 @@ void EC_VolumeTrigger::OnEntityRemoved(Entity *entity)
     if (i != entities_.end())
     {
         entities_.erase(i);
+        emit EntityLeave(entity);
         emit entityLeave(entity);
     }
 }
