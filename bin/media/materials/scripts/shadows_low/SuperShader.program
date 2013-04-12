@@ -1285,6 +1285,7 @@ vertex_program rex/DiffNormalShadowLightmapVP cg
 	{
 	    param_named_auto worldViewProjMatrix worldviewproj_matrix
 	    param_named_auto worldMatrix world_matrix
+		param_named_auto inverseWorldMatrix inverse_world_matrix
 
 		param_named_auto sunLightDir light_position 0
 
