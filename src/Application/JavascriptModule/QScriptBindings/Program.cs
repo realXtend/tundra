@@ -53,6 +53,12 @@ namespace QScriptBindings
 
         static void GenerateBindings(CodeStructure s, string className, string outFilename)
         {
+            if (!s.symbolsByName.ContainsKey(className))
+            {
+                Console.WriteLine("Error: Symbol " + className + " not found");
+                return;
+            }
+
             Symbol classSymbol = s.symbolsByName[className];
             if (classSymbol.kind != "class" && classSymbol.kind != "struct")
             {
