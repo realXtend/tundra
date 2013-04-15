@@ -440,12 +440,12 @@ void IComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element, bool 
 }
 
 /// Returns true if the given XML element has the given child attribute.
-bool HasAttribute(QDomElement &comp_element, const QString &name)
+static bool HasAttribute(QDomElement &comp_element, const QString &name)
 {
     QDomElement attribute_element = comp_element.firstChildElement("attribute");
     while(!attribute_element.isNull())
     {
-        if (attribute_element.attribute("name") == name)
+        if (attribute_element.attribute("name").compare(name, Qt::CaseInsensitive) == 0)
             return true;
         attribute_element = attribute_element.nextSiblingElement("attribute");
     }
