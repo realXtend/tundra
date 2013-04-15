@@ -61,7 +61,7 @@ public:
     /// Called internally by the Framework to update the polling Input API. Not for client use.
     void Update(float frametime);
 
-    typedef QMap<QString, QKeySequence> KeyBindingMap;
+    typedef QMap<QString, QKeySequence> KeyBindingMap; ///< Maps an arbitrary string identifier to a key sequence.
 
     /// Changes the priority of the given input context to the new priority.
     void SetPriority(InputContextPtr inputContext, int newPriority);
@@ -178,6 +178,9 @@ public slots:
     QGraphicsItem *ItemAtCoords(int x, int y) const;
     QGraphicsItem *ItemAtCoords(const QPoint &point) const { return ItemAtCoords(point.x(), point.y()); } /**< @overload */
 
+    /// Return the item under mouse. If the mouse cursor is hidden, always returns null
+    QGraphicsItem *ItemUnderMouse() const { return ItemAtCoords(MousePos()); }
+
     /// Explicitly defocus any widgets and return key focus to the 3D world
     void ClearFocus();
     
@@ -203,7 +206,7 @@ public slots:
     void DumpInputContexts();
 
     /// Returns the number of currently active touch points, if touch input is active.
-    int NumTouchPoints() { return numTouchPoints; }
+    int NumTouchPoints() const { return numTouchPoints; }
 
 signals:
     void TouchBegin(QTouchEvent *touchEvent);
