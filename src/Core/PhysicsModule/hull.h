@@ -28,12 +28,14 @@
 #ifndef HULL_H
 #define HULL_H
 
+#include "PhysicsModuleApi.h"
+
 // Modified for Tundra to use a namespace to not clash with elsewhere defined math types
 /** @cond PRIVATE */
 namespace StanHull
 {
 
-class HullResult
+class PHYSICS_MODULE_API HullResult
 {
 public:
 	HullResult(void)
@@ -65,7 +67,7 @@ enum HullFlag
 };
 
 
-class HullDesc
+class PHYSICS_MODULE_API HullDesc
 {
 public:
 	HullDesc(void)
@@ -126,7 +128,7 @@ enum HullError
 	QE_FAIL           // failed.
 };
 
-class HullLibrary
+class PHYSICS_MODULE_API HullLibrary
 {
 public:
 
