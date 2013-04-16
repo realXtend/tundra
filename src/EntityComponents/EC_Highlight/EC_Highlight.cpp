@@ -100,6 +100,8 @@ void EC_Highlight::Show()
                         {
                             mesh->GetEntity()->getSubEntity(i)->setMaterial(matAsset->ogreMaterial);
 
+                            inApply = false;
+
                             if(!framework->IsHeadless() && highlightTimer->isActive())
                                 highlightTimer->stop();
                         }
