@@ -5,11 +5,8 @@
 #include "Entity.h"
 
 template <typename T>
-EditAttributeCommand<T>::EditAttributeCommand(IAttribute * attr, const T& value, QUndoCommand *parent) :
-    entity_(attr->Owner()->ParentEntity()->shared_from_this()),
-    componentName_(attr->Owner()->Name()),
-    componentType_(attr->Owner()->TypeName()),
-    name_(attr->Name()),
+EditAttributeCommand<T>::EditAttributeCommand(IAttribute *attr, const T& value, QUndoCommand *parent) :
+    attribute_(AttributeWeakPtr(attr->Owner()->shared_from_this(), attr)),
     oldValue_(value),
     dontCallRedo_(true),
     QUndoCommand(parent)

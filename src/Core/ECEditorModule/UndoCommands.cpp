@@ -143,7 +143,8 @@ void RemoveAttributeCommand::redo()
     }
 }
 
-AddComponentCommand::AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, EntityIdList entities, const QString compType, const QString compName, bool sync, bool temp, QUndoCommand * parent) :
+AddComponentCommand::AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const EntityIdList &entities,
+    const QString &compType, const QString &compName, bool sync, bool temp, QUndoCommand * parent) :
     scene_(scene),
     tracker_(tracker),
     entityIds_(entities),
@@ -207,7 +208,7 @@ void AddComponentCommand::redo()
     }
 }
 
-EditXMLCommand::EditXMLCommand(const ScenePtr &scene, const QDomDocument oldDoc, const QDomDocument newDoc, QUndoCommand * parent) : 
+EditXMLCommand::EditXMLCommand(const ScenePtr &scene, const QDomDocument &oldDoc, const QDomDocument &newDoc, QUndoCommand * parent) : 
     scene_(scene),
     oldState_(oldDoc),
     newState_(newDoc),
@@ -288,13 +289,25 @@ void EditXMLCommand::Deserialize(const QDomDocument docState)
 }
 
 AddEntityCommand::AddEntityCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QString &name, bool sync, bool temp, QUndoCommand *parent) :
+    QUndoCommand(parent),
     scene_(scene),
     tracker_(tracker),
     entityName_(name),
     entityId_(0),
     sync_(sync),
-    temp_(temp),
-    QUndoCommand(parent)
+    temp_(temp)
+{
+    setText("add entity named " + (entityName_.isEmpty() ? "(no name)" : entityName_));
+}
+
+AddEntityCommand::AddEntityCommand(const EntityPtr &entity, EntityIdChangeTracker *tracker, QUndoCommand *parent) :
+    QUndoCommand(parent),
+    scene_(entity->ParentScene()->shared_from_this()),
+    tracker_(tracker),
+    entityName_(entity->Name()),
+    entityId_(0),
+    sync_(entity->IsReplicated()),
+    temp_(entity->IsTemporary())
 {
     setText("add entity named " + (entityName_.isEmpty() ? "(no name)" : entityName_));
 }
@@ -307,12 +320,11 @@ int AddEntityCommand::id() const
 void AddEntityCommand::undo()
 {
     ScenePtr scene = scene_.lock();
-    if (!scene.get())
+    if (!scene)
         return;
 
     entity_id_t newId = tracker_->RetrieveId(entityId_);
-    EntityPtr ent = scene->EntityById(newId);
-    if (ent.get())
+    if (scene->EntityById(newId).get()) // intentionally avoid using shared_ptr so that we don't hold ref to the entity that will be deleted
         scene->RemoveEntity(newId, AttributeChange::Replicate);
 }
 
@@ -337,60 +349,44 @@ void AddEntityCommand::redo()
     entity->SetTemporary(temp_);
 }
 
-RemoveCommand::RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QList<EntityWeakPtr> &entityList, const QList<ComponentWeakPtr> &componentList, QUndoCommand * parent) :
+RemoveCommand::RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QList<EntityWeakPtr> &entities, const QList<ComponentWeakPtr> &components, QUndoCommand * parent) :
+    QUndoCommand(parent),
     scene_(scene),
-    tracker_(tracker),
-    QUndoCommand(parent)
+    tracker_(tracker)
 {
-    QString commandText;
-    QString entityStr;
-    QString andStr;
-    QString componentStr;
+    Initialize(entities, components);
+}
 
-    if (!entityList.isEmpty())
-    {
-        for (QList<EntityWeakPtr>::const_iterator i = entityList.begin(); i != entityList.end(); ++i)
-        {
-            entityList_ << (*i).lock()->Id();
+RemoveCommand::RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const QList<EntityWeakPtr> &entities, QUndoCommand *parent) :
+    QUndoCommand(parent),
+    scene_(scene),
+    tracker_(tracker)
+{
+    Initialize(entities, QList<ComponentWeakPtr>());
+}
 
-            if (entityStr.isEmpty())
-            {
-                QString entityName = (*i).lock()->Name().isEmpty() ? "(no name)" : (*i).lock()->Name();
-                entityStr = QString(" entity named %1 with id %2 ").arg(entityName).arg((*i).lock()->Id());
-            }
-        }
+RemoveCommand::RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const QList<ComponentWeakPtr> &components, QUndoCommand *parent) :
+    QUndoCommand(parent),
+    scene_(scene),
+    tracker_(tracker)
+{
+    Initialize(QList<EntityWeakPtr>(), components);
+}
 
-        if (entityList.count() > 1)
-            entityStr = QString(" multiple entities ");
-    }
+RemoveCommand::RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const EntityWeakPtr &entity, QUndoCommand *parent) :
+    QUndoCommand(parent),
+    scene_(scene),
+    tracker_(tracker)
+{
+    Initialize(QList<EntityWeakPtr>(QList<EntityWeakPtr>() << entity), QList<ComponentWeakPtr>());
+}
 
-    if (!componentList.isEmpty())
-    {
-        for (QList<ComponentWeakPtr>::const_iterator i = componentList.begin(); i != componentList.end(); ++i)
-        {
-            ComponentPtr comp = (*i).lock();
-            if (comp.get())
-            {
-                if (entityList_.contains(comp->ParentEntity()->Id()))
-                    continue;
-
-                componentMap_[comp->ParentEntity()->Id()] << qMakePair(comp->TypeName(), comp->Name());
-
-                if (componentStr.isEmpty())
-                {
-                    QString componentName = comp->Name().isEmpty() ? "(no name)" : comp->Name();
-                    componentStr = QString(" component named %1 of type %2 ").arg(componentName).arg(comp->TypeName());
-                }
-            }
-        }
-
-        if (componentList.count() > 1)
-            componentStr = QString(" multiple components ");
-    }
-
-    andStr = QString((!entityStr.isEmpty() && !componentStr.isEmpty()) ? "and" : "");
-    commandText = QString("remove%1%2%3").arg(entityStr).arg(andStr).arg(componentStr);
-    setText(commandText);
+RemoveCommand::RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const ComponentWeakPtr &component, QUndoCommand *parent) :
+    QUndoCommand(parent),
+    scene_(scene),
+    tracker_(tracker)
+{
+    Initialize(QList<EntityWeakPtr>(), QList<ComponentWeakPtr>(QList<ComponentWeakPtr>() << component));
 }
 
 int RemoveCommand::id() const
@@ -513,6 +509,59 @@ void RemoveCommand::redo()
             }
         }
     }
+}
+
+void RemoveCommand::Initialize(const QList<EntityWeakPtr> &entityList, const QList<ComponentWeakPtr> &componentList)
+{
+    QString commandText;
+    QString entityStr;
+    QString andStr;
+    QString componentStr;
+
+    if (!entityList.isEmpty())
+    {
+        for (QList<EntityWeakPtr>::const_iterator i = entityList.begin(); i != entityList.end(); ++i)
+        {
+            entityList_ << (*i).lock()->Id();
+
+            if (entityStr.isEmpty())
+            {
+                QString entityName = (*i).lock()->Name().isEmpty() ? "(no name)" : (*i).lock()->Name();
+                entityStr = QString(" entity named %1 with id %2 ").arg(entityName).arg((*i).lock()->Id());
+            }
+        }
+
+        if (entityList.count() > 1)
+            entityStr = QString(" multiple entities ");
+    }
+
+    if (!componentList.isEmpty())
+    {
+        for (QList<ComponentWeakPtr>::const_iterator i = componentList.begin(); i != componentList.end(); ++i)
+        {
+            ComponentPtr comp = (*i).lock();
+            if (comp.get())
+            {
+                if (entityList_.contains(comp->ParentEntity()->Id()))
+                    continue;
+
+                componentMap_[comp->ParentEntity()->Id()] << qMakePair(comp->TypeName(), comp->Name());
+
+                if (componentStr.isEmpty())
+                {
+                    QString componentName = comp->Name().isEmpty() ? "(no name)" : comp->Name();
+                    componentStr = QString(" component named %1 of type %2 ").arg(componentName).arg(comp->TypeName());
+                }
+            }
+        }
+
+        if (componentList.count() > 1)
+            componentStr = QString(" multiple components ");
+    }
+
+    andStr = QString((!entityStr.isEmpty() && !componentStr.isEmpty()) ? "and" : "");
+    commandText = QString("remove%1%2%3").arg(entityStr).arg(andStr).arg(componentStr);
+    setText(commandText);
 }
 
 RenameCommand::RenameCommand(EntityWeakPtr entity, EntityIdChangeTracker * tracker, const QString oldName, const QString newName, QUndoCommand * parent) : 
