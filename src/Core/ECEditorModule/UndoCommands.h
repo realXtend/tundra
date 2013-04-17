@@ -46,20 +46,10 @@ public:
     /// QUndoCommand override
     void undo()
     {
-        EntityPtr ent = entity_.lock();
-        if (!ent.get())
-            return;
-
-        ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
-        if (comp.get())
+        if (!attribute_.Expired())
         {
-            IAttribute *attr = comp->GetAttribute(name_);
-            Attribute<T> *attribute = dynamic_cast<Attribute<T> *>(attr);
-            if (attribute)
-            {
-                newValue_ = attribute->Get();
-                attribute->Set(oldValue_, AttributeChange::Default);
-            }
+            newValue_ = static_cast<Attribute<T> *>(attribute_.Get())->Get();
+            static_cast<Attribute<T> *>(attribute_.Get())->Set(oldValue_, AttributeChange::Default);
         }
     }
 
@@ -72,18 +62,8 @@ public:
             return;
         }
 
-        EntityPtr ent = entity_.lock();
-        if (!ent.get())
-            return;
-
-        ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
-        if (comp.get())
-        {   
-            IAttribute *attr = comp->GetAttribute(name_);
-            Attribute<T> *attribute = dynamic_cast<Attribute<T> *>(attr);
-            if (attribute)
-                attribute->Set(newValue_, AttributeChange::Default);
-        }
+        if (!attribute_.Expired())
+            static_cast<Attribute<T> *>(attribute_.Get())->Set(newValue_, AttributeChange::Default);
     }
 
     /// QUndoCommand override
@@ -109,10 +89,7 @@ public:
     }
 
 private:
-    EntityWeakPtr entity_; ///< A weak pointer to this attribute's parent entity
-    const QString componentName_; ///< Name of this attribute's parent component
-    const QString componentType_; ///< Typename of this attribute's parent component
-    const QString name_; ///< Name of the attribute
+    AttributeWeakPtr attribute_;
     const T oldValue_; ///< Old value of the attribute
     T newValue_; ///< New value of the attribute
 
@@ -192,7 +169,8 @@ public:
        @param sync Sync state of the component being added
        @param temp Temporary state of the component being added
        @param parent The parent command of this command (optional) */
-    AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, EntityIdList entities, const QString compType, const QString compName, bool sync, bool temp, QUndoCommand * parent = 0);
+    AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const EntityIdList &entities,
+        const QString &compType, const QString &compName, bool sync, bool temp, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
     int id () const;
@@ -217,7 +195,7 @@ public:
     /// Internal QUndoCommand unique ID
     enum { Id = 104 };
 
-    EditXMLCommand(const ScenePtr &scene, const QDomDocument oldDoc, const QDomDocument newDoc, QUndoCommand * parent = 0);
+    EditXMLCommand(const ScenePtr &scene, const QDomDocument &oldDoc, const QDomDocument &newDoc, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
     int id () const;
@@ -253,6 +231,8 @@ public:
        @param parent The parent command of this command (optional) */
     AddEntityCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QString &name, bool sync, bool temp, QUndoCommand * parent = 0);
 
+    AddEntityCommand(const EntityPtr &entity, EntityIdChangeTracker *tracker, QUndoCommand *parent = 0);
+
     /// Returns this command's ID
     int id () const;
     /// QUndoCommand override
@@ -274,13 +254,23 @@ public:
     /// Internal QUndoCommand unique ID
     enum { Id = 106 };
 
-    /// Constructor
+    /// Constructor for both entity and component removal.
     /* @param scene Scene of which entities we're tracking.
-       @param tracker Pointer to the EntityIdChangeTracker object
-       @param entityList A weak pointer list of the entity/entities about to be removed
-       @param componentList A weak pointer list of the component(s) about to be removed
-       @param parent The parent command of this command (optional) */
-    RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QList<EntityWeakPtr> &entityList, const QList<ComponentWeakPtr> &componentList, QUndoCommand * parent = 0);
+       @param tracker Pointer to the EntityIdChangeTracker object.
+       @param entities List of the entities about to be removed.
+       @param components List of component about to be removed.
+       @param parent The parent command of this command (optional). */
+    RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QList<EntityWeakPtr> &entities, const QList<ComponentWeakPtr> &components, QUndoCommand * parent = 0);
+    /// Constructor for removal of entities.
+    RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const QList<EntityWeakPtr> &entities, QUndoCommand *parent = 0);
+    /// Constructor for removal of components.
+    RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const QList<ComponentWeakPtr> &components, QUndoCommand *parent = 0);
+    /// Constructor for a single entity removal.
+    RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const EntityWeakPtr &entity, QUndoCommand *parent = 0);
+    /// Constructor for a single component removal.
+    RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const ComponentWeakPtr &component, QUndoCommand *parent = 0);
+
+    /// @todo Remove command for Scene.
 
     /// Returns this command's ID
     int id () const;
@@ -288,6 +278,9 @@ public:
     void undo();
     /// QUndoCommand override
     void redo();
+
+private:
+    void Initialize(const QList<EntityWeakPtr> &entities, const QList<ComponentWeakPtr> &components);
 
     EntityIdList entityList_; ///< Entity ID list of the entities being removed
     typedef QList<QPair<QString, QString> > ComponentList; ///< A typedef for QList containing QPair of component typenames and component names
