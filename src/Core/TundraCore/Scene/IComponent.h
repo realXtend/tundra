@@ -58,6 +58,11 @@ private: // Return the class visibility specifier to the strictest form so that 
     type get##attribute() const { return (type)attribute.Get(); } \
     void set##attribute(type value) { attribute.Set((type)value, AttributeChange::Default); }
 
+/// Macro for constructing an attribute in the component's constructor initializer list. "id" is the property/variable name, "name" is the human-readable name used in editing.
+#define INIT_ATTRIBUTE(id, name) id(this, name);
+/// Macro for constructing an attribute in the component's constructor initializer list. "id" is the property/variable name, "name" is the human-readable name used in editing, "value" is initial value.
+#define INIT_ATTRIBUTE_VALUE(id, name, value) id(this, name, value);
+
 /// The common interface for all components, which are the building blocks the scene entities are formed of.
 /** Inherit your own components from this class. Never directly allocate new components using operator new,
     but use the factory-based SceneAPI::CreateComponent functions instead.

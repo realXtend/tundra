@@ -28,16 +28,25 @@ class TUNDRACORE_API IAttribute : public enable_shared_from_this<IAttribute>
 public:
     /// Constructor
     /** @param owner Component which this attribute will be attached to.
-        @param name Name of the attribute. */
+        @param name Human-readable name of the attribute. */
     IAttribute(IComponent* owner, const char* name);
+
+    /// Constructor
+    /** @param owner Component which this attribute will be attached to.
+        @param name Human-readable name of the attribute.
+        @param id Id of the attribute, used to identify attributes in scene serialiation. */
+    IAttribute(IComponent* owner, const char* name, const char* id);
 
     virtual ~IAttribute() {}
 
     /// Returns attribute's owner component.
     IComponent* Owner() const { return owner; }
 
-    /// Returns name of the attribute.
+    /// Returns name of the attribute. This is used in editing windows. Is used in serialization only as a fallback (if ID not available)
     const QString &Name() const { return name; }
+
+    /// Returns the id of the attribute for serialization. Should be same as the scripting property name.
+    const QString &Id() const { return id; }
 
     /// Writes attribute to string for XML serialization
     virtual std::string ToString() const = 0;
@@ -125,6 +134,7 @@ protected:
     
     IComponent* owner; ///< Owning component.
     QString name; ///< Name of attribute.
+    QString id; ///< Id of attribute.
     AttributeMetadata *metadata; ///< Possible attribute metadata.
     bool dynamic; ///< Dynamic attributes must be deleted at component destruction
     u8 index; ///< Attribute index in the parent component's attribute list
@@ -157,6 +167,28 @@ public:
         @param val Value. */
     Attribute(IComponent* owner, const char* name, const T &val) :
         IAttribute(owner, name),
+        value(val)
+    {
+    }
+
+    /** Constructor.
+        value is initialiazed to DefaultValue.
+        @param owner Owner component.
+        @param name Name. 
+        @param id Attribute id. */
+    Attribute(IComponent* owner, const char* name, const char* id) :
+        IAttribute(owner, name, id),
+        value(DefaultValue())
+    {
+    }
+
+    /** Constructor taking also value.
+        @param owner Owner component.
+        @param name Name.
+        @param id Attribute id.
+        @param val Value. */
+    Attribute(IComponent* owner, const char* name, const char* id, const T &val) :
+        IAttribute(owner, name, id),
         value(val)
     {
     }

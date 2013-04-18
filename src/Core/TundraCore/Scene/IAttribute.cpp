@@ -44,6 +44,20 @@ IAttribute::IAttribute(IComponent* owner_, const char* name_) :
         owner_->AddAttribute(this);
 }
 
+IAttribute::IAttribute(IComponent* owner_, const char* name_, const char* id_) :
+    name(name_),
+    id(id_),
+    metadata(0),
+    dynamic(false),
+    owner(0),
+    index(0),
+    valueChanged(true)
+{
+    if (owner_)
+        owner_->AddAttribute(this);
+}
+
+
 void IAttribute::Changed(AttributeChange::Type change)
 {
     if (owner)
