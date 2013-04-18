@@ -13,6 +13,17 @@ cmake_minimum_required(VERSION 2.5.5)
 # with Boost disabled. See the dependencies scripts for instructions how to control this.
 option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." TRUE)
 
+if (APPLE)
+    set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvm.clang.1_0")
+endif()
+
+# If TUNDRA_NO_BOOST is TRUE in case of Mac OS X, enable usage of C++11
+if (APPLE AND TUNDRA_NO_BOOST)
+    add_definitions(-DTUNDRA_USE_CPP11)
+    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++0x")
+    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+endif()
+
 macro(PrintUsedEnvVariables)
     # Print out the resolved variables. Note that this does not print the env variables
     # in most cases as they should be resolved to our cmake variables and get cached.

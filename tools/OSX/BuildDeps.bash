@@ -77,8 +77,6 @@ echo "=                                          are part of Xcode must be insta
 echo "= CMake     http://www.cmake.org/cmake/resources/software.html                                              ="
 echo "= Git       http://git-scm.com/download/mac                                                                 ="
 echo "= Mercurial http://mercurial.selenic.com/downloads                                                          ="
-echo "= Qt 4.8.0  http://qt.nokia.com/downloads/sdk-mac-os-cpp                                                    ="
-echo "= MacPorts  http://www.macports.org/install.php                                                             ="
 echo "= XQuartz   for Mac OS X 10.6.x-10.7.x:    NOT required                                                     ="
 echo "=           for Mac OS X 10.8.x and newer: http://xquartz.macosforge.org/landing/                           ="
 echo "============================================================================================================="
@@ -95,7 +93,7 @@ RUN_CMAKE="1"
 RUN_MAKE="1"
 MAKE_XCODE="0"
 USE_BOOST="OFF"
-NO_BOOST="ON" # The variable used in Tundra is called TUNDRA_NO_BOOST, which is opposite of USE_BOOST
+NO_BOOST="ON" # The variable used in Tundra is called TUNDRA_NO_BOOST, which is opposite of USE_BOOST. We will use this also to specify c++11 usage, since not using boost and using c++11 on Mac are mutually exclusive
 NPROCS=`sysctl -n hw.ncpu`
 viewer=
 
@@ -201,23 +199,18 @@ if [ ! -d "$viewer" ]; then
     cd $cwd        # Go back to not alter cwd.
 fi
 
-if [ ! -d "$QTDIR" ]; then
-    #TODO This is very very prone to fail on anyone's system. (but at least we will correctly instruct to use --qt-path)
-    if [ -d /usr/local/Trolltech/Qt-4.7.1 ]; then
-        export QTDIR=/usr/local/Trolltech/Qt-4.7.1
-    elif [ -d ~/QtSDK/Desktop/Qt/4.8.0/gcc ]; then
-        export QTDIR=~/QtSDK/Desktop/Qt/4.8.0/gcc
-    else
-       echoError "Cannot find Qt. Please specify Qt directory with the --qt-path parameter."
-    fi
-fi
-
 DEPS=$viewer/deps
 prefix=$DEPS/osx-64
 build=$DEPS/build
 tarballs=$DEPS/tarballs
 tags=$DEPS/tags
 frameworkpath=$DEPS/Frameworks
+patches=$viewer/tools/OSX/Mods
+
+if [ ! -f "$QTDIR/bin/qmake" ]; then
+    echoWarn "QTDIR does not point to a valid qt installation. Defaulting to $prefix/qt. You can specify a path with --qt-path parameter."
+    export QTDIR=$prefix/qt
+fi
 
 mkdir -p $tarballs $build $prefix $tags $frameworkpath
 
@@ -246,6 +239,31 @@ if [[ $OSX_VERSION == 10.8.* ]]; then
     LC_CTYPE_BAK=$LC_CTYPE
     LC_CTYPE_OVERRIDE='export LC_CTYPE="C"'
     LC_CTYPE_RESTORE="export LC_CTYPE=$LC_CTYPE_BAK"
+fi
+
+what=qt
+qtversion=4.8.4
+pkgbase=qt-everywhere-opensource-src-$qtversion
+dlurl=http://releases.qt-project.org/qt4/source/$pkgbase.tar.gz
+zip=$tarballs/$pkgbase.tar.gz
+
+if [ ! -d $prefix/$what ]; then
+    if [ ! -f $zip ]; then
+        echoInfo "Fetching qt, this could take a while..."
+        curl -L -o $zip $dlurl
+    fi
+
+    if [ ! -d $build/$pkgbase ]; then
+        tar xzf $zip
+    fi
+
+    cd $pkgbase
+    echoInfo "Building $what, version number $qtversion"
+    ./configure -arch x86_64 -cocoa -debug-and-release -opensource -prefix $prefix/$what -no-qt3support -no-opengl -no-openvg -no-dbus -no-phonon -no-phonon-backend -no-multimedia -no-audio-backend -no-declarative -no-xmlpatterns -nomake examples -nomake demos -qt-zlib  -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff
+    make -j$NPROCS
+    make install
+else
+    echoInfo "$what is done"
 fi
 
 cd $build
@@ -319,7 +337,12 @@ else
     chmod +x configure
 
     echoInfo "Building $what:"
-    ./configure --prefix=$prefix/$what
+    if [ $NO_BOOST == "ON" ]; then
+        ./configure --prefix=$prefix/$what CC="/usr/bin/clang -stdlib=libc++" CXX="/usr/bin/clang -stdlib=libc++"
+    else
+        ./configure --prefix=$prefix/$what
+    fi
+
     make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
@@ -340,7 +363,12 @@ else
 
     cd $pkgbase
     echoInfo "Building $what:"
-    ./configure --prefix=$prefix/$what --with-ogg=$prefix/ogg --build=x86_64
+    if [ $NO_BOOST == "ON" ]; then
+        ./configure --prefix=$prefix/$what --with-ogg=$prefix/ogg --build=x86_64 CC="/usr/bin/clang -stdlib=libc++" CXX="/usr/bin/clang -stdlib=libc++"
+    else
+        ./configure --prefix=$prefix/$what --with-ogg=$prefix/ogg --build=x86_64
+    fi
+
     make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
@@ -362,7 +390,12 @@ else
 
     echoInfo "Building $what:"
     cd $pkgbase
-    ./configure --prefix=$prefix/$what --with-ogg=$prefix/ogg --with-vorbis=$prefix/vorbis
+
+    if [ $NO_BOOST == "ON" ]; then
+        ./configure --prefix=$prefix/$what --with-ogg=$prefix/ogg --with-vorbis=$prefix/vorbis CC="/usr/bin/clang -stdlib=libc++" CXX="/usr/bin/clang -stdlib=libc++"
+    else
+        ./configure --prefix=$prefix/$what --with-ogg=$prefix/ogg --with-vorbis=$prefix/vorbis
+    fi
     make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
@@ -406,7 +439,13 @@ else
 
     cd $pkgbase
     echoInfo "Building $what:"
-    ./configure --prefix=$prefix/$what
+    if [ $NO_BOOST == "ON" ]; then
+        patch src/google/protobuf/message.cc < $viewer/tools/OSX/Mods/protobuf-message.cc.patch
+        ./configure --prefix=$prefix/$what CC="/usr/bin/clang++ -stdlib=libc++" CXX="/usr/bin/clang++ -stdlib=libc++"
+    else
+        ./configure --prefix=$prefix/$what
+    fi
+
     make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
@@ -427,7 +466,11 @@ else
 
     cd $pkgbase
     echoInfo "Building $what:"
-    ./configure --prefix=$prefix/$what
+    if [ $NO_BOOST == "ON" ]; then
+        ./configure --prefix=$prefix/$what CC="/usr/bin/clang -stdlib=libc++" CXX="/usr/bin/clang -stdlib=libc++"
+    else
+        ./configure --prefix=$prefix/$what
+    fi
     make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
@@ -448,7 +491,12 @@ else
 
     cd $pkgbase
     echoInfo "Building $what:"
-    ./configure --prefix=$prefix/$what --enable-shared=NO
+    if [ $NO_BOOST == "ON" ]; then
+        ./configure --prefix=$prefix/$what --enable-shared=NO CC="/usr/bin/clang -stdlib=libc++" CXX="/usr/bin/clang -stdlib=libc++"
+    else
+        ./configure --prefix=$prefix/$what --enable-shared=NO
+    fi
+
     make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
@@ -497,14 +545,14 @@ else
 
     echoInfo "Building Qt bindings:"
     cd qtbindings
-    sed -e "s/qtscript_phonon //" < qtbindings.pro > x
+    sed -e "s/qtscript_phonon //" -e "s/qtscript_xmlpatterns //" -e "s/qtscript_opengl //" -e "s/qtscript_uitools //" < qtbindings.pro > x
     mv x qtbindings.pro  
     qmake
     make all -j$NPROCS
     cd ..
     cd ..
-    mkdir -p $viewer/bin/qtplugins/script
-    cp -f $build/$what/plugins/script/* $viewer/bin/qtplugins/script/
+    mkdir -p $viewer/bin/qtplugins
+    cp -Rf $build/$what/plugins/script $viewer/bin/qtplugins
     touch $tags/$what-done
 fi
 
@@ -518,14 +566,18 @@ else
     git clone https://github.com/juj/kNet
     cd kNet
 
-    $LC_CTYPE_OVERRIDE
-    sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" -e "s/USE_BOOST TRUE/USE_BOOST FALSE/" < CMakeLists.txt > x
-    $LC_CTYPE_RESTORE
+    if [ $NO_BOOST == "ON" ]; then
+        git apply $patches/kNet.patch
+    else
+        $LC_CTYPE_OVERRIDE
+        sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" -e "s/USE_BOOST TRUE/USE_BOOST FALSE/" < CMakeLists.txt > x
+        $LC_CTYPE_RESTORE
+        mv x CMakeLists.txt
+    fi
 
-    mv x CMakeLists.txt
     echoInfo "Building $what:"
     cmake . -DCMAKE_BUILD_TYPE=Debug
-    make -j$NPROCS
+    make VERBOSE=1
 
     mkdir -p $prefix/$what/{lib,include}
     cp lib/libkNet.dylib $prefix/$what/lib/
@@ -567,8 +619,14 @@ fi
 
 what=ogre-safe-nocrashes
 baseurl=https://bitbucket.org/clb
-ogredepszip=OgreDependencies_OSX_20120525.zip
-ogredepsurl=http://downloads.sourceforge.net/project/ogre/ogre-dependencies-mac/1.8/
+if [ $NO_BOOST == "ON" ]; then
+    # Use prebuilt dependencies against c++11, system zlip, and later zziplib which will be built later in this script
+    ogredepszip=OgreDependenciesCPP11.zip
+    ogredepsurl=https://dl.dropboxusercontent.com/u/9644277/
+else
+    ogredepszip=OgreDependencies_OSX_20120525.zip
+    ogredepsurl=http://downloads.sourceforge.net/project/ogre/ogre-dependencies-mac/1.8/
+fi
 
 if test -d $prefix/$what/lib/Ogre.framework; then
     echoInfo "$what is done"
@@ -584,11 +642,17 @@ else
     hg clone $baseurl/$what
     cd $what
     hg checkout v1-8
+
+    # Patches Ogre with the same diff as the commits https://bitbucket.org/sinbad/ogre/commits/80717a535bd72cc5a0e7fcf0c154c9fa7afeea2c and
+    # https://bitbucket.org/sinbad/ogre/commits/96d3083c89ea8b5acd0590a4d59a6e31e7a9fba6 which are in v1-9 branch.
+    # Todo: remove this patch when ogre-safe-nocrashes is updated to Ogre 1.9
+    patch -p0 -i $patches/Ogre.patch
+
     curl -L -o $ogredepszip $ogredepsurl$ogredepszip
     tar xzf $ogredepszip
     export OGRE_HOME=$build/$what
     echoInfo "Building $what:"
-    cmake -G Xcode -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DOGRE_USE_BOOST:BOOL=$USE_BOOST -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=0 -DOGRE_CONFIG_THREAD_PROVIDER=none
+    cmake -G Xcode -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DOGRE_USE_BOOST:BOOL=$USE_BOOST -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=0 -DOGRE_CONFIG_THREAD_PROVIDER=none -DOGRE_CONFIG_ENABLE_LIBCPP_SUPPORT:BOOL=$NO_BOOST
     xcodebuild -configuration RelWithDebInfo
 
     mkdir -p $prefix/$what/{lib,include}
@@ -603,6 +667,12 @@ else
     export PKG_CONFIG_PATH=$build/$what/pkgconfig
 fi
 
+# Explicitly specify where the tundra deps boost resides, to allow cmake FindBoost pick it up.
+if [ "$USE_BOOST" == "ON" ]; then
+    export BOOST_ROOT=$prefix/boost/include
+    export BOOST_INCLUDEDIR=$prefix/boost/include/boost
+    export BOOST_LIBRARYDIR=$prefix/boost/lib
+fi
 
 what=assimp
 baseurl=https://assimp.svn.sourceforge.net/svnroot/assimp/trunk
@@ -615,23 +685,22 @@ else
     svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk $what
     cd $what
 
-    $LC_CTYPE_OVERRIDE
-    # Apple's ld does not allow this version number, so override that
-    sed -e 's/(ASSIMP_SV_REVISION 1264)/(ASSIMP_SV_REVISION 1)/' < CMakeLists.txt > temp
-
     if [ "$USE_BOOST" == "ON" ]; then
+        $LC_CTYPE_OVERRIDE
+        # Apple's ld does not allow this version number, so override that
+        sed -e 's/(ASSIMP_SV_REVISION 1264)/(ASSIMP_SV_REVISION 1)/' < CMakeLists.txt > temp
         # Force add boost include path (the same as Ogre's dependencies include path)
         sed -e 's/INCLUDE_DIRECTORIES( include )/INCLUDE_DIRECTORIES( include )\
         set (BOOST_INCLUDEDIR "${ENV_OGRE_HOME}\/Dependencies\/include")/' < temp > temp1
+        $LC_CTYPE_RESTORE
     else
-        # Enable boost workaround
-        sed -e 's/SET ( ASSIMP_ENABLE_BOOST_WORKAROUND OFF CACHE BOOL/SET ( ASSIMP_ENABLE_BOOST_WORKAROUND ON CACHE BOOL/' < temp > temp1
+        # Patch assimp
+        patch -p0 -i $patches/assimp.patch
     fi
-    $LC_CTYPE_RESTORE
 
     mv temp1 CMakeLists.txt
     cmake . -DCMAKE_INSTALL_PREFIX=$prefix/$what
-    make -j4
+    make -j$NPROCS
     make install
     touch $tags/$what-done
 fi
@@ -671,10 +740,10 @@ else
     echoInfo "Building Hydrax:"
     cd $build/$depdir/hydrax
 
-    OSXMAKE="-f makefile.macosx"
-    make $OSXMAKE -j$NPROCS PREFIX=$prefix/$what
-    make $OSXMAKE PREFIX=$prefix/$what install
-    cp ./lib/Release/* $prefix/$what/lib #for some reason, 'cp' that is invoked in the makefile does not copy the library. 
+    cmake . -DCMAKE_INSTALL_PREFIX=$prefix/$what -DUSE_BOOST:BOOL=$USE_BOOST
+    make -j$NPROCS
+    make install
+
     touch $tags/$what-done
 fi
 
@@ -727,6 +796,14 @@ else
     hdiutil detach $mountpoint
 fi
 
+cd $build
+
+if [ $NO_BOOST == "ON" ]; then
+    ZZIPLIBPREFIX=$OGRE_HOME/Dependencies
+else
+    ZZIPLIBPREFIX=$prefix/$what
+fi
+
 what=zziplib
 pkgbase=zziplib-0.13.59
 dlurl=http://sourceforge.net/projects/zziplib/files/zziplib13/0.13.59/$pkgbase.tar.bz2/download
@@ -740,22 +817,16 @@ else
 
     cd $pkgbase
     echoInfo "Building $what:"
-    ./configure --prefix=$prefix/$what
+
+    ./configure --prefix=$ZZIPLIBPREFIX --enable-shared=NO --enable-static=YES
     make VERBOSE=1 -j$NPROCS
     make install
     touch $tags/$what-done
 fi
 
+export ZZIPLIB_ROOT=$ZZIPLIBPREFIX
+
 # All deps are now fetched and built. Do the actual Tundra build.
-
-# Explicitly specify where the tundra deps boost resides, to allow cmake FindBoost pick it up.
-if [ "$USE_BOOST" == "ON" ]; then
-    export BOOST_ROOT=$prefix/boost/include
-    export BOOST_INCLUDEDIR=$prefix/boost/include/boost
-    export BOOST_LIBRARYDIR=$prefix/boost/lib
-fi
-
-
 
 XCODE_SUFFIX=
 if [ "$MAKE_XCODE" == "1" ]; then
@@ -764,7 +835,7 @@ fi
 
 cd $viewer
 if [ "$RUN_CMAKE" == "1" ]; then
-    TUNDRA_DEP_PATH=$prefix cmake . $XCODE_SUFFIX -DCMAKE_OSX_ARCHITECTURES=x86_64 -DTUNDRA_NO_BOOST:BOOL=$NO_BOOST
+    TUNDRA_DEP_PATH=$prefix cmake . $XCODE_SUFFIX -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_BUILD_TYPE=RelWithDebInfo -DTUNDRA_NO_BOOST:BOOL=$NO_BOOST
 fi
 
 if [ "$RUN_MAKE" == "1" ]; then
