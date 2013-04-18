@@ -280,9 +280,9 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
 
     wstring ref = QStringToWString(assetRef);
 
-    wregex expression1(L"(.*?)://(.*)"); // a): protocolSpecifier://pathToAsset
-    wregex expression2(L"([A-Za-z]:[/\\\\].*?)"); // b2): X:\windowsPathToAsset or X:/windowsPathToAsset
-    wregex expression3(L"(.*?):(.*)"); // b3): X:\windowsPathToAsset or X:/windowsPathToAsset
+    static const wregex expression1(L"(.*?)://(.*)"); // a): protocolSpecifier://pathToAsset
+    static const wregex expression2(L"([A-Za-z]:[/\\\\].*?)"); // b2): X:\windowsPathToAsset or X:/windowsPathToAsset
+    static const wregex expression3(L"(.*?):(.*)"); // b3): X:\windowsPathToAsset or X:/windowsPathToAsset
     wsmatch what;
     wstring fullPath; // Contains the url without the "protocolPart://" prefix.
     AssetRefType refType = AssetRefInvalid;
@@ -354,7 +354,13 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
 
     // Parse subAssetName if it exists.
     QString subAssetName = "";
-    wregex expression4(L"(.*?)\\s*[#,]\\s*\"?\\s*(.*?)\\s*\"?\\s*"); // assetRef, "subAssetName". Note: this regex does not parse badly matched '"' signs, but it's a minor issue. (e.g. 'assetRef, ""jeejee' is incorrectly accepted) .
+
+    /* @note For some reason, lazy regex pattern won't match against subasset refs in Apple */
+#ifdef TUNDRA_USE_CPP11
+    static const wregex expression4(L"(.*)\\s*[#,]\\s*\"?\\s*(.*)\\s*\"?\\s*");
+#else
+    static const wregex expression4(L"(.*?)\\s*[#,]\\s*\"?\\s*(.*?)\\s*\"?\\s*"); // assetRef, "subAssetName". Note: this regex does not parse badly matched '"' signs, but it's a minor issue. (e.g. 'assetRef, ""jeejee' is incorrectly accepted) .
+#endif
     if (regex_match(fullPath, what, expression4))
     {
         wstring assetRef = what[1].str();
@@ -1707,9 +1713,16 @@ void AssetAPI::AssetLoadCompleted(const QString assetRef)
     // Check for new transfer: not in the assets map yet
     if (iter != currentTransfers.end())
         asset = iter->second->asset;
-    // Check for a reload: is in the known asset map
-    else if (iter2 != assets.end())
+    // Check for a reload: is in the known asset map.
+    if (!asset.get() && iter2 != assets.end())
+    {
+        /** The above transfer might have been found but its IAsset can be null
+            in the case that this is a IAsset created by cloning. The code that 
+            requested the clone/generated ref might have created the above valid transfer
+            but it might have failed, resulting in a null IAsset, if the clone was not made
+            before the request. */
         asset = iter2->second;
+    }
 
     if (asset.get())
     {
