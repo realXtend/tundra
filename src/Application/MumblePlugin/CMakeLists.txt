@@ -26,7 +26,7 @@ macro (configure_protobuf)
 	set (PROTOBUF_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/protobuf/include)
         
         if ("${PROTOBUF_PROTOC_EXECUTABLE}" STREQUAL "PROTOBUF_PROTOC_EXECUTABLE-NOTFOUND")
-            set (PROTOBUF_PROTOC_EXECUTABLE ${ENV_TUNDRA_DEP_PATH}/bin/protoc)
+            set (PROTOBUF_PROTOC_EXECUTABLE ${ENV_TUNDRA_DEP_PATH}/protobuf/bin/protoc)
             message (STATUS "Protoc executable not found automatically, guessing location to " ${PROTOBUF_PROTOC_EXECUTABLE})
         else ()
             message (STATUS "Protoc executable found from: " ${PROTOBUF_PROTOC_EXECUTABLE})
