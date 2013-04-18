@@ -577,7 +577,7 @@ namespace crnd
       enum { value = true };
    };
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !defined(TUNDRA_USE_CPP11)
 #define CRND_IS_POD(T) std::__is_pod<T>::__value
 #else
 #define CRND_IS_POD(T) __is_pod(T)

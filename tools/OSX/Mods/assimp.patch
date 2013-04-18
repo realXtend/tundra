@@ -1,0 +1,153 @@
+Index: CMakeLists.txt
+===================================================================
+--- CMakeLists.txt	(revision 1300)
++++ CMakeLists.txt	(working copy)
+@@ -2,7 +2,7 @@
+ PROJECT( Assimp )
+ 
+ # Define here the needed parameters
+-set (ASSIMP_SV_REVISION 1264)
++set (ASSIMP_SV_REVISION 1)
+ set (ASSIMP_VERSION_MAJOR 3)
+ set (ASSIMP_VERSION_MINOR 0)
+ set (ASSIMP_VERSION_PATCH ${ASSIMP_SV_REVISION}) # subversion revision?
+@@ -24,6 +24,8 @@
+   add_definitions( -fvisibility=hidden )
+ endif()
+ 
++set(CMAKE_CXX_FLAGS "-stdlib=libc++")
++
+ INCLUDE (FindPkgConfig)
+ INCLUDE_DIRECTORIES( include )
+ 
+@@ -67,7 +69,7 @@
+ 
+ # Globally enbale Boost resp. the Boost workaround – it is also needed by the
+ # tools which include the Assimp headers.
+-SET ( ASSIMP_ENABLE_BOOST_WORKAROUND OFF CACHE BOOL
++SET ( ASSIMP_ENABLE_BOOST_WORKAROUND ON CACHE BOOL
+ 	"If a simple implementation of the used Boost functions is used. Slightly reduces functionality, but enables builds without Boost available."
+ )
+ IF ( ASSIMP_ENABLE_BOOST_WORKAROUND )
+Index: code/STEPFile.h
+===================================================================
+--- code/STEPFile.h	(revision 1300)
++++ code/STEPFile.h	(working copy)
+@@ -195,13 +195,13 @@
+ 			// conversion support.
+ 			template <typename T>
+ 			const T& ResolveSelect(const DB& db) const {
+-				return Couple<T>(db).MustGetObject(To<EXPRESS::ENTITY>())->To<T>();
++				return Couple<T>(db).MustGetObject(To<EXPRESS::ENTITY>())->template To<T>();
+ 			}
+ 
+ 			template <typename T>
+ 			const T* ResolveSelectPtr(const DB& db) const {
+ 				const EXPRESS::ENTITY* e = ToPtr<EXPRESS::ENTITY>();
+-				return e?Couple<T>(db).MustGetObject(*e)->ToPtr<T>():(const T*)0;
++				return e?Couple<T>(db).MustGetObject(*e)->template ToPtr<T>():(const T*)0;
+ 			}
+ 
+ 		public:
+Index: code/BoostWorkaround/boost/tuple/tuple.hpp
+===================================================================
+--- code/BoostWorkaround/boost/tuple/tuple.hpp	(revision 1300)
++++ code/BoostWorkaround/boost/tuple/tuple.hpp	(working copy)
+@@ -175,13 +175,13 @@
+ 		// Get a specific tuple element
+ 		template <unsigned N>
+ 		typename detail::type_getter<T0,0,typename very_long::next_type, N>::type& get ()	{
+-			return m.get<N>();
++			return m.template get<N>();
+ 		}
+ 
+ 		// ... and the const version
+ 		template <unsigned N>
+ 		const typename detail::type_getter<T0,0,typename very_long::next_type, N>::type& get () const	{
+-			return m.get<N>();
++			return m.template get<N>();
+ 		}
+ 
+ 
+@@ -208,14 +208,14 @@
+ 	template <unsigned N,typename T0,typename T1,typename T2,typename T3,typename T4>
+ 	inline typename tuple<T0,T1,T2,T3,T4>::very_long::template type_getter<N>::type& get (
+ 			tuple<T0,T1,T2,T3,T4>& m)	{
+-			return m.get<N>();
++			return m.template get<N>();
+ 		}
+ 
+ 	// ... and the const version
+ 	template <unsigned N,typename T0,typename T1,typename T2,typename T3,typename T4>
+ 	inline const typename tuple<T0,T1,T2,T3,T4>::very_long::template type_getter<N>::type& get (
+ 			const tuple<T0,T1,T2,T3,T4>& m)	{
+-			return m.get<N>();
++			return m.template get<N>();
+ 		}
+ 
+ 	// Constructs a tuple with 5 elements
+@@ -224,11 +224,11 @@
+ 		const T1& t1,const T2& t2,const T3& t3,const T4& t4) {
+ 
+ 		tuple <T0,T1,T2,T3,T4> t;
+-		t.get<0>() = t0;
+-		t.get<1>() = t1;
+-		t.get<2>() = t2;
+-		t.get<3>() = t3;
+-		t.get<4>() = t4;
++		t.template get<0>() = t0;
++		t.template get<1>() = t1;
++		t.template get<2>() = t2;
++		t.template get<3>() = t3;
++		t.template get<4>() = t4;
+ 		return t;
+ 	}
+ 
+@@ -237,10 +237,10 @@
+ 	inline tuple <T0,T1,T2,T3> make_tuple (const T0& t0,
+ 		const T1& t1,const T2& t2,const T3& t3) {
+ 		tuple <T0,T1,T2,T3> t;
+-		t.get<0>() = t0;
+-		t.get<1>() = t1;
+-		t.get<2>() = t2;
+-		t.get<3>() = t3;
++		t.template get<0>() = t0;
++		t.template get<1>() = t1;
++		t.template get<2>() = t2;
++		t.template get<3>() = t3;
+ 		return t;
+ 	}
+ 
+@@ -249,9 +249,9 @@
+ 	inline tuple <T0,T1,T2> make_tuple (const T0& t0,
+ 		const T1& t1,const T2& t2) {
+ 		tuple <T0,T1,T2> t;
+-		t.get<0>() = t0;
+-		t.get<1>() = t1;
+-		t.get<2>() = t2;
++		t.template get<0>() = t0;
++		t.template get<1>() = t1;
++		t.template get<2>() = t2;
+ 		return t;
+ 	}
+ 
+@@ -260,8 +260,8 @@
+ 	inline tuple <T0,T1> make_tuple (const T0& t0,
+ 		const T1& t1) {
+ 		tuple <T0,T1> t;
+-		t.get<0>() = t0;
+-		t.get<1>() = t1;
++		t.template get<0>() = t0;
++		t.template get<1>() = t1;
+ 		return t;
+ 	}
+ 
+@@ -269,7 +269,7 @@
+ 	template <typename T0>
+ 	inline tuple <T0> make_tuple (const T0& t0) {
+ 		tuple <T0> t;
+-		t.get<0>() = t0;
++		t.template get<0>() = t0;
+ 		return t;
+ 	}
+ 
