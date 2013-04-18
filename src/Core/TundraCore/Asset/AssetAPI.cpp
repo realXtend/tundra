@@ -354,7 +354,13 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
 
     // Parse subAssetName if it exists.
     QString subAssetName = "";
+
+    /* @note For some reason, lazy regex pattern won't match against subasset refs in Apple */
+#ifdef TUNDRA_USE_CPP11
+    static const wregex expression4(L"(.*)\\s*[#,]\\s*\"?\\s*(.*)\\s*\"?\\s*");
+#else
     static const wregex expression4(L"(.*?)\\s*[#,]\\s*\"?\\s*(.*?)\\s*\"?\\s*"); // assetRef, "subAssetName". Note: this regex does not parse badly matched '"' signs, but it's a minor issue. (e.g. 'assetRef, ""jeejee' is incorrectly accepted) .
+#endif
     if (regex_match(fullPath, what, expression4))
     {
         wstring assetRef = what[1].str();
