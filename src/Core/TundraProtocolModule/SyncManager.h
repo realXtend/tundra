@@ -55,8 +55,8 @@ public slots:
 
     /// Returns SceneSyncState for a client connection.
     /** @note This slot is only exposed on Server, other wise will return null ptr.
-        @param int connection ID of the client. */
-    SceneSyncState* SceneState(int connectionId) const;
+        @param u32 connection ID of the client. */
+    SceneSyncState* SceneState(u32 connectionId) const;
     SceneSyncState* SceneState(const UserConnectionPtr &connection) const; /**< @overload @param connection Client connection.*/
 
     /// Upates Interest Manager settings.

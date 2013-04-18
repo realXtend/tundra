@@ -44,7 +44,7 @@
 
 #include "MemoryLeakCheck.h"
 
-static int NoneControlID = -1;
+static u32 NoneControlID = 0;
 
 EC_WebView::EC_WebView(Scene *scene) :
     IComponent(scene),
@@ -160,7 +160,7 @@ bool EC_WebView::eventFilter(QObject *obj, QEvent *e)
                     if (wheelEvent)
                     {
                         // Deny wheel scroll if webview is being controlled externally.
-                        int currentControllerId = getcontrollerId();
+                        u32 currentControllerId = getcontrollerId();
                         if (currentControllerId != NoneControlID &&
                             currentControllerId != myControllerId_)
                             return true;
@@ -179,16 +179,16 @@ void EC_WebView::ServerInitialize(TundraLogic::Server *server)
 {
     if (!server || !server->IsRunning())
         return;
-    connect(server, SIGNAL(UserDisconnected(unsigned int, UserConnection*)), SLOT(ServerHandleDisconnect(unsigned int, UserConnection*)), Qt::UniqueConnection);
+    connect(server, SIGNAL(UserDisconnected(u32, UserConnection*)), SLOT(ServerHandleDisconnect(u32, UserConnection*)), Qt::UniqueConnection);
 }
 
-void EC_WebView::ServerHandleDisconnect(unsigned int connectionID, UserConnection* connection)
+void EC_WebView::ServerHandleDisconnect(u32 connectionID, UserConnection* /*connection*/)
 {
     // Server will release the control of a EC_Webview if the controlling user disconnects.
     // This will ensure that a webview wont be left in a state that no one can take control of it.
     if (getcontrollerId() != NoneControlID)
     {
-        if (getcontrollerId() == (int)connectionID)
+        if (getcontrollerId() == connectionID)
         {
             setcontrollerId(NoneControlID);
             ParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(NoneControlID), "");
@@ -196,7 +196,7 @@ void EC_WebView::ServerHandleDisconnect(unsigned int connectionID, UserConnectio
     }
 }
 
-void EC_WebView::ServerCheckControllerValidity(int connectionID)
+void EC_WebView::ServerCheckControllerValidity(u32 connectionID)
 {
     TundraLogic::TundraLogicModule *tundraLogic = GetFramework()->GetModule<TundraLogic::TundraLogicModule>();
     if (tundraLogic)
@@ -340,7 +340,7 @@ void EC_WebView::Render()
 
 QMenu *EC_WebView::GetInteractionMenu(bool createSubmenu)
 {
-    int currentControlId = getcontrollerId();
+    u32 currentControlId = getcontrollerId();
     
     QString installDir = Application::InstallationDirectory();
     if (installDir.isEmpty())
@@ -586,7 +586,7 @@ void EC_WebView::ResetWebView(bool ignoreVisibility)
 }
 
 #ifndef QT_NO_OPENSSL
-void EC_WebView::OnSslErrors(QNetworkReply *reply, const QList<QSslError>& errors)
+void EC_WebView::OnSslErrors(QNetworkReply */*reply*/, const QList<QSslError>& errors)
 {
     LogWarning("EC_WebView: Could not load page, ssl errors occurred in url '" + getwebviewUrl() + "'");
     if (errors.isEmpty())
@@ -605,7 +605,7 @@ void EC_WebView::LoadRequested(const QUrl &url)
     // If we are sharing browsing, share the url to everyone.
     // Otherwise load locally. If we are clicking links and someone
     // else has control, do nothing.
-    int currentControllerId = getcontrollerId();
+    u32 currentControllerId = getcontrollerId();
     if (currentControllerId == myControllerId_)
         setwebviewUrl(url.toEncoded());
     else if (currentControllerId == NoneControlID)
@@ -811,7 +811,7 @@ void EC_WebView::TargetMeshMaterialChanged(uint index, const QString &material)
     }
 }
 
-void EC_WebView::ComponentAdded(IComponent *component, AttributeChange::Type change)
+void EC_WebView::ComponentAdded(IComponent *component, AttributeChange::Type /*change*/)
 {
     if (component->TypeName() == EC_Mesh::TypeNameStatic())
     {
@@ -820,7 +820,7 @@ void EC_WebView::ComponentAdded(IComponent *component, AttributeChange::Type cha
     }
 }
 
-void EC_WebView::ComponentRemoved(IComponent *component, AttributeChange::Type change)
+void EC_WebView::ComponentRemoved(IComponent *component, AttributeChange::Type /*change*/)
 {
     /** If this component is being removed we need to reset to the target meshes original materials.
         EC_WidgetCanvas is too stupid to do this (should be improved!) At this stage our parent
@@ -918,7 +918,7 @@ void EC_WebView::AttributesChanged()
         controllerId.ClearChangedFlag();
 
         // If we have control, leave ui so that we can modify the attributes
-        int currentControllerId = getcontrollerId();
+        u32 currentControllerId = getcontrollerId();
         if (currentControllerId == myControllerId_)
         {
             EnableScrollbars(true);
@@ -1085,7 +1085,7 @@ void EC_WebView::InteractControlRequest()
         
         // Resolve our user name, use connection id if not available
         QString myControllerName;
-        int myId = -1;
+        u32 myId = 0;
         TundraLogic::TundraLogicModule *tundraLogic = GetFramework()->GetModule<TundraLogic::TundraLogicModule>();
         if (tundraLogic)
         {
@@ -1134,14 +1134,14 @@ void EC_WebView::EnableScrollbars(bool enabled)
     RenderDelayed();
 }
 
-void EC_WebView::ActionControllerChanged(QString id, QString newController)
+void EC_WebView::ActionControllerChanged(QString /*id*/, QString newController)
 {
     currentControllerName_ = newController.trimmed();
 }
 
 void EC_WebView::ActionScroll(QString x, QString y)
 {
-    int currentControlId = getcontrollerId();
+    u32 currentControlId = getcontrollerId();
     if (currentControlId != NoneControlID && currentControlId != myControllerId_)
     {
         if (!webview_)
