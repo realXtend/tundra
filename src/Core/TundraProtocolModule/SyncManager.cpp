@@ -274,7 +274,7 @@ void SyncManager::GetClientExtrapolationTime()
     }
 }
 
-SceneSyncState* SyncManager::SceneState(int connectionId) const
+SceneSyncState* SyncManager::SceneState(u32 connectionId) const
 {
     if (!owner_->IsServer())
         return 0;
@@ -476,7 +476,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
     }
 }
 
-void SyncManager::OnAttributeAdded(IComponent* comp, IAttribute* attr, AttributeChange::Type change)
+void SyncManager::OnAttributeAdded(IComponent* comp, IAttribute* attr, AttributeChange::Type /*change*/)
 {
     assert(comp && attr);
     if (!comp || !attr)
@@ -505,7 +505,7 @@ void SyncManager::OnAttributeAdded(IComponent* comp, IAttribute* attr, Attribute
     }
 }
 
-void SyncManager::OnAttributeRemoved(IComponent* comp, IAttribute* attr, AttributeChange::Type change)
+void SyncManager::OnAttributeRemoved(IComponent* comp, IAttribute* attr, AttributeChange::Type /*change*/)
 {
     assert(comp && attr);
     if (!comp || !attr)
@@ -1128,7 +1128,7 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
         destination->FreeMessage(msg);
 }
 
-void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, kNet::packet_id_t packetId, const char* data, size_t numBytes)
+void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* /*source*/, kNet::packet_id_t packetId, const char* data, size_t numBytes)
 {
     ScenePtr scene = scene_.lock();
     if (!scene)
@@ -1625,7 +1625,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
     //    std::cout << "Sent " << numMessagesSent << " scenesync messages" << std::endl;
 }
 
-bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID)
+bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned /*messageID*/, entity_id_t /*entityID*/)
 {
     assert(source);
     

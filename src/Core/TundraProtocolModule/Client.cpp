@@ -427,7 +427,7 @@ void Client::HandleKristalliMessage(MessageConnection* source, packet_id_t packe
     emit NetworkMessageReceived(packetId, messageId, data, numBytes);
 }
 
-void Client:: HandleCameraOrientationRequest(MessageConnection* source, const MsgCameraOrientationRequest& msg)
+void Client:: HandleCameraOrientationRequest(MessageConnection* /*source*/, const MsgCameraOrientationRequest& msg)
 {
     sendCameraUpdates_ = msg.enableCameraUpdates;
 
@@ -450,7 +450,7 @@ void Client:: HandleCameraOrientationRequest(MessageConnection* source, const Ms
     }
 }
 
-void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& msg)
+void Client::HandleLoginReply(MessageConnection* /*source*/, const MsgLoginReply& msg)
 {
     if (msg.success)
     {
