@@ -95,7 +95,6 @@ Q_DECLARE_METATYPE(ConsoleAPI*);
 Q_DECLARE_METATYPE(ConsoleCommand*);
 Q_DECLARE_METATYPE(DelayedSignal*);
 Q_DECLARE_METATYPE(ConfigAPI*);
-Q_DECLARE_METATYPE(ConfigData*);
 Q_DECLARE_METATYPE(RaycastResult*);
 
 // Audio API defines.
@@ -232,6 +231,10 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("addApplicationFont", engine->newFunction(addApplicationFont));
 }
 
+// Tundra classes.
+QScriptValue register_Color_prototype(QScriptEngine *engine);
+QScriptValue register_ConfigData_prototype(QScriptEngine *engine);
+
 // Math classes.
 QScriptValue register_float2_prototype(QScriptEngine *engine);
 QScriptValue register_float3_prototype(QScriptEngine *engine);
@@ -343,7 +346,8 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     // Framework metatypes.
     qScriptRegisterQObjectMetaType<Framework*>(engine);
     qScriptRegisterQObjectMetaType<IModule*>(engine);
-    
+    register_Color_prototype(engine);
+
     // Console metatypes.
     qScriptRegisterQObjectMetaType<ConsoleAPI*>(engine);
     qScriptRegisterQObjectMetaType<ConsoleCommand*>(engine);
@@ -354,8 +358,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 
     // Config metatypes.
     qScriptRegisterQObjectMetaType<ConfigAPI*>(engine);
-    qScriptRegisterQObjectMetaType<ConfigData*>(engine);
-
+    register_ConfigData_prototype(engine);
     // Asset API
     qRegisterMetaType<AssetPtr>("AssetPtr");
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAsset>, qScriptValueToBoostSharedPtr<IAsset>);
