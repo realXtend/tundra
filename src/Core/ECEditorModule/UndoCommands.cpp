@@ -16,7 +16,7 @@
 #include "Transform.h"
 #include "EC_Placeable.h"
 
-/// Merges two EditAttributeCommand<Color> objects, since editing 'Color' triggers two changes 
+/// Merges two EditAttributeCommand<Color> objects, since editing 'Color' triggers two changes
 template<> bool EditAttributeCommand<Color>::mergeWith(const QUndoCommand *other)
 {
     if (id() != other->id())

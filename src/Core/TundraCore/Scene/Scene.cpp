@@ -172,6 +172,9 @@ bool Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
             return false;
         }
         
+        // Before an entity is removed, make it remove all of its components to signal removals properly
+        del_entity->RemoveAllComponents(change);
+        
         EmitEntityRemoved(del_entity.get(), change);
         entities_.erase(it);
         
@@ -205,7 +208,12 @@ void Scene::RemoveAllEntities(bool signal, AttributeChange::Type change)
         RemoveEntity(entIds.back(), change);
         entIds.pop_back();
     }
-    entities_.clear();
+    
+    if (entities_.size())
+    {
+        LogWarning("Scene::RemoveAllEntities: entity map was not clear after removing all entities, clearing manually");
+        entities_.clear();
+    }
     
     if (signal)
         emit SceneCleared(this);

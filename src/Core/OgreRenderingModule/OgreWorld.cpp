@@ -579,12 +579,6 @@ void OgreWorld::OnUpdated(float timeStep)
 
 void OgreWorld::SetupShadows()
 {
-    // Debug mode Ogre might assert due to illegal shadow camera AABB, with empty scene. Disable shadows in debug mode.
-#ifdef _DEBUG
-        sceneManager_->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
-        return;
-#else
-
     OgreRenderer::Renderer::ShadowQualitySetting shadowQuality = renderer_->ShadowQuality();
     if (shadowQuality == OgreRenderer::Renderer::Shadows_Off)
     {
@@ -706,7 +700,6 @@ void OgreWorld::SetupShadows()
             gaussianListeners_.push_back(gaussianListener);
         }
     }
-#endif
 }
 
 Ogre::Camera* OgreWorld::VerifyCurrentSceneCamera() const

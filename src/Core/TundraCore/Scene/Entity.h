@@ -266,6 +266,9 @@ public slots:
     /** @sa RemoveComponent */
     void RemoveComponentById(component_id_t id, AttributeChange::Type change = AttributeChange::Default);
 
+    /// Removes all components from the entity.
+    void RemoveAllComponents(AttributeChange::Type change = AttributeChange::Default);
+
     /// Returns list of components with specific type or an empty list if no components were found.
     /** @param typeId Component type ID. */
     ComponentVector ComponentsOfType(u32 typeId) const;
@@ -432,6 +435,9 @@ private:
 
     /// Emit a entity deletion signal. Called from Scene
     void EmitEntityRemoved(AttributeChange::Type change);
+
+    /// Remove a component by iterator. Called internally
+    void RemoveComponent(ComponentMap::iterator iter, AttributeChange::Type change);
 
     UniqueIdGenerator idGenerator_; ///< Component ID generator
     ComponentMap components_; ///< a list of all components

@@ -11,6 +11,8 @@
 #include <QUndoCommand>
 #include <QAction>
 
+#include "MemoryLeakCheck.h"
+
 UndoManager::UndoManager(const ScenePtr &scene, QWidget *parent)
 {
     undoStack_ = new QUndoStack();

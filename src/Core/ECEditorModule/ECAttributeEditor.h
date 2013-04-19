@@ -150,7 +150,6 @@ protected:
     ComponentWeakPtrList components_;
     bool useMultiEditor_;
     MetaDataFlag metaDataFlag_;
-    bool updated_;
 };
 
 /// Implements attribute editor UI elements for attribute of type @c T and forwards attribute changes to IAttribute objects.
@@ -300,7 +299,9 @@ public:
 private slots:
     void OpenAssetsWindow();
     void HandleNewEditor(QtProperty *prop, QObject *);
+    void HandleAssetSelected(AssetPtr asset);
     void HandleAssetPicked(AssetPtr asset);
+    void SaveOriginalValue();
     void RestoreOriginalValue();
     void OpenEditor();
 
@@ -331,7 +332,9 @@ public:
 private slots:
     void OpenAssetsWindow();
     void HandleNewEditor(QtProperty *prop, QObject *);
+    void HandleAssetSelected(AssetPtr asset);
     void HandleAssetPicked(AssetPtr asset);
+    void SaveOriginalValue();
     void RestoreOriginalValue();
     void OpenEditor();
 
