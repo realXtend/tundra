@@ -118,8 +118,8 @@ public:
 
     /// Interaction ID for components to exchange messages.
     /// \note this attribute is hidden from the UI layer and is not meant to be modified by normal users.
-    Q_PROPERTY(u32 controllerId READ getcontrollerId WRITE setcontrollerId);
-    DEFINE_QPROPERTY_ATTRIBUTE(u32, controllerId);
+    Q_PROPERTY(uint controllerId READ getcontrollerId WRITE setcontrollerId);
+    DEFINE_QPROPERTY_ATTRIBUTE(uint, controllerId);
     
     friend class SceneWidgetComponents;
 

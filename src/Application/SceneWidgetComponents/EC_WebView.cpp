@@ -1102,7 +1102,6 @@ void EC_WebView::InteractControlRequest()
                 // Note that this quite a rare case that server wants to control outside of dev testing.
                 // Also note that servers wont get sync browsing as the entity actions are sent to peers.
                 myControllerName = "server";
-                myId = -2;
             }
         }
 
