@@ -107,7 +107,7 @@ private:
 };
 
 #ifdef MATH_QT_INTEROP
-#include <qmetaType.h>
+#include <qmetatype.h>
 Q_DECLARE_METATYPE(LCG)
 Q_DECLARE_METATYPE(LCG*)
 #endif

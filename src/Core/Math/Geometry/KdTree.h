@@ -24,6 +24,8 @@
 #include "Container/MaxHeap.h"
 #endif
 
+#include "AABB.h"
+
 MATH_BEGIN_NAMESPACE
 
 enum CardinalAxis
@@ -191,4 +193,4 @@ private:
 
 MATH_END_NAMESPACE
 
-#include "KDTree.inl"
+#include "KdTree.inl"

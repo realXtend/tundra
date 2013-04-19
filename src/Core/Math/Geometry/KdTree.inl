@@ -17,7 +17,6 @@
 	@brief Implementation for the KDTree object. */
 #pragma once
 
-#include "AABB.h"
 #include "OBB.h"
 #include "Ray.h"
 #include "Math/MathConstants.h"

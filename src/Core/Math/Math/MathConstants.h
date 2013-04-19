@@ -71,7 +71,7 @@ const float NOT_NECESSARILY_USED inf =          FLOAT_INF;
 /// The floating point representation for -\f$\inf\f$.
 const float NOT_NECESSARILY_USED negInf =       -FLOAT_INF;
 /// Represents a floating-point not-a-number. \note Never compare a float against nan, use IsFinite() instead!
-const float NOT_NECESSARILY_USED nan =          FLOAT_NAN;
+// const float NOT_NECESSARILY_USED nan =          FLOAT_NAN;
 /// Stores the largest positive non-infinite value for a float.
 const float NOT_NECESSARILY_USED floatMax =     FLT_MAX;
 /// Stores the largest negative non-infinite value for a float.
