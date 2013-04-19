@@ -33,7 +33,7 @@
 
 #include <QtScript>
 
-#if defined(__APPLE__) && defined(TUNDRA_USE_CPP11)
+#if defined(__APPLE__) && defined(TUNDRA_CPP11_ENABLED)
 #include <sys/time.h>
 #endif
 

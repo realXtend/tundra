@@ -11,17 +11,41 @@ cmake_minimum_required(VERSION 2.5.5)
 # If TUNDRA_NO_BOOST is set to TRUE, kNet must also be built without Boost dependecy. In order to make the
 # Tundra build fully free of Boost, you must also build Ogre and AssImp, which depend on Boost by default,
 # with Boost disabled. See the dependencies scripts for instructions how to control this.
-option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." FALSE)
+option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." TRUE)
+option(TUNDRA_CPP11_ENABLED "Enables C++11 features on Tundra" FALSE)
 
 if (APPLE)
     set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvm.clang.1_0")
 endif()
 
-# If TUNDRA_NO_BOOST is TRUE in case of Mac OS X, enable usage of C++11
-if (APPLE AND TUNDRA_NO_BOOST)
-    add_definitions(-DTUNDRA_USE_CPP11)
-    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++0x")
-    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+if (APPLE AND TUNDRA_CPP11_ENABLED) # todo: Test if this works on Linux too
+# Compiler-specific C++11 activation.
+    if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+        execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+        if (NOT (GCC_VERSION VERSION_GREATER 4.8 OR GCC_VERSION VERSION_EQUAL 4.8))
+            message(FATAL_ERROR "${PROJECT_NAME} C++11 features require GCC 4.8 or greater.")
+        else ()
+            message(STATUS "C++11 features enabled for GCC")
+        endif ()
+    elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+        execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE CLANG_VERSION)
+        if (NOT (CLANG_VERSION VERSION_GREATER 4.1 OR CLANG_VERSION VERSION_EQUAL 4.1))
+            message(FATAL_ERROR "${PROJECT_NAME} C++11 features require clang 4.1 or greater.")
+        else ()
+            message(STATUS "C++11 features enabled for Clang")
+        endif ()
+    else ()
+        message(FATAL_ERROR "Your C++ compiler does not support C++11!")
+    endif ()
+
+    if ("${CMAKE_GENERATOR}" MATCHES "Xcode")
+        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++0x")
+        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+    endif()
+elseif (MSVC AND TUNDRA_CPP11_ENABLED) # todo: Implement
+    message(AUTHOR_WARNING "C++11 features were requested, but not yet configured for this compiler!")
 endif()
 
 macro(PrintUsedEnvVariables)
@@ -45,6 +69,7 @@ endmacro()
 macro (PrintUsedBuildConfig)
     message ("\n=========== Used Build Configuration =============\n")
     message (STATUS "TUNDRA_NO_BOOST            = " ${TUNDRA_NO_BOOST})
+    message (STATUS "TUNDRA_CPP11_ENABLED       = " ${TUNDRA_CPP11_ENABLED})
     message (STATUS "TUNDRACORE_SHARED          = " ${TUNDRACORE_SHARED})
     message (STATUS "BUILD_SDK_ONLY             = " ${BUILD_SDK_ONLY})
     message (STATUS "BUILDING_INSTALLER         = " ${BUILDING_INSTALLER})
