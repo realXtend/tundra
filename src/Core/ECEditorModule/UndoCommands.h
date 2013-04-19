@@ -231,8 +231,6 @@ public:
        @param parent The parent command of this command (optional) */
     AddEntityCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QString &name, bool sync, bool temp, QUndoCommand * parent = 0);
 
-    AddEntityCommand(const EntityPtr &entity, EntityIdChangeTracker *tracker, QUndoCommand *parent = 0);
-
     /// Returns this command's ID
     int id () const;
     /// QUndoCommand override
