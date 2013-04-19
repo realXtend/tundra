@@ -86,9 +86,9 @@ EC_Mesh::~EC_Mesh()
     }
 }
 
-void EC_Mesh::SetPlaceable(ComponentPtr placeable)
+void EC_Mesh::SetPlaceable(const ComponentPtr &placeable)
 {
-    if (placeable && !dynamic_cast<EC_Placeable*>(placeable.get()))
+    if (!dynamic_pointer_cast<EC_Placeable>(placeable))
     {
         LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic());
         return;
@@ -160,25 +160,25 @@ void EC_Mesh::SetAttachmentScale(uint index, const float3& scale)
     attachment_nodes_[index]->setScale(scale);
 }
 
-float3 EC_Mesh::GetAdjustPosition() const
+float3 EC_Mesh::AdjustPosition() const
 {
     Transform transform = nodeTransformation.Get();
     return transform.pos;
 }
 
-Quat EC_Mesh::GetAdjustOrientation() const
+Quat EC_Mesh::AdjustOrientation() const
 {
     Transform transform = nodeTransformation.Get();
     return transform.Orientation();
 }
 
-float3 EC_Mesh::GetAdjustScale() const
+float3 EC_Mesh::AdjustScale() const
 {
     Transform transform = nodeTransformation.Get();
     return transform.scale;
 }
 
-float3 EC_Mesh::GetAttachmentPosition(uint index) const
+float3 EC_Mesh::AttachmentPosition(uint index) const
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
         return float3::nan;
@@ -186,7 +186,7 @@ float3 EC_Mesh::GetAttachmentPosition(uint index) const
     return attachment_nodes_[index]->getPosition();
 }
 
-Quat EC_Mesh::GetAttachmentOrientation(uint index) const
+Quat EC_Mesh::AttachmentOrientation(uint index) const
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
         return Quat::nan;
@@ -194,7 +194,7 @@ Quat EC_Mesh::GetAttachmentOrientation(uint index) const
     return attachment_nodes_[index]->getOrientation();
 }
 
-float3 EC_Mesh::GetAttachmentScale(uint index) const
+float3 EC_Mesh::AttachmentScale(uint index) const
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
         return float3::nan;
@@ -305,7 +305,7 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
         // Force a re-apply of all materials to this new mesh.
         ApplyMaterial();
     }
-    catch(Ogre::Exception& e)
+    catch(const Ogre::Exception& e)
     {
         LogError("EC_Mesh::SetMesh: Could not set mesh " + mesh_name + ": " + std::string(e.what()));
         return false;
@@ -343,7 +343,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
         mesh->_notifySkeleton(skel);
 //        LogDebug("Set skeleton " + skeleton_name + " to mesh " + mesh_name);
     }
-    catch(Ogre::Exception& e)
+    catch(const Ogre::Exception& e)
     {
         LogError("EC_Mesh::SetMeshWithSkeleton: Could not set skeleton " + skeleton_name + " to mesh " + mesh_name + ": " + std::string(e.what()));
         return false;
@@ -373,7 +373,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
                 skel->setBlendMode(Ogre::ANIMBLEND_CUMULATIVE);
         }
     }
-    catch(Ogre::Exception& e)
+    catch(const Ogre::Exception& e)
     {
         LogError("EC_Mesh::SetMeshWithSkeleton: Could not set mesh " + mesh_name + ": " + std::string(e.what()));
         return false;
@@ -409,7 +409,7 @@ void EC_Mesh::RemoveMesh()
         {
             Ogre::MeshManager::getSingleton().remove(cloned_mesh_name_);
         }
-        catch(Ogre::Exception& e)
+        catch(const Ogre::Exception& e)
         {
             LogWarning("EC_Mesh::RemoveMesh: Could not remove cloned mesh:" + std::string(e.what()));
         }
@@ -418,16 +418,11 @@ void EC_Mesh::RemoveMesh()
     }
 }
 
-Ogre::Bone* EC_Mesh::GetBone(const QString& boneName) const
+Ogre::Bone* EC_Mesh::OgreBone(const QString& boneName) const
 {
     std::string boneNameStd = boneName.toStdString();
-    if (!entity_)
-        return 0;
-    Ogre::Skeleton* skel = entity_->getSkeleton();
-    if (skel && skel->hasBone(boneNameStd))
-        return skel->getBone(boneNameStd);
-    else
-        return 0;
+    Ogre::Skeleton* skel = (entity_ ? entity_->getSkeleton() : 0);
+    return (skel && skel->hasBone(boneNameStd) ? skel->getBone(boneNameStd) : 0);
 }
 
 bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const std::string& attach_point, bool share_skeleton)
@@ -528,7 +523,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
             attachment_entities_[index]->shareSkeletonInstanceWith(entity_);
         }
     }
-    catch(Ogre::Exception& e)
+    catch(const Ogre::Exception& e)
     {
         LogError("EC_Mesh::SetAttachmentMesh: Could not set attachment mesh " + mesh_name + ": " + std::string(e.what()));
         return false;
@@ -618,7 +613,7 @@ bool EC_Mesh::SetMaterial(uint index, const QString& material_name, AttributeCha
         // To retain compatibility with old behavior, always fire the EC_Mesh -specific change signal independent of the value of 'change'.
         emit MaterialChanged(index, material_name);
     }
-    catch(Ogre::Exception& e)
+    catch(const Ogre::Exception& e)
     {
         LogError("EC_Mesh::SetMaterial: Could not set material " + material_name + ": " + e.what());
         return false;
@@ -645,7 +640,7 @@ bool EC_Mesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::s
     {
         attachment_entities_[index]->getSubEntity(submesh_index)->setMaterialName(AssetAPI::SanitateAssetRef(material_name));
     }
-    catch(Ogre::Exception& e)
+    catch(const Ogre::Exception& e)
     {
         LogError("EC_Mesh::SetAttachmentMaterial: Could not set material " + material_name + " on attachment: " + std::string(e.what()));
         return false;
@@ -654,7 +649,7 @@ bool EC_Mesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::s
     return true;
 }
 
-uint EC_Mesh::GetNumMaterials() const
+uint EC_Mesh::NumMaterials() const
 {
     if (!entity_)
         return 0;
@@ -662,7 +657,7 @@ uint EC_Mesh::GetNumMaterials() const
     return entity_->getNumSubEntities();
 }
 
-uint EC_Mesh::GetAttachmentNumMaterials(uint index) const
+uint EC_Mesh::NumAttachmentMaterials(uint index) const
 {
     if (index >= attachment_entities_.size() || attachment_entities_[index] == 0)
         return 0;
@@ -670,7 +665,7 @@ uint EC_Mesh::GetAttachmentNumMaterials(uint index) const
     return attachment_entities_[index]->getNumSubEntities();
 }
 
-const std::string& EC_Mesh::GetMaterialName(uint index) const
+const std::string& EC_Mesh::MaterialName(uint index) const
 {
     const static std::string empty;
     
@@ -683,7 +678,7 @@ const std::string& EC_Mesh::GetMaterialName(uint index) const
     return entity_->getSubEntity(index)->getMaterialName();
 }
 
-const std::string& EC_Mesh::GetAttachmentMaterialName(uint index, uint submesh_index) const
+const std::string& EC_Mesh::AttachmentMaterialName(uint index, uint submesh_index) const
 {
     const static std::string empty;
     
@@ -703,14 +698,14 @@ bool EC_Mesh::HasAttachmentMesh(uint index) const
     return true;
 }
 
-Ogre::Entity* EC_Mesh::GetAttachmentEntity(uint index) const
+Ogre::Entity* EC_Mesh::AttachmentOgreEntity(uint index) const
 {
     if (index >= attachment_entities_.size())
         return 0;
     return attachment_entities_[index];
 }
 
-uint EC_Mesh::GetNumSubMeshes() const
+uint EC_Mesh::NumSubMeshes() const
 {
     uint count = 0;
     if (HasMesh())
@@ -719,7 +714,7 @@ uint EC_Mesh::GetNumSubMeshes() const
     return count;
 }
 
-const std::string& EC_Mesh::GetMeshName() const
+const std::string& EC_Mesh::MeshName() const
 {
     static std::string empty_name;
     
@@ -729,7 +724,7 @@ const std::string& EC_Mesh::GetMeshName() const
         return entity_->getMesh()->getName();
 }
 
-const std::string& EC_Mesh::GetSkeletonName() const
+const std::string& EC_Mesh::SkeletonName() const
 {
     static std::string empty_name;
     
@@ -749,7 +744,7 @@ const std::string& EC_Mesh::GetSkeletonName() const
 
 void EC_Mesh::DetachEntity()
 {
-    if ((!attached_) || (!entity_) || (!placeable_))
+    if (!attached_ || !entity_ || !placeable_)
         return;
     
     EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
@@ -761,7 +756,7 @@ void EC_Mesh::DetachEntity()
 
 void EC_Mesh::AttachEntity()
 {
-    if ((attached_) || (!entity_) || (!placeable_))
+    if (attached_ || !entity_ || !placeable_)
         return;
     
     EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
@@ -792,7 +787,7 @@ Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
             mesh_mgr.load(mesh_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
             mesh = mesh_mgr.getByName(mesh_name);
         }
-        catch(Ogre::Exception& e)
+        catch(const Ogre::Exception& e)
         {
             LogError("EC_Mesh::PrepareMesh: Could not load mesh " + mesh_name + ": " + std::string(e.what()));
             return 0;
@@ -814,7 +809,7 @@ Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
             mesh->setAutoBuildEdgeLists(false);
             cloned_mesh_name_ = mesh->getName();
         }
-        catch(Ogre::Exception& e)
+        catch(const Ogre::Exception& e)
         {
             LogError("EC_Mesh::PrepareMesh: Could not clone mesh " + mesh_name + ":" + std::string(e.what()));
             return 0;
@@ -970,7 +965,7 @@ void EC_Mesh::OnMeshAssetLoaded(AssetPtr asset)
         {
             entity_->getSubEntity(failedIndex)->setMaterialName("AssetLoadError");
         }
-        catch(Ogre::Exception& e)
+        catch(const Ogre::Exception& e)
         {
             LogError(QString("EC_Mesh::OnMeshAssetLoaded: Could not set error material AssetLoadError: ") + e.what());
         }
@@ -1077,7 +1072,7 @@ void EC_Mesh::OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason)
                     {
                         entity_->getSubEntity(i)->setMaterialName("AssetLoadError");
                     }
-                    catch(Ogre::Exception& e)
+                    catch(const Ogre::Exception& e)
                     {
                         LogError(QString("EC_Mesh::OnMaterialAssetFailed: Could not set error material AssetLoadError: ") + e.what());
                     }
@@ -1107,20 +1102,7 @@ void EC_Mesh::ApplyMaterial()
     }
 }
 
-Ogre::Bone* EC_Mesh::GetBone(const QString& bone_name)
-{
-    std::string boneNameStd = bone_name.toStdString();
-    
-    if (!entity_)
-        return 0;
-    Ogre::Skeleton* skel = entity_->getSkeleton();
-    if (skel && skel->hasBone(boneNameStd))
-        return skel->getBone(boneNameStd);
-    else
-        return 0;
-}
-
-QStringList EC_Mesh::GetAvailableBones() const
+QStringList EC_Mesh::AvailableBones() const
 {
     QStringList ret;
     
@@ -1150,7 +1132,7 @@ void EC_Mesh::ForceSkeletonUpdate()
         skel->setAnimationState(*entity_->getAllAnimationStates());
 }
 
-float3 EC_Mesh::GetBonePosition(const QString& bone_name)
+float3 EC_Mesh::BonePosition(const QString& bone_name)
 {
     Ogre::Bone* bone = GetBone(bone_name);
     if (bone)
@@ -1159,7 +1141,7 @@ float3 EC_Mesh::GetBonePosition(const QString& bone_name)
         return float3::zero;
 }
 
-float3 EC_Mesh::GetBoneDerivedPosition(const QString& bone_name)
+float3 EC_Mesh::BoneDerivedPosition(const QString& bone_name)
 {
     Ogre::Bone* bone = GetBone(bone_name);
     if (bone)
@@ -1168,7 +1150,7 @@ float3 EC_Mesh::GetBoneDerivedPosition(const QString& bone_name)
         return float3::zero;
 }
 
-Quat EC_Mesh::GetBoneOrientation(const QString& bone_name)
+Quat EC_Mesh::BoneOrientation(const QString& bone_name)
 {
     Ogre::Bone* bone = GetBone(bone_name);
     if (bone)
@@ -1177,7 +1159,7 @@ Quat EC_Mesh::GetBoneOrientation(const QString& bone_name)
         return Quat::identity;
 }
 
-Quat EC_Mesh::GetBoneDerivedOrientation(const QString& bone_name)
+Quat EC_Mesh::BoneDerivedOrientation(const QString& bone_name)
 {
     Ogre::Bone* bone = GetBone(bone_name);
     if (bone)
@@ -1186,7 +1168,7 @@ Quat EC_Mesh::GetBoneDerivedOrientation(const QString& bone_name)
         return Quat::identity;
 }
 /*
-float3 EC_Mesh::GetBoneOrientationEuler(const QString& bone_name)
+float3 EC_Mesh::BoneOrientationEuler(const QString& bone_name)
 {
     Ogre::Bone* bone = GetBone(bone_name);
     if (bone)
@@ -1201,7 +1183,7 @@ float3 EC_Mesh::GetBoneOrientationEuler(const QString& bone_name)
         return float3::zero;
 }
 
-float3 EC_Mesh::GetBoneDerivedOrientationEuler(const QString& bone_name)
+float3 EC_Mesh::BoneDerivedOrientationEuler(const QString& bone_name)
 {
     Ogre::Bone* bone = GetBone(bone_name);
     if (bone)
@@ -1241,7 +1223,7 @@ void EC_Mesh::SetMorphWeight(const QString& morphName, float weight)
     }
 }
 
-float EC_Mesh::GetMorphWeight(const QString& morphName) const
+float EC_Mesh::MorphWeight(const QString& morphName) const
 {
     if (!entity_)
         return 0.0f;
@@ -1282,7 +1264,7 @@ void EC_Mesh::SetAttachmentMorphWeight(unsigned index, const QString& morphName,
     }
 }
 
-float EC_Mesh::GetAttachmentMorphWeight(unsigned index, const QString& morphName) const
+float EC_Mesh::AttachmentMorphWeight(unsigned index, const QString& morphName) const
 {
     Ogre::Entity* entity = GetAttachmentEntity(index);
     if (!entity)
