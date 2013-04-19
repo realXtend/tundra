@@ -44,7 +44,7 @@
 
 #include "MemoryLeakCheck.h"
 
-static u32 NoneControlID = 0;
+static const u32 NoneControlID = 0;
 
 EC_WebView::EC_WebView(Scene *scene) :
     IComponent(scene),
@@ -54,7 +54,6 @@ EC_WebView::EC_WebView(Scene *scene) :
     webviewHasContent_(false),
     componentPrepared_(false),
     myControllerId_(0),
-    currentControllerName_(""),
     webviewUrl(this, "View URL", QString()),
     webviewSize(this, "View Size", QPoint(800,600)),
     renderSubmeshIndex(this, "Render Submesh", 0),
@@ -64,7 +63,7 @@ EC_WebView::EC_WebView(Scene *scene) :
     illuminating(this, "Illuminating", true),
     enabled(this, "Enabled", true)
 {
-    interactionMetaData_ = new AttributeMetadata(); /**< @todo memory leak */
+    interactionMetaData_ = new AttributeMetadata();
 
     static AttributeMetadata submeshMetaData;
     static AttributeMetadata refreshRateMetadata;
@@ -85,7 +84,7 @@ EC_WebView::EC_WebView(Scene *scene) :
     controllerId.SetMetadata(&nonDesignableMetadata);
 
     // Initializations depending if we are on the server or client
-    TundraLogic::TundraLogicModule *tundraLogic = GetFramework()->GetModule<TundraLogic::TundraLogicModule>();
+    TundraLogicModule *tundraLogic = GetFramework()->Module<TundraLogicModule>();
     if (tundraLogic)
     {
         if (tundraLogic->IsServer())
@@ -115,7 +114,7 @@ EC_WebView::EC_WebView(Scene *scene) :
     connect(resizeRenderTimer_, SIGNAL(timeout()), SLOT(RenderDelayed()), Qt::UniqueConnection);
 
     // Prepare scene interactions
-    SceneInteract *sceneInteract = GetFramework()->GetModule<SceneInteract>();
+    SceneInteract *sceneInteract = GetFramework()->Module<SceneInteract>();
     if (sceneInteract)
     {
         connect(sceneInteract, SIGNAL(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)), 
@@ -125,6 +124,7 @@ EC_WebView::EC_WebView(Scene *scene) :
 
 EC_WebView::~EC_WebView()
 {
+    SAFE_DELETE(interactionMetaData_);
     disconnect();
     ResetWebView(true);
 }
@@ -198,7 +198,7 @@ void EC_WebView::ServerHandleDisconnect(u32 connectionID, UserConnection* /*conn
 
 void EC_WebView::ServerCheckControllerValidity(u32 connectionID)
 {
-    TundraLogic::TundraLogicModule *tundraLogic = GetFramework()->GetModule<TundraLogic::TundraLogicModule>();
+    TundraLogicModule *tundraLogic = GetFramework()->Module<TundraLogicModule>();
     if (tundraLogic)
     {
         if (connectionID != NoneControlID)
@@ -524,7 +524,7 @@ void EC_WebView::PrepareWebview()
 #endif
 
 #ifdef SCENEWIDGET_BROWSER_SHARED_DATA
-        BrowserUiPlugin *browserPlugin = framework->GetModule<BrowserUiPlugin>();
+        BrowserUiPlugin *browserPlugin = framework->Module<BrowserUiPlugin>();
         if (browserPlugin)
         {
             // Shared disk cache and cookies for all browsers
@@ -586,7 +586,7 @@ void EC_WebView::ResetWebView(bool ignoreVisibility)
 }
 
 #ifndef QT_NO_OPENSSL
-void EC_WebView::OnSslErrors(QNetworkReply */*reply*/, const QList<QSslError>& errors)
+void EC_WebView::OnSslErrors(QNetworkReply * /*reply*/, const QList<QSslError>& errors)
 {
     LogWarning("EC_WebView: Could not load page, ssl errors occurred in url '" + getwebviewUrl() + "'");
     if (errors.isEmpty())
@@ -653,7 +653,7 @@ void EC_WebView::LoadUrl(QString urlString)
             // Above won't reset widget if its visible, then we use local instance
             if (!webview_)
             {
-                SceneWidgetComponents *sceneComponentsPlugin = GetFramework()->GetModule<SceneWidgetComponents>();
+                SceneWidgetComponents *sceneComponentsPlugin = GetFramework()->Module<SceneWidgetComponents>();
                 if (sceneComponentsPlugin)
                     sceneComponentsPlugin->WebRenderingRequest(this, url, QSize(getwebviewSize().x(), getwebviewSize().y()));
                 else
@@ -859,7 +859,7 @@ void EC_WebView::ComponentRemoved(IComponent *component, AttributeChange::Type /
 
 void EC_WebView::AttributesChanged()
 {
-    TundraLogic::TundraLogicModule *tundraLogic = GetFramework()->GetModule<TundraLogic::TundraLogicModule>();
+    TundraLogicModule *tundraLogic = GetFramework()->Module<TundraLogicModule>();
     if (tundraLogic)
     {
         if (tundraLogic->IsServer())
@@ -1086,7 +1086,7 @@ void EC_WebView::InteractControlRequest()
         // Resolve our user name, use connection id if not available
         QString myControllerName;
         u32 myId = 0;
-        TundraLogic::TundraLogicModule *tundraLogic = GetFramework()->GetModule<TundraLogic::TundraLogicModule>();
+        TundraLogicModule *tundraLogic = GetFramework()->Module<TundraLogicModule>();
         if (tundraLogic)
         {
             if (!tundraLogic->IsServer())
@@ -1098,7 +1098,6 @@ void EC_WebView::InteractControlRequest()
             }
             else
             {
-                // Not sure if 0 is reserved for the server. Lets stick with -2 being server.
                 // Note that this quite a rare case that server wants to control outside of dev testing.
                 // Also note that servers wont get sync browsing as the entity actions are sent to peers.
                 myControllerName = "server";
