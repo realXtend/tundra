@@ -88,7 +88,7 @@ EC_Mesh::~EC_Mesh()
 
 void EC_Mesh::SetPlaceable(const ComponentPtr &placeable)
 {
-    if (!dynamic_pointer_cast<EC_Placeable>(placeable))
+    if (placeable && !dynamic_pointer_cast<EC_Placeable>(placeable))
     {
         LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic());
         return;
