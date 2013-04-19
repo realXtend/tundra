@@ -404,8 +404,8 @@ IF NOT EXIST "%DEPS%\assimp\". (
    :: Debug build.
    MSBuild Assimp.sln /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
    copy /Y "bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
-   MSBuild Assimp.sln /p:configuration=%BUILD_TYPE% /nologo /m:%NUMBER_OF_PROCESSORS%
-   copy /Y "bin\%BUILD_TYPE%\assimp.dll" "%TUNDRA_BIN%"
+   MSBuild Assimp.sln /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
+   MSBuild Assimp.sln /p:configuration=RelWithDebInfo /nologo /m:%NUMBER_OF_PROCESSORS%
 ) ELSE (
    ::TODO Even if %DEPS%\assimp exists, we have no guarantee that assimp is built successfully for real
    cecho {0D}OpenAssetImport already built. Skipping.{# #}{\n}
