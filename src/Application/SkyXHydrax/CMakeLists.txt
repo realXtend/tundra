@@ -140,8 +140,12 @@ endif()
 
 add_definitions(-DSKYX_HYDRAX_EXPORTS)
 
-file(COPY media/SkyX DESTINATION ${TUNDRA_BIN}/media)
-file(COPY media/HydraX DESTINATION ${TUNDRA_BIN}/media)
+if (ENABLE_SKYX)
+    file(COPY media/SkyX DESTINATION ${TUNDRA_BIN}/media)
+endif()
+if (ENABLE_HYDRAX)
+    file(COPY media/HydraX DESTINATION ${TUNDRA_BIN}/media)
+endif()
 
 UseTundraCore()
 use_core_modules(TundraCore Math OgreRenderingModule)
