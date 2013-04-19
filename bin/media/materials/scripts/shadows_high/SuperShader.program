@@ -267,7 +267,6 @@ vertex_program rex/DiffShadowVP cg
 	{
 	    param_named_auto worldViewProjMatrix worldviewproj_matrix
 	    param_named_auto worldMatrix world_matrix
-		param_named_auto inverseWorldMatrix inverse_world_matrix
 
 		param_named_auto sunLightDir light_position 0
 
@@ -676,8 +675,6 @@ fragment_program rex/DiffSpecmapNormalLightmapFP cg
 
 		param_named_auto lightCol0 light_diffuse_colour 1
 		param_named_auto lightCol1 light_diffuse_colour 2
-
-		param_named_auto ambientLight ambient_light_colour
         
 		// Light mapping parameters.
 		param_named lightMapFactor float 1
@@ -730,8 +727,6 @@ fragment_program rex/DiffSpecmapNormalShadowLightmapFP cg
 
 		param_named_auto lightCol0 light_diffuse_colour 1
 		param_named_auto lightCol1 light_diffuse_colour 2
-
-		param_named_auto ambientLight ambient_light_colour
         
         // Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03

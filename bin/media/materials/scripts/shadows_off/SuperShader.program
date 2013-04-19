@@ -627,8 +627,6 @@ fragment_program rex/DiffSpecmapNormalLightmapFP cg
 
 		param_named_auto lightCol0 light_diffuse_colour 1
 		param_named_auto lightCol1 light_diffuse_colour 2
-
-		param_named_auto ambientLight ambient_light_colour
         
 		// Light mapping parameters.
 		param_named lightMapFactor float 1
@@ -676,8 +674,6 @@ fragment_program rex/DiffSpecmapNormalShadowLightmapFP cg
 
 		param_named_auto lightCol0 light_diffuse_colour 1
 		param_named_auto lightCol1 light_diffuse_colour 2
-
-		param_named_auto ambientLight ambient_light_colour
         
 		// Light mapping parameters.
 		param_named lightMapFactor float 1
