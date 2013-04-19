@@ -300,18 +300,6 @@ AddEntityCommand::AddEntityCommand(const ScenePtr &scene, EntityIdChangeTracker 
     setText("add entity named " + (entityName_.isEmpty() ? "(no name)" : entityName_));
 }
 
-AddEntityCommand::AddEntityCommand(const EntityPtr &entity, EntityIdChangeTracker *tracker, QUndoCommand *parent) :
-    QUndoCommand(parent),
-    scene_(entity->ParentScene()->shared_from_this()),
-    tracker_(tracker),
-    entityName_(entity->Name()),
-    entityId_(0),
-    sync_(entity->IsReplicated()),
-    temp_(entity->IsTemporary())
-{
-    setText("add entity named " + (entityName_.isEmpty() ? "(no name)" : entityName_));
-}
-
 int AddEntityCommand::id() const
 {
     return Id;
