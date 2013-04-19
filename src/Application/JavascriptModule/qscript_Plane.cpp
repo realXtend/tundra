@@ -68,6 +68,14 @@ static QScriptValue Plane_Plane_LineSegment_float3(QScriptContext *context, QScr
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Plane_IsDegenerate_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Plane_IsDegenerate_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Plane This = qscriptvalue_cast<Plane>(context->thisObject());
+    bool ret = This.IsDegenerate();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Plane_Set_float3_float3_float3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Plane_Set_float3_float3_float3 in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -127,6 +135,16 @@ static QScriptValue Plane_Point_float_float_float3_const(QScriptContext *context
     float3 referenceOrigin = qscriptvalue_cast<float3>(context->argument(2));
     float3 ret = This.Point(u, v, referenceOrigin);
     return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Plane_Translate_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Plane_Translate_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Plane This = qscriptvalue_cast<Plane>(context->thisObject());
+    float3 offset = qscriptvalue_cast<float3>(context->argument(0));
+    This.Translate(offset);
+    ToExistingScriptValue_Plane(engine, This, context->thisObject());
+    return QScriptValue();
 }
 
 static QScriptValue Plane_Transform_float3x3(QScriptContext *context, QScriptEngine *engine)
@@ -212,6 +230,7 @@ static QScriptValue Plane_Distance_float3_const(QScriptContext *context, QScript
     Plane This = qscriptvalue_cast<Plane>(context->thisObject());
     float3 point = qscriptvalue_cast<float3>(context->argument(0));
     float ret = This.Distance(point);
+    ret = std::numeric_limits<float>::infinity();
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -248,6 +267,105 @@ static QScriptValue Plane_SignedDistance_float3_const(QScriptContext *context, Q
     Plane This = qscriptvalue_cast<Plane>(context->thisObject());
     float3 point = qscriptvalue_cast<float3>(context->argument(0));
     float ret = This.SignedDistance(point);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Plane_SignedDistance_AABB_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Plane_SignedDistance_AABB_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Plane This = qscriptvalue_cast<Plane>(context->thisObject());
+    AABB aabb = qscriptvalue_cast<AABB>(context->argument(0));
+    float ret = This.SignedDistance(aabb);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Plane_SignedDistance_OBB_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Plane_SignedDistance_OBB_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Plane This = qscriptvalue_cast<Plane>(context->thisObject());
+    OBB obb = qscriptvalue_cast<OBB>(context->argument(0));
+    float ret = This.SignedDistance(obb);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Plane_SignedDistance_Capsule_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Plane_SignedDistance_Capsule_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Plane This = qscriptvalue_cast<Plane>(context->thisObject());
+    Capsule capsule = qscriptvalue_cast<Capsule>(context->argument(0));
+    float ret = This.SignedDistance(capsule);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Plane_SignedDistance_Frustum_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Plane_SignedDistance_Frustum_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Plane This = qscriptvalue_cast<Plane>(context->thisObject());
+    Frustum frustum = qscriptvalue_cast<Frustum>(context->argument(0));
+    float ret = This.SignedDistance(frustum);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Plane_SignedDistance_Line_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Plane_SignedDistance_Line_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Plane This = qscriptvalue_cast<Plane>(context->thisObject());
+    Line line = qscriptvalue_cast<Line>(context->argument(0));
+    float ret = This.SignedDistance(line);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Plane_SignedDistance_LineSegment_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Plane_SignedDistance_LineSegment_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Plane This = qscriptvalue_cast<Plane>(context->thisObject());
+    LineSegment lineSegment = qscriptvalue_cast<LineSegment>(context->argument(0));
+    float ret = This.SignedDistance(lineSegment);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Plane_SignedDistance_Ray_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Plane_SignedDistance_Ray_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Plane This = qscriptvalue_cast<Plane>(context->thisObject());
+    Ray ray = qscriptvalue_cast<Ray>(context->argument(0));
+    float ret = This.SignedDistance(ray);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Plane_SignedDistance_Polygon_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Plane_SignedDistance_Polygon_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Plane This = qscriptvalue_cast<Plane>(context->thisObject());
+    Polygon polygon = qscriptvalue_cast<Polygon>(context->argument(0));
+    float ret = This.SignedDistance(polygon);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Plane_SignedDistance_Polyhedron_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Plane_SignedDistance_Polyhedron_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Plane This = qscriptvalue_cast<Plane>(context->thisObject());
+    Polyhedron polyhedron = qscriptvalue_cast<Polyhedron>(context->argument(0));
+    float ret = This.SignedDistance(polyhedron);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Plane_SignedDistance_Sphere_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Plane_SignedDistance_Sphere_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Plane This = qscriptvalue_cast<Plane>(context->thisObject());
+    Sphere sphere = qscriptvalue_cast<Sphere>(context->argument(0));
+    float ret = This.SignedDistance(sphere);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Plane_SignedDistance_Triangle_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Plane_SignedDistance_Triangle_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Plane This = qscriptvalue_cast<Plane>(context->thisObject());
+    Triangle triangle = qscriptvalue_cast<Triangle>(context->argument(0));
+    float ret = This.SignedDistance(triangle);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -292,25 +410,6 @@ static QScriptValue Plane_Project_Polygon_const(QScriptContext *context, QScript
     Plane This = qscriptvalue_cast<Plane>(context->thisObject());
     Polygon polygon = qscriptvalue_cast<Polygon>(context->argument(0));
     Polygon ret = This.Project(polygon);
-    return qScriptValueFromValue(engine, ret);
-}
-
-static QScriptValue Plane_ObliqueProjection_float3_const(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Plane_ObliqueProjection_float3_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    Plane This = qscriptvalue_cast<Plane>(context->thisObject());
-    float3 obliqueProjectionDir = qscriptvalue_cast<float3>(context->argument(0));
-    float3x4 ret = This.ObliqueProjection(obliqueProjectionDir);
-    return qScriptValueFromValue(engine, ret);
-}
-
-static QScriptValue Plane_ObliqueProject_float3_float3_const(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Plane_ObliqueProject_float3_float3_const in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    Plane This = qscriptvalue_cast<Plane>(context->thisObject());
-    float3 point = qscriptvalue_cast<float3>(context->argument(0));
-    float3 obliqueProjectionDir = qscriptvalue_cast<float3>(context->argument(1));
-    float3 ret = This.ObliqueProject(point, obliqueProjectionDir);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -478,15 +577,6 @@ static QScriptValue Plane_DihedralAngle_Plane_const(QScriptContext *context, QSc
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Plane_IntersectsPlane_Plane_const(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Plane_IntersectsPlane_Plane_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    Plane This = qscriptvalue_cast<Plane>(context->thisObject());
-    Plane plane = qscriptvalue_cast<Plane>(context->argument(0));
-    Line ret = This.IntersectsPlane(plane);
-    return qScriptValueFromValue(engine, ret);
-}
-
 static QScriptValue Plane_Intersects_Plane_Line_ptr_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Plane_Intersects_Plane_Line_ptr_const in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -646,6 +736,18 @@ static QScriptValue Plane_toString_const(QScriptContext *context, QScriptEngine 
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Plane_IntersectLinePlane_float3_float_float3_float3_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 5) { printf("Error! Invalid number of arguments passed to function Plane_IntersectLinePlane_float3_float_float3_float3_float in file %s, line %d!\nExpected 5, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float3 planeNormal = qscriptvalue_cast<float3>(context->argument(0));
+    float planeD = qscriptvalue_cast<float>(context->argument(1));
+    float3 linePos = qscriptvalue_cast<float3>(context->argument(2));
+    float3 lineDir = qscriptvalue_cast<float3>(context->argument(3));
+    float t = qscriptvalue_cast<float>(context->argument(4));
+    bool ret = Plane::IntersectLinePlane(planeNormal, planeD, linePos, lineDir, t);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Plane_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 0)
@@ -707,6 +809,35 @@ static QScriptValue Plane_Distance_selector(QScriptContext *context, QScriptEngi
     if (context->argumentCount() == 1 && QSVIsOfType<Capsule>(context->argument(0)))
         return Plane_Distance_Capsule_const(context, engine);
     printf("Plane_Distance_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
+}
+
+static QScriptValue Plane_SignedDistance_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 1 && QSVIsOfType<float3>(context->argument(0)))
+        return Plane_SignedDistance_float3_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<AABB>(context->argument(0)))
+        return Plane_SignedDistance_AABB_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<OBB>(context->argument(0)))
+        return Plane_SignedDistance_OBB_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Capsule>(context->argument(0)))
+        return Plane_SignedDistance_Capsule_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Frustum>(context->argument(0)))
+        return Plane_SignedDistance_Frustum_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Line>(context->argument(0)))
+        return Plane_SignedDistance_Line_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<LineSegment>(context->argument(0)))
+        return Plane_SignedDistance_LineSegment_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Ray>(context->argument(0)))
+        return Plane_SignedDistance_Ray_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Polygon>(context->argument(0)))
+        return Plane_SignedDistance_Polygon_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Polyhedron>(context->argument(0)))
+        return Plane_SignedDistance_Polyhedron_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Sphere>(context->argument(0)))
+        return Plane_SignedDistance_Sphere_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Triangle>(context->argument(0)))
+        return Plane_SignedDistance_Triangle_const(context, engine);
+    printf("Plane_SignedDistance_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue Plane_Project_selector(QScriptContext *context, QScriptEngine *engine)
@@ -815,23 +946,23 @@ QScriptValue ToScriptValue_const_Plane(QScriptEngine *engine, const Plane &value
 QScriptValue register_Plane_prototype(QScriptEngine *engine)
 {
     QScriptValue proto = engine->newObject();
+    proto.setProperty("IsDegenerate", engine->newFunction(Plane_IsDegenerate_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Set", engine->newFunction(Plane_Set_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Set", engine->newFunction(Plane_Set_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ReverseNormal", engine->newFunction(Plane_ReverseNormal, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("PointOnPlane", engine->newFunction(Plane_PointOnPlane_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Point", engine->newFunction(Plane_Point_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Point", engine->newFunction(Plane_Point_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Translate", engine->newFunction(Plane_Translate_float3, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Transform", engine->newFunction(Plane_Transform_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IsInPositiveDirection", engine->newFunction(Plane_IsInPositiveDirection_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IsOnPositiveSide", engine->newFunction(Plane_IsOnPositiveSide_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ExamineSide", engine->newFunction(Plane_ExamineSide_Triangle_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("AreOnSameSide", engine->newFunction(Plane_AreOnSameSide_float3_float3_const, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Distance", engine->newFunction(Plane_Distance_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("SignedDistance", engine->newFunction(Plane_SignedDistance_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("SignedDistance", engine->newFunction(Plane_SignedDistance_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("OrthoProjection", engine->newFunction(Plane_OrthoProjection_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Project", engine->newFunction(Plane_Project_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("ObliqueProjection", engine->newFunction(Plane_ObliqueProjection_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("ObliqueProject", engine->newFunction(Plane_ObliqueProject_float3_float3_const, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("MirrorMatrix", engine->newFunction(Plane_MirrorMatrix_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Mirror", engine->newFunction(Plane_Mirror_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Refract", engine->newFunction(Plane_Refract_float3_float_float_const, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -841,7 +972,6 @@ QScriptValue register_Plane_prototype(QScriptEngine *engine)
     proto.setProperty("Equals", engine->newFunction(Plane_Equals_Plane_float_const, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IsParallel", engine->newFunction(Plane_IsParallel_Plane_float_const, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("DihedralAngle", engine->newFunction(Plane_DihedralAngle_Plane_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("IntersectsPlane", engine->newFunction(Plane_IntersectsPlane_Plane_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersects", engine->newFunction(Plane_Intersects_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersects", engine->newFunction(Plane_Intersects_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Clip", engine->newFunction(Plane_Clip_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -856,6 +986,7 @@ QScriptValue register_Plane_prototype(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, ToScriptValue_Plane, FromScriptValue_Plane, proto);
 
     QScriptValue ctor = engine->newFunction(Plane_ctor, proto, 3);
+    ctor.setProperty("IntersectLinePlane", engine->newFunction(Plane_IntersectLinePlane_float3_float_float3_float3_float, 5), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     engine->globalObject().setProperty("Plane", ctor, QScriptValue::Undeletable | QScriptValue::ReadOnly);
 
     return ctor;

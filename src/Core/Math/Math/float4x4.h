@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 #pragma once
 
 #ifdef MATH_ENABLE_STL_SUPPORT
-#include <cassert>
+#include "myassert.h"
 #endif
 #include "Math/MathFwd.h"
 #include "MatrixProxy.h"
@@ -31,6 +31,9 @@
 #ifdef MATH_QT_INTEROP
 #include <QMatrix4x4>
 #endif
+
+#include "MathBuildConfig.h"
+#include "SSEMath.h"
 
 MATH_BEGIN_NAMESPACE
 
@@ -48,19 +51,19 @@ MATH_BEGIN_NAMESPACE
 	The element m_yx is the value on the row y and column x.
 	You can access m_yx using the double-bracket notation m[y][x], or using the member function m.At(y, x);
 
-	@note The member functions in this class use the convention that transforms are applied to vectors in the form 
+	@note The member functions in this class use the convention that transforms are applied to vectors in the form
 	M * v. This means that "float4x4 M, M1, M2; M = M1 * M2;" gives a transformation M that applies M2 first, followed
 	by M1 second, i.e. M * v = M1 * M2 * v = M1 * (M2 * v). This is the convention commonly used with OpenGL. The
 	opposing convention (v * M) is commonly used with Direct3D.
 
-	@note This class uses row-major storage, which means that the elements are packed in memory in order 
+	@note This class uses row-major storage, which means that the elements are packed in memory in order
 	 m[0][0], m[0][1], m[0][2], m[0][3], m[1][0], m[1][1], ...
-	The elements for a single row of the matrix hold successive memory addresses. This is the same memory layout as 
+	The elements for a single row of the matrix hold successive memory addresses. This is the same memory layout as
 	 with C++ multidimensional arrays.
 
-	Contrast this with column-major storage, in which the elements are packed in the memory in 
+	Contrast this with column-major storage, in which the elements are packed in the memory in
 	order m[0][0], m[1][0], m[2][0], m[3][0], m[0][1], m[1][1], ...
-	There the elements for a single column of the matrix hold successive memory addresses. 
+	There the elements for a single column of the matrix hold successive memory addresses.
 	This is exactly opposite from the standard C++ multidimensional arrays, since if you have e.g.
 	int v[10][10], then v[0][9] comes in memory right before v[1][0]. ( [0][0], [0][1], [0][2], ... [1][0], [1][1], ...) */
 class float4x4
@@ -74,7 +77,15 @@ public:
 
 	/// Stores the data in this matrix in row-major format.
 	/** [noscript] */
-	float v[Rows][Cols];
+#ifdef MATH_SSE
+	union
+	{
+#endif
+		float v[Rows][Cols];
+#ifdef MATH_SSE
+		__m128 row[4];
+	};
+#endif
 
 	/// A constant matrix that has zeroes in all its entries.
 	static const float4x4 zero;
@@ -90,7 +101,7 @@ public:
 
 	/// A compile-time constant float4x4 which has NaN in each element.
 	/// For this constant, each element has the value of quiet NaN, or Not-A-Number.
-	/// @note Never compare a float4x4 to this value! Due to how IEEE floats work, for each float x, both the expression "x == nan" and "x == nan" returns false!
+	/// @note Never compare a float4x4 to this value! Due to how IEEE floats work, for each float x, both the expression "x == nan" and "x != nan" returns false!
 	///	   That is, nothing is equal to NaN, not even NaN itself!
 	static const float4x4 nan;
 
@@ -98,8 +109,11 @@ public:
 	/** [opaque-qtscript] */
 	float4x4() {}
 
-	/// The copy-ctor for float4x4 is the trivial copy-ctor, but it is explicitly written to be able to automatically pick up this function for QtScript bindings.
+#ifdef MATH_EXPLICIT_COPYCTORS
+	/// The copy-ctor for float4x4 is the trivial copy-ctor, but it is explicitly written to be able to automatically
+	/// pick up this function for QtScript bindings.
 	float4x4(const float4x4 &rhs) { Set(rhs); }
+#endif
 
 	/// Constructs a new float4x4 by explicitly specifying all the matrix elements.
 	/// The elements are specified in row-major format, i.e. the first row first followed by the second and third row.
@@ -139,12 +153,14 @@ public:
 	static TranslateOp Translate(float tx, float ty, float tz);
 	static TranslateOp Translate(const float3 &offset);
 
-	/// Creates a new float4x4 that rotates about one of the principal axes by the given angle. [indexTitle: RotateX/Y/Z]
-	/** Calling RotateX, RotateY or RotateZ is slightly faster than calling the more generic RotateAxisAngle function. */
-	static float4x4 RotateX(float angleRadians);
-	/** @param pointOnAxis If specified, the rotation is performed about an axis that passes through this point, and not
-		through the origin. The returned matrix will not be a pure rotation matrix, but will also contain translation. */
+	/// Creates a new float4x4 that rotates about one of the principal axes. [indexTitle: RotateX/Y/Z]
+	/** Calling RotateX, RotateY or RotateZ is slightly faster than calling the more generic RotateAxisAngle function.
+		@param angleRadians The angle to rotate by, in radians. For example, Pi/4.f equals to 45 degrees, Pi/2.f is 90 degrees, and Pi is 180 degrees.
+		@param pointOnAxis If specified, the rotation is performed about an axis that passes through this point, and not
+		through the origin. The returned matrix will not be a pure rotation matrix, but will also contain translation.
+		@see DegToRad(). */
 	static float4x4 RotateX(float angleRadians, const float3 &pointOnAxis);
+	static float4x4 RotateX(float angleRadians);
 	/** [similarOverload: RotateX] [hideIndex] */
 	static float4x4 RotateY(float angleRadians);
 	/** [similarOverload: RotateX] [hideIndex] */
@@ -154,18 +170,24 @@ public:
 	/** [similarOverload: RotateX] [hideIndex] */
 	static float4x4 RotateZ(float angleRadians, const float3 &pointOnAxis);
 
-	/// Creates a new float4x4 that rotates about the given axis by the given angle.
-	static float4x4 RotateAxisAngle(const float3 &axisDirection, float angleRadians);
-	/** @param pointOnAxis If specified, the rotation is performed about an axis that passes through this point, and not
+	/// Creates a new float4x4 that rotates about the given axis.
+	/** @param axisDirection The axis to rotate about. This vector must be normalized.
+		@param angleRadians The angle to rotate by, in radians. Pi/4.f equals to 45 degrees, Pi/2.f is 90 degrees, and Pi is 180 degrees.
+		@param pointOnAxis If specified, the rotation is performed about an axis that passes through this point, and not
 		through the origin. The returned matrix will not be a pure rotation matrix, but will also contain translation. */
 	static float4x4 RotateAxisAngle(const float3 &axisDirection, float angleRadians, const float3 &pointOnAxis);
+	static float4x4 RotateAxisAngle(const float3 &axisDirection, float angleRadians);
 
 	/// Creates a new float4x4 that rotates sourceDirection vector to coincide with the targetDirection vector.
 	/** @note There are infinite such rotations - this function returns the rotation that has the shortest angle
-		(when decomposed to axis-angle notation). */
-	static float4x4 RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection);
-	/** @param centerPoint If specified, rotation is performed using this point as the coordinate space origin. */
+		(when decomposed to axis-angle notation).
+		@param sourceDirection The 'from' direction vector. This vector must be normalized.
+		@param targetDirection The 'to' direction vector. This vector must be normalized.
+		@param centerPoint If specified, rotation is performed using this point as the coordinate space origin. If omitted,
+			the rotation is performed about the coordinate system origin (0,0,0).
+		@return A new rotation matrix R for which R*sourceDirection == targetDirection. */
 	static float4x4 RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection, const float3 &centerPoint);
+	static float4x4 RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection);
 
 	/// Returns a random 4x4 matrix with each entry randomized between the range[minElem, maxElem].
 	/** Warning: The matrices returned by this function do not represent well-formed 3D transformations.
@@ -173,14 +195,22 @@ public:
 	static float4x4 RandomGeneral(LCG &lcg, float minElem, float maxElem);
 
 	/// Creates a new float4x4 that rotates one coordinate system to coincide with another.
-	/** This function rotates the sourceDirection vector to coincide with the targetDirection vector, and then 
-			rotates sourceDirection2 (which was transformed by 1.) to targetDirection2, but keeping the constraint that 
+	/** This function rotates the sourceDirection vector to coincide with the targetDirection vector, and then
+			rotates sourceDirection2 (which was transformed by 1.) to targetDirection2, but keeping the constraint that
 			sourceDirection must look at targetDirection. */
-	static float4x4 RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection,
-		const float3 &sourceDirection2, const float3 &targetDirection2);
-	/** @param centerPoint If specified, rotation is performed using this point as the coordinate space origin. */
+	/** @param sourceDirection The first 'from' direction. This vector must be normalized.
+		@param targetDirection The first 'to' direction. This vector must be normalized.
+		@param sourceDirection2 The second 'from' direction. This vector must be normalized.
+		@param targetDirection2 The second 'to' direction. This vector must be normalized.
+		@param centerPoint If specified, rotation is performed using this point as the coordinate space origin.
+		@return The returned matrix maps sourceDirection to targetDirection. Additionally, the returned matrix
+			rotates sourceDirection2 to point towards targetDirection2 as closely as possible, under the previous constraint.
+			The returned matrix is a rotation matrix, i.e. it is orthonormal with a determinant of +1, and optionally
+			has a translation component if the rotation is not performed w.r.t. the coordinate system origin. */
 	static float4x4 RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection,
 		const float3 &sourceDirection2, const float3 &targetDirection2, const float3 &centerPoint);
+	static float4x4 RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection,
+		const float3 &sourceDirection2, const float3 &targetDirection2);
 
 	/// Creates a new float4x4 that performs the rotation expressed by the given quaternion.
 	static float4x4 FromQuat(const Quat &orientation);
@@ -218,21 +248,22 @@ public:
 	static ScaleOp Scale(float sx, float sy, float sz);
 	static ScaleOp Scale(const float3 &scale);
 
-	static ScaleOp Scale(float uniformScale);
-
 	/// Creates a new float4x4 that scales with respect to the given center point.
-	/** @param scale The amount of scale to apply to the x, y and z directions. */
+	/** @param scale The amount of scale to apply to the x, y and z directions.
+		@param scaleCenter The coordinate system center point for the scaling. If omitted, the origin (0,0,0) will
+			be used as the origin for the scale operation. */
 	static float4x4 Scale(const float3 &scale, const float3 &scaleCenter);
 
 	/// Creates a new float4x4 that scales points along the given axis.
 	/** @param axis A normalized direction vector that specifies the direction of scaling.
 		@param scalingFactor The amount of scaling to apply along the specified axis. */
-	static float4x4 ScaleAlongAxis(const float3 &axis, float scalingFactor);
 	/** @param scaleCenter If specified, this point will be used as the origin for the scale operation. */
 	static float4x4 ScaleAlongAxis(const float3 &axis, float scalingFactor, const float3 &scaleCenter);
+	static float4x4 ScaleAlongAxis(const float3 &axis, float scalingFactor);
 
 	/// Creates a new float4x4 that performs uniform scaling by the given amount.
 	static ScaleOp UniformScale(float uniformScale);
+	static float4x4 UniformScale(float uniformScale, const float3 &scaleCenter);
 
 	/// Returns the scaling performed by this matrix. This function assumes that the last row is [0 0 0 1].
 	/// GetScale().x specifies the amount of scaling applied to the local x direction vector when it is transformed by this matrix.
@@ -240,7 +271,7 @@ public:
 	float3 GetScale() const;
 
 	/// Produces a matrix that shears along a principal axis.
-	/** The shear matrix offsets the two other axes according to the 
+	/** The shear matrix offsets the two other axes according to the
 		position of the point along the shear axis. [indexTitle: ShearX/Y/Z] */
 	static float4x4 ShearX(float yFactor, float zFactor);
 	static float4x4 ShearY(float xFactor, float zFactor); ///< [similarOverload: ShearX] [hideIndex]
@@ -251,19 +282,31 @@ public:
 		they were. */
 	static float4x4 Mirror(const Plane &p);
 
-	/// Creates a new float4x4 that performs perspective projection.
-	/// @note The returned matrix contains a last row that differs from [0 0 0 1].
-	static float4x4 PerspectiveProjection(float nearPlaneDistance, float farPlaneDistance, float horizontalFov, float verticalFov);
+	/// Identical to D3DXMatrixOrthoLH, except transposed to account for Matrix * vector convention used in MathGeoLib.
+	/// See http://msdn.microsoft.com/en-us/library/windows/desktop/bb205346(v=vs.85).aspx
+	static float4x4 D3DOrthoProjLH(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize);
+	/// Identical to D3DXMatrixOrthoRH, except transposed to account for Matrix * vector convention used in MathGeoLib.
+	/// See http://msdn.microsoft.com/en-us/library/windows/desktop/bb205349(v=vs.85).aspx
+	static float4x4 D3DOrthoProjRH(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize);
+	/// Identical to D3DXMatrixPerspectiveLH, except transposed to account for Matrix * vector convention used in MathGeoLib.
+	/// See http://msdn.microsoft.com/en-us/library/windows/desktop/bb205352(v=vs.85).aspx
+	static float4x4 D3DPerspProjLH(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize);
+	/// Identical to D3DXMatrixPerspectiveRH, except transposed to account for Matrix * vector convention used in MathGeoLib.
+	/// See http://msdn.microsoft.com/en-us/library/windows/desktop/bb205355(v=vs.85).aspx
+	static float4x4 D3DPerspProjRH(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize);
+
+	/// Identical to http://www.opengl.org/sdk/docs/man/xhtml/gluPerspective.xml , except uses viewport sizes instead of FOV to set up the
+	/// projection matrix.
+	static float4x4 OpenGLPerspProjRH(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize);
 
 	/// Creates a new float4x4 that performs orthographic projection. [indexTitle: OrthographicProjection/YZ/XZ/XY]
-	static float4x4 D3DOrthoProjRH(float nearPlaneDistance, float farPlaneDistance, float horizontalViewportSize, float verticalViewportSize);
 	static float4x4 OrthographicProjection(const Plane &target);
 	static float4x4 OrthographicProjectionYZ(); ///< [similarOverload: OrthographicProjection] [hideIndex]
 	static float4x4 OrthographicProjectionXZ(); ///< [similarOverload: OrthographicProjection] [hideIndex]
 	static float4x4 OrthographicProjectionXY(); ///< [similarOverload: OrthographicProjection] [hideIndex]
 
 	/// Computes the complementary projection of this matrix.
-	/// If P is a matrix that projects from 3D space to 2D, then the complementary projection 
+	/// If P is a matrix that projects from 3D space to 2D, then the complementary projection
 	/// matrix projects from 3D to the normal vector of the 2D projection plane of the matrix P.
 	float4x4 ComplementaryProjection() const;
 
@@ -273,14 +316,14 @@ public:
 		@note You can use the index notation to set elements of the matrix, e.g. m[0][1] = 5.f;
 		@note MatrixProxy is a temporary helper class. Do not store references to it, but always
 		directly dereference it with the [] operator.
-		\example m[0][3] Returns the last element on the first row, which is the amount 
+		For example, m[0][3] Returns the last element on the first row, which is the amount
 		of translation in the x-direction. */
 	MatrixProxy<Cols> &operator[](int row);
 	const MatrixProxy<Cols> &operator[](int row) const;
 
 	/// Returns the given element. [noscript]
 	/** This function returns the element of this matrix at (row, col)==(i, j)==(y, x).
-		If you have a non-const object, you can set values of this matrix through this 
+		If you have a non-const object, you can set values of this matrix through this
 		reference, using the notation m.At(row, col) = someValue; */
 	float &At(int row, int col);
 	CONST_WIN32 float At(int row, int col) const;
@@ -318,7 +361,7 @@ public:
 	void ScaleCol(int col, float scalar);
 
 	/// Returns the upper-left 3-by-3 part.
-	const float3x3 Float3x3Part() const;
+	CONST_WIN32 float3x3 Float3x3Part() const;
 
 	/// Returns the upper-left 3-by-4 part. [noscript]
 	/// @note The float3x4 and float4x4 are bit-compatible, so this function simply casts.
@@ -328,7 +371,7 @@ public:
 	/// Returns the translation part.
 	/** The translation part is stored in the fourth column of this matrix.
 		This is equivalent to decomposing this matrix in the form M = T * M', i.e. this translation is applied last,
-		after applying rotation and scale. If this matrix represents a local->world space transformation for an object, 
+		after applying rotation and scale. If this matrix represents a local->world space transformation for an object,
 		then this gives the world space position of the object.
 		@note This function assumes that this matrix does not contain projection (the fourth row of this matrix is [0 0 0 1]). */
 	CONST_WIN32 float3 TranslatePart() const;
@@ -373,29 +416,33 @@ public:
 	const float *ptr() const;
 
 	/// Sets the three first elements of the given row. The fourth element is left unchanged.
-	/** @param row The index of the row to set, in the range [0-3]. */
-	void SetRow3(int row, const float3 &rowVector);
+	/** @param row The index of the row to set, in the range [0-3].
+		@param data A pointer to an array of 3 floats that contain the new x, y and z values for the row. */
 	void SetRow3(int row, const float *data);
+	void SetRow3(int row, const float3 &rowVector);
 	void SetRow3(int row, float m_r0, float m_r1, float m_r2);
 
 	/// Sets the values of the given row.
-	/// @param row The index of the row to set, in the range [0-3].
+	/** @param row The index of the row to set, in the range [0-3].
+		@param data A pointer to an array of 4 floats that contain the new x, y, z and w values for the row. */
+	void SetRow(int row, const float *data);
 	void SetRow(int row, const float3 &rowVector, float m_r3);
 	void SetRow(int row, const float4 &rowVector);
-	void SetRow(int row, const float *data);
 	void SetRow(int row, float m_r0, float m_r1, float m_r2, float m_r3);
 
 	/// Sets the three first elements of the given column. The fourth element is left unchanged.
-	/// @param column The index of the column to set, in the range [0-3].
-	void SetCol3(int column, const float3 &columnVector);
+	/** @param column The index of the column to set, in the range [0-3].
+		@param data A pointer to an array of 3 floats that contain the new x, y and z values for the column. */
 	void SetCol3(int column, const float *data);
+	void SetCol3(int column, const float3 &columnVector);
 	void SetCol3(int column, float m_0c, float m_1c, float m_2c);
 
 	/// Sets the values of the given column.
-	/// @param column The index of the column to set, in the range [0-3].
+	/** @param column The index of the column to set, in the range [0-3].
+		@param data A pointer to an array of 4 floats that contain the new x, y, z and w values for the column. */
+	void SetCol(int column, const float *data);
 	void SetCol(int column, const float3 &columnVector, float m_3c);
 	void SetCol(int column, const float4 &columnVector);
-	void SetCol(int column, const float *data);
 	void SetCol(int column, float m_0c, float m_1c, float m_2c, float m_3c);
 
 	/// Sets all values of this matrix.
@@ -408,13 +455,14 @@ public:
 	void Set(const float4x4 &rhs);
 
 	/// Sets all values of this matrix.
-	/// @param values The values in this array will be copied over to this matrix. The source must contain 16 floats in row-major order (the same
-	///		order as the Set() function above has its input parameters in).
+	/** @param values The values in this array will be copied over to this matrix. The source must contain 16 floats in row-major order (the same
+			order as the Set() function above has its input parameters in). */
 	void Set(const float *values);
 
 	/// Sets a single element of this matrix.
-	/// @param row The row index of the element to set, in the range [0-3].
-	/// @param col The col index of the element to set, in the range [0-3].
+	/** @param row The row index (y-coordinate) of the element to set, in the range [0-3].
+		@param col The col index (x-coordinate) of the element to set, in the range [0-3].
+		@param value The new value to set to the cell [row][col]. */
 	void Set(int row, int col, float value);
 
 	void Set3x3Part(const float3x3 &rotation);
@@ -452,7 +500,7 @@ public:
 	/// Sets the 3-by-3 part of this matrix to perform rotation about the given axis and angle (in radians). Leaves all other
 	/// entries of this matrix untouched. [indexTitle: SetRotatePart/X/Y/Z]
 	void SetRotatePart(const float3 &axisDirection, float angleRadians);
-	/// Sets the 3-by-3 part of this matrix to perform the rotation expressed by the given quaternion. 
+	/// Sets the 3-by-3 part of this matrix to perform the rotation expressed by the given quaternion.
 	/// Leaves all other entries of this matrix untouched.
 	void SetRotatePart(const Quat &orientation);
 
@@ -478,9 +526,9 @@ public:
 			vector localForward, i.e. localForward.Dot(localUp) == 0.
 		@param worldUp Specifies the global up direction of the scene in world space. Simply rotating one vector to
 			coincide with another (localForward->targetDirection) would cause the up direction of the resulting
-			orientation to drift (e.g. the model could be looking at its target its head slanted sideways). To keep 
-			the up direction straight, this function orients the localUp direction of the model to point towards the 
-			specified worldUp direction (as closely as possible). The worldUp and targetDirection vectors cannot be 
+			orientation to drift (e.g. the model could be looking at its target its head slanted sideways). To keep
+			the up direction straight, this function orients the localUp direction of the model to point towards the
+			specified worldUp direction (as closely as possible). The worldUp and targetDirection vectors cannot be
 			collinear, but they do not need to be perpendicular either.
 		@return A matrix that maps the given local space forward direction vector to point towards the given target
 			direction, and the given local up direction towards the given target world up direction. The returned
@@ -510,43 +558,45 @@ public:
 			vector localForward, i.e. localForward.Dot(localUp) == 0.
 		@param worldUp Specifies the global up direction of the scene in world space. Simply rotating one vector to
 			coincide with another (localForward->targetDirection) would cause the up direction of the resulting
-			orientation to drift (e.g. the model could be looking at its target its head slanted sideways). To keep 
-			the up direction straight, this function orients the localUp direction of the model to point towards the 
-			specified worldUp direction (as closely as possible). The worldUp and targetDirection vectors cannot be 
+			orientation to drift (e.g. the model could be looking at its target its head slanted sideways). To keep
+			the up direction straight, this function orients the localUp direction of the model to point towards the
+			specified worldUp direction (as closely as possible). The worldUp and targetDirection vectors cannot be
 			collinear, but they do not need to be perpendicular either.
 		@return A matrix that maps the given local space forward direction vector to point towards the given target
 			direction, and the given local up direction towards the given target world up direction. The returned
 			matrix M is orthonormal with a determinant of +1. For the matrix M it holds that
 			M * localForward = targetDirection, and M * localUp lies in the plane spanned by the vectors targetDirection
-			and worldUp. 
+			and worldUp.
 		@note The position of (the translation performed by) the resulting matrix will be set to eyePos, i.e. the object
 			will be placed to the given eye position.
 		@see RotateFromTo(). */
-	static float4x4 LookAt(const float3 &eyePos, const float3 &targetPos, const float3 &localForward, 
+	static float4x4 LookAt(const float3 &eyePos, const float3 &targetPos, const float3 &localForward,
 	                       const float3 &localUp, const float3 &worldUp);
 
 	/// Sets this float4x4 to represent the same transformation as the given float3x3.
-	/// @important The remaining entries of this matrix are set to identity.
+	/// @note The remaining entries of this matrix are set to identity.
 	float4x4 &operator =(const float3x3 &rhs);
 
 	/// Sets this float4x4 to represent the same transformation as the given float3x4.
-	/// @important The remaining entries of this matrix are set to identity.
+	/// @note The remaining entries of this matrix are set to identity.
 	float4x4 &operator =(const float3x4 &rhs);
 
 	float4x4 &operator =(const float4x4 &rhs);
 
+	float4x4 &operator =(const TranslateOp &rhs);
+
 	/// Sets this float4x4 to represent the same rotation as the given Quat.
-	/// @important The remaining entries of this matrix are set to identity.
+	/// @note The remaining entries of this matrix are set to identity.
 	float4x4 &operator =(const Quat &rhs);
 
 	/// Computes the determinant of the upper-left 3x3 submatrix of this matrix.
 	float Determinant3() const;
 
-	/// Computes the determinant of this matrix. 
+	/// Computes the determinant of this matrix.
 	/** If the determinant is nonzero, this matrix is invertible.
 		If the determinant is negative, this matrix performs reflection about some axis.
 		From http://msdn.microsoft.com/en-us/library/bb204853(VS.85).aspx :
-		"If the determinant is positive, the basis is said to be "positively" oriented (or right-handed). 
+		"If the determinant is positive, the basis is said to be "positively" oriented (or right-handed).
 		If the determinant is negative, the basis is said to be "negatively" oriented (or left-handed)." */
 	float Determinant4() const;
 
@@ -571,7 +621,7 @@ public:
 
 	/// Inverts this matrix using the generic Gauss's method.
 	/// @return Returns true on success, false otherwise.
-	bool Inverse();
+	bool Inverse(float epsilon = 1e-3f);
 
 	/// Returns an inverted copy of this matrix.
 	/// If this matrix does not have an inverse, returns the matrix that was the result of running
@@ -586,12 +636,12 @@ public:
 	/// Returns true on success. On failure, the matrix is not modified. This function fails if any of the
 	/// elements of this vector are not finite, or if the matrix contains a zero scaling factor on X, Y or Z.
 	/// This function may not be called if this matrix contains any projection (last row differs from (0 0 0 1)).
-	/// @note The returned matrix will be row-orthogonal, but not column-orthogonal in general. 
-	/// The returned matrix will be column-orthogonal iff the original matrix M was row-orthogonal as well. 
+	/// @note The returned matrix will be row-orthogonal, but not column-orthogonal in general.
+	/// The returned matrix will be column-orthogonal iff the original matrix M was row-orthogonal as well.
 	/// (in which case S had uniform scale, InverseOrthogonalUniformScale() could have been used instead)
 	bool InverseColOrthogonal();
 
-	/// Inverts a matrix that is a concatenation of only translate, rotate and uniform scale operations. 
+	/// Inverts a matrix that is a concatenation of only translate, rotate and uniform scale operations.
 	/// If a matrix is of form M=T*R*S, where T is an affine translation matrix,
 	/// R is a rotation matrix and S is a diagonal matrix with non-zero and uniform scaling factors (possibly mirroring),
 	/// then the matrix M is both column- and row-orthogonal and this function can be used to compute the inverse.
@@ -618,11 +668,11 @@ public:
 	/// Returns a transposed copy of this matrix.
 	float4x4 Transposed() const;
 
-	/// Computes the inverse transpose of this matrix in-place. 
+	/// Computes the inverse transpose of this matrix in-place.
 	/** Use the inverse transpose to transform covariant vectors (normal vectors). */
 	bool InverseTranspose();
 
-	/// Returns the inverse transpose of this matrix. 
+	/// Returns the inverse transpose of this matrix.
 	/** Use that matrix to transform covariant vectors (normal vectors). */
 	float4x4 InverseTransposed() const;
 
@@ -631,7 +681,7 @@ public:
 
 	/// Orthogonalizes the basis formed by the column vectors of the 3x3 top-left submatrix of this matrix.
 	/// @param firstColumn The index of the column the direction of which will be preserved, in the range [0-2].
-	/// @param secondColumn The second column to be processed, in the range [0-2]. 
+	/// @param secondColumn The second column to be processed, in the range [0-2].
 	/// @param thirdColumn The third column to be processed, in the range [0-2].
 	/// @note The three integers passed in to this function must be a permutation of the numbers 0, 1 and 2, that is,
 	///	   firstColumn != secondColumn, firstColumn != thirdColumn and secondColumn != thirdColumn.
@@ -640,7 +690,7 @@ public:
 
 	/// Orthonormalizes the basis formed by the column vectors of the 3x3 top-left submatrix of this matrix.
 	/// @param firstColumn The index of the column the direction of which will be preserved, in the range [0-2].
-	/// @param secondColumn The second column to be processed, in the range [0-2]. 
+	/// @param secondColumn The second column to be processed, in the range [0-2].
 	/// @param thirdColumn The third column to be processed, in the range [0-2].
 	/// @note The three integers passed in to this function must be a permutation of the numbers 0, 1 and 2, that is,
 	///	   firstColumn != secondColumn, firstColumn != thirdColumn and secondColumn != thirdColumn.
@@ -665,7 +715,7 @@ public:
 	float3 TransformDir(const float3 &directionVector) const;
 	float3 TransformDir(float x, float y, float z) const;
 
-	/// Transforms the given 4-vector by this matrix M, i.e. returns M * (x, y, z, w). 
+	/// Transforms the given 4-vector by this matrix M, i.e. returns M * (x, y, z, w).
 	/// Does not perform a perspective divide afterwards, so remember to divide by w afterwards
 	/// at some point, if this matrix contained a projection.
 	float4 Transform(const float4 &vector) const;
@@ -709,6 +759,9 @@ public:
 	float4x4 operator -(const float4x4 &rhs) const;
 	float4x4 operator -() const;
 
+	/// Unary operator + allows this structure to be used in an expression '+x'.
+	float4x4 operator +() const { return *this; }
+
 	float4x4 &operator *=(float scalar);
 	float4x4 &operator /=(float scalar);
 	float4x4 &operator +=(const float4x4 &rhs);
@@ -739,16 +792,16 @@ public:
 	bool IsSymmetric(float epsilon = 1e-3f) const;
 
 	/// Tests if this matrix is skew-symmetric (M == -M^T).
-	/** The test compares the floating point elements of this matrix up to the given epsilon. A matrix M is skew-symmetric 
+	/** The test compares the floating point elements of this matrix up to the given epsilon. A matrix M is skew-symmetric
 		the identity M=-M^T holds. */
 	bool IsSkewSymmetric(float epsilon = 1e-3f) const;
 
 	/// Tests if this matrix is an idempotent matrix.
-	/// An idempotent matrix is one for which the equality M*M=M holds. Projection matrices are commonly idempotent. 
+	/// An idempotent matrix is one for which the equality M*M=M holds. Projection matrices are commonly idempotent.
 	bool IsIdempotent(float epsilon = 1e-3f) const;
 
 	/// Returns true if this matrix does not perform any scaling.
-	/** A matrix does not do any scaling if the column vectors of this 
+	/** A matrix does not do any scaling if the column vectors of this
 		matrix are normalized in length, compared to the given epsilon. Note that this matrix may still perform
 		reflection, i.e. it has a -1 scale along some axis.
 		@note This function only examines the upper 3-by-3 part of this matrix.
@@ -757,8 +810,8 @@ public:
 
 	/// Returns true if this matrix performs a reflection along some plane.
 	/** In 3D space, an even number of reflections corresponds to a rotation about some axis, so a matrix consisting of
-		an odd number of consecutive mirror operations can only reflect about one axis. A matrix that contains reflection reverses 
-		the handedness of the coordinate system. This function tests if this matrix 
+		an odd number of consecutive mirror operations can only reflect about one axis. A matrix that contains reflection reverses
+		the handedness of the coordinate system. This function tests if this matrix
 		does perform mirroring. This occurs iff this matrix has a negative determinant. */
 	bool HasNegativeScale() const;
 
@@ -796,7 +849,7 @@ public:
 #endif
 
 	/// Extracts the rotation part of this matrix into Euler rotation angles (in radians). [indexTitle: ToEuler***]
-	/// @note It is better to thinkg about the returned float3 as an array of three floats, and
+	/// @note It is better to think about the returned float3 as an array of three floats, and
 	/// not as a triple of xyz, because e.g. the .y component returned by ToEulerYXZ() does
 	/// not return the amount of rotation about the y axis, but contains the amount of rotation
 	/// in the second axis, in this case the x axis.
@@ -832,7 +885,7 @@ public:
 		@param translate [out] This vector receives the translation component this matrix performs. The translation is applied last
 			after rotation and scaling.
 		@param rotate [out] This object receives the rotation part of this transform.
-		@param scale [out] This vector receives the scaling along the local (before transformation by R) X, Y and Z axes 
+		@param scale [out] This vector receives the scaling along the local (before transformation by R) X, Y and Z axes
 			performed by this matrix. */
 	void Decompose(float3 &translate, Quat &rotate, float3 &scale) const;
 	void Decompose(float3 &translate, float3x3 &rotate, float3 &scale) const;
@@ -841,7 +894,7 @@ public:
 
 #ifdef MATH_OGRE_INTEROP
 	float4x4(const Ogre::Matrix4 &m) { Set(&m[0][0]); }
-	operator Ogre::Matrix4() { return Ogre::Matrix4(v[0][0], v[0][1], v[0][2], v[0][3], v[1][0], v[1][1], v[1][2], v[1][3], v[2][0], v[2][1], v[2][2], v[2][3], v[3][0], v[3][1], v[3][2], v[3][3]); } 
+	operator Ogre::Matrix4() { return Ogre::Matrix4(v[0][0], v[0][1], v[0][2], v[0][3], v[1][0], v[1][1], v[1][2], v[1][3], v[2][0], v[2][1], v[2][2], v[2][3], v[3][0], v[3][1], v[3][2], v[3][3]); }
 #endif
 
 #ifdef MATH_QT_INTEROP
@@ -860,6 +913,26 @@ public:
 	float3 MulPos(const float3 &pointVector) const;
 	float3 MulDir(const float3 &directionVector) const;
 	float4 Mul(const float4 &vector) const;
+
+#ifdef MATH_SSE41
+	float4 Mul_SSE41(const float4 &rhs) const;
+#endif
+#ifdef MATH_SSE3
+	float4 Mul_SSE3(const float4 &rhs) const;
+#endif
+#ifdef MATH_SSE
+	float4 Mul_SSE1(const float4 &rhs) const;
+	float4 Mul_SSE(const float4 &rhs) const;
+	float4 Mul_ColMajor_SSE(const float4 &rhs) const;
+	float4 Mul_ColMajor_SSE_2(const float4 &rhs) const;
+
+	float4x4 Mul_SSE(const float4x4 &rhs) const;
+	/* Temporary alternative implementations: Profiled the Mul_SSE version above to be the fastest.
+	float4x4 Mul_SSE1_2(const float4x4 &rhs) const;
+	float4x4 Mul_SSE1_dpps(const float4x4 &rhs) const;
+	float4x4 Mul_SSE1_dpps_2(const float4x4 &rhs) const;
+	*/
+#endif
 };
 
 #ifdef MATH_ENABLE_STL_SUPPORT

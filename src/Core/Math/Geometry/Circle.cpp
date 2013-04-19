@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,11 +18,17 @@
 #include "Circle.h"
 #include "Geometry/Plane.h"
 #include "Math/MathFunc.h"
+#include "Math/float3x3.h"
+#include "Math/Quat.h"
 #include "Geometry/Ray.h"
 #include "Geometry/AABB.h"
 #include "Geometry/OBB.h"
 #include "Geometry/LineSegment.h"
 #include "Geometry/Line.h"
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+#include <iostream>
+#endif
 
 MATH_BEGIN_NAMESPACE
 
@@ -65,6 +71,44 @@ float3 Circle::ExtremePoint(const float3 &direction) const
 Plane Circle::ContainingPlane() const
 {
 	return Plane(pos, normal);
+}
+
+void Circle::Translate(const float3 &offset)
+{
+	pos += offset;
+}
+
+void Circle::Transform(const float3x3 &transform)
+{
+	assume(transform.HasUniformScale());
+	assume(transform.IsColOrthogonal());
+	pos = transform.Mul(pos);
+	normal = transform.Mul(normal).Normalized();
+	r *= transform.Col(0).Length(); // Scale the radius of the circle.
+}
+
+void Circle::Transform(const float3x4 &transform)
+{
+	assume(transform.HasUniformScale());
+	assume(transform.IsColOrthogonal());
+	pos = transform.MulPos(pos);
+	normal = transform.MulDir(normal).Normalized();
+	r *= transform.Col(0).Length(); // Scale the radius of the circle.
+}
+
+void Circle::Transform(const float4x4 &transform)
+{
+	assume(transform.HasUniformScale());
+	assume(transform.IsColOrthogonal3());
+	pos = transform.MulPos(pos);
+	normal = transform.MulDir(normal).Normalized();
+	r *= transform.Col3(0).Length(); // Scale the radius of the circle.
+}
+
+void Circle::Transform(const Quat &transform)
+{
+	pos = transform.Mul(pos);
+	normal = transform.Mul(normal);
 }
 
 bool Circle::EdgeContains(const float3 &point, float maxDistance) const
@@ -178,6 +222,7 @@ bool Circle::IntersectsDisc(const Ray &ray) const
 	return ray.GetPoint(d).DistanceSq(pos) <= r*r;
 }
 
+#ifdef MATH_ENABLE_STL_SUPPORT
 std::vector<float3> Circle::IntersectsFaces(const AABB &aabb) const
 {
     return IntersectsFaces(aabb.ToOBB());
@@ -187,7 +232,7 @@ std::vector<float3> Circle::IntersectsFaces(const OBB &obb) const
 {
 	std::vector<float3> intersectionPoints;
 	for(int i = 0; i < 6; ++i)
-	{
+	{		
 		Plane p = obb.FacePlane(i);
 		float3 pt1, pt2;
 		int numIntersections = Intersects(p, &pt1, &pt2);
@@ -199,14 +244,48 @@ std::vector<float3> Circle::IntersectsFaces(const OBB &obb) const
 	return intersectionPoints;
 }
 
-#ifdef MATH_ENABLE_STL_SUPPORT
 std::string Circle::ToString() const
 {
 	char str[256];
-	sprintf(str, "Circle(pos:(%.2f, %.2f, %.2f) normal:(%.2f, %.2f, %.2f), r:%.2f)", 
+	sprintf(str, "Circle(pos:(%.2f, %.2f, %.2f) normal:(%.2f, %.2f, %.2f), r:%.2f)",
 		pos.x, pos.y, pos.z, normal.x, normal.y, normal.z, r);
 	return str;
 }
+
+std::ostream &operator <<(std::ostream &o, const Circle &circle)
+{
+	o << circle.ToString();
+	return o;
+}
+
 #endif
+
+Circle operator *(const float3x3 &transform, const Circle &circle)
+{
+	Circle c(circle);
+	c.Transform(transform);
+	return c;
+}
+
+Circle operator *(const float3x4 &transform, const Circle &circle)
+{
+	Circle c(circle);
+	c.Transform(transform);
+	return c;
+}
+
+Circle operator *(const float4x4 &transform, const Circle &circle)
+{
+	Circle c(circle);
+	c.Transform(transform);
+	return c;
+}
+
+Circle operator *(const Quat &transform, const Circle &circle)
+{
+	Circle c(circle);
+	c.Transform(transform);
+	return c;
+}
 
 MATH_END_NAMESPACE

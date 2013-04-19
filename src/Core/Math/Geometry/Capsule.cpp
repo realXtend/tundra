@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 /** @file Capsule.cpp
 	@author Jukka Jylänki
 	@brief Implementation for the Capsule geometry object. */
+#include "Geometry/Capsule.h"
 #include "Math/MathConstants.h"
 #include "Math/MathFunc.h"
 #include "Math/float3x3.h"
@@ -28,7 +29,6 @@
 #include "Geometry/Ray.h"
 #include "Geometry/Line.h"
 #include "Geometry/LineSegment.h"
-#include "Geometry/Capsule.h"
 #include "Geometry/Polygon.h"
 #include "Geometry/Polyhedron.h"
 #include "Geometry/Sphere.h"
@@ -36,6 +36,10 @@
 #include "Geometry/Triangle.h"
 #include "Algorithm/Random/LCG.h"
 #include "assume.h"
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+#include <iostream>
+#endif
 
 MATH_BEGIN_NAMESPACE
 
@@ -78,6 +82,20 @@ float3 Capsule::Center() const
 float3 Capsule::ExtremePoint(const float3 &direction) const
 {
 	return (Dot(direction, l.b - l.a) >= 0.f ? l.b : l.a) + direction.ScaledToLength(r);
+}
+
+void Capsule::ProjectToAxis(const float3 &direction, float &outMin, float &outMax) const
+{
+	outMin = Dot(direction, l.a);
+	outMax = Dot(direction, l.b);
+	if (outMax < outMin)
+		Swap(outMin, outMax);
+
+	// The following requires that direction is normalized, otherwise we would have to sub/add 'r * direction.Length()', but
+	// don't want to do that for performance reasons.
+	assume(direction.IsNormalized());
+	outMin -= r;
+	outMax += r;
 }
 
 float3 Capsule::Top() const
@@ -129,7 +147,7 @@ LineSegment Capsule::HeightLineSegment() const
 
 bool Capsule::IsFinite() const
 {
-	return l.IsFinite() && isfinite(r);
+	return l.IsFinite() && MATH_NS::IsFinite(r);
 }
 
 float3 Capsule::PointInside(float l, float a, float d) const
@@ -198,6 +216,7 @@ void Capsule::Scale(const float3 &centerPoint, float scaleFactor)
 void Capsule::Transform(const float3x3 &transform)
 {
 	assume(transform.HasUniformScale());
+	assume(transform.IsColOrthogonal());
 	l.Transform(transform);
 	r *= transform.Col(0).Length(); // Scale the radius.
 }
@@ -205,6 +224,7 @@ void Capsule::Transform(const float3x3 &transform)
 void Capsule::Transform(const float3x4 &transform)
 {
 	assume(transform.HasUniformScale());
+	assume(transform.IsColOrthogonal());
 	l.Transform(transform);
 	r *= transform.Col(0).Length(); // Scale the radius.
 }
@@ -212,6 +232,7 @@ void Capsule::Transform(const float3x4 &transform)
 void Capsule::Transform(const float4x4 &transform)
 {
 	assume(transform.HasUniformScale());
+	assume(transform.IsColOrthogonal3());
 	l.Transform(transform);
 	r *= transform.Col3(0).Length(); // Scale the radius.
 }
@@ -398,6 +419,41 @@ std::string Capsule::ToString() const
 	sprintf(str, "Capsule(a:(%.2f, %.2f, %.2f) b:(%.2f, %.2f, %.2f), r:%.2f)", l.a.x, l.a.y, l.a.z, l.b.x, l.b.y, l.b.z, r);
 	return str;
 }
+
+std::ostream &operator <<(std::ostream &o, const Capsule &capsule)
+{
+	o << capsule.ToString();
+	return o;
+}
+
 #endif
+
+Capsule operator *(const float3x3 &transform, const Capsule &capsule)
+{
+	Capsule c(capsule);
+	c.Transform(transform);
+	return c;
+}
+
+Capsule operator *(const float3x4 &transform, const Capsule &capsule)
+{
+	Capsule c(capsule);
+	c.Transform(transform);
+	return c;
+}
+
+Capsule operator *(const float4x4 &transform, const Capsule &capsule)
+{
+	Capsule c(capsule);
+	c.Transform(transform);
+	return c;
+}
+
+Capsule operator *(const Quat &transform, const Capsule &capsule)
+{
+	Capsule c(capsule);
+	c.Transform(transform);
+	return c;
+}
 
 MATH_END_NAMESPACE

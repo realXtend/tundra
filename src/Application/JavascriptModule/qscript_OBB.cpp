@@ -22,6 +22,14 @@ static QScriptValue OBB_OBB_AABB(QScriptContext *context, QScriptEngine *engine)
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue OBB_NumEdges_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function OBB_NumEdges_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    OBB This = qscriptvalue_cast<OBB>(context->thisObject());
+    int ret = This.NumEdges();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue OBB_SetNegativeInfinity(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function OBB_SetNegativeInfinity in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -95,16 +103,6 @@ static QScriptValue OBB_SetFrom_Sphere(QScriptContext *context, QScriptEngine *e
     return QScriptValue();
 }
 
-static QScriptValue OBB_SetFrom_Polyhedron(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_SetFrom_Polyhedron in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    OBB This = qscriptvalue_cast<OBB>(context->thisObject());
-    Polyhedron polyhedron = qscriptvalue_cast<Polyhedron>(context->argument(0));
-    bool ret = This.SetFrom(polyhedron);
-    ToExistingScriptValue_OBB(engine, This, context->thisObject());
-    return qScriptValueFromValue(engine, ret);
-}
-
 static QScriptValue OBB_ToPolyhedron_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function OBB_ToPolyhedron_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -118,14 +116,6 @@ static QScriptValue OBB_MinimalEnclosingAABB_const(QScriptContext *context, QScr
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function OBB_MinimalEnclosingAABB_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     OBB This = qscriptvalue_cast<OBB>(context->thisObject());
     AABB ret = This.MinimalEnclosingAABB();
-    return qScriptValueFromValue(engine, ret);
-}
-
-static QScriptValue OBB_MaximalContainedAABB_const(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function OBB_MaximalContainedAABB_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    OBB This = qscriptvalue_cast<OBB>(context->thisObject());
-    AABB ret = This.MaximalContainedAABB();
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -279,6 +269,17 @@ static QScriptValue OBB_ExtremePoint_float3_const(QScriptContext *context, QScri
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue OBB_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function OBB_ProjectToAxis_float3_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    OBB This = qscriptvalue_cast<OBB>(context->thisObject());
+    float3 direction = qscriptvalue_cast<float3>(context->argument(0));
+    float outMin = qscriptvalue_cast<float>(context->argument(1));
+    float outMax = qscriptvalue_cast<float>(context->argument(2));
+    This.ProjectToAxis(direction, outMin, outMax);
+    return QScriptValue();
+}
+
 static QScriptValue OBB_PointOnEdge_int_float_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function OBB_PointOnEdge_int_float_const in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -318,7 +319,7 @@ static QScriptValue OBB_FacePlane_int_const(QScriptContext *context, QScriptEngi
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue OBB_GetFacePlanes_Plane_ptr_const(QScriptContext *context, QScriptEngine * /*engine*/)
+static QScriptValue OBB_GetFacePlanes_Plane_ptr_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_GetFacePlanes_Plane_ptr_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     OBB This = qscriptvalue_cast<OBB>(context->thisObject());
@@ -534,15 +535,6 @@ static QScriptValue OBB_Contains_Polyhedron_const(QScriptContext *context, QScri
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue OBB_Intersects_AABB_const(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_Intersects_AABB_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    OBB This = qscriptvalue_cast<OBB>(context->thisObject());
-    AABB aabb = qscriptvalue_cast<AABB>(context->argument(0));
-    bool ret = This.Intersects(aabb);
-    return qScriptValueFromValue(engine, ret);
-}
-
 static QScriptValue OBB_Intersects_OBB_float_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function OBB_Intersects_OBB_float_const in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -553,12 +545,81 @@ static QScriptValue OBB_Intersects_OBB_float_const(QScriptContext *context, QScr
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue OBB_Intersects_AABB_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_Intersects_AABB_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    OBB This = qscriptvalue_cast<OBB>(context->thisObject());
+    AABB aabb = qscriptvalue_cast<AABB>(context->argument(0));
+    bool ret = This.Intersects(aabb);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue OBB_Intersects_Plane_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_Intersects_Plane_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     OBB This = qscriptvalue_cast<OBB>(context->thisObject());
     Plane plane = qscriptvalue_cast<Plane>(context->argument(0));
     bool ret = This.Intersects(plane);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue OBB_Intersects_Ray_float_float_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function OBB_Intersects_Ray_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    OBB This = qscriptvalue_cast<OBB>(context->thisObject());
+    Ray ray = qscriptvalue_cast<Ray>(context->argument(0));
+    float dNear = qscriptvalue_cast<float>(context->argument(1));
+    float dFar = qscriptvalue_cast<float>(context->argument(2));
+    bool ret = This.Intersects(ray, dNear, dFar);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue OBB_Intersects_Ray_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_Intersects_Ray_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    OBB This = qscriptvalue_cast<OBB>(context->thisObject());
+    Ray ray = qscriptvalue_cast<Ray>(context->argument(0));
+    bool ret = This.Intersects(ray);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue OBB_Intersects_Line_float_float_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function OBB_Intersects_Line_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    OBB This = qscriptvalue_cast<OBB>(context->thisObject());
+    Line line = qscriptvalue_cast<Line>(context->argument(0));
+    float dNear = qscriptvalue_cast<float>(context->argument(1));
+    float dFar = qscriptvalue_cast<float>(context->argument(2));
+    bool ret = This.Intersects(line, dNear, dFar);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue OBB_Intersects_Line_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_Intersects_Line_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    OBB This = qscriptvalue_cast<OBB>(context->thisObject());
+    Line line = qscriptvalue_cast<Line>(context->argument(0));
+    bool ret = This.Intersects(line);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue OBB_Intersects_LineSegment_float_float_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function OBB_Intersects_LineSegment_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    OBB This = qscriptvalue_cast<OBB>(context->thisObject());
+    LineSegment lineSegment = qscriptvalue_cast<LineSegment>(context->argument(0));
+    float dNear = qscriptvalue_cast<float>(context->argument(1));
+    float dFar = qscriptvalue_cast<float>(context->argument(2));
+    bool ret = This.Intersects(lineSegment, dNear, dFar);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue OBB_Intersects_LineSegment_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_Intersects_LineSegment_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    OBB This = qscriptvalue_cast<OBB>(context->thisObject());
+    LineSegment lineSegment = qscriptvalue_cast<LineSegment>(context->argument(0));
+    bool ret = This.Intersects(lineSegment);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -666,8 +727,6 @@ static QScriptValue OBB_SetFrom_selector(QScriptContext *context, QScriptEngine 
         return OBB_SetFrom_AABB_Quat(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<Sphere>(context->argument(0)))
         return OBB_SetFrom_Sphere(context, engine);
-    if (context->argumentCount() == 1 && QSVIsOfType<Polyhedron>(context->argument(0)))
-        return OBB_SetFrom_Polyhedron(context, engine);
     printf("OBB_SetFrom_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
@@ -725,12 +784,24 @@ static QScriptValue OBB_Contains_selector(QScriptContext *context, QScriptEngine
 
 static QScriptValue OBB_Intersects_selector(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() == 1 && QSVIsOfType<AABB>(context->argument(0)))
-        return OBB_Intersects_AABB_const(context, engine);
     if (context->argumentCount() == 2 && QSVIsOfType<OBB>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
         return OBB_Intersects_OBB_float_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<AABB>(context->argument(0)))
+        return OBB_Intersects_AABB_const(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<Plane>(context->argument(0)))
         return OBB_Intersects_Plane_const(context, engine);
+    if (context->argumentCount() == 3 && QSVIsOfType<Ray>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
+        return OBB_Intersects_Ray_float_float_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Ray>(context->argument(0)))
+        return OBB_Intersects_Ray_const(context, engine);
+    if (context->argumentCount() == 3 && QSVIsOfType<Line>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
+        return OBB_Intersects_Line_float_float_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Line>(context->argument(0)))
+        return OBB_Intersects_Line_const(context, engine);
+    if (context->argumentCount() == 3 && QSVIsOfType<LineSegment>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
+        return OBB_Intersects_LineSegment_float_float_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<LineSegment>(context->argument(0)))
+        return OBB_Intersects_LineSegment_const(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<Capsule>(context->argument(0)))
         return OBB_Intersects_Capsule_const(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<Triangle>(context->argument(0)))
@@ -771,12 +842,12 @@ QScriptValue ToScriptValue_const_OBB(QScriptEngine *engine, const OBB &value)
 QScriptValue register_OBB_prototype(QScriptEngine *engine)
 {
     QScriptValue proto = engine->newObject();
+    proto.setProperty("NumEdges", engine->newFunction(OBB_NumEdges_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetNegativeInfinity", engine->newFunction(OBB_SetNegativeInfinity, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetFrom", engine->newFunction(OBB_SetFrom_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetFrom", engine->newFunction(OBB_SetFrom_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToPolyhedron", engine->newFunction(OBB_ToPolyhedron_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("MinimalEnclosingAABB", engine->newFunction(OBB_MinimalEnclosingAABB_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("MaximalContainedAABB", engine->newFunction(OBB_MaximalContainedAABB_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("MinimalEnclosingSphere", engine->newFunction(OBB_MinimalEnclosingSphere_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("MaximalContainedSphere", engine->newFunction(OBB_MaximalContainedSphere_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Size", engine->newFunction(OBB_Size_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -795,6 +866,7 @@ QScriptValue register_OBB_prototype(QScriptEngine *engine)
     proto.setProperty("Edge", engine->newFunction(OBB_Edge_int_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("CornerPoint", engine->newFunction(OBB_CornerPoint_int_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ExtremePoint", engine->newFunction(OBB_ExtremePoint_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ProjectToAxis", engine->newFunction(OBB_ProjectToAxis_float3_float_float_const, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("PointOnEdge", engine->newFunction(OBB_PointOnEdge_int_float_const, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("FaceCenterPoint", engine->newFunction(OBB_FaceCenterPoint_int_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("FacePoint", engine->newFunction(OBB_FacePoint_int_float_float_const, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -810,8 +882,9 @@ QScriptValue register_OBB_prototype(QScriptEngine *engine)
     proto.setProperty("ClosestPoint", engine->newFunction(OBB_ClosestPoint_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Distance", engine->newFunction(OBB_Distance_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Contains", engine->newFunction(OBB_Contains_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("Intersects", engine->newFunction(OBB_Intersects_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersects", engine->newFunction(OBB_Intersects_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Intersects", engine->newFunction(OBB_Intersects_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Intersects", engine->newFunction(OBB_Intersects_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Enclose", engine->newFunction(OBB_Enclose_float3, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("toString", engine->newFunction(OBB_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<OBB>()));

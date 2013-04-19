@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 	@author Jukka Jylänki
 	@brief */
 #include "Math/MathFunc.h"
+#include "myassert.h"
 
 MATH_BEGIN_NAMESPACE
 
@@ -32,15 +33,27 @@ bool EqualRel(float a, float b, float maxRelError)
 	return relativeError <= maxRelError;
 }
 
+inline int ReinterpretFloatAsInt(float a)
+{
+	union reinterpret_float_as_int
+	{
+		float f;
+		int i;
+	};
+	reinterpret_float_as_int fi;
+	fi.f = a;
+	return fi.i;
+}
+
 bool EqualUlps(float a, float b, int maxUlps)
 {
 	assert(sizeof(float) == sizeof(int));
 	assert(maxUlps >= 0);
 	assert(maxUlps < 4 * 1024 * 1024);
 
-	int intA = *(int*)&a;
+	int intA = ReinterpretFloatAsInt(a);
 	if (intA < 0) intA = 0x80000000 - intA;
-	int intB = *(int*)&b;
+	int intB = ReinterpretFloatAsInt(b);
 	if (intB < 0) intB = 0x80000000 - intB;
 	if (Abs(intA - intB) <= maxUlps)
 		return true;

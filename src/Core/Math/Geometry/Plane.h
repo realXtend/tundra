@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public:
 	float3 normal;
 	/// The offset of this plane from the origin. [similarOverload: normal]
 	/** The value -d gives the signed distance of this plane from origin.
-		This class uses the convention ax+by+cz = d, which means that:
+		Denoting normal:=(a,b,c), this class uses the convention ax+by+cz = d, which means that:
 		 - If this variable is positive, the vector space origin (0,0,0) is on the negative side of this plane.
 		 - If this variable is negative, the vector space origin (0,0,0) is on the on the positive side of this plane.
 		@note Some sources use the opposite convention ax+by+cz+d = 0 to define the variable d. When comparing equations
@@ -55,14 +55,14 @@ public:
 		@param d The offset of this plane from the origin. The value -d gives the signed distance of this plane from the origin.
 		@see normal, d. */
 	Plane(const float3 &normal, float d);
-	/// Constructs a plane by specifying three points on the plane. 
-	/** The normal of the plane will point to 
+	/// Constructs a plane by specifying three points on the plane.
+	/** The normal of the plane will point to
 		the halfspace from which the points are observed to be oriented in counter-clockwise order.
 		@note The points v1, v2 and v3 must not all lie on the same line.
 		@see Set(). */
 	Plane(const float3 &v1, const float3 &v2, const float3 &v3);
 	/// Constructs a plane by specifying a single point on the plane, and the surface normal.
-	/** @param normal The direction the plane is facing. This vector must have been normalized in advance. 
+	/** @param normal The direction the plane is facing. This vector must have been normalized in advance.
 		@see Set(). */
 	Plane(const float3 &point, const float3 &normal);
 	/// Constructs a plane by specifying a line that lies on the plane, and the plane normal.
@@ -74,8 +74,10 @@ public:
 	Plane(const Line &line, const float3 &normal);
 	Plane(const LineSegment &line, const float3 &normal);
 
-	/// Sets this plane by specifying three points on the plane. 
-	/** The normal of the plane will point to the halfspace from which the points are observed to be oriented in 
+	bool IsDegenerate() const;
+
+	/// Sets this plane by specifying three points on the plane.
+	/** The normal of the plane will point to the halfspace from which the points are observed to be oriented in
 		counter-clockwise order.
 		@note The points v1, v2 and v3 must not all lie on the same line. */
 	void Set(const float3 &v1, const float3 &v2, const float3 &v3);
@@ -89,7 +91,7 @@ public:
 	void ReverseNormal();
 
 	/// Returns a point on this plane.
-	/** @note This point has the special property that the line passing through the vector space origin (0,0,0) 
+	/** @note This point has the special property that the line passing through the vector space origin (0,0,0)
 			and the returned point is perpendicular to this plane (directed towards the normal vector of this plane).
 		@see Point(). */
 	float3 PointOnPlane() const;
@@ -109,9 +111,14 @@ public:
 		@see PointOnPlane(). */
 	float3 Point(float u, float v, const float3 &referenceOrigin) const;
 
+	/// Translates this Plane in world space.
+	/** @param offset The amount of displacement to apply to this Plane, in world space coordinates.
+		@see Transform(). */
+	void Translate(const float3 &offset);
+
 	/// Applies a transformation to this plane.
 	/** This function operates in-place.
-		@see classes float3x3, float3x4, float4x4, Quat. */
+		@see Translate(), classes float3x3, float3x4, float4x4, Quat. */
 	void Transform(const float3x3 &transform);
 	void Transform(const float3x4 &transform);
 	void Transform(const float4x4 &transform);
@@ -126,7 +133,7 @@ public:
 	/// Tests if the given point lies on the positive side of this plane.
 	/** A plane divides the space in three sets: the negative halfspace, the plane itself, and the positive halfspace.
 		The normal vector of the plane points towards the positive halfspace.
-		@return This function returns true if the given point lies either on this plane itself, or in the positive 
+		@return This function returns true if the given point lies either on this plane itself, or in the positive
 			halfspace of this plane.
 		@see IsInPositiveDirection, AreOnSameSide(), Distance(), SignedDistance(). */
 	bool IsOnPositiveSide(const float3 &point) const;
@@ -145,7 +152,7 @@ public:
 
 	/// Returns the distance of this plane to the given object.
 	/** If the given object intersects or lies in this plane, then the returned distance is zero.
-		@note This function always returns a positive distance value, even when the given object lies on the negative side 
+		@note This function always returns a positive distance value, even when the given object lies on the negative side
 			of this plane. See the SignedDistance() function to produce a distance value that differentiates between the
 			front and back sides of this plane.
 		@see SignedDistance(), Intersects(), Contains(). */
@@ -160,6 +167,20 @@ public:
 		@see Distance(), IsOnPositiveSide(), AreOnSameSide(). */
 	float SignedDistance(const float3 &point) const;
 
+	float SignedDistance(const AABB &aabb) const;
+	float SignedDistance(const OBB &obb) const;
+	float SignedDistance(const Capsule &capsule) const;
+//	float SignedDistance(const Circle &circle) const;
+	float SignedDistance(const Frustum &frustum) const;
+	float SignedDistance(const Line &line) const;
+	float SignedDistance(const LineSegment &lineSegment) const;
+	float SignedDistance(const Ray &ray) const;
+//	float SignedDistance(const Plane &plane) const;
+	float SignedDistance(const Polygon &polygon) const;
+	float SignedDistance(const Polyhedron &polyhedron) const;
+	float SignedDistance(const Sphere &sphere) const;
+	float SignedDistance(const Triangle &triangle) const;
+
 	/// Computes the affine transformation matrix that projects orthographically onto this plane.
 	/** @see ObliqueProjection(), MirrorMatrix(), Project(). */
 	float3x4 OrthoProjection() const;
@@ -169,9 +190,9 @@ public:
 		@see OrthoProjection(). */
 	float3 Project(const float3 &point) const;
 	LineSegment Project(const LineSegment &lineSegment) const;
-	/** @param nonDegenerate [out] If the line or ray is perpendicular to the plane, the projection is 
-		a single point. In that case, the .pos parameter of the returned object will specify the point 
-		location, the .dir parameter of the object will be undefined and the nonDegenerate pointer will be 
+	/** @param nonDegenerate [out] If the line or ray is perpendicular to the plane, the projection is
+		a single point. In that case, the .pos parameter of the returned object will specify the point
+		location, the .dir parameter of the object will be undefined and the nonDegenerate pointer will be
 		set to false. This pointer may be null. */
 	Line Project(const Line &line, bool *nonDegenerate) const;
 	Ray Project(const Ray &ray, bool *nonDegenerate) const;
@@ -179,6 +200,7 @@ public:
 	Triangle Project(const Triangle &triangle) const;
 	Polygon Project(const Polygon &polygon) const;
 
+#if 0
 	/// Computes the affine transformation matrix that projects onto this plane in an oblique (slanted) angle.
 	/** @param obliqueProjectionDir The projection direction. This vector must be normalized. If a vector collinear to the
 			normal of this plane is specified, this function returns the same matrix as calling OrthoProjection() would.
@@ -191,6 +213,7 @@ public:
 		@note This mapping can be expressed as a float3x4 operation. See the ObliqueProjection() function.
 		@see ObliqueProjection(), Project(). */
 	float3 ObliqueProject(const float3 &point, const float3 &obliqueProjectionDir) const;
+#endif
 
 	/// Returns the transformation matrix that mirrors objects along this plane.
 	/** This matrix maps each point to its mirror point on the opposite side of this plane.
@@ -263,20 +286,17 @@ public:
 		@see Contains(), Distance(), ClosestPoint(). */
 	bool Intersects(const Plane &plane, const Plane &plane2, Line *outLine = 0, float3 *outPoint = 0) const;
 
-    // Temp
-	Line IntersectsPlane(const Plane &plane) const;
-
 	/// Tests whether this plane and the given object intersect.
-	/** @param outLine [out] The intersection of two planes forms a line. If an intersection occurs, this parameter will receive 
+	/** @param outLine [out] The intersection of two planes forms a line. If an intersection occurs, this parameter will receive
 		the line of intersection. This pointer may be null.
 		@return True if the given object intersects with this plane. */
 	bool Intersects(const Plane &plane, Line *outLine = 0) const;
-	/** @param d [out] If specified, this parameter will receive the parametric distance of 
+	/** @param d [out] If specified, this parameter will receive the parametric distance of
 			the intersection point along the line object. Use the GetPoint(d) function of the line class
 			to get the actual point of intersection. This pointer may be null. */
-	bool Intersects(const Ray &ray, float *d) const;
-	bool Intersects(const Line &line, float *d) const;
-	bool Intersects(const LineSegment &lineSegment, float *d) const;
+	bool Intersects(const Ray &ray, float *d = 0) const;
+	bool Intersects(const Line &line, float *d = 0) const;
+	bool Intersects(const LineSegment &lineSegment, float *d = 0) const;
 	bool Intersects(const Sphere &sphere) const;
 	bool Intersects(const AABB &aabb) const;
 	bool Intersects(const OBB &obb) const;
@@ -337,6 +357,17 @@ public:
 //	float3 RandomPointInsideCircle(const float3 &circleCenter, float radius) const;
 //	float3 RandomPointOnCircleEdge(const float3 &circleCenter, float radius) const;
 
+	/// Computes the intersection of a line and a plane.
+	/** @param planeNormal The plane normal direction vector. This vector can be unnormalized.
+		@param planeD The distance parameter of the plane equation.
+		@param linePos The starting point of the line.
+		@param lineDir The line direction vector. This vector does not need to be normalized.
+		@param t [out] If this function returns true, this parameter will receive the distance along the line where intersection occurs.
+					That is, the point lineStart + t * lineDir will be the intersection point. Note that if |lineDir| != 1,
+					then t will not contain the real distance, but one scaled to the units of lineDir.
+		@return If an intersection occurs, this function returns true. */
+	static bool IntersectLinePlane(const float3 &planeNormal, float planeD, const float3 &linePos, const float3 &lineDir, float &t);
+
 #ifdef MATH_OGRE_INTEROP
 	Plane(const Ogre::Plane &other) { normal = other.normal; d = other.d; }
 	operator Ogre::Plane() const { return Ogre::Plane(normal, d); }
@@ -350,6 +381,12 @@ public:
 	operator QString() const { return toString(); }
 	QString toString() const { return QString::fromStdString(ToString()); }
 #endif
+
+#ifdef MATH_GRAPHICSENGINE_INTEROP
+	void Triangulate(VertexBuffer &vb, float uWidth, float vHeight, const float3 &centerPoint, int numFacesU, int numFacesV, bool ccwIsFrontFacing) const;
+	void ToLineList(VertexBuffer &vb, float uWidth, float vHeight, const float3 &centerPoint, int numLinesU, int numLinesV) const;
+#endif
+
 };
 
 Plane operator *(const float3x3 &transform, const Plane &plane);
@@ -360,6 +397,10 @@ Plane operator *(const Quat &transform, const Plane &plane);
 #ifdef MATH_QT_INTEROP
 Q_DECLARE_METATYPE(Plane)
 Q_DECLARE_METATYPE(Plane*)
+#endif
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+std::ostream &operator <<(std::ostream &o, const Plane &plane);
 #endif
 
 MATH_END_NAMESPACE

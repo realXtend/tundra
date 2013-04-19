@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@
 /** @file OBB.cpp
 	@author Jukka Jylänki
 	@brief Implementation for the Oriented Bounding Box (OBB) geometry object. */
+#include "Geometry/OBB.h"
 #ifdef MATH_ENABLE_STL_SUPPORT
+#include <iostream>
 #include <utility>
 #endif
 #include "Math/MathFunc.h"
-#include "Geometry/OBB.h"
 #include "Geometry/AABB.h"
 #include "Geometry/Frustum.h"
 #include "Algorithm/Random/LCG.h"
@@ -37,6 +38,14 @@
 #include "Math/Quat.h"
 #include "Geometry/Ray.h"
 #include "Geometry/Triangle.h"
+
+#ifdef MATH_CONTAINERLIB_SUPPORT
+#include "Algorithm/Sort/Sort.h"
+#endif
+
+#ifdef MATH_GRAPHICSENGINE_INTEROP
+#include "VertexBuffer.h"
+#endif
 
 MATH_BEGIN_NAMESPACE
 
@@ -123,16 +132,28 @@ void OBB::SetFrom(const Sphere &sphere)
 	axis[2] = float3(0,0,1);
 }
 
-bool OBB::SetFrom(const Polyhedron & /*polyhedron*/)
+#ifdef MATH_CONTAINERLIB_SUPPORT
+bool OBB::SetFrom(const Polyhedron &polyhedron)
 {
-	assume(false && "Not implemented!"); /// @todo Implement.
-	return false;
+	if (polyhedron.v.size() > 0)
+	{
+		*this = OBB::OptimalEnclosingOBB(&polyhedron.v[0], (int)polyhedron.v.size());
+		return true;
+	}
+	else
+	{
+		SetNegativeInfinity();
+		return false;
+	}
 }
+#endif
 
-void OBB::SetFromApproximate(const float3 * /*pointArray*/, int /*numPoints*/)
+#if 0
+void OBB::SetFromApproximate(const float3 *pointArray, int numPoints)
 {
-	assume(false && "Not implemented!"); /// @todo Implement.
+	*this = PCAEnclosingOBB(pointArray, numPoints);
 }
+#endif
 
 Polyhedron OBB::ToPolyhedron() const
 {
@@ -145,8 +166,8 @@ Polyhedron OBB::ToPolyhedron() const
 		p.v.push_back(CornerPoint(i));
 
 	// Generate the 6 faces of this OBB.
-	const int faces[6][4] = 
-	{ 
+	const int faces[6][4] =
+	{
 		{ 0, 1, 3, 2 }, // X-
 		{ 4, 6, 7, 5 }, // X+
 		{ 0, 4, 5, 1 }, // Y-
@@ -173,11 +194,19 @@ AABB OBB::MinimalEnclosingAABB() const
 	return aabb;
 }
 
+#if 0
+
 AABB OBB::MaximalContainedAABB() const
 {
-	assume(false && "Not implemented!"); /// @todo Implement.
+#ifdef _MSC_VER
+#pragma WARNING(OBB::MaximalContainedAABB not implemented!)
+#else
+#warning OBB::MaximalContainedAABB not implemented!
+#endif
+	assume(false && "OBB::MaximalContainedAABB not implemented!"); /// @todo Implement.
 	return AABB();
 }
+#endif
 
 Sphere OBB::MinimalEnclosingSphere() const
 {
@@ -266,6 +295,16 @@ float3 OBB::ExtremePoint(const float3 &direction) const
 	pt += axis[1] * (Dot(direction, axis[1]) >= 0.f ? r.y : -r.y);
 	pt += axis[2] * (Dot(direction, axis[2]) >= 0.f ? r.z : -r.z);
 	return pt;
+}
+
+void OBB::ProjectToAxis(const float3 &direction, float &outMin, float &outMax) const
+{
+	float x = Abs(Dot(direction, axis[0]) * r.x);
+	float y = Abs(Dot(direction, axis[1]) * r.y);
+	float z = Abs(Dot(direction, axis[2]) * r.z);
+	float pt = Dot(direction, pos);
+	outMin = pt - x - y - z;
+	outMax = pt + x + y + z;
 }
 
 float3 OBB::PointOnEdge(int edgeIndex, float u) const
@@ -371,19 +410,17 @@ void OBB::GetFacePlanes(Plane *outPlaneArray) const
 }
 
 /// See Christer Ericson's book Real-Time Collision Detection, page 83.
-void OBB::ExtremePointsAlongDirection(const float3 &dir, const float3 *pointArray, int numPoints, int *idxSmallest, int *idxLargest)
+void OBB::ExtremePointsAlongDirection(const float3 &dir, const float3 *pointArray, int numPoints, int &idxSmallest, int &idxLargest)
 {
-	assume(idxSmallest || idxLargest);
 	assume(pointArray || numPoints == 0);
+
+	idxSmallest = idxLargest = 0;
+
 #ifndef MATH_ENABLE_INSECURE_OPTIMIZATIONS
 	if (!pointArray)
 		return;
-	if (!idxSmallest && !idxLargest)
-		return;
 #endif
 
-	int smallest = 0;
-	int largest = 0;
 	float smallestD = FLOAT_INF;
 	float largestD = -FLOAT_INF;
 	for(int i = 0; i < numPoints; ++i)
@@ -392,25 +429,120 @@ void OBB::ExtremePointsAlongDirection(const float3 &dir, const float3 *pointArra
 		if (d < smallestD)
 		{
 			smallestD = d;
-			smallest = i;
+			idxSmallest = i;
 		}
 		if (d > largestD)
 		{
 			largestD = d;
-			largest = i;
+			idxLargest = i;
 		}
 	}
-	if (idxSmallest)
-		*idxSmallest = smallest;
-	else //if (idxLargest)
-		*idxLargest = largest;
 }
 
+#if 0
 OBB OBB::PCAEnclosingOBB(const float3 * /*pointArray*/, int /*numPoints*/)
 {
-	assume(false && "Not implemented!"); /// @todo Implement.
+#ifdef _MSC_VER
+#pragma WARNING(OBB::PCAEnclosingOBB not implemented!)
+#else
+#warning OBB::PCAEnclosingOBB not implemented!
+#endif
+	assume(false && "OBB::PCAEnclosingOBB not implemented!"); /// @todo Implement.
 	return OBB();
 }
+#endif
+
+#ifdef MATH_CONTAINERLIB_SUPPORT
+int LexFloat3Cmp(const float3 &a, const float3 &b)
+{
+	LEXCMP(a.x, b.x);
+	LEXCMP(a.y, b.y);
+	LEXCMP(a.z, b.z);
+	return 0;
+}
+
+OBB OBB::OptimalEnclosingOBB(const float3 *pointArray, int numPoints)
+{
+	OBB minOBB;
+	float minVolume = FLOAT_INF;
+
+	std::vector<float2> pts;
+	pts.resize(numPoints);
+	///\todo Convex hull'ize.
+
+	std::vector<float3> dirs;
+	dirs.reserve((numPoints * numPoints-1) / 2);
+	for(int i = 0; i < numPoints; ++i)
+		for(int j = i+1; j < numPoints; ++j)
+		{
+			float3 edge = pointArray[i]-pointArray[j];
+			float oldLength = edge.Normalize();
+			if (edge.z < 0.f)
+				edge = -edge;
+			if (oldLength > 0.f)
+				dirs.push_back(edge);
+		}
+
+	LOGI("Got %d directions.", (int)dirs.size());
+	sort::QuickSort(&dirs[0], (int)dirs.size(), LexFloat3Cmp);
+	for(int i = (int)dirs.size()-1; i >= 0; --i)
+		for(int j = i-1; j >= 0; --j)
+		{
+			float distX = dirs[i].x - dirs[j].x;
+			if (distX > 1e-1f)
+				break;
+			if (dirs[i].DistanceSq(dirs[j]) < 1e-3f)
+			{
+				dirs.erase(dirs.begin() + j);
+				--i;
+			}
+		}
+	LOGI("Pruned to %d directions.", (int)dirs.size());
+
+//	int incr = 1;//Max(1, numPoints / 10);
+//	for(int i = 0; i < numPoints; ++i)
+	{
+		//for(int j = i+1; j < numPoints; ++j)
+		for(size_t i = 0; i < dirs.size(); ++i)
+		{
+			float3 edge = dirs[i];//(pointArray[i]-pointArray[j]).Normalized();
+
+			int e1, e2;
+			ExtremePointsAlongDirection(edge, pointArray, numPoints, e1, e2);
+			float edgeLength = Abs(Dot(pointArray[e1], edge) - Dot(pointArray[e2], edge));
+
+			float3 u = edge.Perpendicular();
+			float3 v = edge.AnotherPerpendicular();
+			for(int k = 0; k < numPoints; ++k)
+				pts[k] = float2(pointArray[k].Dot(u), pointArray[k].Dot(v));
+
+			float2 rectCenter;
+			float2 rectU;
+			float2 rectV;
+			float minU, maxU, minV, maxV;
+			float rectArea = float2::MinAreaRect(&pts[0], (int)pts.size(), rectCenter, rectU, rectV, minU, maxU, minV, maxV);
+			float3 rectCenterPos = u * rectCenter.x + v * rectCenter.y;
+			
+			float volume = rectArea * edgeLength;
+			if (volume < minVolume)
+			{
+				minOBB.axis[0] = edge;
+				minOBB.axis[1] = rectU.x * u + rectU.y * v;
+				minOBB.axis[2] = rectV.x * u + rectV.y * v;
+				minOBB.pos = (Dot(pointArray[e1], edge) + Dot(pointArray[e2], edge)) * 0.5f * edge + rectCenterPos;
+				minOBB.r[0] = edgeLength * 0.5f;
+				minOBB.r[1] = (maxU - minU) * 0.5f;
+				minOBB.r[2] = (maxV - minV) * 0.5f;
+				minVolume = volume;
+			}
+			if (i % 100 == 0)
+				LOGI("%d/%d.", (int)i, (int)dirs.size());
+		}
+	}
+
+	return minOBB;
+}
+#endif
 
 float3 OBB::Size() const
 {
@@ -577,8 +709,8 @@ bool OBB::Contains(const float3 &point) const
 {
 	float3 pt = point - pos;
 	return Abs(Dot(pt, axis[0])) <= r[0] &&
-		   Abs(Dot(pt, axis[1])) <= r[1] &&
-		   Abs(Dot(pt, axis[2])) <= r[2];
+	       Abs(Dot(pt, axis[1])) <= r[1] &&
+	       Abs(Dot(pt, axis[2])) <= r[2];
 }
 
 bool OBB::Contains(const LineSegment &lineSegment) const
@@ -648,21 +780,30 @@ void OBB::Enclose(const float3 &point)
 	float3 p = point - pos;
 	for(int i = 0; i < 3; ++i)
 	{
+		assert(EqualAbs(axis[i].Length(), 1.f));
 		float dist = p.Dot(axis[i]);
-		if (Abs(dist) > r[i])
+		float distanceFromOBB = Abs(dist) - r[i];
+		if (distanceFromOBB > 0.f)
 		{
-			pos += axis[i] * (dist - r[i]) * 0.5f;
-			r[i] += Abs(dist - r[i]) * 0.5f;
+			r[i] += distanceFromOBB * 0.5f;
+			if (dist > 0.f) ///\todo Optimize out this comparison!
+				pos += axis[i] * distanceFromOBB * 0.5f;
+			else
+				pos -= axis[i] * distanceFromOBB * 0.5f;
+
+			p = point-pos; ///\todo Can we omit this? (redundant since axis[i] are orthonormal?)
+
+			mathassert(EqualAbs(Abs(p.Dot(axis[i])), r[i], 1e-1f));
 		}
 	}
 	// Should now contain the point.
 	assume(Distance(point) <= 1e-3f);
 }
 
-void OBB::Triangulate(int x, int y, int z, float3 *outPos, float3 *outNormal, float2 *outUV) const
+void OBB::Triangulate(int x, int y, int z, float3 *outPos, float3 *outNormal, float2 *outUV, bool ccwIsFrontFacing) const
 {
 	AABB aabb(float3(0,0,0), float3(r.x*2.f,r.y*2.f,r.z*2.f));
-	aabb.Triangulate(x, y, z, outPos, outNormal, outUV);
+	aabb.Triangulate(x, y, z, outPos, outNormal, outUV, ccwIsFrontFacing);
 	float3x4 localToWorld = LocalToWorld();
 	assume(localToWorld.HasUnitaryScale()); // Transforming of normals will fail otherwise.
 	localToWorld.BatchTransformPos(outPos, NumVerticesInTriangulation(x,y,z), sizeof(float3));
@@ -682,8 +823,6 @@ void OBB::ToEdgeList(float3 *outPos) const
 	}
 }
 
-/** The OBB-OBB intersection test is from Christer Ericson's book Real-Time Collision Detection, p. 101-106. 
-	See http://realtimecollisiondetection.net/ [groupSyntax] */
 bool OBB::Intersects(const OBB &b, float epsilon) const
 {
 	assume(pos.IsFinite());
@@ -711,7 +850,7 @@ bool OBB::Intersects(const OBB &b, float epsilon) const
 	{
 		float ra = r[i];
 		float rb = DOT3(b.r, AbsR[i]);
-		if (Abs(t[i]) > ra + rb) 
+		if (Abs(t[i]) > ra + rb)
 			return false;
 	}
 
@@ -720,7 +859,7 @@ bool OBB::Intersects(const OBB &b, float epsilon) const
 	{
 		float ra = r[0] * AbsR[0][i] + r[1] * AbsR[1][i] + r[2] * AbsR[2][i];
 		float rb = b.r[i];
-		if (Abs(t.x + R[0][i] + t.y * R[1][i] + t.z * R[2][i]) > ra + rb)
+		if (Abs(t.x * R[0][i] + t.y * R[1][i] + t.z * R[2][i]) > ra + rb)
 			return false;
 	}
 
@@ -796,21 +935,42 @@ bool OBB::Intersects(const Plane &p) const
 	return Abs(s) <= t;
 }
 
-bool OBB::Intersects(const Ray &ray, float *dNear, float *dFar) const
+bool OBB::Intersects(const Ray &ray) const
+{
+	AABB aabb(float3(0,0,0), float3(Size()));
+	Ray r = WorldToLocal() * ray;
+	return aabb.Intersects(r);
+}
+
+bool OBB::Intersects(const Ray &ray, float &dNear, float &dFar) const
 {
 	AABB aabb(float3(0,0,0), float3(Size()));
 	Ray r = WorldToLocal() * ray;
 	return aabb.Intersects(r, dNear, dFar);
 }
 
-bool OBB::Intersects(const Line &line, float *dNear, float *dFar) const
+bool OBB::Intersects(const Line &line) const
+{
+	AABB aabb(float3(0,0,0), float3(Size()));
+	Line l = WorldToLocal() * line;
+	return aabb.Intersects(l);
+}
+
+bool OBB::Intersects(const Line &line, float &dNear, float &dFar) const
 {
 	AABB aabb(float3(0,0,0), float3(Size()));
 	Line l = WorldToLocal() * line;
 	return aabb.Intersects(l, dNear, dFar);
 }
 
-bool OBB::Intersects(const LineSegment &lineSegment, float *dNear, float *dFar) const
+bool OBB::Intersects(const LineSegment &lineSegment) const
+{
+	AABB aabb(float3(0,0,0), float3(Size()));
+	LineSegment l = WorldToLocal() * lineSegment;
+	return aabb.Intersects(l);
+}
+
+bool OBB::Intersects(const LineSegment &lineSegment, float &dNear, float &dFar) const
 {
 	AABB aabb(float3(0,0,0), float3(Size()));
 	LineSegment l = WorldToLocal() * lineSegment;
@@ -861,10 +1021,79 @@ bool OBB::Intersects(const Polyhedron &polyhedron) const
 std::string OBB::ToString() const
 {
 	char str[256];
-	sprintf(str, "OBB(Pos:(%.2f, %.2f, %.2f) Size:(%.2f, %.2f, %.2f) X:(%.2f, %.2f, %.2f) Y:(%.2f, %.2f, %.2f) Z:(%.2f, %.2f, %.2f))", 
+	sprintf(str, "OBB(Pos:(%.2f, %.2f, %.2f) Size:(%.2f, %.2f, %.2f) X:(%.2f, %.2f, %.2f) Y:(%.2f, %.2f, %.2f) Z:(%.2f, %.2f, %.2f))",
 		pos.x, pos.y, pos.z, r.x*2.f, r.y*2.f, r.z*2.f, axis[0].x, axis[0].y, axis[0].z, axis[1].x, axis[1].y, axis[1].z, axis[2].x, axis[2].y, axis[2].z);
 	return str;
 }
+
+std::ostream &operator <<(std::ostream &o, const OBB &obb)
+{
+	o << obb.ToString();
+	return o;
+}
+
 #endif
+
+#ifdef MATH_GRAPHICSENGINE_INTEROP
+void OBB::Triangulate(VertexBuffer &vb, int x, int y, int z, bool ccwIsFrontFacing) const
+{
+	Array<float3> pos;
+	Array<float3> normal;
+	Array<float2> uv;
+	int numVertices = (x*y+y*z+x*z)*2*6;
+	pos.Resize_pod(numVertices);
+	normal.Resize_pod(numVertices);
+	uv.Resize_pod(numVertices);
+	Triangulate(x,y,z, &pos[0], &normal[0], &uv[0], ccwIsFrontFacing);
+	int startIndex = vb.AppendVertices(numVertices);
+	for(int i = 0; i < (int)pos.size(); ++i)
+	{
+		vb.Set(startIndex+i, VDPosition, float4(pos[i],1.f));
+		if (vb.Declaration()->TypeOffset(VDNormal) >= 0)
+			vb.Set(startIndex+i, VDNormal, float4(normal[i],0.f));
+		if (vb.Declaration()->TypeOffset(VDUV) >= 0)
+			vb.SetFloat2(startIndex+i, VDUV, 0, uv[i]);
+	}
+}
+
+void OBB::ToLineList(VertexBuffer &vb) const
+{
+	Array<float3> pos;
+	pos.Resize_pod(NumVerticesInEdgeList());
+	ToEdgeList(&pos[0]);
+	int startIndex = vb.AppendVertices((int)pos.size());
+	for(int i = 0; i < (int)pos.size(); ++i)
+		vb.Set(startIndex+i, VDPosition, float4(pos[i], 1.f));
+}
+
+#endif
+
+OBB operator *(const float3x3 &transform, const OBB &obb)
+{
+	OBB o(obb);
+	o.Transform(transform);
+	return o;
+}
+
+OBB operator *(const float3x4 &transform, const OBB &obb)
+{
+	OBB o(obb);
+	o.Transform(transform);
+	return o;
+}
+
+OBB operator *(const float4x4 &transform, const OBB &obb)
+{
+	OBB o(obb);
+	o.Transform(transform);
+	return o;
+}
+
+OBB operator *(const Quat &transform, const OBB &obb)
+{
+	OBB o(obb);
+	o.Transform(transform);
+	return o;
+}
 
 MATH_END_NAMESPACE

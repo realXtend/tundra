@@ -12,14 +12,6 @@ static QScriptValue float3x4_float3x4(QScriptContext *context, QScriptEngine *en
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3x4_float3x4_float3x4(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x4_float3x4_float3x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    float3x4 rhs = qscriptvalue_cast<float3x4>(context->argument(0));
-    float3x4 ret(rhs);
-    return qScriptValueFromValue(engine, ret);
-}
-
 static QScriptValue float3x4_float3x4_float_float_float_float_float_float_float_float_float_float_float_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 12) { printf("Error! Invalid number of arguments passed to function float3x4_float3x4_float_float_float_float_float_float_float_float_float_float_float_float in file %s, line %d!\nExpected 12, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -98,7 +90,7 @@ static QScriptValue float3x4_At_int_int_const(QScriptContext *context, QScriptEn
     float3x4 This = qscriptvalue_cast<float3x4>(context->thisObject());
     int row = qscriptvalue_cast<int>(context->argument(0));
     int col = qscriptvalue_cast<int>(context->argument(1));
-    CONST_WIN32 float ret = This.At(row, col);
+     float ret = This.At(row, col);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -125,7 +117,7 @@ static QScriptValue float3x4_Col_int_const(QScriptContext *context, QScriptEngin
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x4_Col_int_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x4 This = qscriptvalue_cast<float3x4>(context->thisObject());
     int col = qscriptvalue_cast<int>(context->argument(0));
-    CONST_WIN32 float3 ret = This.Col(col);
+    float3 ret = This.Col(col);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -134,7 +126,7 @@ static QScriptValue float3x4_Col3_int_const(QScriptContext *context, QScriptEngi
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x4_Col3_int_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x4 This = qscriptvalue_cast<float3x4>(context->thisObject());
     int col = qscriptvalue_cast<int>(context->argument(0));
-    CONST_WIN32 float3 ret = This.Col3(col);
+    float3 ret = This.Col3(col);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -142,7 +134,7 @@ static QScriptValue float3x4_Diagonal_const(QScriptContext *context, QScriptEngi
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_Diagonal_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x4 This = qscriptvalue_cast<float3x4>(context->thisObject());
-    CONST_WIN32 float3 ret = This.Diagonal();
+    float3 ret = This.Diagonal();
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -183,7 +175,7 @@ static QScriptValue float3x4_Float3x3Part_const(QScriptContext *context, QScript
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_Float3x3Part_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x4 This = qscriptvalue_cast<float3x4>(context->thisObject());
-    CONST_WIN32 float3x3 ret = This.Float3x3Part();
+    float3x3 ret = This.Float3x3Part();
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -191,7 +183,7 @@ static QScriptValue float3x4_TranslatePart_const(QScriptContext *context, QScrip
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_TranslatePart_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x4 This = qscriptvalue_cast<float3x4>(context->thisObject());
-    CONST_WIN32 float3 ret = This.TranslatePart();
+    float3 ret = This.TranslatePart();
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -199,7 +191,7 @@ static QScriptValue float3x4_RotatePart_const(QScriptContext *context, QScriptEn
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_RotatePart_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x4 This = qscriptvalue_cast<float3x4>(context->thisObject());
-    CONST_WIN32 float3x3 ret = This.RotatePart();
+    float3x3 ret = This.RotatePart();
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -463,11 +455,12 @@ static QScriptValue float3x4_Determinant_const(QScriptContext *context, QScriptE
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3x4_Inverse(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3x4_Inverse_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float3x4_Inverse in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x4_Inverse_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x4 This = qscriptvalue_cast<float3x4>(context->thisObject());
-    bool ret = This.Inverse();
+    float epsilon = qscriptvalue_cast<float>(context->argument(0));
+    bool ret = This.Inverse(epsilon);
     ToExistingScriptValue_float3x4(engine, This, context->thisObject());
     return qScriptValueFromValue(engine, ret);
 }
@@ -619,7 +612,7 @@ static QScriptValue float3x4_Transform_float4_const(QScriptContext *context, QSc
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3x4_BatchTransform_float4_ptr_int_const(QScriptContext *context, QScriptEngine * /*engine*/)
+static QScriptValue float3x4_BatchTransform_float4_ptr_int_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float3x4_BatchTransform_float4_ptr_int_const in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x4 This = qscriptvalue_cast<float3x4>(context->thisObject());
@@ -629,7 +622,7 @@ static QScriptValue float3x4_BatchTransform_float4_ptr_int_const(QScriptContext 
     return QScriptValue();
 }
 
-static QScriptValue float3x4_BatchTransform_float4_ptr_int_int_const(QScriptContext *context, QScriptEngine * /*engine*/)
+static QScriptValue float3x4_BatchTransform_float4_ptr_int_int_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float3x4_BatchTransform_float4_ptr_int_int_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x4 This = qscriptvalue_cast<float3x4>(context->thisObject());
@@ -878,7 +871,7 @@ static QScriptValue float3x4_ExtractScale_const(QScriptContext *context, QScript
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3x4_Decompose_float3_Quat_float3_const(QScriptContext *context, QScriptEngine * /*engine*/)
+static QScriptValue float3x4_Decompose_float3_Quat_float3_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float3x4_Decompose_float3_Quat_float3_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x4 This = qscriptvalue_cast<float3x4>(context->thisObject());
@@ -889,7 +882,7 @@ static QScriptValue float3x4_Decompose_float3_Quat_float3_const(QScriptContext *
     return QScriptValue();
 }
 
-static QScriptValue float3x4_Decompose_float3_float3x3_float3_const(QScriptContext *context, QScriptEngine * /*engine*/)
+static QScriptValue float3x4_Decompose_float3_float3x3_float3_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float3x4_Decompose_float3_float3x3_float3_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x4 This = qscriptvalue_cast<float3x4>(context->thisObject());
@@ -900,7 +893,7 @@ static QScriptValue float3x4_Decompose_float3_float3x3_float3_const(QScriptConte
     return QScriptValue();
 }
 
-static QScriptValue float3x4_Decompose_float3_float3x4_float3_const(QScriptContext *context, QScriptEngine * /*engine*/)
+static QScriptValue float3x4_Decompose_float3_float3x4_float3_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float3x4_Decompose_float3_float3x4_float3_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float3x4 This = qscriptvalue_cast<float3x4>(context->thisObject());
@@ -1001,20 +994,20 @@ static QScriptValue float3x4_Translate_float3(QScriptContext *context, QScriptEn
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3x4_RotateX_float(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x4_RotateX_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    float angleRadians = qscriptvalue_cast<float>(context->argument(0));
-    float3x4 ret = float3x4::RotateX(angleRadians);
-    return qScriptValueFromValue(engine, ret);
-}
-
 static QScriptValue float3x4_RotateX_float_float3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float3x4_RotateX_float_float3 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float angleRadians = qscriptvalue_cast<float>(context->argument(0));
     float3 pointOnAxis = qscriptvalue_cast<float3>(context->argument(1));
     float3x4 ret = float3x4::RotateX(angleRadians, pointOnAxis);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue float3x4_RotateX_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x4_RotateX_float in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float angleRadians = qscriptvalue_cast<float>(context->argument(0));
+    float3x4 ret = float3x4::RotateX(angleRadians);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -1052,15 +1045,6 @@ static QScriptValue float3x4_RotateZ_float_float3(QScriptContext *context, QScri
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3x4_RotateAxisAngle_float3_float(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float3x4_RotateAxisAngle_float3_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    float3 axisDirection = qscriptvalue_cast<float3>(context->argument(0));
-    float angleRadians = qscriptvalue_cast<float>(context->argument(1));
-    float3x4 ret = float3x4::RotateAxisAngle(axisDirection, angleRadians);
-    return qScriptValueFromValue(engine, ret);
-}
-
 static QScriptValue float3x4_RotateAxisAngle_float3_float_float3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float3x4_RotateAxisAngle_float3_float_float3 in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -1071,12 +1055,12 @@ static QScriptValue float3x4_RotateAxisAngle_float3_float_float3(QScriptContext 
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3x4_RotateFromTo_float3_float3(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float3x4_RotateAxisAngle_float3_float(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float3x4_RotateFromTo_float3_float3 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    float3 sourceDirection = qscriptvalue_cast<float3>(context->argument(0));
-    float3 targetDirection = qscriptvalue_cast<float3>(context->argument(1));
-    float3x4 ret = float3x4::RotateFromTo(sourceDirection, targetDirection);
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float3x4_RotateAxisAngle_float3_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float3 axisDirection = qscriptvalue_cast<float3>(context->argument(0));
+    float angleRadians = qscriptvalue_cast<float>(context->argument(1));
+    float3x4 ret = float3x4::RotateAxisAngle(axisDirection, angleRadians);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -1090,6 +1074,15 @@ static QScriptValue float3x4_RotateFromTo_float3_float3_float3(QScriptContext *c
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float3x4_RotateFromTo_float3_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float3x4_RotateFromTo_float3_float3 in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float3 sourceDirection = qscriptvalue_cast<float3>(context->argument(0));
+    float3 targetDirection = qscriptvalue_cast<float3>(context->argument(1));
+    float3x4 ret = float3x4::RotateFromTo(sourceDirection, targetDirection);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float3x4_RandomGeneral_LCG_float_float(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float3x4_RandomGeneral_LCG_float_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -1097,6 +1090,14 @@ static QScriptValue float3x4_RandomGeneral_LCG_float_float(QScriptContext *conte
     float minElem = qscriptvalue_cast<float>(context->argument(1));
     float maxElem = qscriptvalue_cast<float>(context->argument(2));
     float3x4 ret = float3x4::RandomGeneral(lcg, minElem, maxElem);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue float3x4_RandomRotation_LCG(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x4_RandomRotation_LCG in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    LCG lcg = qscriptvalue_cast<LCG>(context->argument(0));
+    float3x4 ret = float3x4::RandomRotation(lcg);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -1294,15 +1295,6 @@ static QScriptValue float3x4_Scale_float3_float3(QScriptContext *context, QScrip
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float3x4_ScaleAlongAxis_float3_float(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float3x4_ScaleAlongAxis_float3_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    float3 axis = qscriptvalue_cast<float3>(context->argument(0));
-    float scalingFactor = qscriptvalue_cast<float>(context->argument(1));
-    float3x4 ret = float3x4::ScaleAlongAxis(axis, scalingFactor);
-    return qScriptValueFromValue(engine, ret);
-}
-
 static QScriptValue float3x4_ScaleAlongAxis_float3_float_float3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function float3x4_ScaleAlongAxis_float3_float_float3 in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -1310,6 +1302,15 @@ static QScriptValue float3x4_ScaleAlongAxis_float3_float_float3(QScriptContext *
     float scalingFactor = qscriptvalue_cast<float>(context->argument(1));
     float3 scaleCenter = qscriptvalue_cast<float3>(context->argument(2));
     float3x4 ret = float3x4::ScaleAlongAxis(axis, scalingFactor, scaleCenter);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue float3x4_ScaleAlongAxis_float3_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float3x4_ScaleAlongAxis_float3_float in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float3 axis = qscriptvalue_cast<float3>(context->argument(0));
+    float scalingFactor = qscriptvalue_cast<float>(context->argument(1));
+    float3x4 ret = float3x4::ScaleAlongAxis(axis, scalingFactor);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -1362,17 +1363,6 @@ static QScriptValue float3x4_Mirror_Plane(QScriptContext *context, QScriptEngine
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float3x4_Mirror_Plane in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Plane p = qscriptvalue_cast<Plane>(context->argument(0));
     float3x4 ret = float3x4::Mirror(p);
-    return qScriptValueFromValue(engine, ret);
-}
-
-static QScriptValue float3x4_OrthographicProjection_float_float_float_float(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function float3x4_OrthographicProjection_float_float_float_float in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    float nearPlaneDistance = qscriptvalue_cast<float>(context->argument(0));
-    float farPlaneDistance = qscriptvalue_cast<float>(context->argument(1));
-    float horizontalViewportSize = qscriptvalue_cast<float>(context->argument(2));
-    float verticalViewportSize = qscriptvalue_cast<float>(context->argument(3));
-    float3x4 ret = float3x4::OrthographicProjection(nearPlaneDistance, farPlaneDistance, horizontalViewportSize, verticalViewportSize);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -1432,8 +1422,6 @@ static QScriptValue float3x4_ctor(QScriptContext *context, QScriptEngine *engine
 {
     if (context->argumentCount() == 0)
         return float3x4_float3x4(context, engine);
-    if (context->argumentCount() == 1 && QSVIsOfType<float3x4>(context->argument(0)))
-        return float3x4_float3x4_float3x4(context, engine);
     if (context->argumentCount() == 12 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)) && QSVIsOfType<float>(context->argument(3)) && QSVIsOfType<float>(context->argument(4)) && QSVIsOfType<float>(context->argument(5)) && QSVIsOfType<float>(context->argument(6)) && QSVIsOfType<float>(context->argument(7)) && QSVIsOfType<float>(context->argument(8)) && QSVIsOfType<float>(context->argument(9)) && QSVIsOfType<float>(context->argument(10)) && QSVIsOfType<float>(context->argument(11)))
         return float3x4_float3x4_float_float_float_float_float_float_float_float_float_float_float_float(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float3x3>(context->argument(0)))
@@ -1564,10 +1552,10 @@ static QScriptValue float3x4_Translate_selector(QScriptContext *context, QScript
 
 static QScriptValue float3x4_RotateX_selector(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() == 1 && QSVIsOfType<float>(context->argument(0)))
-        return float3x4_RotateX_float(context, engine);
     if (context->argumentCount() == 2 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)))
         return float3x4_RotateX_float_float3(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<float>(context->argument(0)))
+        return float3x4_RotateX_float(context, engine);
     printf("float3x4_RotateX_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
@@ -1591,19 +1579,19 @@ static QScriptValue float3x4_RotateZ_selector(QScriptContext *context, QScriptEn
 
 static QScriptValue float3x4_RotateAxisAngle_selector(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() == 2 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
-        return float3x4_RotateAxisAngle_float3_float(context, engine);
     if (context->argumentCount() == 3 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float3>(context->argument(2)))
         return float3x4_RotateAxisAngle_float3_float_float3(context, engine);
+    if (context->argumentCount() == 2 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
+        return float3x4_RotateAxisAngle_float3_float(context, engine);
     printf("float3x4_RotateAxisAngle_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue float3x4_RotateFromTo_selector(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() == 2 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)))
-        return float3x4_RotateFromTo_float3_float3(context, engine);
     if (context->argumentCount() == 3 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)) && QSVIsOfType<float3>(context->argument(2)))
         return float3x4_RotateFromTo_float3_float3_float3(context, engine);
+    if (context->argumentCount() == 2 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)))
+        return float3x4_RotateFromTo_float3_float3(context, engine);
     printf("float3x4_RotateFromTo_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
@@ -1640,10 +1628,10 @@ static QScriptValue float3x4_Scale_selector(QScriptContext *context, QScriptEngi
 
 static QScriptValue float3x4_ScaleAlongAxis_selector(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() == 2 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
-        return float3x4_ScaleAlongAxis_float3_float(context, engine);
     if (context->argumentCount() == 3 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float3>(context->argument(2)))
         return float3x4_ScaleAlongAxis_float3_float_float3(context, engine);
+    if (context->argumentCount() == 2 && QSVIsOfType<float3>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
+        return float3x4_ScaleAlongAxis_float3_float(context, engine);
     printf("float3x4_ScaleAlongAxis_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
@@ -1654,15 +1642,6 @@ static QScriptValue float3x4_UniformScale_selector(QScriptContext *context, QScr
     if (context->argumentCount() == 2 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float3>(context->argument(1)))
         return float3x4_UniformScale_float_float3(context, engine);
     printf("float3x4_UniformScale_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
-}
-
-static QScriptValue float3x4_OrthographicProjection_selector(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() == 4 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)) && QSVIsOfType<float>(context->argument(3)))
-        return float3x4_OrthographicProjection_float_float_float_float(context, engine);
-    if (context->argumentCount() == 1 && QSVIsOfType<Plane>(context->argument(0)))
-        return float3x4_OrthographicProjection_Plane(context, engine);
-    printf("float3x4_OrthographicProjection_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
 static QScriptValue float3x4_LookAt_selector(QScriptContext *context, QScriptEngine *engine)
@@ -1733,7 +1712,7 @@ QScriptValue register_float3x4_prototype(QScriptEngine *engine)
     proto.setProperty("SetRotatePart", engine->newFunction(float3x4_SetRotatePart_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetRotatePart", engine->newFunction(float3x4_SetRotatePart_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Determinant", engine->newFunction(float3x4_Determinant_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("Inverse", engine->newFunction(float3x4_Inverse, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Inverse", engine->newFunction(float3x4_Inverse_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Inverted", engine->newFunction(float3x4_Inverted_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("InverseColOrthogonal", engine->newFunction(float3x4_InverseColOrthogonal, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("InverseOrthogonalUniformScale", engine->newFunction(float3x4_InverseOrthogonalUniformScale, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -1793,17 +1772,18 @@ QScriptValue register_float3x4_prototype(QScriptEngine *engine)
     QScriptValue ctor = engine->newFunction(float3x4_ctor, proto, 12);
     ctor.setProperty("Translate", engine->newFunction(float3x4_Translate_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("Translate", engine->newFunction(float3x4_Translate_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    ctor.setProperty("RotateX", engine->newFunction(float3x4_RotateX_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RotateX", engine->newFunction(float3x4_RotateX_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("RotateX", engine->newFunction(float3x4_RotateX_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RotateY", engine->newFunction(float3x4_RotateY_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RotateY", engine->newFunction(float3x4_RotateY_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RotateZ", engine->newFunction(float3x4_RotateZ_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RotateZ", engine->newFunction(float3x4_RotateZ_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    ctor.setProperty("RotateAxisAngle", engine->newFunction(float3x4_RotateAxisAngle_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RotateAxisAngle", engine->newFunction(float3x4_RotateAxisAngle_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    ctor.setProperty("RotateFromTo", engine->newFunction(float3x4_RotateFromTo_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("RotateAxisAngle", engine->newFunction(float3x4_RotateAxisAngle_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RotateFromTo", engine->newFunction(float3x4_RotateFromTo_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("RotateFromTo", engine->newFunction(float3x4_RotateFromTo_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RandomGeneral", engine->newFunction(float3x4_RandomGeneral_LCG_float_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("RandomRotation", engine->newFunction(float3x4_RandomRotation_LCG, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromQuat", engine->newFunction(float3x4_FromQuat_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromQuat", engine->newFunction(float3x4_FromQuat_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("FromTRS", engine->newFunction(float3x4_FromTRS_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -1822,16 +1802,15 @@ QScriptValue register_float3x4_prototype(QScriptEngine *engine)
     ctor.setProperty("Scale", engine->newFunction(float3x4_Scale_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("Scale", engine->newFunction(float3x4_Scale_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("Scale", engine->newFunction(float3x4_Scale_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    ctor.setProperty("ScaleAlongAxis", engine->newFunction(float3x4_ScaleAlongAxis_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("ScaleAlongAxis", engine->newFunction(float3x4_ScaleAlongAxis_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("ScaleAlongAxis", engine->newFunction(float3x4_ScaleAlongAxis_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("UniformScale", engine->newFunction(float3x4_UniformScale_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("UniformScale", engine->newFunction(float3x4_UniformScale_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("ShearX", engine->newFunction(float3x4_ShearX_float_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("ShearY", engine->newFunction(float3x4_ShearY_float_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("ShearZ", engine->newFunction(float3x4_ShearZ_float_float, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("Mirror", engine->newFunction(float3x4_Mirror_Plane, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    ctor.setProperty("OrthographicProjection", engine->newFunction(float3x4_OrthographicProjection_selector, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    ctor.setProperty("OrthographicProjection", engine->newFunction(float3x4_OrthographicProjection_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("OrthographicProjection", engine->newFunction(float3x4_OrthographicProjection_Plane, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("OrthographicProjectionYZ", engine->newFunction(float3x4_OrthographicProjectionYZ, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("OrthographicProjectionXZ", engine->newFunction(float3x4_OrthographicProjectionXZ, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("OrthographicProjectionXY", engine->newFunction(float3x4_OrthographicProjectionXY, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);

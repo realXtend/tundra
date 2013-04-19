@@ -1,15 +1,30 @@
+/* Copyright Jukka Jylänki
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License. */
+
+/** @file KdTree.h
+	@author Jukka Jylänki
+	@brief A KD-tree acceleration structure for static geometry. */
 #pragma once
 
 #include "Types.h"
-
-#include "Math/MathFunc.h"
-#include "Geometry/AABB.h"
-#include "Geometry/OBB.h"
-#include "Geometry/Ray.h"
+#include "myassert.h"
 
 #ifdef MATH_CONTAINERLIB_SUPPORT
 #include "Container/MaxHeap.h"
 #endif
+
+MATH_BEGIN_NAMESPACE
 
 enum CardinalAxis
 {
@@ -53,8 +68,8 @@ public:
 
 	~KdTree();
 
-	void Clear();
-
+    void Clear();
+    
 	/// Adds a given number of objects to this kD-tree.
 	/// Call this function repeatedly as many times as necessary to prepare the data. Then
 	/// call Build() to create the tree data structure.
@@ -78,11 +93,9 @@ public:
 	int NumNodes() const;
 
 	/// Returns the total number of leaf nodes in the tree.
-    /// Warning: This function iterates over the whole tree, so the running time is linear to the number of nodes, and not constant.
 	int NumLeaves() const;
 
 	/// Returns the total number of inner nodes in the tree.
-    /// Warning: This function iterates over the whole tree, so the running time is linear to the number of nodes, and not constant.
 	int NumInnerNodes() const;
 
     /// Returns the total number of objects added to this container.
@@ -106,28 +119,30 @@ public:
 	const AABB &BoundingAABB() const { return rootAABB; }
 
 	/// Traverses a ray through this kD-tree, and calls the given leafCallback function for each leaf of the tree.
-	// The "recursive B" method.
-	/// @param leafCallback A function or a function object of prototype 
-	///    bool LeafCallbackFunction(KdTree<T> &tree, const KdTreeNode &leaf, const Ray &ray, float tNear, float tFar);
-	///    If the callback function returns true, the execution of the query is stopped and this function immediately
-	///    returns afterwards. If the callback function returns false, the execution of the query continues.
+	/// Uses the "recursive B" method from Vlastimil Havran's thesis.
+	/** @param r The ray to query through this kD-tree.
+		@param leafCallback A function or a function object of prototype
+			bool LeafCallbackFunction(KdTree<T> &tree, const KdTreeNode &leaf, const Ray &ray, float tNear, float tFar);
+			If the callback function returns true, the execution of the query is stopped and this function immediately
+			returns afterwards. If the callback function returns false, the execution of the query continues. */
 	template<typename Func>
 	inline void RayQuery(const Ray &r, Func &leafCallback);
 
 	/// Performs an AABB intersection query in this kD-tree, and calls the given leafCallback function for each leaf
 	/// of the tree which intersects the given AABB.
-	/// @param leafCallback A function or a function object of prototype
-	///    bool LeafCallbackFunction(KdTree<T> &tree, KdTreeNode &leaf, const AABB &aabb);
-	///    If the callback function returns true, the execution of the query is stopped and this function immediately
-	///    returns afterwards. If the callback function returns false, the execution of the query continues.
+	/** @param aabb The axis-aligned bounding box to query through this kD-tree.
+		@param leafCallback A function or a function object of prototype
+			bool LeafCallbackFunction(KdTree<T> &tree, KdTreeNode &leaf, const AABB &aabb);
+			If the callback function returns true, the execution of the query is stopped and this function immediately
+			returns afterwards. If the callback function returns false, the execution of the query continues. */
 	template<typename Func>
 	inline void AABBQuery(const AABB &aabb, Func &leafCallback);
 
 #if 0 ///\bug Doesn't work properly. Fix up!
-	/// Performs an intersection query of this kD-tree against a given kD-tree, and calls the given 
+	/// Performs an intersection query of this kD-tree against a given kD-tree, and calls the given
 	/// leafCallback function for each leaf pair that intersect each other.
 	/// @param leafCallback A function or a function object of prototype
-	///    bool LeafCallbackFunction(KdTree<T> &thisTree, KdTreeNode &thisLeaf, const AABB &thisLeafAABB, 
+	///    bool LeafCallbackFunction(KdTree<T> &thisTree, KdTreeNode &thisLeaf, const AABB &thisLeafAABB,
 	///                              KdTree<T> &tree2, KdTreeNode &tree2Leaf, const OBB &tree2LeafOBB);
 	///    If the callback function returns true, the execution of the query is stopped and this function immediately
 	///    returns afterwards. If the callback function returns false, the execution of the query continues.
@@ -147,9 +162,10 @@ public:
 	inline void NearestObjects(const float3 &point, Func &leafCallback);
 #endif
 
-    static const u32 BUCKET_SENTINEL = 0xFFFFFFFF;
+	static const u32 BUCKET_SENTINEL = 0xFFFFFFFF;
 
 private:
+	static const int maxNodes = 256 * 1024;
 	static const int maxTreeDepth = 30;
 
 	std::vector<KdTreeNode> nodes;
@@ -157,6 +173,8 @@ private:
 	std::vector<u32*> buckets;
 
 	int AllocateNodePair();
+
+	void FreeBuckets();
 
 	AABB BoundingAABB(const u32 *bucket) const;
 
@@ -171,4 +189,6 @@ private:
 	int TreeHeight(int nodeIndex) const;
 };
 
-#include "KdTree.inl"
+MATH_END_NAMESPACE
+
+#include "KDTree.inl"

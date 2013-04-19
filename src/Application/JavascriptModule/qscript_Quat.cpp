@@ -15,14 +15,6 @@ static QScriptValue Quat_Quat(QScriptContext *context, QScriptEngine *engine)
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Quat_Quat_Quat(QScriptContext *context, QScriptEngine *engine)
-{
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Quat_Quat_Quat in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    Quat rhs = qscriptvalue_cast<Quat>(context->argument(0));
-    Quat ret(rhs);
-    return qScriptValueFromValue(engine, ret);
-}
-
 static QScriptValue Quat_Quat_float3x3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Quat_Quat_float3x3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -295,7 +287,7 @@ static QScriptValue Quat_AxisFromTo_Quat_const(QScriptContext *context, QScriptE
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Quat_ToAxisAngle_float3_float_const(QScriptContext *context, QScriptEngine * /*engine*/)
+static QScriptValue Quat_ToAxisAngle_float3_float_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Quat_ToAxisAngle_float3_float_const in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Quat This = qscriptvalue_cast<Quat>(context->thisObject());
@@ -560,6 +552,26 @@ static QScriptValue Quat_Slerp_Quat_Quat_float(QScriptContext *context, QScriptE
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Quat_SlerpVector_float3_float3_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Quat_SlerpVector_float3_float3_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float3 from = qscriptvalue_cast<float3>(context->argument(0));
+    float3 to = qscriptvalue_cast<float3>(context->argument(1));
+    float t = qscriptvalue_cast<float>(context->argument(2));
+    float3 ret = Quat::SlerpVector(from, to, t);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Quat_SlerpVectorAbs_float3_float3_float(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Quat_SlerpVectorAbs_float3_float3_float in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float3 from = qscriptvalue_cast<float3>(context->argument(0));
+    float3 to = qscriptvalue_cast<float3>(context->argument(1));
+    float angleRadians = qscriptvalue_cast<float>(context->argument(2));
+    float3 ret = Quat::SlerpVectorAbs(from, to, angleRadians);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Quat_LookAt_float3_float3_float3_float3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function Quat_LookAt_float3_float3_float3_float3 in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -772,8 +784,6 @@ static QScriptValue Quat_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 0)
         return Quat_Quat(context, engine);
-    if (context->argumentCount() == 1 && QSVIsOfType<Quat>(context->argument(0)))
-        return Quat_Quat_Quat(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float3x3>(context->argument(0)))
         return Quat_Quat_float3x3(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<float3x4>(context->argument(0)))
@@ -937,6 +947,8 @@ QScriptValue register_Quat_prototype(QScriptEngine *engine)
     QScriptValue ctor = engine->newFunction(Quat_ctor, proto, 4);
     ctor.setProperty("Lerp", engine->newFunction(Quat_Lerp_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("Slerp", engine->newFunction(Quat_Slerp_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("SlerpVector", engine->newFunction(Quat_SlerpVector_float3_float3_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    ctor.setProperty("SlerpVectorAbs", engine->newFunction(Quat_SlerpVectorAbs_float3_float3_float, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("LookAt", engine->newFunction(Quat_LookAt_float3_float3_float3_float3, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RotateX", engine->newFunction(Quat_RotateX_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     ctor.setProperty("RotateY", engine->newFunction(Quat_RotateY_float, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);

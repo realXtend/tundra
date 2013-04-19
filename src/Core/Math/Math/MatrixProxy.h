@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 	@brief */
 #pragma once
 
+#include "myassert.h"
 #include "Math/MathFwd.h"
 
 MATH_BEGIN_NAMESPACE

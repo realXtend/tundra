@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,28 +23,28 @@
 #include "Math/float3.h"
 /*
 struct PositiveX
-{ 
+{
 	static float3 Pick(const float3x3 &m) { return m.Column(0); }
 	static float3 Pick(const float3x4 &m) { return m.Column(0); }
 	static float3 Pick(const float4x4 &m) { return m.Column3(0); }
 };
 
 struct NegativeX
-{ 
+{
 	static float3 Pick(const float3x3 &m) { return -m.Column(0); }
 	static float3 Pick(const float3x4 &m) { return -m.Column(0); }
 	static float3 Pick(const float4x4 &m) { return -m.Column3(0); }
 };
 
 struct PositiveY
-{ 
+{
 	static float3 Pick(const float3x3 &m) { return m.Column(1); }
 	static float3 Pick(const float3x4 &m) { return m.Column(1); }
 	static float3 Pick(const float4x4 &m) { return m.Column3(1); }
 };
 
 struct NegativeY
-{ 
+{
 	static float3 Pick(const float3x3 &m) { return -m.Column(1); }
 	static float3 Pick(const float3x4 &m) { return -m.Column(1); }
 	static float3 Pick(const float4x4 &m) { return -m.Column3(1); }
@@ -58,7 +58,7 @@ struct PositiveZ
 };
 
 struct NegativeZ
-{ 
+{
 	static float3 Pick(const float3x3 &m) { return -m.Column(2); }
 	static float3 Pick(const float3x4 &m) { return -m.Column(2); }
 	static float3 Pick(const float4x4 &m) { return -m.Column3(2); }

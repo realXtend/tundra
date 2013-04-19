@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
 /** @file Ray.cpp
 	@author Jukka Jylänki
 	@brief Implementation for the Ray geometry object. */
+#include "Geometry/Ray.h"
 #include "Geometry/AABB.h"
 #include "Geometry/Line.h"
-#include "Geometry/Ray.h"
 #include "Geometry/LineSegment.h"
 #include "Math/float3x3.h"
 #include "Math/float3x4.h"
@@ -33,6 +33,10 @@
 #include "Geometry/Triangle.h"
 #include "Geometry/Circle.h"
 #include "Math/MathFunc.h"
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+#include <iostream>
+#endif
 
 MATH_BEGIN_NAMESPACE
 
@@ -53,10 +57,20 @@ Ray::Ray(const LineSegment &lineSegment)
 {
 }
 
+bool Ray::IsFinite() const
+{
+	return pos.IsFinite() && dir.IsFinite();
+}
+
 float3 Ray::GetPoint(float d) const
 {
 	assert(dir.IsNormalized());
 	return pos + d * dir;
+}
+
+void Ray::Translate(const float3 &offset)
+{
+	pos += offset;
 }
 
 void Ray::Transform(const float3x3 &transform)
@@ -167,19 +181,151 @@ float3 Ray::ClosestPoint(const float3 &targetPoint, float *d) const
 
 float3 Ray::ClosestPoint(const Ray &other, float *d, float *d2) const
 {
-	///\bug Properly cap d2.
-	return Line::ClosestPointLineLine(pos, pos + dir, other.pos, other.pos + other.dir, d, d2);
+	float u, u2;
+	float3 closestPoint = Line::ClosestPointLineLine(pos, pos + dir, other.pos, other.pos + other.dir, &u, &u2);
+	if (u < 0.f && u2 < 0.f)
+	{
+		closestPoint = ClosestPoint(other.pos, &u);
+
+		float3 closestPoint2 = other.ClosestPoint(pos, &u2);
+		if (closestPoint.DistanceSq(other.pos) <= closestPoint2.DistanceSq(pos))
+		{
+			if (d)
+				*d = u;
+			if (d2)
+				*d2 = 0.f;
+			return closestPoint;
+		}
+		else
+		{
+			if (d)
+				*d = 0.f;
+			if (d2)
+				*d2 = u2;
+			return pos;
+		}
+	}
+	else if (u < 0.f)
+	{
+		if (d)
+			*d = 0.f;
+		if (d2)
+		{
+			other.ClosestPoint(pos, &u2);
+			*d2 = Max(0.f, u2);
+		}
+		return pos;
+	}
+	else if (u2 < 0.f)
+	{
+		float3 pt = ClosestPoint(other.pos, &u);
+		u = Max(0.f, u);
+		if (d)
+			*d = u;
+		if (d2)
+			*d2 = 0.f;
+		return pt;
+	}
+	else
+	{
+		if (d)
+			*d = u;
+		if (d2)
+			*d2 = u2;
+		return closestPoint;
+	}
 }
 
 float3 Ray::ClosestPoint(const Line &other, float *d, float *d2) const
 {
-	return Line::ClosestPointLineLine(pos, pos + dir, other.pos, other.pos + other.dir, d, d2);
+	float t;
+	float3 closestPoint = Line::ClosestPointLineLine(pos, pos + dir, other.pos, other.pos + other.dir, &t, d2);
+	if (t <= 0.f)
+	{
+		if (d)
+			*d = 0.f;
+		if (d2)
+			other.ClosestPoint(pos, d2);
+		return pos;
+	}
+	else
+	{
+		if (d)
+			*d = t;
+		return closestPoint;
+	}
 }
 
 float3 Ray::ClosestPoint(const LineSegment &other, float *d, float *d2) const
 {
-	///\bug Properly cap d2.
-	return Line::ClosestPointLineLine(pos, pos + dir, other.a, other.b, d, d2);
+	float u, u2;
+	float3 closestPoint = Line::ClosestPointLineLine(pos, pos + dir, other.a, other.b, &u, &u2);
+	if (u < 0.f)
+	{
+		if (u2 >= 0.f && u2 <= 1.f)
+		{
+			if (d)
+				*d = 0.f;
+			if (d2)
+				other.ClosestPoint(pos, d2);
+			return pos;
+		}
+
+		float3 p;
+		float t2;
+
+		if (u2 < 0.f)
+		{
+			p = other.a;
+			t2 = 0.f;
+		}
+		else // u2 > 1.f
+		{
+			p = other.b;
+			t2 = 1.f;
+		}
+
+		closestPoint = ClosestPoint(p, &u);
+		float3 closestPoint2 = other.ClosestPoint(pos, &u2);
+		if (closestPoint.DistanceSq(p) <= closestPoint2.DistanceSq(pos))
+		{
+			if (d)
+				*d = u;
+			if (d2)
+				*d2 = t2;
+			return closestPoint;
+		}
+		else
+		{
+			if (d)
+				*d = 0.f;
+			if (d2)
+				*d2 = u2;
+			return pos;
+		}
+	}
+	else if (u2 < 0.f)
+	{
+		closestPoint = ClosestPoint(other.a, d);
+		if (d2)
+			*d2 = 0.f;
+		return closestPoint;
+	}
+	else if (u2 > 1.f)
+	{
+		closestPoint = ClosestPoint(other.b, d);
+		if (d2)
+			*d2 = 1.f;
+		return closestPoint;
+	}
+	else
+	{
+		if (d)
+			*d = u;
+		if (d2)
+			*d2 = u2;
+		return closestPoint;
+	}
 }
 
 bool Ray::Intersects(const Triangle &triangle, float *d, float3 *intersectionPoint) const
@@ -189,7 +335,11 @@ bool Ray::Intersects(const Triangle &triangle, float *d, float3 *intersectionPoi
 
 bool Ray::Intersects(const Triangle &triangle) const
 {
-	return triangle.Intersects(*this, 0, 0);
+	float u, v;
+	float t = Triangle::IntersectLineTri(pos, dir, triangle.a, triangle.b, triangle.c, u, v);
+	if (t < 0.f || t == FLOAT_INF)
+		return false;
+	return true;
 }
 
 bool Ray::Intersects(const Plane &plane, float *d) const
@@ -204,32 +354,32 @@ bool Ray::Intersects(const Plane &plane) const
 
 bool Ray::Intersects(const Sphere &sphere, float3 *intersectionPoint, float3 *intersectionNormal, float *d) const
 {
-	return sphere.Intersects(*this, intersectionPoint, intersectionNormal, d);
+	return sphere.Intersects(*this, intersectionPoint, intersectionNormal, d) > 0;
 }
 
 bool Ray::Intersects(const Sphere &sphere) const
 {
-	return sphere.Intersects(*this, 0, 0, 0);
-}
-
-bool Ray::Intersects(const AABB &aabb, float *dNear, float *dFar) const
-{
-	return aabb.Intersects(*this, dNear, dFar);
+	return sphere.Intersects(*this, 0, 0, 0) > 0;
 }
 
 bool Ray::Intersects(const AABB &aabb) const
 {
-	return aabb.Intersects(*this, 0, 0);
+	return aabb.Intersects(*this);
 }
 
-bool Ray::Intersects(const OBB &obb, float *dNear, float *dFar) const
+bool Ray::Intersects(const AABB &aabb, float &dNear, float &dFar) const
+{
+	return aabb.Intersects(*this, dNear, dFar);
+}
+
+bool Ray::Intersects(const OBB &obb, float &dNear, float &dFar) const
 {
 	return obb.Intersects(*this, dNear, dFar);
 }
 
 bool Ray::Intersects(const OBB &obb) const
 {
-	return obb.Intersects(*this, 0, 0);
+	return obb.Intersects(*this);
 }
 
 bool Ray::Intersects(const Capsule &capsule) const
@@ -267,6 +417,23 @@ LineSegment Ray::ToLineSegment(float d) const
 	return LineSegment(pos, GetPoint(d));
 }
 
+LineSegment Ray::ToLineSegment(float dStart, float dEnd) const
+{
+	return LineSegment(GetPoint(dStart), GetPoint(dEnd));
+}
+
+void Ray::ProjectToAxis(const float3 &direction, float &outMin, float &outMax) const
+{
+	outMin = outMax = Dot(direction, pos);
+	float d = Dot(direction, dir);
+
+	// Most of the time, the projection interval will be a half-infinite range, extending to either -inf or +inf.
+	if (d > 1e-4f)
+		outMax = FLOAT_INF;
+	else if (d < -1e4f)
+		outMin = -FLOAT_INF;
+}
+
 #ifdef MATH_ENABLE_STL_SUPPORT
 std::string Ray::ToString() const
 {
@@ -274,20 +441,30 @@ std::string Ray::ToString() const
 	sprintf(str, "Ray(Pos:(%.2f, %.2f, %.2f) Dir:(%.2f, %.2f, %.2f))", pos.x, pos.y, pos.z, dir.x, dir.y, dir.z);
 	return str;
 }
+
+std::ostream &operator <<(std::ostream &o, const Ray &ray)
+{
+	o << ray.ToString();
+	return o;
+}
+
 #endif
 
 Ray operator *(const float3x3 &transform, const Ray &ray)
 {
-	return Ray(transform * ray.pos, transform * ray.dir.Normalized());
+	assume(transform.IsInvertible());
+	return Ray(transform * ray.pos, (transform * ray.dir).Normalized());
 }
 
 Ray operator *(const float3x4 &transform, const Ray &ray)
 {
+	assume(transform.IsInvertible());
 	return Ray(transform.MulPos(ray.pos), transform.MulDir(ray.dir).Normalized());
 }
 
 Ray operator *(const float4x4 &transform, const Ray &ray)
 {
+	assume(transform.IsInvertible());
 	return Ray(transform.MulPos(ray.pos), transform.MulDir(ray.dir).Normalized());
 }
 

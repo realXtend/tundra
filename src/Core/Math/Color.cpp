@@ -14,6 +14,8 @@
 #include <stdlib.h>
 //#include "MemoryLeakCheck.h"
 
+MATH_BEGIN_NAMESPACE
+
 #ifdef MATH_QT_INTEROP
 Color::operator QColor() const
 {
@@ -67,3 +69,5 @@ float4 Color::ToFloat4() const
 {
     return (float4)*this;
 }
+
+MATH_END_NAMESPACE
