@@ -34,6 +34,11 @@ if (TUNDRA_NO_BOOST)
     add_definitions(-DTUNDRA_NO_BOOST)
 endif()
 
+# TUNDRA_CPP11_ENABLED is configured in the root CMakeLists.txt
+if (TUNDRA_CPP11_ENABLED)
+    add_definitions(-DTUNDRA_CPP11_ENABLED)
+endif()
+
 if (ENABLE_OPEN_ASSET_IMPORT)
     add_definitions(-DASSIMP_ENABLED)
 endif()
@@ -146,7 +151,7 @@ endif()
 # See /src/Application/SceneWidgetComponents/CMakeLists.txt
 AddProject(Application SceneWidgetComponents)   # Provides ECs for injecting various QWidgets to the 3D scene eg. EC_WebView.
 AddProject(Application BrowserUiPlugin)         # Provides a browser UI for the client. Features multi-tabbed browsing, web login to servers, classic login, world/web bookmarks, web page caching etc.
-if (NOT APPLE AND NOT ANDROID)
+if (NOT ANDROID)
     AddProject(Application MumblePlugin)            # VOIP communication, implements a Mumble client for the Murmur server. Depends on JavascriptModule, OgreRenderingModule and TundraProtocolModule.
     AddProject(Application VlcPlugin)              # Adds media playback capabilities with libVLC and entity components.
 endif()
