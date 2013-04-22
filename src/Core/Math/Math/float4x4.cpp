@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 /** @file float4x4.cpp
 	@author Jukka Jylänki
 	@brief */
+#include "Math/float4x4.h"
 #include <string.h>
 
 #include "Math/MathFunc.h"
@@ -22,12 +23,16 @@
 #include "Math/float4.h"
 #include "Math/float3x3.h"
 #include "Math/float3x4.h"
-#include "Math/float4x4.h"
 #include "Matrix.inl"
 #include "Math/Quat.h"
 #include "TransformOps.h"
 #include "Geometry/Plane.h"
 #include "Algorithm/Random/LCG.h"
+#include "SSEMath.h"
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+#include <iostream>
+#endif
 
 MATH_BEGIN_NAMESPACE
 
@@ -36,27 +41,41 @@ float4x4::float4x4(float _00, float _01, float _02, float _03,
 				   float _20, float _21, float _22, float _23,
 				   float _30, float _31, float _32, float _33)
 {
-	Set(_00, _01, _02, _03, 
-		_10, _11, _12, _13, 
-		_20, _21, _22, _23, 
+	Set(_00, _01, _02, _03,
+		_10, _11, _12, _13,
+		_20, _21, _22, _23,
 		_30, _31, _32, _33);
 }
 
 float4x4::float4x4(const float3x3 &other)
 {
+#ifdef MATH_SSE
+	row[0] = _mm_set_ps(0.f, other.v[0][2], other.v[0][1], other.v[0][0]);
+	row[1] = _mm_set_ps(0.f, other.v[1][2], other.v[1][1], other.v[1][0]);
+	row[2] = _mm_set_ps(0.f, other.v[2][2], other.v[2][1], other.v[2][0]);
+	row[3] = _mm_set_ps(1.f, 0.f, 0.f, 0.f);
+#else
 	SetRow3(0, other.Row(0));
 	SetRow3(1, other.Row(1));
 	SetRow3(2, other.Row(2));
 	SetRow(3, 0, 0, 0, 1);
 	SetCol3(3, 0, 0, 0);
+#endif
 }
 
 float4x4::float4x4(const float3x4 &other)
 {
+#ifdef MATH_SSE
+	row[0] = other.row[0];
+	row[1] = other.row[1];
+	row[2] = other.row[2];
+	row[3] = _mm_set_ps(1.f, 0.f, 0.f, 0.f);
+#else
 	SetRow(0, other.Row(0));
 	SetRow(1, other.Row(1));
 	SetRow(2, other.Row(2));
 	SetRow(3, 0, 0, 0, 1);
+#endif
 }
 
 float4x4::float4x4(const float4 &col0, const float4 &col1, const float4 &col2, const float4 &col3)
@@ -171,8 +190,8 @@ float4x4 float4x4::RotateFromTo(const float3 &sourceDirection, const float3 &tar
 
 float4x4 float4x4::RandomGeneral(LCG &lcg, float minElem, float maxElem)
 {
-	assume(isfinite(minElem));
-	assume(isfinite(maxElem));
+	assume(MATH_NS::IsFinite(minElem));
+	assume(MATH_NS::IsFinite(maxElem));
 	float4x4 m;
 	for(int y = 0; y < 4; ++y)
 		for(int x = 0; x < 4; ++x)
@@ -276,7 +295,7 @@ float4x4 float4x4::FromEulerXYZ(float x, float y, float z)
 	r.SetTranslatePart(0,0,0);
 	r.SetRow(3, 0,0,0,1);
 	Set3x3PartRotateEulerXYZ(r, x, y, z);
-	assume(r.Equals(float4x4::RotateX(x) * float4x4::RotateY(y) * float4x4::RotateX(z)));
+	assume(r.Equals(float4x4::RotateX(x) * float4x4::RotateY(y) * float4x4::RotateZ(z)));
 	return r;
 }
 
@@ -330,7 +349,6 @@ float4x4 float4x4::FromEulerZYX(float z, float y, float x)
 	return r;
 }
 
-
 ScaleOp float4x4::Scale(float sx, float sy, float sz)
 {
 	return ScaleOp(sx, sy, sz);
@@ -343,7 +361,7 @@ ScaleOp float4x4::Scale(const float3 &scale)
 
 float4x4 float4x4::Scale(const float3 &scale, const float3 &scaleCenter)
 {
-	return Translate(scaleCenter).ToFloat4x4() * Scale(scale) * Translate(-scaleCenter);
+	return Translate(scaleCenter) * Scale(scale) * Translate(-scaleCenter);
 }
 
 float4x4 float4x4::ScaleAlongAxis(const float3 &axis, float scalingFactor)
@@ -353,17 +371,17 @@ float4x4 float4x4::ScaleAlongAxis(const float3 &axis, float scalingFactor)
 
 float4x4 float4x4::ScaleAlongAxis(const float3 &axis, float scalingFactor, const float3 &scaleCenter)
 {
-	return Translate(scaleCenter).ToFloat4x4() * Scale(axis * scalingFactor) * Translate(-scaleCenter);
-}
-
-ScaleOp float4x4::Scale(float uniformScale)
-{
-	return ScaleOp(uniformScale, uniformScale, uniformScale);
+	return Translate(scaleCenter) * Scale(axis * scalingFactor) * Translate(-scaleCenter);
 }
 
 ScaleOp float4x4::UniformScale(float uniformScale)
 {
 	return ScaleOp(uniformScale, uniformScale, uniformScale);
+}
+
+float4x4 float4x4::UniformScale(float uniformScale, const float3 &scaleCenter)
+{
+	return float4x4::Translate(scaleCenter) * float4x4::UniformScale(uniformScale) * float4x4::Translate(-scaleCenter);
 }
 
 float3 float4x4::GetScale() const
@@ -403,10 +421,15 @@ float4x4 float4x4::Mirror(const Plane &p)
 	return v;
 }
 
-float4x4 float4x4::PerspectiveProjection(float /*nearPlaneDistance*/, float /*farPlaneDistance*/, float /*horizontalFov*/, float /*verticalFov*/)
+float4x4 float4x4::D3DOrthoProjLH(float n, float f, float h, float v)
 {
-	assume(false && "Not implemented!"); /// @todo Implement.
-	return float4x4(); ///@todo
+	float4x4 p;
+	p[0][0] = 2.f / h; p[0][1] = 0;       p[0][2] = 0;           p[0][3] = 0.f;
+	p[1][0] = 0;       p[1][1] = 2.f / v; p[1][2] = 0;           p[1][3] = 0.f;
+	p[2][0] = 0;       p[2][1] = 0;       p[2][2] = 1.f / (f-n); p[2][3] = n / (n-f);
+	p[3][0] = 0;       p[3][1] = 0;       p[3][2] = 0.f;         p[3][3] = 1.f;
+
+	return p;
 }
 
 /** This function generates an orthographic projection matrix that maps from
@@ -419,7 +442,7 @@ float4x4 float4x4::PerspectiveProjection(float /*nearPlaneDistance*/, float /*fa
 
 	After the transformation, we're in the Direct3D normalized viewport space as follows:
 
-	(-1,-1,0) is the bottom-left corner of the viewport at the near plane. 
+	(-1,-1,0) is the bottom-left corner of the viewport at the near plane.
 	(1,1,0) is the top-right corner of the viewport at the near plane.
 	(0,0,0) is the center point at the near plane.
 	Coordinates with z=1 are at the far plane.
@@ -432,17 +455,56 @@ float4x4 float4x4::PerspectiveProjection(float /*nearPlaneDistance*/, float /*fa
 	*/
 float4x4 float4x4::D3DOrthoProjRH(float n, float f, float h, float v)
 {
+	// D3DOrthoProjLH and D3DOrthoProjRH differ from each other in that the third column is negated.
+	// This corresponds to LH = RH * In, where In is a diagonal matrix with elements [1 1 -1 1].
+
 	float4x4 p;
-	p[0][0] = 2.f / h; p[0][1] = 0;	   p[0][2] = 0;		   p[0][3] = 0.f;
-	p[1][0] = 0;	   p[1][1] = 2.f / v; p[1][2] = 0;		   p[1][3] = 0.f;
-	p[2][0] = 0;	   p[2][1] = 0;	   p[2][2] = 1.f / (f-n); p[2][3] = n / (n-f);
-	p[3][0] = 0;	   p[3][1] = 0;	   p[3][2] = 0.f;		 p[3][3] = 1.f;
-/*
-	p[0][0] = 2.f / h; p[0][1] = 0;	   p[0][2] = 0;		   p[0][3] = 0;
-	p[1][0] = 0;	   p[1][1] = 2.f / v; p[1][2] = 0;		   p[1][3] = 0;
-	p[2][0] = 0;	   p[2][1] = 0;	   p[2][2] = 1.f / (n-f); p[2][3] = 0;
-	p[3][0] = 0;	   p[3][1] = 0;	   p[3][2] = n / (n-f);   p[3][3] = 1.f;
-*/
+	p[0][0] = 2.f / h; p[0][1] = 0;       p[0][2] = 0;           p[0][3] = 0.f;
+	p[1][0] = 0;       p[1][1] = 2.f / v; p[1][2] = 0;           p[1][3] = 0.f;
+	p[2][0] = 0;       p[2][1] = 0;       p[2][2] = 1.f / (n-f); p[2][3] = n / (n-f);
+	p[3][0] = 0;       p[3][1] = 0;       p[3][2] = 0.f;         p[3][3] = 1.f;
+
+	return p;
+}
+
+float4x4 float4x4::D3DPerspProjLH(float n, float f, float h, float v)
+{
+	float4x4 p;
+	p[0][0] = 2.f * n / h; p[0][1] = 0;           p[0][2] = 0;           p[0][3] = 0.f;
+	p[1][0] = 0;           p[1][1] = 2.f * n / v; p[1][2] = 0;           p[1][3] = 0.f;
+	p[2][0] = 0;           p[2][1] = 0;           p[2][2] = f / (f-n);   p[2][3] = n * f / (n-f);
+	p[3][0] = 0;           p[3][1] = 0;           p[3][2] = 1.f;         p[3][3] = 0.f;
+
+	return p;
+}
+
+float4x4 float4x4::D3DPerspProjRH(float n, float f, float h, float v)
+{
+	// D3DPerspProjLH and D3DPerspProjRH differ from each other in that the third column is negated.
+	// This corresponds to LH = RH * In, where In is a diagonal matrix with elements [1 1 -1 1].
+
+	// In Direct3D, the post-perspective unit cube ranges in [-1, 1] in X and Y directions,
+	// and in [0, 1] for the Z direction. See http://msdn.microsoft.com/en-us/library/windows/desktop/bb147302(v=vs.85).aspx
+	float4x4 p;
+	p[0][0] = 2.f * n / h; p[0][1] = 0;           p[0][2] = 0;           p[0][3] = 0.f;
+	p[1][0] = 0;           p[1][1] = 2.f * n / v; p[1][2] = 0;           p[1][3] = 0.f;
+	p[2][0] = 0;           p[2][1] = 0;           p[2][2] = f / (n-f);   p[2][3] = n * f / (n-f);
+	p[3][0] = 0;           p[3][1] = 0;           p[3][2] = -1.f;        p[3][3] = 0.f;
+
+	return p;
+}
+
+float4x4 float4x4::OpenGLPerspProjRH(float n, float f, float h, float v)
+{
+	// In OpenGL, the post-perspective unit cube ranges in [-1, 1] in all X, Y and Z directions.
+	// See http://www.songho.ca/opengl/gl_projectionmatrix.html , unlike in Direct3D, where the
+	// Z coordinate ranges in [0, 1]. This is the only difference between D3DPerspProjRH and OpenGLPerspProjRH.
+	float4x4 p;
+	p[0][0] = 2.f *n / h;  p[0][1] = 0;           p[0][2] = 0;              p[0][3] = 0.f;
+	p[1][0] = 0;           p[1][1] = 2.f * n / v; p[1][2] = 0;              p[1][3] = 0.f;
+	p[2][0] = 0;           p[2][1] = 0;           p[2][2] = (n+f) / (n-f);  p[2][3] = 2.f*n*f / (n-f);
+	p[3][0] = 0;           p[3][1] = 0;           p[3][2] = -1.f;           p[3][3] = 0.f;
+
 	return p;
 }
 
@@ -476,7 +538,7 @@ float4x4 float4x4::OrthographicProjectionXY()
 
 float4x4 float4x4::ComplementaryProjection() const
 {
-	assume(IsIdempotent()); 
+	assume(IsIdempotent());
 
 	return float4x4::identity - *this;
 }
@@ -611,19 +673,19 @@ CONST_WIN32 float3 float4x4::Diagonal3() const
 
 void float4x4::ScaleRow3(int row, float scalar)
 {
-	assume(isfinite(scalar));
+	assume(MATH_NS::IsFinite(scalar));
 	Row3(row) *= scalar;
 }
 
 void float4x4::ScaleRow(int row, float scalar)
 {
-	assume(isfinite(scalar));
+	assume(MATH_NS::IsFinite(scalar));
 	Row(row) *= scalar;
 }
 
 void float4x4::ScaleCol3(int col, float scalar)
 {
-	assume(isfinite(scalar));
+	assume(MATH_NS::IsFinite(scalar));
 	assume(col >= 0);
 	assume(col < Cols);
 #ifndef MATH_ENABLE_INSECURE_OPTIMIZATIONS
@@ -637,7 +699,7 @@ void float4x4::ScaleCol3(int col, float scalar)
 
 void float4x4::ScaleCol(int col, float scalar)
 {
-	assume(isfinite(scalar));
+	assume(MATH_NS::IsFinite(scalar));
 	assume(col >= 0);
 	assume(col < Cols);
 #ifndef MATH_ENABLE_INSECURE_OPTIMIZATIONS
@@ -650,7 +712,7 @@ void float4x4::ScaleCol(int col, float scalar)
 	v[3][col] *= scalar;
 }
 
-const float3x3 float4x4::Float3x3Part() const
+CONST_WIN32 float3x3 float4x4::Float3x3Part() const
 {
 	return float3x3(v[0][0], v[0][1], v[0][2],
 					v[1][0], v[1][1], v[1][2],
@@ -698,7 +760,7 @@ float *float4x4::ptr()
 }
 
 const float *float4x4::ptr() const
-{ 
+{
 	return reinterpret_cast<const float *>(v);
 }
 
@@ -721,9 +783,9 @@ void float4x4::SetRow3(int row, float m_r0, float m_r1, float m_r2)
 {
 	assume(row >= 0);
 	assume(row < Rows);
-	assume(isfinite(m_r0));
-	assume(isfinite(m_r1));
-	assume(isfinite(m_r2));
+	assume(MATH_NS::IsFinite(m_r0));
+	assume(MATH_NS::IsFinite(m_r1));
+	assume(MATH_NS::IsFinite(m_r2));
 #ifndef MATH_ENABLE_INSECURE_OPTIMIZATIONS
 	if (row < 0 || row >= Rows)
 		return; // Benign failure
@@ -757,18 +819,23 @@ void float4x4::SetRow(int row, float m_r0, float m_r1, float m_r2, float m_r3)
 {
 	assume(row >= 0);
 	assume(row < Rows);
-	assume(isfinite(m_r0));
-	assume(isfinite(m_r1));
-	assume(isfinite(m_r2));
-	assume(isfinite(m_r3));
+	assume(MATH_NS::IsFinite(m_r0));
+	assume(MATH_NS::IsFinite(m_r1));
+	assume(MATH_NS::IsFinite(m_r2));
+	assume(MATH_NS::IsFinite(m_r3));
 #ifndef MATH_ENABLE_INSECURE_OPTIMIZATIONS
 	if (row < 0 || row >= Rows)
 		return; // Benign failure
 #endif
+
+#ifdef MATH_SSE
+	this->row[row] = _mm_set_ps(m_r3, m_r2, m_r1, m_r0);
+#else
 	v[row][0] = m_r0;
 	v[row][1] = m_r1;
 	v[row][2] = m_r2;
 	v[row][3] = m_r3;
+#endif
 }
 
 void float4x4::SetCol3(int column, const float3 &columnVector)
@@ -790,9 +857,9 @@ void float4x4::SetCol3(int column, float m_0c, float m_1c, float m_2c)
 {
 	assume(column >= 0);
 	assume(column < Cols);
-	assume(isfinite(m_0c));
-	assume(isfinite(m_1c));
-	assume(isfinite(m_2c));
+	assume(MATH_NS::IsFinite(m_0c));
+	assume(MATH_NS::IsFinite(m_1c));
+	assume(MATH_NS::IsFinite(m_2c));
 #ifndef MATH_ENABLE_INSECURE_OPTIMIZATIONS
 	if (column < 0 || column >= Cols)
 		return; // Benign failure
@@ -826,10 +893,10 @@ void float4x4::SetCol(int column, float m_0c, float m_1c, float m_2c, float m_3c
 {
 	assume(column >= 0);
 	assume(column < Cols);
-	assume(isfinite(m_0c));
-	assume(isfinite(m_1c));
-	assume(isfinite(m_2c));
-	assume(isfinite(m_3c));
+	assume(MATH_NS::IsFinite(m_0c));
+	assume(MATH_NS::IsFinite(m_1c));
+	assume(MATH_NS::IsFinite(m_2c));
+	assume(MATH_NS::IsFinite(m_3c));
 #ifndef MATH_ENABLE_INSECURE_OPTIMIZATIONS
 	if (column < 0 || column >= Cols)
 		return; // Benign failure
@@ -845,10 +912,17 @@ void float4x4::Set(float _00, float _01, float _02, float _03,
 				   float _20, float _21, float _22, float _23,
 				   float _30, float _31, float _32, float _33)
 {
+#ifdef MATH_SSE
+	row[0] = _mm_set_ps(_03, _02, _01, _00);
+	row[1] = _mm_set_ps(_13, _12, _11, _10);
+	row[2] = _mm_set_ps(_23, _22, _21, _20);
+	row[3] = _mm_set_ps(_33, _32, _31, _30);
+#else
 	v[0][0] = _00; v[0][1] = _01; v[0][2] = _02; v[0][3] = _03;
 	v[1][0] = _10; v[1][1] = _11; v[1][2] = _12; v[1][3] = _13;
 	v[2][0] = _20; v[2][1] = _21; v[2][2] = _22; v[2][3] = _23;
 	v[3][0] = _30; v[3][1] = _31; v[3][2] = _32; v[3][3] = _33;
+#endif
 }
 
 void float4x4::Set(const float4x4 &rhs)
@@ -898,9 +972,16 @@ void float4x4::Set3x3Part(const float3x3 &r)
 void float4x4::Set3x4Part(const float3x4 &r)
 {
 	assume(r.IsFinite());
+
+#ifdef MATH_SSE
+	row[0] = r.row[0];
+	row[1] = r.row[1];
+	row[2] = r.row[2];
+#else
 	v[0][0] = r[0][0]; v[0][1] = r[0][1]; v[0][2] = r[0][2]; v[0][3] = r[0][3];
 	v[1][0] = r[1][0]; v[1][1] = r[1][1]; v[1][2] = r[1][2]; v[1][3] = r[1][3];
 	v[2][0] = r[2][0]; v[2][1] = r[2][1]; v[2][2] = r[2][2]; v[2][3] = r[2][3];
+#endif
 }
 
 void float4x4::SwapColumns(int col1, int col2)
@@ -944,10 +1025,15 @@ void float4x4::SwapRows(int row1, int row2)
 	if (row1 < 0 || row1 >= Rows || row2 < 0 || row2 >= Rows)
 		return; // Benign failure
 #endif
+
+#ifdef MATH_SSE
+	Swap(row[row1], row[row2]);
+#else
 	Swap(v[row1][0], v[row2][0]);
 	Swap(v[row1][1], v[row2][1]);
 	Swap(v[row1][2], v[row2][2]);
 	Swap(v[row1][3], v[row2][3]);
+#endif
 }
 
 void float4x4::SwapRows3(int row1, int row2)
@@ -993,7 +1079,7 @@ void float4x4::SetRotatePartZ(float angle)
 void float4x4::SetRotatePart(const float3 &a, float angle)
 {
 	assume(a.IsNormalized());
-	assume(isfinite(angle));
+	assume(MATH_NS::IsFinite(angle));
 
 	const float c = Cos(angle);
 	const float c1 = (1.f-c);
@@ -1026,7 +1112,7 @@ float4x4 float4x4::LookAt(const float3 &localForward, const float3 &targetDirect
 	return m;
 }
 
-float4x4 float4x4::LookAt(const float3 &eyePos, const float3 &targetPos, const float3 &localForward, 
+float4x4 float4x4::LookAt(const float3 &eyePos, const float3 &targetPos, const float3 &localForward,
                           const float3 &localUp, const float3 &worldUp)
 {
 	float4x4 m;
@@ -1046,8 +1132,15 @@ float4x4 &float4x4::operator =(const float3x3 &rhs)
 
 float4x4 &float4x4::operator =(const float3x4 &rhs)
 {
+#ifdef MATH_SSE
+	row[0] = rhs.row[0];
+	row[1] = rhs.row[1];
+	row[2] = rhs.row[2];
+	row[3] = _mm_set_ps(1.f, 0.f, 0.f, 0.f);
+#else
 	Float3x4Part() = rhs;
 	SetRow(3, 0,0,0,1);
+#endif
 	return *this;
 }
 
@@ -1058,12 +1151,37 @@ float4x4 &float4x4::operator =(const float4x4 &rhs)
 	// But note that when assigning through a conversion above (float3x3 -> float4x4 or float3x4 -> float4x4),
 	// we do assume the input matrix is finite.
 //	assume(rhs.IsFinite());
+
+#ifdef MATH_SSE
+	row[0] = rhs.row[0];
+	row[1] = rhs.row[1];
+	row[2] = rhs.row[2];
+	row[3] = rhs.row[3];
+#else
 	memcpy(this, &rhs, sizeof(rhs));
+#endif
+	return *this;
+}
+
+float4x4 &float4x4::operator =(const Quat &rhs)
+{
+	*this = rhs.ToFloat4x4();
+	return *this;
+}
+
+float4x4 &float4x4::operator =(const TranslateOp &rhs)
+{
+	Set(1.f,   0,   0, rhs.x,
+	      0, 1.f,   0, rhs.y,
+	      0,   0, 1.f, rhs.z,
+	      0,   0,   0,   1.f);
+	
 	return *this;
 }
 
 float float4x4::Determinant3() const
 {
+	///\todo SSE
 	assume(Float3x3Part().IsFinite());
 	const float a = v[0][0];
 	const float b = v[0][1];
@@ -1080,6 +1198,7 @@ float float4x4::Determinant3() const
 
 float float4x4::Determinant4() const
 {
+	///\todo SSE
 	assume(IsFinite());
 	return v[0][0] * Minor(0,0) - v[0][1] * Minor(0,1) + v[0][2] * Minor(0,2) - v[0][3] * Minor(0,3);
 }
@@ -1142,16 +1261,17 @@ bool float4x4::LUDecompose(float4x4 &outLower, float4x4 &outUpper) const
 	return LUDecomposeMatrix(*this, outLower, outUpper);
 }
 
-bool float4x4::Inverse()
+bool float4x4::Inverse(float epsilon)
 {
+	///\todo SSE
 #ifdef MATH_ASSERT_CORRECTNESS
 	float4x4 copy = *this;
-	bool success = InverseMatrix(*this);
-	mathassert(!(success == false && Abs(Determinant4()) > 1e-3f));
+	bool success = InverseMatrix(*this, epsilon);
+	mathassert(!(success == false && Abs(Determinant4()) > epsilon));
 	mathassert(!success || (copy * *this).IsIdentity());
 	return success;
 #else
-	return InverseMatrix(*this);
+	return InverseMatrix(*this, epsilon);
 #endif
 }
 
@@ -1164,24 +1284,28 @@ float4x4 float4x4::Inverted() const
 
 bool float4x4::InverseColOrthogonal()
 {
+	///\todo SSE
 	assume(!ContainsProjection());
 	return Float3x4Part().InverseColOrthogonal();
 }
 
 bool float4x4::InverseOrthogonalUniformScale()
 {
+	///\todo SSE
 	assume(!ContainsProjection());
 	return Float3x4Part().InverseOrthogonalUniformScale();
 }
 
 void float4x4::InverseOrthonormal()
 {
+	///\todo SSE
 	assume(!ContainsProjection());
 	return Float3x4Part().InverseOrthonormal();
 }
 
 void float4x4::Transpose()
 {
+	///\todo SSE
 	Swap(v[0][1], v[1][0]);
 	Swap(v[0][2], v[2][0]);
 	Swap(v[0][3], v[3][0]);
@@ -1220,6 +1344,7 @@ float float4x4::Trace() const
 
 void float4x4::Orthogonalize3(int c0, int c1, int c2)
 {
+	///\todo SSE
 	assume(c0 != c1 && c0 != c2 && c1 != c2);
 	assume(c0 >= 0 && c1 >= 0 && c2 >= 0 && c0 < Cols && c1 < Cols && c2 < Cols);
 #ifndef MATH_ENABLE_INSECURE_OPTIMIZATIONS
@@ -1238,6 +1363,7 @@ void float4x4::Orthogonalize3(int c0, int c1, int c2)
 
 void float4x4::Orthonormalize3(int c0, int c1, int c2)
 {
+	///\todo SSE
 	assume(c0 != c1 && c0 != c2 && c1 != c2);
 	assume(c0 >= 0 && c1 >= 0 && c2 >= 0 && c0 < Cols && c1 < Cols && c2 < Cols);
 #ifndef MATH_ENABLE_INSECURE_OPTIMIZATIONS
@@ -1256,10 +1382,14 @@ void float4x4::Orthonormalize3(int c0, int c1, int c2)
 
 void float4x4::RemoveScale()
 {
+	///\todo SSE
 	float x = Row3(0).Normalize();
 	float y = Row3(1).Normalize();
 	float z = Row3(2).Normalize();
 	assume(x != 0 && y != 0 && z != 0 && "float4x4::RemoveScale failed!");
+	MARK_UNUSED(x);
+	MARK_UNUSED(y);
+	MARK_UNUSED(z);
 }
 
 /// Algorithm from Eric Lengyel's Mathematics for 3D Game Programming & Computer Graphics, 2nd Ed.
@@ -1294,34 +1424,58 @@ void float4x4::Pivot()
 
 float3 float4x4::TransformPos(const float3 &pointVector) const
 {
+	assume(!this->ContainsProjection()); // This function does not divide by w or output it, so cannot have projection.
+#ifdef MATH_AUTOMATIC_SSE
+	return _mm_mat3x4_mul_ps_float3(row, _mm_set_ps(1.f, pointVector.z, pointVector.y, pointVector.x));
+#else
 	return TransformPos(pointVector.x, pointVector.y, pointVector.z);
+#endif
 }
 
 float3 float4x4::TransformPos(float x, float y, float z) const
 {
+	assume(!this->ContainsProjection()); // This function does not divide by w or output it, so cannot have projection.
+#ifdef MATH_AUTOMATIC_SSE
+	return _mm_mat3x4_mul_ps_float3(row, _mm_set_ps(1.f, z, y, x));
+#else
 	return float3(DOT4POS_xyz(Row(0), x,y,z),
 				  DOT4POS_xyz(Row(1), x,y,z),
 				  DOT4POS_xyz(Row(2), x,y,z));
+#endif
 }
 
 float3 float4x4::TransformDir(const float3 &directionVector) const
 {
+	assume(!this->ContainsProjection()); // This function does not divide by w or output it, so cannot have projection.
+#ifdef MATH_AUTOMATIC_SSE
+	return _mm_mat3x4_mul_ps_float3(row, _mm_set_ps(0.f, directionVector.z, directionVector.y, directionVector.x));
+#else
 	return TransformDir(directionVector.x, directionVector.y, directionVector.z);
+#endif
 }
 
 float3 float4x4::TransformDir(float x, float y, float z) const
 {
+	assume(!this->ContainsProjection()); // This function does not divide by w or output it, so cannot have projection.
+#ifdef MATH_AUTOMATIC_SSE
+	return _mm_mat3x4_mul_ps_float3(row, _mm_set_ps(0.f, z, y, x));
+#else
 	return float3(DOT4DIR_xyz(Row(0), x,y,z),
 				  DOT4DIR_xyz(Row(1), x,y,z),
 				  DOT4DIR_xyz(Row(2), x,y,z));
+#endif
 }
 
 float4 float4x4::Transform(const float4 &vector) const
 {
+#ifdef MATH_AUTOMATIC_SSE
+	return float4(_mm_mat4x4_mul_ps(row, vector.v));
+#else
 	return float4(DOT4(Row(0), vector),
 				  DOT4(Row(1), vector),
 				  DOT4(Row(2), vector),
 				  DOT4(Row(3), vector));
+#endif
 }
 
 void float4x4::TransformPos(float3 *pointArray, int numPoints) const
@@ -1348,7 +1502,7 @@ void float4x4::TransformPos(float3 *pointArray, int numPoints, int strideBytes) 
 		float3 *v = reinterpret_cast<float3*>(data);
 		*v = this->TransformPos(*v);
 		data += strideBytes;
-	}		
+	}
 }
 
 void float4x4::TransformDir(float3 *dirArray, int numVectors) const
@@ -1375,7 +1529,7 @@ void float4x4::TransformDir(float3 *dirArray, int numVectors, int strideBytes) c
 		float3 *v = reinterpret_cast<float3*>(data);
 		*v = this->TransformDir(*v);
 		data += strideBytes;
-	}		
+	}
 }
 
 void float4x4::Transform(float4 *vectorArray, int numVectors) const
@@ -1402,11 +1556,12 @@ void float4x4::Transform(float4 *vectorArray, int numVectors, int strideBytes) c
 		float4 *v = reinterpret_cast<float4*>(data);
 		*v = *this * *v;
 		data += strideBytes;
-	}		
+	}
 }
 
 float4x4 float4x4::operator *(const float3x3 &rhs) const
 {
+	///\todo SSE.
 	float4x4 r;
 	const float *c0 = rhs.ptr();
 	const float *c1 = rhs.ptr() + 1;
@@ -1436,6 +1591,7 @@ float4x4 float4x4::operator *(const float3x3 &rhs) const
 
 float4x4 float4x4::operator *(const float3x4 &rhs) const
 {
+	///\todo SSE.
 	float4x4 r;
 	const float *c0 = rhs.ptr();
 	const float *c1 = rhs.ptr() + 1;
@@ -1467,6 +1623,9 @@ float4x4 float4x4::operator *(const float3x4 &rhs) const
 float4x4 float4x4::operator *(const float4x4 &rhs) const
 {
 	float4x4 r;
+#ifdef MATH_AUTOMATIC_SSE
+	_mm_mat4x4_mul_ps(r.row, this->row, rhs.row);
+#else
 	const float *c0 = rhs.ptr();
 	const float *c1 = rhs.ptr() + 1;
 	const float *c2 = rhs.ptr() + 2;
@@ -1490,6 +1649,7 @@ float4x4 float4x4::operator *(const float4x4 &rhs) const
 	r[3][1] = DOT4STRIDED(v[3], c1, 4);
 	r[3][2] = DOT4STRIDED(v[3], c2, 4);
 	r[3][3] = DOT4STRIDED(v[3], c3, 4);
+#endif
 
 	return r;
 }
@@ -1507,47 +1667,106 @@ float4 float4x4::operator *(const float4 &rhs) const
 
 float4x4 float4x4::operator *(float scalar) const
 {
+#ifdef MATH_AUTOMATIC_SSE
+	float4x4 r;
+	__m128 s = _mm_set1_ps(scalar);
+	r.row[0] = _mm_mul_ps(row[0], s);
+	r.row[1] = _mm_mul_ps(row[1], s);
+	r.row[2] = _mm_mul_ps(row[2], s);
+	r.row[3] = _mm_mul_ps(row[3], s);
+#else
 	float4x4 r = *this;
 	r *= scalar;
+#endif
+
 	return r;
 }
 
 float4x4 float4x4::operator /(float scalar) const
 {
 	assume(!EqualAbs(scalar, 0));
+
+#ifdef MATH_AUTOMATIC_SSE
+	float4x4 r;
+	__m128 s = _mm_set1_ps(scalar);
+	__m128 one = _mm_set1_ps(1.f);
+	s = _mm_div_ps(one, s);
+	r.row[0] = _mm_mul_ps(row[0], s);
+	r.row[1] = _mm_mul_ps(row[1], s);
+	r.row[2] = _mm_mul_ps(row[2], s);
+	r.row[3] = _mm_mul_ps(row[3], s);
+#else
 	float4x4 r = *this;
 	r /= scalar;
+#endif
+
 	return r;
 }
 
 float4x4 float4x4::operator +(const float4x4 &rhs) const
 {
+#ifdef MATH_AUTOMATIC_SSE
+	float4x4 r;
+	r.row[0] = _mm_add_ps(row[0], rhs.row[0]);
+	r.row[1] = _mm_add_ps(row[1], rhs.row[1]);
+	r.row[2] = _mm_add_ps(row[2], rhs.row[2]);
+	r.row[3] = _mm_add_ps(row[3], rhs.row[3]);
+#else
 	float4x4 r = *this;
 	r += rhs;
+#endif
+
 	return r;
 }
 
 float4x4 float4x4::operator -(const float4x4 &rhs) const
 {
+#ifdef MATH_AUTOMATIC_SSE
+	float4x4 r;
+	r.row[0] = _mm_sub_ps(row[0], rhs.row[0]);
+	r.row[1] = _mm_sub_ps(row[1], rhs.row[1]);
+	r.row[2] = _mm_sub_ps(row[2], rhs.row[2]);
+	r.row[3] = _mm_sub_ps(row[3], rhs.row[3]);
+#else
 	float4x4 r = *this;
 	r -= rhs;
+#endif
+
 	return r;
 }
 
 float4x4 float4x4::operator -() const
 {
 	float4x4 r;
+
+#ifdef MATH_AUTOMATIC_SSE
+	__m128 zero = _mm_setzero_ps();
+	r.row[0] = _mm_sub_ps(zero, row[0]);
+	r.row[1] = _mm_sub_ps(zero, row[1]);
+	r.row[2] = _mm_sub_ps(zero, row[2]);
+	r.row[3] = _mm_sub_ps(zero, row[3]);
+#else
 	for(int y = 0; y < Rows; ++y)
 		for(int x = 0; x < Cols; ++x)
 			r[y][x] = -v[y][x];
+#endif
+
 	return r;
 }
 
 float4x4 &float4x4::operator *=(float scalar)
 {
+#ifdef MATH_AUTOMATIC_SSE
+	__m128 s = _mm_set1_ps(scalar);
+	row[0] = _mm_mul_ps(row[0], s);
+	row[1] = _mm_mul_ps(row[1], s);
+	row[2] = _mm_mul_ps(row[2], s);
+	row[3] = _mm_mul_ps(row[3], s);
+#else
 	for(int y = 0; y < Rows; ++y)
 		for(int x = 0; x < Cols; ++x)
 			v[y][x] *= scalar;
+#endif
 
 	return *this;
 }
@@ -1555,28 +1774,53 @@ float4x4 &float4x4::operator *=(float scalar)
 float4x4 &float4x4::operator /=(float scalar)
 {
 	assume(!EqualAbs(scalar, 0));
+
+#ifdef MATH_AUTOMATIC_SSE
+	__m128 s = _mm_set1_ps(scalar);
+	__m128 one = _mm_set1_ps(1.f);
+	s = _mm_div_ps(one, s);
+	row[0] = _mm_mul_ps(row[0], s);
+	row[1] = _mm_mul_ps(row[1], s);
+	row[2] = _mm_mul_ps(row[2], s);
+	row[3] = _mm_mul_ps(row[3], s);
+#else
 	float invScalar = 1.f / scalar;
 	for(int y = 0; y < Rows; ++y)
 		for(int x = 0; x < Cols; ++x)
 			v[y][x] *= invScalar;
+#endif
 
 	return *this;
 }
 
 float4x4 &float4x4::operator +=(const float4x4 &rhs)
 {
+#ifdef MATH_AUTOMATIC_SSE
+	row[0] = _mm_add_ps(row[0], rhs.row[0]);
+	row[1] = _mm_add_ps(row[1], rhs.row[1]);
+	row[2] = _mm_add_ps(row[2], rhs.row[2]);
+	row[3] = _mm_add_ps(row[3], rhs.row[3]);
+#else
 	for(int y = 0; y < Rows; ++y)
 		for(int x = 0; x < Cols; ++x)
 			v[y][x] += rhs[y][x];
+#endif
 
 	return *this;
 }
 
 float4x4 &float4x4::operator -=(const float4x4 &rhs)
 {
+#ifdef MATH_AUTOMATIC_SSE
+	row[0] = _mm_sub_ps(row[0], rhs.row[0]);
+	row[1] = _mm_sub_ps(row[1], rhs.row[1]);
+	row[2] = _mm_sub_ps(row[2], rhs.row[2]);
+	row[3] = _mm_sub_ps(row[3], rhs.row[3]);
+#else
 	for(int y = 0; y < Rows; ++y)
 		for(int x = 0; x < Cols; ++x)
 			v[y][x] -= rhs[y][x];
+#endif
 
 	return *this;
 }
@@ -1585,7 +1829,7 @@ bool float4x4::IsFinite() const
 {
 	for(int y = 0; y < Rows; ++y)
 		for(int x = 0; x < Cols; ++x)
-			if (!isfinite(v[y][x]))
+			if (!MATH_NS::IsFinite(v[y][x]))
 				return false;
 	return true;
 }
@@ -1620,11 +1864,11 @@ bool float4x4::IsUpperTriangular(float epsilon) const
 		&& EqualAbs(v[3][2], 0.f, epsilon);
 }
 
-bool float4x4::IsInvertible(float /*epsilon*/) const
+bool float4x4::IsInvertible(float epsilon) const
 {
 	///@todo Optimize.
 	float4x4 copy = *this;
-	return copy.Inverse();
+	return copy.Inverse(epsilon);
 }
 
 bool float4x4::IsSymmetric(float epsilon) const
@@ -1706,7 +1950,7 @@ bool float4x4::ContainsProjection(float epsilon) const
 std::string float4x4::ToString() const
 {
 	char str[256];
-	sprintf(str, "(%.2f, %.2f, %.2f, %.2f) (%.2f, %.2f, %.2f, %.2f) (%.2f, %.2f, %.2f, %.2f) (%.2f, %.2f, %.2f, %.2f)", 
+	sprintf(str, "(%.2f, %.2f, %.2f, %.2f) (%.2f, %.2f, %.2f, %.2f) (%.2f, %.2f, %.2f, %.2f) (%.2f, %.2f, %.2f, %.2f)",
 		v[0][0], v[0][1], v[0][2], v[0][3],
 		v[1][0], v[1][1], v[1][2], v[1][3],
 		v[2][0], v[2][1], v[2][2], v[2][3],
@@ -1718,7 +1962,7 @@ std::string float4x4::ToString() const
 std::string float4x4::ToString2() const
 {
 	char str[256];
-	sprintf(str, "float3x4(X:(%.2f,%.2f,%.2f,%.2f) Y:(%.2f,%.2f,%.2f,%.2f) Z:(%.2f,%.2f,%.2f,%.2f), Pos:(%.2f,%.2f,%.2f,%.2f))", 
+	sprintf(str, "float3x4(X:(%.2f,%.2f,%.2f,%.2f) Y:(%.2f,%.2f,%.2f,%.2f) Z:(%.2f,%.2f,%.2f,%.2f), Pos:(%.2f,%.2f,%.2f,%.2f))",
 		v[0][0], v[1][0], v[2][0], v[3][0],
 		v[0][1], v[1][1], v[2][1], v[3][1],
 		v[0][2], v[1][2], v[2][2], v[3][2],
@@ -1812,6 +2056,7 @@ float4x4 operator *(const Quat &lhs, const float4x4 &rhs)
 
 float4x4 operator *(const float3x3 &lhs, const float4x4 &rhs)
 {
+	///\todo SSE.
 	float4x4 r;
 
 	const float *c0 = rhs.ptr();
@@ -1843,6 +2088,7 @@ float4x4 operator *(const float3x3 &lhs, const float4x4 &rhs)
 
 float4x4 operator *(const float3x4 &lhs, const float4x4 &rhs)
 {
+	///\todo SSE.
 	float4x4 r;
 	const float *c0 = rhs.ptr();
 	const float *c1 = rhs.ptr() + 1;
@@ -1873,6 +2119,7 @@ float4x4 operator *(const float3x4 &lhs, const float4x4 &rhs)
 
 float4 operator *(const float4 &lhs, const float4x4 &rhs)
 {
+	///\todo SSE.
 	return float4(DOT4STRIDED(lhs, rhs.ptr(), 4),
 				  DOT4STRIDED(lhs, rhs.ptr()+1, 4),
 				  DOT4STRIDED(lhs, rhs.ptr()+2, 4),
@@ -1886,6 +2133,72 @@ float4x4 float4x4::Mul(const Quat &rhs) const { return *this * rhs; }
 float3 float4x4::MulPos(const float3 &pointVector) const { return this->TransformPos(pointVector); }
 float3 float4x4::MulDir(const float3 &directionVector) const { return this->TransformDir(directionVector); }
 float4 float4x4::Mul(const float4 &vector) const { return *this * vector; }
+
+#ifdef MATH_SSE41
+float4 float4x4::Mul_SSE41(const float4 &rhs) const
+{
+	return float4(_mm_mat4x4_mul_ps_sse41(row, rhs.v));
+}
+#endif
+
+#ifdef MATH_SSE3
+float4 float4x4::Mul_SSE3(const float4 &rhs) const
+{
+	return float4(_mm_mat4x4_mul_ps_sse3(row, rhs.v));
+}
+#endif
+
+#ifdef MATH_SSE
+float4 float4x4::Mul_SSE1(const float4 &rhs) const
+{
+	return float4(_mm_mat4x4_mul_ps_sse1(row, rhs.v));
+}
+
+float4 float4x4::Mul_SSE(const float4 &rhs) const
+{
+	return float4(_mm_mat4x4_mul_ps(row, rhs.v));
+}
+
+float4 float4x4::Mul_ColMajor_SSE(const float4 &rhs) const
+{
+	return float4(_mm_colmajor_mat4x4_mul_ps_sse1(row, rhs.v));
+}
+
+float4 float4x4::Mul_ColMajor_SSE_2(const float4 &rhs) const
+{
+	return float4(_mm_colmajor_mat4x4_mul_ps_sse1_2(row, rhs.v));
+}
+
+float4x4 float4x4::Mul_SSE(const float4x4 &rhs) const
+{
+	float4x4 r;
+	_mm_mat4x4_mul_ps(r.row, row, rhs.row);
+	return r;
+}
+
+/* Temporary alternative implementations: Profiled the Mul_SSE version above to be the fastest.
+float4x4 float4x4::Mul_SSE1_2(const float4x4 &rhs) const
+{
+	float4x4 r;
+	_mm_mat4x4_mul_ps_2(r.row, row, rhs.row);
+	return r;
+}
+
+float4x4 float4x4::Mul_SSE1_dpps(const float4x4 &rhs) const
+{
+	float4x4 r;
+	_mm_mat4x4_mul_ps_dpps(r.row, row, rhs.row);
+	return r;
+}
+
+float4x4 float4x4::Mul_SSE1_dpps_2(const float4x4 &rhs) const
+{
+	float4x4 r;
+	_mm_mat4x4_mul_ps_dpps_2(r.row, row, rhs.row);
+	return r;
+}
+*/
+#endif
 
 const float4x4 float4x4::zero	 = float4x4(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0);
 const float4x4 float4x4::identity = float4x4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);

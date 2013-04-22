@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,15 +17,17 @@
 	@brief */
 #pragma once
 
+#include "MathFunc.h"
+
 #ifdef MATH_ENABLE_STL_SUPPORT
-#include <cassert>
+#include "myassert.h"
 #endif
 
 MATH_BEGIN_NAMESPACE
 
-bool Equal(double a, double b, double epsilon = 1e-6)
+inline bool Equal(double a, double b, double epsilon = 1e-6)
 {
-	return std::abs(a-b) < epsilon;
+	return Abs(a-b) < epsilon;
 }
 
 MATH_END_NAMESPACE

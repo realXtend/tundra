@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 /** @file Quat.cpp
 	@author Jukka Jylänki
 	@brief */
-#include <stdlib.h>
 #include "Math/Quat.h"
+#include <stdlib.h>
 #include "Math/float3.h"
 #include "Math/float4.h"
 #include "Math/float3x3.h"
@@ -25,6 +25,10 @@
 #include "Algorithm/Random/LCG.h"
 #include "assume.h"
 #include "Math/MathFunc.h"
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+#include <iostream>
+#endif
 
 MATH_BEGIN_NAMESPACE
 
@@ -122,6 +126,7 @@ Quat Quat::Normalized() const
 	Quat copy = *this;
 	float success = copy.Normalize();
 	assume(success > 0 && "Quat::Normalized failed!");
+	MARK_UNUSED(success);
 	return copy;
 }
 
@@ -137,7 +142,7 @@ bool Quat::IsInvertible(float epsilon) const
 
 bool Quat::IsFinite() const
 {
-	return isfinite(x) && isfinite(y) && isfinite(z) && isfinite(w);
+	return MATH_NS::IsFinite(x) && MATH_NS::IsFinite(y) && MATH_NS::IsFinite(z) && MATH_NS::IsFinite(w);
 }
 
 bool Quat::Equals(const Quat &rhs, float epsilon) const
@@ -163,7 +168,7 @@ void Quat::Inverse()
 }
 
 Quat Quat::Inverted() const
-{ 
+{
 	assume(IsNormalized());
 	assume(IsInvertible());
 	return Conjugated();
@@ -214,7 +219,7 @@ Quat Quat::Lerp(const Quat &b, float t) const
 	return *this * (1.f - t) + b * t;
 }
 
-Quat Quat::Lerp(const Quat &a, const Quat &b, float t)
+Quat MUST_USE_RESULT Quat::Lerp(const Quat &a, const Quat &b, float t)
 {
 	return a.Lerp(b, t);
 }
@@ -253,7 +258,7 @@ Quat Quat::Slerp(const Quat &q2, float t) const
 	return (*this * (a * sign) + q2 * b).Normalized();
 }
 
-Quat Quat::Slerp(const Quat &a, const Quat &b, float t)
+Quat MUST_USE_RESULT Quat::Slerp(const Quat &a, const Quat &b, float t)
 {
 	return a.Slerp(b, t);
 }
@@ -266,6 +271,31 @@ Quat Lerp(const Quat &a, const Quat &b, float t)
 Quat Slerp(const Quat &a, const Quat &b, float t)
 {
 	return a.Slerp(b, t);
+}
+
+float3 MUST_USE_RESULT Quat::SlerpVector(const float3 &from, const float3 &to, float t)
+{
+	if (t <= 0.f)
+		return from;
+	if (t >= 1.f)
+		return to;
+	///\todo The following chain can be greatly optimized.
+	Quat q = Quat::RotateFromTo(from, to);
+	q = Slerp(Quat::identity, q, t);
+	return q.Transform(from);
+}
+
+float3 MUST_USE_RESULT Quat::SlerpVectorAbs(const float3 &from, const float3 &to, float angleRadians)
+{
+	if (angleRadians <= 0.f)
+		return from;
+	Quat q = Quat::RotateFromTo(from, to);
+	float a = q.Angle();
+	if (a <= angleRadians)
+		return to;
+	float t = angleRadians / a;
+	q = Slerp(Quat::identity, q, t);
+	return q.Transform(from);
 }
 
 float Quat::AngleBetween(const Quat &target) const
@@ -303,7 +333,7 @@ void Quat::ToAxisAngle(float3 &axis, float &angle) const
 void Quat::SetFromAxisAngle(const float3 &axis, float angle)
 {
 	assume(axis.IsNormalized());
-	assume(isfinite(angle));
+	assume(MATH_NS::IsFinite(angle));
 	float cosz = Cos(angle/2.f);
 	float sinz = Sin(angle/2.f);
 	x = axis.x * sinz;
@@ -322,7 +352,7 @@ void SetQuatFrom(Quat &q, const M &m)
 	//    2xz - 2wy           2yz + 2wx         1 - 2x^2 - 2y^2
 
 	float r = m[0][0] + m[1][1] + m[2][2]; // The element w is easiest picked up as a sum of the diagonals.
-	// Above, r == 3 - 4(x^2+y^2+z^2) == 4(1-x^2-y^2-z^2) - 1 == 4*w^2 - 1. 
+	// Above, r == 3 - 4(x^2+y^2+z^2) == 4(1-x^2-y^2-z^2) - 1 == 4*w^2 - 1.
 	if (r > 0) // In this case, |w| > 1/2.
 	{
 		q.w = sqrtf(r + 1.f) * 0.5f; // We have two choices for the sign of w, arbitrarily pick the positive.
@@ -357,6 +387,7 @@ void SetQuatFrom(Quat &q, const M &m)
 	}
 	float oldLength = q.Normalize();
 	assume(oldLength > 0.f);
+	MARK_UNUSED(oldLength);
 }
 
 void Quat::Set(const float3x3 &m)
@@ -368,7 +399,6 @@ void Quat::Set(const float3x3 &m)
 
 #ifdef MATH_ASSERT_CORRECTNESS
 	// Test that the conversion float3x3->Quat->float3x3 is correct.
-	float3x3 f = this->ToFloat3x3();
 	mathassert(this->ToFloat3x3().Equals(m, 0.01f));
 #endif
 }
@@ -408,32 +438,32 @@ void Quat::Set(float x_, float y_, float z_, float w_)
 	w = w_;
 }
 
-Quat Quat::LookAt(const float3 &localForward, const float3 &targetDirection, const float3 &localUp, const float3 &worldUp)
+Quat MUST_USE_RESULT Quat::LookAt(const float3 &localForward, const float3 &targetDirection, const float3 &localUp, const float3 &worldUp)
 {
 	return float3x3::LookAt(localForward, targetDirection, localUp, worldUp).ToQuat();
 }
 
-Quat Quat::RotateX(float angle)
+Quat MUST_USE_RESULT Quat::RotateX(float angle)
 {
 	return Quat(float3(1,0,0), angle);
 }
 
-Quat Quat::RotateY(float angle)
+Quat MUST_USE_RESULT Quat::RotateY(float angle)
 {
 	return Quat(float3(0,1,0), angle);
 }
 
-Quat Quat::RotateZ(float angle)
+Quat MUST_USE_RESULT Quat::RotateZ(float angle)
 {
 	return Quat(float3(0,0,1), angle);
 }
 
-Quat Quat::RotateAxisAngle(const float3 &axis, float angle)
+Quat MUST_USE_RESULT Quat::RotateAxisAngle(const float3 &axis, float angle)
 {
 	return Quat(axis, angle);
 }
 
-Quat Quat::RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection)
+Quat MUST_USE_RESULT Quat::RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection)
 {
 	assume(sourceDirection.IsNormalized());
 	assume(targetDirection.IsNormalized());
@@ -447,26 +477,26 @@ Quat Quat::RotateFromTo(const float3 &sourceDirection, const float3 &targetDirec
 	return Quat(axis, angle);
 }
 
-Quat Quat::RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection,
+Quat MUST_USE_RESULT Quat::RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection,
 	const float3 &sourceDirection2, const float3 &targetDirection2)
 {
 	return LookAt(sourceDirection, targetDirection, sourceDirection2, targetDirection2);
 }
 
-Quat Quat::FromEulerXYX(float x2, float y, float x) { return (Quat::RotateX(x2) * Quat::RotateY(y) * Quat::RotateX(x)).Normalized(); }
-Quat Quat::FromEulerXZX(float x2, float z, float x) { return (Quat::RotateX(x2) * Quat::RotateZ(z) * Quat::RotateX(x)).Normalized(); }
-Quat Quat::FromEulerYXY(float y2, float x, float y) { return (Quat::RotateY(y2) * Quat::RotateX(x) * Quat::RotateY(y)).Normalized(); }
-Quat Quat::FromEulerYZY(float y2, float z, float y) { return (Quat::RotateY(y2) * Quat::RotateZ(z) * Quat::RotateY(y)).Normalized(); }
-Quat Quat::FromEulerZXZ(float z2, float x, float z) { return (Quat::RotateZ(z2) * Quat::RotateX(x) * Quat::RotateZ(z)).Normalized(); }
-Quat Quat::FromEulerZYZ(float z2, float y, float z) { return (Quat::RotateZ(z2) * Quat::RotateY(y) * Quat::RotateZ(z)).Normalized(); }
-Quat Quat::FromEulerXYZ(float x, float y, float z) { return (Quat::RotateX(x) * Quat::RotateY(y) * Quat::RotateZ(z)).Normalized(); }
-Quat Quat::FromEulerXZY(float x, float z, float y) { return (Quat::RotateX(x) * Quat::RotateZ(z) * Quat::RotateY(y)).Normalized(); }
-Quat Quat::FromEulerYXZ(float y, float x, float z) { return (Quat::RotateY(y) * Quat::RotateX(x) * Quat::RotateZ(z)).Normalized(); }
-Quat Quat::FromEulerYZX(float y, float z, float x) { return (Quat::RotateY(y) * Quat::RotateZ(z) * Quat::RotateX(x)).Normalized(); }
-Quat Quat::FromEulerZXY(float z, float x, float y) { return (Quat::RotateZ(z) * Quat::RotateX(x) * Quat::RotateY(y)).Normalized(); }
-Quat Quat::FromEulerZYX(float z, float y, float x) { return (Quat::RotateZ(z) * Quat::RotateY(y) * Quat::RotateX(x)).Normalized(); }
+Quat MUST_USE_RESULT Quat::FromEulerXYX(float x2, float y, float x) { return (Quat::RotateX(x2) * Quat::RotateY(y) * Quat::RotateX(x)).Normalized(); }
+Quat MUST_USE_RESULT Quat::FromEulerXZX(float x2, float z, float x) { return (Quat::RotateX(x2) * Quat::RotateZ(z) * Quat::RotateX(x)).Normalized(); }
+Quat MUST_USE_RESULT Quat::FromEulerYXY(float y2, float x, float y) { return (Quat::RotateY(y2) * Quat::RotateX(x) * Quat::RotateY(y)).Normalized(); }
+Quat MUST_USE_RESULT Quat::FromEulerYZY(float y2, float z, float y) { return (Quat::RotateY(y2) * Quat::RotateZ(z) * Quat::RotateY(y)).Normalized(); }
+Quat MUST_USE_RESULT Quat::FromEulerZXZ(float z2, float x, float z) { return (Quat::RotateZ(z2) * Quat::RotateX(x) * Quat::RotateZ(z)).Normalized(); }
+Quat MUST_USE_RESULT Quat::FromEulerZYZ(float z2, float y, float z) { return (Quat::RotateZ(z2) * Quat::RotateY(y) * Quat::RotateZ(z)).Normalized(); }
+Quat MUST_USE_RESULT Quat::FromEulerXYZ(float x, float y, float z) { return (Quat::RotateX(x) * Quat::RotateY(y) * Quat::RotateZ(z)).Normalized(); }
+Quat MUST_USE_RESULT Quat::FromEulerXZY(float x, float z, float y) { return (Quat::RotateX(x) * Quat::RotateZ(z) * Quat::RotateY(y)).Normalized(); }
+Quat MUST_USE_RESULT Quat::FromEulerYXZ(float y, float x, float z) { return (Quat::RotateY(y) * Quat::RotateX(x) * Quat::RotateZ(z)).Normalized(); }
+Quat MUST_USE_RESULT Quat::FromEulerYZX(float y, float z, float x) { return (Quat::RotateY(y) * Quat::RotateZ(z) * Quat::RotateX(x)).Normalized(); }
+Quat MUST_USE_RESULT Quat::FromEulerZXY(float z, float x, float y) { return (Quat::RotateZ(z) * Quat::RotateX(x) * Quat::RotateY(y)).Normalized(); }
+Quat MUST_USE_RESULT Quat::FromEulerZYX(float z, float y, float x) { return (Quat::RotateZ(z) * Quat::RotateY(y) * Quat::RotateX(x)).Normalized(); }
 
-Quat Quat::RandomRotation(LCG &lcg)
+Quat MUST_USE_RESULT Quat::RandomRotation(LCG &lcg)
 {
 	// Generate a random point on the 4D unitary hypersphere using the rejection sampling method.
 	for(int i = 0; i < 1000; ++i)
@@ -485,43 +515,43 @@ Quat Quat::RandomRotation(LCG &lcg)
 
 ///@todo the following could be heavily optimized. Don't route through float3x3 conversion.
 
-float3 Quat::ToEulerXYX() const { return ToFloat3x3().ToEulerXYX(); }
-float3 Quat::ToEulerXZX() const { return ToFloat3x3().ToEulerXZX(); }
-float3 Quat::ToEulerYXY() const { return ToFloat3x3().ToEulerYXY(); }
-float3 Quat::ToEulerYZY() const { return ToFloat3x3().ToEulerYZY(); }
-float3 Quat::ToEulerZXZ() const { return ToFloat3x3().ToEulerZXZ(); }
-float3 Quat::ToEulerZYZ() const { return ToFloat3x3().ToEulerZYZ(); }
-float3 Quat::ToEulerXYZ() const { return ToFloat3x3().ToEulerXYZ(); }
-float3 Quat::ToEulerXZY() const { return ToFloat3x3().ToEulerXZY(); }
-float3 Quat::ToEulerYXZ() const { return ToFloat3x3().ToEulerYXZ(); }
-float3 Quat::ToEulerYZX() const { return ToFloat3x3().ToEulerYZX(); }
-float3 Quat::ToEulerZXY() const { return ToFloat3x3().ToEulerZXY(); }
-float3 Quat::ToEulerZYX() const { return ToFloat3x3().ToEulerZYX(); }
+float3 MUST_USE_RESULT Quat::ToEulerXYX() const { return ToFloat3x3().ToEulerXYX(); }
+float3 MUST_USE_RESULT Quat::ToEulerXZX() const { return ToFloat3x3().ToEulerXZX(); }
+float3 MUST_USE_RESULT Quat::ToEulerYXY() const { return ToFloat3x3().ToEulerYXY(); }
+float3 MUST_USE_RESULT Quat::ToEulerYZY() const { return ToFloat3x3().ToEulerYZY(); }
+float3 MUST_USE_RESULT Quat::ToEulerZXZ() const { return ToFloat3x3().ToEulerZXZ(); }
+float3 MUST_USE_RESULT Quat::ToEulerZYZ() const { return ToFloat3x3().ToEulerZYZ(); }
+float3 MUST_USE_RESULT Quat::ToEulerXYZ() const { return ToFloat3x3().ToEulerXYZ(); }
+float3 MUST_USE_RESULT Quat::ToEulerXZY() const { return ToFloat3x3().ToEulerXZY(); }
+float3 MUST_USE_RESULT Quat::ToEulerYXZ() const { return ToFloat3x3().ToEulerYXZ(); }
+float3 MUST_USE_RESULT Quat::ToEulerYZX() const { return ToFloat3x3().ToEulerYZX(); }
+float3 MUST_USE_RESULT Quat::ToEulerZXY() const { return ToFloat3x3().ToEulerZXY(); }
+float3 MUST_USE_RESULT Quat::ToEulerZYX() const { return ToFloat3x3().ToEulerZYX(); }
 
-float3x3 Quat::ToFloat3x3() const
+float3x3 MUST_USE_RESULT Quat::ToFloat3x3() const
 {
 	return float3x3(*this);
 }
 
-float3x4 Quat::ToFloat3x4() const
+float3x4 MUST_USE_RESULT Quat::ToFloat3x4() const
 {
 	return float3x4(*this);
 }
 
-float4x4 Quat::ToFloat4x4() const
+float4x4 MUST_USE_RESULT Quat::ToFloat4x4() const
 {
 	return float4x4(*this);
 }
 
 #ifdef MATH_ENABLE_STL_SUPPORT
-std::string Quat::ToString() const
+std::string MUST_USE_RESULT Quat::ToString() const
 {
 	char str[256];
 	sprintf(str, "(%.3f, %.3f, %.3f, %.3f)", x, y, z, w);
 	return str;
 }
 
-std::string Quat::ToString2() const
+std::string MUST_USE_RESULT Quat::ToString2() const
 {
 	float3 axis;
 	float angle;
@@ -531,7 +561,7 @@ std::string Quat::ToString2() const
 	return str;
 }
 
-std::string Quat::SerializeToString() const
+std::string MUST_USE_RESULT Quat::SerializeToString() const
 {
 	char str[256];
 	sprintf(str, "%f %f %f %f", x, y, z, w);
@@ -546,7 +576,7 @@ std::string Quat::SerializeToStringWXYZ() const
 }
 #endif
 
-Quat Quat::FromString(const char *str)
+Quat MUST_USE_RESULT Quat::FromString(const char *str)
 {
 	assume(str);
 	if (!str)
@@ -555,12 +585,18 @@ Quat Quat::FromString(const char *str)
 		++str;
 	Quat q;
 	q.x = (float)strtod(str, const_cast<char**>(&str));
+	while(*str == ' ' || *str == '\t') ///\todo Propagate this to other FromString functions.
+		++str;
 	if (*str == ',' || *str == ';')
 		++str;
 	q.y = (float)strtod(str, const_cast<char**>(&str));
+	while(*str == ' ' || *str == '\t')
+		++str;
 	if (*str == ',' || *str == ';')
 		++str;
 	q.z = (float)strtod(str, const_cast<char**>(&str));
+	while(*str == ' ' || *str == '\t')
+		++str;
 	if (*str == ',' || *str == ';')
 		++str;
 	q.w = (float)strtod(str, const_cast<char**>(&str));
@@ -583,7 +619,7 @@ Quat Quat::operator *(float scalar) const
 }
 
 float3 Quat::operator *(const float3 &rhs) const
-{ 
+{
 	return Mul(rhs);
 }
 
@@ -616,10 +652,10 @@ std::ostream &operator <<(std::ostream &out, const Quat &rhs)
 }
 #endif
 
-Quat Quat::Mul(const Quat &rhs) const { return *this * rhs; } 
-Quat Quat::Mul(const float3x3 &rhs) const { return *this * Quat(rhs); } 
-float3 Quat::Mul(const float3 &vector) const { return this->Transform(vector); }
-float4 Quat::Mul(const float4 &vector) const { return this->Transform(vector); }
+Quat MUST_USE_RESULT Quat::Mul(const Quat &rhs) const { return *this * rhs; }
+Quat MUST_USE_RESULT Quat::Mul(const float3x3 &rhs) const { return *this * Quat(rhs); }
+float3 MUST_USE_RESULT Quat::Mul(const float3 &vector) const { return this->Transform(vector); }
+float4 MUST_USE_RESULT Quat::Mul(const float4 &vector) const { return this->Transform(vector); }
 
 const Quat Quat::identity = Quat(0.f, 0.f, 0.f, 1.f);
 const Quat Quat::nan = Quat(FLOAT_NAN, FLOAT_NAN, FLOAT_NAN, FLOAT_NAN);

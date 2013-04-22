@@ -17,6 +17,8 @@
 #endif
 #endif
 
+#include <cfloat>
+
 #include "MemoryLeakCheck.h"
 
 static const float cMinimumRollOff = 0.1f;
@@ -226,9 +228,9 @@ void SoundChannel::SetMasterGain(float masterGain)
 
 void SoundChannel::SetRange(float inner_radius, float outer_radius, float rolloff)
 {
-    inner_radius_ = Clamp(inner_radius, 0.f, FLOAT_MAX);
-    outer_radius_ = Clamp(outer_radius, 0.f, FLOAT_MAX);
-    rolloff_ = Clamp(rolloff, cMinimumRollOff, FLOAT_MAX);
+    inner_radius_ = Clamp(inner_radius, 0.f, FLT_MAX);
+    outer_radius_ = Clamp(outer_radius, 0.f, FLT_MAX);
+    rolloff_ = Clamp(rolloff, cMinimumRollOff, FLT_MAX);
 }
 
 void SoundChannel::SetPositionAndMode()

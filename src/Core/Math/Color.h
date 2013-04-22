@@ -16,6 +16,10 @@
 #include <OgreColourValue.h>
 #endif
 
+#include "Math/MathNamespace.h"
+
+MATH_BEGIN_NAMESPACE
+
 class float4;
 
 /// A 4-component color value, component values are floating-points [0.0, 1.0].
@@ -103,3 +107,5 @@ public:
 Q_DECLARE_METATYPE(Color)
 Q_DECLARE_METATYPE(Color*)
 #endif
+
+MATH_END_NAMESPACE

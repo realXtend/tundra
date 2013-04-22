@@ -68,7 +68,7 @@ static QScriptValue float4_At_int_const(QScriptContext *context, QScriptEngine *
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_At_int_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     int index = qscriptvalue_cast<int>(context->argument(0));
-    CONST_WIN32 float ret = This.At(index);
+     float ret = This.At(index);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -162,6 +162,14 @@ static QScriptValue float4_DivLeft_float_const(QScriptContext *context, QScriptE
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float4_xy_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_xy_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float4 This = qscriptvalue_cast<float4>(context->thisObject());
+    float2 ret = This.xy();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float4_xyz_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_xyz_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -170,13 +178,15 @@ static QScriptValue float4_xyz_const(QScriptContext *context, QScriptEngine *eng
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float4_Swizzled_int_int_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float4_Swizzled_int_int_int_int_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_Swizzled_int_int_const in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function float4_Swizzled_int_int_int_int_const in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     int i = qscriptvalue_cast<int>(context->argument(0));
     int j = qscriptvalue_cast<int>(context->argument(1));
-    float2 ret = This.Swizzled(i, j);
+    int k = qscriptvalue_cast<int>(context->argument(2));
+    int l = qscriptvalue_cast<int>(context->argument(3));
+    float4 ret = This.Swizzled(i, j, k, l);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -191,15 +201,13 @@ static QScriptValue float4_Swizzled_int_int_int_const(QScriptContext *context, Q
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue float4_Swizzled_int_int_int_int_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue float4_Swizzled_int_int_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function float4_Swizzled_int_int_int_int_const in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function float4_Swizzled_int_int_const in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     int i = qscriptvalue_cast<int>(context->argument(0));
     int j = qscriptvalue_cast<int>(context->argument(1));
-    int k = qscriptvalue_cast<int>(context->argument(2));
-    int l = qscriptvalue_cast<int>(context->argument(3));
-    float4 ret = This.Swizzled(i, j, k, l);
+    float2 ret = This.Swizzled(i, j);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -307,9 +315,9 @@ static QScriptValue float4_NormalizeW(QScriptContext *context, QScriptEngine *en
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_NormalizeW in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
-    bool ret = This.NormalizeW();
+    This.NormalizeW();
     ToExistingScriptValue_float4(engine, This, context->thisObject());
-    return qScriptValueFromValue(engine, ret);
+    return QScriptValue();
 }
 
 static QScriptValue float4_IsWZeroOrOne_float_const(QScriptContext *context, QScriptEngine *engine)
@@ -500,6 +508,14 @@ static QScriptValue float4_Recip4_const(QScriptContext *context, QScriptEngine *
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue float4_RecipFast4_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float4_RecipFast4_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float4 This = qscriptvalue_cast<float4>(context->thisObject());
+    float4 ret = This.RecipFast4();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue float4_Min_float_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Min_float_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -589,6 +605,24 @@ static QScriptValue float4_Distance3_float4_const(QScriptContext *context, QScri
     float4 This = qscriptvalue_cast<float4>(context->thisObject());
     float4 rhs = qscriptvalue_cast<float4>(context->argument(0));
     float ret = This.Distance3(rhs);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue float4_Distance4Sq_float4_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Distance4Sq_float4_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float4 This = qscriptvalue_cast<float4>(context->thisObject());
+    float4 rhs = qscriptvalue_cast<float4>(context->argument(0));
+    float ret = This.Distance4Sq(rhs);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue float4_Distance4_float4_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function float4_Distance4_float4_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    float4 This = qscriptvalue_cast<float4>(context->thisObject());
+    float4 rhs = qscriptvalue_cast<float4>(context->argument(0));
+    float ret = This.Distance4(rhs);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -893,12 +927,12 @@ static QScriptValue float4_Div_selector(QScriptContext *context, QScriptEngine *
 
 static QScriptValue float4_Swizzled_selector(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() == 2 && QSVIsOfType<int>(context->argument(0)) && QSVIsOfType<int>(context->argument(1)))
-        return float4_Swizzled_int_int_const(context, engine);
-    if (context->argumentCount() == 3 && QSVIsOfType<int>(context->argument(0)) && QSVIsOfType<int>(context->argument(1)) && QSVIsOfType<int>(context->argument(2)))
-        return float4_Swizzled_int_int_int_const(context, engine);
     if (context->argumentCount() == 4 && QSVIsOfType<int>(context->argument(0)) && QSVIsOfType<int>(context->argument(1)) && QSVIsOfType<int>(context->argument(2)) && QSVIsOfType<int>(context->argument(3)))
         return float4_Swizzled_int_int_int_int_const(context, engine);
+    if (context->argumentCount() == 3 && QSVIsOfType<int>(context->argument(0)) && QSVIsOfType<int>(context->argument(1)) && QSVIsOfType<int>(context->argument(2)))
+        return float4_Swizzled_int_int_int_const(context, engine);
+    if (context->argumentCount() == 2 && QSVIsOfType<int>(context->argument(0)) && QSVIsOfType<int>(context->argument(1)))
+        return float4_Swizzled_int_int_const(context, engine);
     printf("float4_Swizzled_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
@@ -1019,10 +1053,11 @@ QScriptValue register_float4_prototype(QScriptEngine *engine)
     proto.setProperty("Mul", engine->newFunction(float4_Mul_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Div", engine->newFunction(float4_Div_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("DivLeft", engine->newFunction(float4_DivLeft_float_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("xy", engine->newFunction(float4_xy_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("xyz", engine->newFunction(float4_xyz_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("Swizzled", engine->newFunction(float4_Swizzled_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("Swizzled", engine->newFunction(float4_Swizzled_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Swizzled", engine->newFunction(float4_Swizzled_selector, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Swizzled", engine->newFunction(float4_Swizzled_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Swizzled", engine->newFunction(float4_Swizzled_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetFromScalar", engine->newFunction(float4_SetFromScalar_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("SetFromScalar", engine->newFunction(float4_SetFromScalar_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Set", engine->newFunction(float4_Set_float_float_float_float, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -1057,6 +1092,7 @@ QScriptValue register_float4_prototype(QScriptEngine *engine)
     proto.setProperty("Neg4", engine->newFunction(float4_Neg4_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Recip3", engine->newFunction(float4_Recip3_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Recip4", engine->newFunction(float4_Recip4_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("RecipFast4", engine->newFunction(float4_RecipFast4_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Min", engine->newFunction(float4_Min_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Max", engine->newFunction(float4_Max_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Clamp", engine->newFunction(float4_Clamp_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -1064,6 +1100,8 @@ QScriptValue register_float4_prototype(QScriptEngine *engine)
     proto.setProperty("Lerp", engine->newFunction(float4_Lerp_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Distance3Sq", engine->newFunction(float4_Distance3Sq_float4_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Distance3", engine->newFunction(float4_Distance3_float4_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Distance4Sq", engine->newFunction(float4_Distance4Sq_float4_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Distance4", engine->newFunction(float4_Distance4_float4_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Dot3", engine->newFunction(float4_Dot3_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Dot4", engine->newFunction(float4_Dot4_float4_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Cross3", engine->newFunction(float4_Cross3_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);

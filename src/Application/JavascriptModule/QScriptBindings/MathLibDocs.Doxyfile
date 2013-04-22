@@ -638,7 +638,7 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = ../../../Core/Framework/Transform.h \
+INPUT                  = ../../../Core/TundraCore/Framework/Transform.h \
                          ../../../Core/Math
 
 # This tag can be used to specify the character encoding of the source files 

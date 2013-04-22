@@ -1,4 +1,28 @@
+/* Copyright Jukka Jylänki
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License. */
+
+/** @file KDTree.inl
+	@author Jukka Jylänki
+	@brief Implementation for the KDTree object. */
 #pragma once
+
+#include "OBB.h"
+#include "Ray.h"
+#include "Math/MathConstants.h"
+#include "Math/MathFunc.h"
+
+MATH_BEGIN_NAMESPACE
 
 template<typename T>
 int KdTree<T>::AllocateNodePair()
@@ -13,7 +37,7 @@ int KdTree<T>::AllocateNodePair()
 }
 
 template<typename T>
-void KdTree<T>::Clear()
+void KdTree<T>::FreeBuckets()
 {
 	for(size_t i = 0; i < buckets.size(); ++i)
 		delete[] buckets[i];
@@ -58,10 +82,6 @@ void KdTree<T>::SplitLeaf(int nodeIndex, const AABB &nodeAABB, int numObjectsInB
 	u32 *leftBucket = new u32[numObjectsInBucket+1];
 	u32 *rightBucket = new u32[numObjectsInBucket+1];
 
-	int leftIdx = 0;
-    (void)leftIdx;
-	int rightIdx = 0;
-    (void)rightIdx;
 	u32 *curObject = buckets[curBucketIndex];
 	u32 *l = leftBucket;
 	u32 *r = rightBucket;
@@ -70,26 +90,16 @@ void KdTree<T>::SplitLeaf(int nodeIndex, const AABB &nodeAABB, int numObjectsInB
 	while(*curObject != BUCKET_SENTINEL)
 	{
 		AABB aabb = objects[*curObject].BoundingAABB();
-        bool placed = false;
 		if (leftAABB.Intersects(aabb))
 		{
 			*l++ = *curObject;
 			++numObjectsLeft;
-            placed = true;
 		}
 		if (rightAABB.Intersects(aabb))
 		{
 			*r++ = *curObject;
 			++numObjectsRight;
-            placed = true;
 		}
-        if (!placed) // Numerical precision issues: bounding box doesn't intersect either anymore, so place into both children.
-        {
-			*l++ = *curObject;
-			++numObjectsLeft;
-			*r++ = *curObject;
-			++numObjectsRight;
-        }
 		++curObject;
 	}
 	*l = BUCKET_SENTINEL;
@@ -139,7 +149,7 @@ void KdTree<T>::SplitLeaf(int nodeIndex, const AABB &nodeAABB, int numObjectsInB
 template<typename T>
 KdTree<T>::~KdTree()
 {
-	Clear();
+	FreeBuckets();
 }
 
 template<typename T>
@@ -225,10 +235,16 @@ void KdTree<T>::AddObjects(const T *objects_, int numObjects)
 }
 
 template<typename T>
+void KdTree<T>::Clear()
+{
+    FreeBuckets();
+}
+
+template<typename T>
 void KdTree<T>::Build()
 {
 	nodes.clear();
-	Clear();
+	FreeBuckets();
 
 	// Allocate a dummy node to be stored at index 0 (for safety).
 	KdTreeNode dummy;
@@ -251,7 +267,7 @@ void KdTree<T>::Build()
 	u32 *rootBucket = new u32[objects.size()+1];
 	for(size_t i = 0; i < objects.size(); ++i)
 		rootBucket[i] = i;
-	rootBucket[objects.size()] = BUCKET_SENTINEL;
+	rootBucket[objects.size()] = -1; // The value -1 acts as a terminating sentinel index value.
 	buckets.push_back(rootBucket);
 
 	rootAABB = BoundingAABB(rootBucket);
@@ -289,20 +305,15 @@ bool KdTree<T>::IsPartOfThisTree(const KdTreeNode *root, const KdTreeNode *node)
 	return IsPartOfThisTree(&nodes[root->LeftChildIndex()], node) || IsPartOfThisTree(&nodes[root->RightChildIndex()], node);
 }
 
-static const float travelEpsilon = 1e-4f;
-
 // The "recursive B" method from Vlastimil Havran's thesis.
 template<typename T>
 template<typename Func>
 inline void KdTree<T>::RayQuery(const Ray &r, Func &nodeProcessFunc)
 {
-	float tNear, tFar;
+	float tNear = 0.f, tFar = FLOAT_INF;
 
-	if (!rootAABB.Intersects(r, &tNear, &tFar))
+	if (!rootAABB.IntersectLineAABB(r.pos, r.dir, tNear, tFar))
 		return; // The ray doesn't intersect the root, therefore no collision.
-
-    // We are performing a ray query - ignore any hits behind the ray starting position.
-    tNear = Max(tNear, 0.f);
 
 	static const CardinalAxis axes[] = { AxisX, AxisY, AxisZ, AxisX, AxisY };
 
@@ -323,9 +334,11 @@ inline void KdTree<T>::RayQuery(const Ray &r, Func &nodeProcessFunc)
 	StackPtr entryPoint = 0;
 	stack[entryPoint].t = tNear;
 
+    const float travelEpsilon = 1e-4f;
+
 	// Check if the ray has internal or external origin relative to the scene root node.
 	if (tNear >= 0.f)
-		stack[entryPoint].pos = r.pos + tNear * r.dir;//(tNear + travelEpsilon) * r.dir;
+		stack[entryPoint].pos = r.pos + (tNear + travelEpsilon) * r.dir;
 	else
 		stack[entryPoint].pos = r.pos;
 
@@ -460,6 +473,8 @@ inline void KdTree<T>::AABBQuery(const AABB &aabb, Func &leafCallback)
 	}
 }
 
+#if 0 ///\bug Doesn't work properly. Fix up!
+
 struct StackElem
 {
 	KdTreeNode *thisNode;
@@ -470,10 +485,9 @@ struct StackElem
 };
 
 ///\todo Fix up thread-safety!
-static const int cMaxStackItems = 50*2;
-//StackElem stack[cMaxStackItems*1000];
+const int cMaxStackItems = 50*2;
+StackElem stack[cMaxStackItems*1000];
 
-#if 0 ///\bug Doesn't work properly. Fix up!
 
 template<typename T>
 template<typename Func>
@@ -494,7 +508,7 @@ inline void KdTree<T>::KdTreeQuery(KdTree<T> &tree2, const float3x4 &thisWorldTr
 
 	while(stackSize > 0)
 	{
-		assert(stackSize < cMaxStackItems*100); 
+		assert(stackSize < cMaxStackItems*100);
 		--stackSize;
 		KdTreeNode *thisNode = stack[stackSize].thisNode;
 		KdTreeNode *tree2Node = stack[stackSize].tree2Node;
@@ -628,21 +642,21 @@ inline void KdTree<T>::KdTreeQuery(KdTree<T> &tree2, const float3x4 &thisWorldTr
 #endif
 
 #ifdef MATH_CONTAINERLIB_SUPPORT
+struct NearestObjectsTraversalNode
+{
+	float d;
+	AABB aabb;
+	KdTreeNode *node;
+
+	bool operator <(const NearestObjectsTraversalNode &t) const { return d > t.d; }
+};
+
 template<typename T>
 template<typename Func>
 inline void KdTree<T>::NearestObjects(const float3 &point, Func &leafCallback)
 {
-	struct TraversalNode
-	{
-		float d;
-		AABB aabb;
-		KdTreeNode *node;
-
-		bool operator <(const TraversalNode &t) const { return d > t.d; }
-	};
-
-	MaxHeap<TraversalNode> queue;
-	TraversalNode t;
+	MaxHeap<NearestObjectsTraversalNode> queue;
+	NearestObjectsTraversalNode t;
 	t.d = 0.f;
 	t.aabb = BoundingAABB();
 	t.node = Root();
@@ -657,7 +671,7 @@ inline void KdTree<T>::NearestObjects(const float3 &point, Func &leafCallback)
 			leafCallback(*this, point, *t.node, t.aabb, t.d);
 		else
 		{
-			TraversalNode n;
+			NearestObjectsTraversalNode n;
 
 			// Insert left child node to the traversal queue.
 			n.aabb = t.aabb;
@@ -676,3 +690,5 @@ inline void KdTree<T>::NearestObjects(const float3 &point, Func &leafCallback)
 	}
 }
 #endif
+
+MATH_END_NAMESPACE

@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ MATH_BEGIN_NAMESPACE
    at least 3 vertices (a triangle).
 
    Well-formed polygons are always planar, i.e. all the vertices lie on the same plane. It is possible
-   to store non-planar Polygons in this structure, but their representation is ambiguous, and for all practical 
+   to store non-planar Polygons in this structure, but their representation is ambiguous, and for all practical
    purposes, should be avoided. */
 class Polygon
 {
@@ -49,7 +49,7 @@ public:
 		@see Edge(), NumVertices(). */
 	int NumEdges() const;
 
-	/// Returns the number of vertices in this polygon. 
+	/// Returns the number of vertices in this polygon.
 	/** Since the polygon is always closed and connected, the number of edges is equal to the number of vertices.
 		@see p, Vertex(), NumVertices(). */
 	int NumVertices() const;
@@ -92,10 +92,19 @@ public:
 		this point is not necessarily unique.
 		@param direction The direction vector of the direction to find the extreme point. This vector may
 			be unnormalized, but may not be null.
-		@return An extreme point of this Polygon in the given direction. The returned point is always a 
+		@return An extreme point of this Polygon in the given direction. The returned point is always a
 			vertex of this Polygon.
 		@see Vertex(). */
 	float3 ExtremePoint(const float3 &direction) const;
+
+	/// Projects this Polygon onto the given 1D axis direction vector.
+	/** This function collapses this Polygon onto an 1D axis for the purposes of e.g. separate axis test computations.
+		The function returns a 1D range [outMin, outMax] denoting the interval of the projection.
+		@param direction The 1D axis to project to. This vector may be unnormalized, in which case the output
+			of this function gets scaled by the length of this vector.
+		@param outMin [out] Returns the minimum extent of this object along the projection axis.
+		@param outMax [out] Returns the maximum extent of this object along the projection axis. */
+	void ProjectToAxis(const float3 &direction, float &outMin, float &outMax) const;
 
 	/// Tests if the given diagonal exists.
 	/** This function tests whether the diagonal that joins the two given vertices lies inside this polygon and is not intersected
@@ -118,7 +127,7 @@ public:
 		@param i Index of the first endpoint of the diagonal LineSegment, in the range [0, NumVertices-1].
 		@param j Index of the second endpoint of the diagonal LineSegment, in the range [0, NumVertices-1].
 		@note Whereas it is invalid to call DiagonalExists() with values |i-j|<=1, it is acceptable for this function. This is to
-			simplify generation of code that iterates over diagonal vertex pairs.	  
+			simplify generation of code that iterates over diagonal vertex pairs.	
 		@return LineSegment(Vertex(i), Vertex(j)) without checking if this actually is a valid diagonal of this polygon. If
 			indices outside the valid range are passed, LineSegment(nan, nan) is returned.
 		@see Vertex(), NumVertices(), DiagonalExists(). */
@@ -135,8 +144,8 @@ public:
 
 	/// Tests if this polygon is planar.
 	/** A polygon is planar if all its vertices lie on the same plane.
-		@note Almost all functions in this class require that the polygon is planar. While you can store vertices of 
-			non-planar polygons in this class, they are better avoided. Read the member function documentation carefully 
+		@note Almost all functions in this class require that the polygon is planar. While you can store vertices of
+			non-planar polygons in this class, they are better avoided. Read the member function documentation carefully
 			to avoid calling for non-planar polygons any functions which assume planarity.
 		@see IsConvex(), IsSimple(), IsNull(), IsFinite(), IsDegenerate(). */
 	bool IsPlanar(float epsilon = 1e-3f) const;
@@ -145,7 +154,7 @@ public:
 		A polygon is simple if no two nonconsecutive edges have a point in common.
 		In other words, a planar polygon is simple if its edges do not self-intersect, and if each vertex is joined by
 		exactly two edges.
-		@note This function assumes that the polygon is planar. 
+		@note This function assumes that the polygon is planar.
 		@see IsConvex(), IsPlanar(), IsNull(), IsFinite(), IsDegenerate(). */
 	bool IsSimple() const;
 
@@ -158,7 +167,7 @@ public:
 	/// Tests if this polygon is finite.
 	/** A polygon is finite if each of its vertices have finite floating point coordinates (no nans or infs).
 		@note The null polygon is finite.
-		@see p, IsConvex(), IsPlanar(), IsSimple(), IsNull(), IsDegenerate(), ::IsFinite(), IsInf(), IsNan(), isfinite(), inf, negInf, nan, float3::nan, float3::inf. */
+		@see p, IsConvex(), IsPlanar(), IsSimple(), IsNull(), IsDegenerate(), ::IsFinite(), IsInf(), IsNan(), IsFinite(), inf, negInf, nan, float3::nan, float3::inf. */
 	bool IsFinite() const;
 
 	/// Tests if this polygon is degenerate.
@@ -200,7 +209,7 @@ public:
 		@note Only call this function if this Polygon is planar. */
 	float3 NormalCCW() const;
 	/// Computes the normal of this polygon in clockwise direction. [similarOverload: NormalCCW]
-	/** @return The normal of this polygon in clockwise direction. This vector is normalized and points to the direction 
+	/** @return The normal of this polygon in clockwise direction. This vector is normalized and points to the direction
 		from which observed the vertices of this polygon wind in clockwise order.
 		@note Only call this function if this Polygon is planar.
 		@note These two functions follow the relation NormalCCW() == -NormalCW().
@@ -218,6 +227,19 @@ public:
 		@see NormalCCW(), NormalCW(). */
 	Plane PlaneCW() const;
 
+	/// Translates this Polygon in world space.
+	/** @param offset The amount of displacement to apply to this Polygon, in world space coordinates.
+		@see Transform(). */
+	void Translate(const float3 &offset);
+
+	/// Applies a transformation to this Polygon.
+	/** This function operates in-place.
+		@see Translate(), classes float3x3, float3x4, float4x4, Quat. */
+	void Transform(const float3x3 &transform);
+	void Transform(const float3x4 &transform);
+	void Transform(const float4x4 &transform);
+	void Transform(const Quat &transform);
+
 	// Returns true if the edges of this polygon self-intersect.
 //	bool IsSelfIntersecting() const;
 
@@ -232,8 +254,9 @@ public:
 
 	/// Tests if the given object, expressed in global (world) space, is fully contained inside this polygon.
 	/** Only call this function if the polygon is planar.
-		This test is performed in global space of this polygon, i.e. by specifying the other object in global (world) 
+		This test is performed in global space of this polygon, i.e. by specifying the other object in global (world)
 		space coordinates.
+		@param point The point to test for containment.
 		@param polygonThickness Since a polygon is a 2D object in a 3D space, a threshold value is used to
 			allow floating-point inaccuracies. This parameter defines how much "thickness" to give to the polygon
 			for the purposes of the test.
@@ -244,18 +267,17 @@ public:
 	bool Contains(const LineSegment &lineSegment, float polygonThickness = 1e-3f) const;
 	bool Contains(const Triangle &triangle, float polygonThickness = 1e-3f) const;
 	bool Contains(const Polygon &polygon, float polygonThickness = 1e-3f) const;
-	//todo Add RTCD, p. 202. 
+	//todo Add RTCD, p. 202.
 	//bool ContainsConvex(const float3 &worldSpacePoint, float polygonThickness = 1e-3f) const;
 
 	/// Tests if the given object, expressed in the local space of this polygon, is fully contained inside this polyhedron.
 	/** This test is exactly like in Contains(), except it is performed in 2D in the local space of this polygon.
 		@see Contains(), MapTo2D().
 		@todo Add Contains2D(Circle/Disc/Triangle/Polygon). */
-	bool Contains2D(const float2 &localSpacePoint) const;
 	bool Contains2D(const LineSegment &localSpaceLineSegment) const;
 
 	/// Tests whether this polyhedron and the given object intersect.
-	/** Both objects are treated as "solid", meaning that if one of the objects is fully contained inside 
+	/** Both objects are treated as "solid", meaning that if one of the objects is fully contained inside
 		another, this function still returns true.
 		This test is performed in the global (world) space of this polygon.
 		@return True if an intersection occurs or one of the objects is contained inside the other, false otherwise.
@@ -277,13 +299,14 @@ public:
 	/// Computes the closest point on this polygon to the given object.
 	/** If the other object intersects this polygon, this function will return an arbitrary point inside
 		the region of intersection.
+		@param lineSegment The line segment to find the closest point to.
+		@param lineSegmentPt [out] If specified, receives the closest point on the line segment to this polygon. This
+			pointer may be null.
 		@see Contains(), Distance(), Intersects().
 		@todo Add ClosestPoint(Line/Ray/Plane/Triangle/Polygon/Circle/Disc/AABB/OBB/Sphere/Capsule/Frustum/Polyhedron). */
-	float3 ClosestPoint(const float3 &point) const;
-	float3 ClosestPoint(const LineSegment &lineSegment) const;
-	/** @param lineSegmentPt [out] If specified, receives the closest point on the line segment to this polygon. This
-			pointer may be null. */
 	float3 ClosestPoint(const LineSegment &lineSegment, float3 *lineSegmentPt) const;
+	float3 ClosestPoint(const LineSegment &lineSegment) const;
+	float3 ClosestPoint(const float3 &point) const;
 
 	/// Returns the distance between this polygon and the given point.
 	/** @see Contains(), ClosestPoint(), Intersects(). */
@@ -300,6 +323,24 @@ public:
 	/// Returns the center of mass of this polygon.
 	/** @see Area(), Perimeter(). */
 	float3 Centroid() const;
+	/// Identical to CenterPoint(), but provided to enable common signature with Triangle, AABB and OBB to allow them to be used
+	/// in template classes.
+	float3 CenterPoint() const { return Centroid(); }
+
+	/// Computes a point on the perimeter of this polygon.
+	/** @param normalizedDistance A value in the range [0,1[ specifying the distance along the polygon edge to travel.
+		The polygon perimeter forms a closed loop, so PointOnEdge(0.f) == PointOnEdge(1.f) and is equal to the point p[0] of this
+		polygon. As another example, PointOnEdge(0.5f) returns the point half-way around the polygon edge (but not necessarily the farthest
+		point from p[0]).
+		@see p, RandomPointOnEdge(). */
+	float3 PointOnEdge(float normalizedDistance) const;
+
+	/// Computes a random point on the perimeter of this polygon.
+	/** This function generates points with uniform distribution.
+		@see PointOnEdge(). */
+	float3 RandomPointOnEdge(LCG &rng) const;
+
+	float3 FastRandomPointInside(LCG &rng) const;
 
 	/// Converts this Polygon to a Polyhedron representation.
 	/** This function will create a Polyhedron with two faces, one for the front face of this Polygon,
@@ -334,9 +375,19 @@ public:
 //	static bool IsConvexQuad(const float3 &pointA, const float3 &pointB, const float3 &pointC, const float3 &pointD);
 };
 
+Polygon operator *(const float3x3 &transform, const Polygon &polygon);
+Polygon operator *(const float3x4 &transform, const Polygon &polygon);
+Polygon operator *(const float4x4 &transform, const Polygon &polygon);
+Polygon operator *(const Quat &transform, const Polygon &polygon);
+
 #ifdef MATH_QT_INTEROP
 Q_DECLARE_METATYPE(Polygon)
 Q_DECLARE_METATYPE(Polygon*)
 #endif
+
+// @todo Add this.
+//#ifdef MATH_ENABLE_STL_SUPPORT
+//std::ostream &operator <<(std::ostream &o, const Polygon &polygon);
+//#endif
 
 MATH_END_NAMESPACE

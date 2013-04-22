@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 /** @file Triangle.cpp
 	@author Jukka Jylänki
 	@brief Implementation for the Triangle geometry object. */
+#include "Geometry/Triangle.h"
 #include "Math/MathFunc.h"
 #include "Math/float2.h"
 #include "Math/float3.h"
@@ -24,7 +25,6 @@
 #include "Math/Quat.h"
 #include "Geometry/Capsule.h"
 #include "Geometry/Frustum.h"
-#include "Geometry/Triangle.h"
 #include "Geometry/Plane.h"
 #include "Geometry/Polygon.h"
 #include "Geometry/Polyhedron.h"
@@ -36,6 +36,10 @@
 #include "Geometry/OBB.h"
 #include "Algorithm/Random/LCG.h"
 
+#ifdef MATH_ENABLE_STL_SUPPORT
+#include <iostream>
+#endif
+
 MATH_BEGIN_NAMESPACE
 
 Triangle::Triangle(const float3 &a_, const float3 &b_, const float3 &c_)
@@ -43,23 +47,97 @@ Triangle::Triangle(const float3 &a_, const float3 &b_, const float3 &c_)
 {
 }
 
+void Triangle::Translate(const float3 &offset)
+{
+	a += offset;
+	b += offset;
+	c += offset;
+}
+
+void Triangle::Transform(const float3x3 &transform)
+{
+	transform.BatchTransform(&a, 3);
+}
+
+void Triangle::Transform(const float3x4 &transform)
+{
+	transform.BatchTransformPos(&a, 3);
+}
+
+void Triangle::Transform(const float4x4 &transform)
+{
+	a = transform.MulPos(a);
+	b = transform.MulPos(b);
+	c = transform.MulPos(c);
+}
+
+void Triangle::Transform(const Quat &transform)
+{
+	a = transform * a;
+	b = transform * b;
+	c = transform * c;
+}
+
+/// Implementation from Christer Ericson's Real-Time Collision Detection, pp. 51-52.
+inline float TriArea2D(float x1, float y1, float x2, float y2, float x3, float y3)
+{
+	return (x1-x2)*(y2-y3) - (x2-x3)*(y1-y2);
+}
+
 float3 Triangle::BarycentricUVW(const float3 &point) const
 {
-	/// @note An alternate mechanism to compute the barycentric is given in Christer Ericson's
-	/// Real-Time Collision Detection, pp. 51-52, which might be slightly faster than the current implementation.
+	// Implementation from Christer Ericson's Real-Time Collision Detection, pp. 51-52.
+
+	// Unnormalized triangle normal.
+	float3 m = Cross(b-a, c-a);
+
+	// Nominators and one-over-denominator for u and v ratios.
+	float nu, nv, ood;
+
+	// Absolute components for determining projection plane.
+	float x = Abs(m.x);
+	float y = Abs(m.y);
+	float z = Abs(m.z);
+
+	if (x >= y && x >= z)
+	{
+		// Project to the yz plane.
+		nu = TriArea2D(point.y, point.z, b.y, b.z, c.y, c.z); // Area of PBC in yz-plane.
+		nv = TriArea2D(point.y, point.z, c.y, c.z, a.y, a.z); // Area OF PCA in yz-plane.
+		ood = 1.f / m.x; // 1 / (2*area of ABC in yz plane)
+	}
+	else if (y >= z) // Note: The book has a redundant 'if (y >= x)' comparison
+	{
+		// y is largest, project to the xz-plane.
+		nu = TriArea2D(point.x, point.z, b.x, b.z, c.x, c.z);
+		nv = TriArea2D(point.x, point.z, c.x, c.z, a.x, a.z);
+		ood = 1.f / -m.y;
+	}
+	else // z is largest, project to the xy-plane.
+	{
+		nu = TriArea2D(point.x, point.y, b.x, b.y, c.x, c.y);
+		nv = TriArea2D(point.x, point.y, c.x, c.y, a.x, a.y);
+		ood = 1.f / m.z;
+	}
+	float u = nu * ood;
+	float v = nv * ood;
+	float w = 1.f - u - v;
+	return float3(u,v,w);
+#if 0 // TODO: This version should be more SIMD-friendly, but for some reason, it doesn't return good values for all points inside the triangle.
 	float3 v0 = b - a;
 	float3 v1 = c - a;
 	float3 v2 = point - a;
 	float d00 = Dot(v0, v0);
 	float d01 = Dot(v0, v1);
+	float d02 = Dot(v0, v2);
 	float d11 = Dot(v1, v1);
-	float d20 = Dot(v2, v0);
-	float d21 = Dot(v2, v1);
+	float d12 = Dot(v1, v2);
 	float denom = 1.f / (d00 * d11 - d01 * d01);
-	float v = (d11 * d20 - d01 * d21) * denom;
-	float w = (d00 * d21 - d01 * d20) * denom;
+	float v = (d11 * d02 - d01 * d12) * denom;
+	float w = (d00 * d12 - d01 * d02) * denom;
 	float u = 1.0f - v - w;
 	return float3(u, v, w);
+#endif
 }
 
 float2 Triangle::BarycentricUV(const float3 &point) const
@@ -72,6 +150,11 @@ bool Triangle::BarycentricInsideTriangle(const float3 &barycentric)
 {
 	return barycentric.x >= 0.f && barycentric.y >= 0.f && barycentric.z >= 0.f &&
 		EqualAbs(barycentric.x + barycentric.y + barycentric.z, 1.f);
+}
+
+float3 Triangle::Point(float u, float v) const
+{
+	return a + (b-a) * u + (c-a) * v;
 }
 
 float3 Triangle::Point(float u, float v, float w) const
@@ -164,8 +247,8 @@ float3 Triangle::UnnormalizedNormalCW() const
 
 float3 Triangle::ExtremePoint(const float3 &direction) const
 {
-	float3 mostExtreme;
-	float mostExtremeDist = -FLOAT_MAX;
+	float3 mostExtreme = float3::nan;
+	float mostExtremeDist = -FLT_MAX;
 	for(int i = 0; i < 3; ++i)
 	{
 		float3 pt = Vertex(i);
@@ -183,7 +266,7 @@ Polygon Triangle::ToPolygon() const
 {
 	Polygon p;
 	p.p.push_back(a);
-	p.p.push_back(b); 
+	p.p.push_back(b);
 	p.p.push_back(c);
 	return p;
 }
@@ -195,12 +278,12 @@ Polyhedron Triangle::ToPolyhedron() const
 
 AABB Triangle::BoundingAABB() const
 {
-    AABB aabb;
-    aabb.SetNegativeInfinity();
-    aabb.Enclose(a);
-    aabb.Enclose(b);
-    aabb.Enclose(c);
-    return aabb;
+	AABB aabb;
+	aabb.SetNegativeInfinity();
+	aabb.Enclose(a);
+	aabb.Enclose(b);
+	aabb.Enclose(c);
+	return aabb;
 }
 
 float Triangle::Area2D(const float2 &p1, const float2 &p2, const float2 &p3)
@@ -218,9 +301,9 @@ bool Triangle::IsFinite() const
 	return a.IsFinite() && b.IsFinite() && c.IsFinite();
 }
 
-bool Triangle::IsDegenerate(float /*epsilon*/) const
+bool Triangle::IsDegenerate(float epsilon) const
 {
-	return IsDegenerate(a, b, c);
+	return IsDegenerate(a, b, c, epsilon);
 }
 
 bool Triangle::IsDegenerate(const float3 &a, const float3 &b, const float3 &c, float epsilon)
@@ -234,7 +317,7 @@ bool Triangle::Contains(const float3 &point, float triangleThickness) const
 		return false; ///@todo The plane-point distance test is omitted in Real-Time Collision Detection. p. 25. A bug in the book?
 
 	float3 br = BarycentricUVW(point);
-	return br.y >= 0.f && br.z >= 0.f && (br.y + br.z) <= 1.f;
+	return br.x >= -1e-3f && br.y >= -1e-3f && br.z >= -1e-3f; // Allow for a small epsilon to properly account for points very near the edges of the triangle.
 }
 
 bool Triangle::Contains(const LineSegment &lineSegment, float triangleThickness) const
@@ -269,63 +352,72 @@ float Triangle::Distance(const Sphere &sphere) const
 	return Max(0.f, Distance(sphere.pos) - sphere.r);
 }
 
-/** Calculates the intersection between a ray and a triangle. The facing is not accounted for, so
+float Triangle::Distance(const Capsule &capsule) const
+{
+	float3 otherPt;
+	float3 thisPt = ClosestPoint(capsule.l, &otherPt);
+	return Max(0.f, thisPt.Distance(otherPt) - capsule.r);
+}
+
+/** Calculates the intersection between a line and a triangle. The facing is not accounted for, so
 	rays are reported to intersect triangles that are both front and backfacing.
 	According to "T. M&ouml;ller, B. Trumbore. Fast, Minimum Storage Ray/Triangle Intersection. 2005."
 	http://jgt.akpeters.com/papers/MollerTrumbore97/
-	@param ray The ray to test.
+	@param linePos The starting point of the line.
+	@param lineDir The direction vector of the line. This does not need to be normalized.
 	@param v0 Vertex 0 of the triangle.
 	@param v1 Vertex 1 of the triangle.
 	@param v2 Vertex 2 of the triangle.
 	@param u [out] The barycentric u coordinate is returned here if an intersection occurred.
 	@param v [out] The barycentric v coordinate is returned here if an intersection occurred.
-	@param t [out] The signed distance from ray origin to ray intersection position will be returned here. (if intersection occurred)
-	@return True if an intersection occurred. If no intersection, then u,v and t will contain undefined values. */
-bool Triangle::IntersectLineTri(const float3 &linePos, const float3 &lineDir,
+	@return The distance along the ray to the point of intersection, or +inf if no intersection occurred.
+		If no intersection, then u and v and t will contain undefined values. If lineDir was not normalized, then to get the
+		real world-space distance, one must scale the returned value with lineDir.Length(). If the returned value is negative,
+		then the intersection occurs 'behind' the line starting position, with respect to the direction vector lineDir. */
+float Triangle::IntersectLineTri(const float3 &linePos, const float3 &lineDir,
 		const float3 &v0, const float3 &v1, const float3 &v2,
-		float &u, float &v, float &t)
+		float &u, float &v)
 {
 	float3 vE1, vE2;
 	float3 vT, vP, vQ;
 
-	const float epsilon = 1e-6f;
+	const float epsilon = 1e-4f;
 
 	// Edge vectors
 	vE1 = v1 - v0;
 	vE2 = v2 - v0;
 
 	// begin calculating determinant - also used to calculate U parameter
-	vP = Cross(lineDir, vE2);
+	vP = lineDir.Cross(vE2);
 
 	// If det < 0, intersecting backfacing tri, > 0, intersecting frontfacing tri, 0, parallel to plane.
-	const float det = Dot(vE1, vP);
+	const float det = vE1.Dot(vP);
 
 	// If determinant is near zero, ray lies in plane of triangle.
 	if (fabs(det) <= epsilon)
-		return false;
+		return FLOAT_INF;
 	const float recipDet = 1.f / det;
 
 	// Calculate distance from v0 to ray origin
 	vT = linePos - v0;
 
 	// Output barycentric u
-	u = Dot(vT, vP) * recipDet;
-	if (u < 0.f || u > 1.f)
-		return false; // Barycentric U is outside the triangle - early out.
+	u = vT.Dot(vP) * recipDet;
+	if (u < -epsilon || u > 1.f + epsilon)
+		return FLOAT_INF; // Barycentric U is outside the triangle - early out.
 
 	// Prepare to test V parameter
-	vQ = Cross(vT, vE1);
+	vQ = vT.Cross(vE1);
 
 	// Output barycentric v
-	v = Dot(lineDir, vQ) * recipDet;
-	if (v < 0.f || u + v > 1.f) // Barycentric V or the combination of U and V are outside the triangle - no intersection.
-		return false;
+	v = lineDir.Dot(vQ) * recipDet;
+	if (v < -epsilon || u + v > 1.f + epsilon) // Barycentric V or the combination of U and V are outside the triangle - no intersection.
+		return FLOAT_INF;
 
-	// Barycentric u and v are in limits, the ray intersects the triangle. 
+	// Barycentric u and v are in limits, the ray intersects the triangle.
 	
 	// Output signed distance from ray to triangle.
-	t = Dot(vE2, vQ) * recipDet;
-	return true;
+	return vE2.Dot(vQ) * recipDet;
 //	return (det < 0.f) ? IntersectBackface : IntersectFrontface;
 }
 
@@ -335,8 +427,9 @@ bool Triangle::Intersects(const LineSegment &l, float *d, float3 *intersectionPo
 	/** The Triangle-Line/LineSegment/Ray intersection tests are based on M&ouml;ller-Trumbore method:
 		"T. M&ouml;ller, B. Trumbore. Fast, Minimum Storage Ray/Triangle Intersection. 2005."
 		http://jgt.akpeters.com/papers/MollerTrumbore97/. */
-	float u, v, t;
-	bool success = IntersectLineTri(l.a, l.Dir(), a, b, c, u, v, t);
+	float u, v;
+	float t = IntersectLineTri(l.a, l.Dir(), a, b, c, u, v);
+	bool success = (t >= 0 && t != FLOAT_INF);
 	if (!success)
 		return false;
 	float length = l.LengthSq();
@@ -357,8 +450,9 @@ bool Triangle::Intersects(const LineSegment &l, float *d, float3 *intersectionPo
 
 bool Triangle::Intersects(const Line &l, float *d, float3 *intersectionPoint) const
 {
-	float u, v, t;
-	bool success = IntersectLineTri(l.pos, l.dir, a, b, c, u, v, t);
+	float u, v;
+	float t = IntersectLineTri(l.pos, l.dir, a, b, c, u, v);
+	bool success = (t != FLOAT_INF);
 	if (!success)
 		return false;
 	if (d)
@@ -370,9 +464,10 @@ bool Triangle::Intersects(const Line &l, float *d, float3 *intersectionPoint) co
 
 bool Triangle::Intersects(const Ray &r, float *d, float3 *intersectionPoint) const
 {
-	float u, v, t;
-	bool success = IntersectLineTri(r.pos, r.dir, a, b, c, u, v, t);
-	if (!success || t <= 0.f)
+	float u, v;
+	float t = IntersectLineTri(r.pos, r.dir, a, b, c, u, v);
+	bool success = (t >= 0 && t != FLOAT_INF);
+	if (!success)
 		return false;
 	if (d)
 		*d = t;
@@ -413,17 +508,17 @@ static void FindIntersectingLineSegments(const Triangle &t, float da, float db, 
 	else if (db*dc > 0.f)
 	{
 		l1 = LineSegment(t.a, t.b);
-		l1 = LineSegment(t.a, t.c);
+		l2 = LineSegment(t.a, t.c);
 	}
 	else
 	{
 		l1 = LineSegment(t.a, t.b);
-		l1 = LineSegment(t.b, t.c);
+		l2 = LineSegment(t.b, t.c);
 	}
 }
 
 /// [groupSyntax]
-/** The Triangle-Triangle test implementation is based on pseudo-code from Tomas M&ouml;ller's 
+/** The Triangle-Triangle test implementation is based on pseudo-code from Tomas M&ouml;ller's
 	"A Fast Triangle-Triangle Intersection Test": http://jgt.akpeters.com/papers/Moller97/.
 	See also Christer Ericson's Real-Time Collision Detection, p. 172. */
 bool Triangle::Intersects(const Triangle &t2, LineSegment *outLine) const
@@ -443,7 +538,7 @@ bool Triangle::Intersects(const Triangle &t2, LineSegment *outLine) const
 	if (t1da*t1db > 0.f && t1da*t1dc > 0.f)
 		return false;
 
-	// Find the intersection line of the two planes. 
+	// Find the intersection line of the two planes.
 	Line l;
 	bool success = p1.Intersects(p2, &l);
 	assume(success); // We already determined the two triangles have intersecting planes, so this should always succeed.
@@ -485,9 +580,9 @@ bool RangesOverlap(float start1, float end1, float start2, float end2)
 /// [groupSyntax]
 bool Triangle::Intersects(const AABB &aabb) const
 {
-/** The AABB-Triangle test implementation is based on the pseudo-code in 
+/** The AABB-Triangle test implementation is based on the pseudo-code in
 	Christer Ericson's Real-Time Collision Detection, pp. 169-172. */
-	///@todo The Triangle-AABB intersection test can be greatly optimized by manually unrolling loops, trivial math and by avoiding 
+	///@todo The Triangle-AABB intersection test can be greatly optimized by manually unrolling loops, trivial math and by avoiding
 	/// unnecessary copying.
 	float t1, t2, a1, a2;
 	const float3 e[3] = { float3(1,0,0), float3(0,1,0), float3(0,0,1) };
@@ -621,114 +716,387 @@ float3 Triangle::ClosestPoint(const float3 &p) const
 	return a + ab * v + ac * w;
 }
 
-/// [groupSyntax]
 float3 Triangle::ClosestPoint(const LineSegment &lineSegment, float3 *otherPt) const
 {
-	///@todo The Triangle-LineSegment test is naive. Optimize!
-	float3 closestToA = ClosestPoint(lineSegment.a);
-	float3 closestToB = ClosestPoint(lineSegment.b);
-	float d;
-	float3 closestToSegment = ClosestPointToTriangleEdge(lineSegment, 0, 0, &d);
-	float3 segmentPt = lineSegment.GetPoint(d);
-	float distA = closestToA.DistanceSq(lineSegment.a);
-	float distB = closestToB.DistanceSq(lineSegment.b);
-	float distC = closestToSegment.DistanceSq(segmentPt);
-	if (distA <= distB && distA <= distC)
+	///\todo Optimize.
+	float3 intersectionPoint;
+	if (Intersects(lineSegment, 0, &intersectionPoint))
+	{
+		if (otherPt)
+			*otherPt = intersectionPoint;
+		return intersectionPoint;
+	}
+
+	float u1,v1,d1;
+	float3 pt1 = ClosestPointToTriangleEdge(lineSegment, &u1, &v1, &d1);
+
+	float3 pt2 = ClosestPoint(lineSegment.a);
+	float3 pt3 = ClosestPoint(lineSegment.b);
+	
+	float D1 = pt1.DistanceSq(lineSegment.GetPoint(d1));
+	float D2 = pt2.DistanceSq(lineSegment.a);
+	float D3 = pt3.DistanceSq(lineSegment.b);
+
+	if (D1 <= D2 && D1 <= D3)
+	{
+		if (otherPt)
+			*otherPt = lineSegment.GetPoint(d1);
+		return pt1;
+	}
+	else if (D2 <= D3)
 	{
 		if (otherPt)
 			*otherPt = lineSegment.a;
-		return closestToA;
-	}
-	else if (distB <= distC)
-	{
-		if (otherPt)
-			*otherPt = lineSegment.b;
-		return closestToB;
+		return pt2;
 	}
 	else
 	{
 		if (otherPt)
-			*otherPt = segmentPt;
-		return closestToSegment;
+			*otherPt = lineSegment.b;
+		return pt3;
 	}
 }
 
-/*
-float3 Triangle::ClosestPoint(const LineSegment &line, float3 *otherPt) const
+#if 0
+///\todo Enable this codepath. This if rom Geometric Tools for Computer Graphics,
+/// but the algorithm in the book is broken and does not take into account the
+/// direction of the gradient to determine the proper region of intersection.
+/// Instead using a slower code path above.
+/// [groupSyntax]
+float3 Triangle::ClosestPoint(const LineSegment &lineSegment, float3 *otherPt) const
 {
-	float3 intersectionPoint;
-	bool success = Intersects(line, 0, &intersectionPoint);
-	if (success)
-		return intersectionPoint;
+	float3 e0 = b - a;
+	float3 e1 = c - a;
+	float3 v_p = a - lineSegment.a;
+	float3 d = lineSegment.b - lineSegment.a;
 
-	Plane p = PlaneCCW();
-	float d1 = p.Distance(line.a);
-	float d2 = p.Distance(line.b);
-	/// \bug The following two lines are not correct. This algorithm does not
-	/// produce correct answers. Rewrite.
-	bool aProjectsInsideTriangle = BarycentricInsideTriangle(line.a);
-	bool bProjectsInsideTriangle = BarycentricInsideTriangle(line.b);
+	// Q(u,v) = a + u*e0 + v*e1
+	// L(t)   = ls.a + t*d
+	// Minimize the distance |Q(u,v) - L(t)|^2 under u >= 0, v >= 0, u+v <= 1, t >= 0, t <= 1.
 
-	if (aProjectsInsideTriangle && bProjectsInsideTriangle)
+	float v_p_dot_e0 = Dot(v_p, e0);
+	float v_p_dot_e1 = Dot(v_p, e1);
+	float v_p_dot_d = Dot(v_p, d);
+
+	float3x3 m;
+	m[0][0] = Dot(e0, e0); m[0][1] = Dot(e0, e1); m[0][2] = -Dot(e0, d);
+	m[1][0] =     m[0][1]; m[1][1] = Dot(e1, e1); m[1][2] = -Dot(e1, d);
+	m[2][0] =     m[0][2]; m[2][1] =     m[1][2]; m[2][2] =  Dot(d, d);
+
+	float3 B(-v_p_dot_e0, -v_p_dot_e1, v_p_dot_d);
+
+	float3 uvt;
+	bool success = m.SolveAxb(B, uvt);
+	if (!success)
 	{
-		// We tested above for intersection, so cannot intersect now.
-		if (d1 <= d2)
+		float t1, t2, t3;
+		float s1, s2, s3;
+		LineSegment e1 = Edge(0);
+		LineSegment e2 = Edge(1);
+		LineSegment e3 = Edge(2);
+		float d1 = e1.Distance(lineSegment, &t1, &s1);
+		float d2 = e2.Distance(lineSegment, &t2, &s2);
+		float d3 = e3.Distance(lineSegment, &t3, &s3);
+		if (d1 < d2 && d1 < d3)
 		{
 			if (otherPt)
-				*otherPt = line.a;
-			return p.Project(line.a);
+				*otherPt = lineSegment.GetPoint(s1);
+			return e1.GetPoint(t1);
+		}
+		else if (d2 < d3)
+		{
+			if (otherPt)
+				*otherPt = lineSegment.GetPoint(s2);
+			return e2.GetPoint(t2);
 		}
 		else
 		{
 			if (otherPt)
-				*otherPt = line.b;
-			return p.Project(line.b);
+				*otherPt = lineSegment.GetPoint(s3);
+			return e3.GetPoint(t3);
 		}
 	}
-	LineSegment ab(a, b);
-	LineSegment ac(a, c);
-	LineSegment bc(b, c);
 
-	float tab, tac, tbc;
-	float tab2, tac2, tbc2;
+	if (uvt.x < 0.f)
+	{
+		// Clamp to u == 0 and solve again.
+		float m_00 = m[2][2];
+		float m_01 = -m[1][2];
+		float m_10 = -m[2][1];
+		float m_11 = m[1][1];
+		float det = m_00 * m_11 - m_01 * m_10;
+		float v = m_00 * B[1] + m_01 * B[2];
+		float t = m_10 * B[1] + m_11 * B[2];
+		v /= det;
+		t /= det;
+		if (v < 0.f)
+		{
+			// Clamp to v == 0 and solve for t.
+			t = B[2] / m[2][2];
+			t = Clamp01(t); // The solution for t must also be in the range [0,1].
+			// The solution is (u,v,t)=(0,0,t).
+			if (otherPt)
+				*otherPt = lineSegment.GetPoint(t);
+			return a;
+		}
+		else if (v > 1.f)
+		{
+			// Clamp to v == 1 and solve for t.
+			t = (B[2] - m[2][1]) / m[2][2];
+			t = Clamp01(t);
+			// The solution is (u,v,t)=(0,1,t).
+			if (otherPt)
+				*otherPt = lineSegment.GetPoint(t);
+			return c; // == a + v*e1
+		}
+		else if (t < 0.f)
+		{
+			// Clamp to t == 0 and solve for v.
+			v = B[1] / m[1][1];
+//			mathassert(EqualAbs(v, Clamp01(v)));
+			v = Clamp01(v); // The solution for v must also be in the range [0,1]. TODO: Is this guaranteed by the above?
+			// The solution is (u,v,t)=(0,v,0).
+			if (otherPt)
+				*otherPt = lineSegment.a;
+			return a + v * e1;
+		}
+		else if (t > 1.f)
+		{
+			// Clamp to t == 1 and solve for v.
+			v = (B[1] - m[1][2]) / m[1][1];
+//			mathassert(EqualAbs(v, Clamp01(v)));
+			v = Clamp01(v); // The solution for v must also be in the range [0,1]. TODO: Is this guaranteed by the above?
+			// The solution is (u,v,t)=(0,v,1).
+			if (otherPt)
+				*otherPt = lineSegment.b;
+			return a + v * e1;
+		}
+		else
+		{
+			// The solution is (u,v,t)=(0,v,t).
+			if (otherPt)
+				*otherPt = lineSegment.GetPoint(t);
+			return a + v * e1;
+		}
+	}
+	else if (uvt.y < 0.f)
+	{
+		// Clamp to v == 0 and solve again.
+		float m_00 = m[2][2];
+		float m_01 = -m[0][2];
+		float m_10 = -m[2][0];
+		float m_11 = m[0][0];
+		float det = m_00 * m_11 - m_01 * m_10;
+		float u = m_00 * B[0] + m_01 * B[2];
+		float t = m_10 * B[0] + m_11 * B[2];
+		u /= det;
+		t /= det;
 
-	float dab = ab.Distance(line, &tab, &tab2);
-	float dac = ac.Distance(line, &tac, &tac2);
-	float dbc = bc.Distance(line, &tbc, &tbc2);
+		if (u < 0.f)
+		{
+			// Clamp to u == 0 and solve for t.
+			t = B[2] / m[2][2];
+			t = Clamp01(t); // The solution for t must also be in the range [0,1].
+			// The solution is (u,v,t)=(0,0,t).
+			if (otherPt)
+				*otherPt = lineSegment.GetPoint(t);
+			return a;
+		}
+		else if (u > 1.f)
+		{
+			// Clamp to u == 1 and solve for t.
+			t = (B[2] - m[2][0]) / m[2][2];
+			t = Clamp01(t); // The solution for t must also be in the range [0,1].
+			// The solution is (u,v,t)=(1,0,t).
+			if (otherPt)
+				*otherPt = lineSegment.GetPoint(t);
+			return b;
+		}
+		else if (t < 0.f)
+		{
+			// Clamp to t == 0 and solve for u.
+			u = B[0] / m[0][0];
+//			mathassert(EqualAbs(u, Clamp01(u)));
+			u = Clamp01(u); // The solution for u must also be in the range [0,1].
+			if (otherPt)
+				*otherPt = lineSegment.a;
+			return a + u * e0;
+		}
+		else if (t > 1.f)
+		{
+			// Clamp to t == 1 and solve for u.
+			u = (B[0] - m[0][2]) / m[0][0];
+//			mathassert(EqualAbs(u, Clamp01(u)));
+			u = Clamp01(u); // The solution for u must also be in the range [0,1].
+			if (otherPt)
+				*otherPt = lineSegment.b;
+			return a + u * e0;
+		}
+		else
+		{
+			// The solution is (u, 0, t).
+			if (otherPt)
+				*otherPt = lineSegment.GetPoint(t);
+			return a + u * e0;
+		}
+	}
+	else if (uvt.z < 0.f)
+	{
+		if (otherPt)
+			*otherPt = lineSegment.a;
+		// Clamp to t == 0 and solve again.
+		float m_00 = m[1][1];
+		float m_01 = -m[0][1];
+		float m_10 = -m[1][0];
+		float m_11 = m[0][0];
+		float det = m_00 * m_11 - m_01 * m_10;
+		float u = m_00 * B[0] + m_01 * B[1];
+		float v = m_10 * B[0] + m_11 * B[1];
+		u /= det;
+		v /= det;
+		if (u < 0.f)
+		{
+			// Clamp to u == 0 and solve for v.
+			v = B[1] / m[1][1];
+			v = Clamp01(v);
+			return a + v*e1;
+		}
+		else if (v < 0.f)
+		{
+			// Clamp to v == 0 and solve for u.
+			u = B[0] / m[0][0];
+			u = Clamp01(u);
+			return a + u*e0;
+		}
+		else if (u+v > 1.f)
+		{
+			// Set v = 1-u and solve again.
+//			u = (B[0] - m[0][0]) / (m[0][0] - m[0][1]);
+//			mathassert(EqualAbs(u, Clamp01(u)));
+//			u = Clamp01(u); // The solution for u must also be in the range [0,1].
+//			return a + u*e0;
 
-	if (dab <= dac && dab <= dbc && dab <= d1 && dab <= d2)
-	{
-		if (otherPt)
-			*otherPt = line.GetPoint(tab2);
-		return ab.GetPoint(tab);
+			// Clamp to v = 1-u and solve again.
+			float m_00 = m[2][2];
+			float m_01 = m[1][2] - m[0][2];
+			float m_10 = m_01;
+			float m_11 = m[0][0] + m[1][1] - 2.f * m[0][1];
+			float det = m_00 * m_11 - m_01 * m_10;
+			float b0 = m[1][1] - m[0][1] + v_p_dot_e1 - v_p_dot_e0;
+			float b1 = -m[1][2] + v_p_dot_d;
+			float u = m_00 * b0 + m_01 * b1;
+			u /= det;
+			u = Clamp01(u);
+
+			float t = m_10 * b0 + m_11 * b1;
+			t /= det;
+			t = Clamp01(t);
+			if (otherPt)
+				*otherPt = lineSegment.GetPoint(t);
+			return a + u*e0 + (1.f-u)*e1;
+		}
+		else
+		{
+			// The solution is (u, v, 0)
+			return a + u * e0 + v * e1;
+		}
 	}
-	else if (dac <= dbc && dac <= d1 && dac <= d2)
+	else if (uvt.z > 1.f)
 	{
 		if (otherPt)
-			*otherPt = line.GetPoint(tac2);
-		return ab.GetPoint(tac);
+			*otherPt = lineSegment.b;
+		// Clamp to t == 1 and solve again.
+		float m_00 = m[1][1];
+		float m_01 = -m[0][1];
+		float m_10 = -m[1][0];
+		float m_11 = m[0][0];
+		float det = m_00 * m_11 - m_01 * m_10;
+		float u = m_00 * (B[0]-m[0][2]) + m_01 * (B[1]-m[1][2]);
+		float v = m_10 * (B[0]-m[0][2]) + m_11 * (B[1]-m[1][2]);
+		u /= det;
+		v /= det;
+		if (u < 0.f)
+		{
+			// Clamp to u == 0 and solve again.
+			v = (B[1] - m[1][2]) / m[1][1];
+			v = Clamp01(v);
+			return a + v*e1;
+		}
+		else if (u > 1.f)
+		{
+			// Clamp to u == 1 and solve again.
+			v = (B[1] - m[1][0] - m[1][2]) / m[1][1];
+			v = Clamp01(v); // The solution for v must also be in the range [0,1]. TODO: Is this guaranteed by the above?
+			// The solution is (u,v,t)=(1,v,1).
+			return a + e0 + v*e1;
+		}
+		else if (u+v > 1.f)
+		{
+			// Set v = 1-u and solve again.
+
+			// Q(u,1-u) = a + u*e0 + e1 - u*e1 = a+e1 + u*(e0-e1)
+			// L(1)   = ls.a + t*d = ls.b
+			// Minimize the distance |Q(u,1-u) - L(1)| = |a+e1+ls.b + u*(e0-e1)|
+
+			// |K + u*(e0-e1)|^2 = (K,K) + 2*u(K,e0-e1) + u^2 * (e0-e1,e0-e1)
+
+			// grad = 2*(K,e0-e1) + 2*u*(e0-e1,e0-e1) == 0
+			//                                      u == (K,e1-e0) / (e0-e1,e0-e1)
+
+			u = (B[0] - m[0][1] - m[0][2]) / (m[0][0] - m[0][1]);
+//			u = Dot(a + e1 + lineSegment.b, e1 - e0) / Dot(e0-e1, e0-e1);
+
+//			mathassert(EqualAbs(u, Clamp01(u)));
+			u = Clamp01(u);
+			return a + u*e0 + (1-u)*e1;
+		}
+		else
+		{
+			// The solution is (u, v, 1)
+			return a + u*e0 + v*e1;
+		}
 	}
-	else if (dbc <= d1 && dbc <= d2)
+	else if (uvt.x + uvt.y > 1.f)
 	{
+		// Clamp to v = 1-u and solve again.
+		float m_00 = m[2][2];
+		float m_01 = m[1][2] - m[0][2];
+		float m_10 = m_01;
+		float m_11 = m[0][0] + m[1][1] - 2.f * m[0][1];
+		float det = m_00 * m_11 - m_01 * m_10;
+		float b0 = m[1][1] - m[0][1] + v_p_dot_e1 - v_p_dot_e0;
+		float b1 = -m[1][2] + v_p_dot_d;
+		float u = m_00 * b0 + m_01 * b1;
+		float t = m_10 * b0 + m_11 * b1;
+		u /= det;
+		t /= det;
+
+		t = Clamp01(t);
 		if (otherPt)
-			*otherPt = line.GetPoint(tbc2);
-		return ab.GetPoint(tbc);
+			*otherPt = lineSegment.GetPoint(t);
+
+		if (u < 0.f)
+		{
+			// The solution is (u,v,t)=(0,1,t)
+			return c;
+		}
+		if (u > 1.f)
+		{
+			// The solution is (u,v,t)=(1,0,t)
+			return b;
+		}
+		mathassert(t >= 0.f);
+		mathassert(t <= 1.f);
+		return a + u*e0 + (1.f-u)*e1;
 	}
-	else if (d1 <= d2)
+	else // All parameters are within range, so the triangle and the line segment intersect, and the intersection point is the closest point.
 	{
 		if (otherPt)
-			*otherPt = line.a;
-		return p.Project(line.a);
-	}
-	else
-	{
-		if (otherPt)
-			*otherPt = line.b;
-		return p.Project(line.b);
+			*otherPt = lineSegment.GetPoint(uvt.z);
+		return a + uvt.x * e0 + uvt.y * e1;
 	}
 }
-*/
-
+#endif
 float3 Triangle::ClosestPointToTriangleEdge(const Line &other, float *outU, float *outV, float *outD) const
 {
 	///@todo Optimize!
@@ -797,10 +1165,200 @@ float3 Triangle::ClosestPointToTriangleEdge(const LineSegment &lineSegment, floa
 	}
 }
 
+float3 Triangle::ClosestPoint(const Line &line, float3 *otherPt) const
+{
+	///\todo Optimize this function.
+	float3 intersectionPoint;
+	if (Intersects(line, 0, &intersectionPoint))
+	{
+		if (otherPt)
+			*otherPt = intersectionPoint;
+		return intersectionPoint;
+	}
+
+	float u1,v1,d1;
+	float3 pt1 = ClosestPointToTriangleEdge(line, &u1, &v1, &d1);
+	if (otherPt)
+		*otherPt = line.GetPoint(d1);
+	return pt1;
+}
+
+#if 0
+///\todo Enable this codepath. This if rom Geometric Tools for Computer Graphics,
+/// but the algorithm in the book is broken and does not take into account the
+/// direction of the gradient to determine the proper region of intersection.
+/// Instead using a slower code path above.
+float3 Triangle::ClosestPoint(const Line &line, float3 *otherPt) const
+{
+	float3 e0 = b - a;
+	float3 e1 = c - a;
+	float3 v_p = a - line.pos;
+	float3 d = line.dir;
+
+	float v_p_dot_e0 = Dot(v_p, e0);
+	float v_p_dot_e1 = Dot(v_p, e1);
+	float v_p_dot_d = Dot(v_p, d);
+
+	float3x3 m;
+	m[0][0] = Dot(e0, e0); m[0][1] = Dot(e0, e1); m[0][2] = -Dot(e0, d);
+	m[1][0] =     m[0][1]; m[1][1] = Dot(e1, e1); m[1][2] = -Dot(e1, d);
+	m[2][0] =     m[0][2]; m[2][1] =     m[1][2]; m[2][2] =  Dot(d, d);
+
+	float3 B(-v_p_dot_e0, -v_p_dot_e1, v_p_dot_d);
+
+	float3 uvt;
+	bool success = m.SolveAxb(B, uvt);
+	if (!success)
+	{
+		float t1, t2, t3;
+		float s1, s2, s3;
+		LineSegment e1 = Edge(0);
+		LineSegment e2 = Edge(1);
+		LineSegment e3 = Edge(2);
+		float d1 = e1.Distance(line, &t1, &s1);
+		float d2 = e2.Distance(line, &t2, &s2);
+		float d3 = e3.Distance(line, &t3, &s3);
+		if (d1 < d2 && d1 < d3)
+		{
+			if (otherPt)
+				*otherPt = line.GetPoint(s1);
+			return e1.GetPoint(t1);
+		}
+		else if (d2 < d3)
+		{
+			if (otherPt)
+				*otherPt = line.GetPoint(s2);
+			return e2.GetPoint(t2);
+		}
+		else
+		{
+			if (otherPt)
+				*otherPt = line.GetPoint(s3);
+			return e3.GetPoint(t3);
+		}
+	}
+
+	if (uvt.x < 0.f)
+	{
+		// Clamp to u == 0 and solve again.
+		float m_00 = m[2][2];
+		float m_01 = -m[1][2];
+		float m_10 = -m[2][1];
+		float m_11 = m[1][1];
+		float det = m_00 * m_11 - m_01 * m_10;
+		float v = m_00 * B[1] + m_01 * B[2];
+		float t = m_10 * B[1] + m_11 * B[2];
+		v /= det;
+		t /= det;
+		if (v < 0.f)
+		{
+			// Clamp to v == 0 and solve for t.
+			t = B[2] / m[2][2];
+			// The solution is (u,v,t)=(0,0,t).
+			if (otherPt)
+				*otherPt = line.GetPoint(t);
+			return a;
+		}
+		else if (v > 1.f)
+		{
+			// Clamp to v == 1 and solve for t.
+			t = (B[2] - m[2][1]) / m[2][2];
+			// The solution is (u,v,t)=(0,1,t).
+			if (otherPt)
+				*otherPt = line.GetPoint(t);
+			return c; // == a + v*e1
+		}
+		else
+		{
+			// The solution is (u,v,t)=(0,v,t).
+			if (otherPt)
+				*otherPt = line.GetPoint(t);
+			return a + v * e1;
+		}
+	}
+	else if (uvt.y < 0.f)
+	{
+		// Clamp to v == 0 and solve again.
+		float m_00 = m[2][2];
+		float m_01 = -m[0][2];
+		float m_10 = -m[2][0];
+		float m_11 = m[0][0];
+		float det = m_00 * m_11 - m_01 * m_10;
+		float u = m_00 * B[0] + m_01 * B[2];
+		float t = m_10 * B[0] + m_11 * B[2];
+		u /= det;
+		t /= det;
+
+		if (u < 0.f)
+		{
+			// Clamp to u == 0 and solve for t.
+			t = B[2] / m[2][2];
+			// The solution is (u,v,t)=(0,0,t).
+			if (otherPt)
+				*otherPt = line.GetPoint(t);
+			return a;
+		}
+		else if (u > 1.f)
+		{
+			// Clamp to u == 1 and solve for t.
+			t = (B[2] - m[2][0]) / m[2][2];
+			// The solution is (u,v,t)=(1,0,t).
+			if (otherPt)
+				*otherPt = line.GetPoint(t);
+			return b;
+		}
+		else
+		{
+			// The solution is (u, 0, t).
+			if (otherPt)
+				*otherPt = line.GetPoint(t);
+			return a + u * e0;
+		}
+	}
+	else if (uvt.x + uvt.y > 1.f)
+	{
+		// Clamp to v = 1-u and solve again.
+		float m_00 = m[2][2];
+		float m_01 = m[1][2] - m[0][2];
+		float m_10 = m_01;
+		float m_11 = m[0][0] + m[1][1] - 2.f * m[0][1];
+		float det = m_00 * m_11 - m_01 * m_10;
+		float b0 = m[1][1] - m[0][1] + v_p_dot_e1 - v_p_dot_e0;
+		float b1 = -m[1][2] + v_p_dot_d;
+		float u = m_00 * b0 + m_01 * b1;
+		float t = m_10 * b0 + m_11 * b1;
+		u /= det;
+		t /= det;
+
+		if (otherPt)
+			*otherPt = line.GetPoint(t);
+
+		if (u < 0.f)
+		{
+			// The solution is (u,v,t)=(0,1,t)
+			return c;
+		}
+		if (u > 1.f)
+		{
+			// The solution is (u,v,t)=(1,0,t)
+			return b;
+		}
+		return a + u*e0 + (1.f-u)*e1;
+	}
+	else // All parameters are within range, so the triangle and the line segment intersect, and the intersection point is the closest point.
+	{
+		if (otherPt)
+			*otherPt = line.GetPoint(uvt.z);
+		return a + uvt.x * e0 + uvt.y * e1;
+	}
+}
+#endif
+
+#if 0
 /// [groupSyntax]
 float3 Triangle::ClosestPoint(const Line &other, float *outU, float *outV, float *outD) const
 {
-	/** The implementation of the Triangle-Line test is based on the pseudo-code in 
+	/** The implementation of the Triangle-Line test is based on the pseudo-code in
 		Schneider, Eberly. Geometric Tools for Computer Graphics pp. 433 - 441. */
 	///@todo The Triangle-Line code is currently untested. Run tests to ensure the following code works properly.
 
@@ -822,7 +1380,7 @@ float3 Triangle::ClosestPoint(const Line &other, float *outU, float *outV, float
 	float3x3 m;
 	m[0][0] = d_e0e0;  m[0][1] = d_e0e1;  m[0][2] = -d_e0d;
 	m[1][0] = d_e0e1;  m[1][1] = d_e1e1;  m[1][2] = -d_e1d;
-	m[2][0] = -d_e0d;  m[2][1] = -d_e1d;  m[2][2] = d_dd;
+	m[2][0] = -d_e0d;  m[2][1] = -d_e1d;  m[2][2] =   d_dd;
 
 	///@todo Add optimized float3x3::InverseSymmetric().
 	bool inv = m.Inverse();
@@ -836,45 +1394,37 @@ float3 Triangle::ClosestPoint(const Line &other, float *outU, float *outV, float
 	float3 b = float3(-v_m_p_e0, -v_m_p_e1, v_m_p_d);
 	float3 uvt = m * b;
 	// We cannot simply clamp the solution to (uv) inside the constraints, since the expression we
-	// are minimizing is quadratic. 
+	// are minimizing is quadratic.
 	// So, examine case-by-case which part of the space the solution lies in. Because the function is convex,
 	// we can clamp the search space to the boundary planes.
 	float u = uvt.x;
 	float v = uvt.y;
 	float t = uvt.z;
-	if (u < 0)
+	if (u <= 0)
 	{
 		if (outU) *outU = 0;
 
 		// Solve 2x2 matrix for the (v,t) solution when u == 0.
-		float m00 = m[2][2];
-		float m01 = -m[2][1];
-		float m10 = -m[1][2];
-		float m11 = m[1][1];
-        /// @bug This variable should be used somewhere below? Review the code, and test!
-		float det = m00*m11 - m01*m10;
-
-		// 2x2 * 2 matrix*vec mul.
-		v = m00*b[1] + m01*b[2];
-		t = m10*b[1] + m11*b[2];
-		if (outD) *outD = t;
+		v = m[1][1]*b[1] + m[1][2]*b[2];
+		t = m[2][1]*b[1] + m[2][2]*b[2];
 
 		// Check if the solution is still out of bounds.
 		if (v <= 0)
 		{
 			if (outV) *outV = 0;
-			t = v_m_p_d / d_dd;
+			if (outD) *outD = v_m_p_d / d_dd;
 			return Point(0, 0);
 		}
 		else if (v >= 1)
 		{
 			if (outV) *outV = 1;
-			t = (v_m_p_d - d_e1d) / d_dd;
+			if (outD) *outD = (v_m_p_d - d_e1d) / d_dd;
 			return Point(0, 1);
 		}
 		else // (0 <= v <= 1).
 		{
 			if (outV) *outV = v;
+			if (outD) *outD = t;
 			return Point(0, v);
 		}
 	}
@@ -883,77 +1433,74 @@ float3 Triangle::ClosestPoint(const Line &other, float *outU, float *outV, float
 		if (outV) *outV = 0;
 
 		// Solve 2x2 matrix for the (u,t) solution when v == 0.
-		float m00 = m[2][2];
-		float m01 = -m[2][0];
-		float m10 = -m[0][2];
-		float m11 = m[0][0];
-		float det = 1.f / (m00*m11 - m01*m10);
-
-		// 2x2 * 2 matrix*vec mul.
-		u = (m00*b[0] + m01*b[2]) * det;
-		t = (m10*b[0] + m11*b[2]) * det;
-		if (outD) *outD = t;
+		u = m[0][0]*b[0] + m[0][2]*b[2];
+		t = m[2][0]*b[0] + m[2][2]*b[2];
 
 		// Check if the solution is still out of bounds.
 		if (u <= 0)
 		{
 			if (outU) *outU = 0;
-			t = v_m_p_d / d_dd;
+			if (outD) *outD = v_m_p_d / d_dd;
 			return Point(0, 0);
 		}
 		else if (u >= 1)
 		{
 			if (outU) *outU = 1;
-			t = (v_m_p_d - d_e0d) / d_dd;
+			if (outD) *outD = (v_m_p_d - d_e0d) / d_dd;
 			return Point(1, 0);
 		}
 		else // (0 <= u <= 1).
 		{
 			if (outU) *outU = u;
+			if (outD) *outD = t;
 			return Point(u, 0);
 		}
 	}
 	else if (u + v >= 1.f)
 	{
 		// Set v = 1-u.
+#if 0
 		float m00 = d_e0e0 + d_e1e1 - 2.f * d_e0e1;
 		float m01 = -d_e0d + d_e1d;
 		float m10 = -d_e0d + d_e1d;
 		float m11 = d_dd;
-		float det = 1.f / (m00*m11 - m01*m10);
+//		float det = 1.f / (m00*m11 - m01*m10);
 
 		float b0 = d_e1e1 - d_e0e1 + v_m_p_e0 - v_m_p_e1;
 		float b1 = d_e1d + v_m_p_d;
+		/*
 		// Inverse 2x2 matrix.
 		Swap(m00, m11);
 		Swap(m01, m10);
 		m01 = -m01;
 		m10 = -m10;
-
+		*/
 		// 2x2 * 2 matrix*vec mul.
-		u = (m00*b0 + m01*b1) * det;
-		t = (m10*b0 + m11*b1) * det;
-		if (outD) *outD = t;
+		u = (m00*b0 + m01*b1);// * det;
+		t = (m10*b0 + m11*b1);// * det;
+#endif
+//		u = m[0][0]*b[0] +
 
 		// Check if the solution is still out of bounds.
 		if (u <= 0)
 		{
 			if (outU) *outU = 0;
 			if (outV) *outV = 1;
-			t = (d_e1d + v_m_p_d) / d_dd;
+			if (outD) *outD = (d_e1d + v_m_p_d) / d_dd;
 			return Point(0, 1);
 		}
 		else if (u >= 1)
 		{
 			if (outU) *outU = 1;
 			if (outV) *outV = 0;
-			t = (v_m_p_d + d_e0d) / d_dd;
+			if (outD) *outD = (v_m_p_d + d_e0d) / d_dd;
 			return Point(1, 0);
 		}
 		else // (0 <= u <= 1).
 		{
 			if (outU) *outU = u;
 			if (outV) *outV = 1.f - u;
+			if (outD) *outD = t;
 			return Point(u, 1.f - u);
 		}
 	}
@@ -965,11 +1512,12 @@ float3 Triangle::ClosestPoint(const Line &other, float *outU, float *outV, float
 		return Point(u, v);
 	}
 }
+#endif
 
 /// [groupSyntax]
 float3 Triangle::ClosestPoint(const Triangle &other, float3 *otherPt) const
 {
-	/** The code for computing the closest point pair on two Triangles is based 
+	/** The code for computing the closest point pair on two Triangles is based
 		on pseudo-code from Christer Ericson's Real-Time Collision Detection, pp. 155-156. */
 
 	// First detect if the two triangles are intersecting.
@@ -1017,14 +1565,27 @@ float3 Triangle::ClosestPoint(const Triangle &other, float3 *otherPt) const
 
 float3 Triangle::RandomPointInside(LCG &rng) const
 {
+	float epsilon = 1e-3f;
 	///@todo rng.Float() returns [0,1[, but to be completely uniform, we'd need [0,1] here.
-	float s = rng.Float();
-	float t = rng.Float();
-	if (s + t > 1.f)
+	float s = rng.Float(epsilon, 1.f - epsilon);//1e-2f, 1.f - 1e-2f);
+	float t = rng.Float(epsilon, 1.f - epsilon);//1e-2f, 1.f - 1e-2f
+	if (s + t >= 1.f)
 	{
 		s = 1.f - s;
 		t = 1.f - t;
 	}
+#ifdef MATH_ASSERT_CORRECTNESS
+	float3 pt = Point(s, t);
+	float2 uv = BarycentricUV(pt);
+	assert(uv.x >= 0.f);
+	assert(uv.y >= 0.f);
+	assert(uv.x + uv.y <= 1.f);
+	float3 uvw = BarycentricUVW(pt);
+	assert(uvw.x >= 0.f);
+	assert(uvw.y >= 0.f);
+	assert(uvw.z >= 0.f);
+	assert(EqualAbs(uvw.x + uvw.y + uvw.z, 1.f));
+#endif
 	return Point(s, t);
 }
 
@@ -1049,34 +1610,49 @@ float3 Triangle::RandomPointOnEdge(LCG &rng) const
 	return c + (a-c) * r / ca;
 }
 
-Triangle operator *(const float3x3 &transform, const Triangle &t)
+Triangle operator *(const float3x3 &transform, const Triangle &triangle)
 {
-	return Triangle(transform*t.a, transform*t.b, transform*t.c);
+	Triangle t(triangle);
+	t.Transform(transform);
+	return t;
 }
 
-Triangle operator *(const float3x4 &transform, const Triangle &t)
+Triangle operator *(const float3x4 &transform, const Triangle &triangle)
 {
-	return Triangle(transform.MulPos(t.a), transform.MulPos(t.b), transform.MulPos(t.c));
+	Triangle t(triangle);
+	t.Transform(transform);
+	return t;
 }
 
-Triangle operator *(const float4x4 &transform, const Triangle &t)
+Triangle operator *(const float4x4 &transform, const Triangle &triangle)
 {
-	return Triangle(transform.MulPos(t.a), transform.MulPos(t.b), transform.MulPos(t.c));
+	Triangle t(triangle);
+	t.Transform(transform);
+	return t;
 }
 
-Triangle operator *(const Quat &transform, const Triangle &t)
+Triangle operator *(const Quat &transform, const Triangle &triangle)
 {
-	return Triangle(transform*t.a, transform*t.b, transform*t.c);
+	Triangle t(triangle);
+	t.Transform(transform);
+	return t;
 }
 
 #ifdef MATH_ENABLE_STL_SUPPORT
 std::string Triangle::ToString() const
 {
 	char str[256];
-	sprintf(str, "Triangle(a:(%.2f, %.2f, %.2f) b:(%.2f, %.2f, %.2f) c:(%.2f, %.2f, %.2f))", 
+	sprintf(str, "Triangle(a:(%.2f, %.2f, %.2f) b:(%.2f, %.2f, %.2f) c:(%.2f, %.2f, %.2f))",
 		a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
 	return str;
 }
+
+std::ostream &operator <<(std::ostream &o, const Triangle &triangle)
+{
+	o << triangle.ToString();
+	return o;
+}
+
 #endif
 
 MATH_END_NAMESPACE

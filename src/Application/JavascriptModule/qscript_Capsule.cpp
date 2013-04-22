@@ -99,6 +99,17 @@ static QScriptValue Capsule_ExtremePoint_float3_const(QScriptContext *context, Q
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Capsule_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Capsule_ProjectToAxis_float3_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Capsule This = qscriptvalue_cast<Capsule>(context->thisObject());
+    float3 direction = qscriptvalue_cast<float3>(context->argument(0));
+    float outMin = qscriptvalue_cast<float>(context->argument(1));
+    float outMax = qscriptvalue_cast<float>(context->argument(2));
+    This.ProjectToAxis(direction, outMin, outMax);
+    return QScriptValue();
+}
+
 static QScriptValue Capsule_Top_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Capsule_Top_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -660,6 +671,7 @@ QScriptValue register_Capsule_prototype(QScriptEngine *engine)
     proto.setProperty("Center", engine->newFunction(Capsule_Center_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Centroid", engine->newFunction(Capsule_Centroid_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ExtremePoint", engine->newFunction(Capsule_ExtremePoint_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ProjectToAxis", engine->newFunction(Capsule_ProjectToAxis_float3_float_float_const, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Top", engine->newFunction(Capsule_Top_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("UpDirection", engine->newFunction(Capsule_UpDirection_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Volume", engine->newFunction(Capsule_Volume_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);

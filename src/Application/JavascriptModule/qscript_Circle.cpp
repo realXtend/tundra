@@ -92,6 +92,56 @@ static QScriptValue Circle_ContainingPlane_const(QScriptContext *context, QScrip
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Circle_Translate_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Circle_Translate_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Circle This = qscriptvalue_cast<Circle>(context->thisObject());
+    float3 offset = qscriptvalue_cast<float3>(context->argument(0));
+    This.Translate(offset);
+    ToExistingScriptValue_Circle(engine, This, context->thisObject());
+    return QScriptValue();
+}
+
+static QScriptValue Circle_Transform_float3x3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Circle_Transform_float3x3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Circle This = qscriptvalue_cast<Circle>(context->thisObject());
+    float3x3 transform = qscriptvalue_cast<float3x3>(context->argument(0));
+    This.Transform(transform);
+    ToExistingScriptValue_Circle(engine, This, context->thisObject());
+    return QScriptValue();
+}
+
+static QScriptValue Circle_Transform_float3x4(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Circle_Transform_float3x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Circle This = qscriptvalue_cast<Circle>(context->thisObject());
+    float3x4 transform = qscriptvalue_cast<float3x4>(context->argument(0));
+    This.Transform(transform);
+    ToExistingScriptValue_Circle(engine, This, context->thisObject());
+    return QScriptValue();
+}
+
+static QScriptValue Circle_Transform_float4x4(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Circle_Transform_float4x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Circle This = qscriptvalue_cast<Circle>(context->thisObject());
+    float4x4 transform = qscriptvalue_cast<float4x4>(context->argument(0));
+    This.Transform(transform);
+    ToExistingScriptValue_Circle(engine, This, context->thisObject());
+    return QScriptValue();
+}
+
+static QScriptValue Circle_Transform_Quat(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Circle_Transform_Quat in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Circle This = qscriptvalue_cast<Circle>(context->thisObject());
+    Quat transform = qscriptvalue_cast<Quat>(context->argument(0));
+    This.Transform(transform);
+    ToExistingScriptValue_Circle(engine, This, context->thisObject());
+    return QScriptValue();
+}
+
 static QScriptValue Circle_EdgeContains_float3_float_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Circle_EdgeContains_float3_float_const in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -213,6 +263,19 @@ static QScriptValue Circle_GetPoint_selector(QScriptContext *context, QScriptEng
     printf("Circle_GetPoint_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
 }
 
+static QScriptValue Circle_Transform_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 1 && QSVIsOfType<float3x3>(context->argument(0)))
+        return Circle_Transform_float3x3(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<float3x4>(context->argument(0)))
+        return Circle_Transform_float3x4(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<float4x4>(context->argument(0)))
+        return Circle_Transform_float4x4(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Quat>(context->argument(0)))
+        return Circle_Transform_Quat(context, engine);
+    printf("Circle_Transform_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
+}
+
 static QScriptValue Circle_IntersectsDisc_selector(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 1 && QSVIsOfType<Line>(context->argument(0)))
@@ -259,6 +322,8 @@ QScriptValue register_Circle_prototype(QScriptEngine *engine)
     proto.setProperty("Centroid", engine->newFunction(Circle_Centroid_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ExtremePoint", engine->newFunction(Circle_ExtremePoint_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ContainingPlane", engine->newFunction(Circle_ContainingPlane_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Translate", engine->newFunction(Circle_Translate_float3, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Transform", engine->newFunction(Circle_Transform_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("EdgeContains", engine->newFunction(Circle_EdgeContains_float3_float_const, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("DistanceToEdge", engine->newFunction(Circle_DistanceToEdge_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("DistanceToDisc", engine->newFunction(Circle_DistanceToDisc_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);

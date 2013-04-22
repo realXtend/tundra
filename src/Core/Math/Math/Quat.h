@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 	@author Jukka Jylänki
 	@brief Quaternions represent rotations and orientations of 3D objects. */
 #pragma once
+
+#include "MathBuildConfig.h"
 
 #ifdef MATH_ENABLE_STL_SUPPORT
 #include <string>
@@ -48,8 +50,11 @@ public:
 	/// @note The default ctor does not initialize any member values.
 	Quat() {}
 
-	/// The copy-ctor for Quat is the trivial copy-ctor, but it is explicitly written to be able to automatically pick up this function for QtScript bindings.
+#ifdef MATH_EXPLICIT_COPYCTORS
+	/// The copy-ctor for Quat is the trivial copy-ctor, but it is explicitly written to be able to automatically pick up
+	/// this function for QtScript bindings.
 	Quat(const Quat &rhs) { x = rhs.x; y = rhs.y; z = rhs.z; w = rhs.w; }
+#endif
 
 	/// Constructs a quaternion from the given data buffer.
 	/// @param data An array of four floats to use for the quaternion, in the order 'x, y, z, w'. (== 'i, j, k, r')
@@ -69,7 +74,9 @@ public:
 
 	/// Constructs this quaternion by specifying a rotation axis and the amount of rotation to be performed
 	/// about that axis.
-	/// @param rotationAxis The normalized rotation axis to rotate about.
+	/** @param rotationAxis The normalized rotation axis to rotate about.
+		@param rotationAngleRadians The angle to rotate by, in radians. For example, Pi/4.f equals to 45 degrees, Pi/2.f is 90 degrees, and Pi is 180 degrees.
+		@see DegToRad(). */
 	Quat(const float3 &rotationAxis, float rotationAngleRadians);
 
 	/// Returns the local +X axis in the post-transformed coordinate space. This is the same as transforming the vector (1,0,0) by this quaternion.
@@ -146,9 +153,28 @@ public:
 	float4 Transform(const float4 &vec) const;
 
 	Quat Lerp(const Quat &target, float t) const;
-	static Quat Lerp(const Quat &source, const Quat &target, float t);
+	static MUST_USE_RESULT Quat Lerp(const Quat &source, const Quat &target, float t);
 	Quat Slerp(const Quat &target, float t) const;
-	static Quat Slerp(const Quat &source, const Quat &target, float t);
+	static MUST_USE_RESULT Quat Slerp(const Quat &source, const Quat &target, float t);
+
+	/// Returns the 'from' vector rotated towards the 'to' vector by the given normalized time parameter.
+	/** This function slerps the given 'from' vector towards the 'to' vector.
+		@param from A normalized direction vector specifying the direction of rotation at t=0.
+		@param to A normalized direction vector specifying the direction of rotation at t=1.
+		@param t The interpolation time parameter, in the range [0,1]. Input values outside this range are
+			silently clamped to the [0, 1] interval.
+		@return A spherical linear interpolation of the vector 'from' towards the vector 'to'. */
+	static MUST_USE_RESULT float3 SlerpVector(const float3 &from, const float3 &to, float t);
+
+	/// Returns the 'from' vector rotated towards the 'to' vector by the given absolute angle, in radians.
+	/** This function slerps the given 'from' vector towards the 'to' vector.
+		@param from A normalized direction vector specifying the direction of rotation at angleRadians=0.
+		@param to A normalized direction vector specifying the target direction to rotate towards.
+		@param angleRadians The maximum angle to rotate the 'from' vector by, in the range [0, pi]. If the
+			angle between 'from' and 'to' is smaller than this angle, then the vector 'to' is returned.
+			Input values outside this range are silently clamped to the [0, pi] interval.
+		@return A spherical linear interpolation of the vector 'from' towards the vector 'to'. */
+	static MUST_USE_RESULT float3 SlerpVectorAbs(const float3 &from, const float3 &to, float angleRadians);
 
 	/// Returns the angle between this and the target orientation (the shortest route) in radians.
 	float AngleBetween(const Quat &target) const;
@@ -156,12 +182,12 @@ public:
 	float3 AxisFromTo(const Quat &target) const;
 
 	/// Returns the rotation axis and angle of this quaternion.
-    /// @param rotationAxis [out] Received the normalized axis of the rotation.
-    /// @param rotationAngleRadians [out] Receives the angle of rotation around the given axis. This parameter is returned in the range [0, 2pi].
+	/// @param rotationAxis [out] Received the normalized axis of the rotation.
+	/// @param rotationAngleRadians [out] Receives the angle of rotation around the given axis. This parameter is returned in the range [0, 2pi].
 	void ToAxisAngle(float3 &rotationAxis, float &rotationAngleRadians) const;
 	/// Sets this quaternion by specifying the axis about which the rotation is performed, and the angle of rotation.
 	/// @param rotationAxis The axis of rotation. This vector must be normalized to call this function.
-	/// @param rotationAngle The angle of rotation in radians.
+	/// @param rotationAngleRadians The angle of rotation in radians.
 	void SetFromAxisAngle(const float3 &rotationAxis, float rotationAngleRadians);
 
 	/// Sets this quaternion to represent the same rotation as the given matrix.
@@ -190,60 +216,60 @@ public:
 			vector localForward, i.e. localForward.Dot(localUp) == 0.
 		@param worldUp Specifies the global up direction of the scene in world space. Simply rotating one vector to
 			coincide with another (localForward->targetDirection) would cause the up direction of the resulting
-			orientation to drift (e.g. the model could be looking at its target its head slanted sideways). To keep 
-			the up direction straight, this function orients the localUp direction of the model to point towards the 
-			specified worldUp direction (as closely as possible). The worldUp and targetDirection vectors cannot be 
+			orientation to drift (e.g. the model could be looking at its target its head slanted sideways). To keep
+			the up direction straight, this function orients the localUp direction of the model to point towards the
+			specified worldUp direction (as closely as possible). The worldUp and targetDirection vectors cannot be
 			collinear, but they do not need to be perpendicular either.
 		@return A quaternion that maps the given local space forward direction vector to point towards the given target
-			direction, and the given local up direction towards the given target world up direction. For the returned 
-			quaternion Q it holds that M * localForward = targetDirection, and M * localUp lies in the plane spanned 
+			direction, and the given local up direction towards the given target world up direction. For the returned
+			quaternion Q it holds that M * localForward = targetDirection, and M * localUp lies in the plane spanned
 			by the vectors targetDirection and worldUp.
 		@see RotateFromTo(). */
-	static Quat LookAt(const float3 &localForward, const float3 &targetDirection, const float3 &localUp, const float3 &worldUp);
+	static MUST_USE_RESULT Quat LookAt(const float3 &localForward, const float3 &targetDirection, const float3 &localUp, const float3 &worldUp);
 
 	/// Creates a new quaternion that rotates about the positive X axis by the given angle.
-	static Quat RotateX(float angleRadians);
+	static MUST_USE_RESULT Quat RotateX(float angleRadians);
 	/// Creates a new quaternion that rotates about the positive Y axis by the given angle.
-	static Quat RotateY(float angleRadians);
+	static MUST_USE_RESULT Quat RotateY(float angleRadians);
 	/// Creates a new quaternion that rotates about the positive Z axis by the given angle.
-	static Quat RotateZ(float angleRadians);
+	static MUST_USE_RESULT Quat RotateZ(float angleRadians);
 
 	/// Creates a new Quat that rotates about the given axis by the given angle.
-	static Quat RotateAxisAngle(const float3 &axisDirection, float angleRadians);
+	static MUST_USE_RESULT Quat RotateAxisAngle(const float3 &axisDirection, float angleRadians);
 
-	/// Creates a new quaternion that rotates sourceDirection vector (in world space) to coincide with the 
+	/// Creates a new quaternion that rotates sourceDirection vector (in world space) to coincide with the
 	/// targetDirection vector (in world space).
 	/// Rotation is performed around the origin.
 	/// The vectors sourceDirection and targetDirection are assumed to be normalized.
 	/// @note There are multiple such rotations - this function returns the rotation that has the shortest angle
 	/// (when decomposed to axis-angle notation).
-	static Quat RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection);
+	static MUST_USE_RESULT Quat RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection);
 
 	/// Creates a new quaternion that
-	/// 1. rotates sourceDirection vector to coincide with the targetDirection vector, and then 
-	/// 2. rotates sourceDirection2 (which was transformed by 1.) to targetDirection2, but keeping the constraint that 
+	/// 1. rotates sourceDirection vector to coincide with the targetDirection vector, and then
+	/// 2. rotates sourceDirection2 (which was transformed by 1.) to targetDirection2, but keeping the constraint that
 	///	sourceDirection must look at targetDirection.
-	static Quat RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection,
+	static MUST_USE_RESULT Quat RotateFromTo(const float3 &sourceDirection, const float3 &targetDirection,
 		const float3 &sourceDirection2, const float3 &targetDirection2);
 
 	/// Creates a new Quat from the given sequence of Euler rotation angles (in radians).
 	/** The FromEulerABC function returns a matrix M = A(a) * B(b) * C(c). Rotation
 		C is applied first, followed by B and then A. [indexTitle: FromEuler***] */
-	static Quat FromEulerXYX(float x2, float y, float x);
-	static Quat FromEulerXZX(float x2, float z, float x); ///< [similarOverload: FromEulerXYX] [hideIndex]
-	static Quat FromEulerYXY(float y2, float x, float y); ///< [similarOverload: FromEulerXYX] [hideIndex]
-	static Quat FromEulerYZY(float y2, float z, float y); ///< [similarOverload: FromEulerXYX] [hideIndex]
-	static Quat FromEulerZXZ(float z2, float x, float z); ///< [similarOverload: FromEulerXYX] [hideIndex]
-	static Quat FromEulerZYZ(float z2, float y, float z); ///< [similarOverload: FromEulerXYX] [hideIndex]
-	static Quat FromEulerXYZ(float x, float y, float z); ///< [similarOverload: FromEulerXYX] [hideIndex]
-	static Quat FromEulerXZY(float x, float z, float y); ///< [similarOverload: FromEulerXYX] [hideIndex]
-	static Quat FromEulerYXZ(float y, float x, float z); ///< [similarOverload: FromEulerXYX] [hideIndex]
-	static Quat FromEulerYZX(float y, float z, float x); ///< [similarOverload: FromEulerXYX] [hideIndex]
-	static Quat FromEulerZXY(float z, float x, float y); ///< [similarOverload: FromEulerXYX] [hideIndex]
-	static Quat FromEulerZYX(float z, float y, float x); ///< [similarOverload: FromEulerXYX] [hideIndex]
+	static MUST_USE_RESULT Quat FromEulerXYX(float x2, float y, float x);
+	static MUST_USE_RESULT Quat FromEulerXZX(float x2, float z, float x); ///< [similarOverload: FromEulerXYX] [hideIndex]
+	static MUST_USE_RESULT Quat FromEulerYXY(float y2, float x, float y); ///< [similarOverload: FromEulerXYX] [hideIndex]
+	static MUST_USE_RESULT Quat FromEulerYZY(float y2, float z, float y); ///< [similarOverload: FromEulerXYX] [hideIndex]
+	static MUST_USE_RESULT Quat FromEulerZXZ(float z2, float x, float z); ///< [similarOverload: FromEulerXYX] [hideIndex]
+	static MUST_USE_RESULT Quat FromEulerZYZ(float z2, float y, float z); ///< [similarOverload: FromEulerXYX] [hideIndex]
+	static MUST_USE_RESULT Quat FromEulerXYZ(float x, float y, float z); ///< [similarOverload: FromEulerXYX] [hideIndex]
+	static MUST_USE_RESULT Quat FromEulerXZY(float x, float z, float y); ///< [similarOverload: FromEulerXYX] [hideIndex]
+	static MUST_USE_RESULT Quat FromEulerYXZ(float y, float x, float z); ///< [similarOverload: FromEulerXYX] [hideIndex]
+	static MUST_USE_RESULT Quat FromEulerYZX(float y, float z, float x); ///< [similarOverload: FromEulerXYX] [hideIndex]
+	static MUST_USE_RESULT Quat FromEulerZXY(float z, float x, float y); ///< [similarOverload: FromEulerXYX] [hideIndex]
+	static MUST_USE_RESULT Quat FromEulerZYX(float z, float y, float x); ///< [similarOverload: FromEulerXYX] [hideIndex]
 
 	/// Returns a uniformly random unitary quaternion.
-	static Quat RandomRotation(LCG &lcg);
+	static MUST_USE_RESULT Quat RandomRotation(LCG &lcg);
 
 	/// Extracts the rotation part of this quaternion into Euler rotation angles (in radians).
 	/** @note It is better to think about the returned float3 as an array of three floats, and
@@ -252,34 +278,34 @@ public:
 			in the second axis, in this case the x axis.
 		@return A float3 which specifies the rotation of this quaternion in radian Euler angles.
 			The function ToEulerABC returns a float3 where the first
-			element ([0], or x) specifies the rotation about the axis A (not necessarily the X axis!), 
+			element ([0], or x) specifies the rotation about the axis A (not necessarily the X axis!),
 			[1] or y specifies the rotation about the B axis (not necessarily the Y axis!) and
 			[2] or z specifies the rotation about the C axis (not necessarily the Z axis!). The
 			order of rotations follows the M*v convention, meaning that ToEulerXYZ returns the Euler
 			angles for rotating a vector v in the order X * (Y * (Z * v))), i.e. right-to-left. */
-	float3 ToEulerXYX() const;
-	float3 ToEulerXZX() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
-	float3 ToEulerYXY() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
-	float3 ToEulerYZY() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
-	float3 ToEulerZXZ() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
-	float3 ToEulerZYZ() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
-	float3 ToEulerXYZ() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
-	float3 ToEulerXZY() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
-	float3 ToEulerYXZ() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
-	float3 ToEulerYZX() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
-	float3 ToEulerZXY() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
-	float3 ToEulerZYX() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
+	float3 MUST_USE_RESULT ToEulerXYX() const;
+	float3 MUST_USE_RESULT ToEulerXZX() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
+	float3 MUST_USE_RESULT ToEulerYXY() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
+	float3 MUST_USE_RESULT ToEulerYZY() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
+	float3 MUST_USE_RESULT ToEulerZXZ() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
+	float3 MUST_USE_RESULT ToEulerZYZ() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
+	float3 MUST_USE_RESULT ToEulerXYZ() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
+	float3 MUST_USE_RESULT ToEulerXZY() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
+	float3 MUST_USE_RESULT ToEulerYXZ() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
+	float3 MUST_USE_RESULT ToEulerYZX() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
+	float3 MUST_USE_RESULT ToEulerZXY() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
+	float3 MUST_USE_RESULT ToEulerZYX() const; ///< [similarOverload: ToEulerXYX] [hideIndex]
 
-	float3x3 ToFloat3x3() const;
-	float3x4 ToFloat3x4() const;
-	float4x4 ToFloat4x4() const;
+	float3x3 MUST_USE_RESULT ToFloat3x3() const;
+	float3x4 MUST_USE_RESULT ToFloat3x4() const;
+	float4x4 MUST_USE_RESULT ToFloat4x4() const;
 
 #ifdef MATH_ENABLE_STL_SUPPORT
 	/// Returns "(x,y,z,w)".
-	std::string ToString() const;
+	std::string MUST_USE_RESULT ToString() const;
 
 	/// Returns "Quat(axis:(x,y,z) angle:degrees)".
-	std::string ToString2() const;
+	std::string MUST_USE_RESULT ToString2() const;
 
 	/// Returns "x y z w". This is the preferred format for the quaternion if it has to be serialized to a string for machine transfer.
 	std::string SerializeToString() const;
@@ -288,9 +314,9 @@ public:
     std::string SerializeToStringWXYZ() const;
 #endif
 	/// Parses a string that is of form "x,y,z,w" or "(x,y,z,w)" or "(x;y;z;w)" or "x y z w" to a new quaternion.
-	static Quat FromString(const char *str);
+	static MUST_USE_RESULT Quat FromString(const char *str);
 #ifdef MATH_ENABLE_STL_SUPPORT
-	static Quat FromString(const std::string &str) { return FromString(str.c_str()); }
+	static MUST_USE_RESULT Quat FromString(const std::string &str) { return FromString(str.c_str()); }
 #endif
 
 	/// Multiplies two quaternions together.
@@ -299,7 +325,7 @@ public:
 	Quat operator *(const Quat &rhs) const;
 
 	/// Transforms the given vector by this Quaternion.
-	/// @note Technically, this function does not perform a simple multiplication of 'q * v', 
+	/// @note Technically, this function does not perform a simple multiplication of 'q * v',
 	/// but instead performs a conjugation operation 'q*v*q^-1'. This corresponds to transforming
 	/// the given vector by this Quaternion.
 	float3 operator *(const float3 &rhs) const;
@@ -309,12 +335,15 @@ public:
 	static const Quat identity;
 	/// A compile-time constant Quat with value (NaN, NaN, NaN, NaN).
 	/// For this constant, each element has the value of quiet NaN, or Not-A-Number.
-	/// @note Never compare a Quat to this value! Due to how IEEE floats work, for each float x, both the expression "x == nan" and "x == nan" returns false!
+	/// @note Never compare a Quat to this value! Due to how IEEE floats work, for each float x, both the expression "x == nan" and "x != nan" returns false!
 	///	   That is, nothing is equal to NaN, not even NaN itself!
 	static const Quat nan;
 
 	/// Divides a quaternion by another. Division "a / b" results in a quaternion that rotates the orientation b to coincide with the orientation a.
 	Quat operator /(const Quat &rhs) const;
+
+	/// Unary operator + allows this structure to be used in an expression '+x'.
+	Quat operator +() const { return *this; }
 
 #ifdef MATH_OGRE_INTEROP
 	Quat(const Ogre::Quaternion &other) { w = other.w; x = other.x; y = other.y; z = other.z; }
@@ -332,8 +361,8 @@ public:
 	operator QString() const { return toString(); }
 	QString toString() const { return ToString2().c_str(); }
 	QQuaternion ToQQuaternion() const { return (QQuaternion)*this; }
-	static Quat FromQQuaternion(const QQuaternion &q) { return (Quat)q; }
-	static Quat FromString(const QString &str) { return FromString(str.toStdString()); }
+	static MUST_USE_RESULT Quat FromQQuaternion(const QQuaternion &q) { return (Quat)q; }
+	static MUST_USE_RESULT Quat FromString(const QString &str) { return FromString(str.toStdString()); }
 #endif
 #ifdef MATH_BULLET_INTEROP
 	Quat(const btQuaternion &other) { w = other.w(); x = other.x(); y = other.y(); z = other.z(); }
@@ -342,35 +371,35 @@ public:
 
 	/// Multiplies two quaternions in the order 'this * rhs'.
 	/// This corresponds to the concatenation of the two operations ('this * rhs * vector' applies the rotation 'rhs' first, followed by the rotation 'this'.
-	Quat Mul(const Quat &rhs) const;
+	Quat MUST_USE_RESULT Mul(const Quat &rhs) const;
 	/// Converts the given matrix to a quaternion and computes the concatenated transform 'this * rhs'.
-	Quat Mul(const float3x3 &rhs) const;
+	Quat MUST_USE_RESULT Mul(const float3x3 &rhs) const;
 	/// Transforms the given vector by this Quaternion.
-	/// @note Technically, this function does not perform a simple multiplication of 'q * v', 
+	/// @note Technically, this function does not perform a simple multiplication of 'q * v',
 	/// but instead performs a conjugation operation 'q*v*q^-1'. This corresponds to transforming
 	/// the given vector by this Quaternion.
-	float3 Mul(const float3 &vector) const;
-	float4 Mul(const float4 &vector) const;
+	float3 MUST_USE_RESULT Mul(const float3 &vector) const;
+	float4 MUST_USE_RESULT Mul(const float4 &vector) const;
 
 private: // Hide the unsafe operations from the user, so that he doesn't accidentally invoke an unintended operation.
 
 	/// Multiplies a quaternion by a scalar.
 	/// @note Technically, multiplication by scalar would not affect the rotation this quaternion represents, but since
 	/// Quat uses conjugation to compute the inverse (to optimize), an unnormalized quaternion will not produce a proper rotation transform.
-	/// @important Multiplication by a scalar does not "accumulate" rotations, e.g. "quat * 5.f" will not produce a quaternion that would rotate
+	/// @note Multiplication by a scalar does not "accumulate" rotations, e.g. "quat * 5.f" will not produce a quaternion that would rotate
 	///			"5 times more".
 	Quat operator *(float scalar) const;
 
 	Quat operator /(float scalar) const;
 
 	/// Adds two quaternions.
-	/// @important Adding two quaternions does not concatenate the two rotation operations. Use quaternion multiplication to achieve that.
+	/// @note Adding two quaternions does not concatenate the two rotation operations. Use quaternion multiplication to achieve that.
 	Quat operator +(const Quat &rhs) const;
 
 	Quat operator -(const Quat &rhs) const;
 
 	/// Negates the quaternion.
-	/// @important Negating a quaternion will not produce the inverse rotation. Call Quat::Inverse() to generate the inverse rotation.
+	/// @note Negating a quaternion will not produce the inverse rotation. Call Quat::Inverse() to generate the inverse rotation.
 	Quat operator -() const;
 };
 

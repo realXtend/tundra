@@ -31,6 +31,8 @@
 #include <OgreVector4.h>
 #endif
 
+#include "MathBuildConfig.h"
+
 MATH_BEGIN_NAMESPACE
 
 /// A 3D vector of form (x,y,z,w) in a 4D homogeneous coordinate space.
@@ -46,29 +48,46 @@ public:
 		Size = 4
 	};
 
-	/// The x component.
-	/** A float4 is 16 bytes in size. This element lies in the memory offsets 0-3 of this class. */
-	float x;
-	/// The y component. [similarOverload: x]
-	/** This element is packed to the memory offsets 4-7 of this class. */
-	float y;
-	/// The z component. [similarOverload: x]
-	/** This element is packed to the memory offsets 8-11 of this class. */
-	float z;
-	/// The w component. [similarOverload: x]
-	/** This element is packed to the memory offsets 12-15 of this class. */
-	float w;
+#ifdef MATH_SSE
+	NAMELESS_UNION_BEGIN // Allow nonstandard nameless struct in union extension on MSC.
+
+	union
+	{
+		struct
+		{
+#endif
+			/// The x component.
+			/** A float4 is 16 bytes in size. This element lies in the memory offsets 0-3 of this class. */
+			float x;
+			/// The y component. [similarOverload: x]
+			/** This element is packed to the memory offsets 4-7 of this class. */
+			float y;
+			/// The z component. [similarOverload: x]
+			/** This element is packed to the memory offsets 8-11 of this class. */
+			float z;
+			/// The w component. [similarOverload: x]
+			/** This element is packed to the memory offsets 12-15 of this class. */
+			float w;
+#ifdef MATH_SSE
+		};
+		__m128 v;
+	};
+
+	NAMELESS_UNION_END
+#endif
 
 	/// The default constructor does not initialize any members of this class.
-	/** This means that the values of the members x, y, z and w are all undefined after creating a new float4 using 
+	/** This means that the values of the members x, y, z and w are all undefined after creating a new float4 using
 		this default constructor. Remember to assign to them before use.
 		@see x, y, z, w. */
 	float4() {}
 
+#ifdef MATH_EXPLICIT_COPYCTORS
 	/// The float4 copy constructor.
-	/** The copy constructor is a standard default copy-ctor, but it is explicitly written to be able to automatically pick up 
+	/** The copy constructor is a standard default copy-ctor, but it is explicitly written to be able to automatically pick up
 		this function for script bindings. */
 	float4(const float4 &rhs) { x = rhs.x; y = rhs.y; z = rhs.z; w = rhs.w; }
+#endif
 
 	/// Constructs a new float4 with the value (x, y, z, w).
 	/** @see x, y, z, w. */
@@ -86,14 +105,14 @@ public:
 	/** @param data An array containing four elements for x, y, z and w. This pointer may not be null. */
 	explicit float4(const float *data);
 
-	/// Casts this float4 to a C array. 
+	/// Casts this float4 to a C array.
 	/** This function does not allocate new memory or make a copy of this float4. This function simply
 		returns a C pointer view to this data structure. Use ptr()[0] to access the x component of this float4,
 		ptr()[1] to access y, ptr()[2] to access z, and ptr()[3] to access the w component of this float4.
 		@note Since the returned pointer points to this class, do not dereference the pointer after this
 			float3 has been deleted. You should never store a copy of the returned pointer.
 		@note This function is provided for compatibility with other APIs which require raw C pointer access
-			to vectors. Avoid using this function in general, and instead always use the operator [] of this 
+			to vectors. Avoid using this function in general, and instead always use the operator [] of this
 			class to access the elements of this vector by index.
 		@return A pointer to the first float element of this class. The data is contiguous in memory.
 		@see operator [](). */
@@ -102,14 +121,14 @@ public:
 
 	/// Accesses an element of this vector using array notation.
 	/** @param index The element to get. Pass in 0 for x, 1 for y, 2 for z and 3 for w.
-		@note If you have a non-const instance of this class, you can use this notation to set the elements of 
+		@note If you have a non-const instance of this class, you can use this notation to set the elements of
 			this vector as well, e.g. vec[1] = 10.f; would set the y-component of this vector. */
 	float &operator [](int index) { return At(index); }
 	CONST_WIN32 float operator [](int index) const { return At(index); }
 
 	/// Accesses an element of this vector.
 	/** @param index The element to get. Pass in 0 for x, 1 for y, 2 for z and 3 for w.
-		@note If you have a non-const instance of this class, you can use this notation to set the elements of 
+		@note If you have a non-const instance of this class, you can use this notation to set the elements of
 			this vector as well, e.g. vec.At(1) = 10.f; would set the y-component of this vector. */
 	float &At(int index);
 	CONST_WIN32 float At(int index) const;
@@ -138,6 +157,9 @@ public:
 	/** This function is identical to the member function Div().
 		@return float4(x / scalar, y / scalar, z / scalar, w * scalar); */
 	float4 operator /(float scalar) const;
+
+	/// Unary operator + allows this structure to be used in an expression '+x'.
+	float4 operator +() const { return *this; }
 
 	/// Adds a vector to this vector, in-place. [indexTitle: operators +=,-=,*=,/=]
 	/** @return A reference to this. */
@@ -168,7 +190,7 @@ public:
 	float4 Add(const float4 &v) const { return *this + v; }
 
 	/// Adds the vector (s,s,s,s) to this vector.
-	/// @note Mathematically, the addition of a vector and scalar is not defined in linear space structures, 
+	/// @note Mathematically, the addition of a vector and scalar is not defined in linear space structures,
 	///	 but this function is provided here for syntactical convenience.
 	/// @return (x+s, y+s, z+s, w+s).
 	float4 Add(float s) const;
@@ -178,19 +200,19 @@ public:
 	float4 Sub(const float4 &v) const { return *this - v; }
 
 	/// Subtracts the vector (s,s,s,s) from this vector. [similarOverload: Add] [hideIndex]
-	/// @note Mathematically, the subtraction of a vector by a scalar is not defined in linear space structures, 
+	/// @note Mathematically, the subtraction of a vector by a scalar is not defined in linear space structures,
 	///	 but this function is provided here for syntactical convenience.
 	/// @return (x-s, y-s, z-s, w-s).
 	float4 Sub(float s) const;
 
 	/// Subtracts this vector from the vector (s,s,s,s). [similarOverload: Add] [hideIndex]
-	/// @note Mathematically, the subtraction of a scalar by a vector is not defined in linear space structures, 
+	/// @note Mathematically, the subtraction of a scalar by a vector is not defined in linear space structures,
 	///	 but this function is provided here for syntactical convenience.
 	/// @return (s-x, s-y, s-z, s-w).
 	float4 SubLeft(float s) const;
 
 	/// Multiplies this vector by a vector, element-wise. [similarOverload: Add] [hideIndex]
-	/// @note Mathematically, the multiplication of two vectors is not defined in linear space structures, 
+	/// @note Mathematically, the multiplication of two vectors is not defined in linear space structures,
 	///	 but this function is provided here for syntactical convenience.
 	/// @return (x*v.x, y*v.y, z*v.z, w*v.w).
 	float4 Mul(const float4 &v) const;
@@ -201,7 +223,7 @@ public:
 	float4 Mul(float s) const { return *this * s; }
 
 	/// Divides this vector by a vector, element-wise. [similarOverload: Add] [hideIndex]
-	/// @note Mathematically, the division of two vectors is not defined in linear space structures, 
+	/// @note Mathematically, the division of two vectors is not defined in linear space structures,
 	///	 but this function is provided here for syntactical convenience.
 	/// @return (x/v.x, y/v.y, z/v.z, w/v.w).
 	float4 Div(const float4 &v) const;
@@ -211,10 +233,13 @@ public:
 	float4 Div(float s) const { return *this / s; }
 	
 	/// Divides the vector (s,s,s,s) by this vector, element-wise. [similarOverload: Add] [hideIndex]
-	/// @note Mathematically, the division of a scalar by a vector is not defined in linear space structures, 
+	/// @note Mathematically, the division of a scalar by a vector is not defined in linear space structures,
 	///	 but this function is provided here for syntactical convenience.
 	/// @return (s/x, s/y, s/z, s/w).
 	float4 DivLeft(float s) const;
+
+	/// Returns the (x, y) part of this vector.
+	float2 xy() const;
 
 	/// Returns the (x, y, z) part of this vector.
 	float3 xyz() const;
@@ -226,9 +251,9 @@ public:
 		@param k Chooses the element of this vector to pick for the z value of the returned vector, in the range [0, 3].
 		@param l Chooses the element of this vector to pick for the w value of the returned vector, in the range [0, 3].
 		@see xyz(). */
-	float2 Swizzled(int i, int j) const;
-	float3 Swizzled(int i, int j, int k) const;
 	float4 Swizzled(int i, int j, int k, int l) const;
+	float3 Swizzled(int i, int j, int k) const;
+	float2 Swizzled(int i, int j) const;
 
 	/// Returns float4(scalar, scalar, scalar, scalar).
 	/** @see float4::float4(float scalar), SetFromScalar(). */
@@ -250,7 +275,7 @@ public:
 
 	/// Computes the squared length of the (x, y, z) part of this vector.
 	/** Calling this function is faster than calling Length3(), since this function avoids computing a square root.
-		If you only need to compare lengths to each other, but are not interested in the actual length values, 
+		If you only need to compare lengths to each other, but are not interested in the actual length values,
 		you can compare by using LengthSq3(), instead of Length3(), since Sqrt() is an order-preserving
 		(monotonous and non-decreasing) function.
 		@note This function ignores the w component of this vector.
@@ -266,7 +291,7 @@ public:
 
 	/// Computes the squared length of this vector.
 	/** Calling this function is faster than calling Length4(), since this function avoids computing a square root.
-		If you only need to compare lengths to each other, but are not interested in the actual length values, 
+		If you only need to compare lengths to each other, but are not interested in the actual length values,
 		you can compare by using LengthSq4(), instead of Length4(), since Sqrt() is an order-preserving
 		(monotonous and non-decreasing) function.
 		@return x*x + y*y + z*z + w*w.
@@ -299,25 +324,24 @@ public:
 
 	/// Returns a copy of this vector with the (x, y, z) part normalized.
 	/** The w component of this vector is carried over unchanged.
-		@return A copy of this vector that has the (x, y, z) part normalized, and w set to the same value as in this vector. 
+		@return A copy of this vector that has the (x, y, z) part normalized, and w set to the same value as in this vector.
 			If the normalization fails, an error message is printed and the vector (1, 0, 0, oldW) is returned.
 		@see Length3(), Length4(), Normalize3(), Normalize4(), Normalized4(). */
 	float4 Normalized3() const;
 
 	/// Returns a normalized copy of this vector.
-	/** @return A copy of this vector that has the (x, y, z) part normalized, and w set to the same value as in this vector. 
+	/** @return A copy of this vector that has the (x, y, z) part normalized, and w set to the same value as in this vector.
 			If the normalization fails, an error message is printed and the vector (1, 0, 0, oldW) is returned.
 		@see Length3(), Length4(), Normalize3(), Normalize4(), Normalized3(). */
 	float4 Normalized4() const;
 
 	/// Divides each element by w to produce a float4 of form (x, y, z, 1).
 	/** This function performs the <b>perspective divide</b> or the <b>homogeneous divide</b> on this vector, which is the
-		process of dividing each element of this vector by w.
+		process of dividing each element of this vector by w. If the w component of this vector is zero before division, the
+		result of this vector will be undefined.
 		@note This function operates in-place.
-		@return True if w != 0 for this vector, and the normalization of w succeeded. If this function succeeds, w == 1
-			for the resulting float4. If normalization fails, no error message is printed and false is returned.
-		@see IsWZeroOrOne(). */		
-	bool NormalizeW();
+		@see IsWZeroOrOne(). */
+	void NormalizeW();
 
 	/// Returns true if the w component of this float4 is either 0 or 1.
 	/** This is a required condition for several functions to work correctly.
@@ -418,16 +442,22 @@ public:
 	float4 Neg4() const;
 
 	/// Computes the element-wise reciprocal of the three first elements of this vector.
-	/** This function returns a new vector where the x, y and z elements of the original vector are replaced by 
+	/** This function returns a new vector where the x, y and z elements of the original vector are replaced by
 		the values 1/x, 1/y and 1/z.
 		@return float4(1/x, 1/y, 1/z, w). */
 	float4 Recip3() const;
 
 	/// Computes the element-wise reciprocal of this vector.
-	/** This function returns a new vector where each element x of the original vector is replaced by the value 1/x. 
+	/** This function returns a new vector where each element x of the original vector is replaced by the value 1/x.
 		This function operates on all four elements of this vector.
 		@return float4(1/x, 1/y, 1/z, 1/w). */
 	float4 Recip4() const;
+
+	/// Computes the element-wise reciprocal of this vector using a fast approximation (SSE rcp instruction).
+	/** This function returns a new vector where each element x of the original vector is replaced by the value 1/x.
+		This function operates on all four elements of this vector.
+		@return float4(1/x, 1/y, 1/z, 1/w). */
+	float4 RecipFast4() const;
 
 	/// Returns an element-wise minimum of this and the vector (ceil, ceil, ceil, ceil).
 	/** Each element that is larger than ceil is replaced by ceil. */
@@ -460,21 +490,36 @@ public:
 
 	/// Linearly interpolates between this and the vector b.
 	/** This function assumes that the w components of this and the other vector are equal.
+		@param b The target endpoint to lerp towards to.
 		@param t The interpolation weight, in the range [0, 1].
 		Lerp(b, 0) returns this vector, Lerp(b, 1) returns the vector b.
 		Lerp(b, 0.5) returns the vector half-way in between the two vectors, and so on. */
 	float4 Lerp(const float4 &b, float t) const;
 	static float4 Lerp(const float4 &a, const float4 &b, float t);
 
-	/// Computes the squared distance between the (x, y, z) parts of this and the given float4. 
+	/// Computes the squared distance between the (x, y, z) parts of this and the given float4.
 	/** @note This function ignores the w component of this and rhs vector (assumes w=0 or w=1 are the same for both vectors).
-		@see Distance3(), Length3Sq(), Length3(). */
+		@see Distance3(), Length3Sq(), Length3().
+		@return (x-rhs.x)^2 + (y-rhs.y)^2 + (z-rhs.z)^2. */
 	float Distance3Sq(const float4 &rhs) const;
 
-	/// Computes the distance between the (x, y, z) parts of this and the given float4. 
+	/// Computes the distance between the (x, y, z) parts of this and the given float4.
 	/** @note This function ignores the w component of this and rhs vector (assumes w=0 or w=1 are the same for both vectors).
-		@see Distance3Sq(), Length3Sq(), Length3(). */
+		@see Distance3Sq(), Length3Sq(), Length3().
+		@return Sqrt((x-rhs.x)^2 + (y-rhs.y)^2 + (z-rhs.z)^2). */
 	float Distance3(const float4 &rhs) const;
+
+	/// Computes the squared distance between this and the given float4.
+	/** @note This function computes the square of the Euclidean distance of the two vectors in 4D space (taking into account the w component).
+		@see Distance4Sq(), Distance3(), Distance3Sq(), Length3Sq(), Length3().
+		@return (x-rhs.x)^2 + (y-rhs.y)^2 + (z-rhs.z)^2 + (w-rhs.w)^2. */
+	float Distance4Sq(const float4 &rhs) const;
+
+	/// Computes the distance between this and the given float4.
+	/** @note This function computes the Euclidean distance of the two vectors in 4D space (taking into account the w component).
+		@see Distance4Sq(), Distance3(), Distance3Sq(), Length3Sq(), Length3().
+		@return Sqrt((x-rhs.x)^2 + (y-rhs.y)^2 + (z-rhs.z)^2 + (w-rhs.w)^2). */
+	float Distance4(const float4 &rhs) const;
 
 	/// Computes the dot product of the (x, y, z) parts of this and the given float4.
 	/** @note This function ignores the w component of this vector (assumes w=0).
@@ -508,7 +553,7 @@ public:
 	float4 Reflect3(const float3 &normal) const;
 
 	/// Returns the angle between this vector and the specified vector, in radians.
-	/** @note This function takes into account that this vector or the other vector can be unnormalized, and 
+	/** @note This function takes into account that this vector or the other vector can be unnormalized, and
 			normalizes the computations.
 		@note This function ignores the w component of this vector (assumes w=0).
 		@see Dot3(), AngleBetweenNorm3(), AngleBetween4(), AngleBetweenNorm4(). */
@@ -620,6 +665,26 @@ public:
 	float4(const btVector3 &other) { x = other.x(); y = other.y(); z = other.z(); w = other.w(); }
 	operator btVector3() const { btVector3 v(x, y, z); v.setW(w); return v; }
 #endif
+
+#ifdef MATH_SSE
+	float4(__m128 vec):v(vec) {}
+
+	__m128 Swizzled_SSE(int i, int j, int k, int l) const;
+	__m128 LengthSq3_SSE() const;
+	__m128 Length3_SSE() const;
+	__m128 LengthSq4_SSE() const;
+	__m128 Length4_SSE() const;
+	__m128 Normalize3_SSE();
+	__m128 Normalize4_SSE();
+	void Normalize3_Fast_SSE();
+	void Normalize4_Fast_SSE();
+	void NormalizeW_SSE();
+	__m128 SumOfElements_SSE() const;
+
+	inline float4 &operator =(const __m128 vec) { v = vec; return *this; }
+
+	inline operator __m128() const { return v; }
+#endif
 };
 
 #ifdef MATH_ENABLE_STL_SUPPORT
@@ -627,7 +692,7 @@ public:
 std::ostream &operator <<(std::ostream &out, const float4 &rhs);
 #endif
 
-/// Multiplies the x, y, z and w components of the vector by the given scalar. Note that if w != 0, 
+/// Multiplies the x, y, z and w components of the vector by the given scalar. Note that if w != 0,
 /// this does NOT scale the length of the homogeneous 3D vector.
 float4 operator *(float scalar, const float4 &rhs);
 
@@ -639,6 +704,10 @@ inline float Dot3(const float4 &a, const float4 &b) { return a.Dot3(b); }
 inline float Dot4(const float4 &a, const float4 &b) { return a.Dot4(b); }
 inline float4 Cross3(const float4 &a, const float4 &b) { return a.Cross3(b); }
 inline float4 Abs(const float4 &a) { return a.Abs(); }
+inline float Length3(const float4 &a) { return a.Length3(); }
+inline float Length4(const float4 &a) { return a.Length4(); }
+inline float Distance3(const float4 &a, const float4 &b) { return a.Distance3(b); }
+inline float Distance4(const float4 &a, const float4 &b) { return a.Distance4(b); }
 inline float4 Min(const float4 &a, const float4 &b) { return a.Min(b); }
 inline float4 Max(const float4 &a, const float4 &b) { return a.Max(b); }
 inline float4 Clamp(const float4 &a, float floor, float ceil) { return a.Clamp(floor, ceil); }

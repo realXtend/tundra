@@ -83,6 +83,16 @@ static QScriptValue LineSegment_ExtremePoint_float3_const(QScriptContext *contex
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue LineSegment_Translate_float3(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function LineSegment_Translate_float3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    LineSegment This = qscriptvalue_cast<LineSegment>(context->thisObject());
+    float3 offset = qscriptvalue_cast<float3>(context->argument(0));
+    This.Translate(offset);
+    ToExistingScriptValue_LineSegment(engine, This, context->thisObject());
+    return QScriptValue();
+}
+
 static QScriptValue LineSegment_Transform_float3x3(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function LineSegment_Transform_float3x3 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -213,6 +223,46 @@ static QScriptValue LineSegment_Intersects_Plane_const(QScriptContext *context, 
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue LineSegment_Intersects_AABB_float_float_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function LineSegment_Intersects_AABB_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    LineSegment This = qscriptvalue_cast<LineSegment>(context->thisObject());
+    AABB aabb = qscriptvalue_cast<AABB>(context->argument(0));
+    float dNear = qscriptvalue_cast<float>(context->argument(1));
+    float dFar = qscriptvalue_cast<float>(context->argument(2));
+    bool ret = This.Intersects(aabb, dNear, dFar);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue LineSegment_Intersects_AABB_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function LineSegment_Intersects_AABB_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    LineSegment This = qscriptvalue_cast<LineSegment>(context->thisObject());
+    AABB aabb = qscriptvalue_cast<AABB>(context->argument(0));
+    bool ret = This.Intersects(aabb);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue LineSegment_Intersects_OBB_float_float_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function LineSegment_Intersects_OBB_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    LineSegment This = qscriptvalue_cast<LineSegment>(context->thisObject());
+    OBB obb = qscriptvalue_cast<OBB>(context->argument(0));
+    float dNear = qscriptvalue_cast<float>(context->argument(1));
+    float dFar = qscriptvalue_cast<float>(context->argument(2));
+    bool ret = This.Intersects(obb, dNear, dFar);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue LineSegment_Intersects_OBB_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function LineSegment_Intersects_OBB_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    LineSegment This = qscriptvalue_cast<LineSegment>(context->thisObject());
+    OBB obb = qscriptvalue_cast<OBB>(context->argument(0));
+    bool ret = This.Intersects(obb);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue LineSegment_Intersects_Capsule_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function LineSegment_Intersects_Capsule_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -284,6 +334,17 @@ static QScriptValue LineSegment_ToLine_const(QScriptContext *context, QScriptEng
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue LineSegment_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function LineSegment_ProjectToAxis_float3_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    LineSegment This = qscriptvalue_cast<LineSegment>(context->thisObject());
+    float3 direction = qscriptvalue_cast<float3>(context->argument(0));
+    float outMin = qscriptvalue_cast<float>(context->argument(1));
+    float outMax = qscriptvalue_cast<float>(context->argument(2));
+    This.ProjectToAxis(direction, outMin, outMax);
+    return QScriptValue();
+}
+
 static QScriptValue LineSegment_toString_const(QScriptContext *context, QScriptEngine *engine)
 {
     LineSegment This;
@@ -343,6 +404,14 @@ static QScriptValue LineSegment_Intersects_selector(QScriptContext *context, QSc
 {
     if (context->argumentCount() == 1 && QSVIsOfType<Plane>(context->argument(0)))
         return LineSegment_Intersects_Plane_const(context, engine);
+    if (context->argumentCount() == 3 && QSVIsOfType<AABB>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
+        return LineSegment_Intersects_AABB_float_float_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<AABB>(context->argument(0)))
+        return LineSegment_Intersects_AABB_const(context, engine);
+    if (context->argumentCount() == 3 && QSVIsOfType<OBB>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
+        return LineSegment_Intersects_OBB_float_float_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<OBB>(context->argument(0)))
+        return LineSegment_Intersects_OBB_const(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<Capsule>(context->argument(0)))
         return LineSegment_Intersects_Capsule_const(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<Polygon>(context->argument(0)))
@@ -386,6 +455,7 @@ QScriptValue register_LineSegment_prototype(QScriptEngine *engine)
     proto.setProperty("Reverse", engine->newFunction(LineSegment_Reverse, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Dir", engine->newFunction(LineSegment_Dir_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ExtremePoint", engine->newFunction(LineSegment_ExtremePoint_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Translate", engine->newFunction(LineSegment_Translate_float3, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Transform", engine->newFunction(LineSegment_Transform_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Length", engine->newFunction(LineSegment_Length_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("LengthSq", engine->newFunction(LineSegment_LengthSq_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -394,10 +464,12 @@ QScriptValue register_LineSegment_prototype(QScriptEngine *engine)
     proto.setProperty("Contains", engine->newFunction(LineSegment_Contains_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Distance", engine->newFunction(LineSegment_Distance_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersects", engine->newFunction(LineSegment_Intersects_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Intersects", engine->newFunction(LineSegment_Intersects_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersects", engine->newFunction(LineSegment_Intersects_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IntersectsDisc", engine->newFunction(LineSegment_IntersectsDisc_Circle_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToRay", engine->newFunction(LineSegment_ToRay_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ToLine", engine->newFunction(LineSegment_ToLine_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ProjectToAxis", engine->newFunction(LineSegment_ProjectToAxis_float3_float_float_const, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("toString", engine->newFunction(LineSegment_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<LineSegment>()));
     engine->setDefaultPrototype(qMetaTypeId<LineSegment>(), proto);

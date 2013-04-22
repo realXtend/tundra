@@ -21,6 +21,14 @@ static QScriptValue Frustum_ctor(QScriptContext *context, QScriptEngine *engine)
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Frustum_NumEdges_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Frustum_NumEdges_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
+    int ret = This.NumEdges();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Frustum_AspectRatio_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Frustum_AspectRatio_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -29,11 +37,35 @@ static QScriptValue Frustum_AspectRatio_const(QScriptContext *context, QScriptEn
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Frustum_WorldRight_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Frustum_WorldRight_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
+    float3 ret = This.WorldRight();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue Frustum_NearPlane_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Frustum_NearPlane_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
     Plane ret = This.NearPlane();
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Frustum_NearPlaneWidth_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Frustum_NearPlaneWidth_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
+    float ret = This.NearPlaneWidth();
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Frustum_NearPlaneHeight_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Frustum_NearPlaneHeight_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
+    float ret = This.NearPlaneHeight();
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -86,13 +118,30 @@ static QScriptValue Frustum_GetPlane_int_const(QScriptContext *context, QScriptE
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Frustum_GetPlanes_Plane_ptr_const(QScriptContext *context, QScriptEngine * /*engine*/)
+static QScriptValue Frustum_GetPlanes_Plane_ptr_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Frustum_GetPlanes_Plane_ptr_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
     Plane * outArray = qscriptvalue_cast<Plane *>(context->argument(0));
     This.GetPlanes(outArray);
     return QScriptValue();
+}
+
+static QScriptValue Frustum_CenterPoint_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Frustum_CenterPoint_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
+    float3 ret = This.CenterPoint();
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Frustum_Edge_int_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Frustum_Edge_int_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
+    int edgeIndex = qscriptvalue_cast<int>(context->argument(0));
+    LineSegment ret = This.Edge(edgeIndex);
+    return qScriptValueFromValue(engine, ret);
 }
 
 static QScriptValue Frustum_CornerPoint_int_const(QScriptContext *context, QScriptEngine *engine)
@@ -111,6 +160,27 @@ static QScriptValue Frustum_ExtremePoint_float3_const(QScriptContext *context, Q
     float3 direction = qscriptvalue_cast<float3>(context->argument(0));
     float3 ret = This.ExtremePoint(direction);
     return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Frustum_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Frustum_ProjectToAxis_float3_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
+    float3 direction = qscriptvalue_cast<float3>(context->argument(0));
+    float outMin = qscriptvalue_cast<float>(context->argument(1));
+    float outMax = qscriptvalue_cast<float>(context->argument(2));
+    This.ProjectToAxis(direction, outMin, outMax);
+    return QScriptValue();
+}
+
+static QScriptValue Frustum_SetWorldMatrix_float3x4(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Frustum_SetWorldMatrix_float3x4 in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
+    float3x4 worldTransform = qscriptvalue_cast<float3x4>(context->argument(0));
+    This.SetWorldMatrix(worldTransform);
+    ToExistingScriptValue_Frustum(engine, This, context->thisObject());
+    return QScriptValue();
 }
 
 static QScriptValue Frustum_WorldMatrix_const(QScriptContext *context, QScriptEngine *engine)
@@ -145,23 +215,62 @@ static QScriptValue Frustum_ViewProjMatrix_const(QScriptContext *context, QScrip
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Frustum_LookAt_float_float_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue Frustum_UnProject_float_float_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Frustum_LookAt_float_float_const in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Frustum_UnProject_float_float_const in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
     float x = qscriptvalue_cast<float>(context->argument(0));
     float y = qscriptvalue_cast<float>(context->argument(1));
-    Ray ret = This.LookAt(x, y);
+    Ray ret = This.UnProject(x, y);
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Frustum_LookAtFromNearPlane_float_float_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue Frustum_UnProject_float2_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Frustum_LookAtFromNearPlane_float_float_const in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Frustum_UnProject_float2_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
+    float2 xy = qscriptvalue_cast<float2>(context->argument(0));
+    Ray ret = This.UnProject(xy);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Frustum_UnProjectFromNearPlane_float_float_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Frustum_UnProjectFromNearPlane_float_float_const in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
     float x = qscriptvalue_cast<float>(context->argument(0));
     float y = qscriptvalue_cast<float>(context->argument(1));
-    Ray ret = This.LookAtFromNearPlane(x, y);
+    Ray ret = This.UnProjectFromNearPlane(x, y);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Frustum_UnProjectLineSegment_float_float_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Frustum_UnProjectLineSegment_float_float_const in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
+    float x = qscriptvalue_cast<float>(context->argument(0));
+    float y = qscriptvalue_cast<float>(context->argument(1));
+    LineSegment ret = This.UnProjectLineSegment(x, y);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Frustum_PointInside_float_float_float_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Frustum_PointInside_float_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
+    float x = qscriptvalue_cast<float>(context->argument(0));
+    float y = qscriptvalue_cast<float>(context->argument(1));
+    float z = qscriptvalue_cast<float>(context->argument(2));
+    float3 ret = This.PointInside(x, y, z);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Frustum_PointInside_float3_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Frustum_PointInside_float3_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
+    float3 xyz = qscriptvalue_cast<float3>(context->argument(0));
+    float3 ret = This.PointInside(xyz);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -228,12 +337,21 @@ static QScriptValue Frustum_Volume_const(QScriptContext *context, QScriptEngine 
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Frustum_RandomPointInside_LCG_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue Frustum_FastRandomPointInside_LCG_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Frustum_RandomPointInside_LCG_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Frustum_FastRandomPointInside_LCG_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
     LCG rng = qscriptvalue_cast<LCG>(context->argument(0));
-    float3 ret = This.RandomPointInside(rng);
+    float3 ret = This.FastRandomPointInside(rng);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue Frustum_UniformRandomPointInside_LCG_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Frustum_UniformRandomPointInside_LCG_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
+    LCG rng = qscriptvalue_cast<LCG>(context->argument(0));
+    float3 ret = This.UniformRandomPointInside(rng);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -560,6 +678,24 @@ static QScriptValue Frustum_ScreenToViewportSpace_float2_int_int(QScriptContext 
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue Frustum_UnProject_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 2 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
+        return Frustum_UnProject_float_float_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<float2>(context->argument(0)))
+        return Frustum_UnProject_float2_const(context, engine);
+    printf("Frustum_UnProject_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
+}
+
+static QScriptValue Frustum_PointInside_selector(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() == 3 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
+        return Frustum_PointInside_float_float_float_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<float3>(context->argument(0)))
+        return Frustum_PointInside_float3_const(context, engine);
+    printf("Frustum_PointInside_selector failed to choose the right function to call in file %s, line %d!\n", __FILE__, __LINE__); PrintCallStack(context->backtrace()); return QScriptValue();
+}
+
 static QScriptValue Frustum_NearPlanePos_selector(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() == 2 && QSVIsOfType<float>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)))
@@ -700,8 +836,12 @@ QScriptValue ToScriptValue_const_Frustum(QScriptEngine *engine, const Frustum &v
 QScriptValue register_Frustum_prototype(QScriptEngine *engine)
 {
     QScriptValue proto = engine->newObject();
+    proto.setProperty("NumEdges", engine->newFunction(Frustum_NumEdges_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("AspectRatio", engine->newFunction(Frustum_AspectRatio_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("WorldRight", engine->newFunction(Frustum_WorldRight_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("NearPlane", engine->newFunction(Frustum_NearPlane_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("NearPlaneWidth", engine->newFunction(Frustum_NearPlaneWidth_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("NearPlaneHeight", engine->newFunction(Frustum_NearPlaneHeight_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("FarPlane", engine->newFunction(Frustum_FarPlane_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("LeftPlane", engine->newFunction(Frustum_LeftPlane_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("RightPlane", engine->newFunction(Frustum_RightPlane_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -709,14 +849,22 @@ QScriptValue register_Frustum_prototype(QScriptEngine *engine)
     proto.setProperty("BottomPlane", engine->newFunction(Frustum_BottomPlane_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("GetPlane", engine->newFunction(Frustum_GetPlane_int_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("GetPlanes", engine->newFunction(Frustum_GetPlanes_Plane_ptr_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("CenterPoint", engine->newFunction(Frustum_CenterPoint_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Edge", engine->newFunction(Frustum_Edge_int_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("CornerPoint", engine->newFunction(Frustum_CornerPoint_int_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ExtremePoint", engine->newFunction(Frustum_ExtremePoint_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("ProjectToAxis", engine->newFunction(Frustum_ProjectToAxis_float3_float_float_const, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("SetWorldMatrix", engine->newFunction(Frustum_SetWorldMatrix_float3x4, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("WorldMatrix", engine->newFunction(Frustum_WorldMatrix_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ViewMatrix", engine->newFunction(Frustum_ViewMatrix_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ProjectionMatrix", engine->newFunction(Frustum_ProjectionMatrix_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ViewProjMatrix", engine->newFunction(Frustum_ViewProjMatrix_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("LookAt", engine->newFunction(Frustum_LookAt_float_float_const, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("LookAtFromNearPlane", engine->newFunction(Frustum_LookAtFromNearPlane_float_float_const, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("UnProject", engine->newFunction(Frustum_UnProject_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("UnProject", engine->newFunction(Frustum_UnProject_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("UnProjectFromNearPlane", engine->newFunction(Frustum_UnProjectFromNearPlane_float_float_const, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("UnProjectLineSegment", engine->newFunction(Frustum_UnProjectLineSegment_float_float_const, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("PointInside", engine->newFunction(Frustum_PointInside_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("PointInside", engine->newFunction(Frustum_PointInside_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Project", engine->newFunction(Frustum_Project_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("NearPlanePos", engine->newFunction(Frustum_NearPlanePos_selector, 2), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("NearPlanePos", engine->newFunction(Frustum_NearPlanePos_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -724,7 +872,8 @@ QScriptValue register_Frustum_prototype(QScriptEngine *engine)
     proto.setProperty("FarPlanePos", engine->newFunction(Frustum_FarPlanePos_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("IsFinite", engine->newFunction(Frustum_IsFinite_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Volume", engine->newFunction(Frustum_Volume_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("RandomPointInside", engine->newFunction(Frustum_RandomPointInside_LCG_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("FastRandomPointInside", engine->newFunction(Frustum_FastRandomPointInside_LCG_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("UniformRandomPointInside", engine->newFunction(Frustum_UniformRandomPointInside_LCG_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Translate", engine->newFunction(Frustum_Translate_float3, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Transform", engine->newFunction(Frustum_Transform_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("MinimalEnclosingAABB", engine->newFunction(Frustum_MinimalEnclosingAABB_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
