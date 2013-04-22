@@ -133,3 +133,7 @@
 #endif
 
 #include "Types.h"
+
+#ifndef MUST_USE_RESULT
+#define MUST_USE_RESULT
+#endif
