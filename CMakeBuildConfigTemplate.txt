@@ -146,8 +146,9 @@ if (NOT APPLE) # Python and PythonQt are not available currently on Mac.
         AddProject(Application PythonScriptModule)      # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, TundraLogicModule, AvatarModule SceneWidgetComponents
     endif ()
 endif()
-# Note: SceneWidgetComponents depends on BrowserUiPlugin, if SceneWidgetComponents's BROWSER_SHARED_DATA_ENABLED set to 1
-# See /src/Application/SceneWidgetComponents/CMakeLists.txt
+# BROWSER_SHARED_DATA_ENABLED controls if we need to link SceneWidgetComponents against BrowserUiPlugin
+# in order to get shared data accross all WebView components. This is optional and can be turned off with setting this to 0.
+set(BROWSER_SHARED_DATA_ENABLED 1)
 AddProject(Application SceneWidgetComponents)   # Provides ECs for injecting various QWidgets to the 3D scene eg. EC_WebView.
 AddProject(Application BrowserUiPlugin)         # Provides a browser UI for the client. Features multi-tabbed browsing, web login to servers, classic login, world/web bookmarks, web page caching etc.
 if (NOT ANDROID)
