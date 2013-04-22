@@ -230,7 +230,6 @@ static QScriptValue Plane_Distance_float3_const(QScriptContext *context, QScript
     Plane This = qscriptvalue_cast<Plane>(context->thisObject());
     float3 point = qscriptvalue_cast<float3>(context->argument(0));
     float ret = This.Distance(point);
-    ret = std::numeric_limits<float>::infinity();
     return qScriptValueFromValue(engine, ret);
 }
 

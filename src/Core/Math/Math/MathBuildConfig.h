@@ -92,6 +92,9 @@
 //#define KNET_LOGGING_SUPPORT_ENABLED
 #endif
 
+// Enable explicit copy constructors for script bindings
+#define MATH_EXPLICIT_COPYCTORS
+
 // Uncomment to specify the SIMD instruction set level in use.
 //#define MATH_AVX
 //#define MATH_SSE41
