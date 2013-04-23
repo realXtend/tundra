@@ -523,9 +523,9 @@ void JavascriptModule::RemoveScriptObjects(JavascriptInstance* jsInstance)
     globalObject.setProperty("scriptObjects", QScriptValue());
 }
 
-QStringList JavascriptModule::ParseStartupScriptConfig()
+QMap<QString, QStringList> JavascriptModule::ParseStartupScriptConfig()
 {
-    QStringList pluginsToLoad;
+    QMap<QString, QStringList> pluginsToLoad;
     foreach(const QString &configFile, framework_->Plugins()->ConfigurationFiles())
     {
         QDomDocument doc("plugins");
@@ -533,14 +533,14 @@ QStringList JavascriptModule::ParseStartupScriptConfig()
         if (!file.open(QIODevice::ReadOnly))
         {
             LogError("JavascriptModule::ParseStartupScriptConfig: Failed to open file \"" + configFile + "\"!");
-            return QStringList();
+            continue;
         }
         QString errorMsg;
         if (!doc.setContent(&file, &errorMsg))
         {
             LogError("JavascriptModule::ParseStartupScriptConfig: Failed to parse XML file \"" + configFile + "\": " + errorMsg);
             file.close();
-            return QStringList();
+            continue;
         }
         file.close();
 
@@ -551,12 +551,10 @@ QStringList JavascriptModule::ParseStartupScriptConfig()
         {
             QDomElement e = n.toElement(); // try to convert the node to an element.
             if (!e.isNull() && e.tagName() == "jsplugin" && e.hasAttribute("path"))
-                pluginsToLoad.push_back(e.attribute("path"));
-
+                pluginsToLoad[QDir::fromNativeSeparators(configFile)].push_back(e.attribute("path"));
             n = n.nextSibling();
         }
     }
-
     return pluginsToLoad;
 }
 
@@ -564,25 +562,30 @@ void JavascriptModule::LoadStartupScripts()
 {
     UnloadStartupScripts();
 
+    // Get all existingStartupScripts from all config files
+    QMap<QString, QStringList> startupConfigToScripts = ParseStartupScriptConfig();
+    QStringList startupScriptsToLoad;
+    QStringList startupScriptsLoaded;
+
+    // Load all script refs to a flat list
+    foreach(const QString &configFile, startupConfigToScripts.keys())
+        startupScriptsToLoad += startupConfigToScripts[configFile];
+
+    // Find all script files from /jsmodules/startup
+    QStringList existingStartupScripts;
     QString path = QDir::fromNativeSeparators(Application::InstallationDirectory()) + "jsmodules/startup";
-    QStringList scripts;
     foreach(const QString &file, DirectorySearch(path, false, QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks))
-    if (file.endsWith(".js", Qt::CaseInsensitive))
-        scripts.append(file);
+        if (file.endsWith(".js", Qt::CaseInsensitive))
+            existingStartupScripts.append(file);
 
-    QStringList startupScriptsToLoad = ParseStartupScriptConfig();
-
-    // Create a script instance for each of the files, register services for it and try to run.
-    LogInfo(Name() + ": Loading startup scripts from /jsmodules/startup");
-    if (scripts.empty())
-        LogInfo(Name() + ": ** No scripts in /jsmodules/startup");
-    else
+    // 1. Run any existingStartupScripts that reside in /jsmodules/startup first
+    if (!existingStartupScripts.isEmpty())
     {
-        QStringList scriptsToBeRemoved;
-        foreach (QString script, startupScriptsToLoad)
+        LogInfo(Name() + ": Loading startup scripts from /jsmodules/startup");
+        foreach (const QString &script, startupScriptsToLoad)
         {
             QString fullPath = path + "/" + script;
-            if (scripts.contains(fullPath) || scripts.contains(script))
+            if (existingStartupScripts.contains(fullPath) || existingStartupScripts.contains(script))
             {
                 LogInfo(Name() + ": ** " + script);
                 JavascriptInstance* jsInstance = new JavascriptInstance(fullPath, this);
@@ -590,46 +593,59 @@ void JavascriptModule::LoadStartupScripts()
                 startupScripts_.push_back(jsInstance);
                 jsInstance->Run();
 
-                scriptsToBeRemoved << fullPath;
-                scriptsToBeRemoved << script;
+                startupScriptsLoaded << fullPath << script;
             }
         }
-
-        if (scriptsToBeRemoved.empty())
-            LogInfo(Name() + ": ** No startup scripts were specified in config file");
-        else
-            foreach (QString script, scriptsToBeRemoved)
-                startupScriptsToLoad.removeAll(script);
+        if (startupScriptsLoaded.isEmpty())
+            LogInfo(Name() + ": ** No scripts from /jsmodules/startup");
     }
+    startupScriptsToLoad.clear();
 
-    LogInfo(Name() + ": Loading scripts from startup config");
-    if (startupScriptsToLoad.empty())
-        LogInfo(Name() + ": ** No scripts in config");
-
-    // Allow relative paths from '/<install_dir>' and '/<install_dir>/jsmodules'  to start also
-    QDir jsPluginsDir(QDir::fromNativeSeparators(Application::InstallationDirectory()) + "jsmodules");
-    foreach(QString startupScript, startupScriptsToLoad)
+    // 2. Load the rest of the references from the config files
+    foreach(const QString &configFile, startupConfigToScripts.keys())
     {
-        // Only allow relative paths, maybe allow absolute paths as well, maybe even URLs at some point?
-        if (!QDir::isRelativePath(startupScript))
+        QDir startupConfigDir(configFile.mid(0, configFile.lastIndexOf("/")));
+        QStringList startupScripts = startupConfigToScripts[configFile];
+
+        // Remove any refs that were already loaded in 1.
+        foreach(const QString &loadedRef, startupScriptsLoaded)
+            startupScripts.removeAll(loadedRef);
+        if (startupScripts.isEmpty())
             continue;
 
-        QString pathToFile;
-        if (jsPluginsDir.exists(startupScript))
-            pathToFile = jsPluginsDir.filePath(startupScript);
-        else if (QFile::exists(startupScript))
-            pathToFile = startupScript;
-        else
+        LogInfo(Name() + ": Loading scripts from startup config " + configFile.split("/").last());
+
+        // Allow relative paths from '/<install_dir>' and '/<install_dir>/jsmodules'  to start also
+        QDir jsPluginsDir(QDir::fromNativeSeparators(Application::InstallationDirectory()) + "jsmodules");
+        foreach(QString startupScript, startupScripts)
         {
-            LogWarning(Name() + "** Could not find startup file for: " + startupScript);
-            continue;
-        }
+            // Only allow relative paths, maybe allow absolute paths as well, maybe even URLs at some point?
+            if (!QDir::isRelativePath(startupScript))
+                continue;
 
-        LogInfo(Name() + ": ** " + startupScript);
-        JavascriptInstance* jsInstance = new JavascriptInstance(pathToFile, this);
-        PrepareScriptInstance(jsInstance);
-        startupScripts_.push_back(jsInstance);
-        jsInstance->Run();
+            QString pathToFile;
+            // Relative path from jsplugins
+            if (jsPluginsDir.exists(startupScript))
+                pathToFile = jsPluginsDir.filePath(startupScript);
+            // Relative path from startup file path
+            else if (startupConfigDir.exists(startupScript))
+                pathToFile = startupConfigDir.absoluteFilePath(startupScript);
+            // Absolute path (above these are already ignored?)
+            else if (QFile::exists(startupScript))
+                pathToFile = startupScript;
+            else
+            {
+                // Try relative to the startup config.
+                LogWarning(Name() + "** Could not find startup file for: " + startupScript);
+                continue;
+            }
+
+            LogInfo(Name() + ": ** " + startupScript);
+            JavascriptInstance* jsInstance = new JavascriptInstance(pathToFile, this);
+            PrepareScriptInstance(jsInstance);
+            startupScripts_.push_back(jsInstance);
+            jsInstance->Run();
+        }
     }
 }
 

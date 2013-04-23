@@ -1,0 +1,4 @@
+<Tundra>
+	<jsplugin path="Api/VersionCheck.js" />
+	<jsplugin path="Api/IntegerCheck.js" />
+</Tundra>
