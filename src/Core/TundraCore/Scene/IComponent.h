@@ -146,16 +146,18 @@ public:
     /// Returns a list of all attributes with null attributes sanitated away. This is slower than Attributes().
     AttributeVector NonEmptyAttributes() const;
     
-    /// Finds and returns an attribute of type 'Attribute<T>' and given name.
+    /// Finds and returns an attribute of type 'Attribute<T>' and given name/id.
     /** @param T The Attribute type to look for.
-        @param name The name of the attribute.
+        @param name The name or ID of the attribute.
         @return If there exists an attribute of type 'Attribute<T>' which has the given name, a pointer to
-                that attribute is returned, otherwise returns null. */
+                that attribute is returned, otherwise returns null. 
+        Note: attribute names are human-readable (shown in editor) and may be subject to change, while id's
+        (property / variable names) should be fixed. */
     template<typename T>
     Attribute<T> *GetAttribute(const QString &name) const
     {
         for(size_t i = 0; i < attributes.size(); ++i)
-            if (attributes[i] && attributes[i]->Name() == name)
+            if (attributes[i] && (attributes[i]->Name() == name || attributes[i]->Id() == name))
                 return dynamic_cast<Attribute<T> *>(&attributes[i]);
         return 0;
     }
@@ -184,14 +186,17 @@ public:
         it depends on the situation if they are needed or not. */
     virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
-    /// Returns an Attribute of this component with the given @c name.
+    /// Returns an Attribute of this component with the given name or ID.
     /** This function iterates through the attribute vector and tries to find a member attribute with the given name.
-        @param The name of the attribute to look for.
-        @return A pointer to the attribute, or null if no attribute with the given name exists. */
+        @param The name or ID of the attribute to look for.
+        @return A pointer to the attribute, or null if no attribute with the given name exists. 
+        @note attribute names are human-readable (shown in editor) and may be subject to change, while id's
+        (property / variable names) should be fixed. */
     IAttribute* GetAttribute(const QString &name) const;
     
     /// Create an attribute with specified index, type and name. Return it if successful or null if not. Called by SyncManager.
-    /** Component must override SupportsDynamicAttributes() to allow creating attributes. */
+    /** Component must override SupportsDynamicAttributes() to allow creating attributes.
+        @note Dynamic attributes will always have an empty ID */
     IAttribute* CreateAttribute(u8 index, u32 typeID, const QString& name, AttributeChange::Type change = AttributeChange::Default);
     
     /// Remove an attribute at the specified index. Called by network sync.
@@ -293,12 +298,15 @@ public slots:
     bool ViewEnabled() const;
 
     /// Returns an attribute of this component as a QVariant
-    /** @param name of attribute
+    /** @param name Name or ID of attribute
         @return values of the attribute */
     QVariant GetAttributeQVariant(const QString &name) const;
 
     /// Returns list of attribute names of the component
     QStringList GetAttributeNames() const;
+
+    /// Returns list of attribute IDs of the component. Empty attribute IDs are not listed.
+    QStringList GetAttributeIds() const;
 
     /** @deprecated Currently a no-op, as replication mode can not be changed after adding to an entity.
         @todo Removed once scripts converted to not call this */
@@ -336,11 +344,8 @@ protected:
         If serializeTemporary is true, the attribute 'temporary' is added to the XML element. Default is false. */
     QDomElement BeginSerialization(QDomDocument& doc, QDomElement& baseElement, bool serializeTemporary = false) const;
 
-    /// Helper function for adding an attribute to the component XML serialization.
-    void WriteAttribute(QDomDocument& doc, QDomElement& compElement, const QString& name, const QString& value) const;
-
     /// Helper function for adding an attribute and it's type to the component XML serialization.
-    void WriteAttribute(QDomDocument& doc, QDomElement& compElement, const QString& name, const QString& value, const QString &type) const;
+    void WriteAttribute(QDomDocument& doc, QDomElement& compElement, const QString& name, const QString& id, const QString& value, const QString &type) const;
 
     /// Helper function for starting deserialization.
     /** Checks that XML element contains the right kind of EC, and if it is right, sets the component name.

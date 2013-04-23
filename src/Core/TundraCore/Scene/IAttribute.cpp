@@ -64,6 +64,11 @@ void IAttribute::Changed(AttributeChange::Type change)
         owner->EmitAttributeChanged(this, change);
 }
 
+void IAttribute::FromString(const QString& str, AttributeChange::Type change)
+{
+    FromString(str.toStdString(), change);
+}
+
 // Hide all template implementations from being included to public documentation
 /// @cond PRIVATE
 

@@ -34,7 +34,7 @@ public:
     /// Constructor
     /** @param owner Component which this attribute will be attached to.
         @param name Human-readable name of the attribute.
-        @param id Id of the attribute, used to identify attributes in scene serialiation. */
+        @param id ID (variable / property name) of the attribute, used to identify static attributes in scene serialiation. */
     IAttribute(IComponent* owner, const char* name, const char* id);
 
     virtual ~IAttribute() {}
@@ -42,10 +42,10 @@ public:
     /// Returns attribute's owner component.
     IComponent* Owner() const { return owner; }
 
-    /// Returns name of the attribute. This is used in editing windows. Is used in serialization only as a fallback (if ID not available)
+    /// Returns human-readable name of the attribute. This is shown in the EC editor. Is used in serialization as a fallback, if ID is not available.
     const QString &Name() const { return name; }
 
-    /// Returns the id of the attribute for serialization. Should be same as the scripting property name.
+    /// Returns the ID of the attribute for serialization. Should be same as the variable/property name. Empty for dynamic attributes.
     const QString &Id() const { return id; }
 
     /// Writes attribute to string for XML serialization
@@ -53,6 +53,9 @@ public:
 
     /// Reads attribute from string for XML deserialization
     virtual void FromString(const std::string& str, AttributeChange::Type change) = 0;
+
+    /// Reads attribute from string for XML deserialization
+    void FromString(const QString& str, AttributeChange::Type change);
 
     /// Returns the type name of the data stored in this attribute.
     /** @note As attribute type names are handled case-insensitively internally by the SceneAPI,

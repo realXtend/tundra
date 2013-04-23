@@ -122,11 +122,8 @@ AttributeVector IComponent::NonEmptyAttributes() const
 
 QVariant IComponent::GetAttributeQVariant(const QString &name) const
 {
-    for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
-        if ((*iter) && (*iter)->Name() == name)
-            return (*iter)->ToQVariant();
-
-    return QVariant();
+    IAttribute* attr = GetAttribute(name);
+    return attr ? attr->ToQVariant() : QVariant();
 }
 
 QStringList IComponent::GetAttributeNames() const
@@ -138,10 +135,20 @@ QStringList IComponent::GetAttributeNames() const
     return attribute_list;
 }
 
+QStringList IComponent::GetAttributeIds() const
+{
+    QStringList attribute_list;
+    for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
+        if (*iter && (*iter)->Id().length())
+            attribute_list.push_back((*iter)->Id());
+    return attribute_list;
+}
+
+
 IAttribute* IComponent::GetAttribute(const QString &name) const
 {
     for(unsigned int i = 0; i < attributes.size(); ++i)
-        if(attributes[i] && attributes[i]->Name() == name)
+        if(attributes[i] && (attributes[i]->Name() == name || attributes[i]->Id() == name))
             return attributes[i];
     return 0;
 }
@@ -311,7 +318,6 @@ QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_
     comp_element.setAttribute("type", TypeName());
     if (!Name().isEmpty())
         comp_element.setAttribute("name", Name());
-    // Components with no network sync are never network-serialized. However we might be serializing to a file
     comp_element.setAttribute("sync", BoolToString(replicated));
     if (serializeTemporary)
         comp_element.setAttribute("temporary", BoolToString(temporary));
@@ -324,18 +330,12 @@ QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_
     return comp_element;
 }
 
-void IComponent::WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const QString& name, const QString& value) const
+void IComponent::WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const QString& name, const QString& id, const QString& value, const QString &type) const
 {
     QDomElement attribute_element = doc.createElement("attribute");
     attribute_element.setAttribute("name", name);
-    attribute_element.setAttribute("value", value);
-    comp_element.appendChild(attribute_element);
-}
-
-void IComponent::WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const QString& name, const QString& value, const QString &type) const
-{
-    QDomElement attribute_element = doc.createElement("attribute");
-    attribute_element.setAttribute("name", name);
+    if (id.length())
+        attribute_element.setAttribute("id", id);
     attribute_element.setAttribute("value", value);
     attribute_element.setAttribute("type", type);
     comp_element.appendChild(attribute_element);
@@ -434,21 +434,7 @@ void IComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element, bool 
 
     for(uint i = 0; i < attributes.size(); ++i)
         if (attributes[i])
-            WriteAttribute(doc, comp_element, attributes[i]->Name(), attributes[i]->ToString().c_str());
-}
-
-/// Returns true if the given XML element has the given child attribute.
-bool HasAttribute(QDomElement &comp_element, const QString &name)
-{
-    QDomElement attribute_element = comp_element.firstChildElement("attribute");
-    while(!attribute_element.isNull())
-    {
-        if (attribute_element.attribute("name") == name)
-            return true;
-        attribute_element = attribute_element.nextSiblingElement("attribute");
-    }
-
-    return false;
+            WriteAttribute(doc, comp_element, attributes[i]->Name(), attributes[i]->Id(), attributes[i]->ToString().c_str(), attributes[i]->TypeName());
 }
 
 void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type change)
@@ -466,14 +452,26 @@ void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type cha
     // For all other elements, use the current value in the attribute (if this is a newly allocated component, the current value
     // is the default value for that attribute specified in ctor. If this is an existing component, the DeserializeFrom can be 
     // thought of applying the given "delta modifications" from the XML element).
-
-    for(uint i = 0; i < attributes.size(); ++i)
+    QDomElement attribute_element = element.firstChildElement("attribute");
+    while(!attribute_element.isNull())
     {
-        if (attributes[i] && HasAttribute(element, attributes[i]->Name()))
-        {
-            std::string attr_str = ReadAttribute(element, attributes[i]->Name()).toStdString();
-            attributes[i]->FromString(attr_str, change);
-        }
+        QString name = attribute_element.attribute("name");
+        QString id = attribute_element.attribute("id");
+        
+        IAttribute* attr = 0;
+        
+        // Prefer lookup by ID if it's specified
+        if (id.length())
+            attr = GetAttribute(id);
+        else
+            attr = GetAttribute(name);
+        
+        if (!attr)
+            LogWarning("IComponent::DeserializeFrom: Could not find attribute " + name + " specified in the XML elenent");
+        else
+            attr->FromString(attribute_element.attribute("value"), change);
+        
+        attribute_element = attribute_element.nextSiblingElement("attribute");
     }
 }
 

@@ -112,7 +112,8 @@ public slots:
 
     /// Creates a new dynamic attribute without attaching it to a component and returns it. Returns null if illegal type.
     /** @param attributeTypeName Attribute type name, handled as case-insensitive.
-        @param newAttributeName Arbitrary user-defined name which identifies the attribute. */
+        @param newAttributeName Arbitrary user-defined name which identifies the attribute. 
+        @note The ID of the attribute will be left empty. ID is only defined for static attributes. */
     static IAttribute* CreateAttribute(const QString &attributeTypeName, const QString& newAttributeName);
 
     /// Returns a list of all component type names that can be used in the CreateComponentByName function to create a component.

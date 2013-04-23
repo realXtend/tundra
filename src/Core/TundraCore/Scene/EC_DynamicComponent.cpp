@@ -63,19 +63,6 @@ EC_DynamicComponent::~EC_DynamicComponent()
 {
 }
 
-void EC_DynamicComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element, bool serializeTemporary) const
-{
-    QDomElement comp_element = BeginSerialization(doc, base_element, serializeTemporary);
-
-    AttributeVector::const_iterator iter = attributes.begin();
-    while(iter != attributes.end())
-    {
-        if (*iter)
-            WriteAttribute(doc, comp_element, (*iter)->Name(), (*iter)->ToString().c_str(), (*iter)->TypeName());
-        ++iter;
-    }
-}
-
 void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type change)
 {
     if (!BeginDeserialization(element))
@@ -295,7 +282,7 @@ void EC_DynamicComponent::SetAttributeQScript(const QString &name, const QScript
 {
     LogWarning("EC_DynamicComponent::SetAttributeQScript is deprecated and will be removed. Use SetAttribute instead.");
     for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
-        if((*iter) && (*iter)->Name() == name)
+        if((*iter) && ((*iter)->Name() == name || (*iter)->Id() == name))
         {
             (*iter)->FromScriptValue(value, change);
             break; 
@@ -305,7 +292,7 @@ void EC_DynamicComponent::SetAttributeQScript(const QString &name, const QScript
 void EC_DynamicComponent::SetAttribute(const QString &name, const QVariant &value, AttributeChange::Type change)
 {
     for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
-        if((*iter) && (*iter)->Name() == name)
+        if((*iter) && ((*iter)->Name() == name || (*iter)->Id() == name))
         {
             (*iter)->FromQVariant(value, change);
             break;
@@ -322,6 +309,18 @@ QString EC_DynamicComponent::GetAttributeName(int index) const
         return QString();
     }
     return attributes[index]->Name();
+}
+
+QString EC_DynamicComponent::GetAttributeId(int index) const
+{
+    // Do not count holes.
+    int attrIndex = GetInternalAttributeIndex(index);
+    if (attrIndex < 0)
+    {
+        LogWarning("Cannot get attribute ID, index out of bounds");
+        return QString();
+    }
+    return attributes[index]->Id();
 }
 
 bool EC_DynamicComponent::ContainSameAttributes(const EC_DynamicComponent &comp) const
