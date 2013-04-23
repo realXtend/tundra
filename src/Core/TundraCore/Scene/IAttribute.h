@@ -164,7 +164,7 @@ public:
     {
     }
 
-    /** Constructor taking also value.
+    /** Constructor taking also initial value.
         @param owner Owner component.
         @param name Name.
         @param val Value. */
@@ -174,10 +174,10 @@ public:
     {
     }
 
-    /** Constructor.
+    /** Constructor taking attribute ID.
         value is initialiazed to DefaultValue.
         @param owner Owner component.
-        @param name Name. 
+        @param name Name.
         @param id Attribute id. */
     Attribute(IComponent* owner, const char* name, const char* id) :
         IAttribute(owner, name, id),
@@ -185,7 +185,7 @@ public:
     {
     }
 
-    /** Constructor taking also value.
+    /** Constructor taking initial value and attribute ID.
         @param owner Owner component.
         @param name Name.
         @param id Attribute id.

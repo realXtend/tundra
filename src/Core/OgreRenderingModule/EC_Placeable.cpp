@@ -173,12 +173,12 @@ EC_Placeable::EC_Placeable(Scene* scene) :
     parentPlaceable_(0),
     parentMesh_(0),
     attached_(false),
-    transform(this, "Transform"),
-    drawDebug(this, "Show bounding box", false),
-    visible(this, "Visible", true),
-    selectionLayer(this, "Selection layer", 1),
-    parentRef(this, "Parent entity ref", EntityReference()),
-    parentBone(this, "Parent bone name", "")
+    INIT_ATTRIBUTE(transform, "Transform"),
+    INIT_ATTRIBUTE_VALUE(drawDebug, "Show bounding box", false),
+    INIT_ATTRIBUTE_VALUE(visible, "Visible", true),
+    INIT_ATTRIBUTE_VALUE(selectionLayer, "Selection layer", 1),
+    INIT_ATTRIBUTE_VALUE(parentRef, "Parent entity ref", EntityReference()),
+    INIT_ATTRIBUTE_VALUE(parentBone, "Parent bone name", "")
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();

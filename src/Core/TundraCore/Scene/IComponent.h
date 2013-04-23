@@ -59,9 +59,9 @@ private: // Return the class visibility specifier to the strictest form so that 
     void set##attribute(type value) { attribute.Set((type)value, AttributeChange::Default); }
 
 /// Macro for constructing an attribute in the component's constructor initializer list. "id" is the property/variable name, "name" is the human-readable name used in editing.
-#define INIT_ATTRIBUTE(id, name) id(this, name);
+#define INIT_ATTRIBUTE(id, name) id(this, name, #id)
 /// Macro for constructing an attribute in the component's constructor initializer list. "id" is the property/variable name, "name" is the human-readable name used in editing, "value" is initial value.
-#define INIT_ATTRIBUTE_VALUE(id, name, value) id(this, name, value);
+#define INIT_ATTRIBUTE_VALUE(id, name, value) id(this, name, #id, value)
 
 /// The common interface for all components, which are the building blocks the scene entities are formed of.
 /** Inherit your own components from this class. Never directly allocate new components using operator new,
@@ -351,12 +351,6 @@ protected:
     /** Checks that XML element contains the right kind of EC, and if it is right, sets the component name.
         Otherwise returns false and does nothing. */
     bool BeginDeserialization(QDomElement& compElement);
-
-    /// Helper function for getting an attribute from serialized component.
-    QString ReadAttribute(QDomElement& compElement, const QString &name) const;
-
-    /// Helper function for getting a attribute type from serialized component.
-    QString ReadAttributeType(QDomElement& compElement, const QString &name) const;
 
     /// Add attribute to this component.
     void AddAttribute(IAttribute* attr);

@@ -352,34 +352,6 @@ bool IComponent::BeginDeserialization(QDomElement& comp_element)
     return false;
 }
 
-QString IComponent::ReadAttribute(QDomElement& comp_element, const QString &name) const
-{
-    QDomElement attribute_element = comp_element.firstChildElement("attribute");
-    while(!attribute_element.isNull())
-    {
-        if (attribute_element.attribute("name") == name)
-            return attribute_element.attribute("value");
-        
-        attribute_element = attribute_element.nextSiblingElement("attribute");
-    }
-    
-    return QString();
-}
-
-QString IComponent::ReadAttributeType(QDomElement& comp_element, const QString &name) const
-{
-    QDomElement attribute_element = comp_element.firstChildElement("attribute");
-    while(!attribute_element.isNull())
-    {
-        if (attribute_element.attribute("name") == name)
-            return attribute_element.attribute("type");
-        
-        attribute_element = attribute_element.nextSiblingElement("attribute");
-    }
-    
-    return QString();
-}
-
 void IComponent::EmitAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
     // If this message should be sent with the default attribute change mode specified in the IComponent,
@@ -455,19 +427,15 @@ void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type cha
     QDomElement attribute_element = element.firstChildElement("attribute");
     while(!attribute_element.isNull())
     {
-        QString name = attribute_element.attribute("name");
         QString id = attribute_element.attribute("id");
+        // Prefer lookup by ID if it's specified, but fallback to using attribute human-readable name if not defined
+        if (!id.length())
+            id = attribute_element.attribute("name");
         
-        IAttribute* attr = 0;
-        
-        // Prefer lookup by ID if it's specified
-        if (id.length())
-            attr = GetAttribute(id);
-        else
-            attr = GetAttribute(name);
+        IAttribute* attr = GetAttribute(id);
         
         if (!attr)
-            LogWarning("IComponent::DeserializeFrom: Could not find attribute " + name + " specified in the XML elenent");
+            LogWarning("IComponent::DeserializeFrom: Could not find attribute " + id + " specified in the XML elenent");
         else
             attr->FromString(attribute_element.attribute("value"), change);
         
