@@ -30,6 +30,9 @@ Q_DECLARE_METATYPE(EntityList)
 Q_DECLARE_METATYPE(Scene::EntityMap)
 Q_DECLARE_METATYPE(Entity::ComponentMap)
 
+// Test objects
+Q_DECLARE_METATYPE(IntegerTestRunner*);
+
 QScriptValue toScriptValueIAttribute(QScriptEngine *engine, IAttribute * const &s)
 {
     QScriptValue obj = engine->newObject();
@@ -407,6 +410,13 @@ QScriptValue createAssetReferenceList(QScriptContext *ctx, QScriptEngine *engine
     return engine->toScriptValue(newAssetRefList);
 }
 
+QScriptValue createIntegerTesterRunner(QScriptContext *ctx, QScriptEngine * /*engine*/)
+{
+    if (!ctx->engine() || ctx->thisObject().isNull())
+        return QScriptValue();
+    return ctx->engine()->newQObject(ctx->thisObject(), new IntegerTestRunner(), QScriptEngine::AutoOwnership);
+}
+
 void RegisterCoreMetaTypes()
 {
     qRegisterMetaType<ScenePtr>("ScenePtr");
@@ -423,6 +433,9 @@ void RegisterCoreMetaTypes()
     qRegisterMetaType<Entity::ComponentMap>("ComponentMap");
     qRegisterMetaType<Entity::ComponentVector>("ComponentVector");
     qRegisterMetaType<std::string>("std::string");
+    
+    // Test objects
+    qRegisterMetaType<IntegerTestRunner*>("IntegerTestRunner");
 }
 
 void ExposeCoreTypes(QScriptEngine *engine)
@@ -450,4 +463,9 @@ void ExposeCoreTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("AssetReference", ctorAssetReference);
     QScriptValue ctorAssetReferenceList = engine->newFunction(createAssetReferenceList);
     engine->globalObject().setProperty("AssetReferenceList", ctorAssetReferenceList);
+    
+    // Test objects
+    qScriptRegisterQObjectMetaType<IntegerTestRunner*>(engine);
+    QScriptValue ctorIntegerTesterRunner = engine->newFunction(createIntegerTesterRunner);
+    engine->globalObject().setProperty("IntegerTestRunner", ctorIntegerTesterRunner);
 }

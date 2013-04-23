@@ -273,16 +273,25 @@ static QScriptValue math_MathBreakOnAssume(QScriptContext * /*context*/, QScript
 
 void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 {
-    // Core type defines
+    // Core integer type defines
+    qRegisterMetaType<s8>("s8");
     qRegisterMetaType<u8>("u8");
-    qRegisterMetaType<u16>("u16");
-    qRegisterMetaType<u32>("u32");
-    qRegisterMetaType<u64>("u64");
-    /// @todo For some reason simply using qRegisterMetaType for s8 doesn't make it work properly.
-//    qRegisterMetaType<s8>("s8");
     qRegisterMetaType<s16>("s16");
+    qRegisterMetaType<u16>("u16");
     qRegisterMetaType<s32>("s32");
+    qRegisterMetaType<u32>("u32");
     qRegisterMetaType<s64>("s64");
+    qRegisterMetaType<u64>("u64");
+
+    // JS -> C++: Enables correct JS 'number' type to our typedef conversion. Hits when slots take in eg. u32 as a parameter.
+    qScriptRegisterMetaType(engine, toScriptS32OrSmaller<s8>, fromScriptChar<s8>);
+    qScriptRegisterMetaType(engine, toScriptU32OrSmaller<u8>, fromScriptUChar<u8>);
+    qScriptRegisterMetaType(engine, toScriptS32OrSmaller<s16>, fromScriptShort<s16>);
+    qScriptRegisterMetaType(engine, toScriptU32OrSmaller<u16>, fromScriptUShort<u16>);
+    qScriptRegisterMetaType(engine, toScriptS32OrSmaller<s32>, fromScriptInt<s32>);
+    qScriptRegisterMetaType(engine, toScriptU32OrSmaller<u32>, fromScriptUInt<u32>);
+    qScriptRegisterMetaType(engine, toScriptS64<s64>, fromScriptLongLong<s64>);
+    qScriptRegisterMetaType(engine, toScriptU64<u64>, fromScriptULongLong<u64>);
 
     // Math
     register_float2_prototype(engine);
@@ -339,9 +348,9 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qRegisterMetaType<EntityAction::ExecTypeField>("EntityAction::ExecTypeField");
 
     qRegisterMetaType<entity_id_t>("entity_id_t");
-    qScriptRegisterMetaType(engine, toScriptUInt<entity_id_t>, fromScriptUInt<entity_id_t>);
+    qScriptRegisterMetaType(engine, toScriptU32OrSmaller<entity_id_t>, fromScriptUInt<entity_id_t>);
     qRegisterMetaType<component_id_t>("component_id_t");
-    qScriptRegisterMetaType(engine, toScriptUInt<component_id_t>, fromScriptUInt<component_id_t>);
+    qScriptRegisterMetaType(engine, toScriptU32OrSmaller<component_id_t>, fromScriptUInt<component_id_t>);
 
     // Framework metatypes.
     qScriptRegisterQObjectMetaType<Framework*>(engine);
@@ -359,6 +368,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     // Config metatypes.
     qScriptRegisterQObjectMetaType<ConfigAPI*>(engine);
     register_ConfigData_prototype(engine);
+
     // Asset API
     qRegisterMetaType<AssetPtr>("AssetPtr");
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAsset>, qScriptValueToBoostSharedPtr<IAsset>);

@@ -1,21 +1,19 @@
 
-if (!apiversion)
+function log(msg)
 {
-    print("API version < 1.0. - before api had version info.");
+    console.LogInfo("[Tests::VercionCheck]: " + msg);
 }
-else
-{
-    print("API version:" + apiversion.version);
 
-    if (apiversion.major < 1 && apiversion.minor > 5)
-        print("api version > 0.5 - at least release 1.0.7")
-    if (apiversion.major >= 1)
-        print("tundra sdk is frozen api 1.0 - now we are golden! ?");
-    if (apiversion.major > 1)
-        print("major api version >1? this really happened some day? did we break a lot?");
-}
+print("");
+
+if (!apiversion)
+    log("API version < 1.0, cannot query API version!");
+else
+    log("API version: string=" + apiversion.version + " major=" + apiversion.major + " minor=" + apiversion.minor + " major patch=" + apiversion.majorPatch + " minor patch=" + apiversion.minorPatch);
 
 if (!applicationversion)
-    print("API version < 1.0. - before api had application version info.");
+    log("API version < 1.0, cannot query Application information!");
 else
-    print("Tundra application identifier is " + application.fullIdentifier);
+    log("Tundra application identifier = " + application.fullIdentifier);
+
+print("");
