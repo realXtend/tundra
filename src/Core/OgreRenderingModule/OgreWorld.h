@@ -54,21 +54,24 @@ public:
     std::string GetUniqueObjectName(const std::string &prefix) { return GenerateUniqueObjectName(prefix); } /**< @deprecated Use GenerateUniqueObjectName @todo Add warning print */
 
 public slots:
-    /// Does raycast into the world from viewport coordinates, using specific selection layer(s)
-    /** The coordinates are a position in the render window, not scaled to [0,1].
-        @param x Horizontal position for the origin of the ray
-        @param y Vertical position for the origin of the ray
+    /// Does a raycast into the world from screen coordinates, using specific selection layer(s)
+    /** @note The coordinates are screen positions, not viewport positions [0,1].
+        @param x Horizontal screen position for the origin of the ray
+        @param y Vertical screen position for the origin of the ray
         @param layerMask Which selection layer(s) to use (bitmask)
         @return Raycast result structure, *never* a null pointer, use RaycastResult::entity to see if raycast hit something. */
     RaycastResult* Raycast(int x, int y, unsigned layerMask);
+    RaycastResult* Raycast(const QPoint &point, unsigned layerMask) { return Raycast(point.x(), point.y(), layerMask);} /**< @overload @param point Screen point. */
     /// @overload
-    /** Does raycast into the world from viewport coordinates, using all selection layers
-        @param x Horizontal position for the origin of the ray
-        @param y Vertical position for the origin of the ray */
+    /** Does a raycast into the world from screen coordinates, using all selection layers */
     RaycastResult* Raycast(int x, int y);
+    RaycastResult* Raycast(const QPoint &point) { return Raycast(point.x(), point.y());} /**< @overload @param point Screen point. */
     /// @overload
     /** Does raycast into the world using a ray in world space coordinates. */
     RaycastResult* Raycast(const Ray& ray, unsigned layerMask);
+
+    /// @todo Add Raycast overloads which take max distance param.
+    /// @todo Add RaycastAll which returns list of all hits
 
     /// Does a frustum query to the world from viewport coordinates.
     /** @param viewRect The query rectangle in 2d window coords.
