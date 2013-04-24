@@ -2,8 +2,7 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   UndoCommands.h
-    @brief  A collection of QUndoCommand-derived classes which apply to the
-            operations in EC editor and Scene structure windows  */
+    @brief  A collection of classes which apply to the operations in EC Editor and Scene Structure windows. */
 
 #pragma once
 
@@ -23,7 +22,6 @@
 typedef QList<entity_id_t> EntityIdList;
 typedef QList<TransformAttributeWeakPtr> TransformAttributeWeakPtrList;
 
-
 class EntityIdChangeTracker;
 
 /// EditAttributeCommand representing an "Edit" operation to the attributes
@@ -35,10 +33,12 @@ public:
     enum { Id = 100 };
 
     /// Constructor
-    /* @param attr The attribute that is being edited
-       @param value The old value of 'attr' attribute
-       @param parent The parent command of this command (optional) */
-    EditAttributeCommand(IAttribute * attr, const T& value, QUndoCommand * parent = 0);
+    /** Current value of the attribute will be considered as the old value.
+        @param attr The attribute that is being edited.
+        @param parent The parent command of this command (optional). */
+    EditAttributeCommand(IAttribute *attr, QUndoCommand * parent = 0);
+    /// @param value The old value of the attribute.
+    EditAttributeCommand(IAttribute *attr, const T &value, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
     int id() const { return Id; }

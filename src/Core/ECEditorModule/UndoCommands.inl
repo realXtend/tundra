@@ -1,8 +1,20 @@
+// For conditions of distribution and use, see copyright notice in LICENSE
+
 #pragma once
 
 #include "IAttribute.h"
 #include "IComponent.h"
 #include "Entity.h"
+
+template <typename T>
+EditAttributeCommand<T>::EditAttributeCommand(IAttribute *attr, QUndoCommand * parent = 0) :
+    attribute_(AttributeWeakPtr(attr->Owner()->shared_from_this(), attr)),
+    oldValue_(static_cast<Attribute<T> *>(attr)->Get()),
+    dontCallRedo_(true),
+    QUndoCommand(parent)
+{
+    setText("edit " + attr->Name());
+}
 
 template <typename T>
 EditAttributeCommand<T>::EditAttributeCommand(IAttribute *attr, const T& value, QUndoCommand *parent) :
