@@ -34,6 +34,7 @@
 
 IAttribute::IAttribute(IComponent* owner_, const char* name_) :
     name(name_),
+    id(name_),
     metadata(0),
     dynamic(false),
     owner(0),

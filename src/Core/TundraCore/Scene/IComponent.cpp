@@ -122,7 +122,7 @@ AttributeVector IComponent::NonEmptyAttributes() const
 
 QVariant IComponent::GetAttributeQVariant(const QString &name) const
 {
-    IAttribute* attr = GetAttribute(name);
+    IAttribute* attr = AttributeByName(name);
     return attr ? attr->ToQVariant() : QVariant();
 }
 
@@ -147,8 +147,24 @@ QStringList IComponent::GetAttributeIds() const
 
 IAttribute* IComponent::GetAttribute(const QString &name) const
 {
+    LogWarning("IComponent::GetAttribute is deprecated and will be removed. Use AttributeById or AttributeByName instead.");
+    return AttributeByName(name);
+}
+
+IAttribute* IComponent::AttributeById(const QString &id) const
+{
+    /// \todo Compare needs to be case-insensitive
     for(unsigned int i = 0; i < attributes.size(); ++i)
-        if(attributes[i] && (attributes[i]->Name() == name || attributes[i]->Id() == name))
+        if(attributes[i] && (attributes[i]->Id() == id))
+            return attributes[i];
+    return 0;
+}
+
+IAttribute* IComponent::AttributeByName(const QString &name) const
+{
+    /// \todo Compare needs to be case-insensitive
+    for(unsigned int i = 0; i < attributes.size(); ++i)
+        if(attributes[i] && (attributes[i]->Name() == name))
             return attributes[i];
     return 0;
 }
@@ -333,7 +349,8 @@ QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_
 void IComponent::WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const QString& name, const QString& id, const QString& value, const QString &type) const
 {
     QDomElement attribute_element = doc.createElement("attribute");
-    attribute_element.setAttribute("name", name);
+    if (name != id)
+        attribute_element.setAttribute("name", name);
     if (id.length())
         attribute_element.setAttribute("id", id);
     attribute_element.setAttribute("value", value);
@@ -427,12 +444,16 @@ void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type cha
     QDomElement attribute_element = element.firstChildElement("attribute");
     while(!attribute_element.isNull())
     {
+        IAttribute* attr = 0;
         QString id = attribute_element.attribute("id");
         // Prefer lookup by ID if it's specified, but fallback to using attribute human-readable name if not defined
-        if (!id.length())
+        if (id.length())
+            attr = AttributeById(id);
+        else
+        {
             id = attribute_element.attribute("name");
-        
-        IAttribute* attr = GetAttribute(id);
+            attr = AttributeByName(id);
+        }
         
         if (!attr)
             LogWarning("IComponent::DeserializeFrom: Could not find attribute " + id + " specified in the XML elenent");

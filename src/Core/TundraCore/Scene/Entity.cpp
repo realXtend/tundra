@@ -417,7 +417,7 @@ IAttribute *Entity::GetAttribute(const QString &name) const
 {
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
     {
-        IAttribute *attr = i->second->GetAttribute(name);
+        IAttribute *attr = i->second->AttributeByName(name);
         if (attr)
             return attr;
     }
@@ -504,7 +504,7 @@ AttributeVector Entity::GetAttributes(const QString &name) const
     std::vector<IAttribute *> ret;
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
     {
-        IAttribute *attr = i->second->GetAttribute(name);
+        IAttribute *attr = i->second->AttributeByName(name);
         if (attr)
             ret.push_back(attr);
     }

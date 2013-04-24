@@ -129,7 +129,7 @@ EC_Script::EC_Script(Scene* scene):
         scriptRefButtons.push_back(AttributeMetadata::ButtonInfo("runScriptButton", "P", "Run"));
         scriptRefButtons.push_back(AttributeMetadata::ButtonInfo("stopScriptButton", "S", "Unload"));
         scriptRefData.buttons = scriptRefButtons;
-        scriptRefData.elementType = "assetreference";
+        scriptRefData.elementType = "AssetReference";
         runModeData.enums[RM_Both] = "Both";
         runModeData.enums[RM_Client] = "Client";
         runModeData.enums[RM_Server] = "Server";

@@ -28,7 +28,7 @@ class TUNDRACORE_API IAttribute : public enable_shared_from_this<IAttribute>
 public:
     /// Constructor
     /** @param owner Component which this attribute will be attached to.
-        @param name Human-readable name of the attribute. */
+        @param name Human-readable name of the attribute. Will also be set as the ID. */
     IAttribute(IComponent* owner, const char* name);
 
     /// Constructor
@@ -270,20 +270,20 @@ static const QString cAttributeNoneTypeName = "";
 static const QString cAttributeStringTypeName = "string";
 static const QString cAttributeIntTypeName = "int";
 static const QString cAttributeRealTypeName = "real";
-static const QString cAttributeColorTypeName = "color"; /**< @todo "Color" */
+static const QString cAttributeColorTypeName = "Color";
 static const QString cAttributeFloat2TypeName = "float2";
 static const QString cAttributeFloat3TypeName = "float3";
 static const QString cAttributeFloat4TypeName = "float4";
 static const QString cAttributeBoolTypeName = "bool";
 static const QString cAttributeUIntTypeName = "uint";
-static const QString cAttributeQuatTypeName = "quat"; /**< @todo "Quat" */
-static const QString cAttributeAssetReferenceTypeName = "assetreference"; /**< @todo "AssetReference" */
-static const QString cAttributeAssetReferenceListTypeName = "assetreferencelist"; /**< @todo "AssetReferenceList" */
-static const QString cAttributeEntityReferenceTypeName = "entityreference"; /**< @todo "EntityReference" */
-static const QString cAttributeQVariantTypeName = "qvariant"; /**< @todo "QVariant" */
-static const QString cAttributeQVariantListTypeName = "qvariantlist"; /**< @todo "QVariantList" */
-static const QString cAttributeTransformTypeName = "transform"; /**< @todo "Transform" */
-static const QString cAttributeQPointTypeName = "qpoint"; /**< @todo "QPoint" */
+static const QString cAttributeQuatTypeName = "Quat"; 
+static const QString cAttributeAssetReferenceTypeName = "AssetReference";
+static const QString cAttributeAssetReferenceListTypeName = "AssetReferenceList";
+static const QString cAttributeEntityReferenceTypeName = "EntityReference";
+static const QString cAttributeQVariantTypeName = "QVariant";
+static const QString cAttributeQVariantListTypeName = "QVariantList";
+static const QString cAttributeTransformTypeName = "Transform";
+static const QString cAttributeQPointTypeName = "QPoint";
 
 /// Represents weak pointer to Transform attribute.
 struct AttributeWeakPtr

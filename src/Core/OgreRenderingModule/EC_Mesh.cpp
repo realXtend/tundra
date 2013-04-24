@@ -47,7 +47,7 @@ EC_Mesh::EC_Mesh(Scene* scene) :
     drawDistance.SetMetadata(&drawDistanceData);
 
     static AttributeMetadata materialMetadata;
-    materialMetadata.elementType = "assetreference";
+    materialMetadata.elementType = "AssetReference";
     meshMaterial.SetMetadata(&materialMetadata);
 
     meshAsset = AssetRefListenerPtr(new AssetRefListener());

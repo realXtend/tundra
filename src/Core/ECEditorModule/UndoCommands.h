@@ -53,7 +53,7 @@ public:
         ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
         if (comp.get())
         {
-            IAttribute *attr = comp->GetAttribute(name_);
+            IAttribute *attr = comp->AttributeByName(name_);
             Attribute<T> *attribute = dynamic_cast<Attribute<T> *>(attr);
             if (attribute)
             {
@@ -79,7 +79,7 @@ public:
         ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
         if (comp.get())
         {   
-            IAttribute *attr = comp->GetAttribute(name_);
+            IAttribute *attr = comp->AttributeByName(name_);
             Attribute<T> *attribute = dynamic_cast<Attribute<T> *>(attr);
             if (attribute)
                 attribute->Set(newValue_, AttributeChange::Default);

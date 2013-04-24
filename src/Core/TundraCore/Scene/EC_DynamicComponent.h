@@ -136,7 +136,7 @@ public slots:
     /// Removes all attributes from the component
     void RemoveAllAttributes(AttributeChange::Type change = AttributeChange::Default);
 
-    void AddQVariantAttribute(const QString &name, AttributeChange::Type change = AttributeChange::Default); /**< @deprecated Use CreateAttribute('qvariant') @todo Remove */
+    void AddQVariantAttribute(const QString &name, AttributeChange::Type change = AttributeChange::Default); /**< @deprecated Use CreateAttribute('QVariant') @todo Remove */
     void SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change = AttributeChange::Default); /**< @deprecated Use SetAttribute @todo Remove */
 
 private:

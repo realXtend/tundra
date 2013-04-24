@@ -10,6 +10,7 @@
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
 #include "IAttribute.h"
+#include "LoggingFunctions.h"
 
 #include <QObject>
 #include <QVariant>
@@ -146,22 +147,6 @@ public:
     /// Returns a list of all attributes with null attributes sanitated away. This is slower than Attributes().
     AttributeVector NonEmptyAttributes() const;
     
-    /// Finds and returns an attribute of type 'Attribute<T>' and given name/id.
-    /** @param T The Attribute type to look for.
-        @param name The name or ID of the attribute.
-        @return If there exists an attribute of type 'Attribute<T>' which has the given name, a pointer to
-                that attribute is returned, otherwise returns null. 
-        Note: attribute names are human-readable (shown in editor) and may be subject to change, while id's
-        (property / variable names) should be fixed. */
-    template<typename T>
-    Attribute<T> *GetAttribute(const QString &name) const
-    {
-        for(size_t i = 0; i < attributes.size(); ++i)
-            if (attributes[i] && (attributes[i]->Name() == name || attributes[i]->Id() == name))
-                return dynamic_cast<Attribute<T> *>(&attributes[i]);
-        return 0;
-    }
-
     /// Serializes this component and all its Attributes to the given XML document.
     /** @param doc The XML document to serialize this component to.
         @param baseElement Points to the <entity> element of the document doc. This element is the Entity that
@@ -186,14 +171,6 @@ public:
         it depends on the situation if they are needed or not. */
     virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
-    /// Returns an Attribute of this component with the given name or ID.
-    /** This function iterates through the attribute vector and tries to find a member attribute with the given name.
-        @param The name or ID of the attribute to look for.
-        @return A pointer to the attribute, or null if no attribute with the given name exists. 
-        @note attribute names are human-readable (shown in editor) and may be subject to change, while id's
-        (property / variable names) should be fixed. */
-    IAttribute* GetAttribute(const QString &name) const;
-    
     /// Create an attribute with specified index, type and name. Return it if successful or null if not. Called by SyncManager.
     /** Component must override SupportsDynamicAttributes() to allow creating attributes.
         @note Dynamic attributes will always have an empty ID */
@@ -206,9 +183,77 @@ public:
     /** True by default. Can only be changed before the component is added to an entity, because the replication determines the ID range to use. */
     void SetReplicated(bool enable);
 
+    /// Finds and returns an attribute of type 'Attribute<T>' and given name
+    /** @param T The Attribute type to look for.
+        @param name The name of the attribute.
+        @return If there exists an attribute of type 'Attribute<T>' which has the given name, a pointer to
+                that attribute is returned, otherwise returns null. 
+        Note: attribute names are human-readable (shown in editor) and may be subject to change, while id's
+        (property / variable names) should be fixed. */
+    template<typename T>
+    Attribute<T> *AttributeByName(const QString &name) const
+    {
+        /// \todo Compare needs to be case-insensitive
+        for(size_t i = 0; i < attributes.size(); ++i)
+            if (attributes[i] && attributes[i]->Name() == name)
+                return dynamic_cast<Attribute<T> *>(&attributes[i]);
+        return 0;
+    }
+    
+    /// Finds and returns an attribute of type 'Attribute<T>' and given ID
+    /** @param T The Attribute type to look for.
+        @param id The ID of the attribute.
+        @return If there exists an attribute of type 'Attribute<T>' which has the given ID, a pointer to
+                that attribute is returned, otherwise returns null.   */
+    template<typename T>
+    Attribute<T> *AttributeById(const QString &name) const
+    {
+        /// \todo Compare needs to be case-insensitive
+        for(size_t i = 0; i < attributes.size(); ++i)
+            if (attributes[i] && attributes[i]->Id() == id)
+                return dynamic_cast<Attribute<T> *>(&attributes[i]);
+        return 0;
+    }
+    
     /// Returns a pointer to the Framework instance.
     Framework *GetFramework() const { return framework; }
 
+    /// Returns an Attribute of this component with the given ID.
+    /** This function iterates through the attribute vector and tries to find a member attribute with the given ID
+        @param The ID of the attribute to look for.
+        @return A pointer to the attribute, or null if no attribute with the given ID exists */
+    IAttribute* AttributeById(const QString &name) const;
+    
+    /// Returns an Attribute of this component with the given name.
+    /** This function iterates through the attribute vector and tries to find a member attribute with the given name.
+        @param The name of the attribute to look for.
+        @return A pointer to the attribute, or null if no attribute with the given name exists. 
+        @note attribute names are human-readable (shown in editor) and may be subject to change, while id's
+        (property / variable names) should be fixed. */
+    IAttribute* AttributeByName(const QString &name) const;
+    
+    // Deprecated, use AttributeByName instead
+    IAttribute* GetAttribute(const QString &name) const;
+
+    // Deprecated, use AttributeByName<T> instead
+    /// Finds and returns an attribute of type 'Attribute<T>' and given name
+    /** @param T The Attribute type to look for.
+        @param name The name of the attribute.
+        @return If there exists an attribute of type 'Attribute<T>' which has the given name, a pointer to
+                that attribute is returned, otherwise returns null. 
+        Note: attribute names are human-readable (shown in editor) and may be subject to change, while id's
+        (property / variable names) should be fixed. */
+    template<typename T>
+    Attribute<T> *GetAttribute(const QString &name) const
+    {
+        LogWarning("IComponent::GetAttribute<T> is deprecated and will be removed. Use AttributeByName<T> or AttributeById<T> instead");
+        /// \todo Compare needs to be case-insensitive
+        for(size_t i = 0; i < attributes.size(); ++i)
+            if (attributes[i] && attributes[i]->Name() == name)
+                return dynamic_cast<Attribute<T> *>(&attributes[i]);
+        return 0;
+    }
+    
 public slots:
     /// Returns true if network synchronization of the attributes of this component is enabled.
     /// A component is always either local or replicated, but not both.

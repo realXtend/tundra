@@ -158,7 +158,7 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
 IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const QString &name, AttributeChange::Type change)
 {
     if(ContainsAttribute(name))
-        return IComponent::GetAttribute(name);
+        return IComponent::AttributeByName(name);
 
     IAttribute *attribute = SceneAPI::CreateAttribute(typeName, name);
     if(!attribute)
@@ -182,9 +182,10 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
 
 void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::Type change)
 {
+    /// \todo Compare needs to be case-insensitive
     for(AttributeVector::iterator iter = attributes.begin(); iter != attributes.end(); iter++)
     {
-        if((*iter) && (*iter)->Name() == name)
+        if((*iter) && ((*iter)->Name() == name || (*iter)->Id() == name))
         {
             // Trigger scenemanager signal
             Scene* scene = ParentScene();
@@ -240,7 +241,7 @@ int EC_DynamicComponent::GetInternalAttributeIndex(int index) const
 
 void EC_DynamicComponent::AddQVariantAttribute(const QString &name, AttributeChange::Type change)
 {
-    LogWarning("EC_DynamicComponent::AddQVariantAttribute is deprecated and will be removed. Use CreateAttribute(\"qvariant\",...) instead.");
+    LogWarning("EC_DynamicComponent::AddQVariantAttribute is deprecated and will be removed. Use CreateAttribute(\"QVariant\",...) instead.");
     //Check if the attribute has already been created.
     if(!ContainsAttribute(name))
     {
