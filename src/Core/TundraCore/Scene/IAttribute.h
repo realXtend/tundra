@@ -28,25 +28,25 @@ class TUNDRACORE_API IAttribute : public enable_shared_from_this<IAttribute>
 public:
     /// Constructor
     /** @param owner Component which this attribute will be attached to.
-        @param name Human-readable name of the attribute. Will also be set as the ID. */
-    IAttribute(IComponent* owner, const char* name);
+        @param id ID of the attribute. Will also be assigned as the attribute's human-readable name. */
+    IAttribute(IComponent* owner, const char* id);
 
     /// Constructor
     /** @param owner Component which this attribute will be attached to.
-        @param name Human-readable name of the attribute.
-        @param id ID (variable / property name) of the attribute, used to identify static attributes in scene serialiation. */
-    IAttribute(IComponent* owner, const char* name, const char* id);
+        @param id ID of the attribute.
+        @param name Human-readable name of the attribute. */
+    IAttribute(IComponent* owner, const char* id, const char* name);
 
     virtual ~IAttribute() {}
 
     /// Returns attribute's owner component.
     IComponent* Owner() const { return owner; }
 
-    /// Returns human-readable name of the attribute. This is shown in the EC editor. Is used in serialization as a fallback, if ID is not available.
-    const QString &Name() const { return name; }
-
-    /// Returns the ID of the attribute for serialization. Should be same as the variable/property name. Empty for dynamic attributes.
+    /// Returns the ID of the attribute for serialization. Should be same as the variable/property name.
     const QString &Id() const { return id; }
+
+    /// Returns human-readable name of the attribute. This is shown in the EC editor. For dynamic attributes, is the same as ID.
+    const QString &Name() const { return name; }
 
     /// Writes attribute to string for XML serialization
     virtual std::string ToString() const = 0;
@@ -136,8 +136,8 @@ protected:
     friend class IComponent;
     
     IComponent* owner; ///< Owning component.
-    QString name; ///< Name of attribute.
-    QString id; ///< Id of attribute.
+    QString id; ///< ID of attribute.
+    QString name; ///< Human-readable name of attribute for editing.
     AttributeMetadata *metadata; ///< Possible attribute metadata.
     bool dynamic; ///< Dynamic attributes must be deleted at component destruction
     u8 index; ///< Attribute index in the parent component's attribute list
@@ -157,41 +157,41 @@ public:
     /** Constructor.
         value is initialiazed to DefaultValue.
         @param owner Owner component.
-        @param name Name. */
-    Attribute(IComponent* owner, const char* name) :
-        IAttribute(owner, name),
+        @param id Attribute ID */
+    Attribute(IComponent* owner, const char* id) :
+        IAttribute(owner, id),
         value(DefaultValue())
     {
     }
 
     /** Constructor taking also initial value.
         @param owner Owner component.
-        @param name Name.
+        @param id Attribute ID
         @param val Value. */
-    Attribute(IComponent* owner, const char* name, const T &val) :
-        IAttribute(owner, name),
+    Attribute(IComponent* owner, const char* id, const T &val) :
+        IAttribute(owner, id),
         value(val)
     {
     }
 
-    /** Constructor taking attribute ID.
+    /** Constructor taking attribute ID/name separately
         value is initialiazed to DefaultValue.
         @param owner Owner component.
-        @param name Name.
-        @param id Attribute id. */
-    Attribute(IComponent* owner, const char* name, const char* id) :
-        IAttribute(owner, name, id),
+        @param id Attribute id.
+        @param name Human-readable name. */
+    Attribute(IComponent* owner, const char* id, const char* name) :
+        IAttribute(owner, id, name),
         value(DefaultValue())
     {
     }
 
-    /** Constructor taking initial value and attribute ID.
+    /** Constructor taking initial value and attribute ID/name separately.
         @param owner Owner component.
-        @param name Name.
-        @param id Attribute id.
+        @param id Attribute ID.
+        @param name Human-readable name.
         @param val Value. */
-    Attribute(IComponent* owner, const char* name, const char* id, const T &val) :
-        IAttribute(owner, name, id),
+    Attribute(IComponent* owner, const char* id, const char* name, const T &val) :
+        IAttribute(owner, id, name),
         value(val)
     {
     }

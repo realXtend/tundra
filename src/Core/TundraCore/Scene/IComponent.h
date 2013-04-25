@@ -60,9 +60,9 @@ private: // Return the class visibility specifier to the strictest form so that 
     void set##attribute(type value) { attribute.Set((type)value, AttributeChange::Default); }
 
 /// Macro for constructing an attribute in the component's constructor initializer list. "id" is the property/variable name, "name" is the human-readable name used in editing.
-#define INIT_ATTRIBUTE(id, name) id(this, name, #id)
+#define INIT_ATTRIBUTE(id, name) id(this, #id, name)
 /// Macro for constructing an attribute in the component's constructor initializer list. "id" is the property/variable name, "name" is the human-readable name used in editing, "value" is initial value.
-#define INIT_ATTRIBUTE_VALUE(id, name, value) id(this, name, #id, value)
+#define INIT_ATTRIBUTE_VALUE(id, name, value) id(this, #id, name, value)
 
 /// The common interface for all components, which are the building blocks the scene entities are formed of.
 /** Inherit your own components from this class. Never directly allocate new components using operator new,
@@ -171,10 +171,11 @@ public:
         it depends on the situation if they are needed or not. */
     virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
-    /// Create an attribute with specified index, type and name. Return it if successful or null if not. Called by SyncManager.
-    /** Component must override SupportsDynamicAttributes() to allow creating attributes.
-        @note Dynamic attributes will always have an empty ID */
-    IAttribute* CreateAttribute(u8 index, u32 typeID, const QString& name, AttributeChange::Type change = AttributeChange::Default);
+    /// Create an attribute with specified index, type and ID. Return it if successful or null if not. Called by SyncManager.
+    /** Component must override SupportsDynamicAttributes() to allow creating attributes. 
+        @note For dynamic attributes ID and name will be same
+      */
+    IAttribute* CreateAttribute(u8 index, u32 typeID, const QString& id, AttributeChange::Type change = AttributeChange::Default);
     
     /// Remove an attribute at the specified index. Called by network sync.
     void RemoveAttribute(u8 index, AttributeChange::Type change);
@@ -343,14 +344,15 @@ public slots:
     bool ViewEnabled() const;
 
     /// Returns an attribute of this component as a QVariant
-    /** @param name Name or ID of attribute
-        @return values of the attribute */
-    QVariant GetAttributeQVariant(const QString &name) const;
+    /** @param id ID or name of the attribute
+        @return value of the attribute 
+        @todo Create separate functions to query by name or ID */
+    QVariant GetAttributeQVariant(const QString &id) const;
 
     /// Returns list of attribute names of the component
     QStringList GetAttributeNames() const;
 
-    /// Returns list of attribute IDs of the component. Empty attribute IDs are not listed.
+    /// Returns list of attribute IDs of the component.
     QStringList GetAttributeIds() const;
 
     /** @deprecated Currently a no-op, as replication mode can not be changed after adding to an entity.

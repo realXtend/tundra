@@ -55,13 +55,13 @@ EC_WebView::EC_WebView(Scene *scene) :
     componentPrepared_(false),
     myControllerId_(0),
     currentControllerName_(""),
-    webviewUrl(this, "View URL", QString()),
-    webviewSize(this, "View Size", QPoint(800,600)),
-    renderSubmeshIndex(this, "Render Submesh", 0),
-    renderRefreshRate(this, "Render FPS", 0),
-    interactive(this, "Interactive", false),
-    controllerId(this, "ControllerId", NoneControlID),
-    illuminating(this, "Illuminating", true),
+    INIT_ATTRIBUTE_VALUE(webviewUrl, "View URL", QString()),
+    INIT_ATTRIBUTE_VALUE(webviewSize, "View Size", QPoint(800,600)),
+    INIT_ATTRIBUTE_VALUE(renderSubmeshIndex, "Render Submesh", 0),
+    INIT_ATTRIBUTE_VALUE(renderRefreshRate, "Render FPS", 0),
+    INIT_ATTRIBUTE_VALUE(interactive, "Interactive", false),
+    INIT_ATTRIBUTE_VALUE(controllerId, "ControllerId", NoneControlID),
+    INIT_ATTRIBUTE_VALUE(illuminating, "Illuminating", true),
     enabled(this, "Enabled", true)
 {
     interactionMetaData_ = new AttributeMetadata(); /**< @todo memory leak */

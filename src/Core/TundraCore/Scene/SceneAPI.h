@@ -108,13 +108,14 @@ public slots:
 //    ComponentPtr CloneComponent(const ComponentPtr &component, const QString &newComponentName);
 
     /// Creates a new dynamic attribute without attaching it to a component and returns it. Returns null if illegal type ID.
-    static IAttribute* CreateAttribute(u32 attributeTypeid, const QString& newAttributeName);
+    static IAttribute* CreateAttribute(u32 attributeTypeid, const QString& newAttributeId);
 
     /// Creates a new dynamic attribute without attaching it to a component and returns it. Returns null if illegal type.
     /** @param attributeTypeName Attribute type name, handled as case-insensitive.
-        @param newAttributeName Arbitrary user-defined name which identifies the attribute. 
-        @note The ID of the attribute will be left empty. ID is only defined for static attributes. */
-    static IAttribute* CreateAttribute(const QString &attributeTypeName, const QString& newAttributeName);
+        @param newAttributeId Arbitrary user-defined ID which identifies the attribute. 
+        @note The name of the attribute will be assigned same as the ID. As dynamic attributes are serialized over the network per-object,
+        it would unnecessarily increase the bandwidth needed to transfer both a name and an ID */
+    static IAttribute* CreateAttribute(const QString &attributeTypeName, const QString& newAttributeId);
 
     /// Returns a list of all component type names that can be used in the CreateComponentByName function to create a component.
     QStringList ComponentTypes() const;

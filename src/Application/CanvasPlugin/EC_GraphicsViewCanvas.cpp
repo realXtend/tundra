@@ -36,10 +36,10 @@
 
 EC_GraphicsViewCanvas::EC_GraphicsViewCanvas(Scene *scene) :
     IComponent(scene),
-    outputTexture(this, "Output texture"),
-    width(this, "Texture width"),
-    height(this, "Texture height"),
-    submesh(this, "Submesh", (unsigned)0),
+    INIT_ATTRIBUTE(outputTexture, "Output texture"),
+    INIT_ATTRIBUTE(width, "Texture width"),
+    INIT_ATTRIBUTE(height, "Texture height"),
+    INIT_ATTRIBUTE(submesh, "Submesh", (unsigned)0),
     graphicsScene(0),
     graphicsView(0),
     paintTarget(0),

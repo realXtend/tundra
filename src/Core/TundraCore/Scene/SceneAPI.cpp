@@ -199,50 +199,50 @@ ComponentPtr SceneAPI::CloneComponent(const ComponentPtr &component, const QStri
 }
 */
 
-IAttribute *SceneAPI::CreateAttribute(const QString &attributeTypename, const QString &newAttributeName)
+IAttribute *SceneAPI::CreateAttribute(const QString &attributeTypename, const QString &newAttributeId)
 {
-    return CreateAttribute(GetAttributeTypeId(attributeTypename), newAttributeName);
+    return CreateAttribute(GetAttributeTypeId(attributeTypename), newAttributeId);
 }
 
-IAttribute* SceneAPI::CreateAttribute(u32 attributeTypeid, const QString& newAttributeName)
+IAttribute* SceneAPI::CreateAttribute(u32 attributeTypeid, const QString& newAttributeId)
 {
     IAttribute *attribute = 0;
     switch(attributeTypeid)
     {
     case cAttributeString:
-        attribute = new Attribute<QString>(0, newAttributeName.toStdString().c_str()); break;
+        attribute = new Attribute<QString>(0, newAttributeId.toStdString().c_str()); break;
     case cAttributeInt:
-        attribute = new Attribute<int>(0, newAttributeName.toStdString().c_str()); break;
+        attribute = new Attribute<int>(0, newAttributeId.toStdString().c_str()); break;
     case cAttributeReal:
-        attribute = new Attribute<float>(0, newAttributeName.toStdString().c_str()); break;
+        attribute = new Attribute<float>(0, newAttributeId.toStdString().c_str()); break;
     case cAttributeColor:
-        attribute = new Attribute<Color>(0, newAttributeName.toStdString().c_str()); break;
+        attribute = new Attribute<Color>(0, newAttributeId.toStdString().c_str()); break;
     case cAttributeFloat2:
-        attribute = new Attribute<float2>(0, newAttributeName.toStdString().c_str()); break;
+        attribute = new Attribute<float2>(0, newAttributeId.toStdString().c_str()); break;
     case cAttributeFloat3:
-        attribute = new Attribute<float3>(0, newAttributeName.toStdString().c_str()); break;
+        attribute = new Attribute<float3>(0, newAttributeId.toStdString().c_str()); break;
     case cAttributeFloat4:
-        attribute = new Attribute<float4>(0, newAttributeName.toStdString().c_str()); break;
+        attribute = new Attribute<float4>(0, newAttributeId.toStdString().c_str()); break;
     case cAttributeBool:
-        attribute = new Attribute<bool>(0, newAttributeName.toStdString().c_str()); break;
+        attribute = new Attribute<bool>(0, newAttributeId.toStdString().c_str()); break;
     case cAttributeUInt:
-        attribute = new Attribute<uint>(0, newAttributeName.toStdString().c_str()); break;
+        attribute = new Attribute<uint>(0, newAttributeId.toStdString().c_str()); break;
     case cAttributeQuat:
-        attribute = new Attribute<Quat>(0, newAttributeName.toStdString().c_str()); break;
+        attribute = new Attribute<Quat>(0, newAttributeId.toStdString().c_str()); break;
     case cAttributeAssetReference:
-        attribute = new Attribute<AssetReference>(0, newAttributeName.toStdString().c_str());break;
+        attribute = new Attribute<AssetReference>(0, newAttributeId.toStdString().c_str());break;
     case cAttributeAssetReferenceList:
-        attribute = new Attribute<AssetReferenceList>(0, newAttributeName.toStdString().c_str());break;
+        attribute = new Attribute<AssetReferenceList>(0, newAttributeId.toStdString().c_str());break;
     case cAttributeEntityReference:
-        attribute = new Attribute<EntityReference>(0, newAttributeName.toStdString().c_str());break;
+        attribute = new Attribute<EntityReference>(0, newAttributeId.toStdString().c_str());break;
     case cAttributeQVariant:
-        attribute = new Attribute<QVariant>(0, newAttributeName.toStdString().c_str()); break;
+        attribute = new Attribute<QVariant>(0, newAttributeId.toStdString().c_str()); break;
     case cAttributeQVariantList:
-        attribute = new Attribute<QVariantList>(0, newAttributeName.toStdString().c_str()); break;
+        attribute = new Attribute<QVariantList>(0, newAttributeId.toStdString().c_str()); break;
     case cAttributeTransform:
-        attribute = new Attribute<Transform>(0, newAttributeName.toStdString().c_str()); break;
+        attribute = new Attribute<Transform>(0, newAttributeId.toStdString().c_str()); break;
     case cAttributeQPoint:
-        attribute = new Attribute<QPoint>(0, newAttributeName.toStdString().c_str()); break;
+        attribute = new Attribute<QPoint>(0, newAttributeId.toStdString().c_str()); break;
     default:
         LogError("Cannot create attribute of type \"" + QString::number(attributeTypeid) + "\"! This type is not known to SceneAPI::CreateAttribute!");
         break;

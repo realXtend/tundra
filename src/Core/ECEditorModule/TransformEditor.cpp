@@ -84,7 +84,7 @@ void TransformEditor::AppendSelection(const QList<EntityPtr> &entities)
         {
             Entity *parentPlaceableEntity = p->ParentPlaceableEntity();
             EntityPtr parent = (parentPlaceableEntity ? parentPlaceableEntity ->shared_from_this() : EntityPtr());
-            targets.append(TransformAttributeWeakPtr(p, p->GetAttribute(p->transform.Name()), parent));
+            targets.append(TransformAttributeWeakPtr(p, p->AttributeById(p->transform.Id()), parent));
         }
     }
 }
@@ -103,7 +103,7 @@ void TransformEditor::RemoveFromSelection(const QList<EntityPtr> &entities)
         {
             Entity *parentPlaceableEntity = p->ParentPlaceableEntity();
             EntityPtr parent = (parentPlaceableEntity ? parentPlaceableEntity ->shared_from_this() : EntityPtr());
-            targets.append(TransformAttributeWeakPtr(p, p->GetAttribute(p->transform.Name()), parent));
+            targets.append(TransformAttributeWeakPtr(p, p->AttributeById(p->transform.Id()), parent));
         }
     }
 }

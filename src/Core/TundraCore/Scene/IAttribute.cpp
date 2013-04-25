@@ -32,9 +32,9 @@
 
 #include "MemoryLeakCheck.h"
 
-IAttribute::IAttribute(IComponent* owner_, const char* name_) :
-    name(name_),
-    id(name_),
+IAttribute::IAttribute(IComponent* owner_, const char* id_) :
+    id(id_),
+    name(id_),
     metadata(0),
     dynamic(false),
     owner(0),
@@ -45,9 +45,9 @@ IAttribute::IAttribute(IComponent* owner_, const char* name_) :
         owner_->AddAttribute(this);
 }
 
-IAttribute::IAttribute(IComponent* owner_, const char* name_, const char* id_) :
-    name(name_),
+IAttribute::IAttribute(IComponent* owner_, const char* id_, const char* name_) :
     id(id_),
+    name(name_),
     metadata(0),
     dynamic(false),
     owner(0),

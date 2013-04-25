@@ -120,9 +120,11 @@ AttributeVector IComponent::NonEmptyAttributes() const
     return ret;
 }
 
-QVariant IComponent::GetAttributeQVariant(const QString &name) const
+QVariant IComponent::GetAttributeQVariant(const QString &id) const
 {
-    IAttribute* attr = AttributeByName(name);
+    IAttribute* attr = AttributeById(id);
+    if (!attr)
+        attr = AttributeByName(id);
     return attr ? attr->ToQVariant() : QVariant();
 }
 
@@ -139,7 +141,7 @@ QStringList IComponent::GetAttributeIds() const
 {
     QStringList attribute_list;
     for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
-        if (*iter && (*iter)->Id().length())
+        if (*iter)
             attribute_list.push_back((*iter)->Id());
     return attribute_list;
 }
@@ -192,7 +194,7 @@ int IComponent::NumStaticAttributes() const
     return ret;
 }
 
-IAttribute* IComponent::CreateAttribute(u8 index, u32 typeID, const QString& name, AttributeChange::Type change)
+IAttribute* IComponent::CreateAttribute(u8 index, u32 typeID, const QString& id, AttributeChange::Type change)
 {
     if (!SupportsDynamicAttributes())
     {
@@ -206,7 +208,7 @@ IAttribute* IComponent::CreateAttribute(u8 index, u32 typeID, const QString& nam
         change = updateMode;
     assert(change != AttributeChange::Default);
 
-    IAttribute *attribute = SceneAPI::CreateAttribute(typeID, name);
+    IAttribute *attribute = SceneAPI::CreateAttribute(typeID, id);
     if(!attribute)
         return 0;
     
@@ -349,10 +351,8 @@ QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_
 void IComponent::WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const QString& name, const QString& id, const QString& value, const QString &type) const
 {
     QDomElement attribute_element = doc.createElement("attribute");
-    if (name != id)
-        attribute_element.setAttribute("name", name);
-    if (id.length())
-        attribute_element.setAttribute("id", id);
+    attribute_element.setAttribute("name", name);
+    attribute_element.setAttribute("id", id);
     attribute_element.setAttribute("value", value);
     attribute_element.setAttribute("type", type);
     comp_element.appendChild(attribute_element);

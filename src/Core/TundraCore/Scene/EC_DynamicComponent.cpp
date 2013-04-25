@@ -22,8 +22,8 @@
 /** @cond PRIVATE */
 struct DeserializeData
 {
-    DeserializeData(const QString &name = "", const QString &type = "", const QString &value = ""):
-        name_(name),
+    DeserializeData(const QString &id = "", const QString &type = "", const QString &value = ""):
+        id_(id),
         type_(type),
         value_(value)
     {
@@ -32,24 +32,24 @@ struct DeserializeData
     /// Checks if any of data structure's values are null.
     bool isNull() const
     {
-        return name_ == "" || type_ == "" || value_ == "";
+        return id_ == "" || type_ == "" || value_ == "";
     }
 
-    QString name_;
+    QString id_;
     QString type_;
     QString value_;
 };
 
-/// Function that is used by std::sort algorithm to sort attributes by their name.
-bool CmpAttributeByName(const IAttribute *a, const IAttribute *b)
+/// Function that is used by std::sort algorithm to sort attributes by their ID.
+bool CmpAttributeById(const IAttribute *a, const IAttribute *b)
 {
-    return a->Name() < b->Name();
+    return a->Id() < b->Id();
 }
 
-/// Function that is used by std::sort algorithm to sort DeserializeData by their name.
-bool CmpAttributeDataByName(const DeserializeData &a, const DeserializeData &b)
+/// Function that is used by std::sort algorithm to sort DeserializeData by their ID.
+bool CmpAttributeDataById(const DeserializeData &a, const DeserializeData &b)
 {
-    return a.name_ < b.name_;
+    return a.id_ < b.id_;
 }
 
 /** @endcond */
@@ -72,10 +72,13 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
     QDomElement child = element.firstChildElement("attribute");
     while(!child.isNull())
     {
-        QString name = child.attribute("name");
+        QString id = child.attribute("id");
+        // Fallback if ID is not defined
+        if (!id.length())
+            id = child.attribute("name");
         QString type = child.attribute("type");
         QString value = child.attribute("value");
-        DeserializeData attributeData(name, type, value);
+        DeserializeData attributeData(id, type, value);
         deserializedAttributes.push_back(attributeData);
 
         child = child.nextSiblingElement("attribute");
@@ -88,8 +91,8 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
 {
     // Sort both lists in alphabetical order.
     AttributeVector oldAttributes = NonEmptyAttributes();
-    std::stable_sort(oldAttributes.begin(), oldAttributes.end(), &CmpAttributeByName);
-    std::stable_sort(deserializedAttributes.begin(), deserializedAttributes.end(), &CmpAttributeDataByName);
+    std::stable_sort(oldAttributes.begin(), oldAttributes.end(), &CmpAttributeById);
+    std::stable_sort(deserializedAttributes.begin(), deserializedAttributes.end(), &CmpAttributeDataById);
 
     std::vector<DeserializeData> addAttributes;
     std::vector<DeserializeData> remAttributes;
@@ -110,23 +113,23 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
         else if(iter2 == deserializedAttributes.end())
         {
             for(;iter1 != oldAttributes.end(); ++iter1)
-                remAttributes.push_back(DeserializeData((*iter1)->Name()));
+                remAttributes.push_back(DeserializeData((*iter1)->Id()));
             break;
         }
 
         // Attribute has already created and we only need to update it's value.
-        if((*iter1)->Name() == (*iter2).name_)
+        if((*iter1)->Id() == (*iter2).id_)
         {
             //SetAttribute(QString::fromStdString(iter2->name_), QString::fromStdString(iter2->value_), change);
             for(AttributeVector::const_iterator attr_iter = attributes.begin(); attr_iter != attributes.end(); ++attr_iter)
-                if((*attr_iter)->Name() == iter2->name_)
+                if((*attr_iter)->Id() == iter2->id_)
                     (*attr_iter)->FromString(iter2->value_.toStdString(), change);
 
             ++iter2;
             ++iter1;
         }
         // Found a new attribute that need to be created and added to the component.
-        else if((*iter1)->Name() > (*iter2).name_)
+        else if((*iter1)->Id() > (*iter2).id_)
         {
             addAttributes.push_back(*iter2);
             ++iter2;
@@ -134,7 +137,7 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
         // Couldn't find the attribute in a new list so it need to be removed from the component.
         else
         {
-            remAttributes.push_back(DeserializeData((*iter1)->Name()));
+            remAttributes.push_back(DeserializeData((*iter1)->Id()));
             ++iter1;
         }
     }
@@ -142,7 +145,7 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
     while(!addAttributes.empty())
     {
         DeserializeData attributeData = addAttributes.back();
-        IAttribute *attribute = CreateAttribute(attributeData.type_, attributeData.name_);
+        IAttribute *attribute = CreateAttribute(attributeData.type_, attributeData.id_);
         if (attribute)
             attribute->FromString(attributeData.value_.toStdString(), change);
         addAttributes.pop_back();
@@ -150,17 +153,17 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
     while(!remAttributes.empty())
     {
         DeserializeData attributeData = remAttributes.back();
-        RemoveAttribute(attributeData.name_);
+        RemoveAttribute(attributeData.id_);
         remAttributes.pop_back();
     }
 }
 
-IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const QString &name, AttributeChange::Type change)
+IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const QString &id, AttributeChange::Type change)
 {
     if(ContainsAttribute(name))
         return IComponent::AttributeByName(name);
 
-    IAttribute *attribute = SceneAPI::CreateAttribute(typeName, name);
+    IAttribute *attribute = SceneAPI::CreateAttribute(typeName, id);
     if(!attribute)
     {
         LogError("Failed to create new attribute:" + name + " in dynamic component:" + Name());
@@ -180,12 +183,12 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
     return attribute;
 }
 
-void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::Type change)
+void EC_DynamicComponent::RemoveAttribute(const QString &id, AttributeChange::Type change)
 {
     /// \todo Compare needs to be case-insensitive
     for(AttributeVector::iterator iter = attributes.begin(); iter != attributes.end(); iter++)
     {
-        if((*iter) && ((*iter)->Name() == name || (*iter)->Id() == name))
+        if((*iter) && (*iter)->Id() == id)
         {
             // Trigger scenemanager signal
             Scene* scene = ParentScene();
@@ -211,9 +214,7 @@ void EC_DynamicComponent::RemoveAllAttributes(AttributeChange::Type change)
             Scene* scene = ParentScene();
             if (scene)
                 scene->EmitAttributeRemoved(this, attributes[i], change);
-
-            QString name(attributes[i]->Name());
-
+            
             // Trigger internal signal(s)
             emit AttributeAboutToBeRemoved(attributes[i]);
             SAFE_DELETE(attributes[i]);
@@ -239,18 +240,18 @@ int EC_DynamicComponent::GetInternalAttributeIndex(int index) const
     return -1;
 }
 
-void EC_DynamicComponent::AddQVariantAttribute(const QString &name, AttributeChange::Type change)
+void EC_DynamicComponent::AddQVariantAttribute(const QString &id, AttributeChange::Type change)
 {
     LogWarning("EC_DynamicComponent::AddQVariantAttribute is deprecated and will be removed. Use CreateAttribute(\"QVariant\",...) instead.");
     //Check if the attribute has already been created.
-    if(!ContainsAttribute(name))
+    if(!ContainsAttribute(id))
     {
-        Attribute<QVariant> *attribute = new Attribute<QVariant>(this, name.toStdString().c_str());
+        Attribute<QVariant> *attribute = new Attribute<QVariant>(this, id.toStdString().c_str());
         EmitAttributeChanged(attribute, change);
         emit AttributeAdded(attribute);
     }
     else
-        LogWarning("Failed to add a new QVariant in name of " + name + ", cause there already is an attribute in that name.");
+        LogWarning("Failed to add a new QVariant with ID " + id + ", because there already is an attribute with that ID.");
 }
 
 QVariant EC_DynamicComponent::GetAttribute(int index) const
@@ -262,9 +263,9 @@ QVariant EC_DynamicComponent::GetAttribute(int index) const
     return attributes[attrIndex]->ToQVariant();
 }
 
-QVariant EC_DynamicComponent::GetAttribute(const QString &name) const
+QVariant EC_DynamicComponent::GetAttribute(const QString &id) const
 {
-    return IComponent::GetAttributeQVariant(name);
+    return IComponent::GetAttributeQVariant(id);
 }
 
 void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, AttributeChange::Type change)
@@ -279,29 +280,25 @@ void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, Attribu
     attributes[attrIndex]->FromQVariant(value, change);
 }
 
-void EC_DynamicComponent::SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change)
+void EC_DynamicComponent::SetAttributeQScript(const QString &id, const QScriptValue &value, AttributeChange::Type change)
 {
     LogWarning("EC_DynamicComponent::SetAttributeQScript is deprecated and will be removed. Use SetAttribute instead.");
-    for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
-        if((*iter) && ((*iter)->Name() == name || (*iter)->Id() == name))
-        {
-            (*iter)->FromScriptValue(value, change);
-            break; 
-        }
+    IAttribute* attr = AttributeById(id);
+    if (attr)
+        attr->FromScriptValue(value, change);
 }
 
-void EC_DynamicComponent::SetAttribute(const QString &name, const QVariant &value, AttributeChange::Type change)
+void EC_DynamicComponent::SetAttribute(const QString &id, const QVariant &value, AttributeChange::Type change)
 {
-    for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
-        if((*iter) && ((*iter)->Name() == name || (*iter)->Id() == name))
-        {
-            (*iter)->FromQVariant(value, change);
-            break;
-        }
+    IAttribute* attr = AttributeById(id);
+    if (attr)
+        attr->FromQVariant(value, change);
 }
 
 QString EC_DynamicComponent::GetAttributeName(int index) const
 {
+    LogWarning("EC_DynamicComponent::GetAttributeName is deprecated and will be removed. For dynamic attributes ID is the same as name. Use GetAttributeId instead.");
+    
     // Do not count holes.
     int attrIndex = GetInternalAttributeIndex(index);
     if (attrIndex < 0)
@@ -333,15 +330,15 @@ bool EC_DynamicComponent::ContainSameAttributes(const EC_DynamicComponent &comp)
     if(attributeVector.empty() && myAttributeVector.empty())
         return true;
 
-    std::sort(myAttributeVector.begin(), myAttributeVector.end(), &CmpAttributeByName);
-    std::sort(attributeVector.begin(), attributeVector.end(), &CmpAttributeByName);
+    std::sort(myAttributeVector.begin(), myAttributeVector.end(), &CmpAttributeById);
+    std::sort(attributeVector.begin(), attributeVector.end(), &CmpAttributeById);
 
     AttributeVector::const_iterator iter1 = myAttributeVector.begin();
     AttributeVector::const_iterator iter2 = attributeVector.begin();
     while(iter1 != myAttributeVector.end() && iter2 != attributeVector.end())
     {
-        // Compare attribute names and type and if they mach continue iteration if not components aren't exactly the same.
-        if ((*iter1)->Name() == (*iter2)->Name() && (*iter1)->TypeName() == (*iter2)->TypeName())
+        // Compare attribute IDs and type and if they mach continue iteration if not components aren't exactly the same.
+        if ((*iter1)->Id() == (*iter2)->Id() && (*iter1)->TypeName() == (*iter2)->TypeName())
         {
             if(iter1 != myAttributeVector.end())
                 ++iter1;
@@ -374,17 +371,9 @@ bool EC_DynamicComponent::ContainSameAttributes(const EC_DynamicComponent &comp)
     return true;*/
 }
 
-bool EC_DynamicComponent::ContainsAttribute(const QString &name) const
+bool EC_DynamicComponent::ContainsAttribute(const QString &id) const
 {
-    AttributeVector::const_iterator iter = attributes.begin();
-    while(iter != attributes.end())
-    {
-        if((*iter) && (*iter)->Name() == name)
-            return true;
-        ++iter;
-    }
-
-    return false;
+    return AttributeById(id) != 0;
 }
 
 void EC_DynamicComponent::SerializeToBinary(kNet::DataSerializer& dest) const
@@ -396,7 +385,7 @@ void EC_DynamicComponent::SerializeToBinary(kNet::DataSerializer& dest) const
     {
         if (*iter)
         {
-            dest.AddString((*iter)->Name().toStdString());
+            dest.AddString((*iter)->Id().toStdString());
             dest.AddString((*iter)->TypeName().toStdString());
             dest.AddString((*iter)->ToString());
         }
@@ -410,11 +399,11 @@ void EC_DynamicComponent::DeserializeFromBinary(kNet::DataDeserializer& source, 
     std::vector<DeserializeData> deserializedAttributes;
     for(uint i = 0; i < num_attributes; ++i)
     {
-        std::string name = source.ReadString();
+        std::string id = source.ReadString();
         std::string typeName = source.ReadString();
         std::string value = source.ReadString();
         
-        DeserializeData attrData(name.c_str(), typeName.c_str(), value.c_str());
+        DeserializeData attrData(id.c_str(), typeName.c_str(), value.c_str());
         deserializedAttributes.push_back(attrData);
     }
 

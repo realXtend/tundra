@@ -111,11 +111,11 @@ void EC_Script::Unload(const QString &name)
 
 EC_Script::EC_Script(Scene* scene):
     IComponent(scene),
-    scriptRef(this, "Script ref", AssetReferenceList("Script")),
-    runOnLoad(this, "Run on load", false),
-    runMode(this, "Run mode", RM_Both),
-    applicationName(this, "Script application name"),
-    className(this, "Script class name"),
+    INIT_ATTRIBUTE_VALUE(scriptRef, "Script ref", AssetReferenceList("Script")),
+    INIT_ATTRIBUTE_VALUE(runOnLoad, "Run on load", false),
+    INIT_ATTRIBUTE_VALUE(runMode, "Run mode", RM_Both),
+    INIT_ATTRIBUTE(applicationName, "Script application name"),
+    INIT_ATTRIBUTE(className, "Script class name"),
     scriptInstance_(0),
     isClient_(false),
     isServer_(false)
