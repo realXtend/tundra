@@ -768,6 +768,19 @@ AABB EC_RigidBody::ShapeAABB() const
     return AABB(aabbMin, aabbMax);
 }
 
+bool EC_RigidBody::IsPrimitiveShape() const
+{
+    switch(static_cast<ShapeType>(shapeType.Get()))
+    {
+    case Shape_TriMesh:
+    case Shape_HeightField:
+    case Shape_ConvexHull:
+        return false;
+    default:
+        return true;
+    }
+}
+
 void EC_RigidBody::TerrainUpdated(IAttribute* attribute)
 {
     EC_Terrain* terrain = terrain_.lock().get();
