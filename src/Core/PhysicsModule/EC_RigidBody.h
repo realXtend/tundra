@@ -83,6 +83,7 @@ class EC_Terrain;
     <li> "GetAngularVelocity": @copydoc GetAngularVelocity
     <li> "HasAuthority": @copydoc HasAuthority
     <li> "ShapeAABB": @copydoc ShapeAABB
+    <li> "IsPrimitiveShape": @copydoc IsPrimitiveShape
     </ul>
 
     <b>Reacts on the following actions:</b>
@@ -296,6 +297,9 @@ public slots:
     /// Returns the minimal axis-aligned bounding box that encloses the collision shape of this rigid body.
     /// Note that this function may be called even if the shape of this rigid body is not AABB.
     AABB ShapeAABB() const;
+
+    /// Returns true if the currently used shape is a primitive shape (box et al.), false otherwise.
+    bool IsPrimitiveShape() const;
 
 private slots:
     /// Called when the parent entity has been set.
