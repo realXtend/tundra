@@ -496,9 +496,9 @@ void InputAPI::TriggerGestureEvent(GestureEvent &gesture)
     }
 }
 
-void InputAPI::SetKeyBinding(const QString &actionName, QKeySequence key)
+void InputAPI::SetKeyBinding(const QString &actionName, const QKeySequence &key)
 {
-    keyboardMappings[actionName] = QKeySequence(key);
+    keyboardMappings[actionName] = key;
 }
 
 QKeySequence InputAPI::KeyBinding(const QString &actionName) const
@@ -531,7 +531,7 @@ void InputAPI::LoadKeyBindingsFromFile()
     ConfigData inputConfig(ConfigAPI::FILE_FRAMEWORK, "input");
     for(int i = 0; ; ++i)
     {
-        QStringList bindings = cfg.Get(inputConfig, QString("keybinding%1").arg(i)).toString().split('|');
+        QStringList bindings = cfg.Read(inputConfig, QString("keybinding%1").arg(i)).toString().split('|');
         if (bindings.size() != 2)
             break;
         SetKeyBinding(bindings[0], bindings[1]);
@@ -544,7 +544,7 @@ void InputAPI::SaveKeyBindingsToFile()
     ConfigData inputConfig(ConfigAPI::FILE_FRAMEWORK, "input");
     int i = 0;
     for(KeyBindingMap::const_iterator iter = keyboardMappings.begin(); iter != keyboardMappings.end(); ++iter)
-        cfg.Set(inputConfig, QString("keybinding%1").arg(i++), iter.key() + '|' + iter.value().toString());
+        cfg.Write(inputConfig, QString("keybinding%1").arg(i++), iter.key() + '|' + iter.value().toString());
 }
 
 Qt::Key StripModifiersFromKey(int qtKeyWithModifiers)

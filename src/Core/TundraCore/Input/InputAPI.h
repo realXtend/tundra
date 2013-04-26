@@ -167,7 +167,7 @@ public slots:
     InputContext *TopLevelInputContext() { return &topLevelInputContext; }
 
     /// Associates the given custom action with the given key.
-    void SetKeyBinding(const QString &actionName, QKeySequence key);
+    void SetKeyBinding(const QString &actionName, const QKeySequence &key);
 
     /// Returns the key associated with the given action.
     /** @param actionName The custom action name to query. The convention is to use two-part names, separated with a period, i.e.
