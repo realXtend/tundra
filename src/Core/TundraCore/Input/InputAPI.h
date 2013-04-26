@@ -48,6 +48,7 @@ class Framework;
 class TUNDRACORE_API InputAPI : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(KeyBindingMap keyBindings READ KeyBindings WRITE SetKeyBindings) /**< @copydoc keyboardMappings */
 
 public:
     /// Initializes the API and hooks it into the main application window.
@@ -65,6 +66,12 @@ public:
 
     /// Changes the priority of the given input context to the new priority.
     void SetPriority(InputContextPtr inputContext, int newPriority);
+
+    /// Return the current key bindings.
+    const KeyBindingMap &KeyBindings() const { return keyboardMappings; }
+
+    /// Sets new set of key bindings.
+    void SetKeyBindings(const KeyBindingMap &actionMap) { keyboardMappings = actionMap; }
 
 public slots:
     /// Creates a new input context with the given name.
@@ -169,7 +176,10 @@ public slots:
     QKeySequence KeyBinding(const QString &actionName) const;
     /// @overload
     /** @param defaultKey If the action does not exist, the default key sequence is registered for it and returned. */
-    QKeySequence KeyBinding(const QString &actionName, QKeySequence defaultKey);
+    QKeySequence KeyBinding(const QString &actionName, const QKeySequence &defaultKey);
+
+    /// Removes a key binding.
+    void RemoveKeyBinding(const QString &actionName);
 
     /// Finds the InputContext that has the highest mouse priority, and applies the mouse cursor in it as the currently shown mouse cursor.
     void ApplyMouseCursorOverride();
@@ -189,12 +199,6 @@ public slots:
     
     /// Sends mouse button release messages for each mouse button that was held down.
     void SceneReleaseMouseButtons();
-
-    /// Return the current key bindings.
-    KeyBindingMap KeyBindings() const { return keyboardMappings; }
-
-    /// Sets new set of key bindings.
-    void SetKeyBindings(const KeyBindingMap &actionMap) { keyboardMappings = actionMap; }
 
     /// Loads key bindings from config.
     void LoadKeyBindingsFromFile();
