@@ -24,8 +24,8 @@ using namespace OgreRenderer;
 
 EC_AnimationController::EC_AnimationController(Scene* scene) :
     IComponent(scene),
-    animationState(this, "Animation state", ""),
-    drawDebug(this, "Draw debug", false),
+    INIT_ATTRIBUTE_VALUE(animationState, "Animation state", ""),
+    INIT_ATTRIBUTE_VALUE(drawDebug, "Draw debug", false),
     mesh(0)
 {
     ResetState();

@@ -20,9 +20,9 @@ using namespace Physics;
 
 EC_PhysicsMotor::EC_PhysicsMotor(Scene* scene) :
     IComponent(scene),
-    absoluteMoveForce(this, "Absolute Move Force", float3::zero),
-    relativeMoveForce(this, "Relative Move Force", float3::zero),
-    dampingForce(this, "Damping Force", float3::zero)
+    INIT_ATTRIBUTE_VALUE(absoluteMoveForce, "Absolute Move Force", float3::zero),
+    INIT_ATTRIBUTE_VALUE(relativeMoveForce, "Relative Move Force", float3::zero),
+    INIT_ATTRIBUTE_VALUE(dampingForce, "Damping Force", float3::zero)
 {
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()), Qt::UniqueConnection);
 }

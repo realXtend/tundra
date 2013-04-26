@@ -458,7 +458,7 @@ void AddContentWindow::AddEntities(const QList<EntityDesc> &entityDescs)
             // Gather non-empty asset references. They're shown in their own tree widget.
 /*
             foreach(AttributeDesc a, c.attributes)
-                if (a.typeName == "assetreference" && !a.value.isEmpty())
+                if (a.typeName == "AssetReference" && !a.value.isEmpty())
                     assetRefs.insert(a);
         }
 */
@@ -553,7 +553,7 @@ void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetS
             while(adIt.hasNext())
             {
                 adIt.next();
-                if (adIt.value().typeName == "assetreference" || adIt.value().typeName == "assetreferencelist")
+                if (adIt.value().typeName == "AssetReference" || adIt.value().typeName == "AssetReferenceList")
                 {
                     QStringList newValues;
                     foreach(QString value, adIt.value().value.split(";", QString::SkipEmptyParts))

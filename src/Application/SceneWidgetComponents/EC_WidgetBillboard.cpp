@@ -42,11 +42,11 @@
 
 EC_WidgetBillboard::EC_WidgetBillboard(Scene* scene) :
     IComponent(scene),
-    uiRef(this, "UI ref", AssetReference("", "QtUiFile")),
-    visible(this, "Visible", true),
-    acceptInput(this, "Accept Input", true),
-    position(this, "Position", float3(0.0f, 0.0f, 0.0f)),
-    ppm(this, "Pixels per meter", 300),
+    INIT_ATTRIBUTE_VALUE(uiRef, "UI ref", AssetReference("", "QtUiFile")),
+    INIT_ATTRIBUTE_VALUE(visible, "Visible", true),
+    INIT_ATTRIBUTE_VALUE(acceptInput, "Accept Input", true),
+    INIT_ATTRIBUTE_VALUE(position, "Position", float3(0.0f, 0.0f, 0.0f)),
+    INIT_ATTRIBUTE_VALUE(ppm, "Pixels per meter", 300),
     cloneMaterialRef_("Ogre Media:LitTextured.material"),
     refListener_(0),
     widgetContainer_(0),

@@ -77,7 +77,7 @@ bool ComponentGroup::ContainsAttribute(const QString &name) const
     for(uint i = 0; i < components_.size(); i++)
     {
         ComponentPtr comp = components_[i].lock();
-        if(comp && comp->GetAttribute(name))
+        if(comp && comp->AttributeByName(name))
             return true;
     }
     return false;

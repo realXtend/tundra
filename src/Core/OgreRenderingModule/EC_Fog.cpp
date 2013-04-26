@@ -19,11 +19,11 @@
 
 EC_Fog::EC_Fog(Scene* scene) :
     IComponent(scene),
-    mode(this, "Mode", 3),
-    color(this,"Color", Color(0.707792f,0.770537f,0.831373f,1.f)),
-    startDistance(this, "Start distance", 100.f),
-    endDistance(this, "End distance", 2000.f),
-    expDensity(this, "Exponential density", 0.001f)
+    INIT_ATTRIBUTE_VALUE(mode, "Mode", 3),
+    INIT_ATTRIBUTE_VALUE(color,"Color", Color(0.707792f,0.770537f,0.831373f,1.f)),
+    INIT_ATTRIBUTE_VALUE(startDistance, "Start distance", 100.f),
+    INIT_ATTRIBUTE_VALUE(endDistance, "End distance", 2000.f),
+    INIT_ATTRIBUTE_VALUE(expDensity, "Exponential density", 0.001f)
 {
     static AttributeMetadata metadata;
     static bool metadataInitialized = false;

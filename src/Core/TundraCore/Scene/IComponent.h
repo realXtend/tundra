@@ -10,6 +10,7 @@
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
 #include "IAttribute.h"
+#include "LoggingFunctions.h"
 
 #include <QObject>
 #include <QVariant>
@@ -57,6 +58,11 @@ private: // Return the class visibility specifier to the strictest form so that 
     Attribute<type > attribute; \
     type get##attribute() const { return (type)attribute.Get(); } \
     void set##attribute(type value) { attribute.Set((type)value, AttributeChange::Default); }
+
+/// Macro for constructing an attribute in the component's constructor initializer list. "id" is the property/variable name, "name" is the human-readable name used in editing.
+#define INIT_ATTRIBUTE(id, name) id(this, #id, name)
+/// Macro for constructing an attribute in the component's constructor initializer list. "id" is the property/variable name, "name" is the human-readable name used in editing, "value" is initial value.
+#define INIT_ATTRIBUTE_VALUE(id, name, value) id(this, #id, name, value)
 
 /// The common interface for all components, which are the building blocks the scene entities are formed of.
 /** Inherit your own components from this class. Never directly allocate new components using operator new,
@@ -141,20 +147,6 @@ public:
     /// Returns a list of all attributes with null attributes sanitated away. This is slower than Attributes().
     AttributeVector NonEmptyAttributes() const;
     
-    /// Finds and returns an attribute of type 'Attribute<T>' and given name.
-    /** @param T The Attribute type to look for.
-        @param name The name of the attribute.
-        @return If there exists an attribute of type 'Attribute<T>' which has the given name, a pointer to
-                that attribute is returned, otherwise returns null. */
-    template<typename T>
-    Attribute<T> *GetAttribute(const QString &name) const
-    {
-        for(size_t i = 0; i < attributes.size(); ++i)
-            if (attributes[i] && attributes[i]->Name() == name)
-                return dynamic_cast<Attribute<T> *>(&attributes[i]);
-        return 0;
-    }
-
     /// Serializes this component and all its Attributes to the given XML document.
     /** @param doc The XML document to serialize this component to.
         @param baseElement Points to the <entity> element of the document doc. This element is the Entity that
@@ -179,15 +171,11 @@ public:
         it depends on the situation if they are needed or not. */
     virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
-    /// Returns an Attribute of this component with the given @c name.
-    /** This function iterates through the attribute vector and tries to find a member attribute with the given name.
-        @param The name of the attribute to look for.
-        @return A pointer to the attribute, or null if no attribute with the given name exists. */
-    IAttribute* GetAttribute(const QString &name) const;
-    
-    /// Create an attribute with specified index, type and name. Return it if successful or null if not. Called by SyncManager.
-    /** Component must override SupportsDynamicAttributes() to allow creating attributes. */
-    IAttribute* CreateAttribute(u8 index, u32 typeID, const QString& name, AttributeChange::Type change = AttributeChange::Default);
+    /// Create an attribute with specified index, type and ID. Return it if successful or null if not. Called by SyncManager.
+    /** Component must override SupportsDynamicAttributes() to allow creating attributes. 
+        @note For dynamic attributes ID and name will be same
+      */
+    IAttribute* CreateAttribute(u8 index, u32 typeID, const QString& id, AttributeChange::Type change = AttributeChange::Default);
     
     /// Remove an attribute at the specified index. Called by network sync.
     void RemoveAttribute(u8 index, AttributeChange::Type change);
@@ -196,9 +184,77 @@ public:
     /** True by default. Can only be changed before the component is added to an entity, because the replication determines the ID range to use. */
     void SetReplicated(bool enable);
 
+    /// Finds and returns an attribute of type 'Attribute<T>' and given name
+    /** @param T The Attribute type to look for.
+        @param name The name of the attribute.
+        @return If there exists an attribute of type 'Attribute<T>' which has the given name, a pointer to
+                that attribute is returned, otherwise returns null. 
+        Note: attribute names are human-readable (shown in editor) and may be subject to change, while id's
+        (property / variable names) should be fixed. */
+    template<typename T>
+    Attribute<T> *AttributeByName(const QString &name) const
+    {
+        /// \todo Compare needs to be case-insensitive
+        for(size_t i = 0; i < attributes.size(); ++i)
+            if (attributes[i] && attributes[i]->Name() == name)
+                return dynamic_cast<Attribute<T> *>(&attributes[i]);
+        return 0;
+    }
+    
+    /// Finds and returns an attribute of type 'Attribute<T>' and given ID
+    /** @param T The Attribute type to look for.
+        @param id The ID of the attribute.
+        @return If there exists an attribute of type 'Attribute<T>' which has the given ID, a pointer to
+                that attribute is returned, otherwise returns null.   */
+    template<typename T>
+    Attribute<T> *AttributeById(const QString &id) const
+    {
+        /// \todo Compare needs to be case-insensitive
+        for(size_t i = 0; i < attributes.size(); ++i)
+            if (attributes[i] && attributes[i]->Id() == id)
+                return dynamic_cast<Attribute<T> *>(&attributes[i]);
+        return 0;
+    }
+    
     /// Returns a pointer to the Framework instance.
     Framework *GetFramework() const { return framework; }
 
+    /// Returns an Attribute of this component with the given ID.
+    /** This function iterates through the attribute vector and tries to find a member attribute with the given ID
+        @param The ID of the attribute to look for.
+        @return A pointer to the attribute, or null if no attribute with the given ID exists */
+    IAttribute* AttributeById(const QString &name) const;
+    
+    /// Returns an Attribute of this component with the given name.
+    /** This function iterates through the attribute vector and tries to find a member attribute with the given name.
+        @param The name of the attribute to look for.
+        @return A pointer to the attribute, or null if no attribute with the given name exists. 
+        @note attribute names are human-readable (shown in editor) and may be subject to change, while id's
+        (property / variable names) should be fixed. */
+    IAttribute* AttributeByName(const QString &name) const;
+    
+    // Deprecated, use AttributeByName instead
+    IAttribute* GetAttribute(const QString &name) const;
+
+    // Deprecated, use AttributeByName<T> instead
+    /// Finds and returns an attribute of type 'Attribute<T>' and given name
+    /** @param T The Attribute type to look for.
+        @param name The name of the attribute.
+        @return If there exists an attribute of type 'Attribute<T>' which has the given name, a pointer to
+                that attribute is returned, otherwise returns null. 
+        Note: attribute names are human-readable (shown in editor) and may be subject to change, while id's
+        (property / variable names) should be fixed. */
+    template<typename T>
+    Attribute<T> *GetAttribute(const QString &name) const
+    {
+        LogWarning("IComponent::GetAttribute<T> is deprecated and will be removed. Use AttributeByName<T> or AttributeById<T> instead");
+        /// \todo Compare needs to be case-insensitive
+        for(size_t i = 0; i < attributes.size(); ++i)
+            if (attributes[i] && attributes[i]->Name() == name)
+                return dynamic_cast<Attribute<T> *>(&attributes[i]);
+        return 0;
+    }
+    
 public slots:
     /// Returns true if network synchronization of the attributes of this component is enabled.
     /// A component is always either local or replicated, but not both.
@@ -288,12 +344,16 @@ public slots:
     bool ViewEnabled() const;
 
     /// Returns an attribute of this component as a QVariant
-    /** @param name of attribute
-        @return values of the attribute */
-    QVariant GetAttributeQVariant(const QString &name) const;
+    /** @param id ID or name of the attribute
+        @return value of the attribute 
+        @todo Create separate functions to query by name or ID */
+    QVariant GetAttributeQVariant(const QString &id) const;
 
     /// Returns list of attribute names of the component
     QStringList GetAttributeNames() const;
+
+    /// Returns list of attribute IDs of the component.
+    QStringList GetAttributeIds() const;
 
     /** @deprecated Currently a no-op, as replication mode can not be changed after adding to an entity.
         @todo Removed once scripts converted to not call this */
@@ -331,22 +391,13 @@ protected:
         If serializeTemporary is true, the attribute 'temporary' is added to the XML element. Default is false. */
     QDomElement BeginSerialization(QDomDocument& doc, QDomElement& baseElement, bool serializeTemporary = false) const;
 
-    /// Helper function for adding an attribute to the component XML serialization.
-    void WriteAttribute(QDomDocument& doc, QDomElement& compElement, const QString& name, const QString& value) const;
-
     /// Helper function for adding an attribute and it's type to the component XML serialization.
-    void WriteAttribute(QDomDocument& doc, QDomElement& compElement, const QString& name, const QString& value, const QString &type) const;
+    void WriteAttribute(QDomDocument& doc, QDomElement& compElement, const QString& name, const QString& id, const QString& value, const QString &type) const;
 
     /// Helper function for starting deserialization.
     /** Checks that XML element contains the right kind of EC, and if it is right, sets the component name.
         Otherwise returns false and does nothing. */
     bool BeginDeserialization(QDomElement& compElement);
-
-    /// Helper function for getting an attribute from serialized component.
-    QString ReadAttribute(QDomElement& compElement, const QString &name) const;
-
-    /// Helper function for getting a attribute type from serialized component.
-    QString ReadAttributeType(QDomElement& compElement, const QString &name) const;
 
     /// Add attribute to this component.
     void AddAttribute(IAttribute* attr);
