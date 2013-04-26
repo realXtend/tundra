@@ -105,11 +105,6 @@ QVariant ConsoleCommand::Invoke(const QStringList &params)
     return returnValue;
 }
 
-bool CommandCaseInsensitiveCompare(const QString &c1, const QString &c2)
-{
-    return (c1.compare(c2, Qt::CaseInsensitive) < 0);
-}
-
 QStringList ConsoleAPI::AvailableCommands(Qt::CaseSensitivity sortingCaseSensitivity) const
 {
     QStringList commandsList;
@@ -119,9 +114,7 @@ QStringList ConsoleAPI::AvailableCommands(Qt::CaseSensitivity sortingCaseSensiti
         if (!command.isEmpty() && !commandsList.contains(command))
             commandsList << command;
     }
-    if (sortingCaseSensitivity == Qt::CaseInsensitive)
-        qSort(commandsList.begin(), commandsList.end(), CommandCaseInsensitiveCompare);
-    else if (sortingCaseSensitivity == Qt::CaseSensitive)
+    if (sortingCaseSensitivity == Qt::CaseSensitive)
         qSort(commandsList);
     return commandsList;
 }
