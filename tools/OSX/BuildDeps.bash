@@ -828,6 +828,25 @@ export ZZIPLIB_ROOT=$ZZIPLIBPREFIX
 
 # All deps are now fetched and built. Do the actual Tundra build.
 
+# Detect Mac OS X SDKs:
+XCODE_VERSION=`xcodebuild -version | grep Xcode | sed -e 's/[^0-9]*//'`
+#XCODE_VERSION_MINOR=`$XCODE_VERSION | sed -e 's/[0-9]\.*//'`
+#XCODE_VERSION_MAJOR=`$XCODE_VERSION | sed -e 's/\.[0-9]*//'`
+XCODE_LION_SDK=macosx10.7  # note: Since XCode 4.2, the SDK is in /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
+XCODE_SNOW_LEOPARD_SDK=macosx10.6
+OSX_SDK_ROOT=$XCODE_LION_SDK
+
+if [[ $OSX_VERSION == 10.7.* ]] || [[ $OSX_VERSION == 10.8.* ]]; then
+    OSX_SDK_ROOT=$XCODE_LION_SDK
+elif [[ $OSX_VERSION == 10.6.* ]]; then
+    OSX_SDK_ROOT=$XCODE_SNOW_LEOPARD_SDK
+else
+    echoError "Failed to set Mac OS X SDK root. Are you using an unsupported Mac version? (the version detected by this script was $OSX_VERSION )"
+    exit 0
+fi
+
+echoInfo "Using Mac OS X $OSX_VERSION, Xcode version $XCODE_VERSION, SDK system root: $OSX_SDK_ROOT"
+
 XCODE_SUFFIX=
 if [ "$MAKE_XCODE" == "1" ]; then
     XCODE_SUFFIX="-G Xcode"
@@ -835,7 +854,7 @@ fi
 
 cd $viewer
 if [ "$RUN_CMAKE" == "1" ]; then
-    TUNDRA_DEP_PATH=$prefix cmake . $XCODE_SUFFIX -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_BUILD_TYPE=RelWithDebInfo -DTUNDRA_NO_BOOST:BOOL=$NO_BOOST -DTUNDRA_CPP11_ENABLED:BOOL=$NO_BOOST
+    TUNDRA_DEP_PATH=$prefix cmake . $XCODE_SUFFIX -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_OSX_SYSROOT=$OSX_SDK_ROOT -DTUNDRA_NO_BOOST:BOOL=$NO_BOOST -DTUNDRA_CPP11_ENABLED:BOOL=$NO_BOOST
 fi
 
 if [ "$RUN_MAKE" == "1" ]; then
