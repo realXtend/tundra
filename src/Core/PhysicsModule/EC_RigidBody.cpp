@@ -80,6 +80,7 @@ EC_RigidBody::EC_RigidBody(Scene* scene) :
         shapemetadata.enums[Shape_TriMesh] = "TriMesh";
         shapemetadata.enums[Shape_HeightField] = "HeightField";
         shapemetadata.enums[Shape_ConvexHull] = "ConvexHull";
+        shapemetadata.enums[Shape_Cone] = "Cone";
         metadataInitialized = true;
     }
     shapeType.SetMetadata(&shapemetadata);
@@ -329,6 +330,9 @@ void EC_RigidBody::CreateCollisionShape()
         break;
     case Shape_ConvexHull:
         CreateConvexHullSetShape();
+        break;
+    case Shape_Cone:
+        shape_ = new btConeShape(sizeVec.x * 0.5f, sizeVec.y * 0.5f);
         break;
     }
     
