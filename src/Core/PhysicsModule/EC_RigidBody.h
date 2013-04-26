@@ -121,7 +121,8 @@ public:
         Shape_Capsule, ///< Capsule
         Shape_TriMesh, ///< Triangle mesh
         Shape_HeightField, ///< Heightfield
-        Shape_ConvexHull ///< Convex hull
+        Shape_ConvexHull, ///< Convex hull
+        Shape_Cone ///< Cone
     };
 
     /// Mass of the body. Set to 0 to have a static (immovable) object
