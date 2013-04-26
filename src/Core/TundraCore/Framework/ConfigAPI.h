@@ -32,10 +32,16 @@ struct TUNDRACORE_API ConfigData
     QVariant defaultValue;
 
     /// Returns string presentation of the contained data.
-    QString ToString() const { return QString("ConfigData(file:%1 section:%2 key:%3 value:%4 defaultValue:%5)")
-        .arg(file).arg(section).arg(key).arg(value.toString()).arg(defaultValue.toString()); }
+    QString ToString() const
+    {
+        return QString("ConfigData(file:%1 section:%2 key:%3 value:%4 defaultValue:%5)")
+            .arg(file).arg(section).arg(key).arg(value.toString()).arg(defaultValue.toString());
+    }
+
+    /// @cond PRIVATE
     /// Same as ToString, exists for QtScript-compatibility.
     QString toString() const { return ToString(); }
+    /// @endcond
 };
 Q_DECLARE_METATYPE(ConfigData)
 Q_DECLARE_METATYPE(ConfigData*)
@@ -82,7 +88,7 @@ public slots:
     /// Returns if a key exists in the config.
     /** @param file Name of the file. For example: "foundation" or "foundation.ini" you can omit the .ini extension.
         @param section The section in the config where key is. For example: "login".
-        @param key  Key to look for in the file under section. */
+        @param key Key to look for in the file under section. */
     bool HasKey(QString file, QString section, QString key) const;
     bool HasKey(const ConfigData &data) const; /**< @overload @param data Filled ConfigData object */
     bool HasKey(const ConfigData &data, QString key) const; /**< @overload */
@@ -114,7 +120,16 @@ public slots:
     /// Returns the absolute path to the config folder where configs are stored. Guaranteed to have a trailing forward slash '/'.
     QString ConfigFolder() const { return configFolder_; }
 
+    /// Declares a setting, meaning that if the setting doesn't exist in the config it will be created.
+    /** @return The value of the setting the config, if the setting existed, or default value if the setting did not exist. */
+    QVariant DeclareSetting(const QString &file, const QString &section, const QString &key, const QVariant &defaultValue);
+     /// @overload
+    /** @note ConfigData::value will take precedence over ConfigData::defaultValue, if both are set, as the value that will be used for the default value. */
+    QVariant DeclareSetting(const ConfigData &data);
+    QVariant DeclareSetting(const ConfigData &data, const QString &key, const QVariant &defaultValue); /**< @overload */
+
     // DEPRECATED
+    /// @cond PRIVATE
     QVariant Get(QString file, QString section, QString key, const QVariant &defaultValue = QVariant()) const { return Read(file, section, key, defaultValue); } /**< @deprecated Use Read. @todo Add warning print */
     QVariant Get(const ConfigData &data) const { return Read(data); } /**< @deprecated Use Read. @todo Add warning print */
     QVariant Get(const ConfigData &data, QString key, const QVariant &defaultValue = QVariant()) const { return Read(data, key, defaultValue); } /**< @deprecated Use Read. @todo Add warning print */
@@ -125,7 +140,7 @@ public slots:
     bool HasValue(const ConfigData &data) const { return HasKey(data); } /**< @deprecated Use HasKey. @todo Add warning print @todo Remove */
     bool HasValue(const ConfigData &data, QString key) const { return HasKey(data, key); } /**< @deprecated Use HasKey. @todo Add warning print @todo Remove */
     QString GetConfigFolder() const { return ConfigFolder(); } /**< @deprecated Use ConfigFolder. @todo Add warning print @todo Remove */
-
+    /// @endcond
 private:
     friend class Framework;
 

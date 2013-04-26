@@ -215,3 +215,26 @@ void ConfigAPI::Write(QString file, QString section, QString key, const QVariant
         config.setValue(section + "/" + key, value);
     config.sync();
 }
+
+QVariant ConfigAPI::DeclareSetting(const QString &file, const QString &section, const QString &key, const QVariant &defaultValue)
+{
+    if (HasKey(file, section, key))
+    {
+        return Read(file, section, key);
+    }
+    else
+    {
+        Write(file, section, key, defaultValue);
+        return defaultValue;
+    }
+}
+
+QVariant ConfigAPI::DeclareSetting(const ConfigData &data)
+{
+    return DeclareSetting(data.file, data.section, data.key, data.value.isValid() ? data.value : data.defaultValue);
+}
+
+QVariant ConfigAPI::DeclareSetting(const ConfigData &data, const QString &key, const QVariant &defaultValue)
+{
+    return DeclareSetting(data.file, data.section, key, defaultValue);
+}
