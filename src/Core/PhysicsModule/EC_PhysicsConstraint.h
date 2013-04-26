@@ -20,7 +20,7 @@ public:
     {
         Invalid = 0, ///< Invalid constraint
         Hinge, ///< Hinge constraint
-        Point2Point, ///< Point2point constraint
+        PointToPoint, ///< Point to point constraint
         Slider, ///< Slider constraint
     };
 
@@ -30,8 +30,8 @@ public:
     Q_PROPERTY(EntityReference otherEntity READ getotherEntity WRITE setotherEntity);
     DEFINE_QPROPERTY_ATTRIBUTE(EntityReference, otherEntity);
 
-    Q_PROPERTY(int type READ gettype WRITE settype);
-    DEFINE_QPROPERTY_ATTRIBUTE(int, type);
+    Q_PROPERTY(uint type READ gettype WRITE settype);
+    DEFINE_QPROPERTY_ATTRIBUTE(uint, type);
 
     Q_PROPERTY(float3 pivotPointA READ getpivotPointA WRITE setpivotPointA);
     DEFINE_QPROPERTY_ATTRIBUTE(float3, pivotPointA);
@@ -45,12 +45,8 @@ public:
     Q_PROPERTY(float lowerLimit READ getlowerLimit WRITE setlowerLimit);
     DEFINE_QPROPERTY_ATTRIBUTE(float, lowerLimit);
 
-    
-    
 private slots:
     void UpdateSignals();
 private:
-
     weak_ptr<EC_RigidBody> rigidBody_;
-
 };

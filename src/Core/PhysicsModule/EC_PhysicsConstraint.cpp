@@ -27,7 +27,7 @@ EC_PhysicsConstraint::EC_PhysicsConstraint(Scene* scene):
     {
         constraintTypeMetadata.enums[Invalid] = "Invalid";
         constraintTypeMetadata.enums[Hinge] = "Hinge";
-        constraintTypeMetadata.enums[Point2Point] = "Point to point";
+        constraintTypeMetadata.enums[PointToPoint] = "Point to point";
         constraintTypeMetadata.enums[Slider] = "Slider";
         metadataInitialized = true;
     }
