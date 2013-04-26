@@ -507,7 +507,7 @@ QKeySequence InputAPI::KeyBinding(const QString &actionName) const
     return iter != keyboardMappings.end() ? iter.value() : QKeySequence();
 }
 
-QKeySequence InputAPI::KeyBinding(const QString &actionName, QKeySequence defaultKey)
+QKeySequence InputAPI::KeyBinding(const QString &actionName, const QKeySequence &defaultKey)
 {
     KeyBindingMap::const_iterator iter = keyboardMappings.find(actionName);
     if (iter == keyboardMappings.end())
@@ -516,6 +516,13 @@ QKeySequence InputAPI::KeyBinding(const QString &actionName, QKeySequence defaul
         return defaultKey;
     }
     return iter.value();
+}
+
+void InputAPI::RemoveKeyBinding(const QString &actionName)
+{
+    int ret = keyboardMappings.remove(actionName);
+    if (ret == 0)
+        LogWarning("InputAPI::RemoveKeyBinding: Could not find " + actionName + ".");
 }
 
 void InputAPI::LoadKeyBindingsFromFile()
