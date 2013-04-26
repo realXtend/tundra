@@ -46,6 +46,11 @@ public:
     void Reset();
 
 public slots:
+    /// Get all available console commands.
+    /** @param Case sensitivity for sorting.
+        @return Available console commands. */
+    QStringList AvailableCommands(Qt::CaseSensitivity sortingCaseSensitivity = Qt::CaseInsensitive) const;
+    
     /// Registers a new console command which invokes a slot on the specified QObject.
     /** @param name The function name to use for this command.
         @param desc A help description of this command.
