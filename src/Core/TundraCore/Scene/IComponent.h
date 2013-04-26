@@ -207,7 +207,7 @@ public:
         @return If there exists an attribute of type 'Attribute<T>' which has the given ID, a pointer to
                 that attribute is returned, otherwise returns null.   */
     template<typename T>
-    Attribute<T> *AttributeById(const QString &name) const
+    Attribute<T> *AttributeById(const QString &id) const
     {
         /// \todo Compare needs to be case-insensitive
         for(size_t i = 0; i < attributes.size(); ++i)

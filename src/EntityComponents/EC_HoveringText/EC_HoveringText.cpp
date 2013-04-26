@@ -38,7 +38,7 @@ EC_HoveringText::EC_HoveringText(Scene* scene) :
     billboard_(0),
     INIT_ATTRIBUTE_VALUE(usingGrad, "Use Gradient", false),
     INIT_ATTRIBUTE(text, "Text"),
-    INIT_ATTRIBUTE(font, "Font", "Arial"),
+    INIT_ATTRIBUTE_VALUE(font, "Font", "Arial"),
     INIT_ATTRIBUTE(fontColor, "Font Color"),
     INIT_ATTRIBUTE_VALUE(fontSize, "Font Size", 100),
     INIT_ATTRIBUTE_VALUE(backgroundColor, "Background Color", Color(1.0f,1.0f,1.0f,0.0f)),
