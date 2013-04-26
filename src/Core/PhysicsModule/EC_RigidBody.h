@@ -62,6 +62,8 @@ class EC_Terrain;
     <div>@copydoc collisionMask</div>
     <li>float: rollingFriction
     <div>@copydoc rollingFriction</div>
+    <li>bool: useGravity
+    <div>@copydoc useGravity</div>
     </ul>
 
     <b>Exposes the following scriptable functions:</b>
@@ -196,6 +198,10 @@ public:
     /// Rolling friction coefficient between 0.0 - 1.0.
     Q_PROPERTY(float rollingFriction READ getrollingFriction WRITE setrollingFriction);
     DEFINE_QPROPERTY_ATTRIBUTE(float, rollingFriction);
+
+    /// Gravity enable. If true (default), the physics world gravity affects the object.
+    Q_PROPERTY(bool useGravity READ getuseGravity WRITE setuseGravity)
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, useGravity)
 
     /// btMotionState override. Called when Bullet wants us to tell the body's initial transform
     virtual void getWorldTransform(btTransform &worldTrans) const;
@@ -355,6 +361,9 @@ private:
     
     /// Update position & rotation from placeable
     void UpdatePosRotFromPlaceable();
+    
+    /// Update gravity setting of the body.
+    void UpdateGravity();
     
     /// Request mesh resource (for trimesh & convexhull shapes)
     void RequestMesh();

@@ -14,6 +14,8 @@
 
 #include <QTreeWidget>
 
+#include "MemoryLeakCheck.h"
+
 TreeWidgetItemExpandMemory::TreeWidgetItemExpandMemory(const char *group, Framework *fw) :
     framework(fw),
     groupName(group)

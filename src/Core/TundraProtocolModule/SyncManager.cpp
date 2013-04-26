@@ -140,9 +140,6 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
             LogError("TundraLogicModule: Invalid parameters for --im.");
 
     }
-    else
-        LogError("TundraLogicModule: --im commandline switch given but no parameters supplied.");
-
     
     GetClientExtrapolationTime();
 }

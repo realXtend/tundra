@@ -86,6 +86,7 @@ PhysicsWorld::PhysicsWorld(const ScenePtr &scene, bool isClient) :
     debugDrawMode_(0),
     cachedOgreWorld_(0)
 {
+#include "DisableMemoryLeakCheck.h"
     collisionConfiguration_ = new btDefaultCollisionConfiguration();
     collisionDispatcher_ = new btCollisionDispatcher(collisionConfiguration_);
     broadphase_ = new btDbvtBroadphase();
@@ -93,6 +94,7 @@ PhysicsWorld::PhysicsWorld(const ScenePtr &scene, bool isClient) :
     world_ = new btDiscreteDynamicsWorld(collisionDispatcher_, broadphase_, solver_, collisionConfiguration_);
     world_->setDebugDrawer(this);
     world_->setInternalTickCallback(TickCallback, (void*)this, false);
+#include "EnableMemoryLeakCheck.h"
 
     if (scene->GetFramework()->HasCommandLineParameter("--variablephysicsstep"))
         useVariableTimestep_ = true;

@@ -10,6 +10,8 @@
 #include "Scene.h"
 #include "Entity.h"
 
+#include "MemoryLeakCheck.h"
+
 EntityIdChangeTracker::EntityIdChangeTracker(const ScenePtr &scene, QObject * parent) :
     scene_(scene),
     QObject(parent)

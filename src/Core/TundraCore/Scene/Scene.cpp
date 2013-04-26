@@ -172,6 +172,9 @@ bool Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
             return false;
         }
         
+        // Before an entity is removed, make it remove all of its components to signal removals properly
+        del_entity->RemoveAllComponents(change);
+        
         EmitEntityRemoved(del_entity.get(), change);
         entities_.erase(it);
         

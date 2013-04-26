@@ -208,7 +208,7 @@ QList<Entity *> SceneImporter::Import(const QString &filename, const QString &in
         QString upaxis = scene_elem.attribute("upAxis");
         if (upaxis == "y")
             flipyz = false;
-        
+            
         if (clearscene)
             scene_->RemoveAllEntities(true, change);
         
@@ -504,6 +504,14 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
         return sceneDesc;
     }
 
+    // We assume two cases:
+    // - Blender exporter, up axis not specified; Ogre meshes will be exported as Y-up, but the scene is Z-up (!). Need to change the scene coordinate system.
+    // - Up axis specified as Y: no conversion needs to be done
+    bool flipyz = true;
+    QString upaxis = scene_elem.attribute("upAxis");
+    if (upaxis == "y")
+        flipyz = false;
+        
     QDomElement nodes_elem = scene_elem.firstChildElement("nodes");
     if (nodes_elem.isNull())
     {
@@ -552,7 +560,7 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
     QDomElement node_elem = nodes_elem.firstChildElement("node");
     while(!node_elem.isNull())
     {
-        ProcessNodeForDesc(sceneDesc, node_elem, f.pos, rot, f.scale, path + "/"/*prefix*/, false/*flipyz*/, meshFiles, skeletons, usedMaterials);
+        ProcessNodeForDesc(sceneDesc, node_elem, f.pos, rot, f.scale, path + "/"/*prefix*/, flipyz, meshFiles, skeletons, usedMaterials);
 
         // Process siblings
         node_elem = node_elem.nextSiblingElement("node");
@@ -926,18 +934,17 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElement,
                 
                 if (flipyz)
                 {
-                    float3 eulerRot;
-                    Quat adjustedRot(-newRot.x, newRot.y, newRot.z, newRot.w);
-                    eulerRot = adjustedRot.ToEulerXZY();
+                    float3 rot_euler;
+                    Quat adjustedrot(-newRot.x, newRot.z, newRot.y, newRot.w);
+                    adjustedrot = Quat::FromEulerZYX(0, pi, 0) * adjustedrot;
                     entityTransform.SetPos(-newPos.x, newPos.z, newPos.y);
-                    entityTransform.SetRotation(RadToDeg(eulerRot.x), RadToDeg(eulerRot.y), RadToDeg(eulerRot.z));
+                    entityTransform.SetOrientation(adjustedrot);
                     entityTransform.SetScale(newScale.x, newScale.z, newScale.y);
                 }
                 else
                 {
-                    float3 eulerRot = newRot.ToEulerXYZ();
                     entityTransform.SetPos(newPos.x, newPos.y, newPos.z);
-                    entityTransform.SetRotation(RadToDeg(eulerRot.x), RadToDeg(eulerRot.y), RadToDeg(eulerRot.z));
+                    entityTransform.SetOrientation(newRot);
                     entityTransform.SetScale(newScale.x, newScale.y, newScale.z);
                 }
 

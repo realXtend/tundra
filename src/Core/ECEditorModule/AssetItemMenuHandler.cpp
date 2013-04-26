@@ -26,6 +26,8 @@
 #include "UiMainWindow.h"
 #include "FileUtils.h"
 
+#include "MemoryLeakCheck.h"
+
 AssetItemMenuHandler::AssetItemMenuHandler(Framework *fw) :
     framework_(fw),
     sender_(0)

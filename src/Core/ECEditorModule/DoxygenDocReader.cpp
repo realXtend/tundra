@@ -12,6 +12,8 @@
 
 #include "DoxygenDocReader.h"
 
+#include "MemoryLeakCheck.h"
+
 static QString GuessClassDocumentationFilename(QString functionName)
 {
     // Escape all underscores. The doxygen filenames use underscore as the escape character.

@@ -130,25 +130,25 @@ IF %BUILD_OPENSSL%==FALSE (
 
 IF NOT EXIST "%DEPS%\openssl\src". (
    cd "%DEPS%"
-   IF NOT EXIST openssl-0.9.8u.tar.gz. (
-      cecho {0D}Downloading OpenSSL 0.9.8u.{# #}{\n}
-      wget http://www.openssl.org/source/openssl-0.9.8u.tar.gz
+   IF NOT EXIST openssl-0.9.8x.tar.gz. (
+      cecho {0D}Downloading OpenSSL 0.9.8x.{# #}{\n}
+      wget http://www.openssl.org/source/openssl-0.9.8x.tar.gz
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
    mkdir openssl
-   cecho {0D}Extracting OpenSSL 0.9.8u sources to "%DEPS%\openssl\src".{# #}{\n}
-   7za e -y openssl-0.9.8u.tar.gz
-   7za x -y -oopenssl openssl-0.9.8u.tar
+   cecho {0D}Extracting OpenSSL 0.9.8x sources to "%DEPS%\openssl\src".{# #}{\n}
+   7za e -y openssl-0.9.8x.tar.gz
+   7za x -y -oopenssl openssl-0.9.8x.tar
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cd openssl
-   ren openssl-0.9.8u src
+   ren openssl-0.9.8x src
    cd ..
    IF NOT EXIST "%DEPS%\openssl\src". (
-      cecho {0E}Failed to rename %DEPS%\openssl\openssl-0.9.8u to %DEPS%\openssl\src. Permission denied for your account?{# #}{\n}
+      cecho {0E}Failed to rename %DEPS%\openssl\openssl-0.9.8x to %DEPS%\openssl\src. Permission denied for your account?{# #}{\n}
       GOTO :ERROR
    )
-   del openssl-0.9.8u.tar
+   del openssl-0.9.8x.tar
 ) ELSE (
    cecho {0D}OpenSSL already downloaded. Skipping.{# #}{\n}
 )
@@ -180,16 +180,18 @@ IF NOT EXIST "%TUNDRA_BIN%\ssleay32.dll". (
 :SKIP_OPENSSL
 
 :: Qt
-:: NOTE For VS2012 support Qt 4.8.3>= needed:
-:: http://stackoverflow.com/questions/12113400/compiling-qt-4-8-x-for-visual-studio-2012
-:: But 4.8.4 should support VS2012 out-of-the-box.
-:: Use http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-4.8.4.zip
-set QT_VER=4.7.4
+:: NOTE For VS2012 support Qt 4.8.3>= needed: http://stackoverflow.com/questions/12113400/compiling-qt-4-8-x-for-visual-studio-2012
+:: In theory, 4.8.4 should support VS2012 out-of-the-box, but in practice doesn't...
+:: NOTE ftp://ftp.qt-project.org/qt/source/ Can be used for Qt < 4.8.2, for Qt >= 4.8.2 use http://releases.qt-project.org/qt4/source/
+::set QT_VER=4.7.4
+::set QT_URL=ftp://ftp.qt-project.org/qt/source/qt-everywhere-opensource-src-%QT_VER%.zip
+set QT_VER=4.8.4
+set QT_URL=http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-%QT_VER%.zip
 IF NOT EXIST "%DEPS%\qt". (
    cd "%DEPS%"
    IF NOT EXIST qt-everywhere-opensource-src-%QT_VER%.zip. (
       cecho {0D}Downloading Qt %QT_VER%. Please be patient, this will take a while.{# #}{\n}
-      wget ftp://ftp.qt-project.org/qt/source/qt-everywhere-opensource-src-%QT_VER%.zip
+      wget %QT_URL%
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
@@ -253,7 +255,10 @@ IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
 
    IF NOT EXIST "configure.cache". (
       cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}
-      configure -platform %QT_PLATFORM% -debug-and-release -opensource -prefix "%DEPS%\qt" -shared -ltcg -no-qt3support -no-opengl -no-openvg -no-dbus -no-phonon -no-phonon-backend -nomake examples -nomake demos -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
+      configure -platform %QT_PLATFORM% -debug-and-release -opensource -prefix "%DEPS%\qt" -shared -ltcg ^
+        -no-qt3support -no-opengl -no-openvg -no-dbus -no-phonon -no-phonon-backend -no-multimedia -no-audio-backend ^
+        -no-declarative -no-xmlpatterns -nomake examples -nomake demos ^
+        -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
 
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    ) ELSE (
@@ -342,7 +347,8 @@ IF NOT EXIST "%DEPS%\bullet\". (
 
     cecho {0D}Building Bullet. Please be patient, this will take a while.{# #}{\n}
     MSBuild BULLET_PHYSICS.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-    MSBuild BULLET_PHYSICS.sln /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild BULLET_PHYSICS.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild BULLET_PHYSICS.sln /p:configuration=RelWithDebInfo /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
     cecho {0D}Bullet already built. Skipping.{# #}{\n}

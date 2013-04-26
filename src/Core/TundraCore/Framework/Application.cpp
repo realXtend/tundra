@@ -63,7 +63,7 @@
 /// @note Modify these values when you are making a custom Tundra build. Also the version needs to be changed here on releases.
 const char *Application::organizationName = "realXtend";
 const char *Application::applicationName = "Tundra";
-const char *Application::version = "2.4.1";
+const char *Application::version = "2.5";
 
 Application::Application(Framework *owner, int &argc, char **argv) :
     QApplication(argc, argv),
@@ -355,6 +355,18 @@ QString Application::InstallationDirectory()
 #elif defined(ANDROID)
     /// \todo Implement a proper file access mechanism. Hardcoded internal storage access is used for now
     return "/sdcard/Download/Tundra/";
+#elif defined(__linux__)
+    char exeName[1024];
+    memset(exeName, 0, 1024);
+    pid_t pid = getpid();
+    QString link = "/proc/" + QString::number(pid) + "/exe";
+    readlink(link.toStdString().c_str(), exeName, 1024);
+    // The returned path also contains the executable name, so strip that off from the path name.
+    QString p(exeName);
+    int lastSlash = p.lastIndexOf("/");
+    if (lastSlash != -1)
+        p = p.left(lastSlash+1);
+    return p;     
 #else
     LogError("Application::InstallationDirectory not implemented for this platform. Returning './'");
     return "./";
@@ -657,6 +669,33 @@ QString Application::Platform()
 int generate_dump(EXCEPTION_POINTERS* pExceptionPointers);
 #endif
 
+#if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK) && defined(_DEBUG)
+
+int FilterMemoryLeaks(int reportType, char* message, int* retVal)
+{
+    static int allowLineCount = 0;
+    
+    // To make the report more readable, print only leaks that originate from own debug allocation functions
+    if (strstr(message, ".cpp"))
+        allowLineCount = 4;
+    
+    if (allowLineCount)
+    {
+        allowLineCount--;
+        return FALSE;
+    }
+    else
+        return TRUE;
+}
+
+void DumpMemoryLeaks()
+{
+    // Uncomment the next line to only print allocations that came through our debug allocation functions
+    //_CrtSetReportHook(FilterMemoryLeaks);
+    _CrtDumpMemoryLeaks();
+}
+#endif
+
 int TUNDRACORE_API run(int argc, char **argv)
 {
     // set up a debug flag for memory leaks. Output the results to file when the app exits.
@@ -678,8 +717,9 @@ int TUNDRACORE_API run(int argc, char **argv)
         int return_value = EXIT_SUCCESS;
 
         // Initialization prints
-        LogInfo("Starting up Tundra.");
+        LogInfo("Starting up " + QString(Application::ApplicationName()));
         LogInfo("* Working directory: " + QDir::currentPath());
+        LogInfo("* Installation directory: " + Application::InstallationDirectory());
 
     // Create application object
 #if !defined(_DEBUG) || !defined (_MSC_VER)
@@ -711,12 +751,17 @@ int TUNDRACORE_API run(int argc, char **argv)
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK) && defined(_DEBUG)
     if (hLogFile != INVALID_HANDLE_VALUE)
     {
-       _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
-       _CrtSetReportFile(_CRT_WARN, hLogFile);
-       _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-       _CrtSetReportFile(_CRT_ERROR, hLogFile);
-       _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
-       _CrtSetReportFile(_CRT_ASSERT, hLogFile);
+        _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
+        _CrtSetReportFile(_CRT_WARN, hLogFile);
+        _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
+        _CrtSetReportFile(_CRT_ERROR, hLogFile);
+        _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
+        _CrtSetReportFile(_CRT_ASSERT, hLogFile);
+       
+        // The DLL version of the CRT skips the call to _CrtDumpMemoryLeaks() at exit.
+        // Add it as an atexit function instead. Note: we may get false positives due to static objects
+        // and external libraries having not released their heap memory yet.
+        atexit(DumpMemoryLeaks);
     }
 #endif
 
