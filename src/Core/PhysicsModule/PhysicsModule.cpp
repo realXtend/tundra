@@ -10,6 +10,7 @@
 #include "EC_RigidBody.h"
 #include "EC_VolumeTrigger.h"
 #include "EC_PhysicsMotor.h"
+#include "EC_PhysicsConstraint.h"
 #include "OgreRenderingModule.h"
 #include "EC_Mesh.h"
 #include "EC_Placeable.h"
@@ -67,6 +68,7 @@ void PhysicsModule::Load()
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_RigidBody>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_VolumeTrigger>));
     framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_PhysicsMotor>));
+    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_PhysicsConstraint>));
 }
 
 void PhysicsModule::Initialize()
