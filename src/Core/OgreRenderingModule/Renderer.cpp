@@ -469,7 +469,13 @@ namespace OgreRenderer
                 // As a workaround, it is possible to have Ogre output directly on the main window HWND of the ui chain. On other systems, this gives
                 // graphical issues, so it cannot be used as a permanent mechanism. Therefore this workaround is enabled only as a command-line switch.
                 if (framework->HasCommandLineParameter("--ogrecapturetopwindow"))
+                {
+                    // In this mode the toolbar will not be rendered anyway, but if we don't hide it you have to click all UI ~20-25 pixels 
+                    // below the actual position to hit it. It's an error in our ui overlay to InputAPI mapping and gets fixed by hiding the toolbar.
+                    if (fullscreen && framework->Ui()->MainWindow()->menuBar())
+                        framework->Ui()->MainWindow()->menuBar()->hide();
                     renderWindow->CreateRenderWindow(framework->Ui()->MainWindow(), windowTitle.c_str(), width, height, window_left, window_top, fullscreen, framework);
+                }
                 else if (framework->HasCommandLineParameter("--nouicompositing"))
                     renderWindow->CreateRenderWindow(0, windowTitle.c_str(), width, height, window_left, window_top, fullscreen, framework);
                 else // Normally, we want to render Ogre onto the UiGraphicsview viewport window.
