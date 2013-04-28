@@ -391,6 +391,7 @@ IF NOT EXIST "%DEPS%\boost". (
 )
 
 :SKIP_BOOST
+
 IF NOT EXIST "%DEPS%\assimp\". (
    cecho {0D}Checking out OpenAssetImport library from https://assimp.svn.sourceforge.net/svnroot/assimp/trunk into "%DEPS%\assimp".{# #}{\n}
    cd "%DEPS%"
@@ -419,9 +420,9 @@ IF NOT EXIST "%DEPS%\assimp\". (
 
 :: Copy the correct runtime to /bin for this run
 IF %BUILD_RELEASE% == TRUE (
-   copy /Y "bin\Release\assimp.dll" "%TUNDRA_BIN%"
+   copy /Y "%DEPS%\assimp\bin\Release\assimp.dll" "%TUNDRA_BIN%"
 ) ELSE (
-   copy /Y "bin\RelWithDebInfo\assimp.dll" "%TUNDRA_BIN%"
+   copy /Y "%DEPS%\assimp\bin\RelWithDebInfo\assimp.dll" "%TUNDRA_BIN%"
 )
 
 IF NOT EXIST "%DEPS%\kNet\". (
