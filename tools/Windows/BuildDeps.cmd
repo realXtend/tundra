@@ -605,10 +605,10 @@ IF %USE_BOOST%==FALSE (
     IF NOT EXIST %TBB_VERSION%_win.zip. (
         cecho {0D}Downloading Intel Thread Building Blocks prebuilt package.{# #}{\n}
         wget "http://threadingbuildingblocks.org/sites/default/files/software_releases/windows/%TBB_VERSION%_win.zip"
-    )
-    IF NOT EXIST %TBB_VERSION%_win.zip. (
-        cecho {0C}Error downloading Intel Thread Building Blocks! Aborting!{# #}{\n}
-        GOTO :ERROR
+        IF NOT EXIST %TBB_VERSION%_win.zip. (
+            cecho {0C}Error downloading Intel Thread Building Blocks! Aborting!{# #}{\n}
+            GOTO :ERROR
+        )
     )
     IF NOT EXIST "%TBB_HOME%". (
         cecho {0D}Extracting Intel Thread Building Blocks package.{# #}{\n}
@@ -632,15 +632,14 @@ IF %USE_BOOST%==FALSE (
         sed s@"#error TBB is unable to run on old Windows versions;"@"//#error TBB is unable to run on old Windows versions;"@g <_tbb_windef.h >_tbb_windef.h.sed
         del _tbb_windef.h
         rename _tbb_windef.h.sed _tbb_windef.h
-
-        REM Copy TBB DLLs.
-        REM TODO Currently hardcoded to the 32-bit versions.
-        copy /Y "%TBB_HOME%\bin\ia32\%VC_VER%\*.dll" "%TUNDRA_BIN%"
-
-        cd "%DEPS%\ogre-safe-nocrashes"
     )
+
+    REM Copy TBB DLLs.
+    REM TODO Currently hardcoded to the 32-bit versions.
+    copy /Y "%TBB_HOME%\bin\ia32\%VC_VER%\*.dll" "%TUNDRA_BIN%"
 )
 
+cd "%DEPS%\ogre-safe-nocrashes"
 IF NOT EXIST OGRE.sln. (
    :: If not wanting to use Boost with Ogre, we need slightly tweaked version of Ogre's Dependencies.cmake
    :: which doesn't enforce usage of Boost if it's found regardless of the value of OGRE_USE_BOOST
