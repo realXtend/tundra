@@ -269,16 +269,8 @@ IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
    IF %USE_JOM%==TRUE (
       cecho {0D}- Building Qt with jom{# #}{\n}
       "%DEPS%\qt\jom\jom.exe"
-      :: Qt build system is slightly broken: see https://bugreports.qt-project.org/browse/QTBUG-6470. Work around the issue.
-      set ERRORLEVEL=0
-      del /s /q mocinclude.tmp
-      "%DEPS%\qt\jom\jom.exe"
    ) ELSE (
       cecho {0D}- Building Qt with nmake{# #}{\n}
-      nmake /nologo
-      :: Qt build system is slightly broken: see https://bugreports.qt-project.org/browse/QTBUG-6470. Work around the issue.
-      set ERRORLEVEL=0
-      del /s /q mocinclude.tmp
       nmake /nologo
    )
 
