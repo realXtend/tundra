@@ -402,7 +402,6 @@ IF NOT EXIST "%DEPS%\assimp\". (
    
    :: Debug build.
    MSBuild Assimp.sln /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
-   copy /Y "bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
    MSBuild Assimp.sln /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
    MSBuild Assimp.sln /p:configuration=RelWithDebInfo /nologo /m:%NUMBER_OF_PROCESSORS%
 ) ELSE (
@@ -416,6 +415,7 @@ IF %BUILD_RELEASE% == TRUE (
 ) ELSE (
    copy /Y "%DEPS%\assimp\bin\RelWithDebInfo\assimp.dll" "%TUNDRA_BIN%"
 )
+copy /Y "%DEPS%\assimp\bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
 
 IF NOT EXIST "%DEPS%\kNet\". (
    cecho {0D}Cloning kNet from https://github.com/juj/kNet into "%DEPS%\kNet".{# #}{\n}
