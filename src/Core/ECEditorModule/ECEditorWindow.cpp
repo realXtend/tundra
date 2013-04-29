@@ -171,6 +171,8 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     connect(undoManager_, SIGNAL(CanRedoChanged(bool)), this, SLOT(OnRedoChanged(bool)));
     connect(undoButton_, SIGNAL(clicked()), undoManager_, SLOT(Undo()));
     connect(redoButton_, SIGNAL(clicked()), undoManager_, SLOT(Redo()));
+    
+    connect(framework->Input()->TopLevelInputContext(), SIGNAL(KeyPressed(KeyEvent*)), SLOT(OnKeyEvent(KeyEvent*)));
 }
 
 ECEditorWindow::~ECEditorWindow()
@@ -180,7 +182,7 @@ ECEditorWindow::~ECEditorWindow()
     //DeselectAllEntities(); the list is already cleared here
 }
 
-EntityListWidgetItem *ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpate_ui)
+EntityListWidgetItem *ECEditorWindow::AddEntity(entity_id_t entity_id, bool updateUi)
 {
     EntityListWidgetItem *item = 0;
     PROFILE(ECEditorWindow_AddEntity);
@@ -200,7 +202,7 @@ EntityListWidgetItem *ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpa
         entityList->blockSignals(false);
     }
 
-    if (udpate_ui)
+    if (updateUi)
         RefreshPropertyBrowser();
 
     return item;
@@ -209,7 +211,6 @@ EntityListWidgetItem *ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpa
 void ECEditorWindow::AddEntities(const QList<entity_id_t> &entities, bool select_all)
 {
     // SetEntitySelected() will block entity list's signals, no need to do it here.
-
     ClearEntities();
     foreach(entity_id_t id, entities)
     {
@@ -388,6 +389,26 @@ void ECEditorWindow::CreateComponent()
     }
 }
 
+void ECEditorWindow::OnKeyEvent(KeyEvent *keyEvent)
+{
+    if (!isVisible() || !undoManager_ || !framework || !framework->Input())
+        return;
+
+    const QKeySequence undo = framework->Input()->KeyBinding("TundraEditors.Undo", QKeySequence(Qt::ControlModifier + Qt::Key_Z));
+    const QKeySequence redo = framework->Input()->KeyBinding("TundraEditors.Redo", QKeySequence(Qt::ControlModifier + Qt::Key_Y));
+
+    if (keyEvent->sequence == undo)
+    {
+        undoManager_->Undo();
+        keyEvent->Suppress();
+    }
+    else if( keyEvent->sequence == redo)
+    {
+        undoManager_->Redo();
+        keyEvent->Suppress();
+    }
+}
+
 void ECEditorWindow::EntityActionDialogFinished(int result)
 {
     EntityActionDialog *dialog = qobject_cast<EntityActionDialog *>(sender());
@@ -472,16 +493,15 @@ void ECEditorWindow::OnActionTriggered(Entity *entity, const QString &action, co
                 DeselectAllEntities();
 
             EntityListWidgetItem *item = FindItem(entity->Id());
-            if (item && item->isSelected())
-                SetEntitySelected(item, false);
+            if (item)
+                SetEntitySelected(item, !item->isSelected());
             else
             {
                 item = AddEntity(entity->Id());
                 SetEntitySelected(item, true);
             }
+            RefreshPropertyBrowser();
         }
-
-        RefreshPropertyBrowser();
     }
 }
 
@@ -647,7 +667,6 @@ void ECEditorWindow::RefreshPropertyBrowser()
 
     // Unbold all items for starters.
     BoldEntityListItems(QSet<entity_id_t>());
-    undoManager_->Clear();
 
     QList<EntityPtr> entities = SelectedEntities();
     if (entities.empty()) // If any of entities was not selected clear the browser window.
@@ -922,8 +941,7 @@ void ECEditorWindow::HighlightEntity(const EntityPtr &entity, bool highlight)
         
         if (highlight)
         {
-            EC_Highlight *hl = dynamic_cast<EC_Highlight *>(entity->GetOrCreateLocalComponent(
-                EC_Highlight::TypeNameStatic(), cEcEditorHighlight).get());
+            EC_Highlight *hl = dynamic_cast<EC_Highlight *>(entity->GetOrCreateLocalComponent(EC_Highlight::TypeNameStatic(), cEcEditorHighlight).get());
             if (hl)
             {
                 hl->SetTemporary(true);
@@ -1116,4 +1134,9 @@ void ECEditorWindow::OnUndoChanged(bool canUndo)
 void ECEditorWindow::OnRedoChanged(bool canRedo)
 {
     redoButton_->setEnabled(canRedo);
+}
+
+UndoManager *ECEditorWindow::GetUndoManager()
+{
+    return undoManager_;
 }

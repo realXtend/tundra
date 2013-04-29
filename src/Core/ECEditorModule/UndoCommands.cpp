@@ -638,7 +638,7 @@ void ToggleTemporaryCommand::ToggleTemporary(bool temporary)
     }
 }
 
-TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3 & offset, QUndoCommand * parent) : 
+TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3 &offset, QUndoCommand *parent) : 
     targets_(attributes),
     nItems_(numberOfItems),
     action_(action),
@@ -649,10 +649,10 @@ TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attribut
     SetCommandText();
 }
 
-TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, const float3x4 & rotation, QUndoCommand * parent) :
+TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3x4 &rotation, QUndoCommand *parent) :
     targets_(attributes),
     nItems_(numberOfItems),
-    action_(TransformCommand::Rotate),
+    action_(action),
     rotation_(rotation),
     offset_(float3::zero),
     QUndoCommand(parent)
@@ -671,17 +671,46 @@ void TransformCommand::SetCommandText()
     switch(action_)
     {
         case Translate:
-            text += "translate";
+            text += "Translate";
+            break;
+        case TranslateX:
+            text += "Translate X-axis";
+            break;
+        case TranslateY:
+            text += "Translate Y-axis";
+            break;
+        case TranslateZ:
+            text += "Translate Z-axis";
             break;
         case Rotate:
-            text += "rotate";
+            text += "Rotate";
+            break;
+        case RotateX:
+            text += "Rotate X-axis";
+            break;
+        case RotateY:
+            text += "Rotate Y-axis";
+            break;
+        case RotateZ:
+            text += "Rotate Z-axis";
             break;
         case Scale:
-            text += "scale";
+            text += "Scale";
+            break;
+        case ScaleX:
+            text += "Scale X-axis";
+            break;
+        case ScaleY:
+            text += "Scale Y-axis";
+            break;
+        case ScaleZ:
+            text += "Scale Z-axis";
             break;
     }
-    text += QString(" %1 ").arg(nItems_);
-    text += (nItems_ == 1 ? "item" : "items");
+    if (nItems_ > 1)
+        text += QString(" on %1 Entities").arg(nItems_);
+    else
+        text += " on one Entity";
     setText(text);
 }
 
@@ -690,12 +719,21 @@ void TransformCommand::undo()
     switch(action_)
     {
         case Translate:
+        case TranslateX:
+        case TranslateY:
+        case TranslateZ:
             DoTranslate(true);
             break;
         case Rotate:
+        case RotateX:
+        case RotateY:
+        case RotateZ:
             DoRotate(true);
             break;
         case Scale:
+        case ScaleX:
+        case ScaleY:
+        case ScaleZ:
             DoScale(true);
             break;
     }
@@ -706,12 +744,21 @@ void TransformCommand::redo()
     switch(action_)
     {
         case Translate:
+        case TranslateX:
+        case TranslateY:
+        case TranslateZ:
             DoTranslate(false);
             break;
         case Rotate:
+        case RotateX:
+        case RotateY:
+        case RotateZ:
             DoRotate(false);
             break;
         case Scale:
+        case ScaleX:
+        case ScaleY:
+        case ScaleZ:
             DoScale(false);
             break;
     }
@@ -778,26 +825,23 @@ void TransformCommand::DoScale(bool isUndo)
     }
 }
 
-bool TransformCommand::mergeWith(const QUndoCommand * other)
+bool TransformCommand::mergeWith(const QUndoCommand *other)
 {
     if (id() != other->id())
         return false;
 
-    const TransformCommand * otherCommand = dynamic_cast<const TransformCommand*> (other);
+    const TransformCommand *otherCommand = dynamic_cast<const TransformCommand*>(other);
     if (!otherCommand)
         return false;
-
     if (action_ != otherCommand->action_)
         return false;
-
     if (targets_ != otherCommand->targets_)
         return false;
 
-    if (action_ != Rotate)
+    if (action_ != Rotate && action_ != RotateX && action_ != RotateY && action_ != RotateZ)
         offset_ += otherCommand->offset_;
     else
         rotation_ = otherCommand->rotation_.Mul(rotation_);
-
     return true;
 }
 
