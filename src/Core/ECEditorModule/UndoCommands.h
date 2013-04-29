@@ -356,13 +356,22 @@ public:
 
     enum Action
     {
-        Translate,
-        Rotate,
-        Scale
+        Translate = 0,  // Translate on multiple axes
+        TranslateX,     // Translate X-axis
+        TranslateY,     // Translate Y-axis
+        TranslateZ,     // Translate Z-axis
+        Rotate,         // Rotate on multiple axes
+        RotateX,        // Rotate X-axis
+        RotateY,        // Rotate Y-axis
+        RotateZ,        // Rotate Z-axis
+        Scale,          // Scale on multiple axes
+        ScaleX,         // Scale X-axis
+        ScaleY,         // Scale Y-axis
+        ScaleZ          // Scale Z-axis
     };
 
-    TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3 & offset, QUndoCommand * parent = 0);
-    TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, const float3x4 & rotation, QUndoCommand * parent = 0);
+    TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3 &offset, QUndoCommand *parent = 0);
+    TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3x4 &rotation, QUndoCommand *parent = 0);
 
     /// Returns this command's ID
     int id() const;
