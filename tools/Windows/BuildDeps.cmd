@@ -599,7 +599,9 @@ IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
 )
 
 :: Use Intel Thread Building Blocks for Ogre's threading if Boost is not used.
-set TBB_VERSION=tbb41_20121003oss
+:: Latest 4.0 is used as 4.1 introduces WIN32 API calls that do not work on windows xp.
+:: If we are to update this can be fixed in tbb windows_api.h by using the xp workaround on all platforms.
+set TBB_VERSION=tbb40_20120613oss
 set TBB_HOME=%DEPS%\ogre-safe-nocrashes\Dependencies\tbb
 IF %USE_BOOST%==FALSE (
     IF NOT EXIST %TBB_VERSION%_win.zip. (
@@ -636,7 +638,12 @@ IF %USE_BOOST%==FALSE (
 
     REM Copy TBB DLLs.
     REM TODO Currently hardcoded to the 32-bit versions.
-    copy /Y "%TBB_HOME%\bin\ia32\%VC_VER%\*.dll" "%TUNDRA_BIN%"
+    IF NOT EXIST "%TUNDRA_BIN%\tbb.dll". (
+      copy /Y "%TBB_HOME%\bin\ia32\%VC_VER%\tbb.dll" "%TUNDRA_BIN%"
+    )
+    IF NOT EXIST "%TUNDRA_BIN%\tbb_debug.dll". (
+      copy /Y "%TBB_HOME%\bin\ia32\%VC_VER%\tbb_debug.dll" "%TUNDRA_BIN%"
+    )
 )
 
 cd "%DEPS%\ogre-safe-nocrashes"
