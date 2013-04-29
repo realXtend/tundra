@@ -1020,30 +1020,30 @@ IF NOT EXIST "%DEPS%\qxmpp\". (
 )
 
 :: ZLIB
-IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". (
+IF NOT EXIST "%DEPS%\zlib-1.2.8.tar.gz". (
    CD "%DEPS%"
    rmdir /S /Q "%DEPS%\zlib"
-   cecho {0D}Downloading zlib 1.2.7{# #}{\n}
-   wget http://zlib.net/zlib-1.2.7.tar.gz
-   IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". GOTO :ERROR
+   cecho {0D}Downloading zlib 1.2.8{# #}{\n}
+   wget http://zlib.net/zlib-1.2.8.tar.gz
+   IF NOT EXIST "%DEPS%\zlib-1.2.8.tar.gz". GOTO :ERROR
 ) ELSE (
-   cecho {0D}zlib 1.2.7 already downloaded. Skipping.{# #}{\n}
+   cecho {0D}zlib 1.2.8 already downloaded. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%DEPS%\zlib". (
    CD "%DEPS%"
-   cecho {0D}Extracting zlib 1.2.7 package to "%DEPS%\zlib"{# #}{\n}
+   cecho {0D}Extracting zlib 1.2.8 package to "%DEPS%\zlib"{# #}{\n}
    mkdir zlib
-   7za e -y zlib-1.2.7.tar.gz
-   7za x -y -ozlib zlib-1.2.7.tar
-   del /Q zlib-1.2.7.tar
-   cecho {0D}Building zlib 1.2.7{# #}{\n}
+   7za e -y zlib-1.2.8.tar.gz
+   7za x -y -ozlib zlib-1.2.8.tar
+   del /Q zlib-1.2.8.tar
+   cecho {0D}Building zlib 1.2.8{# #}{\n}
    cd zlib
    mkdir lib
    mkdir lib\Release
    mkdir lib\Debug
    mkdir include
-   cd zlib-1.2.7
+   cd zlib-1.2.8
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
    cd contrib\masmx86
@@ -1062,7 +1062,7 @@ IF NOT EXIST "%DEPS%\zlib". (
    copy /Y contrib\vstudio\%VC_VER%\x86\ZlibStatDebug\zlibstat.lib ..\lib\Debug
    copy /Y *.h ..\include\
 ) ELSE (
-   cecho {0D}zlib 1.2.7 already built. Skipping.{# #}{\n}
+   cecho {0D}zlib 1.2.8 already built. Skipping.{# #}{\n}
 )
 
 :: ZZIPLIB
@@ -1071,7 +1071,7 @@ IF NOT EXIST "%DEPS%\zziplib-0.13.59.tar.bz2". (
   rmdir /S /Q "%DEPS%\zziplib"
   cecho {0D}Downloading zziplib 0.13.59{# #}{\n}
   wget http://sourceforge.net/projects/zziplib/files/zziplib13/0.13.59/zziplib-0.13.59.tar.bz2/download
-  IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". GOTO :ERROR
+  IF NOT EXIST "%DEPS%\zlib-1.2.8.tar.gz". GOTO :ERROR
 ) ELSE (
    cecho {0D}zziplib 0.13.59 already downloaded. Skipping.{# #}{\n}
 )
@@ -1102,7 +1102,7 @@ IF NOT EXIST "%DEPS%\zziplib". (
    copy /Y zziplibd.lib ..\..\lib
    copy /Y ..\zzip\*.h ..\..\include\zzip
 ) ELSE (
-   cecho {0D}zlib 1.2.7 already built. Skipping.{# #}{\n}
+   cecho {0D}zziplib 0.13.59 already built. Skipping.{# #}{\n}
 )
 
 echo.
