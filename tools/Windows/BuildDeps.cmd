@@ -599,7 +599,7 @@ IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
 )
 
 :: Use Intel Thread Building Blocks for Ogre's threading if Boost is not used.
-set TBB_VERSION=tbb41_20121003oss
+set TBB_VERSION=tbb40_20120613oss
 set TBB_HOME=%DEPS%\ogre-safe-nocrashes\Dependencies\tbb
 IF %USE_BOOST%==FALSE (
     IF NOT EXIST %TBB_VERSION%_win.zip. (
@@ -632,6 +632,9 @@ IF %USE_BOOST%==FALSE (
         sed s@"#error TBB is unable to run on old Windows versions;"@"//#error TBB is unable to run on old Windows versions;"@g <_tbb_windef.h >_tbb_windef.h.sed
         del _tbb_windef.h
         rename _tbb_windef.h.sed _tbb_windef.h
+
+        REM Enable XP compatibility for TBB
+        cd "%TBB_HOME%\include\tbb\machine"     
     )
 
     REM Copy TBB DLLs.
