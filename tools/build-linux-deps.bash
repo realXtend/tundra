@@ -37,20 +37,18 @@ export CC="ccache gcc"
 export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 export TUNDRA_PYTHON_ENABLED=TRUE
+export BOOSTUSE148=false
 
-
-
+if $BOOSTUSE148 ; then
+    boostpackage=libboost1.48-all-dev
+else
+    boostpackage=libboost-all-dev
+fi
 
 
 if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|katya|julia|isadora|quantal|nadia" && tty >/dev/null; then
-    export BOOSTUSE148=false
-    if $BOOSTUSE148 ; then
-        boostpackage=libboost1.48-all-dev
-    else
-        boostpackage=libboost-all-dev
-    fi
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
-     sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
+    sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
      build-essential g++ $boostpackage libois-dev \
      ccache libqt4-dev python-dev freeglut3-dev \
      libxml2-dev cmake libalut-dev libtheora-dev ed \
@@ -64,10 +62,13 @@ if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|kat
      libqt4-opengl-dev libqtwebkit-dev \
      libspeexdsp-dev libprotobuf-dev \
      libvlc-dev
-elif lsb_release -d | egrep -q -e "Debian GNU/Linux Kali Linux" && tty >/dev/null; then
-    boostpackage=libboost-all-dev
+fi
+
+
+
+if lsb_release -d | egrep -q -e "Debian GNU/Linux" && tty >/dev/null; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
-     sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
+    sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
      build-essential g++ $boostpackage libois-dev \
      ccache libqt4-dev python-dev freeglut3-dev \
      libxml2-dev cmake libalut-dev libtheora-dev ed \
@@ -81,8 +82,6 @@ elif lsb_release -d | egrep -q -e "Debian GNU/Linux Kali Linux" && tty >/dev/nul
      libqt4-opengl-dev libqtwebkit-dev \
      libspeexdsp-dev libprotobuf-dev \
      libvlc-dev
- else
-    echo Unknown Linux distro!
 fi
 
 what=bullet-2.81-rev2613
@@ -224,13 +223,10 @@ else
         hg clone https://bitbucket.org/clb/ogre-safe-nocrashes
     fi
 
-
     if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|quantal" && tty >/dev/null; then
         sudo apt-get build-dep libogre-dev
-    elif lsb_release -d | egrep -q -e "Debian GNU/Linux Kali Linux" && tty >/dev/null; then
+    elif lsb_release -d | egrep -q -e "Debian GNU/Linux" && tty >/dev/null; then
         sudo apt-get build-dep libogre-1.8-dev
-    else
-        echo Unknown Linux distro!
     fi
     cd $what
     hg checkout v1-8 # Make sure we are in the right branch
