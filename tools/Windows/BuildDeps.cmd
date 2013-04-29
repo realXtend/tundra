@@ -767,7 +767,7 @@ IF NOT EXIST "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head.dll". (
 :: OpenAL
 IF NOT EXIST "%DEPS%\OpenAL\libs\Win32\OpenAL32.lib". (
    cecho {0D}OpenAL does not exist. Unzipping a prebuilt package.{# #}{\n}
-   copy "%TOOLS%\utils-windows\OpenAL.zip" "%DEPS%\"
+   copy "%TOOLS%\Utils\OpenAL.zip" "%DEPS%\"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cd "%DEPS%\"
    7za x OpenAL.zip
