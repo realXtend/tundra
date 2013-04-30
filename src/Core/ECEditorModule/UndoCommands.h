@@ -109,7 +109,7 @@ private:
         attributeTypeName = attr->TypeName(),
         parentId = attr->Owner()->ParentEntity()->Id();
         noAutoRedo = false;
-        setText("Edited " + attr->Name());
+        setText("* Edited " + attr->Name() + " Attribute");
     }
     
     T redoValue;
@@ -279,7 +279,7 @@ public:
        @param entities List of the entities about to be removed.
        @param components List of component about to be removed.
        @param parent The parent command of this command (optional). */
-    RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QList<EntityWeakPtr> &entities, const QList<ComponentWeakPtr> &components, QUndoCommand * parent = 0);
+    RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const QList<EntityWeakPtr> &entities, const QList<ComponentWeakPtr> &components, QUndoCommand * parent = 0);
     /// Constructor for removal of entities.
     RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const QList<EntityWeakPtr> &entities, QUndoCommand *parent = 0);
     /// Constructor for removal of components.

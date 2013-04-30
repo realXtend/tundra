@@ -37,7 +37,7 @@ AddAttributeCommand::AddAttributeCommand(IComponent * comp, const QString &typeN
     attributeName_(name),
     QUndoCommand(parent)
 {
-    setText("add attribute of type " + typeName);
+    setText("+ Added " + typeName + " Attribute");
 }
 
 int AddAttributeCommand::id() const
@@ -99,7 +99,7 @@ RemoveAttributeCommand::RemoveAttributeCommand(IAttribute *attr, QUndoCommand *p
     value_(QString::fromStdString(attr->ToString())),
     QUndoCommand(parent)
 {
-    setText("remove attribute of type " + attributeTypeName_);
+    setText("- Removed " + attributeTypeName_ + " Attribute");
 }
 
 int RemoveAttributeCommand::id() const
@@ -154,7 +154,7 @@ AddComponentCommand::AddComponentCommand(const ScenePtr &scene, EntityIdChangeTr
     sync_(sync),
     QUndoCommand(parent)
 {
-    setText("add component of type " + componentType_ + (entities.size() == 1 ? "" : " to multiple entities"));
+    setText("+ Added " + QString(componentType_).replace("EC_", "") + " Component" + (entities.size() == 1 ? "" : QString(" (to %1 entities)").arg(entities.size())));
 }
 
 int AddComponentCommand::id() const
@@ -247,7 +247,7 @@ EditXMLCommand::EditXMLCommand(const ScenePtr &scene, const QDomDocument &oldDoc
     newState_(newDoc),
     QUndoCommand(parent)
 {
-    setText("editing XML");
+    setText("* Edited XML");
 }
 
 int EditXMLCommand::id() const
@@ -330,7 +330,7 @@ AddEntityCommand::AddEntityCommand(const ScenePtr &scene, EntityIdChangeTracker 
     sync_(sync),
     temp_(temp)
 {
-    setText("add entity named " + (entityName_.isEmpty() ? "(no name)" : entityName_));
+    setText("+ Added Entity " + entityName_.trimmed());
 }
 
 int AddEntityCommand::id() const
@@ -539,55 +539,37 @@ void RemoveCommand::redo()
 
 void RemoveCommand::Initialize(const QList<EntityWeakPtr> &entityList, const QList<ComponentWeakPtr> &componentList)
 {
-    QString commandText;
-    QString entityStr;
-    QString andStr;
-    QString componentStr;
+    QStringList componentTypes;
+    bool componentMultiParented = false;
+    
+    for (QList<EntityWeakPtr>::const_iterator i = entityList.begin(); i != entityList.end(); ++i)
+        entityList_ << (*i).lock()->Id();
 
-    if (!entityList.isEmpty())
+    for (QList<ComponentWeakPtr>::const_iterator i = componentList.begin(); i != componentList.end(); ++i)
     {
-        for (QList<EntityWeakPtr>::const_iterator i = entityList.begin(); i != entityList.end(); ++i)
+        ComponentPtr comp = (*i).lock();
+        if (comp.get())
         {
-            entityList_ << (*i).lock()->Id();
+            if (entityList_.contains(comp->ParentEntity()->Id()))
+                continue;
 
-            if (entityStr.isEmpty())
-            {
-                QString entityName = (*i).lock()->Name().isEmpty() ? "(no name)" : (*i).lock()->Name();
-                entityStr = QString(" entity named %1 with id %2 ").arg(entityName).arg((*i).lock()->Id());
-            }
+            componentMap_[comp->ParentEntity()->Id()] << qMakePair(comp->TypeName(), comp->Name());
+
+            QString cleanTypeName = QString(comp->TypeName()).replace("EC_", "");
+            if (!componentTypes.contains(cleanTypeName))
+                componentTypes << cleanTypeName;
+                
+            if (i != componentList.begin())
+                componentMultiParented = true;
         }
-
-        if (entityList.count() > 1)
-            entityStr = QString(" multiple entities ");
     }
-
-    if (!componentList.isEmpty())
-    {
-        for (QList<ComponentWeakPtr>::const_iterator i = componentList.begin(); i != componentList.end(); ++i)
-        {
-            ComponentPtr comp = (*i).lock();
-            if (comp.get())
-            {
-                if (entityList_.contains(comp->ParentEntity()->Id()))
-                    continue;
-
-                componentMap_[comp->ParentEntity()->Id()] << qMakePair(comp->TypeName(), comp->Name());
-
-                if (componentStr.isEmpty())
-                {
-                    QString componentName = comp->Name().isEmpty() ? "(no name)" : comp->Name();
-                    componentStr = QString(" component named %1 of type %2 ").arg(componentName).arg(comp->TypeName());
-                }
-            }
-        }
-
-        if (componentList.count() > 1)
-            componentStr = QString(" multiple components ");
-    }
-
-    andStr = QString((!entityStr.isEmpty() && !componentStr.isEmpty()) ? "and" : "");
-    commandText = QString("remove%1%2%3").arg(entityStr).arg(andStr).arg(componentStr);
-    setText(commandText);
+    
+    if (!componentTypes.isEmpty() && entityList_.size() > 0)
+        setText("* Removed Entities and Components");
+    else if (!componentTypes.isEmpty())
+        setText(QString("* Removed ") + (!componentTypes.isEmpty() ? componentTypes.join(", ") : "") + (componentTypes.size() > 1 ? " Components" : " Component") + (componentMultiParented ? " from multiple entities" : "")); 
+    else if (entityList_.size() > 0)
+        setText(QString("* Removed %1 Entities").arg(entityList_.size()));
 }
 
 RenameCommand::RenameCommand(EntityWeakPtr entity, EntityIdChangeTracker * tracker, const QString oldName, const QString newName, QUndoCommand * parent) : 
@@ -596,7 +578,10 @@ RenameCommand::RenameCommand(EntityWeakPtr entity, EntityIdChangeTracker * track
     newName_(newName),
     QUndoCommand(parent)
 {
-    setText("rename entity named " + (oldName.isEmpty() ? "(no name)" : oldName));
+    if (newName_.trimmed().isEmpty())
+        setText("* Removed name from Entity " + entity.lock()->Name().trimmed());
+    else
+        setText("* Renamed Entity to " + newName_.trimmed());
     scene_ = entity.lock()->ParentScene()->shared_from_this();
     entityId_ = entity.lock()->Id();
 }
@@ -634,11 +619,11 @@ ToggleTemporaryCommand::ToggleTemporaryCommand(const QList<EntityWeakPtr> &entit
     QUndoCommand(parent)
 {
     if (entities.size() > 1)
-        setText("toggle temporary of multiple entities");
+        setText(QString("* Made multiple entities ") + (temporary_ ? "temporary" : "non-temporary"));
     else
     {
         QString name = entities.at(0).lock()->Name();
-        setText("toggle temporary of entity named " + name);
+        setText(QString("* Made Entity ") + name.trimmed() + (temporary_ ? " temporary" : " non-temporary"));
     }
 
     scene_ = entities.at(0).lock()->ParentScene()->shared_from_this();
@@ -709,46 +694,46 @@ void TransformCommand::SetCommandText()
     switch(action_)
     {
         case Translate:
-            text += "Translate";
+            text += "* Translated";
             break;
         case TranslateX:
-            text += "Translate X-axis";
+            text += "* Translated X-axis";
             break;
         case TranslateY:
-            text += "Translate Y-axis";
+            text += "* Translated Y-axis";
             break;
         case TranslateZ:
-            text += "Translate Z-axis";
+            text += "* Translated Z-axis";
             break;
         case Rotate:
-            text += "Rotate";
+            text += "* Rotated";
             break;
         case RotateX:
-            text += "Rotate X-axis";
+            text += "* Rotated X-axis";
             break;
         case RotateY:
-            text += "Rotate Y-axis";
+            text += "* Rotated Y-axis";
             break;
         case RotateZ:
-            text += "Rotate Z-axis";
+            text += "* Rotated Z-axis";
             break;
         case Scale:
-            text += "Scale";
+            text += "* Scaled";
             break;
         case ScaleX:
-            text += "Scale X-axis";
+            text += "* Scaled X-axis";
             break;
         case ScaleY:
-            text += "Scale Y-axis";
+            text += "* Scaled Y-axis";
             break;
         case ScaleZ:
-            text += "Scale Z-axis";
+            text += "* Scaled Z-axis";
             break;
     }
     if (nItems_ > 1)
         text += QString(" on %1 Entities").arg(nItems_);
     else
-        text += " on one Entity";
+        text += " on Entity";
     setText(text);
 }
 
