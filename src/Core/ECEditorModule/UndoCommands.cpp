@@ -28,7 +28,7 @@ template<> bool EditAttributeCommand<Color>::mergeWith(const QUndoCommand *other
     if (!otherCommand)
         return false;
 
-    return (oldValue_ == otherCommand->oldValue_);
+    return (undoValue == otherCommand->undoValue);
 }
 
 AddAttributeCommand::AddAttributeCommand(IComponent * comp, const QString &typeName, const QString &name, QUndoCommand * parent) :
@@ -165,7 +165,10 @@ int AddComponentCommand::id() const
 }
 
 void AddComponentCommand::undo()
-{
+{    
+    // Call base impl that executes potential attribute edit commands
+    QUndoCommand::undo();
+
     ScenePtr scene = scene_.lock();
     if (!scene.get())
         return;
@@ -205,6 +208,36 @@ void AddComponentCommand::redo()
                 comp->SetReplicated(sync_);
                 comp->SetTemporary(temp_);
                 ent->AddComponent(comp, AttributeChange::Default);
+                
+                // Execute any child commands.
+                AttributeVector attributes = comp->NonEmptyAttributes();
+                for(int i=0; i<childCount(); ++i)
+                {
+                    QUndoCommand *command = const_cast<QUndoCommand*>(child(i));
+                    IEditAttributeCommand *attrbCommand = dynamic_cast<IEditAttributeCommand*>(command);
+                    if (!attrbCommand)
+                    {
+                        if (command)
+                            command->redo();
+                        continue;
+                    }
+
+                    // Check that this commands parent is the entity being processed.
+                    EntityPtr attrCommandParent = scene->EntityById(tracker_->RetrieveId(attrbCommand->parentId));
+                    if (attrCommandParent != ent)
+                        continue;
+
+                    // Find the correct attribute with name and type and update the weak ptr.
+                    for (unsigned i = 0; i < attributes.size(); ++i)
+                    {
+                        if (attrbCommand->attributeName == attributes[i]->Name() && attrbCommand->attributeTypeName == attributes[i]->TypeName())
+                        {
+                            attrbCommand->attribute = AttributeWeakPtr(comp, attributes[i]);
+                            attrbCommand->redo();
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
@@ -309,6 +342,8 @@ int AddEntityCommand::id() const
 
 void AddEntityCommand::undo()
 {
+    QUndoCommand::undo();
+    
     ScenePtr scene = scene_.lock();
     if (!scene)
         return;
@@ -337,6 +372,9 @@ void AddEntityCommand::redo()
         entity->SetName(entityName_);
 
     entity->SetTemporary(temp_);
+
+    // Execute any AddComponentCommand children to apply component back.
+    QUndoCommand::redo();
 }
 
 RemoveCommand::RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QList<EntityWeakPtr> &entities, const QList<ComponentWeakPtr> &components, QUndoCommand * parent) :
@@ -640,7 +678,7 @@ void ToggleTemporaryCommand::ToggleTemporary(bool temporary)
     }
 }
 
-TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3 & offset, QUndoCommand * parent) : 
+TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3 &offset, QUndoCommand *parent) : 
     targets_(attributes),
     nItems_(numberOfItems),
     action_(action),
@@ -651,10 +689,10 @@ TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attribut
     SetCommandText();
 }
 
-TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, const float3x4 & rotation, QUndoCommand * parent) :
+TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3x4 &rotation, QUndoCommand *parent) :
     targets_(attributes),
     nItems_(numberOfItems),
-    action_(TransformCommand::Rotate),
+    action_(action),
     rotation_(rotation),
     offset_(float3::zero),
     QUndoCommand(parent)
@@ -673,17 +711,46 @@ void TransformCommand::SetCommandText()
     switch(action_)
     {
         case Translate:
-            text += "translate";
+            text += "Translate";
+            break;
+        case TranslateX:
+            text += "Translate X-axis";
+            break;
+        case TranslateY:
+            text += "Translate Y-axis";
+            break;
+        case TranslateZ:
+            text += "Translate Z-axis";
             break;
         case Rotate:
-            text += "rotate";
+            text += "Rotate";
+            break;
+        case RotateX:
+            text += "Rotate X-axis";
+            break;
+        case RotateY:
+            text += "Rotate Y-axis";
+            break;
+        case RotateZ:
+            text += "Rotate Z-axis";
             break;
         case Scale:
-            text += "scale";
+            text += "Scale";
+            break;
+        case ScaleX:
+            text += "Scale X-axis";
+            break;
+        case ScaleY:
+            text += "Scale Y-axis";
+            break;
+        case ScaleZ:
+            text += "Scale Z-axis";
             break;
     }
-    text += QString(" %1 ").arg(nItems_);
-    text += (nItems_ == 1 ? "item" : "items");
+    if (nItems_ > 1)
+        text += QString(" on %1 Entities").arg(nItems_);
+    else
+        text += " on one Entity";
     setText(text);
 }
 
@@ -692,12 +759,21 @@ void TransformCommand::undo()
     switch(action_)
     {
         case Translate:
+        case TranslateX:
+        case TranslateY:
+        case TranslateZ:
             DoTranslate(true);
             break;
         case Rotate:
+        case RotateX:
+        case RotateY:
+        case RotateZ:
             DoRotate(true);
             break;
         case Scale:
+        case ScaleX:
+        case ScaleY:
+        case ScaleZ:
             DoScale(true);
             break;
     }
@@ -708,12 +784,21 @@ void TransformCommand::redo()
     switch(action_)
     {
         case Translate:
+        case TranslateX:
+        case TranslateY:
+        case TranslateZ:
             DoTranslate(false);
             break;
         case Rotate:
+        case RotateX:
+        case RotateY:
+        case RotateZ:
             DoRotate(false);
             break;
         case Scale:
+        case ScaleX:
+        case ScaleY:
+        case ScaleZ:
             DoScale(false);
             break;
     }
@@ -780,26 +865,23 @@ void TransformCommand::DoScale(bool isUndo)
     }
 }
 
-bool TransformCommand::mergeWith(const QUndoCommand * other)
+bool TransformCommand::mergeWith(const QUndoCommand *other)
 {
     if (id() != other->id())
         return false;
 
-    const TransformCommand * otherCommand = dynamic_cast<const TransformCommand*> (other);
+    const TransformCommand *otherCommand = dynamic_cast<const TransformCommand*>(other);
     if (!otherCommand)
         return false;
-
     if (action_ != otherCommand->action_)
         return false;
-
     if (targets_ != otherCommand->targets_)
         return false;
 
-    if (action_ != Rotate)
+    if (action_ != Rotate && action_ != RotateX && action_ != RotateY && action_ != RotateZ)
         offset_ += otherCommand->offset_;
     else
         rotation_ = otherCommand->rotation_.Mul(rotation_);
-
     return true;
 }
 
