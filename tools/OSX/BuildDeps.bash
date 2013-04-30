@@ -241,6 +241,7 @@ if [[ $OSX_VERSION == 10.8.* ]]; then
     LC_CTYPE_RESTORE="export LC_CTYPE=$LC_CTYPE_BAK"
 fi
 
+cd $build
 what=qt
 qtversion=4.8.4
 pkgbase=qt-everywhere-opensource-src-$qtversion
@@ -567,7 +568,7 @@ else
     cd kNet
 
     if [ $NO_BOOST == "ON" ]; then
-        git apply $patches/kNet.patch
+        git apply $patches/kNet.patch --ignore-space-change --ignore-whitespace
     else
         $LC_CTYPE_OVERRIDE
         sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" -e "s/USE_BOOST TRUE/USE_BOOST FALSE/" < CMakeLists.txt > x
