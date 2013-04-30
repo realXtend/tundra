@@ -771,8 +771,9 @@ else
 fi
 
 what=vlc
-baseurl=http://download.videolan.org/pub/videolan/vlc/2.0.1/macosx
-dmgname=vlc-2.0.1-intel64.dmg
+VLCVERSION=1.1.12
+baseurl=http://download.videolan.org/pub/videolan/vlc/$VLCVERSION/macosx
+dmgname=vlc-$VLCVERSION-intel64.dmg
 if test -f $tags/$what-done; then
     echoInfo "$what is done"
 else
@@ -785,7 +786,7 @@ else
     curl -L -o $dmg $baseurl/$dmgname
     hdiutil attach $dmg
 
-    mountpoint=/Volumes/vlc-2.0.1
+    mountpoint=/Volumes/vlc-$VLCVERSION
     cd $mountpoint/VLC.app/Contents/MacOS
     echoInfo "Installing $what into $prefix/$what:"
 
