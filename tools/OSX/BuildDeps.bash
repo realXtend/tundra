@@ -647,7 +647,7 @@ else
     # Patches Ogre with the same diff as the commits https://bitbucket.org/sinbad/ogre/commits/80717a535bd72cc5a0e7fcf0c154c9fa7afeea2c and
     # https://bitbucket.org/sinbad/ogre/commits/96d3083c89ea8b5acd0590a4d59a6e31e7a9fba6 which are in v1-9 branch.
     # Todo: remove this patch when ogre-safe-nocrashes is updated to Ogre 1.9
-    patch -p0 -i $patches/Ogre.patch
+    patch -p1 -i $patches/Ogre.patch
 
     curl -L -o $ogredepszip $ogredepsurl$ogredepszip
     tar xzf $ogredepszip
