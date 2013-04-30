@@ -333,7 +333,7 @@ void EC_RigidBody::CreateCollisionShape()
         CreateConvexHullSetShape();
         break;
     case Shape_Cone:
-        shape_ = new btConeShape(sizeVec.x * 0.5f, sizeVec.y * 0.5f);
+        shape_ = new btConeShape(sizeVec.x * 0.5f, sizeVec.y);
         break;
     }
     

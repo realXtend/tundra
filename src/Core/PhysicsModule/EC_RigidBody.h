@@ -134,7 +134,8 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(int, shapeType);
 
     /// Size (scaling) of the shape.
-    /** Sphere only uses x-axis, and capsule uses only x & z axes. Shape is further scaled by Placeable scale.*/
+    /** Size.z is applicable only for box, and size.y is not applicable for sphere. For non-box shapes x == radius and y == height.
+        Shape is further scaled by Placeable scale.*/
     Q_PROPERTY(float3 size READ getsize WRITE setsize)
     DEFINE_QPROPERTY_ATTRIBUTE(float3, size);
 

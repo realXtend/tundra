@@ -184,7 +184,7 @@ void TransformEditor::FocusGizmoPivotToAabbCenter()
     
     if (gizmo)
     {
-        EC_TransformGizmo *tg = gizmo->GetComponent<EC_TransformGizmo>().get();
+        EC_TransformGizmo *tg = TransformGizmo();
         if (tg)
         {
             tg->SetPosition(pivotPos);
@@ -200,12 +200,9 @@ void TransformEditor::FocusGizmoPivotToAabbCenter()
 void TransformEditor::SetGizmoVisible(bool show)
 {
 #ifdef EC_TransformGizmo_ENABLED
-    if (gizmo)
-    {
-        EC_TransformGizmo *tg = gizmo->GetComponent<EC_TransformGizmo>().get();
-        if (tg)
-            tg->SetVisible(show);
-    }
+    EC_TransformGizmo *tg = TransformGizmo();
+    if (tg)
+        tg->SetVisible(show);
 #endif
 }
 
@@ -219,22 +216,45 @@ float3 TransformEditor::GizmoPos() const
     return placeable->transform.Get().pos;
 }
 
+EC_TransformGizmo *TransformEditor::TransformGizmo() const
+{
+#ifdef EC_TransformGizmo_ENABLED
+    if (!gizmo)
+        return 0;
+    return gizmo->Component<EC_TransformGizmo>().get();
+#else
+    return 0;
+#endif
+}
+
 void TransformEditor::TranslateTargets(const float3 &offset)
 {
     PROFILE(TransformEditor_TranslateTargets);
+    
+    EC_TransformGizmo *tg = TransformGizmo();
+    if (!tg)
+        return;
+    
     TransformAttributeWeakPtrList targetAttrs;
-
     foreach(const TransformAttributeWeakPtr &attr, targets)
     {
         // If selected object's parent is also selected, do not apply changes to the child object.
         if (TargetsContainAlsoParent(attr))
             continue;
-
         targetAttrs << attr;
     }
 
     if (undoManager)
-        undoManager->Push(new TransformCommand(targetAttrs, targets.size(), TransformCommand::Translate, offset));
+    {
+        TransformCommand::Action action = TransformCommand::Translate;
+        EC_TransformGizmo::GizmoAxisList axes = tg->ActiveAxes();
+        if (axes.size() == 1)
+        {
+            EC_TransformGizmo::GizmoAxis activeAxis = axes.first();
+            action = (activeAxis.axis == EC_TransformGizmo::GizmoAxis::X ? TransformCommand::TranslateX : (activeAxis.axis == EC_TransformGizmo::GizmoAxis::Y ? TransformCommand::TranslateY : TransformCommand::TranslateZ));
+        }
+        undoManager->Push(new TransformCommand(targetAttrs, targets.size(), action, offset));
+    }
 
     FocusGizmoPivotToAabbCenter();
 }
@@ -242,6 +262,11 @@ void TransformEditor::TranslateTargets(const float3 &offset)
 void TransformEditor::RotateTargets(const Quat &delta)
 {
     PROFILE(TransformEditor_RotateTargets);
+
+    EC_TransformGizmo *tg = TransformGizmo();
+    if (!tg)
+        return;
+
     float3 gizmoPos = GizmoPos();
     float3x4 rotation = float3x4::Translate(gizmoPos) * float3x4(delta) * float3x4::Translate(-gizmoPos);
     TransformAttributeWeakPtrList targetAttrs;
@@ -251,12 +276,20 @@ void TransformEditor::RotateTargets(const Quat &delta)
         // If selected object's parent is also selected, do not apply changes to the child object.
         if (TargetsContainAlsoParent(attr))
             continue;
-
         targetAttrs << attr;
     }
 
     if (undoManager)
-        undoManager->Push(new TransformCommand(targetAttrs, targets.size(), rotation));
+    {
+        TransformCommand::Action action = TransformCommand::Rotate;
+        EC_TransformGizmo::GizmoAxisList axes = tg->ActiveAxes();
+        if (axes.size() == 1)
+        {
+            EC_TransformGizmo::GizmoAxis activeAxis = axes.first();
+            action = (activeAxis.axis == EC_TransformGizmo::GizmoAxis::X ? TransformCommand::RotateX : (activeAxis.axis == EC_TransformGizmo::GizmoAxis::Y ? TransformCommand::RotateY : TransformCommand::RotateZ));
+        }
+        undoManager->Push(new TransformCommand(targetAttrs, targets.size(), action, rotation));
+    }
 
     FocusGizmoPivotToAabbCenter();
 }
@@ -264,18 +297,31 @@ void TransformEditor::RotateTargets(const Quat &delta)
 void TransformEditor::ScaleTargets(const float3 &offset)
 {
     PROFILE(TransformEditor_ScaleTargets);
+
+    EC_TransformGizmo *tg = TransformGizmo();
+    if (!tg)
+        return;
+
     TransformAttributeWeakPtrList targetAttrs;
     foreach(const TransformAttributeWeakPtr &attr, targets)
     {
         // If selected object's parent is also selected, do not apply changes to the child object.
         if (TargetsContainAlsoParent(attr))
             continue;
-
         targetAttrs << attr;
     }
 
     if (undoManager)
-        undoManager->Push(new TransformCommand(targetAttrs, targets.size(), TransformCommand::Scale, offset));
+    {
+        TransformCommand::Action action = TransformCommand::Scale;
+        EC_TransformGizmo::GizmoAxisList axes = tg->ActiveAxes();
+        if (axes.size() == 1)
+        {
+            EC_TransformGizmo::GizmoAxis activeAxis = axes.first();
+            action = (activeAxis.axis == EC_TransformGizmo::GizmoAxis::X ? TransformCommand::ScaleX : (activeAxis.axis == EC_TransformGizmo::GizmoAxis::Y ? TransformCommand::ScaleY : TransformCommand::ScaleZ));
+        }
+        undoManager->Push(new TransformCommand(targetAttrs, targets.size(), action, offset));
+    }
 
     FocusGizmoPivotToAabbCenter();
 }
@@ -308,7 +354,7 @@ void TransformEditor::CreateGizmo()
     }
     gizmo->SetTemporary(true);
 
-    EC_TransformGizmo *tg = gizmo->GetComponent<EC_TransformGizmo>().get();
+    EC_TransformGizmo *tg = TransformGizmo();
     if (!tg)
     {
         LogError("TransformEditor: could not acquire EC_TransformGizmo.");
@@ -373,7 +419,7 @@ void TransformEditor::HandleKeyEvent(KeyEvent *e)
     ScenePtr scn = scene.lock();
     if (!scn)
         return;
-    EC_TransformGizmo *tg = (gizmo ? gizmo->Component<EC_TransformGizmo>().get() : 0);
+    EC_TransformGizmo *tg = TransformGizmo();
     if (!tg)
         return;
 
@@ -411,13 +457,9 @@ void TransformEditor::OnGizmoModeSelected(int mode)
     ScenePtr scn = scene.lock();
     if (!scn)
         return;
-    EC_TransformGizmo *tg = 0;
-    if (gizmo && scn)
-    {
-        tg = gizmo->GetComponent<EC_TransformGizmo>().get();
-        if (!tg)
-            return;
-    }
+    EC_TransformGizmo *tg = TransformGizmo();
+    if (!tg)
+        return;
     
     if (mode == 0)
         tg->SetCurrentGizmoType(EC_TransformGizmo::Translate);
@@ -458,13 +500,9 @@ void TransformEditor::OnUpdated(float frameTime)
 #ifdef EC_TransformGizmo_ENABLED
         // If gizmo is not active (ie. no drag going on), update the axes
         // This is needed to update local mode rotation after a rotation edit is finished, as well as to make it follow autonomously moving objects
-        EC_TransformGizmo *tg = 0;
-        if (gizmo)
-        {
-            tg = gizmo->GetComponent<EC_TransformGizmo>().get();
-            if (tg && tg->State() != EC_TransformGizmo::Active)
-                FocusGizmoPivotToAabbCenter();
-        }
+        EC_TransformGizmo *tg = TransformGizmo();
+        if (tg && tg->State() != EC_TransformGizmo::Active)
+            FocusGizmoPivotToAabbCenter();
 #endif
     }
 }

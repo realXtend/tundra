@@ -567,7 +567,7 @@ else
     cd kNet
 
     if [ $NO_BOOST == "ON" ]; then
-        git apply $patches/kNet.patch
+        git apply --ignore-space-change --ignore-whitespace $patches/kNet.patch
     else
         $LC_CTYPE_OVERRIDE
         sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" -e "s/USE_BOOST TRUE/USE_BOOST FALSE/" < CMakeLists.txt > x

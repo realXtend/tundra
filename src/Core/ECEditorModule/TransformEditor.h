@@ -18,6 +18,7 @@
 
 class OgreWorld;
 class UndoManager;
+class EC_TransformGizmo;
 
 /// Controls Transform attributes for group of entities.
 /** Can be used to alter transforms of entities even without the visual gizmo (EC_TransformGizmo).*/
@@ -64,6 +65,9 @@ public:
 
     /// Returns position of the editing gizmo.
     float3 GizmoPos() const;
+    
+    /// Returns the transform gizmo.
+    EC_TransformGizmo *TransformGizmo() const;
 
     /// Returns the transform gizmo editor settings widget.
     QPointer<QWidget> EditorSettingsWidget() const { return editorSettings; }

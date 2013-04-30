@@ -9,6 +9,7 @@
 #include "ECEditorModuleApi.h"
 #include "CoreTypes.h"
 #include "SceneFwd.h"
+#include "InputFwd.h"
 
 #include <QMap>
 #include <QSet>
@@ -109,7 +110,8 @@ public:
     /** @note The visibility state is not stored within this class. ECEditorModule is authoritative for this state. */
     void SetGizmoVisible(bool show);
 
-    UndoManager * GetUndoManager() { return undoManager_; }
+    /// Returns undo manager for this editor.
+    UndoManager *GetUndoManager();
 
 public slots:
     /// Deletes selected entity entries from the list (does not delete the entity itself).
@@ -201,6 +203,9 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
 private slots:
+    /// Key event handler.
+    void OnKeyEvent(KeyEvent *keyEvent);
+    
     /// Called by entity action dialog when it's finished.
     /** @param result Result of finished. Close is 0, Execute and Close is 1, Execute is 2. */
     void EntityActionDialogFinished(int result);

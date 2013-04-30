@@ -69,6 +69,19 @@ public:
         Active, ///< Mouse was pressed above gizmo, and is currently held down (might or might not be above the gizmo).
     };
     
+    /// Represents axis of the gizmo.
+    struct GizmoAxis
+    {
+        ///\todo Gizmo mesh must be re-authored so that x=0, y=1, z=2. Currently x=1, y=0, z=2.
+        static const uint X = 1; ///< Submesh index of the gizmo's x axis.
+        static const uint Y = 0; ///< Submesh index of the gizmo's y axis.
+        static const uint Z = 2; ///< Submesh index of the gizmo's z axis.
+        uint axis; ///< Represented coordinate axis.
+        Ray ray; ///< Corresponding ray for the represented coordinate axis.
+        AssetReference material; ///< Currently used material for the axis' submesh.
+    };
+    typedef QList<GizmoAxis> GizmoAxisList; 
+    
 public slots:
     ///\todo implement SetPivot
     //void SetPivot(float3x4 tm)
@@ -88,15 +101,18 @@ public slots:
     /** @type Type of the gizmo. */
     void SetCurrentGizmoType(GizmoType type);
 
-    /// Sets visiblity of the gizmo.
+    /// Sets visibility of the gizmo.
     /** @param visible Visibility of the gizmo. */
     void SetVisible(bool visible);
 
     /// Returns visibility of the gizmo.
     bool IsVisible() const;
 
-    /// Return state of gizmo
+    /// Returns state of gizmo.
     GizmoState State() const { return state; }
+    
+    /// Returns active axes.
+    GizmoAxisList ActiveAxes() const { return activeAxes; }
 
 signals:
     /// Emitted when gizmo is active in Translate mode.
@@ -112,18 +128,6 @@ signals:
     void Scaled(const float3 &offset);
 
 private:
-    /// Represents axis of the gizmo.
-    struct GizmoAxis
-    {
-        ///\todo Gizmo mesh must be re-authored so that x=0, y=1, z=2. Currently x=1, y=0, z=2.
-        static const uint X = 1; ///< Submesh index of the gizmo's x axis.
-        static const uint Y = 0; ///< Submesh index of the gizmo's y axis.
-        static const uint Z = 2; ///< Submesh index of the gizmo's z axis.
-        uint axis; ///< Represented coordinate axis.
-        Ray ray; ///< Corresponding ray for the represented coordinate axis.
-        AssetReference material; ///< Currently used material for the axis' submesh.
-    };
-
     InputContextPtr input; ///< Input context for the gizmo.
     shared_ptr<EC_Placeable> placeable; ///< Placeable component.
     shared_ptr<EC_Mesh> mesh; ///< Mesh component.
@@ -134,7 +138,7 @@ private:
     float3 prevPoint; ///< Previous nearest projected point on the gizmo's coordinate axes.
     float3 curPoint; ///< Current nearest projected point on the gizmo's coordinate axes.
     GizmoState state; ///< Current state of the gizmo.
-    QList<GizmoAxis> activeAxes; ///< Currently active axes.
+    GizmoAxisList activeAxes; ///< Currently active axes.
 
     /// Computes the scale we want to apply to the transform gizmo to make it constant-sized in the view.
     float DesiredGizmoScale();
