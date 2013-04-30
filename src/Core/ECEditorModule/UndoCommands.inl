@@ -7,23 +7,20 @@
 #include "Entity.h"
 
 template <typename T>
-EditAttributeCommand<T>::EditAttributeCommand(IAttribute *attr, QUndoCommand * parent) :
-    attribute_(AttributeWeakPtr(attr->Owner()->shared_from_this(), attr)),
-    oldValue_(static_cast<Attribute<T> *>(attr)->Get()),
-    dontCallRedo_(true),
-    QUndoCommand(parent)
+EditAttributeCommand<T>::EditAttributeCommand(IAttribute *attr, QUndoCommand *parent) :
+    IEditAttributeCommand(parent),
+    undoValue(static_cast<Attribute<T> *>(attr)->Get())
 {
-    setText("edit " + attr->Name());
+    Initialize(attr, true);
 }
 
 template <typename T>
-EditAttributeCommand<T>::EditAttributeCommand(IAttribute *attr, const T& value, QUndoCommand *parent) :
-    attribute_(AttributeWeakPtr(attr->Owner()->shared_from_this(), attr)),
-    oldValue_(value),
-    dontCallRedo_(true),
-    QUndoCommand(parent)
+EditAttributeCommand<T>::EditAttributeCommand(IAttribute *attr, const T& valueToApply, QUndoCommand *parent) :
+    IEditAttributeCommand(parent),
+    undoValue(static_cast<Attribute<T> *>(attr)->Get()),
+    redoValue(valueToApply)
 {
-    setText("edit " + attr->Name());
+    Initialize(attr, false);
 }
 
 /// @note Had to move the implementations of virtual functions to UndoCommands.h due to bogus MSVC warnings:

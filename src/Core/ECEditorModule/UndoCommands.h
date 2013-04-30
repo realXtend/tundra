@@ -24,21 +24,38 @@ typedef QList<TransformAttributeWeakPtr> TransformAttributeWeakPtrList;
 
 class EntityIdChangeTracker;
 
-/// EditAttributeCommand representing an "Edit" operation to the attributes
-template <typename T>
-class EditAttributeCommand : public QUndoCommand
+/// EditAttributeCommandBase exposes basi
+class IEditAttributeCommand : public QUndoCommand
 {
 public:
     /// Internal QUndoCommand unique ID
     enum { Id = 100 };
+   
+    IEditAttributeCommand(QUndoCommand *parent) : QUndoCommand(parent) {}
 
-    /// Constructor
-    /** Current value of the attribute will be considered as the old value.
+    AttributeWeakPtr attribute;
+    QString attributeName;
+    QString attributeTypeName;
+    entity_id_t parentId;
+};
+
+/// EditAttributeCommand representing an "Edit" operation to the attributes
+template <typename T>
+class EditAttributeCommand : public IEditAttributeCommand
+{
+public:
+    /** Current value of the attribute will be read as the undo() applied value.
+        When redo() is triggered this command does nothing and it will read the redo value once undo() is applied.
         @param attr The attribute that is being edited.
         @param parent The parent command of this command (optional). */
-    EditAttributeCommand(IAttribute *attr, QUndoCommand * parent = 0);
-    /// @param value The old value of the attribute.
-    EditAttributeCommand(IAttribute *attr, const T &value, QUndoCommand * parent = 0);
+    EditAttributeCommand(IAttribute *attr, QUndoCommand *parent = 0);
+    
+    /** Current value of the attribute will be read as the undo() applied value.
+        Given valueToApply will be applied immediately when redo() is triggered (eg. added to a QUndoStack).
+        @param attr The attribute that is being edited.
+        @param valueToApply The new attribute value. Gets applied immediately when this actions redo() it triggered.
+        @param parent The parent command of this command (optional). */
+    EditAttributeCommand(IAttribute *attr, const T &valueToApply, QUndoCommand *parent = 0);
 
     /// Returns this command's ID
     int id() const { return Id; }
@@ -46,24 +63,20 @@ public:
     /// QUndoCommand override
     void undo()
     {
-        if (!attribute_.Expired())
+        if (!attribute.Expired())
         {
-            newValue_ = static_cast<Attribute<T> *>(attribute_.Get())->Get();
-            static_cast<Attribute<T> *>(attribute_.Get())->Set(oldValue_, AttributeChange::Default);
+            redoValue = static_cast<Attribute<T> *>(attribute.Get())->Get();
+            static_cast<Attribute<T> *>(attribute.Get())->Set(undoValue, AttributeChange::Default);
         }
     }
 
     /// QUndoCommand override
     void redo()
     {
-        if (dontCallRedo_)
-        {
-            dontCallRedo_ = false;
-            return;
-        }
-
-        if (!attribute_.Expired())
-            static_cast<Attribute<T> *>(attribute_.Get())->Set(newValue_, AttributeChange::Default);
+        if (noAutoRedo)
+            noAutoRedo = false;
+        else if (!attribute.Expired())
+            static_cast<Attribute<T> *>(attribute.Get())->Set(redoValue, AttributeChange::Default);
     }
 
     /// QUndoCommand override
@@ -89,11 +102,19 @@ public:
     }
 
 private:
-    AttributeWeakPtr attribute_;
-    const T oldValue_; ///< Old value of the attribute
-    T newValue_; ///< New value of the attribute
-
-    bool dontCallRedo_; ///< A workaround variable to prevent redo() from calling immediately when this command is pushed onto the stack
+    void Initialize(IAttribute *attr, bool autoRedo)
+    {
+        attribute = AttributeWeakPtr(attr->Owner()->shared_from_this(), attr);
+        attributeName = attr->Name();
+        attributeTypeName = attr->TypeName(),
+        parentId = attr->Owner()->ParentEntity()->Id();
+        noAutoRedo = false;
+        setText("Edited " + attr->Name());
+    }
+    
+    T redoValue;
+    T undoValue;
+    bool noAutoRedo;
 };
 
 #include "UndoCommands.inl"

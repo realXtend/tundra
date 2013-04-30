@@ -26,7 +26,7 @@ template<> bool EditAttributeCommand<Color>::mergeWith(const QUndoCommand *other
     if (!otherCommand)
         return false;
 
-    return (oldValue_ == otherCommand->oldValue_);
+    return (undoValue == otherCommand->undoValue);
 }
 
 AddAttributeCommand::AddAttributeCommand(IComponent * comp, const QString &typeName, const QString &name, QUndoCommand * parent) :
@@ -163,7 +163,10 @@ int AddComponentCommand::id() const
 }
 
 void AddComponentCommand::undo()
-{
+{    
+    // Call base impl that executes potential attribute edit commands
+    QUndoCommand::undo();
+
     ScenePtr scene = scene_.lock();
     if (!scene.get())
         return;
@@ -203,6 +206,36 @@ void AddComponentCommand::redo()
                 comp->SetReplicated(sync_);
                 comp->SetTemporary(temp_);
                 ent->AddComponent(comp, AttributeChange::Default);
+                
+                // Execute any child commands.
+                AttributeVector attributes = comp->NonEmptyAttributes();
+                for(int i=0; i<childCount(); ++i)
+                {
+                    QUndoCommand *command = const_cast<QUndoCommand*>(child(i));
+                    IEditAttributeCommand *attrbCommand = dynamic_cast<IEditAttributeCommand*>(command);
+                    if (!attrbCommand)
+                    {
+                        if (command)
+                            command->redo();
+                        continue;
+                    }
+
+                    // Check that this commands parent is the entity being processed.
+                    EntityPtr attrCommandParent = scene->EntityById(tracker_->RetrieveId(attrbCommand->parentId));
+                    if (attrCommandParent != ent)
+                        continue;
+
+                    // Find the correct attribute with name and type and update the weak ptr.
+                    for (unsigned i = 0; i < attributes.size(); ++i)
+                    {
+                        if (attrbCommand->attributeName == attributes[i]->Name() && attrbCommand->attributeTypeName == attributes[i]->TypeName())
+                        {
+                            attrbCommand->attribute = AttributeWeakPtr(comp, attributes[i]);
+                            attrbCommand->redo();
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
@@ -307,6 +340,8 @@ int AddEntityCommand::id() const
 
 void AddEntityCommand::undo()
 {
+    QUndoCommand::undo();
+    
     ScenePtr scene = scene_.lock();
     if (!scene)
         return;
@@ -335,6 +370,9 @@ void AddEntityCommand::redo()
         entity->SetName(entityName_);
 
     entity->SetTemporary(temp_);
+
+    // Execute any AddComponentCommand children to apply component back.
+    QUndoCommand::redo();
 }
 
 RemoveCommand::RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QList<EntityWeakPtr> &entities, const QList<ComponentWeakPtr> &components, QUndoCommand * parent) :
