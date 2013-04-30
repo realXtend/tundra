@@ -144,7 +144,7 @@ if (ENABLE_SKYX)
     file(COPY media/SkyX DESTINATION ${TUNDRA_BIN}/media)
 endif()
 if (ENABLE_HYDRAX)
-    file(COPY media/HydraX DESTINATION ${TUNDRA_BIN}/media)
+    file(COPY media/Hydrax DESTINATION ${TUNDRA_BIN}/media)
 endif()
 
 UseTundraCore()

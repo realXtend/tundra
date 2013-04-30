@@ -11,7 +11,13 @@ cmake_minimum_required(VERSION 2.5.5)
 # If TUNDRA_NO_BOOST is set to TRUE, kNet must also be built without Boost dependecy. In order to make the
 # Tundra build fully free of Boost, you must also build Ogre and AssImp, which depend on Boost by default,
 # with Boost disabled. See the dependencies scripts for instructions how to control this.
-option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." TRUE)
+# On Linux TUNDRA_NO_BOOST can not yet be used
+if (NOT WIN32 AND NOT APPLE)
+    option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." FALSE)
+else ()
+    option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." TRUE)
+endif ()
+
 option(TUNDRA_CPP11_ENABLED "Enables C++11 features on Tundra" FALSE)
 
 if (APPLE)
