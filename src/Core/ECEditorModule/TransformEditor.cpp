@@ -26,8 +26,8 @@
 #endif
 #include "Profiler.h"
 #include "ConfigAPI.h"
-
 #include "Application.h"
+
 #include <QUiLoader>
 
 #include "MemoryLeakCheck.h"
@@ -79,7 +79,7 @@ void TransformEditor::AppendSelection(const QList<EntityPtr> &entities)
         CreateGizmo();
     foreach(const EntityPtr &e, entities)
     {
-        shared_ptr<EC_Placeable> p = e->GetComponent<EC_Placeable>();
+        shared_ptr<EC_Placeable> p = e->Component<EC_Placeable>();
         if (p)
         {
             Entity *parentPlaceableEntity = p->ParentPlaceableEntity();
@@ -98,7 +98,7 @@ void TransformEditor::RemoveFromSelection(const QList<EntityPtr> &entities)
 {
     foreach(const EntityPtr &e, entities)
     {
-        shared_ptr<EC_Placeable> p = e->GetComponent<EC_Placeable>();
+        shared_ptr<EC_Placeable> p = e->Component<EC_Placeable>();
         if (p)
         {
             Entity *parentPlaceableEntity = p->ParentPlaceableEntity();
@@ -163,7 +163,7 @@ void TransformEditor::FocusGizmoPivotToAabbCenter()
         if (transform)
         {
             ///\todo The gizmo is placed according to the target placeable position, although it is meant as a generic transform editor. Refactor needed in the future.
-            EC_Placeable* placeable = transform->Owner()->ParentEntity()->GetComponent<EC_Placeable>().get();
+            EC_Placeable* placeable = transform->Owner()->ParentEntity()->Component<EC_Placeable>().get();
             if (placeable)
             {
                 float3 worldPos = placeable->WorldPosition();
@@ -210,7 +210,7 @@ float3 TransformEditor::GizmoPos() const
 {
     if (!gizmo)
         return float3::zero;
-    shared_ptr<EC_Placeable> placeable = gizmo->GetComponent<EC_Placeable>();
+    shared_ptr<EC_Placeable> placeable = gizmo->Component<EC_Placeable>();
     if (!placeable)
         return float3::zero;
     return placeable->transform.Get().pos;
@@ -230,30 +230,45 @@ EC_TransformGizmo *TransformEditor::TransformGizmo() const
 void TransformEditor::TranslateTargets(const float3 &offset)
 {
     PROFILE(TransformEditor_TranslateTargets);
-    
-    EC_TransformGizmo *tg = TransformGizmo();
-    if (!tg)
-        return;
-    
+
     TransformAttributeWeakPtrList targetAttrs;
     foreach(const TransformAttributeWeakPtr &attr, targets)
     {
         // If selected object's parent is also selected, do not apply changes to the child object.
-        if (TargetsContainAlsoParent(attr))
-            continue;
-        targetAttrs << attr;
+        if (!TargetsContainAlsoParent(attr))
+            targetAttrs << attr;
     }
 
     if (undoManager)
     {
         TransformCommand::Action action = TransformCommand::Translate;
-        EC_TransformGizmo::GizmoAxisList axes = tg->ActiveAxes();
+#ifdef EC_TransformGizmo_ENABLED
+        EC_TransformGizmo *tg = TransformGizmo();
+        EC_TransformGizmo::GizmoAxisList axes = (tg ? tg->ActiveAxes() : EC_TransformGizmo::GizmoAxisList());
         if (axes.size() == 1)
         {
             EC_TransformGizmo::GizmoAxis activeAxis = axes.first();
-            action = (activeAxis.axis == EC_TransformGizmo::GizmoAxis::X ? TransformCommand::TranslateX : (activeAxis.axis == EC_TransformGizmo::GizmoAxis::Y ? TransformCommand::TranslateY : TransformCommand::TranslateZ));
+            action = (activeAxis.axis == EC_TransformGizmo::GizmoAxis::X ? TransformCommand::TranslateX :
+                (activeAxis.axis == EC_TransformGizmo::GizmoAxis::Y ? TransformCommand::TranslateY : TransformCommand::TranslateZ));
         }
+#endif
         undoManager->Push(new TransformCommand(targetAttrs, targets.size(), action, offset));
+    }
+    else
+    {
+        foreach(const TransformAttributeWeakPtr &attr, targets)
+        {
+            Attribute<Transform> *transform = static_cast<Attribute<Transform> *>(attr.Get());
+            Transform t = transform->Get();
+            // If we have parented transform, translate the changes to parent's world space.
+            Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
+            EC_Placeable *parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
+            if (parentPlaceable)
+                t.pos += parentPlaceable->WorldToLocal().MulDir(offset);
+            else
+                t.pos += offset;
+            transform->Set(t, AttributeChange::Default);
+        }
     }
 
     FocusGizmoPivotToAabbCenter();
@@ -263,10 +278,6 @@ void TransformEditor::RotateTargets(const Quat &delta)
 {
     PROFILE(TransformEditor_RotateTargets);
 
-    EC_TransformGizmo *tg = TransformGizmo();
-    if (!tg)
-        return;
-
     float3 gizmoPos = GizmoPos();
     float3x4 rotation = float3x4::Translate(gizmoPos) * float3x4(delta) * float3x4::Translate(-gizmoPos);
     TransformAttributeWeakPtrList targetAttrs;
@@ -274,21 +285,40 @@ void TransformEditor::RotateTargets(const Quat &delta)
     foreach(const TransformAttributeWeakPtr &attr, targets)
     {
         // If selected object's parent is also selected, do not apply changes to the child object.
-        if (TargetsContainAlsoParent(attr))
-            continue;
-        targetAttrs << attr;
+        if (!TargetsContainAlsoParent(attr))
+            targetAttrs << attr;
     }
 
     if (undoManager)
     {
         TransformCommand::Action action = TransformCommand::Rotate;
-        EC_TransformGizmo::GizmoAxisList axes = tg->ActiveAxes();
+#ifdef EC_TransformGizmo_ENABLED
+        EC_TransformGizmo *tg = TransformGizmo();
+        EC_TransformGizmo::GizmoAxisList axes = (tg ? tg->ActiveAxes() : EC_TransformGizmo::GizmoAxisList());
         if (axes.size() == 1)
         {
             EC_TransformGizmo::GizmoAxis activeAxis = axes.first();
-            action = (activeAxis.axis == EC_TransformGizmo::GizmoAxis::X ? TransformCommand::RotateX : (activeAxis.axis == EC_TransformGizmo::GizmoAxis::Y ? TransformCommand::RotateY : TransformCommand::RotateZ));
+            action = (activeAxis.axis == EC_TransformGizmo::GizmoAxis::X ? TransformCommand::RotateX :
+                (activeAxis.axis == EC_TransformGizmo::GizmoAxis::Y ? TransformCommand::RotateY : TransformCommand::RotateZ));
         }
+#endif
         undoManager->Push(new TransformCommand(targetAttrs, targets.size(), action, rotation));
+    }
+    else
+    {
+        foreach(const TransformAttributeWeakPtr &attr, targets)
+        {
+            Attribute<Transform> *transform = static_cast<Attribute<Transform> *>(attr.Get());
+            Transform t = transform->Get();
+            // If we have parented transform, translate the changes to parent's world space.
+            Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
+            EC_Placeable* parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
+            if (parentPlaceable)
+                t.FromFloat3x4(parentPlaceable->WorldToLocal() * rotation * parentPlaceable->LocalToWorld() * t.ToFloat3x4());
+            else
+                t.FromFloat3x4(rotation * t.ToFloat3x4());
+            transform->Set(t, AttributeChange::Default);
+        }
     }
 
     FocusGizmoPivotToAabbCenter();
@@ -297,10 +327,6 @@ void TransformEditor::RotateTargets(const Quat &delta)
 void TransformEditor::ScaleTargets(const float3 &offset)
 {
     PROFILE(TransformEditor_ScaleTargets);
-
-    EC_TransformGizmo *tg = TransformGizmo();
-    if (!tg)
-        return;
 
     TransformAttributeWeakPtrList targetAttrs;
     foreach(const TransformAttributeWeakPtr &attr, targets)
@@ -314,13 +340,27 @@ void TransformEditor::ScaleTargets(const float3 &offset)
     if (undoManager)
     {
         TransformCommand::Action action = TransformCommand::Scale;
-        EC_TransformGizmo::GizmoAxisList axes = tg->ActiveAxes();
+#ifdef EC_TransformGizmo_ENABLED
+        EC_TransformGizmo *tg = TransformGizmo();
+        EC_TransformGizmo::GizmoAxisList axes = (tg ? tg->ActiveAxes() : EC_TransformGizmo::GizmoAxisList());
         if (axes.size() == 1)
         {
             EC_TransformGizmo::GizmoAxis activeAxis = axes.first();
-            action = (activeAxis.axis == EC_TransformGizmo::GizmoAxis::X ? TransformCommand::ScaleX : (activeAxis.axis == EC_TransformGizmo::GizmoAxis::Y ? TransformCommand::ScaleY : TransformCommand::ScaleZ));
+            action = (activeAxis.axis == EC_TransformGizmo::GizmoAxis::X ? TransformCommand::ScaleX :
+                (activeAxis.axis == EC_TransformGizmo::GizmoAxis::Y ? TransformCommand::ScaleY : TransformCommand::ScaleZ));
         }
+#endif
         undoManager->Push(new TransformCommand(targetAttrs, targets.size(), action, offset));
+    }
+    else
+    {
+        foreach(const TransformAttributeWeakPtr &attr, targets)
+        {
+            Attribute<Transform> *transform = static_cast<Attribute<Transform> *>(attr.Get());
+            Transform t = transform->Get();
+            t.scale += offset;
+            transform->Set(t, AttributeChange::Default);
+        }
     }
 
     FocusGizmoPivotToAabbCenter();
@@ -346,18 +386,17 @@ void TransformEditor::CreateGizmo()
     if (!s)
         return;
 
-    gizmo = s->CreateLocalEntity(QStringList(EC_TransformGizmo::TypeNameStatic()), AttributeChange::LocalOnly, false);
+    gizmo = s->CreateLocalEntity(QStringList(EC_TransformGizmo::TypeNameStatic()), AttributeChange::LocalOnly, false, true);
     if (!gizmo)
     {
-        LogError("TransformEditor: could not create gizmo entity.");
+        LogError("TransformEditor::CreateGizmo: could not create gizmo entity.");
         return;
     }
-    gizmo->SetTemporary(true);
 
     EC_TransformGizmo *tg = TransformGizmo();
     if (!tg)
     {
-        LogError("TransformEditor: could not acquire EC_TransformGizmo.");
+        LogError("TransformEditor::CreateGizmo: could not acquire EC_TransformGizmo.");
         return;
     }
 
@@ -372,7 +411,7 @@ void TransformEditor::CreateGizmo()
     file.open(QFile::ReadOnly);
     if (!file.exists())
     {
-        LogError("Cannot find " + Application::InstallationDirectory() + "data/ui/EditorSettings.ui file.");
+        LogError("TransformEditor::CreateGizmo: Cannot find " + Application::InstallationDirectory() + "data/ui/EditorSettings.ui file.");
         return;
     }
     editorSettings = loader.load(&file, s->GetFramework()->Ui()->MainWindow());
@@ -424,9 +463,9 @@ void TransformEditor::HandleKeyEvent(KeyEvent *e)
         return;
 
     InputAPI *inputApi = scn->GetFramework()->Input();
-    const QKeySequence translate= inputApi->KeyBinding("SetTranslateGizmo", QKeySequence(Qt::Key_1));
-    const QKeySequence rotate = inputApi->KeyBinding("SetRotateGizmo", QKeySequence(Qt::Key_2));
-    const QKeySequence scale = inputApi->KeyBinding("SetScaleGizmo", QKeySequence(Qt::Key_3));
+    const QKeySequence translate= inputApi->KeyBinding("TransformEditor.SetTranslateGizmo", QKeySequence(Qt::Key_1));
+    const QKeySequence rotate = inputApi->KeyBinding("TransformEditor.SetRotateGizmo", QKeySequence(Qt::Key_2));
+    const QKeySequence scale = inputApi->KeyBinding("TransformEditor.SetScaleGizmo", QKeySequence(Qt::Key_3));
     QComboBox* modeCombo = editorSettings ? editorSettings->findChild<QComboBox*>("modeComboBox") : 0;
     if (modeCombo)
     {
@@ -512,35 +551,40 @@ void TransformEditor::DrawDebug(OgreWorld* world, Entity* entity)
     const Entity::ComponentMap& components = entity->Components();
     for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
     {
-        u32 type = i->second->TypeId();
-        if (type == EC_Placeable::TypeIdStatic())
+        switch(i->second->TypeId())
         {
-            EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(i->second.get());
-            // Draw without depth test to ensure the axes do not get lost within a mesh for example
-            world->DebugDrawAxes(float3x4::FromTRS(placeable->WorldPosition(), placeable->WorldOrientation(), placeable->WorldScale()), false);
-        }
-        else if (type == EC_Light::TypeIdStatic())
-        {
-            EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
-            if (placeable)
+        case EC_Placeable::ComponentTypeId:
             {
-                EC_Light* light = checked_static_cast<EC_Light*>(i->second.get());
-                const Color& color = light->diffColor.Get();
-                world->DebugDrawLight(float3x4(placeable->WorldOrientation(), placeable->WorldPosition()), light->type.Get(), light->range.Get(), light->outerAngle.Get(), color.r, color.g, color.b);
+                EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(i->second.get());
+                // Draw without depth test to ensure the axes do not get lost within a mesh for example
+                world->DebugDrawAxes(placeable->WorldTransform(), false);
             }
-        }
-        else if (type == EC_Camera::TypeIdStatic())
-        {
-            EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
-            if (placeable)
-                world->DebugDrawCamera(float3x4(placeable->WorldOrientation(), placeable->WorldPosition()), 1.0f, 1.0f, 1.0f, 1.0f);
-        }
-        else if (type == EC_Sound::TypeIdStatic())
-        {
-            EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
-            EC_Sound *soundSource = entity->GetComponent<EC_Sound>().get();
-            if (placeable && soundSource)
-                world->DebugDrawSoundSource(placeable->WorldPosition(), soundSource->soundInnerRadius.Get(), soundSource->soundOuterRadius.Get(), 1.0f, 1.0f, 1.0f, 1.0f);
+            break;
+        case EC_Light::ComponentTypeId:
+            {
+                EC_Placeable* placeable = entity->Component<EC_Placeable>().get();
+                if (placeable)
+                {
+                    EC_Light* light = checked_static_cast<EC_Light*>(i->second.get());
+                    world->DebugDrawLight(placeable->WorldTransform(), light->type.Get(), light->range.Get(), light->outerAngle.Get(), light->diffColor.Get());
+                }
+            }
+            break;
+        case EC_Camera::ComponentTypeId:
+            {
+                EC_Placeable* placeable = entity->Component<EC_Placeable>().get();
+                if (placeable)
+                    world->DebugDrawCamera(placeable->WorldTransform(), 1.0f, 1.0f, 1.0f, 1.0f);
+            }
+            break;
+        case EC_Sound::ComponentTypeId:
+            {
+                EC_Placeable* placeable = entity->Component<EC_Placeable>().get();
+                EC_Sound *soundSource = entity->Component<EC_Sound>().get();
+                if (placeable && soundSource)
+                    world->DebugDrawSoundSource(placeable->WorldPosition(), soundSource->soundInnerRadius.Get(), soundSource->soundOuterRadius.Get(), 1.0f, 1.0f, 1.0f, 1.0f);
+            }
+            break;
         }
     }
 }

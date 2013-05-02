@@ -95,22 +95,19 @@ assetAPI(assetAPI_)
     impl->soundMasterGain[SoundChannel::Voice] = 1.f;
     impl->listenerPosition = float3(0.0, 0.0, 0.0);
     
-    QStringList audioDevice = fw->CommandLineParameters("--audiodevice");
+    QStringList audioDevice = fw->CommandLineParameters("--audioDevice"); /**< @todo document to help */
     QString device = "";
     if (audioDevice.size() >= 1)
         device = audioDevice.back();
     if (audioDevice.size() > 1)
-        LogWarning("Specified multiple --audiodevice parameters. Using \"" + device + "\".");
+        LogWarning("Specified multiple --audioDevice parameters. Using \"" + device + "\".");
     Initialize(device);
 
     // Load sound settings. If we have "master_gain" in config we very likely have all the other settings as well.
     if (fw->Config()->HasValue(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_SOUND, "master_gain"))
         LoadSoundSettingsFromConfig();
 
-    QStringList audioTypeExtensions;
-    /// @todo Why is mp3 in the following list - we don't support it.
-    audioTypeExtensions << ".wav" << ".ogg" << ".mp3";
-    
+    QStringList audioTypeExtensions(QStringList() << ".wav" << ".ogg");
     if (!fw->IsHeadless())
         assetAPI->RegisterAssetTypeFactory(MAKE_SHARED(GenericAssetFactory<AudioAsset>, "Audio", audioTypeExtensions));
     else
