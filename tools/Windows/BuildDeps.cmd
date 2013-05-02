@@ -534,17 +534,19 @@ IF NOT EXIST "%TUNDRA_BIN%\qtplugins\script\qtscript_core.dll". (
 )
 
 IF NOT EXIST "%DEPS%\realxtend-tundra-deps\.git". (
-   cecho {0D}Cloning realxtend-tundra-deps repository into "%DEPS%\realxtend-tundra-deps".{# #}{\n}
-   cd "%DEPS%"
-   call git clone https://code.google.com/p/realxtend-tundra-deps
-   IF NOT EXIST "%DEPS%\realxtend-tundra-deps\.git" GOTO :ERROR
-
-   cd "%DEPS%\realxtend-tundra-deps"
-   call git checkout sources
+    cecho {0D}Cloning realxtend-tundra-deps repository into "%DEPS%\realxtend-tundra-deps".{# #}{\n}
+    REM Only clone/fetch the sources branch. Skipping the prebuilt binary branches as they are huge.
+    cd "%DEPS%"
+    call git init realxtend-tundra-deps
+    cd realxtend-tundra-deps
+    call git fetch https://code.google.com/p/realxtend-tundra-deps/ sources:refs/remotes/origin/sources
+    call git remote add origin https://code.google.com/p/realxtend-tundra-deps/
+    call git checkout sources
+    IF NOT EXIST "%DEPS%\realxtend-tundra-deps\.git" GOTO :ERROR
 ) ELSE (
-   cecho {0D}Updating realxtend-tundra-deps to newest.{# #}{\n}
-   cd "%DEPS%\realxtend-tundra-deps"
-   call git pull origin
+    cecho {0D}Updating realxtend-tundra-deps to newest.{# #}{\n}
+    cd "%DEPS%\realxtend-tundra-deps"
+    call git pull origin
 )
 
 set OGRE_HOME=%DEPS%\ogre-safe-nocrashes\SDK
