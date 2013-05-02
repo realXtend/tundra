@@ -370,6 +370,11 @@ if (NOT ANDROID)
     use_package(OPENAL)
 endif()
 
+# OSX / Xcode needs Assimp as a global link directory, as it cannot find libassimp otherwise for eg. modules linking to OgreRenderingModule
+if (APPLE)
+    use_package_assimp()
+endif()
+
 # Convenience macro for including all TundraCore subfolders.
 macro(UseTundraCore)
     include_directories(${PROJECT_BINARY_DIR}/src/Core/TundraCore/)
