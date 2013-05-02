@@ -1,12 +1,13 @@
 #!/bin/bash
 
-# To use this script, first configure these paths!
-qtdir=~/QtSDK/Desktop/Qt/4.8.0/gcc
+# Reconfigure thèse paths if necessary!
 startdir=$(pwd)
-cd ../../naali-deps
+cd ../../deps
 depsdir=$(pwd)
 cd build/ogre-safe-nocrashes
 ogredir=$(pwd)
+cd $depsdir/osx-64/qt
+qtdir=$(pwd)
 cd $startdir
 
 echo "Assuming Qt is found at $qtdir."
