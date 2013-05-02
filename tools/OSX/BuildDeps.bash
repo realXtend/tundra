@@ -27,15 +27,12 @@ fnDisplayHelpAndExit()
     echo " "
     echo " -rwdi | --release-with-debug-info    Enables debugging information to be included in compile-time"
     echo " "
-    echo " -x | --xcode                         Make Xcode project instead of Makefiles                                      "
-    echo " "
     echo " -nc | --no-run-cmake                 Do not run 'cmake .' after the dependencies are built. (The default is that  "
     echo "                                      'cmake .' is executed to generate Makefiles after all dependencies have been "
     echo "                                      built)."
     echo " "
-    echo " -nm | --no-run-make                  Do not run 'make' after the dependencies are built, or if --xcode is defined,"
-    echo "                                      do not run 'xcodebuild' command (The default is that 'make' is executed to "
-    echo "                                      start the compile process)."
+    echo " -nm | --no-run-make                  Do not run 'make' after the dependencies are built (The default is that      "
+    echo "                                     'make' is executed to start the compile process).                             "
     echo " "
     echo " -np | --number-of-processes <NUMBER> The number of processes to be run simultaneously, recommended for multi-core "
     echo "                                      or processors with hyper-threading technology for a faster compile process."
@@ -91,7 +88,7 @@ ERRORS_OCCURED="0"
 RELWITHDEBINFO="0"
 RUN_CMAKE="1"
 RUN_MAKE="1"
-MAKE_XCODE="0"
+MAKE_XCODE="1"
 USE_BOOST="OFF"
 NO_BOOST="ON" # The variable used in Tundra is called TUNDRA_NO_BOOST, which is opposite of USE_BOOST. We will use this also to specify c++11 usage, since not using boost and using c++11 on Mac are mutually exclusive
 NPROCS=`sysctl -n hw.ncpu`
@@ -141,9 +138,6 @@ while [ "$1" != "" ]; do
                                                 continue
                                             fi
                                             export OGRE_HOME=$1
-                                            ;;
-
-         -x | --xcode )                     MAKE_XCODE="1"
                                             ;;
 
         -nc | --no-run-cmake )              RUN_CMAKE="0"
