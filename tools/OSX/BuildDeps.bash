@@ -694,12 +694,12 @@ else
         sed -e 's/INCLUDE_DIRECTORIES( include )/INCLUDE_DIRECTORIES( include )\
         set (BOOST_INCLUDEDIR "${ENV_OGRE_HOME}\/Dependencies\/include")/' < temp > temp1
         $LC_CTYPE_RESTORE
+        mv temp1 CMakeLists.txt
     else
         # Patch assimp
         patch -p0 -i $patches/assimp.patch
     fi
 
-    mv temp1 CMakeLists.txt
     cmake . -DCMAKE_INSTALL_PREFIX=$prefix/$what
     make -j$NPROCS
     make install
