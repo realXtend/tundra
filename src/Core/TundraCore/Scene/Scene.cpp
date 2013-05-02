@@ -13,7 +13,6 @@
 #include "AttributeMetadata.h"
 #include "ChangeRequest.h"
 #include "EntityReference.h"
-
 #include "Framework.h"
 #include "Application.h"
 #include "AssetAPI.h"
@@ -60,12 +59,12 @@ Scene::~Scene()
     emit Removed(this);
 }
 
-EntityPtr Scene::CreateLocalEntity(const QStringList &components, AttributeChange::Type change, bool componentsReplicated)
+EntityPtr Scene::CreateLocalEntity(const QStringList &components, AttributeChange::Type change, bool componentsReplicated, bool temporary)
 {
-    return CreateEntity(0, components, change, false, componentsReplicated);
+    return CreateEntity(0, components, change, false, componentsReplicated, temporary);
 }
 
-EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change, bool replicated, bool componentsReplicated)
+EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change, bool replicated, bool componentsReplicated, bool temporary)
 {
     // Figure out new entity id
     if (id == 0)
@@ -97,6 +96,7 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
     }
 
     EntityPtr entity = MAKE_SHARED(Entity, framework_, id, this);
+    entity->SetTemporary(temporary);
     for(size_t i = 0 ; i < (size_t)components.size(); ++i)
     {
         ComponentPtr newComp = framework_->Scene()->CreateComponentByName(this, components[i]);
@@ -137,14 +137,7 @@ EntityPtr Scene::EntityByName(const QString &name) const
 
 bool Scene::IsUniqueName(const QString& name) const
 {
-    if (name.isEmpty())
-        return false;
-
-    for(const_iterator it = begin(); it != end(); ++it)
-        if (it->second->Name() == name)
-            return false;
-
-    return true;
+    return !EntityByName(name);
 }
 
 void Scene::ChangeEntityId(entity_id_t old_id, entity_id_t new_id)
@@ -152,11 +145,11 @@ void Scene::ChangeEntityId(entity_id_t old_id, entity_id_t new_id)
     if (old_id == new_id)
         return;
     
-    EntityPtr old_entity = GetEntity(old_id);
+    EntityPtr old_entity = EntityById(old_id);
     if (!old_entity)
         return;
     
-    if (GetEntity(new_id))
+    if (EntityById(new_id))
     {
         LogWarning("Purged entity " + QString::number(new_id) + " to make room for a ChangeEntityId request. This should not happen");
         RemoveEntity(new_id, AttributeChange::LocalOnly);

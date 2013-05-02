@@ -19,7 +19,7 @@
 
 EC_SoundListener::EC_SoundListener(Scene* scene):
     IComponent(scene),
-    active(this, "active", false)
+    active(this, "Active", false)
 {
     // By default, this component is NOT network-replicated
     SetReplicated(false);

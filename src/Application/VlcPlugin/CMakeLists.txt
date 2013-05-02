@@ -9,7 +9,7 @@ macro(configure_vlc)
     
     sagase_configure_package(VLC
         NAMES vlc
-        COMPONENTS libvlc libvlccore
+        COMPONENTS vlc libvlc libvlccore
         PREFIXES ${VLC_ROOT})
     sagase_configure_report (VLC)
 endmacro()

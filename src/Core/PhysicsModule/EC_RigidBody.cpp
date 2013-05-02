@@ -81,6 +81,7 @@ EC_RigidBody::EC_RigidBody(Scene* scene) :
         shapemetadata.enums[Shape_TriMesh] = "TriMesh";
         shapemetadata.enums[Shape_HeightField] = "HeightField";
         shapemetadata.enums[Shape_ConvexHull] = "ConvexHull";
+        shapemetadata.enums[Shape_Cone] = "Cone";
         metadataInitialized = true;
     }
     shapeType.SetMetadata(&shapemetadata);
@@ -330,6 +331,9 @@ void EC_RigidBody::CreateCollisionShape()
         break;
     case Shape_ConvexHull:
         CreateConvexHullSetShape();
+        break;
+    case Shape_Cone:
+        shape_ = new btConeShape(sizeVec.x * 0.5f, sizeVec.y);
         break;
     }
     
@@ -766,6 +770,19 @@ AABB EC_RigidBody::ShapeAABB() const
     btVector3 aabbMin, aabbMax;
     body_->getAabb(aabbMin, aabbMax);
     return AABB(aabbMin, aabbMax);
+}
+
+bool EC_RigidBody::IsPrimitiveShape() const
+{
+    switch(static_cast<ShapeType>(shapeType.Get()))
+    {
+    case Shape_TriMesh:
+    case Shape_HeightField:
+    case Shape_ConvexHull:
+        return false;
+    default:
+        return true;
+    }
 }
 
 void EC_RigidBody::TerrainUpdated(IAttribute* attribute)

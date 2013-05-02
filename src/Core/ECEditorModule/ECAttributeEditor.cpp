@@ -1792,6 +1792,37 @@ template<> void ECAttributeEditor<AssetReference>::Set(QtProperty *property)
         SetValue(AssetReference(property->valueText()));
 }
 
+void AssetReferenceAttributeEditor::TextEdited(QString text)
+{
+    if(useMultiEditor_)
+    {
+        MultiEditPropertyFactory *multiEditFactory = qobject_cast<MultiEditPropertyFactory *>(sender());
+
+        if(multiEditFactory && multiEditFactory->buttonFactory)
+        {
+            QList<QPushButton*> multiEditButtons = multiEditFactory->buttonFactory->GetButtons(); 
+            for(int i = 0; i < multiEditButtons.size(); i++)
+            {
+                if(multiEditButtons[i]->text() == "E")
+                    multiEditButtons[i]->setDisabled(true);
+            }
+        }
+    }else
+    {
+        LineEditPropertyFactory *lineEditFactory = qobject_cast<LineEditPropertyFactory*>(sender());
+
+        if(lineEditFactory && lineEditFactory->buttonFactory)
+        {
+            QList<QPushButton*> lineEditButtons = lineEditFactory->buttonFactory->GetButtons(); 
+            for(int i = 0; i < lineEditButtons.size(); i++)
+            {
+                if(lineEditButtons[i]->text() == "E")
+                    lineEditButtons[i]->setDisabled(true);
+            }
+        }
+    }
+}
+
 void AssetReferenceAttributeEditor::HandleNewEditor(QtProperty *prop, QObject *factory)
 {
     QPushButton *pickButton = 0, *editButton = 0;
@@ -1801,6 +1832,8 @@ void AssetReferenceAttributeEditor::HandleNewEditor(QtProperty *prop, QObject *f
         MultiEditPropertyFactory *multiEditFactory = qobject_cast<MultiEditPropertyFactory *>(factory);
         if (multiEditFactory && multiEditFactory->buttonFactory)
         {
+            connect(multiEditFactory, SIGNAL(TextEdited(QString)), SLOT(TextEdited(QString)));
+
             pickButton = multiEditFactory->buttonFactory->AddButton(prop->propertyName(), "...");
             if (IsAssetEditorAvailable())
                 editButton = multiEditFactory->buttonFactory->AddButton(prop->propertyName(), tr("E"));
@@ -1811,6 +1844,8 @@ void AssetReferenceAttributeEditor::HandleNewEditor(QtProperty *prop, QObject *f
         LineEditPropertyFactory *lineEditFactory = qobject_cast<LineEditPropertyFactory *>(factory);
         if (lineEditFactory && lineEditFactory->buttonFactory)
         {
+            connect(lineEditFactory, SIGNAL(TextEdited(QString)), SLOT(TextEdited(QString)));
+
             pickButton = lineEditFactory->buttonFactory->AddButton(prop->propertyName(), "...");
             if (IsAssetEditorAvailable())
                 editButton = lineEditFactory->buttonFactory->AddButton(prop->propertyName(), tr("E"));
@@ -2023,7 +2058,7 @@ template<> void ECAttributeEditor<AssetReferenceList>::Initialize()
             rootProperty_->addSubProperty(childProperty);
 
             Update();
-            connect(stringManager, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+            connect(stringManager, SIGNAL(propertyChanged(QtProperty*)), SLOT(PropertyChanged(QtProperty*)));
         }
 
         owner_->setFactoryForManager(stringManager, lineEditFactory);
@@ -2063,6 +2098,37 @@ template<> void ECAttributeEditor<AssetReferenceList>::Set(QtProperty *property)
     }
 }
 
+void AssetReferenceListAttributeEditor::TextEdited(QString text)
+{
+    if(useMultiEditor_)
+    {
+        MultiEditPropertyFactory *multiEditFactory = qobject_cast<MultiEditPropertyFactory *>(sender());
+
+        if(multiEditFactory && multiEditFactory->buttonFactory)
+        {
+            QList<QPushButton*> multiEditButtons = multiEditFactory->buttonFactory->GetButtons(); 
+            for(int i = 0; i < multiEditButtons.size(); i++)
+            {
+                if(multiEditButtons[i]->text() == "E")
+                    multiEditButtons[i]->setDisabled(true);
+            }
+        }
+    }else
+    {
+        LineEditPropertyFactory *lineEditFactory = qobject_cast<LineEditPropertyFactory*>(sender());
+
+        if(lineEditFactory && lineEditFactory->buttonFactory)
+        {
+            QList<QPushButton*> lineEditButtons = lineEditFactory->buttonFactory->GetButtons(); 
+            for(int i = 0; i < lineEditButtons.size(); i++)
+            {
+                if(lineEditButtons[i]->text() == "E")
+                    lineEditButtons[i]->setDisabled(true);
+            }
+        }
+    }
+}
+
 void AssetReferenceListAttributeEditor::HandleNewEditor(QtProperty *prop, QObject *factory)
 {
     // Add button for picking assets always, but editing button only if we have asset editor available.
@@ -2072,6 +2138,8 @@ void AssetReferenceListAttributeEditor::HandleNewEditor(QtProperty *prop, QObjec
         MultiEditPropertyFactory *multiEditFactory = qobject_cast<MultiEditPropertyFactory *>(factory);
         if (multiEditFactory && multiEditFactory->buttonFactory)
         {
+            connect(multiEditFactory, SIGNAL(TextEdited(QString)), SLOT(TextEdited(QString)));
+
             pickButton = multiEditFactory->buttonFactory->AddButton(prop->propertyName(), "...");
             if (IsAssetEditorAvailable())
                 editButton = multiEditFactory->buttonFactory->AddButton(prop->propertyName(), tr("E"));
@@ -2082,6 +2150,8 @@ void AssetReferenceListAttributeEditor::HandleNewEditor(QtProperty *prop, QObjec
         LineEditPropertyFactory *lineEditFactory = qobject_cast<LineEditPropertyFactory *>(factory);
         if (lineEditFactory && lineEditFactory->buttonFactory)
         {
+            connect(lineEditFactory, SIGNAL(TextEdited(QString)), SLOT(TextEdited(QString)));
+
             pickButton = lineEditFactory->buttonFactory->AddButton(prop->propertyName(), "...");
             if (IsAssetEditorAvailable())
                 editButton = lineEditFactory->buttonFactory->AddButton(prop->propertyName(), tr("E"));

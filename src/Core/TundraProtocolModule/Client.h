@@ -6,18 +6,20 @@
 #include "CoreTypes.h"
 #include "TundraProtocolModuleApi.h"
 #include "TundraProtocolModuleFwd.h"
+#include "Math/Quat.h"
+#include "Math/float3.h"
 
 #include <kNet/Socket.h>
-#include <map>
+
 #include <QObject>
 #include <QUrl>
 #include <QMap>
-#include "Math/Quat.h"
-#include "Math/float3.h"
-#include <QTimer>
+
+#include <map>
 
 class Framework;
 
+class QTimer;
 class QUrl;
 
 namespace TundraLogic
@@ -26,7 +28,7 @@ namespace TundraLogic
 class TUNDRAPROTOCOL_MODULE_API Client : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(unsigned int connectionId READ GetConnectionID)
+    Q_PROPERTY(u32 connectionId READ GetConnectionID)
     Q_PROPERTY(ClientLoginState loginState READ LoginState)
     Q_PROPERTY(bool connected READ IsConnected)
     Q_ENUMS(ClientLoginState)
@@ -52,7 +54,7 @@ public:
     ClientLoginState LoginState() const { return loginstate_; }
 
     /// Returns client connection ID (from loginreply message), or zero if not connected.
-    unsigned int ConnectionId() const { return client_id_; }
+    u32 ConnectionId() const { return client_id_; }
 
     /// Returns all the login properties that will be used to login to the server.
     LoginPropertyMap &LoginProperties() { return properties; }
@@ -114,10 +116,11 @@ public slots:
     void ClearLoginProperties() { properties.clear(); }
 
     /// Get the current camera orientation
+    /// @todo SyncManager/InterestManager functionality. Move away from here.
     void GetCameraOrientation();
 
-    QString GetLoginProperty(QString key) const { return LoginProperty(key); } ///< @deprecated Use LoginProperty. @todo Add warning print
-    unsigned int GetConnectionID() const { return ConnectionId(); } ///< @deprecated Use ConnectionId. @todo Add warning print.
+    QString GetLoginProperty(QString key) const { return LoginProperty(key); } /**< @deprecated Use LoginProperty. @todo Add warning print */
+    u32 GetConnectionID() const { return ConnectionId(); } /**< @deprecated Use ConnectionId. @todo Add warning print. */
 
 signals:
     /// This signal is emitted right before this client is starting to connect to a Tundra server.
@@ -150,14 +153,15 @@ private slots:
     void DelayedLogout();
 
 private:
-
     /// Send camera orientation to the server
+    /// @todo SyncManager/InterestManager functionality. Move away from here.
     void SendCameraOrientation(kNet::DataSerializer ds, kNet::NetworkMessage *msg);
 
     /// Handles pending login to server
     void CheckLogin();
 
     /// Handles a camera orientation request message
+    /// @todo SyncManager/InterestManager functionality. Move away from here.
     void HandleCameraOrientationRequest(kNet::MessageConnection* source, const MsgCameraOrientationRequest& msg);
 
     /// Handles a loginreply message
@@ -176,14 +180,18 @@ private:
     TundraLogicModule* owner_; ///< Owning module
     Framework* framework_; ///< Framework pointer
 
+    /// @todo SyncManager/InterestManager functionality. Move away from here.
     QTimer *cameraUpdateTimer;
-
     // Current camera orientation
+    /// @todo SyncManager/InterestManager functionality. Move away from here.
     Quat currentcameraorientation_;
     // Current camera location
+    /// @todo SyncManager/InterestManager functionality. Move away from here.
     float3 currentcameralocation_;
     // Variable controlling whether or not to send camera orientation updates
+    /// @todo SyncManager/InterestManager functionality. Move away from here.
     bool sendCameraUpdates_;
+    /// @todo SyncManager/InterestManager functionality. Move away from here.
     bool firstCameraUpdateSent_;
 };
 

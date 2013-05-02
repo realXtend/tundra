@@ -119,10 +119,7 @@ AddComponentDialog::~AddComponentDialog()
 void AddComponentDialog::SetComponentList(const QStringList &component_types)
 {
     foreach(const QString &type, component_types)
-        if (type.startsWith("EC_"))
-            type_combo_box_->addItem(type.mid(3));
-        else
-            type_combo_box_->addItem(type);
+        type_combo_box_->addItem(IComponent::EnsureTypeNameWithoutPrefix(type));
 }
 
 void AddComponentDialog::SetComponentName(const QString &name)
@@ -132,10 +129,7 @@ void AddComponentDialog::SetComponentName(const QString &name)
 
 QString AddComponentDialog::TypeName() const
 {
-    if (!type_combo_box_->currentText().startsWith("EC_"))
-        return "EC_" + type_combo_box_->currentText();
-    else
-        return type_combo_box_->currentText();
+    return IComponent::EnsureTypeNameWithPrefix(type_combo_box_->currentText());
 }
 
 QString AddComponentDialog::Name() const
@@ -164,18 +158,16 @@ void AddComponentDialog::CheckComponentName()
     if (!scene)
         return;
 
-    QString typeName = type_combo_box_->currentText();
-    if (!typeName.startsWith("EC_"))
-        typeName.prepend("EC_");
+    QString typeName = IComponent::EnsureTypeNameWithPrefix(type_combo_box_->currentText());
     QString compName = name_line_edit_->text().trimmed();
 
     bool nameDuplicates = false;
     for(uint i = 0; i < (uint)entities_.size(); i++)
     {
-        EntityPtr entity = scene->GetEntity(entities_[i]);
+        EntityPtr entity = scene->EntityById(entities_[i]);
         if (!entity)
             continue;
-        if (entity->GetComponent(typeName, compName))
+        if (entity->Component(typeName, compName))
         {
             nameDuplicates = true;
             break;

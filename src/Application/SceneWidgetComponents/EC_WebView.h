@@ -118,8 +118,8 @@ public:
 
     /// Interaction ID for components to exchange messages.
     /// \note this attribute is hidden from the UI layer and is not meant to be modified by normal users.
-    Q_PROPERTY(int controllerId READ getcontrollerId WRITE setcontrollerId);
-    DEFINE_QPROPERTY_ATTRIBUTE(int, controllerId);
+    Q_PROPERTY(uint controllerId READ getcontrollerId WRITE setcontrollerId);
+    DEFINE_QPROPERTY_ATTRIBUTE(uint, controllerId);
     
     friend class SceneWidgetComponents;
 
@@ -166,14 +166,14 @@ protected:
 
 private slots:
     /// Server side handler for user disconnects.
-    void ServerHandleDisconnect(unsigned int connectionID, UserConnection *connection);
+    void ServerHandleDisconnect(u32 connectionID, UserConnection *connection);
 
     /** Server side handler for checking controller id against connected clients. 
         The id must never be set in any component to a connection id that is not connected.
         Fixes situations some rarer situations e.g. server is shut down when someone has control and something auto stores the conmponent data,
         leaving a connection id to the scene description. When server loads this then clients cannot take control before the controller id is assigned to new client.
     */
-    void ServerCheckControllerValidity(int connectionID);
+    void ServerCheckControllerValidity(u32 connectionID);
 
     /// For internals to do delayed rendering due to e.g. widget resize or submesh index change.
     /// \note Depending if the 'renderRefreshRate' is a valid number (0-25) we use the timer, otherwise a QTimer::singleShot().
@@ -283,7 +283,7 @@ private:
     AttributeMetadata *interactionMetaData_;
 
     /// Our own connection id.
-    int myControllerId_;
+    u32 myControllerId_;
 
     /// Name of the client that has current control
     QString currentControllerName_;

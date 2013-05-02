@@ -241,10 +241,10 @@ public slots:
     QString GenerateTemporaryNonexistingAssetFilename(QString filename) const;
 
     /// Returns the asset type factory that can create assets of the given type, or null, if no asset type provider of the given type exists.
-    AssetTypeFactoryPtr AssetTypeFactory(QString typeName) const;
+    AssetTypeFactoryPtr AssetTypeFactory(const QString &typeName) const;
 
     /// Return the asset bundle factory that can create asset bundles of the given type, or null, if no asset bundle type provider of the given type exists.
-    AssetBundleTypeFactoryPtr GetAssetBundleTypeFactory(QString typeName) const;
+    AssetBundleTypeFactoryPtr AssetBundleTypeFactory(const QString &typeName) const;
 
     /// Returns the given asset by full URL ref if it exists, or null otherwise.
     /// @note The "name" of an asset is in most cases the URL ref of the asset, so use this function to query an asset by name.
@@ -286,8 +286,8 @@ public slots:
 
     /// Returns an asset type name of the given assetRef. e.g. "asset.png" -> "Texture".
     /** The Asset type name is a unique type identifier string each asset type has. */
-    QString GetResourceTypeFromAssetRef(QString assetRef) const;
-    QString GetResourceTypeFromAssetRef(const AssetReference &ref) const; ///< @overload
+    QString ResourceTypeForAssetRef(QString assetRef) const;
+    QString ResourceTypeForAssetRef(const AssetReference &ref) const; /**< @overload */
 
     /// Parses a (relative) assetRef in the given context, and returns an assetRef pointing to the same asset as an absolute asset ref.
     /** For example: context: "local://myasset.material", ref: "texture.png" returns "local://texture.png".
@@ -425,6 +425,9 @@ public slots:
     AssetStoragePtr GetDefaultAssetStorage() const { return DefaultAssetStorage(); } /**< @deprecated Use DefaultAssetStorage instead @todo Add warning print in some distant future */
     AssetTransferMap GetCurrentTransfers() const { return CurrentTransfers(); } /**< @deprecated Use CurrentTransfers instead @todo Add warning print in some distant future */
     AssetBundleMap GetAllAssetBundles() const { return AssetBundles(); } /**< @deprecated Use AssetBundles instead @todo Add warning print in some distant future */
+    AssetBundleTypeFactoryPtr GetAssetBundleTypeFactory(const QString &typeName) const { return AssetBundleTypeFactory(typeName); } /**< @deprecated Use AssetBundleTypeFactory instead @todo Add warning print in some distant future */
+    QString GetResourceTypeFromAssetRef(QString assetRef) const { return ResourceTypeForAssetRef(assetRef); } /**< @deprecated Use ResourceTypeForAssetRef instead @todo Add warning print in some distant future */
+    QString GetResourceTypeFromAssetRef(const AssetReference &ref) const { return ResourceTypeForAssetRef(ref); } /**< @deprecated Use ResourceTypeForAssetRef instead @todo Add warning print in some distant future */
 
 signals:
     /// Emitted for each new asset that was created and added to the system.

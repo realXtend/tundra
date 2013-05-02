@@ -43,8 +43,6 @@ protected:
     Qt::DropActions supportedDropActions() const;
 
 private:
-    Q_DISABLE_COPY(PropertyTableWidget);
-
     void InitWidget();
 };
 /// @endcond

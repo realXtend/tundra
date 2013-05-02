@@ -48,6 +48,7 @@ class Framework;
 class TUNDRACORE_API InputAPI : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(KeyBindingMap keyBindings READ KeyBindings WRITE SetKeyBindings) /**< @copydoc keyboardMappings */
 
 public:
     /// Initializes the API and hooks it into the main application window.
@@ -61,10 +62,16 @@ public:
     /// Called internally by the Framework to update the polling Input API. Not for client use.
     void Update(float frametime);
 
-    typedef QMap<QString, QKeySequence> KeyBindingMap;
+    typedef QMap<QString, QKeySequence> KeyBindingMap; ///< Maps an arbitrary string identifier to a key sequence.
 
     /// Changes the priority of the given input context to the new priority.
     void SetPriority(InputContextPtr inputContext, int newPriority);
+
+    /// Return the current key bindings.
+    const KeyBindingMap &KeyBindings() const { return keyboardMappings; }
+
+    /// Sets new set of key bindings.
+    void SetKeyBindings(const KeyBindingMap &actionMap) { keyboardMappings = actionMap; }
 
 public slots:
     /// Creates a new input context with the given name.
@@ -160,7 +167,7 @@ public slots:
     InputContext *TopLevelInputContext() { return &topLevelInputContext; }
 
     /// Associates the given custom action with the given key.
-    void SetKeyBinding(const QString &actionName, QKeySequence key);
+    void SetKeyBinding(const QString &actionName, const QKeySequence &key);
 
     /// Returns the key associated with the given action.
     /** @param actionName The custom action name to query. The convention is to use two-part names, separated with a period, i.e.
@@ -169,13 +176,20 @@ public slots:
     QKeySequence KeyBinding(const QString &actionName) const;
     /// @overload
     /** @param defaultKey If the action does not exist, the default key sequence is registered for it and returned. */
-    QKeySequence KeyBinding(const QString &actionName, QKeySequence defaultKey);
+    QKeySequence KeyBinding(const QString &actionName, const QKeySequence &defaultKey);
+
+    /// Removes a key binding.
+    void RemoveKeyBinding(const QString &actionName);
 
     /// Finds the InputContext that has the highest mouse priority, and applies the mouse cursor in it as the currently shown mouse cursor.
     void ApplyMouseCursorOverride();
 
     /// Return the item at coordinates. If the mouse cursor is hidden, always returns null
-    QGraphicsItem* ItemAtCoords(int x, int y) const;
+    QGraphicsItem *ItemAtCoords(int x, int y) const;
+    QGraphicsItem *ItemAtCoords(const QPoint &point) const { return ItemAtCoords(point.x(), point.y()); } /**< @overload */
+
+    /// Return the item under mouse. If the mouse cursor is hidden, always returns null
+    QGraphicsItem *ItemUnderMouse() const { return ItemAtCoords(MousePos()); }
 
     /// Explicitly defocus any widgets and return key focus to the 3D world
     void ClearFocus();
@@ -185,12 +199,6 @@ public slots:
     
     /// Sends mouse button release messages for each mouse button that was held down.
     void SceneReleaseMouseButtons();
-
-    /// Return the current key bindings.
-    KeyBindingMap KeyBindings() const { return keyboardMappings; }
-
-    /// Sets new set of key bindings.
-    void SetKeyBindings(const KeyBindingMap &actionMap) { keyboardMappings = actionMap; }
 
     /// Loads key bindings from config.
     void LoadKeyBindingsFromFile();
@@ -202,7 +210,7 @@ public slots:
     void DumpInputContexts();
 
     /// Returns the number of currently active touch points, if touch input is active.
-    int NumTouchPoints() { return numTouchPoints; }
+    int NumTouchPoints() const { return numTouchPoints; }
 
 signals:
     void TouchBegin(QTouchEvent *touchEvent);
@@ -210,8 +218,6 @@ signals:
     void TouchEnd(QTouchEvent *touchEvent);
 
 private:
-    Q_DISABLE_COPY(InputAPI)
-
     /// Stores all InputContexts that have been registered from a script and can't hold strong refs on their own.
     std::list<InputContextPtr> untrackedInputContexts;
 

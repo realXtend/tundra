@@ -106,10 +106,9 @@ void ComponentItem::SetText(IComponent *comp)
     if (ptr.lock().get() != comp)
         LogWarning("ComponentItem::SetText: the component given is different than the component this item represents.");
 
-    QString compType = comp->TypeName();
-    if (compType.startsWith("ec_", Qt::CaseInsensitive))
-        compType = compType.right(compType.length() - 3);
+    QString compType = IComponent::EnsureTypeNameWithoutPrefix(comp->TypeName());
     QString name = QString("%1 %2").arg(compType).arg(comp->Name());
+
     setTextColor(0, QColor(Qt::black));
 
     QString localText = QApplication::translate("ComponentItem", "Local");

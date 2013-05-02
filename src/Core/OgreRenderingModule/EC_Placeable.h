@@ -191,7 +191,7 @@ public slots:
     void SetWorldTransform(const Quat &orientation, const float3 &pos, const float3 &scale);
 
     /// Returns the world-space transform this scene node.
-    float3x4 WorldTransform() const { return float3x4(WorldOrientation(), WorldPosition()); }
+    float3x4 WorldTransform() const { return float3x4::FromTRS(WorldPosition(), WorldOrientation(), WorldScale()); }
 
     /// Returns the position of this placeable node in world space.
     float3 WorldPosition() const;

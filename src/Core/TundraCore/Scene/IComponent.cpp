@@ -1,4 +1,4 @@
-/**
+/*
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   IComponent.cpp
@@ -72,7 +72,9 @@ void IComponent::SetUpdateMode(AttributeChange::Type defaultMode)
     // Note: we can't allow default mode to be Default, because that would be meaningless
     if (defaultMode == AttributeChange::Disconnected || defaultMode == AttributeChange::LocalOnly ||
         defaultMode == AttributeChange::Replicate)
+    {
         updateMode = defaultMode;
+    }
     else
     {
         LogWarning("IComponent::SetUpdateMode: Trying to set default update mode to an invalid value! (" + QString::number((int)defaultMode) + ")");
@@ -123,7 +125,7 @@ AttributeVector IComponent::NonEmptyAttributes() const
 QVariant IComponent::GetAttributeQVariant(const QString &name) const
 {
     for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
-        if ((*iter) && (*iter)->Name() == name)
+        if ((*iter) && (*iter)->Name().compare(name, Qt::CaseInsensitive) == 0)
             return (*iter)->ToQVariant();
 
     return QVariant();
@@ -141,7 +143,7 @@ QStringList IComponent::GetAttributeNames() const
 IAttribute* IComponent::GetAttribute(const QString &name) const
 {
     for(unsigned int i = 0; i < attributes.size(); ++i)
-        if(attributes[i] && attributes[i]->Name() == name)
+        if(attributes[i] && attributes[i]->Name().compare(name, Qt::CaseInsensitive) == 0)
             return attributes[i];
     return 0;
 }
@@ -357,7 +359,7 @@ QString IComponent::ReadAttribute(QDomElement& comp_element, const QString &name
     QDomElement attribute_element = comp_element.firstChildElement("attribute");
     while(!attribute_element.isNull())
     {
-        if (attribute_element.attribute("name") == name)
+        if (attribute_element.attribute("name").compare(name, Qt::CaseInsensitive) == 0)
             return attribute_element.attribute("value");
         
         attribute_element = attribute_element.nextSiblingElement("attribute");
@@ -371,7 +373,7 @@ QString IComponent::ReadAttributeType(QDomElement& comp_element, const QString &
     QDomElement attribute_element = comp_element.firstChildElement("attribute");
     while(!attribute_element.isNull())
     {
-        if (attribute_element.attribute("name") == name)
+        if (attribute_element.attribute("name").compare(name, Qt::CaseInsensitive) == 0)
             return attribute_element.attribute("type");
         
         attribute_element = attribute_element.nextSiblingElement("attribute");
@@ -438,12 +440,12 @@ void IComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element, bool 
 }
 
 /// Returns true if the given XML element has the given child attribute.
-bool HasAttribute(QDomElement &comp_element, const QString &name)
+static bool HasAttribute(QDomElement &comp_element, const QString &name)
 {
     QDomElement attribute_element = comp_element.firstChildElement("attribute");
     while(!attribute_element.isNull())
     {
-        if (attribute_element.attribute("name") == name)
+        if (attribute_element.attribute("name").compare(name, Qt::CaseInsensitive) == 0)
             return true;
         attribute_element = attribute_element.nextSiblingElement("attribute");
     }

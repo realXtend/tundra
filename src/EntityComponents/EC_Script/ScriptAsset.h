@@ -23,9 +23,6 @@ public:
     /// Load script asset into memory
     virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const;
 
-    /// Unload script asset
-    virtual void DoUnload();
-
     /// Return found asset references inside the script
     virtual std::vector<AssetReference> FindReferences() const { return references; }
 
@@ -38,9 +35,14 @@ public:
 
     bool IsLoaded() const;
 
+private:
+    /// Unload script asset
+    virtual void DoUnload();
+
 private slots:
     /// Parse internal references from script
     void ParseReferences();
+
 };
 
 typedef shared_ptr<ScriptAsset> ScriptAssetPtr;

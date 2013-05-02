@@ -45,7 +45,6 @@ public:
     /// Erases all registered console commands and stops the native input thread.
     void Reset();
 
-public slots:
     /// Registers a new console command which invokes a slot on the specified QObject.
     /** @param name The function name to use for this command.
         @param desc A help description of this command.
@@ -58,6 +57,7 @@ public slots:
         @see UnregisterCommand */
     void RegisterCommand(const QString &name, const QString &desc, QObject *receiver, const char *memberSlot, const char *memberSlotDefaultArgs = 0);
 
+public slots:
     /// Registers a new console command which triggers a signal when executed.
     /** Use this function from QtScript to implement custom console commands from a script.
         @param name The function name to use for this command.
@@ -83,6 +83,11 @@ public slots:
     /// Lists all console commands and their descriptions to the log.
     /** This command is invoked by typing 'help' to the console. */
     void ListCommands();
+
+    /// Returns names of the available console commands.
+    /** @note The names are exactly the strings they were originally registered with.
+        Always perform case-insensitive comparison when searching for a specific command. */
+    QStringList AvailableCommands() const;
 
     /// Clears the console log.
     /** This command is invoked by typing 'clear' to the console. */
@@ -120,6 +125,7 @@ public slots:
     /// Returns the bitset of currently enabled log channels.
     u32 EnabledLogChannels() const;
 
+    void ToggleConsole();
 private:
     Framework *framework;
     CommandMap commands; ///< Stores all the registered console commands.
@@ -132,7 +138,6 @@ private:
 
 private slots:
     void HandleKeyEvent(KeyEvent *e);
-    void ToggleConsole();
 };
 
 /// Represents a registered console command.

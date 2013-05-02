@@ -13,6 +13,7 @@
 
 #include <QHash>
 #include <QString>
+#include <QTimer>
 
 /// Enables visual highlighting effect for scene entity.
 /** <table class="header">
@@ -69,6 +70,8 @@ public:
     /// Color of the outline (wireframe) pass
     Q_PROPERTY(Color outlineColor READ getoutlineColor WRITE setoutlineColor);
     DEFINE_QPROPERTY_ATTRIBUTE(Color, outlineColor);
+
+    QTimer *highlightTimer;
 
 public slots:
     /// Shows the highlighting effect. Does not change the visible attribute

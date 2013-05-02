@@ -48,8 +48,13 @@ EC_PlanarMirror::~EC_PlanarMirror()
     if(!renderer_)
         return;
     Ogre::SceneManager *mngr = renderer_->GetActiveOgreWorld()->OgreSceneManager();
-    tex_unit_state_->setProjectiveTexturing(false);
-    mngr->destroyEntity(mirror_plane_entity_);
+    if(tex_unit_state_)
+        tex_unit_state_->setProjectiveTexturing(false);
+    if(mngr)
+    {
+        if(mirror_plane_entity_)
+            mngr->destroyEntity(mirror_plane_entity_);
+    }
     SAFE_DELETE(mirror_plane_);
 }
 

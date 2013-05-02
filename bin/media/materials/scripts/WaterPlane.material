@@ -1,0 +1,76 @@
+vertex_program OceanVS cg
+{
+    source Ocean.cg
+    entry_point OceanVSMain
+    profiles vs_1_1 arbvp1
+
+    default_params
+    {
+        param_named_auto WorldViewProj worldviewproj_matrix
+        param_named_auto eyePosition camera_position_object_space
+        param_named_auto ambient ambient_light_colour
+    }
+}
+
+fragment_program OceanPS cg
+{
+    source Ocean.cg
+    entry_point OceanPSMain
+    profiles ps_2_0 arbfp1
+}
+
+material WaterPlane
+{
+    receive_shadows off
+
+    technique
+    {
+        pass
+        {
+            cull_hardware none
+            scene_blend alpha_blend
+            depth_write off
+            
+            vertex_program_ref OceanVS
+            {
+                param_named BumpScale float 0.2
+                param_named textureScale float2 125 126
+                param_named bumpSpeed float2 0.0005 0.00014
+                param_named_auto time time_0_x 100.0
+                param_named waveFreq float 0.0028
+                param_named waveAmp float 0.2
+            }
+
+            fragment_program_ref OceanPS
+            {
+                param_named deepColor float4 0 0.7 0.9 1.0
+                param_named shallowColor float4 0 1 1 1.0
+                param_named reflectionColor float4 0.95 1 1 1.0
+                param_named reflectionAmount float 0.5
+                param_named reflectionBlur float 0.0
+                param_named waterAmount float 0.3
+                param_named fresnelPower float 5.0
+                param_named fresnelBias float 0.328
+                param_named hdrMultiplier float 0.471
+                param_named_auto fogParams fog_params
+                param_named_auto fogColor fog_colour
+            }
+
+            texture_unit
+            {
+                texture DefaultOceanWaves.dds
+                tex_coord_set 0
+                filtering linear linear linear
+            }
+
+            // Not using reflection texture as it works nicely only when using the default daytime sky box
+            //texture_unit
+            //{
+            //    cubic_texture DefaultOceanSkyCube.dds combinedUVW
+            //    tex_address_mode clamp
+            //    tex_coord_set 1
+            //    filtering linear linear linear
+            //}
+        }
+    }
+}

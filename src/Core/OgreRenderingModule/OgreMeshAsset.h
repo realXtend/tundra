@@ -39,9 +39,6 @@ public:
     /// Ogre threaded load listener. Ogre::ResourceBackgroundQueue::Listener override.
     virtual void operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result);
 
-    /// Unload mesh from ogre
-    virtual void DoUnload();
-
     /// Returns an empty list - meshes do not refer to other assets.
     virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }
 
@@ -76,6 +73,9 @@ private slots:
 #endif
 
 private:
+    /// Unload mesh from ogre
+    virtual void DoUnload();
+
     /// Precomputes a kD-tree for the triangle data of this mesh.
     void CreateKdTree();
 

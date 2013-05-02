@@ -199,6 +199,9 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
     }
     
     PROFILE(TextureAsset_DeserializeFromData);
+    
+    /// Force an unload of this data first.
+    Unload();
 
     // A NullAssetFactory has been registered on headless mode.
     // We should never be here in headless mode.

@@ -29,12 +29,6 @@ struct DeserializeData
     {
     }
 
-    /// Checks if any of data structure's values are null.
-    bool isNull() const
-    {
-        return name_ == "" || type_ == "" || value_ == "";
-    }
-
     QString name_;
     QString type_;
     QString value_;
@@ -43,13 +37,13 @@ struct DeserializeData
 /// Function that is used by std::sort algorithm to sort attributes by their name.
 bool CmpAttributeByName(const IAttribute *a, const IAttribute *b)
 {
-    return a->Name() < b->Name();
+    return a->Name().compare(b->Name(), Qt::CaseInsensitive);
 }
 
 /// Function that is used by std::sort algorithm to sort DeserializeData by their name.
 bool CmpAttributeDataByName(const DeserializeData &a, const DeserializeData &b)
 {
-    return a.name_ < b.name_;
+    return a.name_.compare(b.name_, Qt::CaseInsensitive);
 }
 
 /** @endcond */
@@ -197,7 +191,7 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::
 {
     for(AttributeVector::iterator iter = attributes.begin(); iter != attributes.end(); iter++)
     {
-        if((*iter) && (*iter)->Name() == name)
+        if((*iter) && (*iter)->Name().compare(name, Qt::CaseInsensitive) == 0)
         {
             // Trigger scenemanager signal
             Scene* scene = ParentScene();
@@ -295,7 +289,7 @@ void EC_DynamicComponent::SetAttributeQScript(const QString &name, const QScript
 {
     LogWarning("EC_DynamicComponent::SetAttributeQScript is deprecated and will be removed. Use SetAttribute instead.");
     for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
-        if((*iter) && (*iter)->Name() == name)
+        if((*iter) && (*iter)->Name().compare(name, Qt::CaseInsensitive) == 0)
         {
             (*iter)->FromScriptValue(value, change);
             break; 
@@ -305,7 +299,7 @@ void EC_DynamicComponent::SetAttributeQScript(const QString &name, const QScript
 void EC_DynamicComponent::SetAttribute(const QString &name, const QVariant &value, AttributeChange::Type change)
 {
     for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
-        if((*iter) && (*iter)->Name() == name)
+        if((*iter) && (*iter)->Name().compare(name, Qt::CaseInsensitive) == 0)
         {
             (*iter)->FromQVariant(value, change);
             break;
@@ -341,7 +335,8 @@ bool EC_DynamicComponent::ContainSameAttributes(const EC_DynamicComponent &comp)
     while(iter1 != myAttributeVector.end() && iter2 != attributeVector.end())
     {
         // Compare attribute names and type and if they mach continue iteration if not components aren't exactly the same.
-        if ((*iter1)->Name() == (*iter2)->Name() && (*iter1)->TypeName() == (*iter2)->TypeName())
+        if (((*iter1)->Name().compare((*iter2)->Name(), Qt::CaseInsensitive) == 0) &&
+            (*iter1)->TypeName().compare((*iter2)->TypeName(), Qt::CaseInsensitive) == 0)
         {
             if(iter1 != myAttributeVector.end())
                 ++iter1;
@@ -379,7 +374,7 @@ bool EC_DynamicComponent::ContainsAttribute(const QString &name) const
     AttributeVector::const_iterator iter = attributes.begin();
     while(iter != attributes.end())
     {
-        if((*iter) && (*iter)->Name() == name)
+        if((*iter) && (*iter)->Name().compare(name, Qt::CaseInsensitive) == 0)
             return true;
         ++iter;
     }

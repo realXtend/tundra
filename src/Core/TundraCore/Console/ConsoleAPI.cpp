@@ -105,11 +105,24 @@ QVariant ConsoleCommand::Invoke(const QStringList &params)
     return returnValue;
 }
 
+QStringList ConsoleAPI::AvailableCommands() const
+{
+    QStringList ret;
+    for(CommandMap::const_iterator iter = commands.begin(); iter != commands.end(); ++iter)
+        ret << iter->first;
+    return ret;
+}
+
 ConsoleCommand *ConsoleAPI::RegisterCommand(const QString &name, const QString &desc)
 {
+    if (name.isEmpty())
+    {
+        LogError("ConsoleAPI::RegisterCommand: Command name can not be an empty string.");
+        return 0;
+    }
     if (commands.find(name) != commands.end())
     {
-        LogWarning("ConsoleAPI: Command " + name + " is already registered.");
+        LogWarning("ConsoleAPI::RegisterCommand: Command " + name + " is already registered.");
         return commands[name].get();
     }
 
@@ -120,9 +133,14 @@ ConsoleCommand *ConsoleAPI::RegisterCommand(const QString &name, const QString &
 
 void ConsoleAPI::RegisterCommand(const QString &name, const QString &desc, QObject *receiver, const char *memberSlot, const char *memberSlotDefaultArgs)
 {
+    if (name.isEmpty())
+    {
+        LogError("ConsoleAPI::RegisterCommand: Command name can not be an empty string.");
+        return;
+    }
     if (commands.find(name) != commands.end())
     {
-        LogWarning("ConsoleAPI: Command " + name + " is already registered.");
+        LogWarning("ConsoleAPI::RegisterCommand: Command " + name + " is already registered.");
         return;
     }
 

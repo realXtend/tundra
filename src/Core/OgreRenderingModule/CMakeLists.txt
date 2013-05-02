@@ -71,6 +71,11 @@ endif()
 # Install windows deps
 setup_install_windows_deps("cg.dll" Release|RelWithDebInfo|Debug)
 setup_install_windows_deps("OgreMain.dll" Release|RelWithDebInfo "OgreMain_d.dll" Debug)
+
+if (TUNDRA_NO_BOOST)
+    setup_install_windows_deps("tbb.dll" Release|RelWithDebInfo "tbb_debug.dll" Debug)
+endif ()
+
 if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/ogre-safe-nocrashes/SDK/bin) # Full deps
     if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/ogre-safe-nocrashes/SDK/bin/Debug)
         setup_install_windows_deps_regexp("" ogre-safe-nocrashes/SDK/bin/Debug/ "Plugin_+.*[_][d][.]dll$" Debug)

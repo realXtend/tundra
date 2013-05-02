@@ -44,6 +44,12 @@ EC_Highlight::EC_Highlight(Scene* scene) :
         world_ = scene->GetWorld<OgreWorld>();
     
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
+
+    if(!framework->IsHeadless())
+    {
+        highlightTimer = new QTimer(this);
+        connect(highlightTimer, SIGNAL(timeout()), this, SLOT(Show()));
+    }
 }
 
 EC_Highlight::~EC_Highlight()
@@ -51,7 +57,7 @@ EC_Highlight::~EC_Highlight()
     Hide();
 }
 
-void  EC_Highlight::Show()
+void EC_Highlight::Show()
 {
     if ((mesh_.expired()) || (world_.expired()))
         return;
@@ -79,6 +85,10 @@ void  EC_Highlight::Show()
             if ((asset) && (asset->IsLoaded()) && (dynamic_cast<OgreMaterialAsset*>(asset.get())))
             {
                 AssetPtr clone = asset->Clone(QString::fromStdString(world_.lock()->GetUniqueObjectName("EC_Highlight_Material")) + ".material");
+
+                if(!framework->IsHeadless() && highlightTimer->isActive())
+                    highlightTimer->stop();
+
                 if (clone)
                 {
                     OgreMaterialAsset* matAsset = dynamic_cast<OgreMaterialAsset*>(clone.get());
@@ -87,7 +97,19 @@ void  EC_Highlight::Show()
                     try
                     {
                         if ((mesh) && (mesh->GetEntity()) && (mesh->GetEntity()->getSubEntity(i)))
+                        {
                             mesh->GetEntity()->getSubEntity(i)->setMaterial(matAsset->ogreMaterial);
+
+                            inApply = false;
+
+                            if(!framework->IsHeadless() && highlightTimer->isActive())
+                                highlightTimer->stop();
+                        }
+                        else
+                        {
+                            if(!framework->IsHeadless() && !highlightTimer->isActive())
+                                highlightTimer->start(1000);
+                        }
                     }
                     catch(Ogre::Exception& e)
                     {
@@ -100,6 +122,11 @@ void  EC_Highlight::Show()
                     // Store original ref to be restored in Hide()
                     originalMaterials_[i] = materialList[i].ref;
                 }
+            }
+            else
+            {
+                if(!framework->IsHeadless()  && !highlightTimer->isActive())
+                    highlightTimer->start(1000);
             }
         }
     }

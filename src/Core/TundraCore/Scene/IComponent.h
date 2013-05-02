@@ -46,12 +46,6 @@ public slots:                                                                   
 private: // Return the class visibility specifier to the strictest form so that the user most likely catches that this macro had to change the visibility.
 
 //Q_PROPERTY(type attribute READ get##attribute WRITE set##attribute)
-/// Exposes an existing 'Attribute<type> attribute' member as an automatically generated QProperty of name 'attribute'.
-#define EXPOSE_ATTRIBUTE_AS_QPROPERTY(type, attribute) \
-    type get##attribute() const { return (type)attribute.Get(); } \
-    void set##atribute(type value) { attribute.Set((type)value, AttributeChange::Default); }
-
-//Q_PROPERTY(type attribute READ get##attribute WRITE set##attribute)
 /// Defines a new 'Attribute<type> attribute' member as an automatically generated QProperty of name 'attribute'.
 #define DEFINE_QPROPERTY_ATTRIBUTE(type, attribute) \
     Attribute<type > attribute; \
@@ -143,7 +137,7 @@ public:
     
     /// Finds and returns an attribute of type 'Attribute<T>' and given name.
     /** @param T The Attribute type to look for.
-        @param name The name of the attribute.
+        @param name The name of the attribute, case-insensitive.
         @return If there exists an attribute of type 'Attribute<T>' which has the given name, a pointer to
                 that attribute is returned, otherwise returns null. */
     template<typename T>
@@ -181,7 +175,7 @@ public:
 
     /// Returns an Attribute of this component with the given @c name.
     /** This function iterates through the attribute vector and tries to find a member attribute with the given name.
-        @param The name of the attribute to look for.
+        @param The name of the attribute to look for, case-insensitive
         @return A pointer to the attribute, or null if no attribute with the given name exists. */
     IAttribute* GetAttribute(const QString &name) const;
     
@@ -229,8 +223,7 @@ public slots:
     /// Returns whether this component supports adding dynamic attributes. False by default.
     /** Components that do *not* support dynamic attributes (most of them) are resilient to versioning mismatches between client/server
         as long as the new attributes are added to the end of the static attributes list. In contrast, components with dynamic attributes
-        are not resilient to mismatches, except if they use *only* dynamic attributes, like EC_DynamicComponent.
-     */
+        are not resilient to mismatches, except if they use *only* dynamic attributes, like EC_DynamicComponent. */
     virtual bool SupportsDynamicAttributes() const { return false; }
     
     /// Returns the total number of attributes in this component. Does not count holes in the attribute vector
@@ -287,17 +280,20 @@ public slots:
     /** If the information is not available (component is not yet in a scene, will guess "true. */
     bool ViewEnabled() const;
 
-    /// Returns an attribute of this component as a QVariant
-    /** @param name of attribute
-        @return values of the attribute */
+    /// Returns value of an attribute as a QVariant.
+    /** @param name Name of the attribute, case-insensitive. */
     QVariant GetAttributeQVariant(const QString &name) const;
 
     /// Returns list of attribute names of the component
     QStringList GetAttributeNames() const;
 
-    /** @deprecated Currently a no-op, as replication mode can not be changed after adding to an entity.
-        @todo Removed once scripts converted to not call this */
-    void SetNetworkSyncEnabled(bool enable);
+    /// Crafts a component type name string that is guaranteed not to thave the "EC_" prefix.
+    static QString EnsureTypeNameWithoutPrefix(const QString &tn) { return (tn.startsWith("EC_", Qt::CaseInsensitive) ? tn.mid(3) : tn); }
+    /// Crafts a component type name string that is guaranteed to have the "EC_" prefix.
+    static QString EnsureTypeNameWithPrefix(const QString &tn) { return (tn.startsWith("EC_", Qt::CaseInsensitive) ? tn : "EC_" + tn); }
+
+    // DEPRECATED
+    void SetNetworkSyncEnabled(bool enable); /**< @deprecated Currently a no-op, as replication mode can not be changed after adding to an entity. @todo Remove! */
 
 signals:
     /// This signal is emitted when an Attribute of this Component has changed. 
