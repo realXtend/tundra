@@ -102,13 +102,13 @@ public:
     }
 
 private:
-    void Initialize(IAttribute *attr, bool autoRedo)
+    void Initialize(IAttribute *attr, bool _noAutoRedo)
     {
         attribute = AttributeWeakPtr(attr->Owner()->shared_from_this(), attr);
         attributeName = attr->Name();
         attributeTypeName = attr->TypeName(),
         parentId = attr->Owner()->ParentEntity()->Id();
-        noAutoRedo = autoRedo;
+        noAutoRedo = _noAutoRedo;
         setText("* Edited " + attr->Name() + " Attribute");
     }
     
