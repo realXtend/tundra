@@ -121,7 +121,8 @@ set(CPP_FILES ${CPP_FILES} ${CPP_FILES_MUMBLE_})
 MocFolder ()
 UiFolder ()
 
-QT4_WRAP_CPP (MOC_SRCS ${H_FILES})
+QT4_WRAP_CPP(MOC_SRCS AudioProcessor.h AudioWizard.h CeltCodec.h MumbleData.h MumbleDefines.h
+    MumbleNetworkHandler.h MumblePlugin.h mumble/AudioStats.h)
 QT4_WRAP_UI (UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(QRC_SRCS ${QRC_FILES})
 
