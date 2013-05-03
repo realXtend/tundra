@@ -15,7 +15,7 @@
  </entity>
  <entity id="2" sync="1">
   <component type="EC_Script" sync="1">
-   <attribute value="avatarapplication.js;simpleavatar.js;exampleavataraddon.js" name="Script ref"/>
+   <attribute value="avatarapplication.js;optimizedsimpleavatar.js;exampleavataraddon.js" name="Script ref"/>
    <attribute value="true" name="Run on load"/>
    <attribute value="0" name="Run mode"/>
    <attribute value="AvatarApp" name="Script application name"/>

@@ -15,8 +15,9 @@ if (!server.IsRunning() && !framework.IsHeadless())
 }
 
 // A simple walking avatar with physics & 1st/3rd person camera
-function SimpleAvatar(entity, comp)                                                                  
+function SimpleAvatar(entity, comp)
 {
+    print("Created optimized avatar!");
     // Store the entity reference
     this.me = entity;
 
