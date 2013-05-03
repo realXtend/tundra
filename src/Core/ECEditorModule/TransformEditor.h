@@ -76,6 +76,15 @@ public:
     /// Returns the transform gizmo editor settings widget.
     QPointer<QWidget> EditorSettingsWidget() const { return editorSettings; }
 
+    /// Translates a transform attribute.
+    static void Translate(const TransformAttributeWeakPtr &attr, const float3 &offset, AttributeChange::Type change);
+
+    /// Rotates a transform attribute.
+    static void Rotate(const TransformAttributeWeakPtr &attr, const float3x4 &rotation, AttributeChange::Type change);
+
+    /// Scales a transform attribute.
+    static void Scale(const TransformAttributeWeakPtr &attr, const float3 &offset, AttributeChange::Type change);
+
 public slots:
     /// Translates current target transforms.
     /** @param offset Offset to be applied. */

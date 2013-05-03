@@ -4,6 +4,7 @@
 
 #include "UndoCommands.h"
 #include "EntityIdChangeTracker.h"
+#include "TransformEditor.h"
 
 #include "Scene.h"
 #include "SceneAPI.h"
@@ -789,63 +790,26 @@ void TransformCommand::redo()
 
 void TransformCommand::DoTranslate(bool isUndo)
 {
-    float3 offset = (isUndo ? offset = offset_.Neg() : offset = offset_);
+    const float3 offset = (isUndo ? offset_.Neg() : offset_);
 
     foreach(const TransformAttributeWeakPtr &attr, targets_)
-    {
-        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
-        if (transform)
-        {
-            Transform t = transform->Get();
-            // If we have parented transform, translate the changes to parent's world space.
-            Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
-            EC_Placeable *parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
-            if (parentPlaceable)
-                t.pos += parentPlaceable->WorldToLocal().MulDir(offset);
-            else
-                t.pos += offset;
-            transform->Set(t, AttributeChange::Default);
-        }
-    }
+        TransformEditor::Translate(attr, offset, AttributeChange::Default);
 }
 
 void TransformCommand::DoRotate(bool isUndo)
 {
-    float3x4 rotation = (isUndo ? rotation_.Inverted() : rotation_);
+    const float3x4 rotation = (isUndo ? rotation_.Inverted() : rotation_);
 
     foreach(const TransformAttributeWeakPtr &attr, targets_)
-    {
-        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
-        if (transform)
-        {
-            Transform t = transform->Get();
-            // If we have parented transform, translate the changes to parent's world space.
-            Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
-            EC_Placeable* parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
-            if (parentPlaceable)
-                t.FromFloat3x4(parentPlaceable->WorldToLocal() * rotation * parentPlaceable->LocalToWorld() * t.ToFloat3x4());
-            else
-                t.FromFloat3x4(rotation * t.ToFloat3x4());
-
-            transform->Set(t, AttributeChange::Default);
-        }
-    }
+        TransformEditor::Rotate(attr, rotation, AttributeChange::Default);
 }
 
 void TransformCommand::DoScale(bool isUndo)
 {
-    float3 offset = (isUndo ? offset = offset_.Neg() : offset = offset_);
+    const float3 offset = (isUndo ? offset_.Neg() : offset_);
 
     foreach(const TransformAttributeWeakPtr &attr, targets_)
-    {
-        Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
-        if (transform)
-        {
-            Transform t = transform->Get();
-            t.scale += offset;
-            transform->Set(t, AttributeChange::Default);
-        }
-    }
+        TransformEditor::Scale(attr, offset, AttributeChange::Default);
 }
 
 bool TransformCommand::mergeWith(const QUndoCommand *other)
