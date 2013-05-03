@@ -227,6 +227,51 @@ EC_TransformGizmo *TransformEditor::TransformGizmo() const
 #endif
 }
 
+void TransformEditor::Translate(const TransformAttributeWeakPtr &attr, const float3 &offset, AttributeChange::Type change)
+{
+    Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
+    if (transform)
+    {
+        Transform t = transform->Get();
+        // If we have parented transform, translate the changes to parent's world space.
+        Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
+        EC_Placeable *parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
+        if (parentPlaceable)
+            t.pos += parentPlaceable->WorldToLocal().MulDir(offset);
+        else
+            t.pos += offset;
+        transform->Set(t, change);
+    }
+}
+
+void TransformEditor::Rotate(const TransformAttributeWeakPtr &attr, const float3x4 &rotation, AttributeChange::Type change)
+{
+    Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
+    if (transform)
+    {
+        Transform t = transform->Get();
+        // If we have parented transform, translate the changes to parent's world space.
+        Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
+        EC_Placeable* parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
+        if (parentPlaceable)
+            t.FromFloat3x4(parentPlaceable->WorldToLocal() * rotation * parentPlaceable->LocalToWorld() * t.ToFloat3x4());
+        else
+            t.FromFloat3x4(rotation * t.ToFloat3x4());
+        transform->Set(t, change);
+    }
+}
+
+void TransformEditor::Scale(const TransformAttributeWeakPtr &attr, const float3 &offset, AttributeChange::Type change)
+{
+    Attribute<Transform> *transform = dynamic_cast<Attribute<Transform> *>(attr.Get());
+    if (transform)
+    {
+        Transform t = transform->Get();
+        t.scale += offset;
+        transform->Set(t, change);
+    }
+}
+
 void TransformEditor::TranslateTargets(const float3 &offset)
 {
     PROFILE(TransformEditor_TranslateTargets);
@@ -257,18 +302,7 @@ void TransformEditor::TranslateTargets(const float3 &offset)
     else
     {
         foreach(const TransformAttributeWeakPtr &attr, targets)
-        {
-            Attribute<Transform> *transform = static_cast<Attribute<Transform> *>(attr.Get());
-            Transform t = transform->Get();
-            // If we have parented transform, translate the changes to parent's world space.
-            Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
-            EC_Placeable *parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
-            if (parentPlaceable)
-                t.pos += parentPlaceable->WorldToLocal().MulDir(offset);
-            else
-                t.pos += offset;
-            transform->Set(t, AttributeChange::Default);
-        }
+            Translate(attr, offset, AttributeChange::Default);
     }
 
     FocusGizmoPivotToAabbCenter();
@@ -307,18 +341,7 @@ void TransformEditor::RotateTargets(const Quat &delta)
     else
     {
         foreach(const TransformAttributeWeakPtr &attr, targets)
-        {
-            Attribute<Transform> *transform = static_cast<Attribute<Transform> *>(attr.Get());
-            Transform t = transform->Get();
-            // If we have parented transform, translate the changes to parent's world space.
-            Entity *parentPlaceableEntity = attr.parentPlaceableEntity.lock().get();
-            EC_Placeable* parentPlaceable = parentPlaceableEntity ? parentPlaceableEntity->GetComponent<EC_Placeable>().get() : 0;
-            if (parentPlaceable)
-                t.FromFloat3x4(parentPlaceable->WorldToLocal() * rotation * parentPlaceable->LocalToWorld() * t.ToFloat3x4());
-            else
-                t.FromFloat3x4(rotation * t.ToFloat3x4());
-            transform->Set(t, AttributeChange::Default);
-        }
+            Rotate(attr, rotation, AttributeChange::Default);
     }
 
     FocusGizmoPivotToAabbCenter();
@@ -355,12 +378,7 @@ void TransformEditor::ScaleTargets(const float3 &offset)
     else
     {
         foreach(const TransformAttributeWeakPtr &attr, targets)
-        {
-            Attribute<Transform> *transform = static_cast<Attribute<Transform> *>(attr.Get());
-            Transform t = transform->Get();
-            t.scale += offset;
-            transform->Set(t, AttributeChange::Default);
-        }
+            Scale(attr, offset, AttributeChange::Default);
     }
 
     FocusGizmoPivotToAabbCenter();
