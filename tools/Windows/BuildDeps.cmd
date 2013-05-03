@@ -417,36 +417,47 @@ IF %BUILD_RELEASE% == TRUE (
 )
 copy /Y "%DEPS%\assimp\bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
 
+set BUILD_KNET=TRUE
 IF NOT EXIST "%DEPS%\kNet\". (
-   cecho {0D}Cloning kNet from https://github.com/juj/kNet into "%DEPS%\kNet".{# #}{\n}
-   cd "%DEPS%"
-   call git clone https://github.com/juj/kNet
-   IF NOT EXIST "%DEPS%\kNet\.git" GOTO :ERROR
+    cecho {0D}Cloning kNet from https://github.com/juj/kNet into "%DEPS%\kNet".{# #}{\n}
+    cd "%DEPS%"
+    call git clone https://github.com/juj/kNet
+    IF NOT EXIST "%DEPS%\kNet\.git" GOTO :ERROR
 ) ELSE (
-   cecho {0D}Updating kNet to newest version from https://github.com/juj/kNet.{# #}{\n}
-   cd "%DEPS%\kNet"
-   call git pull
+    cecho {0D}Updating kNet to newest version from https://github.com/juj/kNet.{# #}{\n}
+    cd "%DEPS%\kNet"
+    call git pull >"%DEPS%\kNet\git-check"
+    set /p KNET_GIT_CHECK=<"%DEPS%\kNet\git-check"
+    echo !KNET_GIT_CHECK!
+    IF "!KNET_GIT_CHECK!"=="Already up-to-date." set BUILD_KNET=FALSE
+    del "%DEPS%\kNet\git-check"
 )
 
 cd "%DEPS%\kNet"
-:: TODO/NOTE: USE_BOOST not possible to configure from command-line with kNet's
-:: default (stable) branch yet, so tweak the CMakeLists.txt manually for now.
-sed s/"set(USE_BOOST TRUE)"/"option(USE_BOOST \"Specifies whether Boost is used.\" TRUE)"/g <CMakeLists.txt >CMakeLists.txt.sed
-del CMakeLists.txt
-rename CMakeLists.txt.sed CMakeLists.txt
-
 IF NOT EXIST kNet.sln. (
-   cecho {0D}Running cmake for kNet.{# #}{\n}
-   del /Q CMakeCache.txt
-   cmake . -G %GENERATOR% -DBOOST_ROOT=%BOOST_ROOT% -DUSE_BOOST:BOOL=%USE_BOOST%
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cecho {0D}Running cmake for kNet.{# #}{\n}
+
+    REM TODO/NOTE: USE_BOOST not possible to configure from command-line with kNet's
+    REM default (stable) branch yet, so tweak the CMakeLists.txt manually for now.
+    sed s/"set(USE_BOOST TRUE)"/"option(USE_BOOST \"Specifies whether Boost is used.\" TRUE)"/g <CMakeLists.txt >CMakeLists.txt.sed
+    del CMakeLists.txt
+    rename CMakeLists.txt.sed CMakeLists.txt
+
+    del /Q CMakeCache.txt
+    cmake . -G %GENERATOR% -DBOOST_ROOT=%BOOST_ROOT% -DUSE_BOOST:BOOL=%USE_BOOST%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    set BUILD_KNET=TRUE
 )
 
-cecho {0D}Building kNet. Please be patient, this will take a while.{# #}{\n}
-MSBuild kNet.sln /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
-MSBuild kNet.sln /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
-MSBuild kNet.sln /p:configuration=RelWithDebInfo /nologo /m:%NUMBER_OF_PROCESSORS%
-IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+IF %BUILD_KNET%==TRUE (
+    cecho {0D}Building kNet. Please be patient, this will take a while.{# #}{\n}
+    MSBuild kNet.sln /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild kNet.sln /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild kNet.sln /p:configuration=RelWithDebInfo /nologo /m:%NUMBER_OF_PROCESSORS%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+) ELSE (
+    cecho {0D}kNet already built and up to date. Skipping.{# #}{\n}
+)
 
 IF NOT EXIST "%DEPS%\qtscriptgenerator\.git". (
    cecho {0D}Cloning QtScriptGenerator into "%DEPS%\qtscriptgenerator".{# #}{\n}
@@ -522,7 +533,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xml.dll". (
    )
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-   cecho {0D}QtScriptGenerator skipped.{# #}{\n}
+   cecho {0D}QtScriptGenerator already built. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%TUNDRA_BIN%\qtplugins\script\qtscript_core.dll". (
@@ -546,7 +557,8 @@ IF NOT EXIST "%DEPS%\realxtend-tundra-deps\.git". (
 ) ELSE (
     cecho {0D}Updating realxtend-tundra-deps to newest.{# #}{\n}
     cd "%DEPS%\realxtend-tundra-deps"
-    call git pull origin
+    call git fetch origin sources:refs/remotes/origin/sources
+    git rebase origin/sources
 )
 
 set OGRE_HOME=%DEPS%\ogre-safe-nocrashes\SDK
