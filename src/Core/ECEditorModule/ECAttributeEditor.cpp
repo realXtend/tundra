@@ -116,7 +116,7 @@ void ECAttributeEditorBase::AddComponent(ComponentPtr component)
     PROFILE(ECAttributeEditor_AddComponent);
     // Before we add new component we make sure that it's not already added
     // and it contains right attribute.
-    if(!HasComponent(component) && component->GetAttribute(name_))
+    if(!HasComponent(component) && component->AttributeByName(name_))
     {
         components_.push_back(ComponentWeakPtr(component));
         connect(component.get(), SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), 
@@ -177,7 +177,7 @@ IAttribute *ECAttributeEditorBase::FindAttribute(const ComponentPtr &component) 
 {
     PROFILE(ECAttributeEditor_FindAttribute);
     if(component)
-        return component->GetAttribute(name_);
+        return component->AttributeByName(name_);
     LogError("Component has expired.");
     return 0;
 }
@@ -1270,7 +1270,7 @@ template<> void ECAttributeEditor<QString>::Initialize()
             ComponentPtr comp = components_[0].lock();
             if (comp)
             {
-                IAttribute *attr = comp->GetAttribute(name_);
+                IAttribute *attr = comp->AttributeByName(name_);
                 if (attr && attr->Metadata())
                 {
                     AttributeMetadata *meta = attr->Metadata();
@@ -1761,7 +1761,7 @@ template<> void ECAttributeEditor<AssetReference>::Initialize()
 
         if (components_.size() && !components_[0].expired())
         {
-            IAttribute *attr = components_[0].lock()->GetAttribute(name_);
+            IAttribute *attr = components_[0].lock()->AttributeByName(name_);
             if (attr && attr->Metadata())
                 //lineEditFactory->SetComponents(rootProperty_, components_);
                 lineEditFactory->AddButtons(attr->Metadata()->buttons);
@@ -2392,7 +2392,7 @@ template<> void ECAttributeEditor<EntityReference>::Initialize()
 
         if (components_.size() && !components_[0].expired())
         {
-            IAttribute *attr = components_[0].lock()->GetAttribute(name_);
+            IAttribute *attr = components_[0].lock()->AttributeByName(name_);
             if (attr && attr->Metadata())
                 //lineEditFactory->SetComponents(rootProperty_, components_);
                 lineEditFactory->AddButtons(attr->Metadata()->buttons);

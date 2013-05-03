@@ -15,10 +15,10 @@
 
 EC_OgreCompositor::EC_OgreCompositor(Scene* scene) :
     IComponent(scene),
-    enabled(this, "Enabled", true),
-    compositorName(this, "Compositor ref", ""), ///<\todo Rename to "Compositor" or "Compositor name".
-    priority(this, "Priority", -1),
-    parameters(this, "Parameters"),
+    INIT_ATTRIBUTE_VALUE(enabled, "Enabled", true),
+    INIT_ATTRIBUTE_VALUE(compositorName, "Compositor ref", ""), ///<\todo Rename to "Compositor" or "Compositor name".
+    INIT_ATTRIBUTE_VALUE(priority, "Priority", -1),
+    INIT_ATTRIBUTE(parameters, "Parameters"),
     previousPriority(-1),
     compositionHandler(0)
 {

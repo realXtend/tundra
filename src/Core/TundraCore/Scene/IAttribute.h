@@ -28,15 +28,24 @@ class TUNDRACORE_API IAttribute : public enable_shared_from_this<IAttribute>
 public:
     /// Constructor
     /** @param owner Component which this attribute will be attached to.
-        @param name Name of the attribute. */
-    IAttribute(IComponent* owner, const char* name);
+        @param id ID of the attribute. Will also be assigned as the attribute's human-readable name. */
+    IAttribute(IComponent* owner, const char* id);
+
+    /// Constructor
+    /** @param owner Component which this attribute will be attached to.
+        @param id ID of the attribute.
+        @param name Human-readable name of the attribute. */
+    IAttribute(IComponent* owner, const char* id, const char* name);
 
     virtual ~IAttribute() {}
 
     /// Returns attribute's owner component.
     IComponent* Owner() const { return owner; }
 
-    /// Returns name of the attribute.
+    /// Returns the ID of the attribute for serialization. Should be same as the variable/property name.
+    const QString &Id() const { return id; }
+
+    /// Returns human-readable name of the attribute. This is shown in the EC editor. For dynamic attributes, is the same as ID.
     const QString &Name() const { return name; }
 
     /// Writes attribute to string for XML serialization
@@ -44,6 +53,9 @@ public:
 
     /// Reads attribute from string for XML deserialization
     virtual void FromString(const std::string& str, AttributeChange::Type change) = 0;
+
+    /// Reads attribute from string for XML deserialization
+    void FromString(const QString& str, AttributeChange::Type change);
 
     /// Returns the type name of the data stored in this attribute.
     /** @note As attribute type names are handled case-insensitively internally by the SceneAPI,
@@ -124,7 +136,8 @@ protected:
     friend class IComponent;
     
     IComponent* owner; ///< Owning component.
-    QString name; ///< Name of attribute.
+    QString id; ///< ID of attribute.
+    QString name; ///< Human-readable name of attribute for editing.
     AttributeMetadata *metadata; ///< Possible attribute metadata.
     bool dynamic; ///< Dynamic attributes must be deleted at component destruction
     u8 index; ///< Attribute index in the parent component's attribute list
@@ -144,19 +157,41 @@ public:
     /** Constructor.
         value is initialiazed to DefaultValue.
         @param owner Owner component.
-        @param name Name. */
-    Attribute(IComponent* owner, const char* name) :
-        IAttribute(owner, name),
+        @param id Attribute ID */
+    Attribute(IComponent* owner, const char* id) :
+        IAttribute(owner, id),
         value(DefaultValue())
     {
     }
 
-    /** Constructor taking also value.
+    /** Constructor taking also initial value.
         @param owner Owner component.
-        @param name Name.
+        @param id Attribute ID
         @param val Value. */
-    Attribute(IComponent* owner, const char* name, const T &val) :
-        IAttribute(owner, name),
+    Attribute(IComponent* owner, const char* id, const T &val) :
+        IAttribute(owner, id),
+        value(val)
+    {
+    }
+
+    /** Constructor taking attribute ID/name separately
+        value is initialiazed to DefaultValue.
+        @param owner Owner component.
+        @param id Attribute id.
+        @param name Human-readable name. */
+    Attribute(IComponent* owner, const char* id, const char* name) :
+        IAttribute(owner, id, name),
+        value(DefaultValue())
+    {
+    }
+
+    /** Constructor taking initial value and attribute ID/name separately.
+        @param owner Owner component.
+        @param id Attribute ID.
+        @param name Human-readable name.
+        @param val Value. */
+    Attribute(IComponent* owner, const char* id, const char* name, const T &val) :
+        IAttribute(owner, id, name),
         value(val)
     {
     }
@@ -235,20 +270,20 @@ static const QString cAttributeNoneTypeName = "";
 static const QString cAttributeStringTypeName = "string";
 static const QString cAttributeIntTypeName = "int";
 static const QString cAttributeRealTypeName = "real";
-static const QString cAttributeColorTypeName = "color"; /**< @todo "Color" */
+static const QString cAttributeColorTypeName = "Color";
 static const QString cAttributeFloat2TypeName = "float2";
 static const QString cAttributeFloat3TypeName = "float3";
 static const QString cAttributeFloat4TypeName = "float4";
 static const QString cAttributeBoolTypeName = "bool";
 static const QString cAttributeUIntTypeName = "uint";
-static const QString cAttributeQuatTypeName = "quat"; /**< @todo "Quat" */
-static const QString cAttributeAssetReferenceTypeName = "assetreference"; /**< @todo "AssetReference" */
-static const QString cAttributeAssetReferenceListTypeName = "assetreferencelist"; /**< @todo "AssetReferenceList" */
-static const QString cAttributeEntityReferenceTypeName = "entityreference"; /**< @todo "EntityReference" */
-static const QString cAttributeQVariantTypeName = "qvariant"; /**< @todo "QVariant" */
-static const QString cAttributeQVariantListTypeName = "qvariantlist"; /**< @todo "QVariantList" */
-static const QString cAttributeTransformTypeName = "transform"; /**< @todo "Transform" */
-static const QString cAttributeQPointTypeName = "qpoint"; /**< @todo "QPoint" */
+static const QString cAttributeQuatTypeName = "Quat"; 
+static const QString cAttributeAssetReferenceTypeName = "AssetReference";
+static const QString cAttributeAssetReferenceListTypeName = "AssetReferenceList";
+static const QString cAttributeEntityReferenceTypeName = "EntityReference";
+static const QString cAttributeQVariantTypeName = "QVariant";
+static const QString cAttributeQVariantListTypeName = "QVariantList";
+static const QString cAttributeTransformTypeName = "Transform";
+static const QString cAttributeQPointTypeName = "QPoint";
 
 /// Represents weak pointer to Transform attribute.
 struct AttributeWeakPtr

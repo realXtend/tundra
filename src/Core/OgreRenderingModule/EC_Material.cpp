@@ -19,9 +19,9 @@
 
 EC_Material::EC_Material(Scene* scene) :
     IComponent(scene),
-    parameters(this, "Parameters", QVariantList()),
-    inputMat(this, "Input Material", ""),
-    outputMat(this, "Output Material", "")
+    INIT_ATTRIBUTE_VALUE(parameters, "Parameters", QVariantList()),
+    INIT_ATTRIBUTE_VALUE(inputMat, "Input Material", ""),
+    INIT_ATTRIBUTE_VALUE(outputMat, "Output Material", "")
 {
     materialAsset = AssetRefListenerPtr(new AssetRefListener());
     connect(materialAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);

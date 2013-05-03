@@ -173,7 +173,7 @@ void ECComponentEditor::AddNewComponent(ComponentPtr component)
     AttributeEditorMap::iterator iter = attributeEditors_.begin();
     while(iter != attributeEditors_.end())
     {
-        IAttribute *attribute = component->GetAttribute(iter.value()->GetAttributeName());
+        IAttribute *attribute = component->AttributeByName(iter.value()->GetAttributeName());
         if(attribute)
             iter.value()->AddComponent(component);
         iter++;
@@ -198,7 +198,7 @@ void ECComponentEditor::RemoveComponent(ComponentPtr component)
             AttributeEditorMap::iterator attributeIter = attributeEditors_.begin();
             while(attributeIter != attributeEditors_.end())
             {
-                IAttribute *attribute = comp_ptr->GetAttribute(attributeIter.value()->GetAttributeName());
+                IAttribute *attribute = comp_ptr->AttributeByName(attributeIter.value()->GetAttributeName());
                 if(attribute)
                     attributeIter.value()->RemoveComponent(component);
                 attributeIter++;
@@ -227,7 +227,7 @@ void ECComponentEditor::RemoveAttribute(ComponentPtr comp, IAttribute *attr)
             AttributeEditorMap::iterator attributeIter = attributeEditors_.begin();
             while(attributeIter != attributeEditors_.end())
             {
-                IAttribute *attribute = component->GetAttribute(attributeIter.value()->GetAttributeName());
+                IAttribute *attribute = component->AttributeByName(attributeIter.value()->GetAttributeName());
                 if (attribute == attr)
                 {
                     SAFE_DELETE(attributeIter.value())

@@ -35,12 +35,12 @@ EC_MediaPlayer::EC_MediaPlayer(Scene* scene) :
     mediaPlayer_(0),
     componentPrepared_(false),
     pendingMediaDownload_(false),
-    sourceRef(this, "Media Source", AssetReference("", "")),
-    renderSubmeshIndex(this, "Render Submesh", 0),
-    interactive(this, "Interactive", false),
-    illuminating(this, "Illuminating", true),
-    streamingAllowed(this, "Streaming Allowed", true),
-    enabled(this, "Enabled", true)
+    INIT_ATTRIBUTE_VALUE(sourceRef, "Media Source", AssetReference("", "")),
+    INIT_ATTRIBUTE_VALUE(renderSubmeshIndex, "Render Submesh", 0),
+    INIT_ATTRIBUTE_VALUE(interactive, "Interactive", false),
+    INIT_ATTRIBUTE_VALUE(illuminating, "Illuminating", true),
+    INIT_ATTRIBUTE_VALUE(streamingAllowed, "Streaming Allowed", true),
+    INIT_ATTRIBUTE_VALUE(enabled, "Enabled", true)
 {
     if (!ViewEnabled() || GetFramework()->IsHeadless())
         return;

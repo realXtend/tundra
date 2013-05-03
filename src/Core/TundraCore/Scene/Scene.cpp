@@ -692,7 +692,7 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
                 if (!useEntityIDsFromFile && i->second->TypeName() == "EC_Placeable")
                 {
                     // Go and fix parent ref of EC_Placeable if new entity IDs were generated
-                    IAttribute *iAttr = i->second->GetAttribute("Parent entity ref");
+                    IAttribute *iAttr = i->second->AttributeById("parentRef");
                     Attribute<EntityReference> *parenRef = iAttr != 0 ? dynamic_cast<Attribute<EntityReference> *>(iAttr) : 0;
                     if (parenRef && !parenRef->Get().IsEmpty())
                     {
@@ -849,7 +849,7 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
                 if (!useEntityIDsFromFile && i->second->TypeName() == "EC_Placeable")
                 {
                     // Go and fix parent ref of EC_Placeable if new entity IDs were generated
-                    IAttribute *iAttr = i->second->GetAttribute("Parent entity ref");
+                    IAttribute *iAttr = i->second->AttributeById("parentRef");
                     Attribute<EntityReference> *parentRef = iAttr != 0 ? dynamic_cast<Attribute<EntityReference> *>(iAttr) : 0;
                     if (parentRef && !parentRef->Get().IsEmpty())
                     {
@@ -966,7 +966,7 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
             if (!useEntityIDsFromFile && i->second->TypeName() == "EC_Placeable")
             {
                 // Go and fix parent ref of EC_Placeable if new entity IDs were generated
-                IAttribute *iAttr = i->second->GetAttribute("Parent entity ref");
+                IAttribute *iAttr = i->second->AttributeById("parentRef");
                 Attribute<EntityReference> *parenRef = iAttr != 0 ? dynamic_cast<Attribute<EntityReference> *>(iAttr) : 0;
                 if (parenRef && !parenRef->Get().IsEmpty())
                 {
@@ -1082,8 +1082,8 @@ SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) 
                     compDesc.attributes.append(attrDesc);
 
                     QString attrValue = QString(a->ToString().c_str()).trimmed();
-                    if ((typeName == "assetreference" || typeName == "assetreferencelist" || 
-                        (a->Metadata() && a->Metadata()->elementType == "assetreference")) &&
+                    if ((!typeName.compare("AssetReference", Qt::CaseInsensitive) || !typeName.compare("AssetReferenceList", Qt::CaseInsensitive) || 
+                        (a->Metadata() && !a->Metadata()->elementType.compare("AssetReference", Qt::CaseInsensitive))) &&
                         !attrValue.isEmpty())
                     {
                         // We might have multiple references, ";" used as a separator.
@@ -1269,8 +1269,8 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
                                 compDesc.attributes.append(attrDesc);
 
                                 QString attrValue = QString(a->ToString().c_str()).trimmed();
-                                if ((typeName == "assetreference" || typeName == "assetreferencelist" || 
-                                    (a->Metadata() && a->Metadata()->elementType == "assetreference")) &&
+                                if ((!typeName.compare("AssetReference", Qt::CaseInsensitive) || !typeName.compare("AssetReferenceList", Qt::CaseInsensitive) || 
+                                    (a->Metadata() && !a->Metadata()->elementType.compare("AssetReference", Qt::CaseInsensitive))) &&
                                     !attrValue.isEmpty())
                                 {
                                     // We might have multiple references, ";" used as a separator.

@@ -26,17 +26,17 @@ EC_Light::EC_Light(Scene* scene) :
     IComponent(scene),
     light_(0),
     attached_(false),
-    type(this, "Light type", LT_Point),
-    diffColor(this, "Diffuse color", Color(1.0f, 1.0f, 1.0f)),
-    specColor(this, "Specular color", Color(0.0f, 0.0f, 0.0f)),
-    castShadows(this, "Cast shadows", false),
-    range(this, "Light range", 25.0f),
-    brightness(this, "Brightness", 1.0f),
-    constAtten(this, "Constant atten", 0.0f),
-    linearAtten(this, "Linear atten", 0.01f),
-    quadraAtten(this, "Quadratic atten", 0.01f),
-    innerAngle(this, "Light inner angle", 30.0f),
-    outerAngle(this, "Light outer angle", 40.0f)
+    INIT_ATTRIBUTE_VALUE(type, "Light type", LT_Point),
+    INIT_ATTRIBUTE_VALUE(diffColor, "Diffuse color", Color(1.0f, 1.0f, 1.0f)),
+    INIT_ATTRIBUTE_VALUE(specColor, "Specular color", Color(0.0f, 0.0f, 0.0f)),
+    INIT_ATTRIBUTE_VALUE(castShadows, "Cast shadows", false),
+    INIT_ATTRIBUTE_VALUE(range, "Light range", 25.0f),
+    INIT_ATTRIBUTE_VALUE(brightness, "Brightness", 1.0f),
+    INIT_ATTRIBUTE_VALUE(constAtten, "Constant atten", 0.0f),
+    INIT_ATTRIBUTE_VALUE(linearAtten, "Linear atten", 0.01f),
+    INIT_ATTRIBUTE_VALUE(quadraAtten, "Quadratic atten", 0.01f),
+    INIT_ATTRIBUTE_VALUE(innerAngle, "Light inner angle", 30.0f),
+    INIT_ATTRIBUTE_VALUE(outerAngle, "Light outer angle", 40.0f)
 {
     static AttributeMetadata typeAttrData;
     static bool metadataInitialized = false;

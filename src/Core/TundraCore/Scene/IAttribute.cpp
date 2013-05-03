@@ -32,7 +32,21 @@
 
 #include "MemoryLeakCheck.h"
 
-IAttribute::IAttribute(IComponent* owner_, const char* name_) :
+IAttribute::IAttribute(IComponent* owner_, const char* id_) :
+    id(id_),
+    name(id_),
+    metadata(0),
+    dynamic(false),
+    owner(0),
+    index(0),
+    valueChanged(true)
+{
+    if (owner_)
+        owner_->AddAttribute(this);
+}
+
+IAttribute::IAttribute(IComponent* owner_, const char* id_, const char* name_) :
+    id(id_),
     name(name_),
     metadata(0),
     dynamic(false),
@@ -44,10 +58,16 @@ IAttribute::IAttribute(IComponent* owner_, const char* name_) :
         owner_->AddAttribute(this);
 }
 
+
 void IAttribute::Changed(AttributeChange::Type change)
 {
     if (owner)
         owner->EmitAttributeChanged(this, change);
+}
+
+void IAttribute::FromString(const QString& str, AttributeChange::Type change)
+{
+    FromString(str.toStdString(), change);
 }
 
 // Hide all template implementations from being included to public documentation

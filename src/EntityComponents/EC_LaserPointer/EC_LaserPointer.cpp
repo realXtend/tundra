@@ -32,10 +32,10 @@
 
 EC_LaserPointer::EC_LaserPointer(Scene *scene) :
     IComponent(scene),
-    startPos(this, "Start position"),
-    endPos(this, "End position"),
-    color(this, "Color", Color(1.0f,0.0f,0.0f,1.0f)),
-    enabled(this, "Enabled", false),
+    INIT_ATTRIBUTE(startPos, "Start position"),
+    INIT_ATTRIBUTE(endPos, "End position"),
+    INIT_ATTRIBUTE_VALUE(color, "Color", Color(1.0f,0.0f,0.0f,1.0f)),
+    INIT_ATTRIBUTE_VALUE(enabled, "Enabled", false),
     laserObject_(0),
     canUpdate_(true),
     updateInterval_(20),

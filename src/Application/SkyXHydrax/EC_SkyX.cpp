@@ -123,24 +123,24 @@ struct EC_SkyX::Impl
 
 EC_SkyX::EC_SkyX(Scene* scene) :
     IComponent(scene),
-    cloudType(this, "Cloud type", Normal),
-    timeMultiplier(this, "Time multiplier", 0.0f),
-    time(this, "Time [0-24]", 14.f), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
-    sunriseTime(this, "Time sunrise [0-24]", 7.5f), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
-    sunsetTime(this, "Time sunset [0-24]", 20.5f), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
-    cloudCoverage(this, "Cloud coverage [0-100]", 50), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
-    cloudAverageSize(this, "Cloud average size [0-100]", 50), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
-    cloudHeight(this, "Cloud height", 100),
-    moonPhase(this, "Moon phase [0-100]", 50), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
-    windDirection(this, "Wind direction", 0.0f),
-    windSpeed(this, "Wind speed", 5.0f),
-    sunInnerRadius(this, "Sun inner radius", 9.75f),
-    sunOuterRadius(this, "Sun outer radius", 10.25f),
-    sunlightDiffuseColor(this, "Sunlight diffuse color", Color(0.639f,0.639f,0.639f)),
-    sunlightSpecularColor(this, "Sunlight specular color"), // defaults to black
-    moonlightDiffuseColor(this, "Moonlight color", Color(0.639f,0.639f,0.639f, 0.25f)), /**< @todo Nicer color for moonlight */
-    moonlightSpecularColor(this, "Moonlight specular color"), // defaults to black
-    ambientLightColor(this, "Ambient light color", OgreWorld::DefaultSceneAmbientLightColor()), // Ambient and sun diffuse color copied from EC_EnvironmentLight
+    INIT_ATTRIBUTE_VALUE(cloudType, "Cloud type", Normal),
+    INIT_ATTRIBUTE_VALUE(timeMultiplier, "Time multiplier", 0.0f),
+    INIT_ATTRIBUTE_VALUE(time, "Time [0-24]", 14.f), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
+    INIT_ATTRIBUTE_VALUE(sunriseTime, "Time sunrise [0-24]", 7.5f), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
+    INIT_ATTRIBUTE_VALUE(sunsetTime, "Time sunset [0-24]", 20.5f), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
+    INIT_ATTRIBUTE_VALUE(cloudCoverage, "Cloud coverage [0-100]", 50), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
+    INIT_ATTRIBUTE_VALUE(cloudAverageSize, "Cloud average size [0-100]", 50), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
+    INIT_ATTRIBUTE_VALUE(cloudHeight, "Cloud height", 100),
+    INIT_ATTRIBUTE_VALUE(moonPhase, "Moon phase [0-100]", 50), /**< @todo This metadata appended to attribute name is not nice. Usability issued should be resolved at UI level (f.ex. tooltip?) and/or by using AttributeMetadata. Remove this. */
+    INIT_ATTRIBUTE_VALUE(windDirection, "Wind direction", 0.0f),
+    INIT_ATTRIBUTE_VALUE(windSpeed, "Wind speed", 5.0f),
+    INIT_ATTRIBUTE_VALUE(sunInnerRadius, "Sun inner radius", 9.75f),
+    INIT_ATTRIBUTE_VALUE(sunOuterRadius, "Sun outer radius", 10.25f),
+    INIT_ATTRIBUTE_VALUE(sunlightDiffuseColor, "Sunlight diffuse color", Color(0.639f,0.639f,0.639f)),
+    INIT_ATTRIBUTE(sunlightSpecularColor, "Sunlight specular color"), // defaults to black
+    INIT_ATTRIBUTE_VALUE(moonlightDiffuseColor, "Moonlight color", Color(0.639f,0.639f,0.639f, 0.25f)), /**< @todo Nicer color for moonlight */
+    INIT_ATTRIBUTE(moonlightSpecularColor, "Moonlight specular color"), // defaults to black
+    INIT_ATTRIBUTE_VALUE(ambientLightColor, "Ambient light color", OgreWorld::DefaultSceneAmbientLightColor()), // Ambient and sun diffuse color copied from EC_EnvironmentLight
     impl(0)
 {
     static AttributeMetadata cloudTypeMd, cloudHeightMd, timeMd, zeroToHundredMd, mediumStepMd, smallStepMd;

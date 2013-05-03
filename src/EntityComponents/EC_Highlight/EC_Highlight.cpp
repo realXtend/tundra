@@ -35,9 +35,9 @@ static bool inApply = false;
 
 EC_Highlight::EC_Highlight(Scene* scene) :
     IComponent(scene),
-    visible(this, "Is visible", false),
-    solidColor(this, "Solid color", Color(0.3f, 0.5f, 0.1f, 0.5f)),
-    outlineColor(this, "Outline color", Color(1.0f, 1.0f, 1.0f, 0.5f)),
+    INIT_ATTRIBUTE_VALUE(visible, "Is visible", false),
+    INIT_ATTRIBUTE_VALUE(solidColor, "Solid color", Color(0.3f, 0.5f, 0.1f, 0.5f)),
+    INIT_ATTRIBUTE_VALUE(outlineColor, "Outline color", Color(1.0f, 1.0f, 1.0f, 0.5f)),
     reapplyPending_(false)
 {
     if (scene)

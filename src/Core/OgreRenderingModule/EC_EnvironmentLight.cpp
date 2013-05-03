@@ -24,11 +24,11 @@
 
 EC_EnvironmentLight::EC_EnvironmentLight(Scene* scene) :
     IComponent(scene),
-    sunColor(this, "Sunlight color", Color(0.639f,0.639f,0.639f)),
-    ambientColor(this, "Ambient light color", OgreWorld::DefaultSceneAmbientLightColor()),
-    sunDirection(this, "Sunlight direction vector", float3(-1.f, -1.f, -1.f)),
-    sunCastShadows(this, "Sunlight cast shadows", true),
-    brightness(this, "Brightness", 1.0f),
+    INIT_ATTRIBUTE_VALUE(sunColor, "Sunlight color", Color(0.639f,0.639f,0.639f)),
+    INIT_ATTRIBUTE_VALUE(ambientColor, "Ambient light color", OgreWorld::DefaultSceneAmbientLightColor()),
+    INIT_ATTRIBUTE_VALUE(sunDirection, "Sunlight direction vector", float3(-1.f, -1.f, -1.f)),
+    INIT_ATTRIBUTE_VALUE(sunCastShadows, "Sunlight cast shadows", true),
+    INIT_ATTRIBUTE_VALUE(brightness, "Brightness", 1.0f),
     sunlight(0)
 {
     if (scene)

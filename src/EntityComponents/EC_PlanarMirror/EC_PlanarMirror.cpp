@@ -33,7 +33,7 @@ int EC_PlanarMirror::mirror_cam_num_ = 0;
 
 EC_PlanarMirror::EC_PlanarMirror(Scene *scene) :
     IComponent(scene),
-    reflectionPlaneVisible(this, "Show reflection plane", true),
+    INIT_ATTRIBUTE_VALUE(reflectionPlaneVisible, "Show reflection plane", true),
     mirror_texture_(0),
     tex_unit_state_(0),
     mat_(0),

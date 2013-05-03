@@ -36,12 +36,12 @@ EC_Billboard::EC_Billboard(Scene* scene) :
     billboardSet_(0),
     billboard_(0),
     attached_(false),
-    materialRef(this, "Material ref"),
-    position(this, "Position", float3::zero),
-    width(this, "Size X", 1.0f),
-    height(this, "Size Y", 1.0f),
-    rotation(this, "Rotation", 0.0f),
-    show(this, "Show billboard", true)
+    INIT_ATTRIBUTE(materialRef, "Material ref"),
+    INIT_ATTRIBUTE_VALUE(position, "Position", float3::zero),
+    INIT_ATTRIBUTE_VALUE(width, "Size X", 1.0f),
+    INIT_ATTRIBUTE_VALUE(height, "Size Y", 1.0f),
+    INIT_ATTRIBUTE_VALUE(rotation, "Rotation", 0.0f),
+    INIT_ATTRIBUTE_VALUE(show, "Show billboard", true)
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();

@@ -34,11 +34,11 @@ using namespace OgreRenderer;
 
 EC_Camera::EC_Camera(Scene* scene) :
     IComponent(scene),
-    upVector(this, "Up vector", float3::unitY),
-    nearPlane(this, "Near plane", 0.1f),
-    farPlane(this, "Far plane", 2000.f),
-    verticalFov(this, "Vertical FOV", 45.f),
-    aspectRatio(this, "Aspect ratio", ""),
+    INIT_ATTRIBUTE_VALUE(upVector, "Up vector", float3::unitY),
+    INIT_ATTRIBUTE_VALUE(nearPlane, "Near plane", 0.1f),
+    INIT_ATTRIBUTE_VALUE(farPlane, "Far plane", 2000.f),
+    INIT_ATTRIBUTE_VALUE(verticalFov, "Vertical FOV", 45.f),
+    INIT_ATTRIBUTE_VALUE(aspectRatio, "Aspect ratio", ""),
     attached_(false),
     camera_(0),
     query_(0),

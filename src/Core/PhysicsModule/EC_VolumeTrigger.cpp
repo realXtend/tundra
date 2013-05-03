@@ -24,8 +24,8 @@ using namespace Physics;
 
 EC_VolumeTrigger::EC_VolumeTrigger(Scene* scene) :
     IComponent(scene),
-    byPivot(this, "By Pivot", false),
-    entities(this, "Entities")
+    INIT_ATTRIBUTE_VALUE(byPivot, "By Pivot", false),
+    INIT_ATTRIBUTE(entities, "Entities")
 {
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()), Qt::UniqueConnection);
 }

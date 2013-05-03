@@ -29,7 +29,7 @@ static const float FIXED_HEIGHT_OFFSET = -0.87f;
 
 EC_Avatar::EC_Avatar(Scene* scene) :
     IComponent(scene),
-    appearanceRef(this, "Appearance ref", AssetReference("", "Avatar"))
+    INIT_ATTRIBUTE_VALUE(appearanceRef, "Appearance ref", AssetReference("", "Avatar"))
 {
     avatarAssetListener_ = AssetRefListenerPtr(new AssetRefListener());
     connect(avatarAssetListener_.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAvatarAppearanceLoaded(AssetPtr)), Qt::UniqueConnection);

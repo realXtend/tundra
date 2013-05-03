@@ -31,12 +31,12 @@ using namespace OgreRenderer;
 
 EC_Mesh::EC_Mesh(Scene* scene) :
     IComponent(scene),
-    nodeTransformation(this, "Transform", Transform(float3(0,0,0),float3(0,0,0),float3(1,1,1))),
-    meshRef(this, "Mesh ref", AssetReference("", "OgreMesh")),
-    skeletonRef(this, "Skeleton ref", AssetReference("", "OgreSkeleton")),
-    meshMaterial(this, "Mesh materials", AssetReferenceList("OgreMaterial")),
-    drawDistance(this, "Draw distance", 0.0f),
-    castShadows(this, "Cast shadows", false),
+    INIT_ATTRIBUTE_VALUE(nodeTransformation, "Transform", Transform(float3(0,0,0),float3(0,0,0),float3(1,1,1))),
+    INIT_ATTRIBUTE_VALUE(meshRef, "Mesh ref", AssetReference("", "OgreMesh")),
+    INIT_ATTRIBUTE_VALUE(skeletonRef, "Skeleton ref", AssetReference("", "OgreSkeleton")),
+    INIT_ATTRIBUTE_VALUE(meshMaterial, "Mesh materials", AssetReferenceList("OgreMaterial")),
+    INIT_ATTRIBUTE_VALUE(drawDistance, "Draw distance", 0.0f),
+    INIT_ATTRIBUTE_VALUE(castShadows, "Cast shadows", false),
     entity_(0),
     attached_(false)
 {
@@ -47,7 +47,7 @@ EC_Mesh::EC_Mesh(Scene* scene) :
     drawDistance.SetMetadata(&drawDistanceData);
 
     static AttributeMetadata materialMetadata;
-    materialMetadata.elementType = "assetreference";
+    materialMetadata.elementType = "AssetReference";
     meshMaterial.SetMetadata(&materialMetadata);
 
     meshAsset = AssetRefListenerPtr(new AssetRefListener());
