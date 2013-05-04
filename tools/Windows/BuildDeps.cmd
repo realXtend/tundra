@@ -306,20 +306,21 @@ set QMAKESPEC=%DEPS%\qt\mkspecs\%QT_PLATFORM%
 set QTDIR=%DEPS%\qt
 
 IF NOT EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
-   cecho {0D}Deploying Qt DLLs to Tundra bin\.{# #}{\n}
-   copy /Y "%DEPS%\qt\bin\*.dll" "%TUNDRA_BIN%"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   mkdir "%TUNDRA_BIN%\qtplugins"
-   xcopy /E /I /C /H /R /Y "%DEPS%\qt\plugins\*.*" "%TUNDRA_BIN%\qtplugins"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   :: Clean out some definately not needed Qt DLLs from bin
-   :: QtCLucene does not have a public API and QtDesigner* are for QtCreator etc.
-   :: Others we could (should) remove right here: QtSvg, QtSql, QtTest and QtHelp.
-   del /Q "%TUNDRA_BIN%\QtCLucene*.dll"
-   del /Q "%TUNDRA_BIN%\QtDesigner*.dll"
+    cecho {0D}Deploying Qt DLLs to Tundra bin\.{# #}{\n}
+    copy /Y "%DEPS%\qt\bin\*.dll" "%TUNDRA_BIN%"
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    mkdir "%TUNDRA_BIN%\qtplugins"
+    xcopy /E /I /C /H /R /Y "%DEPS%\qt\plugins\*.*" "%TUNDRA_BIN%\qtplugins"
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    :: Clean out some definately not needed Qt DLLs from bin
+    del /Q "%TUNDRA_BIN%\QtCLucene*.dll"
+    del /Q "%TUNDRA_BIN%\QtDesigner*.dll"
+    del /Q "%TUNDRA_BIN%\QtHelp*.dll"
+    del /Q "%TUNDRA_BIN%\QtScriptTools*.dll"
+    del /Q "%TUNDRA_BIN%\QtSql*.dll"
+    del /Q "%TUNDRA_BIN%\QtSvg*.dll"
+    del /Q "%TUNDRA_BIN%\QtTest*.dll"
 )
-
-
 
 :: Bullet physics engine
 :: version 2.81 sp1, svn rev 2613
@@ -690,6 +691,9 @@ copy /Y "%DEPS%\ogre-safe-nocrashes\bin\%BUILD_TYPE%\*.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 copy /Y "%DEPS%\ogre-safe-nocrashes\Dependencies\bin\Release\cg.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+del /Q "%TUNDRA_BIN%\OgrePaging*.dll"
+del /Q "%TUNDRA_BIN%\OgreRTShaderSystem*.dll"
+del /Q "%TUNDRA_BIN%\OgreTerrain*.dll"
 
 cecho {0E}NOTE: Skipping PythonQt build for now!{# #}{\n}
 REM IF NOT EXIST "%DEPS%\realxtend-tundra-deps\PythonQt\lib\PythonQt.lib". (
