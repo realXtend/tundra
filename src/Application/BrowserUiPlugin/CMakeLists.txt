@@ -24,4 +24,6 @@ if (APPLE)
     link_ogre()
 endif()
 
+setup_install_files (${CMAKE_CURRENT_SOURCE_DIR}/bin/viewer-browser.xml) # Browser viewer startup config
+
 final_target()
