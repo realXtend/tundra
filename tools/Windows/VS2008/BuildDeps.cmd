@@ -1,2 +1,2 @@
 @cd ..
-BuildDeps.cmd "Visual Studio 9 2008"
+@BuildDeps.cmd "Visual Studio 9 2008"
