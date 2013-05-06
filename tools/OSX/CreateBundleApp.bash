@@ -20,7 +20,7 @@ qtlibdir=$qtdir/lib
 qtpluginsdir=$qtdir/plugins
 
 # Establish directories we're working in.
-cd ..
+cd ../..
 startdir=$(pwd)
 echo "Assuming $startdir is the Tundra repository root directory."
 mkdir -p build/Tundra.app/ # Hide errors if path doesn't exist.
