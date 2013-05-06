@@ -89,8 +89,8 @@ RELWITHDEBINFO="0"
 RUN_CMAKE="1"
 RUN_MAKE="1"
 MAKE_XCODE="1"
-USE_BOOST="OFF"
-NO_BOOST="ON" # The variable used in Tundra is called TUNDRA_NO_BOOST, which is opposite of USE_BOOST. We will use this also to specify c++11 usage, since not using boost and using c++11 on Mac are mutually exclusive
+USE_BOOST="ON"
+NO_BOOST="OFF" # The variable used in Tundra is called TUNDRA_NO_BOOST, which is opposite of USE_BOOST. We will use this also to specify c++11 usage, since not using boost and using c++11 on Mac are mutually exclusive
 NPROCS=`sysctl -n hw.ncpu`
 viewer=
 
@@ -631,22 +631,32 @@ if test -d $prefix/$what/lib/Ogre.framework; then
     fi
 else
     cd $build
-    rm -rf $what
 
-    echoInfo "Cloning $what repository, this may take a while..."
-    hg clone $baseurl/$what
-    cd $what
-    hg checkout v1-8
+    if ! test -d $what; then    
+        echoInfo "Cloning $what repository, this may take a while..."
+        hg clone $baseurl/$what
+        cd $what
+        hg checkout v1-8
 
-    # Patches Ogre with the same diff as the commits https://bitbucket.org/sinbad/ogre/commits/80717a535bd72cc5a0e7fcf0c154c9fa7afeea2c and
-    # https://bitbucket.org/sinbad/ogre/commits/96d3083c89ea8b5acd0590a4d59a6e31e7a9fba6 which are in v1-9 branch.
-    # Todo: remove this patch when ogre-safe-nocrashes is updated to Ogre 1.9
-    patch -p1 -i $patches/Ogre.patch
+        # Patches Ogre with the same diff as the commits https://bitbucket.org/sinbad/ogre/commits/80717a535bd72cc5a0e7fcf0c154c9fa7afeea2c and
+        # https://bitbucket.org/sinbad/ogre/commits/96d3083c89ea8b5acd0590a4d59a6e31e7a9fba6 which are in v1-9 branch.
+        # Todo: remove this patch when ogre-safe-nocrashes is updated to Ogre 1.9
+        patch -p1 -i $patches/Ogre.patch
+    else
+        cd $what
+    fi
 
-    curl -L -o $ogredepszip $ogredepsurl$ogredepszip
-    tar xzf $ogredepszip
+    if ! test -d Dependencies; then
+        curl -L -o $ogredepszip $ogredepsurl$ogredepszip
+        tar xzf $ogredepszip
+    fi    
+
     export OGRE_HOME=$build/$what
     echoInfo "Building $what:"
+    if test -f CMakeCache.txt; then
+        rm CMakeCache.txt
+    fi
+ 
     cmake -G Xcode -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DOGRE_USE_BOOST:BOOL=$USE_BOOST -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=0 -DOGRE_CONFIG_THREAD_PROVIDER=none -DOGRE_CONFIG_ENABLE_LIBCPP_SUPPORT:BOOL=$NO_BOOST
     xcodebuild -configuration RelWithDebInfo
 
@@ -681,16 +691,10 @@ else
     cd $what
 
     if [ "$USE_BOOST" == "ON" ]; then
-        $LC_CTYPE_OVERRIDE
-        # Apple's ld does not allow this version number, so override that
-        sed -e 's/(ASSIMP_SV_REVISION 1264)/(ASSIMP_SV_REVISION 1)/' < CMakeLists.txt > temp
-        # Force add boost include path (the same as Ogre's dependencies include path)
-        sed -e 's/INCLUDE_DIRECTORIES( include )/INCLUDE_DIRECTORIES( include )\
-        set (BOOST_INCLUDEDIR "${ENV_OGRE_HOME}\/Dependencies\/include")/' < temp > temp1
-        $LC_CTYPE_RESTORE
-        mv temp1 CMakeLists.txt
+         # Patch assimp (non-c++11 variant)
+        patch -p0 -i $patches/assimp_boost.patch
     else
-        # Patch assimp
+        # Patch assimp 
         patch -p0 -i $patches/assimp.patch
     fi
 
