@@ -41,7 +41,7 @@ public:
     explicit EC_Name(Scene* scene) :
         IComponent(scene),
         INIT_ATTRIBUTE_VALUE(name, "Name", ""),
-        INIT_ATTRIBUTE_VALUE(description, "description", "")
+        INIT_ATTRIBUTE_VALUE(description, "Description", "")
     {}
     /// @endcond
 
