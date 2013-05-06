@@ -62,7 +62,7 @@ IF %GENERATOR%=="" (
 )
 
 :: If we use VS2008, framework path (for msbuild) may not be correctly set. Manually attempt to add in that case
-IF %GENERATOR%==%GENERATOR_VS2008% set PATH=C:\Windows\Microsoft.NET\Framework\v3.5;%PATH%
+IF %VS_VER%==vs2008 set PATH=C:\Windows\Microsoft.NET\Framework\v3.5;%PATH%
 
 :: Print user-defined variables
 cecho {F0}This script fetches and builds all Tundra dependencies{# #}{\n}
@@ -470,7 +470,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xmlpatterns.dll".
    :: We need to patch pp-iterator.h in order to make it compile with newer Visual Studio versions:
    :: http://stackoverflow.com/questions/2791525/stl-operator-behavior-change-with-visual-studio-2010
    :: Also cannot use QMake as it results in linker errors, so instead generate vcproj files and build using MSBuild.
-   IF NOT %GENERATOR%==%GENERATOR_VS2008% (
+   IF NOT %VS_VER%==vs2008 (
       copy /Y "%TOOLS%\Mods\QtScriptGenerator_pp-iterator.h" "%DEPS%\qtscriptgenerator\generator\parser\rpp\pp-iterator.h"
       qmake -tp vc
       cecho {0D}Building qtscript plugins. Please be patient, this will take a while.{# #}{\n}
@@ -787,7 +787,7 @@ IF NOT EXIST "%DEPS%\ogg". (
    cecho {0D}Cloning Ogg into "%DEPS%\ogg".{# #}{\n}
    svn checkout http://svn.xiph.org/tags/ogg/libogg-1.3.0/ "%DEPS%\ogg"
    :: TODO ideally we would do cd "%DEPS%\ogg\win32\%VS_VER%" here, but ogg has no VS2012 directory currently
-   IF %GENERATOR%==%GENERATOR_VS2008% (
+   IF %VS_VER%==vs2008 (
       cd "%DEPS%\ogg\win32\VS2008"
    ) ELSE (
       cd "%DEPS%\ogg\win32\VS2010"
@@ -806,7 +806,7 @@ IF NOT EXIST "%DEPS%\vorbis". (
    cecho {0D}Cloning Vorbis into "%DEPS%\vorbis".{# #}{\n}
    svn checkout http://svn.xiph.org/tags/vorbis/libvorbis-1.3.3/ "%DEPS%\vorbis"
    :: TODO ideally we would do cd "%DEPS%\ogg\win32\%VS_VER%" here, but ogg has no VS2012 directory currently
-   IF %GENERATOR%==%GENERATOR_VS2008% (
+   IF %VS_VER%==vs2008 (
       cd "%DEPS%\vorbis\win32\VS2008"
    ) ELSE (
       cd "%DEPS%\vorbis\win32\VS2010"
@@ -883,7 +883,7 @@ IF NOT EXIST "%DEPS%\protobuf". (
 :: is set properly. Because of this we can skip copying things to /lib /bin /include folders.
 IF NOT EXIST "%DEPS%\protobuf\vsprojects\Debug\libprotobuf.lib". (
     cd "%DEPS%\protobuf\vsprojects"
-    IF %GENERATOR%==%GENERATOR_VS2008% (
+    IF %VS_VER%==vs2008 (
         :: Upgrade the VS2005 files to VS2008
         cecho {0D}Upgrading Google Protobuf project files.{# #}{\n}
         vcbuild /c /upgrade libprotobuf.vcproj $ALL
@@ -927,7 +927,7 @@ IF NOT EXIST "%DEPS%\celt\.git" (
 
 IF NOT EXIST "%DEPS%\celt\lib\libcelt.lib" (
    cd "%DEPS%\celt\libcelt"
-   IF %GENERATOR%==%GENERATOR_VS2008% (
+   IF %VS_VER%==vs2008 (
       :: The project does not provide VS2008 solution file
       cecho {0D}Copying VS2008 project file to "%DEPS%\celt\libcelt\libcelt.vcproj."{# #}{\n}
       copy /Y "%TOOLS%\Mods\libcelt.vcproj" "%DEPS%\celt\libcelt"
@@ -943,7 +943,7 @@ IF NOT EXIST "%DEPS%\celt\lib\libcelt.lib" (
 )
 
 :: VLC
-IF NOT %GENERATOR%==%GENERATOR_VS2008% (
+IF NOT %VS_VER%==vs2008 (
    cecho {0D}VLC is not binary-compatible with non-VS2008 binaries, skipping.{# #}{\n}
    GOTO :SKIP_VLC
 )
@@ -1101,7 +1101,7 @@ IF NOT EXIST "%DEPS%\zziplib". (
    :: It's nicer to use a tailored file rathern than copy duplicates under the zziblib source tree.
    cecho {0D}Building zziplib from premade project %TOOLS%\Mods\vs2008-zziplib.vcproj{# #}{\n}
    copy /Y "%TOOLS%\Mods\vs2008-zziplib.vcproj" zziplib.vcproj
-   IF NOT %GENERATOR%==%GENERATOR_VS2008% VCUpgrade /nologo zziplib.vcproj
+   IF NOT %VS_VER%==vs2008 VCUpgrade /nologo zziplib.vcproj
    MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
    MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Debug /nologo  /m:%NUMBER_OF_PROCESSORS%
    
