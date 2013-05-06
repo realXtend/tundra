@@ -2,9 +2,18 @@
 
 #include "StableHeaders.h"
 #include "MumbleNetworkHandler.h"
-#include "Mumble.pb.h"
 
-#include "celt/celt.h"
+// Disable warnings leaking from protobuf
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4244)
+#pragma warning(disable : 4100)
+#pragma warning(disable : 4125)
+#endif
+#include "Mumble.pb.h"
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #include "CoreTypes.h"
 #include "Application.h"
@@ -16,6 +25,8 @@
 #include <QDataStream>
 #include <QSslCipher>
 #include <QMutexLocker>
+
+#include <celt/celt.h>
 
 #ifdef Q_OS_UNIX
 #include <sys/socket.h>
