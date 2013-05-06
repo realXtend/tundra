@@ -33,6 +33,10 @@
 
 #include <QtScript>
 
+#if defined(__APPLE__) && defined(TUNDRA_CPP11_ENABLED)
+#include <sys/time.h>
+#endif
+
 /** @cond PRIVATE */
 namespace jsprofiler {
 

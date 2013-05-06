@@ -88,8 +88,6 @@ public slots:
     void CacheStorageContents();
 
 private:
-    Q_DISABLE_COPY(LocalAssetStorage)
-
     friend class LocalAssetProvider;
 
     /// Maps a file basename 'asset.mesh' to its full path 'c:\project\assets\asset.mesh'.

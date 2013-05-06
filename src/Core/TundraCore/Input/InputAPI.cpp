@@ -496,9 +496,9 @@ void InputAPI::TriggerGestureEvent(GestureEvent &gesture)
     }
 }
 
-void InputAPI::SetKeyBinding(const QString &actionName, QKeySequence key)
+void InputAPI::SetKeyBinding(const QString &actionName, const QKeySequence &key)
 {
-    keyboardMappings[actionName] = QKeySequence(key);
+    keyboardMappings[actionName] = key;
 }
 
 QKeySequence InputAPI::KeyBinding(const QString &actionName) const
@@ -507,7 +507,7 @@ QKeySequence InputAPI::KeyBinding(const QString &actionName) const
     return iter != keyboardMappings.end() ? iter.value() : QKeySequence();
 }
 
-QKeySequence InputAPI::KeyBinding(const QString &actionName, QKeySequence defaultKey)
+QKeySequence InputAPI::KeyBinding(const QString &actionName, const QKeySequence &defaultKey)
 {
     KeyBindingMap::const_iterator iter = keyboardMappings.find(actionName);
     if (iter == keyboardMappings.end())
@@ -518,13 +518,20 @@ QKeySequence InputAPI::KeyBinding(const QString &actionName, QKeySequence defaul
     return iter.value();
 }
 
+void InputAPI::RemoveKeyBinding(const QString &actionName)
+{
+    int ret = keyboardMappings.remove(actionName);
+    if (ret == 0)
+        LogWarning("InputAPI::RemoveKeyBinding: Could not find " + actionName + ".");
+}
+
 void InputAPI::LoadKeyBindingsFromFile()
 {
     ConfigAPI &cfg = *framework->Config();
     ConfigData inputConfig(ConfigAPI::FILE_FRAMEWORK, "input");
     for(int i = 0; ; ++i)
     {
-        QStringList bindings = cfg.Get(inputConfig, QString("keybinding%1").arg(i)).toString().split('|');
+        QStringList bindings = cfg.Read(inputConfig, QString("keybinding%1").arg(i)).toString().split('|');
         if (bindings.size() != 2)
             break;
         SetKeyBinding(bindings[0], bindings[1]);
@@ -537,7 +544,7 @@ void InputAPI::SaveKeyBindingsToFile()
     ConfigData inputConfig(ConfigAPI::FILE_FRAMEWORK, "input");
     int i = 0;
     for(KeyBindingMap::const_iterator iter = keyboardMappings.begin(); iter != keyboardMappings.end(); ++iter)
-        cfg.Set(inputConfig, QString("keybinding%1").arg(i++), iter.key() + '|' + iter.value().toString());
+        cfg.Write(inputConfig, QString("keybinding%1").arg(i++), iter.key() + '|' + iter.value().toString());
 }
 
 Qt::Key StripModifiersFromKey(int qtKeyWithModifiers)
@@ -751,8 +758,9 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         mouseEvent.globalY = e->globalY();
 
         mouseEvent.otherButtons = e->buttons();
-
-        //mouseEvent.heldKeys = heldKeys; ///\todo
+        mouseEvent.modifiers = e->modifiers();
+        for (std::map<Qt::Key, KeyPressInformation>::const_iterator current = heldKeys.begin(); current != heldKeys.end(); ++ current)
+            mouseEvent.heldKeys.push_back((*current).first);
         mouseEvent.handled = false;
 
         // If the mouse press is going to the inworld scene, clear keyboard focus from the QGraphicsScene widget (if any had it) so key events also go to inworld scene.
@@ -829,7 +837,8 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         mouseEvent.globalX = e->globalX(); // Note that these may "jitter" when mouse is in relative movement mode.
         mouseEvent.globalY = e->globalY();
         mouseEvent.otherButtons = e->buttons();
-        //mouseEvent.heldKeys = heldKeys; ///\todo
+        for (std::map<Qt::Key, KeyPressInformation>::const_iterator current = heldKeys.begin(); current != heldKeys.end(); ++ current)
+            mouseEvent.heldKeys.push_back((*current).first);
         mouseEvent.handled = false;
 
         // Save the absolute coordinates to be able to compute the proper relative movement values in the next
@@ -884,8 +893,9 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         mouseEvent.globalY = e->globalY();
 
         mouseEvent.otherButtons = e->buttons(); ///\todo Can this be trusted?
-
-        //mouseEvent.heldKeys = heldKeys; ///\todo
+        mouseEvent.modifiers = e->modifiers();
+        for (std::map<Qt::Key, KeyPressInformation>::const_iterator current = heldKeys.begin(); current != heldKeys.end(); ++ current)
+            mouseEvent.heldKeys.push_back((*current).first);
         mouseEvent.handled = false;
 
         TriggerMouseEvent(mouseEvent);

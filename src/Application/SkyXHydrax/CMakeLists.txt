@@ -5,8 +5,8 @@ macro(use_package_hydrax)
     # 1. If the environment variable HYDRAX_HOME is set, use that directory and cache it.
     # 2. Otherwise, use the deps directory path.
 
-    # TODO Linux/mac still uses sagase. Try to get rid of it and unify the below.
-    if (MSVC)
+    # TODO Linux still uses sagase. Try to get rid of it and unify the below.
+    if (MSVC OR APPLE)
         message("** Configuring Hydrax")
         if ("${HYDRAX_HOME}" STREQUAL "")
             if (NOT "$ENV{HYDRAX_HOME}" STREQUAL "")
@@ -21,8 +21,11 @@ macro(use_package_hydrax)
         message(STATUS "Using HYDRAX_HOME = ${HYDRAX_HOME}")
     endif ()
     
-    if (MSVC) 
+    if (MSVC)
         include_directories(${HYDRAX_HOME}/include)
+        link_directories(${HYDRAX_HOME}/lib)
+    elseif (APPLE)
+        include_directories(${HYDRAX_HOME}/include/Hydrax)
         link_directories(${HYDRAX_HOME}/lib)
     else()
         sagase_configure_package (HYDRAX
@@ -51,7 +54,7 @@ macro(use_package_skyx)
     # 3. Assume SkyX from deps path.
 
     message("** Configuring SkyX")
-    if (MSVC)
+    if (MSVC OR APPLE)
         if ("${SKYX_HOME}" STREQUAL "")
             if (NOT "$ENV{SKYX_HOME}" STREQUAL "")
                 file (TO_CMAKE_PATH "$ENV{SKYX_HOME}" SKYX_HOME)
@@ -63,10 +66,16 @@ macro(use_package_skyx)
             endif ()
         endif()
         message(STATUS "Using SKYX_HOME = ${SKYX_HOME}")
-        include_directories(${SKYX_HOME}/include) # For prebuilt VS2008/VS2010 deps.
-        include_directories(${SKYX_HOME}/SkyX/include) # For full-built deps.
+        if (APPLE)
+            # todo: In Mac below line is SKYX_HOME/include/SkyX instead of SKYX_HOME/SkyX/include as in the case of full-built deps on MSVC. Is this an error on Windows side? Somebody confirm this.
+            include_directories(${SKYX_HOME}/include/SkyX)
+        else()
+            include_directories(${SKYX_HOME}/include) # For prebuilt VS2008/VS2010 deps.
+            include_directories(${SKYX_HOME}/SkyX/include) # For full-built deps.
+        endif()
+
         link_directories(${SKYX_HOME}/lib)
-    else() # Linux and mac
+    else() # Linux
         if ("${SKYX_DIR}" STREQUAL "")
             file (TO_CMAKE_PATH "$ENV{SKYX_DIR}" SKYX_DIR)
             # Cache SKYX_DIR for runs that dont define $ENV{SKYX_DIR}.
@@ -130,6 +139,13 @@ if (ENABLE_HYDRAX)
 endif()
 
 add_definitions(-DSKYX_HYDRAX_EXPORTS)
+
+if (ENABLE_SKYX)
+    file(COPY media/SkyX DESTINATION ${TUNDRA_BIN}/media)
+endif()
+if (ENABLE_HYDRAX)
+    file(COPY media/HydraX DESTINATION ${TUNDRA_BIN}/media)
+endif()
 
 UseTundraCore()
 use_core_modules(TundraCore Math OgreRenderingModule)

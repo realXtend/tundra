@@ -100,7 +100,8 @@ if (!framework.IsHeadless())
             showHighlightAction.checked = ecEditor.highlightingEnabled;
             showHighlightAction.triggered.connect(HighlightSelectedEntities);
         }
-	ui.InitLanguageMenu();
+        // TODO Lanuage change is broken, do not show the menu for now.
+        //ui.InitLanguageMenu();
     }
 
     // Help menu

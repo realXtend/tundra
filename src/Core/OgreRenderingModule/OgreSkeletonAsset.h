@@ -9,12 +9,10 @@
 #include <OgreResourceBackgroundQueue.h>
 
 /// An Ogre-specific skeleton resource, contains bone structure and skeletal animations
-/** \ingroup OgreRenderingModuleClient */
-
+/** @ingroup OgreRenderingModuleClient */
 class OGRE_MODULE_API OgreSkeletonAsset : public IAsset, Ogre::ResourceBackgroundQueue::Listener
 {
-
-Q_OBJECT
+    Q_OBJECT
 
 public:
     /// Constructor.
@@ -36,9 +34,6 @@ public:
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "") const;
 
     /// IAsset override.
-    virtual void DoUnload();
-
-    /// IAsset override.
     bool IsLoaded() const;
 
     /// Ogre Skeleton ptr.
@@ -49,5 +44,8 @@ public:
 
     /// Ticket for ogres threaded loading operation.
     Ogre::BackgroundProcessTicket loadTicket_;
-};
 
+private:
+    /// IAsset override.
+    virtual void DoUnload();
+};

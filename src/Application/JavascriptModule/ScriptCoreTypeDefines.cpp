@@ -30,51 +30,8 @@ Q_DECLARE_METATYPE(EntityList)
 Q_DECLARE_METATYPE(Scene::EntityMap)
 Q_DECLARE_METATYPE(Entity::ComponentMap)
 
-QScriptValue Color_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine);
-QScriptValue Color_prototype_FromString(QScriptContext *ctx, QScriptEngine *engine);
-
-void createColorFunctions(QScriptValue &value, QScriptEngine *engine)
-{
-    // Expose native functions to script value.
-    value.setProperty("toString", engine->newFunction(Color_prototype_ToString));
-    value.setProperty("fromString", engine->newFunction(Color_prototype_FromString));
-}
-
-QScriptValue toScriptValueColor(QScriptEngine *engine, const Color &s)
-{
-    QScriptValue obj = engine->newObject();
-    obj.setProperty("r", QScriptValue(engine, s.r));
-    obj.setProperty("g", QScriptValue(engine, s.g));
-    obj.setProperty("b", QScriptValue(engine, s.b));
-    obj.setProperty("a", QScriptValue(engine, s.a));
-    createColorFunctions(obj, engine);
-    return obj;
-}
-
-void fromScriptValueColor(const QScriptValue &obj, Color &s)
-{
-    s.r = (float)obj.property("r").toNumber();
-    s.g = (float)obj.property("g").toNumber();
-    s.b = (float)obj.property("b").toNumber();
-    s.a = (float)obj.property("a").toNumber();
-}
-
-/// @todo this code duplicates with IAttribute.
-QScriptValue Color_prototype_ToString(QScriptContext *ctx, QScriptEngine *engine)
-{
-    return engine->toScriptValue(engine->fromScriptValue<Color>(ctx->thisObject()).SerializeToString());
-}
-
-QScriptValue Color_prototype_FromString(QScriptContext *ctx, QScriptEngine *engine)
-{
-    if (ctx->argumentCount() != 1)
-        return ctx->throwError(QScriptContext::TypeError, "Color fromString(): invalid number of arguments."); 
-    QStringList values = ctx->argument(0).toString().split(" ");
-    if (values.count() != 4)
-        return ctx->throwError(QScriptContext::TypeError, "Color fromString(): invalid string value."); 
-
-    return toScriptValueColor(engine, Color::FromString(ctx->argument(0).toString()));
-}
+// Test objects
+Q_DECLARE_METATYPE(IntegerTestRunner*);
 
 QScriptValue toScriptValueIAttribute(QScriptEngine *engine, IAttribute * const &s)
 {
@@ -453,6 +410,13 @@ QScriptValue createAssetReferenceList(QScriptContext *ctx, QScriptEngine *engine
     return engine->toScriptValue(newAssetRefList);
 }
 
+QScriptValue createIntegerTesterRunner(QScriptContext *ctx, QScriptEngine * /*engine*/)
+{
+    if (!ctx->engine() || ctx->thisObject().isNull())
+        return QScriptValue();
+    return ctx->engine()->newQObject(ctx->thisObject(), new IntegerTestRunner(), QScriptEngine::AutoOwnership);
+}
+
 void RegisterCoreMetaTypes()
 {
     qRegisterMetaType<ScenePtr>("ScenePtr");
@@ -469,11 +433,13 @@ void RegisterCoreMetaTypes()
     qRegisterMetaType<Entity::ComponentMap>("ComponentMap");
     qRegisterMetaType<Entity::ComponentVector>("ComponentVector");
     qRegisterMetaType<std::string>("std::string");
+    
+    // Test objects
+    qRegisterMetaType<IntegerTestRunner*>("IntegerTestRunner");
 }
 
 void ExposeCoreTypes(QScriptEngine *engine)
 {
-    qScriptRegisterMetaType(engine, toScriptValueColor, fromScriptValueColor);
     qScriptRegisterMetaType(engine, toScriptValueAssetReference, fromScriptValueAssetReference);
     qScriptRegisterMetaType(engine, toScriptValueAssetReferenceList, fromScriptValueAssetReferenceList);
     qScriptRegisterMetaType(engine, toScriptValueEntityReference, fromScriptValueEntityReference);
@@ -493,11 +459,13 @@ void ExposeCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType<std::string>(engine, toScriptValueStdString, fromScriptValueStdString);
 
     // Register constructors
-    QScriptValue ctorColor = engine->newFunction(createColor);
-    engine->globalObject().setProperty("Color", ctorColor);
-    engine->globalObject().property("Color").setProperty("fromString", engine->newFunction(Color_prototype_FromString));
     QScriptValue ctorAssetReference = engine->newFunction(createAssetReference);
     engine->globalObject().setProperty("AssetReference", ctorAssetReference);
     QScriptValue ctorAssetReferenceList = engine->newFunction(createAssetReferenceList);
     engine->globalObject().setProperty("AssetReferenceList", ctorAssetReferenceList);
+    
+    // Test objects
+    qScriptRegisterQObjectMetaType<IntegerTestRunner*>(engine);
+    QScriptValue ctorIntegerTesterRunner = engine->newFunction(createIntegerTesterRunner);
+    engine->globalObject().setProperty("IntegerTestRunner", ctorIntegerTesterRunner);
 }

@@ -19,7 +19,6 @@
 class float4;
 
 /// A 4-component color value, component values are floating-points [0.0, 1.0].
-/** @todo Expose to QtScript by using QScriptBindings instead of manual exposing. */
 class Color
 {
 public:
@@ -61,6 +60,16 @@ public:
 
     /// Returns Color as a float4.
     float4 ToFloat4() const;
+
+    static const Color Red; ///< (1, 0, 0, 1)
+    static const Color Green; ///< (0, 1, 0, 1)
+    static const Color Blue; ///< (0, 0, 1, 1)
+    static const Color White; ///< (1, 1, 1, 1)
+    static const Color Black; ///< (0, 0, 0, 1)
+    static const Color Yellow; ///< (1, 0, 0, 1)
+    static const Color Cyan; ///< (0, 1, 1, 1)
+    static const Color Magenta; ///< (1, 0, 1, 1)
+    static const Color Gray; ///< (0.5, 0.5, 0.5, 1)
 
 #ifdef MATH_QT_INTEROP
     /// Constucts Color from QColor

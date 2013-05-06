@@ -147,7 +147,7 @@ if (!framework.IsHeadless())
                 tr("&Yes"), tr("&No"),
                 QString::null, 0, 1))
             {
-                input.SetKeyBindings(editedActions);
+                input.keyBindings = editedActions;
                 input.SaveKeyBindingsToFile();
             }
         }
@@ -195,7 +195,7 @@ if (!framework.IsHeadless())
 
         Clear();
 
-        var keyActions = input.KeyBindings();
+        var keyActions = input.keyBindings;
         for(var action in keyActions)
         {
             var binding = keyActions[action];

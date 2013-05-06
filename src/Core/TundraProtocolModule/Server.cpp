@@ -183,11 +183,11 @@ QVariantList Server::GetConnectionIDs() const
 //    LogWarning("Server::GetConnectionIDs: This function signature is deprecated will be removed. Migrate to using AuthenticatedUsers instead.");
     QVariantList ret;
     foreach(const UserConnectionPtr &user, AuthenticatedUsers())
-        ret.push_back(QVariant((uint)user->userID)); /**< @todo The uint cast should not be necessary here, but without it when compiling TUNDRA_NO_BOOST build with VC9 we get error C2440: '<function-style-cast>' : cannot convert from 'u32' to 'QVariant' */
+        ret.push_back(QVariant(static_cast<uint>(user->userID))); /**< @todo The uint cast should not be necessary here, but without it when compiling TUNDRA_NO_BOOST build with VC9 we get error C2440: '<function-style-cast>' : cannot convert from 'u32' to 'QVariant' */
     return ret;
 }
 
-UserConnectionPtr Server::GetUserConnection(unsigned int connectionID) const
+UserConnectionPtr Server::GetUserConnection(u32 connectionID) const
 {
     foreach(const UserConnectionPtr &user, AuthenticatedUsers())
         if (user->userID == connectionID)
@@ -365,13 +365,13 @@ namespace
 {
 
 template<typename T>
-QScriptValue qScriptValueFromNull(QScriptEngine *engine, const T &v)
+QScriptValue qScriptValueFromNull(QScriptEngine *engine, const T &/*v*/)
 {
     return QScriptValue();
 }
 
 template<typename T>
-void qScriptValueToNull(const QScriptValue &value, T &v)
+void qScriptValueToNull(const QScriptValue &value, T &/*v*/)
 {
 }
 

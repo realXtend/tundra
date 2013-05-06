@@ -4,12 +4,12 @@ var isServer = server.IsRunning();
 
 if (isServer)
 {
-    print("Replication stresstest, client");
+    print("Replication stresstest, server");
     frame.Updated.connect(PerformOperation);
 }
 else
 {
-    print("Replication stresstest, server");
+    print("Replication stresstest, client");
     frame.Updated.connect(PerformOperation);
 }
 

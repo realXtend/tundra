@@ -14,9 +14,9 @@ namespace kNet
     class DataDeserializer;
 }
 
-struct DeserializeData;
-
 class QScriptValue;
+
+struct DeserializeData;
 
 /// A component that allows adding of dynamically structured attributes at runtime.
 /** <table class="header">
@@ -74,8 +74,6 @@ public:
     /// IComponent override.
     void DeserializeFrom(QDomElement& element, AttributeChange::Type change);
 
-    void DeserializeCommon(std::vector<DeserializeData>& deserializedAttributes, AttributeChange::Type change);
-
     /// Constructs a new attribute of type Attribute<T>.
     template<typename T>
     void AddAttribute(const QString &name, AttributeChange::Type change = AttributeChange::Default)
@@ -101,7 +99,7 @@ public slots:
     
     /// A factory method that constructs a new attribute of a given the type name.
     /** @param typeName Type name of the attribute.
-        @param name Name of the attribute.
+        @param name Name of the attribute, case-insensitive.
         @param change Change type.
         This factory is not extensible. If attribute was already created the method will return it's pointer.
 
@@ -117,14 +115,14 @@ public slots:
         @param index Index to attribute list.
         @return Return attribute value as QVariant if attribute has been found, else return null QVariant. */
     QVariant GetAttribute(int index) const;
-    QVariant GetAttribute(const QString &name) const; /**< @overload @param name Name of the attribute. */
+    QVariant GetAttribute(const QString &name) const; /**< @overload @param name Name of the attribute, case-insensitive. */
 
     /// Inserts new attribute value to attribute.
     /** @param index Index for the attribute.
         @param value Value of the attribute.
         @param change Change type. */
     void SetAttribute(int index, const QVariant &value, AttributeChange::Type change = AttributeChange::Default);
-    void SetAttribute(const QString &name, const QVariant &value, AttributeChange::Type change = AttributeChange::Default); /**< @overload @param name Name of the attribute. */
+    void SetAttribute(const QString &name, const QVariant &value, AttributeChange::Type change = AttributeChange::Default); /**< @overload @param name Name of the attribute, case-insensitive. */
 
     /// Returns name of attribute with the specific @c index
     /** @param index Index of the attribute. */
@@ -140,16 +138,18 @@ public slots:
     void RemoveAttribute(const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
     /// Check if component is holding an attribute by the @c name.
-    /** @param name Name of attribute that we are looking for. */
+    /** @param name Name of attribute that we are looking for, case-insensitive. */
     bool ContainsAttribute(const QString &name) const;
 
     /// Removes all attributes from the component
     void RemoveAllAttributes(AttributeChange::Type change = AttributeChange::Default);
 
+    // DEPRECATED
     void AddQVariantAttribute(const QString &name, AttributeChange::Type change = AttributeChange::Default); /**< @deprecated Use CreateAttribute('qvariant') @todo Remove */
     void SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change = AttributeChange::Default); /**< @deprecated Use SetAttribute @todo Remove */
 
 private:
+    void DeserializeCommon(std::vector<DeserializeData>& deserializedAttributes, AttributeChange::Type change);
     /// Convert attribute index without holes (used by client) into actual attribute index. Returns below zero if not found. Requires a linear search.
     int GetInternalAttributeIndex(int index) const;
 };

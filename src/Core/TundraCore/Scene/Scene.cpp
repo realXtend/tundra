@@ -59,12 +59,12 @@ Scene::~Scene()
     emit Removed(this);
 }
 
-EntityPtr Scene::CreateLocalEntity(const QStringList &components, AttributeChange::Type change, bool componentsReplicated)
+EntityPtr Scene::CreateLocalEntity(const QStringList &components, AttributeChange::Type change, bool componentsReplicated, bool temporary)
 {
-    return CreateEntity(0, components, change, false, componentsReplicated);
+    return CreateEntity(0, components, change, false, componentsReplicated, temporary);
 }
 
-EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change, bool replicated, bool componentsReplicated)
+EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change, bool replicated, bool componentsReplicated, bool temporary)
 {
     // Figure out new entity id
     if (id == 0)
@@ -96,6 +96,7 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
     }
 
     EntityPtr entity = MAKE_SHARED(Entity, framework_, id, this);
+    entity->SetTemporary(temporary);
     for(size_t i = 0 ; i < (size_t)components.size(); ++i)
     {
         ComponentPtr newComp = framework_->Scene()->CreateComponentByName(this, components[i]);
@@ -171,6 +172,9 @@ bool Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
             return false;
         }
         
+        // Before an entity is removed, make it remove all of its components to signal removals properly
+        del_entity->RemoveAllComponents(change);
+        
         EmitEntityRemoved(del_entity.get(), change);
         entities_.erase(it);
         
@@ -204,7 +208,12 @@ void Scene::RemoveAllEntities(bool signal, AttributeChange::Type change)
         RemoveEntity(entIds.back(), change);
         entIds.pop_back();
     }
-    entities_.clear();
+    
+    if (entities_.size())
+    {
+        LogWarning("Scene::RemoveAllEntities: entity map was not clear after removing all entities, clearing manually");
+        entities_.clear();
+    }
     
     if (signal)
         emit SceneCleared(this);

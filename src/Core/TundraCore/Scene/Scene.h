@@ -223,9 +223,12 @@ public slots:
         @param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
         @param change Notification/network replication mode
         @param replicated Whether entity is replicated. Default true.
-        @param componentsReplicated Whether components will be replicated. Default true */
+        @param componentsReplicated Whether components will be replicated, true by default.
+        @param temporary Will the entity be temporary i.e. it is no serialized to disk by default, false by default.
+        @note Setting temporary status of an entity when it's created is currently the only way to replicate this status properly.
+        @sa CreateLocalEntity */
     EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList(),
-        AttributeChange::Type change = AttributeChange::Default, bool replicated = true, bool componentsReplicated = true);
+        AttributeChange::Type change = AttributeChange::Default, bool replicated = true, bool componentsReplicated = true, bool temporary = false);
 
     /// Creates new local entity that contains the specified components
     /** Entities should never be created directly, but instead created with this function.
@@ -234,9 +237,12 @@ public slots:
 
         @param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
         @param change Notification/network replication mode
-        @param defaultNetworkSync Whether components will have network sync. Default true */
+        @param componentsReplicated Whether components will be replicated, true by default.
+        @param temporary Will the entity be temporary i.e. it is no serialized to disk by default.
+        @note Setting temporary status of an entity when it's created is currently the only way to replicate this status properly.
+        @sa CreateEntity */
     EntityPtr CreateLocalEntity(const QStringList &components = QStringList(),
-        AttributeChange::Type change = AttributeChange::Default, bool componentsReplicated = true);
+        AttributeChange::Type change = AttributeChange::Default, bool componentsReplicated = true, bool temporary = false);
 
     /// Returns scene up vector. For now it is a compile-time constant
     float3 UpVector() const;

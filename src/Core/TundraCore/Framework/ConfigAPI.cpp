@@ -107,7 +107,7 @@ bool ConfigAPI::HasKey(QString file, QString section, QString key) const
 {
     if (configFolder_.isEmpty())
     {
-        LogError("ConfigAPI::HasKey: Config folder has not been prepared, returning empty string.");
+        LogError("ConfigAPI::HasKey: Config folder has not been prepared, returning false.");
         return false;
     }
 
@@ -124,34 +124,34 @@ bool ConfigAPI::HasKey(QString file, QString section, QString key) const
     return config.allKeys().contains(key);
 }
 
-QVariant ConfigAPI::Get(const ConfigData &data) const
+QVariant ConfigAPI::Read(const ConfigData &data) const
 {
     if (data.file.isEmpty() || data.section.isEmpty() || data.key.isEmpty())
     {
-        LogWarning("ConfigAPI::Get: ConfigData does not have enough information.");
+        LogWarning("ConfigAPI::Read: ConfigData does not have enough information.");
         return data.defaultValue;
     }
-    return Get(data.file, data.section, data.key, data.defaultValue);
+    return Read(data.file, data.section, data.key, data.defaultValue);
 }
 
-QVariant ConfigAPI::Get(const ConfigData &data, QString key, const QVariant &defaultValue) const
+QVariant ConfigAPI::Read(const ConfigData &data, QString key, const QVariant &defaultValue) const
 {
     if (data.file.isEmpty() || data.section.isEmpty())
     {
-        LogWarning("ConfigAPI::Get: ConfigData does not have enough information.");
+        LogWarning("ConfigAPI::Read: ConfigData does not have enough information.");
         return data.defaultValue;
     }
     if (defaultValue.isNull())
-        return Get(data.file, data.section, key, data.defaultValue);
+        return Read(data.file, data.section, key, data.defaultValue);
     else
-        return Get(data.file, data.section, key, defaultValue);
+        return Read(data.file, data.section, key, defaultValue);
 }
 
-QVariant ConfigAPI::Get(QString file, QString section, QString key, const QVariant &defaultValue) const
+QVariant ConfigAPI::Read(QString file, QString section, QString key, const QVariant &defaultValue) const
 {
     if (configFolder_.isEmpty())
     {
-        LogError("ConfigAPI::Get: Config folder has not been prepared, returning empty string.");
+        LogError("ConfigAPI::Read: Config folder has not been prepared, returning null QVariant.");
         return "";
     }
 
@@ -171,31 +171,31 @@ QVariant ConfigAPI::Get(QString file, QString section, QString key, const QVaria
         return config.value(section + "/" + key, defaultValue);
 }
 
-void ConfigAPI::Set(const ConfigData &data)
+void ConfigAPI::Write(const ConfigData &data)
 {
     if (data.file.isEmpty() || data.section.isEmpty() || data.key.isEmpty() || data.value.isNull())
     {
-        LogWarning("ConfigAPI::Set: ConfigData does not have enough information.");
+        LogWarning("ConfigAPI::Write: ConfigData does not have enough information.");
         return;
     }
-    return Set(data.file, data.section, data.key, data.value);
+    Write(data.file, data.section, data.key, data.value);
 }
 
-void ConfigAPI::Set(const ConfigData &data, QString key, const QVariant &value)
+void ConfigAPI::Write(const ConfigData &data, QString key, const QVariant &value)
 {
     if (data.file.isEmpty() || data.section.isEmpty())
     {
-        LogWarning("ConfigAPI::Set: ConfigData does not have enough information.");
+        LogWarning("ConfigAPI::Write: ConfigData does not have enough information.");
         return;
     }
-    return Set(data.file, data.section, key, value);
+    Write(data.file, data.section, key, value);
 }
 
-void ConfigAPI::Set(QString file, QString section, QString key, const QVariant &value)
+void ConfigAPI::Write(QString file, QString section, QString key, const QVariant &value)
 {
     if (configFolder_.isEmpty())
     {
-        LogError("ConfigAPI::Set: Config folder has not been prepared, not storing value to config empty string.");
+        LogError("ConfigAPI::Write: Config folder has not been prepared, can not write value to config.");
         return;
     }
 
@@ -214,4 +214,27 @@ void ConfigAPI::Set(QString file, QString section, QString key, const QVariant &
     else
         config.setValue(section + "/" + key, value);
     config.sync();
+}
+
+QVariant ConfigAPI::DeclareSetting(const QString &file, const QString &section, const QString &key, const QVariant &defaultValue)
+{
+    if (HasKey(file, section, key))
+    {
+        return Read(file, section, key);
+    }
+    else
+    {
+        Write(file, section, key, defaultValue);
+        return defaultValue;
+    }
+}
+
+QVariant ConfigAPI::DeclareSetting(const ConfigData &data)
+{
+    return DeclareSetting(data.file, data.section, data.key, data.value.isValid() ? data.value : data.defaultValue);
+}
+
+QVariant ConfigAPI::DeclareSetting(const ConfigData &data, const QString &key, const QVariant &defaultValue)
+{
+    return DeclareSetting(data.file, data.section, key, defaultValue);
 }

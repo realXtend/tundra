@@ -639,7 +639,8 @@ WARN_LOGFILE           =
 # with spaces.
 
 INPUT                  = ../../../Core/Framework/Transform.h \
-                         ../../../Core/Math
+                         ../../../Core/Math \
+                         ../../../Core/TundraCore/Framework/ConfigAPI.h
 
 # This tag can be used to specify the character encoding of the source files 
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is 

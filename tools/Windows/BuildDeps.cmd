@@ -269,16 +269,8 @@ IF NOT EXIST "%DEPS%\qt\lib\QtWebKit4.dll". (
    IF %USE_JOM%==TRUE (
       cecho {0D}- Building Qt with jom{# #}{\n}
       "%DEPS%\qt\jom\jom.exe"
-      :: Qt build system is slightly broken: see https://bugreports.qt-project.org/browse/QTBUG-6470. Work around the issue.
-      set ERRORLEVEL=0
-      del /s /q mocinclude.tmp
-      "%DEPS%\qt\jom\jom.exe"
    ) ELSE (
       cecho {0D}- Building Qt with nmake{# #}{\n}
-      nmake /nologo
-      :: Qt build system is slightly broken: see https://bugreports.qt-project.org/browse/QTBUG-6470. Work around the issue.
-      set ERRORLEVEL=0
-      del /s /q mocinclude.tmp
       nmake /nologo
    )
 
@@ -314,20 +306,21 @@ set QMAKESPEC=%DEPS%\qt\mkspecs\%QT_PLATFORM%
 set QTDIR=%DEPS%\qt
 
 IF NOT EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
-   cecho {0D}Deploying Qt DLLs to Tundra bin\.{# #}{\n}
-   copy /Y "%DEPS%\qt\bin\*.dll" "%TUNDRA_BIN%"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   mkdir "%TUNDRA_BIN%\qtplugins"
-   xcopy /E /I /C /H /R /Y "%DEPS%\qt\plugins\*.*" "%TUNDRA_BIN%\qtplugins"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   :: Clean out some definately not needed Qt DLLs from bin
-   :: QtCLucene does not have a public API and QtDesigner* are for QtCreator etc.
-   :: Others we could (should) remove right here: QtSvg, QtSql, QtTest and QtHelp.
-   del /Q "%TUNDRA_BIN%\QtCLucene*.dll"
-   del /Q "%TUNDRA_BIN%\QtDesigner*.dll"
+    cecho {0D}Deploying Qt DLLs to Tundra bin\.{# #}{\n}
+    copy /Y "%DEPS%\qt\bin\*.dll" "%TUNDRA_BIN%"
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    mkdir "%TUNDRA_BIN%\qtplugins"
+    xcopy /E /I /C /H /R /Y "%DEPS%\qt\plugins\*.*" "%TUNDRA_BIN%\qtplugins"
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    :: Clean out some definately not needed Qt DLLs from bin
+    del /Q "%TUNDRA_BIN%\QtCLucene*.dll"
+    del /Q "%TUNDRA_BIN%\QtDesigner*.dll"
+    del /Q "%TUNDRA_BIN%\QtHelp*.dll"
+    del /Q "%TUNDRA_BIN%\QtScriptTools*.dll"
+    del /Q "%TUNDRA_BIN%\QtSql*.dll"
+    del /Q "%TUNDRA_BIN%\QtSvg*.dll"
+    del /Q "%TUNDRA_BIN%\QtTest*.dll"
 )
-
-
 
 :: Bullet physics engine
 :: version 2.81 sp1, svn rev 2613
@@ -391,6 +384,7 @@ IF NOT EXIST "%DEPS%\boost". (
 )
 
 :SKIP_BOOST
+
 IF NOT EXIST "%DEPS%\assimp\". (
    cecho {0D}Checking out OpenAssetImport library from https://assimp.svn.sourceforge.net/svnroot/assimp/trunk into "%DEPS%\assimp".{# #}{\n}
    cd "%DEPS%"
@@ -409,9 +403,8 @@ IF NOT EXIST "%DEPS%\assimp\". (
    
    :: Debug build.
    MSBuild Assimp.sln /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
-   copy /Y "bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
-   MSBuild Assimp.sln /p:configuration=%BUILD_TYPE% /nologo /m:%NUMBER_OF_PROCESSORS%
-   copy /Y "bin\%BUILD_TYPE%\assimp.dll" "%TUNDRA_BIN%"
+   MSBuild Assimp.sln /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
+   MSBuild Assimp.sln /p:configuration=RelWithDebInfo /nologo /m:%NUMBER_OF_PROCESSORS%
 ) ELSE (
    ::TODO Even if %DEPS%\assimp exists, we have no guarantee that assimp is built successfully for real
    cecho {0D}OpenAssetImport already built. Skipping.{# #}{\n}
@@ -419,41 +412,53 @@ IF NOT EXIST "%DEPS%\assimp\". (
 
 :: Copy the correct runtime to /bin for this run
 IF %BUILD_RELEASE% == TRUE (
-   copy /Y "bin\Release\assimp.dll" "%TUNDRA_BIN%"
+   copy /Y "%DEPS%\assimp\bin\Release\assimp.dll" "%TUNDRA_BIN%"
 ) ELSE (
-   copy /Y "bin\RelWithDebInfo\assimp.dll" "%TUNDRA_BIN%"
+   copy /Y "%DEPS%\assimp\bin\RelWithDebInfo\assimp.dll" "%TUNDRA_BIN%"
 )
+copy /Y "%DEPS%\assimp\bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
 
+set BUILD_KNET=TRUE
 IF NOT EXIST "%DEPS%\kNet\". (
-   cecho {0D}Cloning kNet from https://github.com/juj/kNet into "%DEPS%\kNet".{# #}{\n}
-   cd "%DEPS%"
-   call git clone https://github.com/juj/kNet
-   IF NOT EXIST "%DEPS%\kNet\.git" GOTO :ERROR
+    cecho {0D}Cloning kNet from https://github.com/juj/kNet into "%DEPS%\kNet".{# #}{\n}
+    cd "%DEPS%"
+    call git clone https://github.com/juj/kNet
+    IF NOT EXIST "%DEPS%\kNet\.git" GOTO :ERROR
 ) ELSE (
-   cecho {0D}Updating kNet to newest version from https://github.com/juj/kNet.{# #}{\n}
-   cd "%DEPS%\kNet"
-   call git pull
+    cecho {0D}Updating kNet to newest version from https://github.com/juj/kNet.{# #}{\n}
+    cd "%DEPS%\kNet"
+    call git pull >"%DEPS%\kNet\git-check"
+    set /p KNET_GIT_CHECK=<"%DEPS%\kNet\git-check"
+    echo !KNET_GIT_CHECK!
+    IF "!KNET_GIT_CHECK!"=="Already up-to-date." set BUILD_KNET=FALSE
+    del "%DEPS%\kNet\git-check"
 )
 
 cd "%DEPS%\kNet"
-:: TODO/NOTE: USE_BOOST not possible to configure from command-line with kNet's
-:: default (stable) branch yet, so tweak the CMakeLists.txt manually for now.
-sed s/"set(USE_BOOST TRUE)"/"option(USE_BOOST \"Specifies whether Boost is used.\" TRUE)"/g <CMakeLists.txt >CMakeLists.txt.sed
-del CMakeLists.txt
-rename CMakeLists.txt.sed CMakeLists.txt
-
 IF NOT EXIST kNet.sln. (
-   cecho {0D}Running cmake for kNet.{# #}{\n}
-   del /Q CMakeCache.txt
-   cmake . -G %GENERATOR% -DBOOST_ROOT=%BOOST_ROOT% -DUSE_BOOST:BOOL=%USE_BOOST%
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cecho {0D}Running cmake for kNet.{# #}{\n}
+
+    REM TODO/NOTE: USE_BOOST not possible to configure from command-line with kNet's
+    REM default (stable) branch yet, so tweak the CMakeLists.txt manually for now.
+    sed s/"set(USE_BOOST TRUE)"/"option(USE_BOOST \"Specifies whether Boost is used.\" TRUE)"/g <CMakeLists.txt >CMakeLists.txt.sed
+    del CMakeLists.txt
+    rename CMakeLists.txt.sed CMakeLists.txt
+
+    del /Q CMakeCache.txt
+    cmake . -G %GENERATOR% -DBOOST_ROOT=%BOOST_ROOT% -DUSE_BOOST:BOOL=%USE_BOOST%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    set BUILD_KNET=TRUE
 )
 
-cecho {0D}Building kNet. Please be patient, this will take a while.{# #}{\n}
-MSBuild kNet.sln /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
-MSBuild kNet.sln /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
-MSBuild kNet.sln /p:configuration=RelWithDebInfo /nologo /m:%NUMBER_OF_PROCESSORS%
-IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+IF %BUILD_KNET%==TRUE (
+    cecho {0D}Building kNet. Please be patient, this will take a while.{# #}{\n}
+    MSBuild kNet.sln /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild kNet.sln /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild kNet.sln /p:configuration=RelWithDebInfo /nologo /m:%NUMBER_OF_PROCESSORS%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+) ELSE (
+    cecho {0D}kNet already built and up to date. Skipping.{# #}{\n}
+)
 
 IF NOT EXIST "%DEPS%\qtscriptgenerator\.git". (
    cecho {0D}Cloning QtScriptGenerator into "%DEPS%\qtscriptgenerator".{# #}{\n}
@@ -464,7 +469,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\.git". (
    cecho {0D}QtScriptGenerator already cloned. Skipping.{# #}{\n}
 )
 
-IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xmlpatterns.dll". (
+IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xml.dll". (
    cd "%DEPS%\qtscriptgenerator\generator"
    cecho {0D}Running qmake for QtScriptGenerator.{# #}{\n}
    :: We need to patch pp-iterator.h in order to make it compile with newer Visual Studio versions:
@@ -529,7 +534,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xmlpatterns.dll".
    )
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-   cecho {0D}QtScriptGenerator skipped.{# #}{\n}
+   cecho {0D}QtScriptGenerator already built. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%TUNDRA_BIN%\qtplugins\script\qtscript_core.dll". (
@@ -541,17 +546,20 @@ IF NOT EXIST "%TUNDRA_BIN%\qtplugins\script\qtscript_core.dll". (
 )
 
 IF NOT EXIST "%DEPS%\realxtend-tundra-deps\.git". (
-   cecho {0D}Cloning realxtend-tundra-deps repository into "%DEPS%\realxtend-tundra-deps".{# #}{\n}
-   cd "%DEPS%"
-   call git clone https://code.google.com/p/realxtend-tundra-deps
-   IF NOT EXIST "%DEPS%\realxtend-tundra-deps\.git" GOTO :ERROR
-
-   cd "%DEPS%\realxtend-tundra-deps"
-   call git checkout sources
+    cecho {0D}Cloning realxtend-tundra-deps repository into "%DEPS%\realxtend-tundra-deps".{# #}{\n}
+    REM Only clone/fetch the sources branch. Skipping the prebuilt binary branches as they are huge.
+    cd "%DEPS%"
+    call git init realxtend-tundra-deps
+    cd realxtend-tundra-deps
+    call git fetch https://code.google.com/p/realxtend-tundra-deps/ sources:refs/remotes/origin/sources
+    call git remote add origin https://code.google.com/p/realxtend-tundra-deps/
+    call git checkout sources
+    IF NOT EXIST "%DEPS%\realxtend-tundra-deps\.git" GOTO :ERROR
 ) ELSE (
-   cecho {0D}Updating realxtend-tundra-deps to newest.{# #}{\n}
-   cd "%DEPS%\realxtend-tundra-deps"
-   call git pull origin
+    cecho {0D}Updating realxtend-tundra-deps to newest.{# #}{\n}
+    cd "%DEPS%\realxtend-tundra-deps"
+    call git fetch origin sources:refs/remotes/origin/sources
+    git rebase origin/sources
 )
 
 set OGRE_HOME=%DEPS%\ogre-safe-nocrashes\SDK
@@ -606,16 +614,18 @@ IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
 )
 
 :: Use Intel Thread Building Blocks for Ogre's threading if Boost is not used.
-set TBB_VERSION=tbb41_20121003oss
+:: Latest 4.0 is used as 4.1 introduces WIN32 API calls that do not work on windows xp.
+:: If we are to update this can be fixed in tbb windows_api.h by using the xp workaround on all platforms.
+set TBB_VERSION=tbb40_20120613oss
 set TBB_HOME=%DEPS%\ogre-safe-nocrashes\Dependencies\tbb
 IF %USE_BOOST%==FALSE (
     IF NOT EXIST %TBB_VERSION%_win.zip. (
         cecho {0D}Downloading Intel Thread Building Blocks prebuilt package.{# #}{\n}
         wget "http://threadingbuildingblocks.org/sites/default/files/software_releases/windows/%TBB_VERSION%_win.zip"
-    )
-    IF NOT EXIST %TBB_VERSION%_win.zip. (
-        cecho {0C}Error downloading Intel Thread Building Blocks! Aborting!{# #}{\n}
-        GOTO :ERROR
+        IF NOT EXIST %TBB_VERSION%_win.zip. (
+            cecho {0C}Error downloading Intel Thread Building Blocks! Aborting!{# #}{\n}
+            GOTO :ERROR
+        )
     )
     IF NOT EXIST "%TBB_HOME%". (
         cecho {0D}Extracting Intel Thread Building Blocks package.{# #}{\n}
@@ -639,15 +649,19 @@ IF %USE_BOOST%==FALSE (
         sed s@"#error TBB is unable to run on old Windows versions;"@"//#error TBB is unable to run on old Windows versions;"@g <_tbb_windef.h >_tbb_windef.h.sed
         del _tbb_windef.h
         rename _tbb_windef.h.sed _tbb_windef.h
+    )
 
-        REM Copy TBB DLLs.
-        REM TODO Currently hardcoded to the 32-bit versions.
-        copy /Y "%TBB_HOME%\bin\ia32\%VC_VER%\*.dll" "%TUNDRA_BIN%"
-
-        cd "%DEPS%\ogre-safe-nocrashes"
+    REM Copy TBB DLLs.
+    REM TODO Currently hardcoded to the 32-bit versions.
+    IF NOT EXIST "%TUNDRA_BIN%\tbb.dll". (
+      copy /Y "%TBB_HOME%\bin\ia32\%VC_VER%\tbb.dll" "%TUNDRA_BIN%"
+    )
+    IF NOT EXIST "%TUNDRA_BIN%\tbb_debug.dll". (
+      copy /Y "%TBB_HOME%\bin\ia32\%VC_VER%\tbb_debug.dll" "%TUNDRA_BIN%"
     )
 )
 
+cd "%DEPS%\ogre-safe-nocrashes"
 IF NOT EXIST OGRE.sln. (
    :: If not wanting to use Boost with Ogre, we need slightly tweaked version of Ogre's Dependencies.cmake
    :: which doesn't enforce usage of Boost if it's found regardless of the value of OGRE_USE_BOOST
@@ -677,6 +691,9 @@ copy /Y "%DEPS%\ogre-safe-nocrashes\bin\%BUILD_TYPE%\*.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 copy /Y "%DEPS%\ogre-safe-nocrashes\Dependencies\bin\Release\cg.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+del /Q "%TUNDRA_BIN%\OgrePaging*.dll"
+del /Q "%TUNDRA_BIN%\OgreRTShaderSystem*.dll"
+del /Q "%TUNDRA_BIN%\OgreTerrain*.dll"
 
 cecho {0E}NOTE: Skipping PythonQt build for now!{# #}{\n}
 REM IF NOT EXIST "%DEPS%\realxtend-tundra-deps\PythonQt\lib\PythonQt.lib". (
@@ -772,7 +789,7 @@ IF NOT EXIST "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head.dll". (
 :: OpenAL
 IF NOT EXIST "%DEPS%\OpenAL\libs\Win32\OpenAL32.lib". (
    cecho {0D}OpenAL does not exist. Unzipping a prebuilt package.{# #}{\n}
-   copy "%TOOLS%\utils-windows\OpenAL.zip" "%DEPS%\"
+   copy "%TOOLS%\Utils\OpenAL.zip" "%DEPS%\"
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    cd "%DEPS%\"
    7za x OpenAL.zip
@@ -837,22 +854,25 @@ IF NOT EXIST "%DEPS%\theora". (
 
 :: Speex
 IF NOT EXIST "%DEPS%\speex". (
-   cd "%DEPS%"
-   :: Speex does not have a tagged release for VS2008! So, check out trunk instead.
-   cecho {0D}Cloning Speex into "%DEPS%\speex".{# #}{\n}
-   svn checkout http://svn.xiph.org/trunk/speex/ speex
-   cd speex\win32\VS2008
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cd "%DEPS%"
+    :: Speex does not have a tagged release for VS2008! So, check out trunk instead.
+    cecho {0D}Cloning Speex into "%DEPS%\speex".{# #}{\n}
+    svn checkout http://svn.xiph.org/trunk/speex/ speex
+)
 
-   cecho {0D}Building Speex. Please be patient, this will take a while.{# #}{\n}
-   MSBuild libspeex.sln /p:configuration=Debug /t:libspeex /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild libspeex.sln /p:configuration=Release /t:libspeex /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   :: For some reason /t:libspeex;libspeexdsp wont build the dsp lib, so do it separately.
-   :: Only build release because the target directory and name are the same for debug and release.
-   MSBuild libspeexdsp\libspeexdsp.%VCPROJ_FILE_EXT% /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   :: Copy libspeex.lib also to \lib
-   copy /Y Win32\Release\libspeex.lib "%DEPS%\speex\lib"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+IF NOT EXIST "%DEPS%\speex\lib\Release\libspeexdsp.lib". (
+    cd "%DEPS%\speex\win32\VS2008"
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
+    cecho {0D}Building Speex. Please be patient, this will take a while.{# #}{\n}
+    :: The default libspeex.sln has the libspeexdsp project disabled, so we must use our own custom solution file.
+    copy /Y "%TOOLS%\Mods\libspeex.sln" libspeex.sln
+    :: Also, the libspeexdsp.vcproj poorly outputs the resulted library to the same directory using the same filename
+    :: regardless of the used configuration so we must work around that too.
+    copy /Y "%TOOLS%\Mods\libspeexdsp.vcproj" libspeexdsp\libspeexdsp.vcproj
+    MSBuild libspeex.sln /p:configuration=Debug /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libspeex.sln /p:configuration=Release /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Speex already built. Skipping.{# #}{\n}
 )

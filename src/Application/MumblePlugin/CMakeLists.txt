@@ -20,19 +20,13 @@ endmacro (configure_speex)
 
 macro (configure_protobuf)
     if (APPLE)
-        sagase_configure_package(PROTOBUF
-            NAMES protobuf
-            COMPONENTS libprotobuf      # protobuf lib
-                       service          # service.h to find include dir
-            PREFIXES ${ENV_TUNDRA_DEP_PATH}/protobuf                      # Finding the libs
-                     ${ENV_TUNDRA_DEP_PATH}/protobuf/bin                  # Protoc executable
-                     ${ENV_TUNDRA_DEP_PATH}/protobuf/include/google)      # Finding the include
+        find_package(Protobuf REQUIRED)
 
-        # Remove FindProtobuf.cmake generated not found item
-        list (REMOVE_ITEM PROTOBUF_LIBRARIES PROTOBUF_LIBRARY-NOTFOUND)
-        
+        set (PROTOBUF_LIBRARIES ${ENV_TUNDRA_DEP_PATH}/protobuf/lib/libprotobuf.7.dylib)
+        set (PROTOBUF_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/protobuf/include)
+
         if ("${PROTOBUF_PROTOC_EXECUTABLE}" STREQUAL "PROTOBUF_PROTOC_EXECUTABLE-NOTFOUND")
-            set (PROTOBUF_PROTOC_EXECUTABLE ${ENV_TUNDRA_DEP_PATH}/bin/protoc)
+            set (PROTOBUF_PROTOC_EXECUTABLE ${ENV_TUNDRA_DEP_PATH}/protobuf/bin/protoc)
             message (STATUS "Protoc executable not found automatically, guessing location to " ${PROTOBUF_PROTOC_EXECUTABLE})
         else ()
             message (STATUS "Protoc executable found from: " ${PROTOBUF_PROTOC_EXECUTABLE})
@@ -40,9 +34,7 @@ macro (configure_protobuf)
         
         # Force the protobuf as found or Mumble.proto wont be processed.
         set (PROTOBUF_FOUND 1)
-    endif()
-
-    if (NOT APPLE)
+    else()
         if ("${PROTOBUF_SRC_ROOT_FOLDER}" STREQUAL "")
             file (TO_CMAKE_PATH "$ENV{PROTOBUF_SRC_ROOT_FOLDER}" PROTOBUF_SRC_ROOT_FOLDER)
         endif()
@@ -69,7 +61,7 @@ macro (configure_protobuf)
     sagase_configure_report (PROTOBUF)
 endmacro (configure_protobuf)
 
-macro (configure_openssl)       
+macro (configure_openssl)
     if ("${OPENSSL_ROOT_DIR}" STREQUAL "")
         file (TO_CMAKE_PATH "$ENV{OPENSSL_ROOT_DIR}" OPENSSL_ROOT_DIR)
     endif()
@@ -96,8 +88,9 @@ macro (configure_celt)
                    celt0    # for old celt0 name (linux?)
                    celt     # for celt.h
         PREFIXES ${CELT_ROOT}
-                 ${ENV_TUNDRA_DEP_PATH})
-        
+                 ${ENV_TUNDRA_DEP_PATH}
+                 ${CELT_ROOT}/libcelt/Debug
+                 ${CELT_ROOT}/libcelt/Release)
     sagase_configure_report (CELT)
 endmacro (configure_celt)
 
@@ -128,7 +121,8 @@ set(CPP_FILES ${CPP_FILES} ${CPP_FILES_MUMBLE_})
 MocFolder ()
 UiFolder ()
 
-QT4_WRAP_CPP (MOC_SRCS ${H_FILES})
+QT4_WRAP_CPP(MOC_SRCS AudioProcessor.h AudioWizard.h CeltCodec.h MumbleData.h MumbleDefines.h
+    MumbleNetworkHandler.h MumblePlugin.h mumble/AudioStats.h)
 QT4_WRAP_UI (UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(QRC_SRCS ${QRC_FILES})
 
@@ -169,7 +163,7 @@ if (NOT WIN32)
 
     #TODO This line should not be needed, as these libraries should be picked up by above link_package. However,
     # does not seem to be happening. Remove this line when the above link_packages have been fixed.
-    target_link_libraries(${TARGET_NAME} speex speexdsp protobuf)
+    target_link_libraries(${TARGET_NAME} speex speexdsp)
 endif ()
 
 if (WIN32)

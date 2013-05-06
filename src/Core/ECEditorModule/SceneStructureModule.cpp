@@ -75,8 +75,10 @@ SceneStructureModule::~SceneStructureModule()
 void SceneStructureModule::Initialize()
 {
     // No headless checks for these as they are useful in headless mode too.
-    framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window, hides it if it's visible.", 
+    framework_->Console()->RegisterCommand("scene", "Shows the Scene Structure window, hides it if it's visible.", 
         this, SLOT(ToggleSceneStructureWindow()));
+    framework_->Console()->RegisterCommand("scenestruct", "Deprecated use 'scene' instead.", 
+        this, SLOT(ToggleSceneStructureWindowDeprecated()));
     framework_->Console()->RegisterCommand("assets", "Shows the Assets window, hides it if it's visible.", 
         this, SLOT(ToggleAssetsWindow()));
 
@@ -318,6 +320,12 @@ void SceneStructureModule::CleanReference(QString &fileRef)
         fileRef = fileRef.mid(1);
 #endif
     }
+}
+
+void SceneStructureModule::ToggleSceneStructureWindowDeprecated()
+{
+    LogWarning("SceneStructureModule: 'scenestruct' console command is deprecated, use 'scene' instead.");
+    ToggleSceneStructureWindow();
 }
 
 void SceneStructureModule::ToggleSceneStructureWindow()

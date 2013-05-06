@@ -21,9 +21,6 @@ public:
     virtual bool IsLoaded() const;
 
     /// IAssetBundle override.
-    virtual void DoUnload();
-
-    /// IAssetBundle override.
     /** Our current zziplib implementation requires disk source for processing. */
     virtual bool RequiresDiskSource() { return true; }
 
@@ -54,6 +51,9 @@ private slots:
     void OnAsynchLoadCompleted(bool successful);
     
 private:
+    /// IAssetBundle override.
+    virtual void DoUnload();
+
     /// Closes zip file.
     void Close();
     

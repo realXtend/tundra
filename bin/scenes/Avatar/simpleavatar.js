@@ -75,9 +75,13 @@ SimpleAvatar.prototype.OnScriptObjectDestroyed = function() {
     }
     else
     {
+        // It would be a good idea to destroy the avatar when script object is destroyed/recreated, unfortunately
+        // it can lead to stack overflow if we were already removing the entity
+/*
         var avatar = scene.EntityByName("Avatar" + client.connectionId);
         if (avatar)
             scene.RemoveEntity(avatar.id);
+*/
 
         frame.Updated.disconnect(this, this.ClientUpdate);
     }

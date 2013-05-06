@@ -86,6 +86,14 @@ public slots:
     /// Toggles visibility of Key Bindings window.
     void ToggleKeyBindingsWindow();
 
+private slots:
+    /// @cond PRIVATE
+    /** @deprecated at version 2.5.0.1. Used for old 'scenestruct' console command. Use 'scene' console command instead. 
+        Needs to be its own slot as is used for console command and we want to print a deprecated warning for only the old command.
+        @todo Remove */
+    void ToggleSceneStructureWindowDeprecated();
+    /// @endcond
+
 private:
     void SaveWindowPosition(QWidget *widget, const QString &settingName);
     void LoadWindowPosition(QWidget *widget, const QString &settingName);

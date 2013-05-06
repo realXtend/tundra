@@ -48,8 +48,7 @@ ECAttributeEditorBase::ECAttributeEditorBase(QtAbstractPropertyBrowser *owner,
     propertyMgr_(0),
     listenEditorChangedSignal_(false),
     useMultiEditor_(false),
-    metaDataFlag_(0),
-    updated_(false)
+    metaDataFlag_(0)
 {
     AddComponent(component);
 }
@@ -1734,14 +1733,9 @@ template<> void ECAttributeEditor<AssetReference>::Update(IAttribute *attr)
 
         QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(propertyMgr_);
         if (!stringManager)
-            return;
-
-        if (!updated_)
         {
-            updated_ = true;
-
-            UnInitialize();
-            Initialize();
+            LogWarning("Failed to update attribute value in ECEditor, couldn't find stringmanager");
+            return;
         }
 
         stringManager->setValue(rootProperty_, attribute->Get().ref);
@@ -1850,36 +1844,51 @@ void AssetReferenceAttributeEditor::OpenAssetsWindow()
         QString assetType = components_[0].lock()->GetFramework()->Asset()->GetResourceTypeFromAssetRef(assetRef->Get());
         LogDebug("Creating AssetsWindow for asset type " + assetType);
         AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
-        connect(assetsWindow, SIGNAL(SelectedAssetChanged(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
+        connect(assetsWindow, SIGNAL(SelectedAssetChanged(AssetPtr)), SLOT(HandleAssetSelected(AssetPtr)));
         connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
         connect(assetsWindow, SIGNAL(PickCanceled()), SLOT(RestoreOriginalValue()));
         assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
         assetsWindow->setWindowFlags(Qt::Tool);
         assetsWindow->show();
 
-        // Save the original asset ref(s), if we decide to cancel
-        foreach(const ComponentWeakPtr &c, components_)
-            if (c.lock())
-            {
-                Attribute<AssetReference> *ref = FindAttribute<AssetReference>(c.lock());
-                if (ref)
-                    originalValues[c] = ref->Get();
-            }
+        SaveOriginalValue();
     }
+}
+
+void AssetReferenceAttributeEditor::SaveOriginalValue()
+{
+    originalValues.clear();
+    
+    // Save the original asset ref(s), if we decide to cancel
+    foreach(const ComponentWeakPtr &c, components_)
+        if (c.lock())
+        {
+            Attribute<AssetReference> *ref = FindAttribute<AssetReference>(c.lock());
+            if (ref)
+                originalValues[c] = ref->Get();
+        }
 }
 
 void AssetReferenceAttributeEditor::HandleAssetPicked(AssetPtr asset)
 {
+    // Choice was final, set new original values
+    originalValues.clear();
+    HandleAssetSelected(asset);
+    SaveOriginalValue();
+}
+
+void AssetReferenceAttributeEditor::HandleAssetSelected(AssetPtr asset)
+{
     if (asset)
     {
         LogDebug("AssetReferenceAttributeEditor: Setting new value " + asset->Name());
-
-        updated_ = false;
-
         SetValue(AssetReference(asset->Name()));
-        Update();
+        // Update() does not update immediately, need to reinit
+        UnInitialize();
+        Initialize();
     }
 }
+
 
 void AssetReferenceAttributeEditor::RestoreOriginalValue()
 {
@@ -1953,14 +1962,18 @@ template<> void ECAttributeEditor<AssetReferenceList>::Update(IAttribute *attr)
         const AssetReferenceList &value = attribute->Get();
         /// @todo It tends to be heavy operation to reinitialize all ui elements when new parameters have been added.
         /// replace this so that only single vector's element is added/deleted from the editor.
-        if (value.Size() + 1 != children.size() || !updated_)
+        if (value.Size() + 1 != children.size())
         {
-            updated_ = true;
-
             UnInitialize();
             Initialize();
         }
 
+        if (!stringManager)
+        {
+            LogWarning("Failed to update attribute value in ECEditor, couldn't find stringmanager");
+            return;
+        }
+        
         if (value.Size() <= children.size())
             for(uint i = 0; i < (uint)value.Size(); ++i)
                 stringManager->setValue(children[i], value[i].ref);
@@ -2135,13 +2148,18 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
     LogDebug("OpenAssetsWindow, index " + QString::number(currentIndex));
     LogDebug("Creating AssetsWindow for asset type " + assetType);
     AssetsWindow *assetsWindow = new AssetsWindow(assetType, fw, fw->Ui()->MainWindow());
-    connect(assetsWindow, SIGNAL(SelectedAssetChanged(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
+    connect(assetsWindow, SIGNAL(SelectedAssetChanged(AssetPtr)), SLOT(HandleAssetSelected(AssetPtr)));
     connect(assetsWindow, SIGNAL(AssetPicked(AssetPtr)), SLOT(HandleAssetPicked(AssetPtr)));
     connect(assetsWindow, SIGNAL(PickCanceled()), SLOT(RestoreOriginalValue()));
     assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
     assetsWindow->setWindowFlags(Qt::Tool);
     assetsWindow->show();
 
+    SaveOriginalValue();
+}
+
+void AssetReferenceListAttributeEditor::SaveOriginalValue()
+{
     originalValues.clear();
 
     // Save the original asset ref(s), if we decide to cancel
@@ -2155,6 +2173,14 @@ void AssetReferenceListAttributeEditor::OpenAssetsWindow()
 }
 
 void AssetReferenceListAttributeEditor::HandleAssetPicked(AssetPtr asset)
+{
+    // Choice was final, set new original values
+    originalValues.clear();
+    HandleAssetSelected(asset);
+    SaveOriginalValue();
+}
+
+void AssetReferenceListAttributeEditor::HandleAssetSelected(AssetPtr asset)
 {
     Attribute<AssetReferenceList> *refList = FindAttribute<AssetReferenceList>(components_[0].lock());
     if (!refList)
@@ -2172,9 +2198,6 @@ void AssetReferenceListAttributeEditor::HandleAssetPicked(AssetPtr asset)
     if (asset)
     {
         LogDebug("AssetReferenceListAttributeEditor: Setting new value " + asset->Name() + " for index " + QString::number(currentIndex));
-
-        updated_ = false;
-
         AssetReferenceList newRefList = refList->Get();
         if (newRefList.IsEmpty())
             newRefList.Append(AssetReference(asset->Name()));
@@ -2182,7 +2205,9 @@ void AssetReferenceListAttributeEditor::HandleAssetPicked(AssetPtr asset)
             newRefList.Set(currentIndex, AssetReference(asset->Name()));
 
         SetValue(newRefList);
-        Update();
+        // Update() does not update immediately, need to reinit
+        UnInitialize();
+        Initialize();
     }
 }
 
@@ -2269,7 +2294,10 @@ template<> void ECAttributeEditor<EntityReference>::Update(IAttribute *attr)
 
         QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(propertyMgr_);
         if (!stringManager)
+        {
+            LogWarning("Failed to update attribute value in ECEditor, couldn't find stringmanager");
             return;
+        }
 
         stringManager->setValue(rootProperty_, attribute->Get().ref);
     }

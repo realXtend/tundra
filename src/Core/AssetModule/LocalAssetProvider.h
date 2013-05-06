@@ -71,8 +71,6 @@ public:
     LocalAssetStoragePtr FindStorageForPath(const QString &path) const;
 
 private:
-    Q_DISABLE_COPY(LocalAssetProvider)
-
     /// Finds a path where the file localFilename can be found. Searches through all local storages.
     /// @param storage [out] Receives the local storage that contains the asset.
     QString GetPathForAsset(const QString &localFilename, LocalAssetStoragePtr *storage) const;

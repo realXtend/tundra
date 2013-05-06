@@ -53,12 +53,11 @@
     <li>"SetAdjustScale": @copydoc SetAdjustScale
     <li>"RemoveMesh": @copydoc RemoveMesh
     <li>"HasMesh": @copydoc HasMesh
-    <li>"GetPlaceable": @copydoc GetPlaceable
-    <li>"GetMeshName": @copydoc GetMeshName
-    <li>"GetSkeletonName": @copydoc GetSkeletonName
-    <li>"GetEntity": @copydoc GetEntity
-    <li>"GetNumMaterials": @copydoc GetNumMaterials
-    <li>"GetMatName": @copydoc GetMatName
+    <li>"Placeable": @copydoc Placeable
+    <li>"MeshName": @copydoc MeshName
+    <li>"SkeletonName": @copydoc SkeletonName
+    <li>"NumMaterials": @copydoc NumMaterials
+    <li>"MaterialName": @copydoc MatName
     <li>"WorldOBB": @copydoc WorldOBB
     <li>"LocalOBB": @copydoc LocalOBB
     <li>"WorldAABB": @copydoc WorldAABB
@@ -66,13 +65,21 @@
     <li>"MeshAsset": @copydoc MeshAsset
     <li>"MaterialAsset": @copydoc MaterialAsset
     <li>"SkeletonAsset": @copydoc SkeletonAsset
-    <li>"GetAdjustPosition": @copydoc GetAdjustPosition
-    <li>"GetAdjustOrientation": @copydoc GetAdjustOrientation
-    <li>"GetAdjustScale": @copydoc GetAdjustScale
-    <li>"GetAttachmentPosition": @copydoc GetAttachmentPosition
-    <li>"GetAttachmentOrientation": @copydoc GetAttachmentOrientation
-    <li>"GetAttachmentScale": @copydoc GetAttachmentScale
-    <li>"GetAdjustmentSceneNode": @copydoc GetAdjustmentSceneNode
+    <li>"AdjustPosition": @copydoc AdjustPosition
+    <li>"AdjustOrientation": @copydoc AdjustOrientation
+    <li>"AdjustScale": @copydoc AdjustScale
+    <li>"AttachmentPosition": @copydoc AttachmentPosition
+    <li>"AttachmentOrientation": @copydoc AttachmentOrientation
+    <li>"AttachmentScale": @copydoc AttachmentScale
+    <li>"AvailableBones": @copydoc AvailableBones
+    <li>"BonePosition": @copydoc BonePosition
+    <li>"BoneDerivedPosition": @copydoc BoneDerivedPosition
+    <li>"BoneOrientation": @copydoc BoneOrientation
+    <li>"BoneDerivedOrientation": @copydoc BoneDerivedOrientation
+    <li>"SetMorphWeight": @copydoc SetMorphWeight
+    <li>"MorphWeight": @copydoc MorphWeight
+    <li>"SetAttachmentMorphWeight": @copydoc SetAttachmentMorphWeight
+    <li>"AttachmentMorphWeight": @copydoc AttachmentMorphWeight
     </ul>
 
     <b>Reacts on the following actions:</b>
@@ -92,9 +99,10 @@ class OGRE_MODULE_API EC_Mesh : public IComponent
     COMPONENT_NAME("EC_Mesh", 17)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Mesh(Scene* scene);
-
+    /// @endcond
     virtual ~EC_Mesh();
 
     /// Transformation attribute is used to do some position, rotation and scale adjustments.
@@ -121,6 +129,30 @@ public:
     Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
 
+    /// Returns Ogre mesh entity
+    Ogre::Entity* OgreEntity() const { return entity_; }
+
+    /// Returns an Ogre bone safely, or null if not found.
+    Ogre::Bone* OgreBone(const QString& boneName) const;
+
+    /// Returns adjustment scene node (used for scaling/offset/orientation modifications)
+    Ogre::SceneNode* AdjustmentSceneNode() const { return adjustment_node_; }
+
+    /// Returns Ogre attachment mesh entity.
+    /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
+    Ogre::Entity* AttachmentOgreEntity(uint index) const;
+
+    /// Raycast into an Ogre mesh entity using a world-space ray.
+    /** Returns true if a hit happens, in which case the fields (which are not null) are filled appropriately. */
+    static bool Raycast(Ogre::Entity* meshEntity, const Ray& ray, float* distance = 0, unsigned* subMeshIndex = 0,
+        unsigned* triangleIndex = 0, float3* hitPosition = 0, float3* normal = 0, float2* uv = 0);
+
+    // DEPRECATED
+    Ogre::Entity* GetEntity() const { return OgreEntity(); } /**< @deprecated use OgreEntity instead. @todo Add warning print. */
+    Ogre::Bone* GetBone(const QString& boneName) const { return OgreBone(boneName); } /**< @deprecated use OgreBone instead. @todo Add warning print. */
+    Ogre::SceneNode* GetAdjustmentSceneNode() const { return AdjustmentSceneNode(); } /**< @deprecated use AdjustmentSceneNode instead. @todo Add warning print. */
+    Ogre::Entity* GetAttachmentEntity(uint index) const { return AttachmentOgreEntity(index); } /**< @deprecated use AttachmentOgreEntity instead. @todo Add warning print. */
+
 public slots:
     /// Automatically finds the placeable from the parent entity and sets it.
     void AutoSetPlaceable();
@@ -128,7 +160,7 @@ public slots:
     /// Sets placeable component
     /** Set a null placeable to detach the object, otherwise will attach
         @param placeable placeable component */
-    void SetPlaceable(ComponentPtr placeable);
+    void SetPlaceable(const ComponentPtr &placeable);
     void SetPlaceable(EC_Placeable* placeable); /**< @overload */
 
     /// Sets mesh
@@ -182,56 +214,47 @@ public slots:
 
     /// Returns number of submeshes
     /** @return returns 0 if mesh is not set, otherwise will ask Ogre::Mesh the submesh count. */
-    uint GetNumSubMeshes() const;
+    uint NumSubMeshes() const;
 
     /// Returns if attachment mesh exists at specific @c index
     bool HasAttachmentMesh(uint index) const;
 
     /// Returns placeable component
-    ComponentPtr GetPlaceable() const { return placeable_; }
+    ComponentPtr Placeable() const { return placeable_; }
 
     /// Returns mesh name
-    const std::string& GetMeshName() const;
+    const std::string& MeshName() const;
 
     /// Returns mesh skeleton name
-    const std::string& GetSkeletonName() const;
-
-    /// Returns Ogre mesh entity
-    Ogre::Entity* GetEntity() const { return entity_; }
+    const std::string& SkeletonName() const;
 
     /// Returns number of materials (submeshes) in the mesh entity
-    uint GetNumMaterials() const;
-    
-    //! returns an Ogre bone safely, or null if not found.
-    Ogre::Bone* GetBone(const QString& boneName) const;
-    
+    uint NumMaterials() const;
+
     /// Gets material name from mesh
     /** @param index submesh index
         @return name if successful, empty if no entity / illegal index */
-    const std::string& GetMaterialName(uint index) const;
+    const std::string& MaterialName(uint index) const;
     ///\todo Remove, leave just one.
     QString GetMatName(uint index) const { return GetMaterialName(index).c_str(); }
 
     /// Returns adjustment position
-    float3 GetAdjustPosition() const;
+    float3 AdjustPosition() const;
 
     /// Returns adjustment orientation
-    Quat GetAdjustOrientation() const;
+    Quat AdjustOrientation() const;
 
     /// Returns adjustment scale
-    float3 GetAdjustScale() const;
+    float3 AdjustScale() const;
 
     /// Returns offset position of attachment
-    float3 GetAttachmentPosition(uint index) const;
+    float3 AttachmentPosition(uint index) const;
 
     /// Returns offset orientation of attachment
-    Quat GetAttachmentOrientation(uint index) const;
+    Quat AttachmentOrientation(uint index) const;
 
     /// Returns offset scale of attachment
-    float3 GetAttachmentScale(uint index) const;
-
-    /// Returns adjustment scene node (used for scaling/offset/orientation modifications)
-    Ogre::SceneNode* GetAdjustmentSceneNode() const { return adjustment_node_; }
+    float3 AttachmentScale(uint index) const;
 
     /// Returns the affine transform that maps from the local space of this mesh to the space of the EC_Placeable component of this mesh.
     /** If the Entity this mesh is part of does not have an EC_Placeable component, returns the local->world transform of this mesh instance. */
@@ -244,38 +267,35 @@ public slots:
 //    virtual IComponent *GetParentComponent();
 
     /// 
-//    float3x4 IComponent::GetWorldTransform();
-
-    /// Return Ogre bone safely
-    Ogre::Bone* GetBone(const QString& boneName);
+//    float3x4 IComponent::WorldTransform();
 
     /// Return names of all bones. If no entity or skeleton, returns empty list
-    QStringList GetAvailableBones() const;
+    QStringList AvailableBones() const;
 
-    /// Force a skeleton update. Call this before GetBonePosition()... to make sure bones have updated positions, even if the mesh is currently invisible
+    /// Force a skeleton update. Call this before BonePosition()... to make sure bones have updated positions, even if the mesh is currently invisible
     void ForceSkeletonUpdate();
     /// Return bone's local position
-    float3 GetBonePosition(const QString& boneName);
+    float3 BonePosition(const QString& boneName);
     /// Return bone's root-derived position. Note: these are not world coordinates, but relative to the mesh root
-    float3 GetBoneDerivedPosition(const QString& boneName);
+    float3 BoneDerivedPosition(const QString& boneName);
     /// Return bone's local orientation
-    Quat GetBoneOrientation(const QString& boneName);
+    Quat BoneOrientation(const QString& boneName);
     /// Return bone's root-derived orientation
-    Quat GetBoneDerivedOrientation(const QString& boneName);
+    Quat BoneDerivedOrientation(const QString& boneName);
     /// Return bone's local orientation as Euler degrees
-//    float3 GetBoneOrientationEuler(const QString& boneName);
+//    float3 BoneOrientationEuler(const QString& boneName);
     /// Return bone's root-derived orientation as Euler degrees
-//    float3 GetBoneDerivedOrientationEuler(const QString& boneName);
+//    float3 BoneDerivedOrientationEuler(const QString& boneName);
     
     /// Set the weight (0.0 - 1.0) of a morph on the mesh
     void SetMorphWeight(const QString& morphName, float weight);
     /// Return the weight of a morph on the mesh. Returns 0.0 if not found
-    float GetMorphWeight(const QString& morphName) const;
+    float MorphWeight(const QString& morphName) const;
     
     /// Set the weight of a morph on an attachment mesh
     void SetAttachmentMorphWeight(unsigned index, const QString& morphName, float weight);
     /// Return the weight of a morph on an attachment mesh. Return 0.0 if not found
-    float GetAttachmentMorphWeight(unsigned index, const QString& morphName) const;
+    float AttachmentMorphWeight(unsigned index, const QString& morphName) const;
 
     /// Returns the world space bounding box of this object.
     OBB WorldOBB() const;
@@ -298,6 +318,7 @@ public slots:
     /// Returns the possible asset used by this component.
     OgreSkeletonAssetPtr SkeletonAsset() const;
 
+    // DEPRECATED
     /// Sets an attachment mesh.
     /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
         The mesh entity must exist before attachment meshes can be set. Setting a new mesh entity removes all attachment meshes.
@@ -307,28 +328,22 @@ public slots:
         @param shareSkeleton whether to link animation (for attachments that are also skeletally animated)
         @return true if successful */
     bool SetAttachmentMesh(uint index, const std::string& meshName, const std::string& attachPoint = std::string(), bool shareSkeleton = false);
-
     /// Sets position of attachment mesh, relative to attachment point.
     /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
     void SetAttachmentPosition(uint index, const float3& position);
-
     /// Sets orientation of attachment mesh, relative to attachment point.
     /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
     void SetAttachmentOrientation(uint index, const Quat &orientation);
-
     /// Sets scale of attachment mesh, relative to attachment point.
     /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
     void SetAttachmentScale(uint index, const float3& scale);
-    
     /// Removes an attachment mesh.
     /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
         @param index attachment index starting from 0 */
     void RemoveAttachmentMesh(uint index);
-
     /// Removes all attachments.
     /** @note THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
     void RemoveAllAttachments();
-
     /// Sets material on an attachment mesh.
     /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
         @param index attachment index starting from 0
@@ -336,27 +351,19 @@ public slots:
         @param materialName material name
         @return true if successful */
     bool SetAttachmentMaterial(uint index, uint submesh_index, const std::string& materialName);
-
     /// Returns number of attachments.
     /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
         @note returns just the size of attachment vector, so check individually that attachments actually exist */
-    uint GetNumAttachments() const { return attachment_entities_.size(); }
-
-    /// Returns Ogre attachment mesh entity.
-    /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
-    Ogre::Entity* GetAttachmentEntity(uint index) const;
-
+    uint NumAttachments() const { return attachment_entities_.size(); }
     /// Returns number of materials (submeshes) in attachment mesh entity.
     /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
-    uint GetAttachmentNumMaterials(uint index) const;
-
+    uint NumAttachmentMaterials(uint index) const;
     /// gets material name from attachment mesh.
     /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
         @param index attachment index
-        @param submesh_index submesh index
+        @param submeshIndex submesh index
         @return name if successful, empty if no entity / illegal index */
-    const std::string& GetAttachmentMaterialName(uint index, uint submesh_index) const;
-
+    const std::string& AttachmentMaterialName(uint index, uint submeshIndex) const;
     /// Helper for setting asset ref from js with less code (and at all from py, due to some trouble with assetref decorator setting)
     /// @todo Remove when abovementioned problems are resolved.
     /// @deprecated Use meshRef attribute.
@@ -364,11 +371,29 @@ public slots:
     /// @todo Remove when abovementioned problems are resolved.
     /// @deprecated Use meshRef attribute.
     void SetMeshRef(const QString& newref) { setmeshRef(AssetReference(newref)); }
+    uint GetNumSubMeshes() const { return NumSubMeshes(); } /**< @deprecated use NumSubMeshes instead. @todo Add warning print. */
+    ComponentPtr GetPlaceable() const { return Placeable(); } /**< @deprecated use Placeable instead. @todo Add warning print. */
+    const std::string& GetMeshName() const { return MeshName(); } /**< @deprecated use MeshName instead. @todo Add warning print. */
+    const std::string& GetSkeletonName() const { return SkeletonName(); } /**< @deprecated use SkeletonName instead. @todo Add warning print. */
+    uint GetNumMaterials() const { return NumMaterials(); } /**< @deprecated use NumMaterials instead. @todo Add warning print. */
+    const std::string& GetMaterialName(uint index) const { return MaterialName(index); } /**< @deprecated use MaterialName instead. @todo Add warning print. */
+    float3 GetAdjustPosition() const { return AdjustPosition(); } /**< @deprecated use AdjustPosition instead. @todo Add warning print. */
+    Quat GetAdjustOrientation() const { return AdjustOrientation(); } /**< @deprecated use AdjustOrientation instead. @todo Add warning print. */
+    float3 GetAdjustScale() const { return AdjustScale(); } /**< @deprecated use AdjustScale instead. @todo Add warning print. */
+    float3 GetAttachmentPosition(uint index) const { return AttachmentPosition(index); } /**< @deprecated use AttachmentPosition instead. @todo Add warning print. */
+    Quat GetAttachmentOrientation(uint index) const { return AttachmentOrientation(index); } /**< @deprecated use AttachmentOrientation instead. @todo Add warning print. */
+    float3 GetAttachmentScale(uint index) const { return AttachmentScale(index); } /**< @deprecated use AttachmentScale instead. @todo Add warning print. */
+    QStringList GetAvailableBones() const { return AvailableBones(); } /**< @deprecated use AvailableBones instead. @todo Add warning print. */
+    float3 GetBonePosition(const QString& boneName) { return BonePosition(boneName); } /**< @deprecated use BonePosition instead. @todo Add warning print. */
+    float3 GetBoneDerivedPosition(const QString& boneName) { return BoneDerivedPosition(boneName); } /**< @deprecated use BoneDerivedPosition instead. @todo Add warning print. */
+    Quat GetBoneOrientation(const QString& boneName) { return BoneOrientation(boneName); } /**< @deprecated use BoneOrientation instead. @todo Add warning print. */
+    Quat GetBoneDerivedOrientation(const QString& boneName) { return BoneDerivedOrientation(boneName); } /**< @deprecated use BoneDerivedOrientation instead. @todo Add warning print. */
+    float GetMorphWeight(const QString& morphName) const { return MorphWeight(morphName); } /**< @deprecated use MorphWeight instead. @todo Add warning print. */
+    float GetAttachmentMorphWeight(unsigned index, const QString& morphName) const { return AttachmentMorphWeight(index, morphName); } /**< @deprecated use AttachmentMorphWeight instead. @todo Add warning print. */
+    uint GetNumAttachments() const { return NumAttachments(); } /**< @deprecated Use NumAttachments instead. @todo Add warning print. */
+    uint GetAttachmentNumMaterials(uint index) const { return NumAttachmentMaterials(index); } /**< @deprecated use NumAttachmentMaterials instead. @todo Add warning print. */
+    const std::string& GetAttachmentMaterialName(uint index, uint submeshIndex) const { return AttachmentMaterialName(index, submeshIndex); } /**< @deprecated use AttachmentMaterialName instead. @todo Add warning print. */
 
-public:
-    /// Raycast into an Ogre mesh entity using a world-space ray. Returns true if a hit happens, in which case the fields (which are not null) are filled appropriately
-    static bool Raycast(Ogre::Entity* meshEntity, const Ray& ray, float* distance = 0, unsigned* subMeshIndex = 0, unsigned* triangleIndex = 0, float3* hitPosition = 0, float3* normal = 0, float2* uv = 0);
-    
 signals:
     /// Emitted before the Ogre mesh entity is about to be destroyed
     void MeshAboutToBeDestroyed();
@@ -381,7 +406,7 @@ signals:
 
     /// Signal is emitted when skeleton has successfully applied to entity.
     void SkeletonChanged(QString skeletonName);
-    
+
 private slots:
     /// Called when the parent entity has been set.
     void UpdateSignals();
@@ -402,7 +427,6 @@ private slots:
     void OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason);
 
 private:
-
     /// Called when some of the attributes has been changed.
     void AttributesChanged();
 

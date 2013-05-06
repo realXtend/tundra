@@ -5,7 +5,7 @@ set -e
 # http://stackoverflow.com/questions/96882/how-do-i-create-a-nice-looking-dmg-for-mac-os-x-using-command-line-tools
 
 # Work in Tundra repository root directory.
-cd ..
+cd ../..
 rootdir=$(pwd)
 echo "Assuming $rootdir is the Tundra root directory."
 

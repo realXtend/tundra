@@ -2,8 +2,7 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   UndoCommands.h
-    @brief  A collection of QUndoCommand-derived classes which apply to the
-            operations in EC editor and Scene structure windows  */
+    @brief  A collection of classes which apply to the operations in EC Editor and Scene Structure windows. */
 
 #pragma once
 
@@ -23,22 +22,40 @@
 typedef QList<entity_id_t> EntityIdList;
 typedef QList<TransformAttributeWeakPtr> TransformAttributeWeakPtrList;
 
-
 class EntityIdChangeTracker;
 
-/// EditAttributeCommand representing an "Edit" operation to the attributes
-template <typename T>
-class EditAttributeCommand : public QUndoCommand
+/// EditAttributeCommandBase exposes basi
+class IEditAttributeCommand : public QUndoCommand
 {
 public:
     /// Internal QUndoCommand unique ID
     enum { Id = 100 };
+   
+    IEditAttributeCommand(QUndoCommand *parent) : QUndoCommand(parent) {}
 
-    /// Constructor
-    /* @param attr The attribute that is being edited
-       @param value The old value of 'attr' attribute
-       @param parent The parent command of this command (optional) */
-    EditAttributeCommand(IAttribute * attr, const T& value, QUndoCommand * parent = 0);
+    AttributeWeakPtr attribute;
+    QString attributeName;
+    QString attributeTypeName;
+    entity_id_t parentId;
+};
+
+/// EditAttributeCommand representing an "Edit" operation to the attributes
+template <typename T>
+class EditAttributeCommand : public IEditAttributeCommand
+{
+public:
+    /** Current value of the attribute will be read as the undo() applied value.
+        When redo() is triggered this command does nothing and it will read the redo value once undo() is applied.
+        @param attr The attribute that is being edited.
+        @param parent The parent command of this command (optional). */
+    EditAttributeCommand(IAttribute *attr, QUndoCommand *parent = 0);
+    
+    /** Current value of the attribute will be read as the undo() applied value.
+        Given valueToApply will be applied immediately when redo() is triggered (eg. added to a QUndoStack).
+        @param attr The attribute that is being edited.
+        @param valueToApply The new attribute value. Gets applied immediately when this actions redo() it triggered.
+        @param parent The parent command of this command (optional). */
+    EditAttributeCommand(IAttribute *attr, const T &valueToApply, QUndoCommand *parent = 0);
 
     /// Returns this command's ID
     int id() const { return Id; }
@@ -46,44 +63,20 @@ public:
     /// QUndoCommand override
     void undo()
     {
-        EntityPtr ent = entity_.lock();
-        if (!ent.get())
-            return;
-
-        ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
-        if (comp.get())
+        if (!attribute.Expired())
         {
-            IAttribute *attr = comp->GetAttribute(name_);
-            Attribute<T> *attribute = dynamic_cast<Attribute<T> *>(attr);
-            if (attribute)
-            {
-                newValue_ = attribute->Get();
-                attribute->Set(oldValue_, AttributeChange::Default);
-            }
+            redoValue = static_cast<Attribute<T> *>(attribute.Get())->Get();
+            static_cast<Attribute<T> *>(attribute.Get())->Set(undoValue, AttributeChange::Default);
         }
     }
 
     /// QUndoCommand override
     void redo()
     {
-        if (dontCallRedo_)
-        {
-            dontCallRedo_ = false;
-            return;
-        }
-
-        EntityPtr ent = entity_.lock();
-        if (!ent.get())
-            return;
-
-        ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
-        if (comp.get())
-        {   
-            IAttribute *attr = comp->GetAttribute(name_);
-            Attribute<T> *attribute = dynamic_cast<Attribute<T> *>(attr);
-            if (attribute)
-                attribute->Set(newValue_, AttributeChange::Default);
-        }
+        if (noAutoRedo)
+            noAutoRedo = false;
+        else if (!attribute.Expired())
+            static_cast<Attribute<T> *>(attribute.Get())->Set(redoValue, AttributeChange::Default);
     }
 
     /// QUndoCommand override
@@ -109,14 +102,19 @@ public:
     }
 
 private:
-    EntityWeakPtr entity_; ///< A weak pointer to this attribute's parent entity
-    const QString componentName_; ///< Name of this attribute's parent component
-    const QString componentType_; ///< Typename of this attribute's parent component
-    const QString name_; ///< Name of the attribute
-    const T oldValue_; ///< Old value of the attribute
-    T newValue_; ///< New value of the attribute
-
-    bool dontCallRedo_; ///< A workaround variable to prevent redo() from calling immediately when this command is pushed onto the stack
+    void Initialize(IAttribute *attr, bool autoRedo)
+    {
+        attribute = AttributeWeakPtr(attr->Owner()->shared_from_this(), attr);
+        attributeName = attr->Name();
+        attributeTypeName = attr->TypeName(),
+        parentId = attr->Owner()->ParentEntity()->Id();
+        noAutoRedo = autoRedo;
+        setText("* Edited " + attr->Name() + " Attribute");
+    }
+    
+    T redoValue;
+    T undoValue;
+    bool noAutoRedo;
 };
 
 #include "UndoCommands.inl"
@@ -192,7 +190,8 @@ public:
        @param sync Sync state of the component being added
        @param temp Temporary state of the component being added
        @param parent The parent command of this command (optional) */
-    AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, EntityIdList entities, const QString compType, const QString compName, bool sync, bool temp, QUndoCommand * parent = 0);
+    AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const EntityIdList &entities,
+        const QString &compType, const QString &compName, bool sync, bool temp, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
     int id () const;
@@ -217,7 +216,7 @@ public:
     /// Internal QUndoCommand unique ID
     enum { Id = 104 };
 
-    EditXMLCommand(const ScenePtr &scene, const QDomDocument oldDoc, const QDomDocument newDoc, QUndoCommand * parent = 0);
+    EditXMLCommand(const ScenePtr &scene, const QDomDocument &oldDoc, const QDomDocument &newDoc, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
     int id () const;
@@ -274,13 +273,23 @@ public:
     /// Internal QUndoCommand unique ID
     enum { Id = 106 };
 
-    /// Constructor
+    /// Constructor for both entity and component removal.
     /* @param scene Scene of which entities we're tracking.
-       @param tracker Pointer to the EntityIdChangeTracker object
-       @param entityList A weak pointer list of the entity/entities about to be removed
-       @param componentList A weak pointer list of the component(s) about to be removed
-       @param parent The parent command of this command (optional) */
-    RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QList<EntityWeakPtr> &entityList, const QList<ComponentWeakPtr> &componentList, QUndoCommand * parent = 0);
+       @param tracker Pointer to the EntityIdChangeTracker object.
+       @param entities List of the entities about to be removed.
+       @param components List of component about to be removed.
+       @param parent The parent command of this command (optional). */
+    RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const QList<EntityWeakPtr> &entities, const QList<ComponentWeakPtr> &components, QUndoCommand * parent = 0);
+    /// Constructor for removal of entities.
+    RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const QList<EntityWeakPtr> &entities, QUndoCommand *parent = 0);
+    /// Constructor for removal of components.
+    RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const QList<ComponentWeakPtr> &components, QUndoCommand *parent = 0);
+    /// Constructor for a single entity removal.
+    RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const EntityWeakPtr &entity, QUndoCommand *parent = 0);
+    /// Constructor for a single component removal.
+    RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const ComponentWeakPtr &component, QUndoCommand *parent = 0);
+
+    /// @todo Remove command for Scene.
 
     /// Returns this command's ID
     int id () const;
@@ -288,6 +297,9 @@ public:
     void undo();
     /// QUndoCommand override
     void redo();
+
+private:
+    void Initialize(const QList<EntityWeakPtr> &entities, const QList<ComponentWeakPtr> &components);
 
     EntityIdList entityList_; ///< Entity ID list of the entities being removed
     typedef QList<QPair<QString, QString> > ComponentList; ///< A typedef for QList containing QPair of component typenames and component names
@@ -365,13 +377,22 @@ public:
 
     enum Action
     {
-        Translate,
-        Rotate,
-        Scale
+        Translate = 0,  // Translate on multiple axes
+        TranslateX,     // Translate X-axis
+        TranslateY,     // Translate Y-axis
+        TranslateZ,     // Translate Z-axis
+        Rotate,         // Rotate on multiple axes
+        RotateX,        // Rotate X-axis
+        RotateY,        // Rotate Y-axis
+        RotateZ,        // Rotate Z-axis
+        Scale,          // Scale on multiple axes
+        ScaleX,         // Scale X-axis
+        ScaleY,         // Scale Y-axis
+        ScaleZ          // Scale Z-axis
     };
 
-    TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3 & offset, QUndoCommand * parent = 0);
-    TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, const float3x4 & rotation, QUndoCommand * parent = 0);
+    TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3 &offset, QUndoCommand *parent = 0);
+    TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3x4 &rotation, QUndoCommand *parent = 0);
 
     /// Returns this command's ID
     int id() const;

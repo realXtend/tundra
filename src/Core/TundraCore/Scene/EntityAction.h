@@ -23,11 +23,10 @@ class TUNDRACORE_API EntityAction : public QObject
     Q_ENUMS(ExecType)
 
 public:
-    /// Destructor.
     ~EntityAction() {}
 
     /// Returns name of the action.
-    QString Name() const { return name; }
+    const QString &Name() const { return name; }
 
     /// Execution type of the action, i.e. where the actions is executed.
     /** As combinations we get local+server, local+peers(all clients but not server),
@@ -54,7 +53,6 @@ signals:
     void Triggered(QString p1, QString p2, QString p3, QStringList rest);
 
 private:
-    Q_DISABLE_COPY(EntityAction)
     friend class Entity;
 
     /// Constructor.
@@ -68,5 +66,5 @@ private:
         @param rest Rest of the parameters, if applicable. */
     void Trigger(const QString &p1 = "", const QString &p2 = "", const QString &p3 = "", const QStringList &rest = QStringList());
 
-    QString name; ///< Name of the action.
+    const QString name; ///< Name of the action.
 };
