@@ -4,6 +4,9 @@ project(tundra)
 # CMake version requirement, >= 2.5.5 to ensure that ProtoBuf is found ok.
 cmake_minimum_required(VERSION 2.5.5)
 
+# Enable solution folders
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 # TUNDRA_NO_BOOST defines whether we want to replace usage of Boost with the C++ (TR1) standard equivalents.
 # Setting TUNDRA_NO_BOOST to TRUE, i.e. disabling usage of Boost in the Tundra codebase, requires compiler
 # with up-to-date C++ TR1 and preferably the C99 standard cstdint header. Also if the used compiler has C++11 
@@ -105,6 +108,7 @@ endmacro ()
 # Examples:     AddEntityComponent(EC_Sound)
 #               AddEntityComponent(3rdparty/myecs/EC_Thingie)
 macro(AddEntityComponent componentName)
+    set (PROJECT_TYPE "EntityComponents")
     # Chekc if the component is in our default entity components location
     # note: from cmake docs: IS_DIRECTORY Behavior is well-defined only for full paths.
     if (IS_DIRECTORY ${PROJECT_BINARY_DIR}/src/EntityComponents/${componentName})
@@ -119,6 +123,7 @@ macro(AddEntityComponent componentName)
     else ()
         message(FATAL_ERROR "Could not resolve AddEntityComponent() call with path " ${componentName} ". Are you sure the component is there?")
     endif ()
+    set (PROJECT_TYPE "")
 endmacro()
 
 # AddProject takes in one or two parameters: 
@@ -131,6 +136,7 @@ endmacro()
 #               AddProject(Application JavascriptModule)
 #               AddProject(mysubdir/MyPlugin)
 function(AddProject)
+    set (PROJECT_TYPE ${ARGV0})
     if (NOT ARGV1)
         if (BUILD_SDK_ONLY)
             message (STATUS "** Omitting Application level project " ${ARGV0} " because BUILD_SDK_ONLY is set to TRUE")
@@ -147,6 +153,7 @@ function(AddProject)
             add_subdirectory(src/${ARGV0}/${ARGV1})
         endif ()
     endif ()
+    set (PROJECT_TYPE "")
 endfunction()
 
 # Generates in the current project a #define for each EC that has been added to the build. Use this macro in your module CMakeLists.txt
