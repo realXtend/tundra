@@ -68,19 +68,21 @@ IF %VS_VER%==vs2008 set PATH=C:\Windows\Microsoft.NET\Framework\v3.5;%PATH%
 cecho {F0}This script fetches and builds all Tundra dependencies{# #}{\n}
 echo.
 cecho {0A}Script configuration:{# #}{\n}
-cecho {0D}  CMake Generator     = %GENERATOR%{# #}{\n}
+cecho {0D}  CMake Generator      = %GENERATOR%{# #}{\n}
 echo    - Passed to CMake -G option.
-cecho {0D}  Target Architecture = %VS_ARCH%{# #}{\n}
+cecho {0D}  Target Architecture  = %VS_ARCH%{# #}{\n}
 echo    - Whether were doing 32-bit (x86) or 64-bit (x64) build.
-cecho {0D}  Use Boost           = %USE_BOOST%{# #}{\n}
+cecho {0D}  Dependency Directory = %DEPS%{# #}{\n}
+echo    - The directory where Tundra dependencies are fetched and built.
+cecho {0D}  Use Boost            = %USE_BOOST%{# #}{\n}
 echo    - Configures whether dependencies kNet, Ogre, and AssImp are built using Boost.
-cecho {0D}  Build Release       = %BUILD_RELEASE%{# #}{\n}
+cecho {0D}  Build Release        = %BUILD_RELEASE%{# #}{\n}
 echo    - Build Release mode in addition to RelWithDebInfo when possible.
 echo      Default is disabled, enable if you are planning to deploy
 echo      Tundra in Release mode.
-cecho {0D}  Build OpenSSL       = %BUILD_OPENSSL%{# #}{\n}
+cecho {0D}  Build OpenSSL        = %BUILD_OPENSSL%{# #}{\n}
 echo    - Build OpenSSL, requires Active Perl.
-cecho {0D}  Build Qt with JOM   = %USE_JOM%{# #}{\n}
+cecho {0D}  Build Qt with JOM    = %USE_JOM%{# #}{\n}
 echo    - Use jom.exe instead of nmake.exe to build qmake projects.
 echo      Default enabled as jom is significantly faster by usin all CPUs.
 echo.
