@@ -68,17 +68,19 @@ IF %GENERATOR%==%GENERATOR_VS2008% set PATH=C:\Windows\Microsoft.NET\Framework\v
 cecho {F0}This script fetches and builds all Tundra dependencies{# #}{\n}
 echo.
 cecho {0A}Script configuration:{# #}{\n}
-cecho {0D}  CMake Generator    = %GENERATOR%{# #}{\n}
-echo    - Passed to CMake -G option
-cecho {0D}  Use Boost          = %USE_BOOST%{# #}{\n}
+cecho {0D}  CMake Generator     = %GENERATOR%{# #}{\n}
+echo    - Passed to CMake -G option.
+cecho {0D}  Target Architecture = %VS_ARCH%{# #}{\n}
+echo    - Whether were doing 32-bit (x86) or 64-bit (x64) build.
+cecho {0D}  Use Boost           = %USE_BOOST%{# #}{\n}
 echo    - Configures whether dependencies kNet, Ogre, and AssImp are built using Boost.
-cecho {0D}  Build Release      = %BUILD_RELEASE%{# #}{\n}
+cecho {0D}  Build Release       = %BUILD_RELEASE%{# #}{\n}
 echo    - Build Release mode in addition to RelWithDebInfo when possible.
 echo      Default is disabled, enable if you are planning to deploy
 echo      Tundra in Release mode.
-cecho {0D}  Build OpenSSL      = %BUILD_OPENSSL%{# #}{\n}
+cecho {0D}  Build OpenSSL       = %BUILD_OPENSSL%{# #}{\n}
 echo    - Build OpenSSL, requires Active Perl.
-cecho {0D}  Build Qt with JOM  = %USE_JOM%{# #}{\n}
+cecho {0D}  Build Qt with JOM   = %USE_JOM%{# #}{\n}
 echo    - Use jom.exe instead of nmake.exe to build qmake projects.
 echo      Default enabled as jom is significantly faster by usin all CPUs.
 echo.
@@ -154,18 +156,27 @@ IF NOT EXIST "%DEPS%\openssl\src". (
 )
 
 IF NOT EXIST "%DEPS%\openssl\bin\ssleay32.dll". (
-   cd "%DEPS%\openssl\src"
-   cecho {0D}Configuring OpenSSL build.{# #}{\n}
-   perl Configure VC-WIN32 --prefix=%DEPS%\openssl
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   REM Build Makefiles  with assembly language files. ml.exe is a part of Visual Studio
-   call ms\do_masm.bat
-   cecho {0D}Building OpenSSL. Please be patient, this will take a while.{# #}{\n}
-   nmake -f ms\ntdll.mak
-   nmake -f ms\ntdll.mak install
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   REM We (re)built OpenSSL, so delete ssleay32.dll in Tundra bin\ to force DLL deployment below.
-   del /Q "%TUNDRA_BIN%\ssleay32.dll"
+    cd "%DEPS%\openssl\src"
+    cecho {0D}Configuring OpenSSL build.{# #}{\n}
+    IF %VS_ARCH%==x64 (
+        perl Configure VC-WIN64A --prefix=%DEPS%\openssl
+    ) ELSE (
+        perl Configure VC-WIN32 --prefix=%DEPS%\openssl
+    )
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
+    REM Build Makefiles  with assembly language files. ml.exe is a part of Visual Studio
+    cecho {0D}Building OpenSSL. Please be patient, this will take a while.{# #}{\n}    
+    if %VS_ARCH%==x64 (
+        call ms\do_win64a.bat
+    ) else (
+        call ms\do_masm.bat
+    )
+    nmake -f ms\ntdll.mak
+    nmake -f ms\ntdll.mak install
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    REM We (re)built OpenSSL, so delete ssleay32.dll in Tundra bin\ to force DLL deployment below.
+    del /Q "%TUNDRA_BIN%\ssleay32.dll"
 ) ELSE (
    cecho {0D}OpenSSL already built. Skipping.{# #}{\n}
 )
@@ -323,7 +334,6 @@ IF NOT EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
 
 :: Bullet physics engine
 :: version 2.81 sp1, svn rev 2613
-
 IF NOT EXIST "%DEPS%\bullet\". (
     cecho {0D}Cloning Bullet into "%DEPS%\bullet".{# #}{\n}
     cd "%DEPS%"
@@ -333,7 +343,9 @@ IF NOT EXIST "%DEPS%\bullet\". (
     IF NOT EXIST BULLET_PHYSICS.sln. (
         cecho {0D}Running CMake for Bullet.{# #}{\n}
         IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
-         cmake . -G %GENERATOR% -DBUILD_DEMOS:BOOL=OFF -DBUILD_EXTRAS:BOOL=OFF -DBUILD_INTEL_OPENCL_DEMOS:BOOL=OFF -DBUILD_NVIDIA_OPENCL_DEMOS:BOOL=OFF -DBUILD_UNIT_TESTS:BOOL=OFF -DUSE_DX11:BOOL=OFF-DBUILD_AMD_OPENCL_DEMOS:BOOL=OFF -DCMAKE_DEBUG_POSTFIX= -DCMAKE_MINSIZEREL_POSTFIX= -DCMAKE_RELWITHDEBINFO_POSTFIX=
+        cmake . -G %GENERATOR% -DBUILD_DEMOS:BOOL=OFF -DBUILD_EXTRAS:BOOL=OFF -DBUILD_INTEL_OPENCL_DEMOS:BOOL=OFF ^
+            -DBUILD_NVIDIA_OPENCL_DEMOS:BOOL=OFF -DBUILD_UNIT_TESTS:BOOL=OFF -DUSE_DX11:BOOL=OFF -DBUILD_AMD_OPENCL_DEMOS:BOOL=OFF ^
+            -DCMAKE_DEBUG_POSTFIX= -DCMAKE_MINSIZEREL_POSTFIX= -DCMAKE_RELWITHDEBINFO_POSTFIX=
         IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     )
 
