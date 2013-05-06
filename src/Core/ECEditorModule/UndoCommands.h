@@ -108,7 +108,7 @@ private:
         attributeName = attr->Name();
         attributeTypeName = attr->TypeName(),
         parentId = attr->Owner()->ParentEntity()->Id();
-        noAutoRedo = autoRedo;
+        noAutoRedo = _noAutoRedo;
         setText("* Edited " + attr->Name() + " Attribute");
     }
     
