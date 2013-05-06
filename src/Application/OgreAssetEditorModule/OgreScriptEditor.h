@@ -32,8 +32,6 @@ public slots:
     void Open();
 
 private:
-    Q_DISABLE_COPY(OgreScriptEditor);
-
     /// Creates the text edit field for raw editing.
     void CreateTextEdit();
 

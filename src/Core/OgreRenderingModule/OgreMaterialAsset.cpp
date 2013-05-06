@@ -277,7 +277,7 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bo
                             QStringList textures = QString(line.substr(14).c_str()).split(" ", QString::SkipEmptyParts);
                             if (textures.size() == 2)
                             {
-                                LogWarning("OgreMaterialAsset::DeserializeFromData: Usage of \"cubic_texture <base_name> <combinedUVW|separateUV>\" detected. "
+                                LogWarning("OgreMaterialAsset::DeserializeFromData: " + Name() + " - usage of \"cubic_texture <base_name> <combinedUVW|separateUV>\" detected. "
                                     "This format is not supported by the Asset API. Use \"cubic_texture <front> <back> <left> <right> <up> <down> separateUV\" instead.");
                             }
                             else if (textures.size() == 7)

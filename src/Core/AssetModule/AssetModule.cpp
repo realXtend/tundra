@@ -66,11 +66,11 @@ void AssetModule::Initialize()
     framework_->RegisterDynamicObject("assetModule", this);
 
     framework_->Console()->RegisterCommand(
-        "RequestAsset", "Request asset from server. Usage: RequestAsset(uuid,assettype)", 
+        "RequestAsset", "Request asset from server. Usage: RequestAsset(assetRef, assetType)",
         this, SLOT(ConsoleRequestAsset(const QString &, const QString &)));
 
     framework_->Console()->RegisterCommand(
-        "AddAssetStorage", "Usage: AddAssetStorage(storage string). For example: AddAssetStorage(name=MyAssets;type=HttpAssetStorage;src=http://www.myserver.com/;default;)", 
+        "AddAssetStorage", "Usage: AddAssetStorage(storageString). For example: AddAssetStorage(name=MyAssets;type=HttpAssetStorage;src=http://www.myserver.com/;default;)", 
         this, SLOT(AddAssetStorage(const QString &)));
 
     framework_->Console()->RegisterCommand(
@@ -92,8 +92,8 @@ void AssetModule::Initialize()
     ProcessCommandLineOptions();
 
     TundraLogic::Server *server = framework_->GetModule<TundraLogic::TundraLogicModule>()->GetServer().get();
-    connect(server, SIGNAL(UserConnected(unsigned int, UserConnection *, UserConnectedResponseData *)), this, 
-        SLOT(ServerNewUserConnected(unsigned int, UserConnection *, UserConnectedResponseData *)));
+    connect(server, SIGNAL(UserConnected(u32, UserConnection *, UserConnectedResponseData *)), this,
+        SLOT(ServerNewUserConnected(u32, UserConnection *, UserConnectedResponseData *)));
 
     TundraLogic::Client *client = framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient().get();
     connect(client, SIGNAL(Connected(UserConnectedResponseData *)), this, SLOT(ClientConnectedToServer(UserConnectedResponseData *)));
@@ -110,8 +110,6 @@ void AssetModule::Initialize()
 
 void AssetModule::ProcessCommandLineOptions()
 {
-    assert(framework_);
-
     bool hasFile = framework_->HasCommandLineParameter("--file");
     bool hasStorage = framework_->HasCommandLineParameter("--storage");
     QStringList files = framework_->CommandLineParameters("--file");
@@ -194,7 +192,7 @@ void AssetModule::RefreshHttpStorages()
     }
 }
 
-void AssetModule::ServerNewUserConnected(unsigned int /*connectionID*/, UserConnection *connection, UserConnectedResponseData *responseData)
+void AssetModule::ServerNewUserConnected(u32 /*connectionID*/, UserConnection *connection, UserConnectedResponseData *responseData)
 {
     QDomDocument &doc = responseData->responseData;
     QDomElement assetRoot = doc.createElement("asset");

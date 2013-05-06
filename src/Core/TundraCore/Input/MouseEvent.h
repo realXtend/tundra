@@ -109,7 +109,7 @@ public:
 
     /// A bitfield of the keyboard modifiers (Ctrl, Shift, ...) associated with this key event.
     /// Use Qt::KeyboardModifier, http://doc.trolltech.com/4.6/qt.html#KeyboardModifier-enum to access these.
-    /// Also see \see KeyEvent::HasShiftModifier.
+    /// @sa HasShiftModifier, HasCtrlModifier, HasAltModifier
     unsigned long modifiers;
 
     /// Which keyboard keys were held down when this event occurred.

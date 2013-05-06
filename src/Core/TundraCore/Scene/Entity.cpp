@@ -413,17 +413,6 @@ QObjectList Entity::GetComponentsRaw(const QString &type_name) const
     return ret;
 }
 
-IAttribute *Entity::GetAttribute(const QString &name) const
-{
-    for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
-    {
-        IAttribute *attr = i->second->GetAttribute(name);
-        if (attr)
-            return attr;
-    }
-    return 0;
-}
-
 void Entity::SerializeToBinary(kNet::DataSerializer &dst) const
 {
     dst.Add<u32>(Id());
@@ -498,18 +487,6 @@ bool Entity::DeserializeFromXMLString(const QString &src, AttributeChange::Type 
 
     return CreateContentFromXml(entityDocument, replaceOnConflict, change);
 }*/
-
-AttributeVector Entity::GetAttributes(const QString &name) const
-{
-    std::vector<IAttribute *> ret;
-    for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
-    {
-        IAttribute *attr = i->second->GetAttribute(name);
-        if (attr)
-            ret.push_back(attr);
-    }
-    return ret;
-}
 
 EntityPtr Entity::Clone(bool local, bool temporary, const QString &cloneName, AttributeChange::Type changeType) const
 {

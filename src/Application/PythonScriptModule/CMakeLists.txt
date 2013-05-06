@@ -12,6 +12,9 @@ file (GLOB XML_FILES *.xml)
 file (GLOB MOC_FILES PythonScriptModule.h PythonQtScriptingConsole.h TundraWrapper.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
+# Copy Python script plugins to bin/pyplugins
+file(COPY pyplugins DESTINATION ${TUNDRA_BIN}/pyplugins)
+
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})

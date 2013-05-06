@@ -31,9 +31,6 @@ public:
     /// Ogre threaded load listener. Ogre::ResourceBackgroundQueue::Listener override.
     virtual void operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result);
 
-    /// Unload texture from ogre
-    virtual void DoUnload();
-
     bool IsLoaded() const;
 
     /// Sets the contents of this texture asset from raw pixel data.
@@ -113,4 +110,8 @@ public slots:
 
     /// Texture extension.
     QString NameSuffix() const;
+
+private:
+    /// Unload texture from ogre
+    virtual void DoUnload();
 };

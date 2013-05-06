@@ -99,12 +99,18 @@ typedef unsigned int component_id_t;
 #endif
 
 /** @def CORETYPES_NAMESPACE
-    The namespace from which C++ TR1 functionalities are used (boost, std::tr1 or std). */
+    The namespace from which C++ TR1 functionalities are used (boost, std::tr1 or std). 
+    @note As of Xcode 4.X Apple has dropped GCC in favor of clang, which means that
+          a 'stock GCC' in Xcode is very unlikely in the future. Last used GCC version in
+          Macs was 4.2 which has initial TR1 implementations. For now, we assume that 
+          Mac developers will use stock compilers. If one thinks otherwise, feel free to make
+          the nessessary tests and changes here. 
+          This has not been tested yet on Linux, at least to my knowledge. -cs */
 #ifndef TUNDRA_NO_BOOST
 #define CORETYPES_NAMESPACE boost
-#elif defined(_MSC_VER) && (_MSC_VER == 1500) || (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 2)
+#elif defined(_MSC_VER) && (_MSC_VER == 1500) || (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 2 && !defined(__APPLE__))
 #define CORETYPES_NAMESPACE std::tr1
-#elif defined(_MSC_VER) && (_MSC_VER >= 1600) || (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+#elif defined(_MSC_VER) && (_MSC_VER >= 1600) || (defined(__APPLE__) && defined(__clang__) && __clang_major__ == 4 && __clang_minor__ == 2) || (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 8 && !defined(__APPLE__))
 #define CORETYPES_NAMESPACE std
 #endif
 
@@ -127,7 +133,7 @@ using CORETYPES_NAMESPACE::wsmatch;
     If make_shared is not available, the shared_ptr is constructed using the old-fashioned way.
     @todo Although make_shared is a nice little optimization, consider if this macro workaround
     is worth the trouble and worth keeping. */
-#if !defined(TUNDRA_NO_BOOST) || (defined(_MSC_VER) && (_MSC_VER >= 1600)) || (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+#if !defined(TUNDRA_NO_BOOST) || (defined(_MSC_VER) && (_MSC_VER >= 1600)) || (defined(__APPLE__) && defined(__clang__) && __clang_major__ == 4 && __clang_minor__ == 2)
 #define MAKE_SHARED(type, ...) CORETYPES_NAMESPACE::make_shared<type>(__VA_ARGS__)
 #else
 #define MAKE_SHARED(type, ...) shared_ptr<type>(new type(__VA_ARGS__))

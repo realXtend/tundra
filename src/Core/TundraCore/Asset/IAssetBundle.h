@@ -107,7 +107,7 @@ protected:
 // Object for tracking asset bundle parent child relations. This class is for private AssetAPI usage only.
 class AssetBundleMonitor : QObject
 {
-Q_OBJECT
+    Q_OBJECT
 
 public:
     AssetBundleMonitor(AssetAPI *owner, AssetTransferPtr bundleTransfer);
@@ -142,12 +142,11 @@ struct SubAssetLoader
 {
     QString parentBundleRef;
     AssetTransferPtr subAssetTransfer;
-    
-    SubAssetLoader(const QString _parentBundleRef, AssetTransferPtr _subAssetTransfer)
+
+    SubAssetLoader(const QString &_parentBundleRef, const AssetTransferPtr &_subAssetTransfer) :
+        parentBundleRef(_parentBundleRef),
+        subAssetTransfer(_subAssetTransfer)
     {
-        parentBundleRef = _parentBundleRef;
-        subAssetTransfer = _subAssetTransfer;
     }
 };
-
 /// @endcond

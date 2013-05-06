@@ -33,7 +33,7 @@ int EC_PlanarMirror::mirror_cam_num_ = 0;
 
 EC_PlanarMirror::EC_PlanarMirror(Scene *scene) :
     IComponent(scene),
-    reflectionPlaneVisible(this, "Show reflection plane", true),
+    INIT_ATTRIBUTE_VALUE(reflectionPlaneVisible, "Show reflection plane", true),
     mirror_texture_(0),
     tex_unit_state_(0),
     mat_(0),
@@ -48,8 +48,13 @@ EC_PlanarMirror::~EC_PlanarMirror()
     if(!renderer_)
         return;
     Ogre::SceneManager *mngr = renderer_->GetActiveOgreWorld()->OgreSceneManager();
-    tex_unit_state_->setProjectiveTexturing(false);
-    mngr->destroyEntity(mirror_plane_entity_);
+    if(tex_unit_state_)
+        tex_unit_state_->setProjectiveTexturing(false);
+    if(mngr)
+    {
+        if(mirror_plane_entity_)
+            mngr->destroyEntity(mirror_plane_entity_);
+    }
     SAFE_DELETE(mirror_plane_);
 }
 

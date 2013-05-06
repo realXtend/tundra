@@ -36,6 +36,7 @@ public:
 
 signals:
     void EditingFinished();
+    void TextEdited(QString text);
 
 private:
     QLayout *layout_;
@@ -67,6 +68,7 @@ public slots:
 
 signals:
     void EditorCreated(QtProperty *prop, QObject *factory);
+    void TextEdited(QString text);
 
 protected:
     virtual void connectPropertyManager(QtStringPropertyManager *manager);

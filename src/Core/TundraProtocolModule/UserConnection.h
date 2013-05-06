@@ -24,7 +24,7 @@ public:
     UserConnection() : userID(0) {}
 
     /// Returns the connection ID.
-    int ConnectionId() const { return userID; }
+    u32 ConnectionId() const { return userID; }
 
     /// Message connection
     Ptr(kNet::MessageConnection) connection;
@@ -63,7 +63,7 @@ public slots:
     /// Forcibly kills this connection without notifying the peer.
     void Close();
 
-    int GetConnectionID() const { return ConnectionId(); }  /**< @deprecated Use ConnectionId or 'id' @todo Add warning print */
+    u32 GetConnectionID() const { return ConnectionId(); }  /**< @deprecated Use ConnectionId or 'id' @todo Add warning print */
     QString GetLoginData() const { return LoginData(); }  /**< @deprecated Use LoginData @todo Add warning print */
     QString GetProperty(const QString& key) const { return Property(key); } /**< @deprecated Use Property @todo Add warning print */
 

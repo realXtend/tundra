@@ -35,6 +35,7 @@ namespace Ogre
 
 typedef shared_ptr<Ogre::Root> OgreRootPtr;
 
+/// @todo Remove OgreRenderer namespace.
 namespace OgreRenderer
 {
     class OgreRenderingModule;
@@ -42,6 +43,10 @@ namespace OgreRenderer
     typedef shared_ptr<Renderer> RendererPtr;
     typedef weak_ptr<Renderer> RendererWeakPtr;
 }
+
+using OgreRenderer::OgreRenderingModule;
+typedef OgreRenderer::RendererPtr OgreRendererPtr;
+typedef OgreRenderer::RendererWeakPtr OgreRendererWeakPtr;
 
 class OgreCompositionHandler;
 class GaussianListener;

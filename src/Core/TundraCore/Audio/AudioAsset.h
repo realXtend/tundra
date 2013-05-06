@@ -17,8 +17,6 @@ public:
 
     ~AudioAsset();
 
-    virtual void DoUnload();
-
     virtual bool DeserializeFromData(const u8 *data, size_t numBytes, bool allowAsynchronous);
 
     /// Loads this audio asset from the given .wav file in memory.
@@ -48,6 +46,8 @@ public:
     bool IsLoaded() const;
 
 private:
+    virtual void DoUnload();
+
     /// The actual sound data is stored in an OpenAL internal audio buffer. This handle specifies the buffer.
     /// If == 0, then this AudioAsset is unloaded.
     ALuint handle;

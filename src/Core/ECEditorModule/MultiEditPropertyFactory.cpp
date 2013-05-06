@@ -71,6 +71,8 @@ QWidget *MultiEditPropertyFactory::createEditor(MultiEditPropertyManager *manage
     connect(this, SIGNAL(ValueSelected(QtProperty *, const QString &)), manager, SLOT(SetValue(QtProperty *, const QString &)));
     connect(dialog, SIGNAL(destroyed(QObject *)), SLOT(EditorDestroyed(QObject *)));
 
+    connect(dialog, SIGNAL(textValueChanged(QString)), SIGNAL(TextEdited(QString)));
+
     emit EditorCreated(property, this);
 
     return multiEditButton;

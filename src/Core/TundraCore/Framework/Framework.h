@@ -37,7 +37,7 @@ public:
         @return The module, or null if the module doesn't exist. Always remember to check for null pointer.
         @note Do not store the returned raw module pointer anywhere or make a weak_ptr/shared_ptr out of it. */
     template <class T>
-    T *GetModule() const;
+    T *Module() const;
 
     /// Registers a new module into the Framework.
     /** Framework will take ownership of the module pointer, so it is safe to pass in a raw pointer. */
@@ -67,24 +67,28 @@ public:
     /// Returns the main QApplication
     Application *App() const;
 
+    /// @cond PRIVATE
     /// Registers the system Renderer object.
     /** @note Please don't use this function. Called only by the OgreRenderingModule which implements the rendering subsystem. */
     void RegisterRenderer(IRenderer *renderer);
+    /// @endcond
 
     /// Returns the system Renderer object.
     /** @note Please don't use this function. It exists for dependency inversion purposes only.
-        Instead, call framework->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer(); to directly obtain the renderer,
+        Instead, call framework->Module<OgreRenderingModule>()->Renderer(); to directly obtain the renderer,
         as that will make the dependency explicit. The IRenderer interface is not continuously updated to match the real Renderer implementation. */
     IRenderer *Renderer() const;
 
     /// Stores the Framework instance. Call this inside each plugin DLL main function that will have a copy of the static instance pointer.
     static void SetInstance(Framework *fw) { instance = fw; }
 
+    /// @cond PRIVATE
     /// Returns the global Framework instance.
     /** @note DO NOT CALL THIS FUNCTION. Every point where this function is called will cause a serious portability issue when we intend
         to run multiple instances inside a single process (inside a browser memory space). This function is intended to serve only for 
         carefully crafted re-entrant code (currently only logging and profiling). */
     static Framework *Instance() { return instance; }
+    /// @endcond
 
     /// Returns the static plugin registry for systems where plugins are not loaded as dynamic libraries. Used by StaticPluginRegistry.
     static StaticPluginRegistry *StaticPluginRegistryInstance();
@@ -99,6 +103,8 @@ public:
     /// Sets the Java environment instance on Android. Called by main in main.cpp.
     static void SetJniEnvInstance(JNIEnv* instance) { jniEnv = instance; }
 #endif
+    // DEPRECATED
+    template <class T> T *GetModule() const { return Module<T>(); } /**< @deprecated Use Module instead. @todo Remove. */
 
 public slots:
     /// Returns the core API UI object.
@@ -142,7 +148,7 @@ public slots:
     /// Returns raw module pointer.
     /** @param name Name of the module.
         @note Do not store the returned raw module pointer anywhere or make a weak_ptr/shared_ptr out of it. */
-    IModule *GetModuleByName(const QString &name) const;
+    IModule *ModuleByName(const QString &name) const;
 
     /// Returns if we're running the application in headless or not.
     bool IsHeadless() const { return headless; }
@@ -169,16 +175,17 @@ public slots:
     /// Prints to console all the registered dynamic objects.
     void PrintDynamicObjects();
 
-private:
-    Q_DISABLE_COPY(Framework)
+    // DEPRECATED
+    IModule *GetModuleByName(const QString &name) const { return ModuleByName(name); } /**< @deprecated Use ModuleByName instead. @todo Add deprecation warning print. @todo Remove. */
 
+private:
     /// Appends all found startup options from the given file to the startupOptions member.
     void LoadStartupOptionsFromXML(QString configurationFile);
 
     /// Appends startup options from a commandline file, Android only
-    #ifdef ANDROID
+#ifdef ANDROID
     void LoadCommandLineFromFile();
-    #endif
+#endif
 
     bool exitSignal; ///< If true, exit application.
 #ifdef PROFILING
@@ -218,7 +225,7 @@ private:
 };
 
 template <class T>
-T *Framework::GetModule() const
+T *Framework::Module() const
 {
     for(size_t i = 0; i < modules.size(); ++i)
     {

@@ -16,9 +16,9 @@
 
 EC_RttTarget::EC_RttTarget(Scene* scene) :
     IComponent(scene),
-    textureName(this, "Texture name", "RttTex"),
-    width(this, "Texture width", 400),
-    height(this, "Texture height", 300)
+    INIT_ATTRIBUTE_VALUE(textureName, "Texture name", "RttTex"),
+    INIT_ATTRIBUTE_VALUE(width, "Texture width", 400),
+    INIT_ATTRIBUTE_VALUE(height, "Texture height", 300)
 {
     //can't do immediately here, 'cause getcomponent crashes
     //.. is not allowed to get other components in the creation of a component. ok?

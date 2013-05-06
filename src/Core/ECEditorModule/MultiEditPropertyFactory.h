@@ -50,6 +50,7 @@ signals:
 
     /// Value has been selected from a dialog window.
     void ValueSelected(QtProperty *property, const QString &value);
+    void TextEdited(QString text);
 
 private:
     QMap<const QtProperty *, QDialog *> createdEditors_;

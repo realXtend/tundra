@@ -39,13 +39,13 @@
 
 EC_SlideShow::EC_SlideShow(Scene *scene) :
     IComponent(scene),
-    slides(this, "Slides", QVariantList()),
-    slideChangeInterval(this, "Change Interval", 0),
-    currentSlideIndex(this, "Current Slide", 0),
-    renderSubmeshIndex(this, "Render Submesh", 0),
-    enabled(this, "Enabled", true),
-    interactive(this, "Interactive", false),
-    illuminating(this, "Illuminating", true),
+    INIT_ATTRIBUTE_VALUE(slides, "Slides", QVariantList()),
+    INIT_ATTRIBUTE_VALUE(slideChangeInterval, "Change Interval", 0),
+    INIT_ATTRIBUTE_VALUE(currentSlideIndex, "Current Slide", 0),
+    INIT_ATTRIBUTE_VALUE(renderSubmeshIndex, "Render Submesh", 0),
+    INIT_ATTRIBUTE_VALUE(enabled, "Enabled", true),
+    INIT_ATTRIBUTE_VALUE(interactive, "Interactive", false),
+    INIT_ATTRIBUTE_VALUE(illuminating, "Illuminating", true),
     isServer_(false),
     currentTextureRef_("")
 {

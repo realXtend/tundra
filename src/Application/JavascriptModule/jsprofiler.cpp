@@ -185,7 +185,7 @@ void Profiler::functionExit(qint64 /*scriptId*/, const QScriptValue &)
     if (!currentFunction.isEmpty())
         currentFunction.pop();
     if (!currentFunction.isEmpty()) {
-        useconds_t current = getTimeOfDay();
+        suseconds_t current = getTimeOfDay();
         currentFunction.top()->cost += current - funTime;
         funTime = current;
         currentFunction.top()->called++;

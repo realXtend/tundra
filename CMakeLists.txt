@@ -11,7 +11,48 @@ cmake_minimum_required(VERSION 2.5.5)
 # If TUNDRA_NO_BOOST is set to TRUE, kNet must also be built without Boost dependecy. In order to make the
 # Tundra build fully free of Boost, you must also build Ogre and AssImp, which depend on Boost by default,
 # with Boost disabled. See the dependencies scripts for instructions how to control this.
-option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." FALSE)
+# On Linux & OS X TUNDRA_NO_BOOST can not yet be used
+if (NOT WIN32)
+    option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." FALSE)
+else ()
+    option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." TRUE)
+endif ()
+
+option(TUNDRA_CPP11_ENABLED "Enables C++11 features on Tundra" FALSE)
+
+if (APPLE)
+    set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvm.clang.1_0")
+endif()
+
+if (APPLE AND TUNDRA_CPP11_ENABLED) # todo: Test if this works on Linux too
+# Compiler-specific C++11 activation.
+    if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+        execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+        if (NOT (GCC_VERSION VERSION_GREATER 4.8 OR GCC_VERSION VERSION_EQUAL 4.8))
+            message(FATAL_ERROR "${PROJECT_NAME} C++11 features require GCC 4.8 or greater.")
+        else ()
+            message(STATUS "C++11 features enabled for GCC")
+        endif ()
+    elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+        execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE CLANG_VERSION)
+        if (NOT (CLANG_VERSION VERSION_GREATER 4.1 OR CLANG_VERSION VERSION_EQUAL 4.1))
+            message(FATAL_ERROR "${PROJECT_NAME} C++11 features require clang 4.1 or greater.")
+        else ()
+            message(STATUS "C++11 features enabled for Clang")
+        endif ()
+    else ()
+        message(FATAL_ERROR "Your C++ compiler does not support C++11!")
+    endif ()
+
+    if ("${CMAKE_GENERATOR}" MATCHES "Xcode")
+        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++0x")
+        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+    endif()
+elseif (MSVC AND TUNDRA_CPP11_ENABLED) # todo: Implement
+    message(AUTHOR_WARNING "C++11 features were requested, but not yet configured for this compiler!")
+endif()
 
 macro(PrintUsedEnvVariables)
     # Print out the resolved variables. Note that this does not print the env variables
@@ -34,6 +75,7 @@ endmacro()
 macro (PrintUsedBuildConfig)
     message ("\n=========== Used Build Configuration =============\n")
     message (STATUS "TUNDRA_NO_BOOST            = " ${TUNDRA_NO_BOOST})
+    message (STATUS "TUNDRA_CPP11_ENABLED       = " ${TUNDRA_CPP11_ENABLED})
     message (STATUS "TUNDRACORE_SHARED          = " ${TUNDRACORE_SHARED})
     message (STATUS "BUILD_SDK_ONLY             = " ${BUILD_SDK_ONLY})
     message (STATUS "BUILDING_INSTALLER         = " ${BUILDING_INSTALLER})
@@ -186,6 +228,17 @@ if (COMMAND cmake_policy)
     cmake_policy(SET CMP0005 NEW)
 endif()
 
+if (APPLE)
+    EXEC_PROGRAM(/usr/bin/sw_vers ARGS -productVersion OUTPUT_VARIABLE OSX_MINOR_VERSION_RAW)
+    STRING(REGEX REPLACE "10\\.([0-9]).*" "\\1" MACOSX_VERSION "${OSX_MINOR_VERSION_RAW}")
+    if(${MACOSX_VERSION} LESS 6)
+        message(FATAL_ERROR "Unsupported version of OS X: ${OSX_MINOR_VERSION_RAW}")
+        return()
+    elseif (${MACOSX_VERSION} LESS 7)
+        set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvm.clang.1_0")
+    endif()
+endif()
+
 # Detect what compiler we are using on Windows
 # TODO Remove these as redundant.
 set(VC90 FALSE)
@@ -315,6 +368,11 @@ use_package(OGRE)
 use_package(QT4)
 if (NOT ANDROID)
     use_package(OPENAL)
+endif()
+
+# OSX / Xcode needs Assimp as a global link directory, as it cannot find libassimp otherwise for eg. modules linking to OgreRenderingModule
+if (APPLE)
+    use_package_assimp()
 endif()
 
 # Convenience macro for including all TundraCore subfolders.

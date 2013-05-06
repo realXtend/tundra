@@ -39,25 +39,25 @@ static const float cTorqueThresholdSq = 0.0005f * 0.0005f;
 
 EC_RigidBody::EC_RigidBody(Scene* scene) :
     IComponent(scene),
-    mass(this, "Mass", 0.0f),
-    shapeType(this, "Shape type", (int)Shape_Box),
-    size(this, "Size", float3(1,1,1)),
-    collisionMeshRef(this, "Collision mesh ref", AssetReference("", "OgreMesh")),
-    friction(this, "Friction", 0.5f),
-    restitution(this, "Restitution", 0.0f),
-    linearDamping(this, "Linear damping", 0.0f),
-    angularDamping(this, "Angular damping", 0.0f),
-    linearFactor(this, "Linear factor", float3(1,1,1)),
-    angularFactor(this, "Angular factor", float3(1,1,1)),
-    linearVelocity(this, "Linear velocity", float3(0,0,0)),
-    angularVelocity(this, "Angular velocity", float3(0,0,0)),
-    phantom(this, "Phantom", false),
-    kinematic(this, "Kinematic", false),
-    drawDebug(this, "Draw Debug", false),
-    collisionLayer(this, "Collision Layer", -1),
-    collisionMask(this, "Collision Mask", -1),
-    rollingFriction(this, "Rolling friction", 0.5f),
-    useGravity(this, "Use gravity", true),
+    INIT_ATTRIBUTE_VALUE(mass, "Mass", 0.0f),
+    INIT_ATTRIBUTE_VALUE(shapeType, "Shape type", (int)Shape_Box),
+    INIT_ATTRIBUTE_VALUE(size, "Size", float3(1,1,1)),
+    INIT_ATTRIBUTE_VALUE(collisionMeshRef, "Collision mesh ref", AssetReference("", "OgreMesh")),
+    INIT_ATTRIBUTE_VALUE(friction, "Friction", 0.5f),
+    INIT_ATTRIBUTE_VALUE(restitution, "Restitution", 0.0f),
+    INIT_ATTRIBUTE_VALUE(linearDamping, "Linear damping", 0.0f),
+    INIT_ATTRIBUTE_VALUE(angularDamping, "Angular damping", 0.0f),
+    INIT_ATTRIBUTE_VALUE(linearFactor, "Linear factor", float3(1,1,1)),
+    INIT_ATTRIBUTE_VALUE(angularFactor, "Angular factor", float3(1,1,1)),
+    INIT_ATTRIBUTE_VALUE(linearVelocity, "Linear velocity", float3(0,0,0)),
+    INIT_ATTRIBUTE_VALUE(angularVelocity, "Angular velocity", float3(0,0,0)),
+    INIT_ATTRIBUTE_VALUE(phantom, "Phantom", false),
+    INIT_ATTRIBUTE_VALUE(kinematic, "Kinematic", false),
+    INIT_ATTRIBUTE_VALUE(drawDebug, "Draw Debug", false),
+    INIT_ATTRIBUTE_VALUE(collisionLayer, "Collision Layer", -1),
+    INIT_ATTRIBUTE_VALUE(collisionMask, "Collision Mask", -1),
+    INIT_ATTRIBUTE_VALUE(rollingFriction, "Rolling friction", 0.5f),
+    INIT_ATTRIBUTE_VALUE(useGravity, "Use gravity", true),
     body_(0),
     world_(0),
     shape_(0),
@@ -81,6 +81,7 @@ EC_RigidBody::EC_RigidBody(Scene* scene) :
         shapemetadata.enums[Shape_TriMesh] = "TriMesh";
         shapemetadata.enums[Shape_HeightField] = "HeightField";
         shapemetadata.enums[Shape_ConvexHull] = "ConvexHull";
+        shapemetadata.enums[Shape_Cone] = "Cone";
         metadataInitialized = true;
     }
     shapeType.SetMetadata(&shapemetadata);
@@ -330,6 +331,9 @@ void EC_RigidBody::CreateCollisionShape()
         break;
     case Shape_ConvexHull:
         CreateConvexHullSetShape();
+        break;
+    case Shape_Cone:
+        shape_ = new btConeShape(sizeVec.x * 0.5f, sizeVec.y);
         break;
     }
     
@@ -766,6 +770,19 @@ AABB EC_RigidBody::ShapeAABB() const
     btVector3 aabbMin, aabbMax;
     body_->getAabb(aabbMin, aabbMax);
     return AABB(aabbMin, aabbMax);
+}
+
+bool EC_RigidBody::IsPrimitiveShape() const
+{
+    switch(static_cast<ShapeType>(shapeType.Get()))
+    {
+    case Shape_TriMesh:
+    case Shape_HeightField:
+    case Shape_ConvexHull:
+        return false;
+    default:
+        return true;
+    }
 }
 
 void EC_RigidBody::TerrainUpdated(IAttribute* attribute)

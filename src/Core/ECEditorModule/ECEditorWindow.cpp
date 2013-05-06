@@ -171,6 +171,8 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     connect(undoManager_, SIGNAL(CanRedoChanged(bool)), this, SLOT(OnRedoChanged(bool)));
     connect(undoButton_, SIGNAL(clicked()), undoManager_, SLOT(Undo()));
     connect(redoButton_, SIGNAL(clicked()), undoManager_, SLOT(Redo()));
+    
+    connect(framework->Input()->TopLevelInputContext(), SIGNAL(KeyPressed(KeyEvent*)), SLOT(OnKeyEvent(KeyEvent*)));
 }
 
 ECEditorWindow::~ECEditorWindow()
@@ -180,7 +182,7 @@ ECEditorWindow::~ECEditorWindow()
     //DeselectAllEntities(); the list is already cleared here
 }
 
-EntityListWidgetItem *ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpate_ui)
+EntityListWidgetItem *ECEditorWindow::AddEntity(entity_id_t entity_id, bool updateUi)
 {
     EntityListWidgetItem *item = 0;
     PROFILE(ECEditorWindow_AddEntity);
@@ -200,7 +202,7 @@ EntityListWidgetItem *ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpa
         entityList->blockSignals(false);
     }
 
-    if (udpate_ui)
+    if (updateUi)
         RefreshPropertyBrowser();
 
     return item;
@@ -209,7 +211,6 @@ EntityListWidgetItem *ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpa
 void ECEditorWindow::AddEntities(const QList<entity_id_t> &entities, bool select_all)
 {
     // SetEntitySelected() will block entity list's signals, no need to do it here.
-
     ClearEntities();
     foreach(entity_id_t id, entities)
     {
@@ -388,6 +389,26 @@ void ECEditorWindow::CreateComponent()
     }
 }
 
+void ECEditorWindow::OnKeyEvent(KeyEvent *keyEvent)
+{
+    if (!isVisible() || !undoManager_ || !framework || !framework->Input())
+        return;
+
+    const QKeySequence undo = framework->Input()->KeyBinding("TundraEditors.Undo", QKeySequence(Qt::ControlModifier + Qt::Key_Z));
+    const QKeySequence redo = framework->Input()->KeyBinding("TundraEditors.Redo", QKeySequence(Qt::ControlModifier + Qt::Key_Y));
+
+    if (keyEvent->sequence == undo)
+    {
+        undoManager_->Undo();
+        keyEvent->Suppress();
+    }
+    else if( keyEvent->sequence == redo)
+    {
+        undoManager_->Redo();
+        keyEvent->Suppress();
+    }
+}
+
 void ECEditorWindow::EntityActionDialogFinished(int result)
 {
     EntityActionDialog *dialog = qobject_cast<EntityActionDialog *>(sender());
@@ -472,16 +493,15 @@ void ECEditorWindow::OnActionTriggered(Entity *entity, const QString &action, co
                 DeselectAllEntities();
 
             EntityListWidgetItem *item = FindItem(entity->Id());
-            if (item && item->isSelected())
-                SetEntitySelected(item, false);
+            if (item)
+                SetEntitySelected(item, !item->isSelected());
             else
             {
                 item = AddEntity(entity->Id());
                 SetEntitySelected(item, true);
             }
+            RefreshPropertyBrowser();
         }
-
-        RefreshPropertyBrowser();
     }
 }
 
@@ -577,7 +597,7 @@ void ECEditorWindow::PasteEntity()
         for(uint j = 0; j < attributes.size(); j++)
             if (attributes[j])
             {
-                IAttribute *attribute = component->GetAttribute(attributes[j]->Name());
+                IAttribute *attribute = component->AttributeByName(attributes[j]->Name());
                 if(attribute)
                     attribute->FromString(attributes[j]->ToString(), AttributeChange::Default);
             }
@@ -647,7 +667,6 @@ void ECEditorWindow::RefreshPropertyBrowser()
 
     // Unbold all items for starters.
     BoldEntityListItems(QSet<entity_id_t>());
-    undoManager_->Clear();
 
     QList<EntityPtr> entities = SelectedEntities();
     if (entities.empty()) // If any of entities was not selected clear the browser window.
@@ -922,8 +941,7 @@ void ECEditorWindow::HighlightEntity(const EntityPtr &entity, bool highlight)
         
         if (highlight)
         {
-            EC_Highlight *hl = dynamic_cast<EC_Highlight *>(entity->GetOrCreateLocalComponent(
-                EC_Highlight::TypeNameStatic(), cEcEditorHighlight).get());
+            EC_Highlight *hl = dynamic_cast<EC_Highlight *>(entity->GetOrCreateLocalComponent(EC_Highlight::TypeNameStatic(), cEcEditorHighlight).get());
             if (hl)
             {
                 hl->SetTemporary(true);
@@ -1043,138 +1061,68 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
         targetEntities << id;
     }
 
-    undoManager_->Push(new AddComponentCommand(scene->shared_from_this(), undoManager_->GetTracker(), targetEntities, dialog->TypeName(), dialog->Name(), dialog->IsReplicated(), dialog->IsTemporary()));
+    undoManager_->Push(new AddComponentCommand(scene->shared_from_this(), undoManager_->GetTracker(),
+        targetEntities, dialog->TypeName(), dialog->Name(), dialog->IsReplicated(), dialog->IsTemporary()));
 }
 
 void ECEditorWindow::OnAboutToEditAttribute(IAttribute *attr)
 {
-    if (attr)
+    switch(attr->TypeId())
     {
-        u32 type = attr->TypeId();
-        switch (type)
-        {
-            case cAttributeReal:
-            {
-                Attribute<float> *a = static_cast<Attribute<float> *>(attr);
-                undoManager_->Push(new EditAttributeCommand<float>(attr, a->Get()));
-            }
-            break;
-
-            case cAttributeInt:
-            {
-                Attribute<int> *a = static_cast<Attribute<int> *>(attr);
-                undoManager_->Push(new EditAttributeCommand<int>(attr, a->Get()));
-            }
-            break;
-
-            case cAttributeUInt:
-            {
-                Attribute<unsigned int> *a = static_cast<Attribute<unsigned int> *>(attr);
-                undoManager_->Push(new EditAttributeCommand<unsigned int>(attr, a->Get()));
-            }
-            break;
-
-            case cAttributeFloat2:
-            {
-                Attribute<float2> *a = static_cast<Attribute<float2> *>(attr);
-                undoManager_->Push(new EditAttributeCommand<float2>(attr, a->Get()));
-            }
-            break;
-
-            case cAttributeFloat3:
-            {
-                Attribute<float3> *a = static_cast<Attribute<float3> *>(attr);
-                undoManager_->Push(new EditAttributeCommand<float3>(attr, a->Get()));
-            }
-            break;
-
-            case cAttributeFloat4:
-            {
-                Attribute<float4> *a = static_cast<Attribute<float4> *>(attr);
-                undoManager_->Push(new EditAttributeCommand<float4>(attr, a->Get()));
-            }
-            break;
-
-            case cAttributeQuat:
-            {
-                Attribute<Quat> *a = static_cast<Attribute<Quat> *>(attr);
-                undoManager_->Push(new EditAttributeCommand<Quat>(attr, a->Get()));
-            }
-            break;
-
-            case cAttributeColor:
-            {
-                Attribute<Color> *a = static_cast<Attribute<Color> *>(attr);
-                undoManager_->Push(new EditAttributeCommand<Color>(attr, a->Get()));
-            }
-            break;
-
-            case cAttributeString:
-            {
-                Attribute<QString> *a = static_cast<Attribute<QString> *>(attr);
-                undoManager_->Push(new EditAttributeCommand<QString>(attr, a->Get()));
-            }
-            break;
-
-            case cAttributeBool:
-            {
-                Attribute<bool> *a = static_cast<Attribute<bool> *>(attr);
-                undoManager_->Push(new EditAttributeCommand<bool>(attr, a->Get()));
-            }
-            break;
-
-            case cAttributeQVariant:
-            {
-                Attribute<QVariant> *a = static_cast<Attribute<QVariant> *>(attr);
-                undoManager_->Push(new EditAttributeCommand<QVariant>(attr, a->Get()));
-            }
-            break;
-
-            case cAttributeQVariantList:
-            {
-                Attribute<QVariantList> *a = static_cast<Attribute<QVariantList> *>(attr);
-                undoManager_->Push(new EditAttributeCommand<QVariantList>(attr, a->Get()));
-            }
-            break;
-
-            case cAttributeEntityReference:
-            {
-                Attribute<EntityReference> *a = static_cast<Attribute<EntityReference> *>(attr);
-                undoManager_->Push(new EditAttributeCommand<EntityReference>(attr, a->Get()));
-            }
-            break;
-
-            case cAttributeAssetReference:
-            {
-                Attribute<AssetReference> *a = static_cast<Attribute<AssetReference> *>(attr);
-                undoManager_->Push(new EditAttributeCommand<AssetReference>(attr, a->Get()));
-            }
-            break;
-
-            case cAttributeAssetReferenceList:
-            {
-                Attribute<AssetReferenceList> *a = static_cast<Attribute<AssetReferenceList> *>(attr);
-                undoManager_->Push(new EditAttributeCommand<AssetReferenceList>(attr, a->Get()));
-            }
-            break;
-
-            case cAttributeTransform:
-            {
-                Attribute<Transform> *a = static_cast<Attribute<Transform> *>(attr);
-                undoManager_->Push(new EditAttributeCommand<Transform>(attr, a->Get()));
-            }
-            break;
-
-            case cAttributeQPoint:
-            {
-                Attribute<QPoint> *a = static_cast<Attribute<QPoint> *>(attr);
-                undoManager_->Push(new EditAttributeCommand<QPoint>(attr, a->Get()));
-            }
-            break;
-
-            default:
-                LogWarning("Unknown attribute type " + attr->TypeName() + " for pushing into the undo stack.");
-        }
+    case cAttributeReal:
+        undoManager_->Push(new EditAttributeCommand<float>(attr));
+        break;
+    case cAttributeInt:
+        undoManager_->Push(new EditAttributeCommand<int>(attr));
+        break;
+    case cAttributeUInt:
+        undoManager_->Push(new EditAttributeCommand<unsigned int>(attr));
+        break;
+    case cAttributeFloat2:
+        undoManager_->Push(new EditAttributeCommand<float2>(attr));
+        break;
+    case cAttributeFloat3:
+        undoManager_->Push(new EditAttributeCommand<float3>(attr));
+        break;
+    case cAttributeFloat4:
+        undoManager_->Push(new EditAttributeCommand<float4>(attr));
+        break;
+    case cAttributeQuat:
+        undoManager_->Push(new EditAttributeCommand<Quat>(attr));
+        break;
+    case cAttributeColor:
+        undoManager_->Push(new EditAttributeCommand<Color>(attr));
+        break;
+    case cAttributeString:
+        undoManager_->Push(new EditAttributeCommand<QString>(attr));
+        break;
+    case cAttributeBool:
+        undoManager_->Push(new EditAttributeCommand<bool>(attr));
+        break;
+    case cAttributeQVariant:
+        undoManager_->Push(new EditAttributeCommand<QVariant>(attr));
+        break;
+    case cAttributeQVariantList:
+        undoManager_->Push(new EditAttributeCommand<QVariantList>(attr));
+        break;
+    case cAttributeEntityReference:
+        undoManager_->Push(new EditAttributeCommand<EntityReference>(attr));
+        break;
+    case cAttributeAssetReference:
+        undoManager_->Push(new EditAttributeCommand<AssetReference>(attr));
+        break;
+    case cAttributeAssetReferenceList:
+        undoManager_->Push(new EditAttributeCommand<AssetReferenceList>(attr));
+        break;
+    case cAttributeTransform:
+        undoManager_->Push(new EditAttributeCommand<Transform>(attr));
+        break;
+    case cAttributeQPoint:
+        undoManager_->Push(new EditAttributeCommand<QPoint>(attr));
+        break;
+    default:
+        LogWarning("Unknown attribute type " + attr->TypeName() + " for pushing into the undo stack.");
+        break;
     }
 }
 
@@ -1186,4 +1134,9 @@ void ECEditorWindow::OnUndoChanged(bool canUndo)
 void ECEditorWindow::OnRedoChanged(bool canRedo)
 {
     redoButton_->setEnabled(canRedo);
+}
+
+UndoManager *ECEditorWindow::GetUndoManager()
+{
+    return undoManager_;
 }

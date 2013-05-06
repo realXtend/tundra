@@ -28,7 +28,7 @@ template<> bool EditAttributeCommand<Color>::mergeWith(const QUndoCommand *other
     if (!otherCommand)
         return false;
 
-    return (oldValue_ == otherCommand->oldValue_);
+    return (undoValue == otherCommand->undoValue);
 }
 
 AddAttributeCommand::AddAttributeCommand(IComponent * comp, const QString &typeName, const QString &name, QUndoCommand * parent) :
@@ -39,7 +39,7 @@ AddAttributeCommand::AddAttributeCommand(IComponent * comp, const QString &typeN
     attributeName_(name),
     QUndoCommand(parent)
 {
-    setText("add attribute of type " + typeName);
+    setText("+ Added " + typeName + " Attribute");
 }
 
 int AddAttributeCommand::id() const
@@ -101,7 +101,7 @@ RemoveAttributeCommand::RemoveAttributeCommand(IAttribute *attr, QUndoCommand *p
     value_(QString::fromStdString(attr->ToString())),
     QUndoCommand(parent)
 {
-    setText("remove attribute of type " + attributeTypeName_);
+    setText("- Removed " + attributeTypeName_ + " Attribute");
 }
 
 int RemoveAttributeCommand::id() const
@@ -145,7 +145,8 @@ void RemoveAttributeCommand::redo()
     }
 }
 
-AddComponentCommand::AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, EntityIdList entities, const QString compType, const QString compName, bool sync, bool temp, QUndoCommand * parent) :
+AddComponentCommand::AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const EntityIdList &entities,
+    const QString &compType, const QString &compName, bool sync, bool temp, QUndoCommand * parent) :
     scene_(scene),
     tracker_(tracker),
     entityIds_(entities),
@@ -155,7 +156,7 @@ AddComponentCommand::AddComponentCommand(const ScenePtr &scene, EntityIdChangeTr
     sync_(sync),
     QUndoCommand(parent)
 {
-    setText("add component of type " + componentType_ + (entities.size() == 1 ? "" : " to multiple entities"));
+    setText("+ Added " + QString(componentType_).replace("EC_", "") + " Component" + (entities.size() == 1 ? "" : QString(" (to %1 entities)").arg(entities.size())));
 }
 
 int AddComponentCommand::id() const
@@ -164,7 +165,10 @@ int AddComponentCommand::id() const
 }
 
 void AddComponentCommand::undo()
-{
+{    
+    // Call base impl that executes potential attribute edit commands
+    QUndoCommand::undo();
+
     ScenePtr scene = scene_.lock();
     if (!scene.get())
         return;
@@ -204,18 +208,48 @@ void AddComponentCommand::redo()
                 comp->SetReplicated(sync_);
                 comp->SetTemporary(temp_);
                 ent->AddComponent(comp, AttributeChange::Default);
+                
+                // Execute any child commands.
+                AttributeVector attributes = comp->NonEmptyAttributes();
+                for(int i=0; i<childCount(); ++i)
+                {
+                    QUndoCommand *command = const_cast<QUndoCommand*>(child(i));
+                    IEditAttributeCommand *attrbCommand = dynamic_cast<IEditAttributeCommand*>(command);
+                    if (!attrbCommand)
+                    {
+                        if (command)
+                            command->redo();
+                        continue;
+                    }
+
+                    // Check that this commands parent is the entity being processed.
+                    EntityPtr attrCommandParent = scene->EntityById(tracker_->RetrieveId(attrbCommand->parentId));
+                    if (attrCommandParent != ent)
+                        continue;
+
+                    // Find the correct attribute with name and type and update the weak ptr.
+                    for (unsigned i = 0; i < attributes.size(); ++i)
+                    {
+                        if (attrbCommand->attributeName == attributes[i]->Name() && attrbCommand->attributeTypeName == attributes[i]->TypeName())
+                        {
+                            attrbCommand->attribute = AttributeWeakPtr(comp, attributes[i]);
+                            attrbCommand->redo();
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
 }
 
-EditXMLCommand::EditXMLCommand(const ScenePtr &scene, const QDomDocument oldDoc, const QDomDocument newDoc, QUndoCommand * parent) : 
+EditXMLCommand::EditXMLCommand(const ScenePtr &scene, const QDomDocument &oldDoc, const QDomDocument &newDoc, QUndoCommand * parent) : 
     scene_(scene),
     oldState_(oldDoc),
     newState_(newDoc),
     QUndoCommand(parent)
 {
-    setText("editing XML");
+    setText("* Edited XML");
 }
 
 int EditXMLCommand::id() const
@@ -290,15 +324,15 @@ void EditXMLCommand::Deserialize(const QDomDocument docState)
 }
 
 AddEntityCommand::AddEntityCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QString &name, bool sync, bool temp, QUndoCommand *parent) :
+    QUndoCommand(parent),
     scene_(scene),
     tracker_(tracker),
     entityName_(name),
     entityId_(0),
     sync_(sync),
-    temp_(temp),
-    QUndoCommand(parent)
+    temp_(temp)
 {
-    setText("add entity named " + (entityName_.isEmpty() ? "(no name)" : entityName_));
+    setText("+ Added Entity " + entityName_.trimmed());
 }
 
 int AddEntityCommand::id() const
@@ -308,13 +342,14 @@ int AddEntityCommand::id() const
 
 void AddEntityCommand::undo()
 {
+    QUndoCommand::undo();
+    
     ScenePtr scene = scene_.lock();
-    if (!scene.get())
+    if (!scene)
         return;
 
     entity_id_t newId = tracker_->RetrieveId(entityId_);
-    EntityPtr ent = scene->EntityById(newId);
-    if (ent.get())
+    if (scene->EntityById(newId).get()) // intentionally avoid using shared_ptr so that we don't hold ref to the entity that will be deleted
         scene->RemoveEntity(newId, AttributeChange::Replicate);
 }
 
@@ -337,62 +372,49 @@ void AddEntityCommand::redo()
         entity->SetName(entityName_);
 
     entity->SetTemporary(temp_);
+
+    // Execute any AddComponentCommand children to apply component back.
+    QUndoCommand::redo();
 }
 
-RemoveCommand::RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QList<EntityWeakPtr> &entityList, const QList<ComponentWeakPtr> &componentList, QUndoCommand * parent) :
+RemoveCommand::RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QList<EntityWeakPtr> &entities, const QList<ComponentWeakPtr> &components, QUndoCommand * parent) :
+    QUndoCommand(parent),
     scene_(scene),
-    tracker_(tracker),
-    QUndoCommand(parent)
+    tracker_(tracker)
 {
-    QString commandText;
-    QString entityStr;
-    QString andStr;
-    QString componentStr;
+    Initialize(entities, components);
+}
 
-    if (!entityList.isEmpty())
-    {
-        for (QList<EntityWeakPtr>::const_iterator i = entityList.begin(); i != entityList.end(); ++i)
-        {
-            entityList_ << (*i).lock()->Id();
+RemoveCommand::RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const QList<EntityWeakPtr> &entities, QUndoCommand *parent) :
+    QUndoCommand(parent),
+    scene_(scene),
+    tracker_(tracker)
+{
+    Initialize(entities, QList<ComponentWeakPtr>());
+}
 
-            if (entityStr.isEmpty())
-            {
-                QString entityName = (*i).lock()->Name().isEmpty() ? "(no name)" : (*i).lock()->Name();
-                entityStr = QString(" entity named %1 with id %2 ").arg(entityName).arg((*i).lock()->Id());
-            }
-        }
+RemoveCommand::RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const QList<ComponentWeakPtr> &components, QUndoCommand *parent) :
+    QUndoCommand(parent),
+    scene_(scene),
+    tracker_(tracker)
+{
+    Initialize(QList<EntityWeakPtr>(), components);
+}
 
-        if (entityList.count() > 1)
-            entityStr = QString(" multiple entities ");
-    }
+RemoveCommand::RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const EntityWeakPtr &entity, QUndoCommand *parent) :
+    QUndoCommand(parent),
+    scene_(scene),
+    tracker_(tracker)
+{
+    Initialize(QList<EntityWeakPtr>(QList<EntityWeakPtr>() << entity), QList<ComponentWeakPtr>());
+}
 
-    if (!componentList.isEmpty())
-    {
-        for (QList<ComponentWeakPtr>::const_iterator i = componentList.begin(); i != componentList.end(); ++i)
-        {
-            ComponentPtr comp = (*i).lock();
-            if (comp.get())
-            {
-                if (entityList_.contains(comp->ParentEntity()->Id()))
-                    continue;
-
-                componentMap_[comp->ParentEntity()->Id()] << qMakePair(comp->TypeName(), comp->Name());
-
-                if (componentStr.isEmpty())
-                {
-                    QString componentName = comp->Name().isEmpty() ? "(no name)" : comp->Name();
-                    componentStr = QString(" component named %1 of type %2 ").arg(componentName).arg(comp->TypeName());
-                }
-            }
-        }
-
-        if (componentList.count() > 1)
-            componentStr = QString(" multiple components ");
-    }
-
-    andStr = QString((!entityStr.isEmpty() && !componentStr.isEmpty()) ? "and" : "");
-    commandText = QString("remove%1%2%3").arg(entityStr).arg(andStr).arg(componentStr);
-    setText(commandText);
+RemoveCommand::RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *tracker, const ComponentWeakPtr &component, QUndoCommand *parent) :
+    QUndoCommand(parent),
+    scene_(scene),
+    tracker_(tracker)
+{
+    Initialize(QList<EntityWeakPtr>(), QList<ComponentWeakPtr>(QList<ComponentWeakPtr>() << component));
 }
 
 int RemoveCommand::id() const
@@ -517,13 +539,51 @@ void RemoveCommand::redo()
     }
 }
 
+void RemoveCommand::Initialize(const QList<EntityWeakPtr> &entityList, const QList<ComponentWeakPtr> &componentList)
+{
+    QStringList componentTypes;
+    bool componentMultiParented = false;
+    
+    for (QList<EntityWeakPtr>::const_iterator i = entityList.begin(); i != entityList.end(); ++i)
+        entityList_ << (*i).lock()->Id();
+
+    for (QList<ComponentWeakPtr>::const_iterator i = componentList.begin(); i != componentList.end(); ++i)
+    {
+        ComponentPtr comp = (*i).lock();
+        if (comp.get())
+        {
+            if (entityList_.contains(comp->ParentEntity()->Id()))
+                continue;
+
+            componentMap_[comp->ParentEntity()->Id()] << qMakePair(comp->TypeName(), comp->Name());
+
+            QString cleanTypeName = QString(comp->TypeName()).replace("EC_", "");
+            if (!componentTypes.contains(cleanTypeName))
+                componentTypes << cleanTypeName;
+                
+            if (i != componentList.begin())
+                componentMultiParented = true;
+        }
+    }
+    
+    if (!componentTypes.isEmpty() && entityList_.size() > 0)
+        setText("* Removed Entities and Components");
+    else if (!componentTypes.isEmpty())
+        setText(QString("* Removed ") + (!componentTypes.isEmpty() ? componentTypes.join(", ") : "") + (componentTypes.size() > 1 ? " Components" : " Component") + (componentMultiParented ? " from multiple entities" : "")); 
+    else if (entityList_.size() > 0)
+        setText(QString("* Removed %1 Entities").arg(entityList_.size()));
+}
+
 RenameCommand::RenameCommand(EntityWeakPtr entity, EntityIdChangeTracker * tracker, const QString oldName, const QString newName, QUndoCommand * parent) : 
     tracker_(tracker),
     oldName_(oldName),
     newName_(newName),
     QUndoCommand(parent)
 {
-    setText("rename entity named " + (oldName.isEmpty() ? "(no name)" : oldName));
+    if (newName_.trimmed().isEmpty())
+        setText("* Removed name from Entity " + entity.lock()->Name().trimmed());
+    else
+        setText("* Renamed Entity to " + newName_.trimmed());
     scene_ = entity.lock()->ParentScene()->shared_from_this();
     entityId_ = entity.lock()->Id();
 }
@@ -561,11 +621,11 @@ ToggleTemporaryCommand::ToggleTemporaryCommand(const QList<EntityWeakPtr> &entit
     QUndoCommand(parent)
 {
     if (entities.size() > 1)
-        setText("toggle temporary of multiple entities");
+        setText(QString("* Made multiple entities ") + (temporary_ ? "temporary" : "non-temporary"));
     else
     {
         QString name = entities.at(0).lock()->Name();
-        setText("toggle temporary of entity named " + name);
+        setText(QString("* Made Entity ") + name.trimmed() + (temporary_ ? " temporary" : " non-temporary"));
     }
 
     scene_ = entities.at(0).lock()->ParentScene()->shared_from_this();
@@ -603,7 +663,7 @@ void ToggleTemporaryCommand::ToggleTemporary(bool temporary)
     }
 }
 
-TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3 & offset, QUndoCommand * parent) : 
+TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3 &offset, QUndoCommand *parent) : 
     targets_(attributes),
     nItems_(numberOfItems),
     action_(action),
@@ -614,10 +674,10 @@ TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attribut
     SetCommandText();
 }
 
-TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, const float3x4 & rotation, QUndoCommand * parent) :
+TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3x4 &rotation, QUndoCommand *parent) :
     targets_(attributes),
     nItems_(numberOfItems),
-    action_(TransformCommand::Rotate),
+    action_(action),
     rotation_(rotation),
     offset_(float3::zero),
     QUndoCommand(parent)
@@ -636,17 +696,46 @@ void TransformCommand::SetCommandText()
     switch(action_)
     {
         case Translate:
-            text += "translate";
+            text += "* Translated";
+            break;
+        case TranslateX:
+            text += "* Translated X-axis";
+            break;
+        case TranslateY:
+            text += "* Translated Y-axis";
+            break;
+        case TranslateZ:
+            text += "* Translated Z-axis";
             break;
         case Rotate:
-            text += "rotate";
+            text += "* Rotated";
+            break;
+        case RotateX:
+            text += "* Rotated X-axis";
+            break;
+        case RotateY:
+            text += "* Rotated Y-axis";
+            break;
+        case RotateZ:
+            text += "* Rotated Z-axis";
             break;
         case Scale:
-            text += "scale";
+            text += "* Scaled";
+            break;
+        case ScaleX:
+            text += "* Scaled X-axis";
+            break;
+        case ScaleY:
+            text += "* Scaled Y-axis";
+            break;
+        case ScaleZ:
+            text += "* Scaled Z-axis";
             break;
     }
-    text += QString(" %1 ").arg(nItems_);
-    text += (nItems_ == 1 ? "item" : "items");
+    if (nItems_ > 1)
+        text += QString(" on %1 Entities").arg(nItems_);
+    else
+        text += " on Entity";
     setText(text);
 }
 
@@ -655,12 +744,21 @@ void TransformCommand::undo()
     switch(action_)
     {
         case Translate:
+        case TranslateX:
+        case TranslateY:
+        case TranslateZ:
             DoTranslate(true);
             break;
         case Rotate:
+        case RotateX:
+        case RotateY:
+        case RotateZ:
             DoRotate(true);
             break;
         case Scale:
+        case ScaleX:
+        case ScaleY:
+        case ScaleZ:
             DoScale(true);
             break;
     }
@@ -671,12 +769,21 @@ void TransformCommand::redo()
     switch(action_)
     {
         case Translate:
+        case TranslateX:
+        case TranslateY:
+        case TranslateZ:
             DoTranslate(false);
             break;
         case Rotate:
+        case RotateX:
+        case RotateY:
+        case RotateZ:
             DoRotate(false);
             break;
         case Scale:
+        case ScaleX:
+        case ScaleY:
+        case ScaleZ:
             DoScale(false);
             break;
     }
@@ -743,26 +850,23 @@ void TransformCommand::DoScale(bool isUndo)
     }
 }
 
-bool TransformCommand::mergeWith(const QUndoCommand * other)
+bool TransformCommand::mergeWith(const QUndoCommand *other)
 {
     if (id() != other->id())
         return false;
 
-    const TransformCommand * otherCommand = dynamic_cast<const TransformCommand*> (other);
+    const TransformCommand *otherCommand = dynamic_cast<const TransformCommand*>(other);
     if (!otherCommand)
         return false;
-
     if (action_ != otherCommand->action_)
         return false;
-
     if (targets_ != otherCommand->targets_)
         return false;
 
-    if (action_ != Rotate)
+    if (action_ != Rotate && action_ != RotateX && action_ != RotateY && action_ != RotateZ)
         offset_ += otherCommand->offset_;
     else
         rotation_ = otherCommand->rotation_.Mul(rotation_);
-
     return true;
 }
 

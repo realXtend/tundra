@@ -54,8 +54,6 @@ public slots:
     void MouseWheelEvent(QWheelEvent* ev);
 
 private:
-    Q_DISABLE_COPY(MeshPreviewEditor)
-
     void InitializeEditorWidget();
     void CreateRenderTexture();
     void AdjustScene();

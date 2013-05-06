@@ -84,21 +84,6 @@ public:
     template <class T>
     std::vector<shared_ptr<T> > ComponentsOfType() const;
 
-   /** Returns pointer to the first attribute with specific name.
-        @param T Type name/class of the attribute.
-        @param name Name of the attribute.
-        @return Pointer to the attribute.
-        @note Always remember to check for null pointer. */
-    template<typename T>
-    Attribute<T> *GetAttribute(const QString &name) const;
-
-    /// Returns list of attributes with specific name.
-    /** @param T Type name/class of the attribute.
-        @param name Name of the attribute.
-        @return List of attributes, or empty list if no attributes are found. */
-    template<typename T>
-    std::vector<Attribute<T> > GetAttributes(const QString &name) const;
-
     /// In the following, deserialization functions are now disabled since deserialization can't safely
     /// process the exact same data that was serialized, or it risks receiving entity ID conflicts in the scene.
     /// @todo Implement a deserialization flow that takes that into account. In the meanwhile, use Scene
@@ -135,18 +120,6 @@ public:
 
     /// introspection for the entity, returns all components
     const ComponentMap &Components() const { return components_; }
-
-    /// Returns attribute interface pointer to attribute with specific name.
-    /** @param name Name of the attribute.
-        @note Always remember to check for null pointer.
-        @todo Remove, attributes should be accessed via components. */
-    IAttribute *GetAttribute(const QString &name) const;
-
-    /// Returns list of attributes with specific name.
-    /** @param name Name of the attribute.
-        @return List of attribute interface pointers, or empty list if no attributes are found.
-        @todo Remove, attributes should be accessed via components. */
-    AttributeVector GetAttributes(const QString &name) const;
 
     /// Returns actions map for introspection/reflection.
     const ActionMap &Actions() const { return actions_; }

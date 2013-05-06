@@ -95,25 +95,23 @@ assetAPI(assetAPI_)
     impl->soundMasterGain[SoundChannel::Voice] = 1.f;
     impl->listenerPosition = float3(0.0, 0.0, 0.0);
     
-    QStringList audioDevice = fw->CommandLineParameters("--audiodevice");
+    QStringList audioDevice = fw->CommandLineParameters("--audioDevice"); /**< @todo document to help */
     QString device = "";
     if (audioDevice.size() >= 1)
         device = audioDevice.back();
     if (audioDevice.size() > 1)
-        LogWarning("Specified multiple --audiodevice parameters. Using \"" + device + "\".");
+        LogWarning("Specified multiple --audioDevice parameters. Using \"" + device + "\".");
     Initialize(device);
 
     // Load sound settings. If we have "master_gain" in config we very likely have all the other settings as well.
     if (fw->Config()->HasValue(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_SOUND, "master_gain"))
         LoadSoundSettingsFromConfig();
 
-    QStringList audioTypeExtensions;
-    audioTypeExtensions << ".wav" << ".ogg" << ".mp3";
-    
+    QStringList audioTypeExtensions(QStringList() << ".wav" << ".ogg");
     if (!fw->IsHeadless())
-        assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio", audioTypeExtensions)));
+        assetAPI->RegisterAssetTypeFactory(MAKE_SHARED(GenericAssetFactory<AudioAsset>, "Audio", audioTypeExtensions));
     else
-        assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Audio", audioTypeExtensions)));
+        assetAPI->RegisterAssetTypeFactory(MAKE_SHARED(NullAssetFactory, "Audio", audioTypeExtensions));
 }
 
 AudioAPI::~AudioAPI()
@@ -162,7 +160,7 @@ bool AudioAPI::Initialize(const QString &playbackDeviceName)
     return true;
 }
 
-QStringList AudioAPI::GetPlaybackDevices() const
+QStringList AudioAPI::PlaybackDevices() const
 {
     QStringList names;
 
@@ -184,7 +182,7 @@ QStringList AudioAPI::GetPlaybackDevices() const
 AudioAssetPtr AudioAPI::CreateAudioAssetFromSoundBuffer(const SoundBuffer &buffer) const
 {
     // Construct a sound from the buffer
-    AudioAssetPtr new_sound(new AudioAsset(assetAPI, "Audio", "buffer"));
+    AudioAssetPtr new_sound = MAKE_SHARED(AudioAsset, assetAPI, "Audio", "buffer");
     new_sound->LoadFromSoundBuffer(buffer);
 
     // If failed for some reason (out of memory?), bail out
@@ -220,7 +218,7 @@ void AudioAPI::Uninitialize()
     impl->initialized = false;
 }
 
-std::vector<SoundChannelPtr> AudioAPI::GetActiveSounds() const
+std::vector<SoundChannelPtr> AudioAPI::ActiveSounds() const
 {
     std::vector<SoundChannelPtr> ret;
     
@@ -323,15 +321,15 @@ void AudioAPI::SetListener(const float3 &position, const Quat &orientation)
     impl->listenerOrientation = orientation;
 }
 
-SoundChannelPtr AudioAPI::PlaySound(AssetPtr audioAsset, SoundChannel::SoundType type, SoundChannelPtr channel)
+SoundChannelPtr AudioAPI::PlaySound(const AssetPtr &audioAsset, SoundChannel::SoundType type, SoundChannelPtr channel)
 {
     if (!impl || !impl->initialized)
         return SoundChannelPtr();
 
     if (!channel)
     {
-        sound_id_t newId = GetNextSoundChannelID();
-        channel = SoundChannelPtr(new SoundChannel(newId, type));
+        sound_id_t newId = NextSoundChannelID();
+        channel = MAKE_SHARED(SoundChannel, newId, type);
         impl->channels.insert(make_pair(newId, channel));
     }
 
@@ -342,15 +340,15 @@ SoundChannelPtr AudioAPI::PlaySound(AssetPtr audioAsset, SoundChannel::SoundType
     return channel;
 }
 
-SoundChannelPtr AudioAPI::PlaySound3D(const float3 &position, AssetPtr audioAsset, SoundChannel::SoundType type, SoundChannelPtr channel)
+SoundChannelPtr AudioAPI::PlaySound3D(const float3 &position, const AssetPtr &audioAsset, SoundChannel::SoundType type, SoundChannelPtr channel)
 {
     if (!impl || !impl->initialized)
         return SoundChannelPtr();
 
     if (!channel)
     {
-        sound_id_t newId = GetNextSoundChannelID();
-        channel = SoundChannelPtr(new SoundChannel(newId, type));
+        sound_id_t newId = NextSoundChannelID();
+        channel = MAKE_SHARED(SoundChannel, newId, type);
         impl->channels.insert(make_pair(newId, channel));
     }
 
@@ -369,8 +367,8 @@ SoundChannelPtr AudioAPI::PlaySoundBuffer(const SoundBuffer &buffer, SoundChanne
         
     if (!channel)
     {
-        sound_id_t newId = GetNextSoundChannelID();
-        channel = SoundChannelPtr(new SoundChannel(newId, type));
+        sound_id_t newId = NextSoundChannelID();
+        channel = MAKE_SHARED(SoundChannel, newId, type);
         impl->channels.insert(make_pair(newId, channel));
     }
 
@@ -390,8 +388,8 @@ SoundChannelPtr AudioAPI::PlaySoundBuffer3D(const SoundBuffer &buffer, SoundChan
         
     if (!channel)
     {
-        sound_id_t newId = GetNextSoundChannelID();
-        channel = SoundChannelPtr(new SoundChannel(newId, type));
+        sound_id_t newId = NextSoundChannelID();
+        channel = MAKE_SHARED(SoundChannel, newId, type);
         impl->channels.insert(make_pair(newId, channel));
     }
 
@@ -405,13 +403,13 @@ SoundChannelPtr AudioAPI::PlaySoundBuffer3D(const SoundBuffer &buffer, SoundChan
     return channel;
 }
 
-void AudioAPI::Stop(SoundChannelPtr channel) const
+void AudioAPI::Stop(const SoundChannelPtr &channel) const
 {
     if (channel)
         channel->Stop();
 }
 
-sound_id_t AudioAPI::GetNextSoundChannelID() const
+sound_id_t AudioAPI::NextSoundChannelID() const
 {
     assert(impl);
     if (!impl)
@@ -436,7 +434,7 @@ void AudioAPI::SetMasterGain(float masterGain)
     ApplyMasterGain();
 }
 
-float AudioAPI::GetMasterGain() const
+float AudioAPI::MasterGain() const
 {
     return impl ? impl->masterGain : 0.f;
 }
@@ -447,7 +445,7 @@ void AudioAPI::SetSoundMasterGain(SoundChannel::SoundType type, float masterGain
     ApplyMasterGain();
 }
 
-float AudioAPI::GetSoundMasterGain(SoundChannel::SoundType type) const
+float AudioAPI::SoundMasterGain(SoundChannel::SoundType type) const
 {
     return impl ? impl->soundMasterGain[type] : 0.f;
 }
@@ -462,7 +460,7 @@ void AudioAPI::ApplyMasterGain()
     }
 }
 
-QStringList AudioAPI::GetRecordingDevices() const
+QStringList AudioAPI::RecordingDevices() const
 {
     QStringList names;
 
@@ -542,7 +540,7 @@ void AudioAPI::StopRecording()
 #endif
 }
 
-uint AudioAPI::GetRecordedSoundSize() const
+uint AudioAPI::RecordedSoundSize() const
 {
     if (!impl || !impl->captureDevice)
         return 0;
@@ -554,7 +552,7 @@ uint AudioAPI::GetRecordedSoundSize() const
 #endif
 }
 
-uint AudioAPI::GetRecordedSoundData(void* buffer, uint size)
+uint AudioAPI::RecordedSoundData(void* buffer, uint size)
 {
     if (!impl || !impl->captureDevice)
         return 0;

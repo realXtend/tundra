@@ -40,7 +40,8 @@ public:
 public slots:
     /// Returns the topmost visible QGraphicsItem in the given application main window coordinates.
     QGraphicsItem *VisibleItemAtCoords(int x, int y) const;
-    QGraphicsItem *GetVisibleItemAtCoords(int x, int y) const { return VisibleItemAtCoords(x,y); } ///< @deprecated Use VisibleItemAtCoords. @todo Add warning print
+    QGraphicsItem *VisibleItemAtCoords(const QPoint &point) const { return VisibleItemAtCoords(point.x(), point.y()); } /**< @overload */
+    QGraphicsItem *GetVisibleItemAtCoords(int x, int y) const { return VisibleItemAtCoords(x,y); } /**< @deprecated Use VisibleItemAtCoords. @todo Add warning print */
 
     /// Sets a new size for this widget. Will emit the WindowResized signal.
     void Resize(int newWidth, int newHeight);

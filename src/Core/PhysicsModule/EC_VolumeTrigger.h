@@ -65,9 +65,10 @@ class EC_VolumeTrigger : public IComponent
     COMPONENT_NAME("EC_VolumeTrigger", 24)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_VolumeTrigger(Scene* scene);
-
+    /// @endcond
     virtual ~EC_VolumeTrigger();
 
     /// Pivot trigger flag.
@@ -81,12 +82,12 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, entities);
 
 signals:
-    /// Note: needs to be lowercase for QML to accept connections to it
-    /// @todo Make signature uppercase, QML support is deprecated. */
-    void entityEnter(Entity* entity/*, const float3& position*/);
-    /// Note: needs to be lowercase for QML to accept connections to it
-    /// @todo Make signature uppercase, QML support is deprecated. */
-    void entityLeave(Entity* entity/*, const float3& position*/);
+    void EntityEnter(Entity *entity);
+    void EntityLeave(Entity *entity);
+
+    // DEPRECATED
+    void entityEnter(Entity* entity/*, const float3& position*/); /**< @deprecated Use EntityEnter instead. @todo Add warning print. */
+    void entityLeave(Entity* entity/*, const float3& position*/);/**< @deprecated Use EntityLeave instead. @todo Add warning print. */
 
 public slots:
     /// Get a list of entities currently residing inside the volume.
@@ -145,7 +146,6 @@ public slots:
     bool IsInsideVolume(const float3& point) const;
 
 private slots:
-
     void UpdateSignals();
 
     /// Check for rigid body component and connect to its signal

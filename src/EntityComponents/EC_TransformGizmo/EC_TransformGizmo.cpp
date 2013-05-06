@@ -58,7 +58,7 @@ EC_TransformGizmo::EC_TransformGizmo(Scene *scene) :
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Initialize()));
 
     QString uniqueName("EC_TransformGizmo_" + framework->Asset()->GenerateUniqueAssetName("",""));
-    input = framework->Input()->RegisterInputContext(uniqueName, 100);
+    input = framework->Input()->RegisterInputContext(uniqueName, 10000);
     connect(input.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
 
     ogreWorld = scene->GetWorld<OgreWorld>();

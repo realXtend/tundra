@@ -13,10 +13,14 @@
 #include "InputFwd.h"
 #include "IAttribute.h"
 
-#include <QObject>
+#include <QWidget>
+#include <QPointer>
 
 class OgreWorld;
 class UndoManager;
+#ifdef EC_TransformGizmo_ENABLED
+class EC_TransformGizmo;
+#endif
 
 /// Controls Transform attributes for group of entities.
 /** Can be used to alter transforms of entities even without the visual gizmo (EC_TransformGizmo).*/
@@ -64,8 +68,13 @@ public:
     /// Returns position of the editing gizmo.
     float3 GizmoPos() const;
 
+#ifdef EC_TransformGizmo_ENABLED
+    /// Returns the transform gizmo.
+    EC_TransformGizmo *TransformGizmo() const;
+#endif
+
     /// Returns the transform gizmo editor settings widget.
-    QWidget *EditorSettingsWidget() const { return editorSettings; }
+    QPointer<QWidget> EditorSettingsWidget() const { return editorSettings; }
 
 public slots:
     /// Translates current target transforms.
@@ -97,7 +106,7 @@ private:
     EntityPtr gizmo; ///< Gizmo entity.
     QList<TransformAttributeWeakPtr> targets; ///< Current target transform attributes.
     InputContextPtr input; ///< Input context for controlling gizmo mode.
-    QWidget* editorSettings; ///< Editor settings window
+    QPointer<QWidget> editorSettings; ///< Editor settings window
     bool localAxes; ///< Whether to show object local axes instead of global world axes.
     UndoManager *undoManager; ///< Undo manager, if undo functionality used.
 

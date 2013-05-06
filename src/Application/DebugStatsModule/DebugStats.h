@@ -48,8 +48,6 @@ private slots:
     void Exec(const QStringList &params);
 
 private:
-    Q_DISABLE_COPY(DebugStatsModule);
-
     std::vector<std::pair<u64, double> > frameTimes; ///< A history of estimated frame times.
     QPointer<TimeProfilerWindow> profilerWindow_; /// Profiler window
     shared_ptr<InputContext> inputContext; ///< InputContext for Shift-P - Profiler window shortcut.

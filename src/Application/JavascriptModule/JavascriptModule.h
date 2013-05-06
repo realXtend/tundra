@@ -54,7 +54,8 @@ signals:
 
 private:
     /// Parses the plugin startup configuration file to detect which startup scripts should be run.
-    QStringList ParseStartupScriptConfig();
+    /** @return Returns a QMap<absolute_configfile_path, list_of_scripts> */
+    QMap<QString, QStringList> ParseStartupScriptConfig();
 
     /// Stops and deletes startup scripts
     void UnloadStartupScripts();

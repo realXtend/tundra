@@ -41,27 +41,3 @@ shared_ptr<T> Entity::Component(const QString& name) const
     return dynamic_pointer_cast<T>(Component(T::TypeIdStatic(), name));
 }
 
-template<typename T>
-Attribute<T> *Entity::GetAttribute(const QString &name) const
-{
-    for(ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
-    {
-        Attribute<T> *t = i->second->GetAttribute<T>(name);
-        if (t)
-            return t;
-    }
-    return 0;
-}
-
-template<typename T>
-std::vector<Attribute<T> > Entity::GetAttributes(const QString &name) const
-{
-    std::vector<Attribute<T> > ret;
-    for(ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
-    {
-        Attribute<T> *t = i->second->GetAttribute<T>(name);
-        if (t)
-            return ret.push_back(t);
-    }
-    return ret;
-}

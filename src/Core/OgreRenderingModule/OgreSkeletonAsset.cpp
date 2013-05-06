@@ -33,6 +33,9 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bo
         LogError("Zero sized skeleton asset");
         return false;
     }
+    
+    /// Force an unload of this data first.
+    Unload();
 
     if (assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load"))
         allowAsynchronous = false;

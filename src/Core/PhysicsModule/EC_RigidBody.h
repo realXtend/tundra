@@ -85,6 +85,7 @@ class EC_Terrain;
     <li> "GetAngularVelocity": @copydoc GetAngularVelocity
     <li> "HasAuthority": @copydoc HasAuthority
     <li> "ShapeAABB": @copydoc ShapeAABB
+    <li> "IsPrimitiveShape": @copydoc IsPrimitiveShape
     </ul>
 
     <b>Reacts on the following actions:</b>
@@ -120,7 +121,8 @@ public:
         Shape_Capsule, ///< Capsule
         Shape_TriMesh, ///< Triangle mesh
         Shape_HeightField, ///< Heightfield
-        Shape_ConvexHull ///< Convex hull
+        Shape_ConvexHull, ///< Convex hull
+        Shape_Cone ///< Cone
     };
 
     /// Mass of the body. Set to 0 to have a static (immovable) object
@@ -132,7 +134,8 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(int, shapeType);
 
     /// Size (scaling) of the shape.
-    /** Sphere only uses x-axis, and capsule uses only x & z axes. Shape is further scaled by Placeable scale.*/
+    /** Size.z is applicable only for box, and size.y is not applicable for sphere. For non-box shapes x == radius and y == height.
+        Shape is further scaled by Placeable scale.*/
     Q_PROPERTY(float3 size READ getsize WRITE setsize)
     DEFINE_QPROPERTY_ATTRIBUTE(float3, size);
 
@@ -302,6 +305,9 @@ public slots:
     /// Returns the minimal axis-aligned bounding box that encloses the collision shape of this rigid body.
     /// Note that this function may be called even if the shape of this rigid body is not AABB.
     AABB ShapeAABB() const;
+
+    /// Returns true if the currently used shape is a primitive shape (box et al.), false otherwise.
+    bool IsPrimitiveShape() const;
 
 private slots:
     /// Called when the parent entity has been set.

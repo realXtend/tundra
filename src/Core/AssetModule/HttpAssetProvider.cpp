@@ -324,7 +324,7 @@ AssetUploadTransferPtr HttpAssetProvider::UploadAssetFromFileInMemory(const u8 *
     QByteArray dataArray((const char*)data, numBytes);
     QNetworkReply *reply = networkAccessManager->put(request, dataArray);
 
-    AssetUploadTransferPtr transfer = AssetUploadTransferPtr(new IAssetUploadTransfer());
+    AssetUploadTransferPtr transfer = MAKE_SHARED(IAssetUploadTransfer);
     transfer->destinationStorage = destination;
     transfer->destinationProvider = shared_from_this();
     transfer->destinationName = assetName;

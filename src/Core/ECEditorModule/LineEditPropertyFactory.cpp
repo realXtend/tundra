@@ -27,6 +27,7 @@ LineEditWithButtons::LineEditWithButtons(const QString &text, QWidget *parent):
     layout_->addWidget(lineEditor_);
     setFocusProxy(lineEditor_);
     connect(lineEditor_, SIGNAL(editingFinished()), this, SIGNAL(EditingFinished()));
+    connect(lineEditor_, SIGNAL(textEdited(QString)), this, SIGNAL(TextEdited(QString)));
 }
 
 LineEditWithButtons::~LineEditWithButtons()
@@ -97,6 +98,7 @@ QWidget *LineEditPropertyFactory::createEditor(QtStringPropertyManager *manager,
 
     connect(editor, SIGNAL(EditingFinished()), SLOT(OnEditingFinished()));
     connect(editor, SIGNAL(destroyed(QObject*)), SLOT(OnEditorDestroyed(QObject*)));
+    connect(editor, SIGNAL(TextEdited(QString)), SIGNAL(TextEdited(QString)));
 
     emit EditorCreated(property, this);
 

@@ -57,7 +57,6 @@ protected:
     Framework *framework_; ///< Parent framework
 
 private:
-    Q_DISABLE_COPY(IModule)
     friend class Framework;
 
     /// Only for internal use.

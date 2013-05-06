@@ -28,13 +28,13 @@
 
 EC_Sound::EC_Sound(Scene* scene):
     IComponent(scene),
-    soundRef(this, "Sound ref", AssetReference("", "Audio")),
-    soundInnerRadius(this, "Sound radius inner", 0.0f),
-    soundOuterRadius(this, "Sound radius outer", 20.0f),
-    playOnLoad(this, "Play on load", false),
-    loopSound(this, "Loop sound", false),
-    soundGain(this, "Sound gain", 1.0f),
-    spatial(this, "Spatial", true)
+    INIT_ATTRIBUTE_VALUE(soundRef, "Sound ref", AssetReference("", "Audio")),
+    INIT_ATTRIBUTE_VALUE(soundInnerRadius, "Sound radius inner", 0.0f),
+    INIT_ATTRIBUTE_VALUE(soundOuterRadius, "Sound radius outer", 20.0f),
+    INIT_ATTRIBUTE_VALUE(playOnLoad, "Play on load", false),
+    INIT_ATTRIBUTE_VALUE(loopSound, "Loop sound", false),
+    INIT_ATTRIBUTE_VALUE(soundGain, "Sound gain", 1.0f),
+    INIT_ATTRIBUTE_VALUE(spatial, "Spatial", true)
 {
     static AttributeMetadata metaData("", "0", "1", "0.1");
     soundGain.SetMetadata(&metaData);

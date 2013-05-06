@@ -19,6 +19,8 @@
 #include "FrameAPI.h"
 #include "Math/MathFunc.h"
 #include "Profiler.h"
+#include "OgreMaterialAsset.h"
+#include "AssetRefListener.h"
 
 #include <Ogre.h>
 
@@ -26,23 +28,22 @@
 
 EC_WaterPlane::EC_WaterPlane(Scene* scene) :
     IComponent(scene),
-    xSize(this, "x-size", 5000),
-    ySize(this, "y-size", 5000),
-    depth(this, "Depth", 10000),
-    position(this, "Position", float3::zero),
-    rotation(this, "Rotation", Quat::identity),
-    scaleUfactor(this, "U factor", 0.0002f),
-    scaleVfactor(this, "V factor", 0.0002f),
-    xSegments(this, "Segments in x", 10),
-    ySegments(this, "Segments in y", 10),
-    materialName(this, "Material", QString("Ocean")),
-    materialRef(this, "Material ref"),
-   //textureNameAttr(this, "Texture", QString("DefaultOceanSkyCube.dds")),
-    fogColor(this, "Fog color", Color(0.2f,0.4f,0.35f,1.0f)),
-    fogStartDistance(this, "Fog start dist.", 100.f),
-    fogEndDistance(this, "Fog end dist.", 2000.f),
-    fogMode(this, "Fog mode", 3),
-    fogExpDensity(this, "Fog exponential density", 0.001f),
+    INIT_ATTRIBUTE_VALUE(xSize, "X-size", 5000),
+    INIT_ATTRIBUTE_VALUE(ySize, "Y-size", 5000),
+    INIT_ATTRIBUTE_VALUE(depth, "Depth", 10000),
+    INIT_ATTRIBUTE_VALUE(position, "Position", float3::zero),
+    INIT_ATTRIBUTE_VALUE(rotation, "Rotation", Quat::identity),
+    INIT_ATTRIBUTE_VALUE(scaleUfactor, "U factor", 0.0002f),
+    INIT_ATTRIBUTE_VALUE(scaleVfactor, "V factor", 0.0002f),
+    INIT_ATTRIBUTE_VALUE(xSegments, "Segments in x", 10),
+    INIT_ATTRIBUTE_VALUE(ySegments, "Segments in y", 10),
+    INIT_ATTRIBUTE_VALUE(materialName, "Material", QString("Ocean")),
+    INIT_ATTRIBUTE(materialRef, "Material ref"),
+    INIT_ATTRIBUTE_VALUE(fogColor, "Fog color", Color(0.2f,0.4f,0.35f,1.0f)),
+    INIT_ATTRIBUTE_VALUE(fogStartDistance, "Fog start dist.", 100.f),
+    INIT_ATTRIBUTE_VALUE(fogEndDistance, "Fog end dist.", 2000.f),
+    INIT_ATTRIBUTE_VALUE(fogMode, "Fog mode", 3),
+    INIT_ATTRIBUTE_VALUE(fogExpDensity, "Fog exponential density", 0.001f),
     entity_(0),
     node_(0),
     attached_(false),
@@ -66,16 +67,15 @@ EC_WaterPlane::EC_WaterPlane(Scene* scene) :
     ySegments.SetMetadata(&segmentMetadata);
 
     if (scene)
-        world_ = scene->GetWorld<OgreWorld>();
+        world_ = scene->Subsystem<OgreWorld>();
     OgreWorldPtr world = world_.lock();
     if (world)
         node_ = world->OgreSceneManager()->createSceneNode(world->GetUniqueObjectName("EC_WaterPlane_Root"));
 
-    lastXsize_ = xSize.Get();
-    lastYsize_ = ySize.Get();
-
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(Create()));
 
+    materialAsset = MAKE_SHARED(AssetRefListener);
+    connect(materialAsset.get(), SIGNAL(Loaded(AssetPtr)), SLOT(OnMaterialAssetLoaded(AssetPtr)));
     // If there exist placeable copy its position for default position and rotation.
    
     /*
@@ -130,7 +130,7 @@ void EC_WaterPlane::Create()
 
 void EC_WaterPlane::ComponentAdded(IComponent* component, AttributeChange::Type type)
 {
-    if (component->TypeName() == EC_Placeable::TypeNameStatic())
+    if (component->TypeId() == EC_Placeable::TypeIdStatic())
     {
         DetachEntity();
 
@@ -142,7 +142,7 @@ void EC_WaterPlane::ComponentAdded(IComponent* component, AttributeChange::Type 
 
         try
         {
-            Ogre::SceneNode* node = placeable->GetSceneNode();
+            Ogre::SceneNode* node = placeable->OgreSceneNode();
             node->addChild(node_);
             node_->attachObject(entity_);
             node_->setVisible(true);
@@ -160,7 +160,7 @@ void EC_WaterPlane::ComponentRemoved(IComponent* component, AttributeChange::Typ
     if (world_.expired())
         return;
     
-    if (component->TypeName() == EC_Placeable::TypeNameStatic())
+    if (component->TypeId() == EC_Placeable::TypeIdStatic())
     {
         DetachEntity();
 
@@ -182,11 +182,10 @@ void EC_WaterPlane::ComponentRemoved(IComponent* component, AttributeChange::Typ
 
 void EC_WaterPlane::Update()
 {
-    PROFILE(EC_WaterPlane_Update)
     OgreWorldPtr world = world_.lock();
     if (!world)
         return;
-
+    PROFILE(EC_WaterPlane_Update)
     bool cameraWasInsideWaterCube = cameraInsideWaterCube;
     cameraInsideWaterCube = IsCameraInsideWaterCube();
     if (!cameraWasInsideWaterCube && cameraInsideWaterCube)
@@ -217,18 +216,7 @@ float3 EC_WaterPlane::GetPointOnPlane(const float3 &point) const
     if (node_ == 0)
         return float3::nan;
 
-    Ogre::Quaternion rot = node_->_getDerivedOrientation();
-    Ogre::Vector3 trans = node_->_getDerivedPosition();
-    Ogre::Vector3 scale = node_->_getDerivedScale();
-
-    Ogre::Matrix4 worldTM;
-    worldTM.makeTransform(trans, scale, rot);
-
-    /// @todo Use the 1.7.x API? Not supporting Ogre 1.6.x any longer afaik.
-    // In Ogre 1.7.1 we could simply use the following line, but since we're also supporting Ogre 1.6.4 for now, the above
-    // lines are used instead, which work in both.
-    // Ogre::Matrix4 worldTM = node_->_getFullTransform(); // local->world. 
-
+    Ogre::Matrix4 worldTM = node_->_getFullTransform(); // local->world
     Ogre::Matrix4 inv = worldTM.inverse(); // world->local
     Ogre::Vector4 local = inv * Ogre::Vector4(point.x, point.y, point.z, 1.f);
 
@@ -240,11 +228,8 @@ float3 EC_WaterPlane::GetPointOnPlane(const float3 &point) const
 float EC_WaterPlane::GetDistanceToWaterPlane(const float3& point) const
 {
     if (!node_)
-        return 0;
-
-    float3 pointOnPlane = GetPointOnPlane(point);
-    //Ogre::Vector3 local = node_->_getDerivedOrientation().Inverse() * ( OgreRenderer::ToOgreVector3(point) - node_->_getDerivedPosition()) / node_->_getDerivedScale();
-    return point.y - pointOnPlane.y;
+        return 0.f;
+    return point.y - GetPointOnPlane(point).y;
 }
 
 bool EC_WaterPlane::IsTopOrBelowWaterPlane(const float3& point) const
@@ -327,7 +312,7 @@ void EC_WaterPlane::CreateWaterPlane()
                 x, y, xSeg, ySeg, true, 1, uTile, vTile, Ogre::Vector3::UNIT_X);
 
             entity_ = world->OgreSceneManager()->createEntity(world->GetUniqueObjectName("EC_WaterPlane_entity"), Name().toStdString().c_str());
-            entity_->setMaterialName(materialName.Get().toStdString().c_str());
+            entity_->setMaterialName(currentMaterial.toStdString());
             entity_->setCastShadows(false);
             // Tries to attach entity, if there is no EC_Placeable available, it will not attach the object.
             AttachEntity();
@@ -363,79 +348,46 @@ void EC_WaterPlane::RemoveWaterPlane()
     disconnect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(Update()));
 }
 
+void EC_WaterPlane::OnMaterialAssetLoaded(const AssetPtr &mat)
+{
+    OgreMaterialAssetPtr material = dynamic_pointer_cast<OgreMaterialAsset>(mat);
+    if (material && !material->ogreMaterial.isNull())
+    {
+        currentMaterial = material->ogreAssetName;
+        UpdateMaterial();
+    }
+}
+
 void EC_WaterPlane::AttributesChanged()
 {
-    if ((xSize.ValueChanged() || ySize.ValueChanged() || scaleUfactor.ValueChanged() || scaleVfactor.ValueChanged()) &&
-        (lastXsize_ != xSize.Get() || lastYsize_ != ySize.Get()))
-    {
+    if (xSize.ValueChanged() || ySize.ValueChanged() || scaleUfactor.ValueChanged() || scaleVfactor.ValueChanged())
         CreateWaterPlane();
-        lastXsize_ = xSize.Get();
-        lastYsize_ = ySize.Get();
-    }
+
     if (xSegments.ValueChanged() || ySegments.ValueChanged())
-    {
         CreateWaterPlane();
-    }
+
     if (position.ValueChanged())
-    {
         SetPosition();
-    }
+
     if (rotation.ValueChanged())
+        SetOrientation();
+
+    if (materialName.ValueChanged() && !materialName.Get().isEmpty())
     {
-        // Is there placeable component? If not use given rotation 
-        //if (dynamic_cast<EC_Placeable*>(FindPlaceable().get()) == 0 )
-        //{
-           SetOrientation();
-        //}
+        LogWarning("EC_WaterPlane:: materialName attribute will be deprecated. Use materialRef instead.");
+        currentMaterial = materialName.Get();
+        UpdateMaterial();
     }
-    if (depth.ValueChanged())
-    {
-        // Change depth
-        // Currently do nothing..
-    }
-    if (materialName.ValueChanged())
-    {
-        //Change material
-        if (entity_)
-            entity_->setMaterialName(materialName.Get().toStdString());
-    }
+
     if (fogColor.ValueChanged() || fogStartDistance.ValueChanged() || fogEndDistance.ValueChanged() ||
         fogMode.ValueChanged() || fogExpDensity.ValueChanged())
     {
-        // Apply fog immediately only if the camera is within the water cube.
-        if (IsCameraInsideWaterCube())
+        if (IsCameraInsideWaterCube()) // Apply fog immediately only if the camera is within the water cube.
             SetUnderwaterFog();
     }
-/*
-    // Currently commented out, working feature but not enabled yet.
-    if (name == textureNameAttr.GetNameString())
-    {
 
-        QString currentMaterial = materialName.Get();
-        
-        // Check that has texture really changed. 
-        
-        StringVector names;
-        Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
-        
-        if (materialPtr.get() == 0)
-            return;
-
-        OgreRenderer::GetTextureNamesFromMaterial(materialPtr, names);
-        
-        QString textureName = textureNameAttr.Get();
-        
-        for(StringVector::iterator iter = names.begin(); iter != names.end(); ++iter)
-        {
-            QString currentTextureName(iter->c_str());
-            if (currentTextureName == textureName)
-                return;
-        }
-
-        // So texture has really changed, let's change it. 
-        OgreRenderer::SetTextureUnitOnMaterial(materialPtr, textureName.toStdString(), 0);
-    }
-*/
+    if (materialRef.ValueChanged())
+        materialAsset->HandleAssetRefChange(framework->Asset(), materialRef.Get().ref);
 }
 
 void EC_WaterPlane::SetPosition()
@@ -444,32 +396,14 @@ void EC_WaterPlane::SetPosition()
         return;
 
     const float3 &pos = position.Get();
-    //node_->setPosition(vec.x, vec.y, vec.z);
-
-    /// @todo Remove these ifdefs? Not supporting Ogre 1.6.x any longer afaik.
-#if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
-    //Ogre::Vector3 current_pos = node_->_getDerivedPosition();
-    if (!pos.IsFinite())
-        return;
-    node_->setPosition(pos);
-#else
-    if (!pos.IsFinite())
-        return;
-    //node_->_setDerivedPosition(pos);
-    node_->setPosition(pos);
-#endif
+    if (pos.IsFinite())
+        node_->setPosition(pos);
 }
 
 void EC_WaterPlane::SetOrientation()
 {
-    if (!node_ || !ViewEnabled())
-        return;
-    /// @todo Remove these ifdefs? Not supporting Ogre 1.6.x any longer afaik.
-#if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
-    node_->setOrientation(node_->_getDerivedOrientation() * rotation.Get());
-#else
-    node_->_setDerivedOrientation(rotation.Get());
-#endif
+    if (ViewEnabled() && node_)
+        node_->_setDerivedOrientation(rotation.Get());
 }
 
 ComponentPtr EC_WaterPlane::FindPlaceable() const
@@ -491,7 +425,7 @@ void EC_WaterPlane::AttachEntity()
         // If there exist placeable attach node and entity to it
         if (placeable != 0 )
         {
-            Ogre::SceneNode* node = placeable->GetSceneNode();
+            Ogre::SceneNode* node = placeable->OgreSceneNode();
             node->addChild(node_);
             node_->attachObject(entity_);
             node_->setVisible(true);
@@ -523,7 +457,7 @@ void EC_WaterPlane::DetachEntity()
         EC_Placeable* placeable = dynamic_cast<EC_Placeable*>(FindPlaceable().get());
         if (placeable != 0 && !attachedToRoot_)
         {
-            Ogre::SceneNode* node = placeable->GetSceneNode();
+            Ogre::SceneNode* node = placeable->OgreSceneNode();
             node_->detachObject(entity_);
             node->removeChild(node_); 
         }
@@ -559,4 +493,10 @@ void EC_WaterPlane::SetUnderwaterFog()
         world->OgreSceneManager()->setFog((Ogre::FogMode)fogMode.Get(), fogColor.Get(), fogExpDensity.Get(), fogStartDistance.Get(), fogEndDistance.Get());
         world->Renderer()->MainViewport()->setBackgroundColour(fogColor.Get());
     }
+}
+
+void EC_WaterPlane::UpdateMaterial()
+{
+    if (entity_)
+        entity_->setMaterialName(currentMaterial.toStdString());
 }

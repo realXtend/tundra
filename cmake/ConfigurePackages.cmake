@@ -25,11 +25,7 @@ if ("${BOOST_ROOT}" STREQUAL "")
 endif()
 
 if ("${BOOST_ROOT}" STREQUAL "")
-    if (NOT APPLE)
-        SET(BOOST_ROOT ${ENV_TUNDRA_DEP_PATH}/boost)
-    else()
-        SET(BOOST_ROOT ${ENV_TUNDRA_DEP_PATH}/include)
-    endif()
+    SET(BOOST_ROOT ${ENV_TUNDRA_DEP_PATH}/boost)
 endif()
 
 message("** Configuring Boost")
@@ -70,34 +66,27 @@ else()
    message(FATAL_ERROR "Boost not found!")
 endif()
 
-if (APPLE)
-    set (BOOST_LIBRARY_DIRS ${ENV_TUNDRA_DEP_PATH}/lib)
-    set (BOOST_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/include)
-endif()
-
 # On Android, pthread library does not exist. Remove it if mistakenly added to boost libraries
 if (ANDROID)
-    list(REMOVE_ITEM Boost_LIBRARIES "pthread")   
+    list(REMOVE_ITEM Boost_LIBRARIES "pthread")
 endif()
 
 endmacro (configure_boost)
 
-macro (configure_qt4)
+macro(configure_qt4)
     if (NOT ANDROID)
-        sagase_configure_package (QT4 
+        sagase_configure_package(QT4
             NAMES Qt4 4.6.1
             COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools
-	    PREFIXES ${ENV_QT_DIR} ${ENV_TUNDRA_DEP_PATH})
+        PREFIXES ${ENV_QT_DIR} ${ENV_TUNDRA_DEP_PATH})
     else()
         find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork QtScript QtUiTools)
     endif()
 
     # FindQt4.cmake
     if (QT4_FOUND AND QT_USE_FILE)
-
-        include (${QT_USE_FILE})
-        
-        set (QT4_INCLUDE_DIRS 
+        include(${QT_USE_FILE})
+        set(QT4_INCLUDE_DIRS 
             ${QT_INCLUDE_DIR}
             ${QT_QTCORE_INCLUDE_DIR}
             ${QT_QTGUI_INCLUDE_DIR}
@@ -105,20 +94,17 @@ macro (configure_qt4)
             ${QT_QTNETWORK_INCLUDE_DIR}
             ${QT_QTXML_INCLUDE_DIR}
             ${QT_QTSCRIPT_INCLUDE_DIR}
-            ${QT_DECLARATIVE_INCLUDE_DIR}
             ${QT_QTWEBKIT_INCLUDE_DIR})
-            
+#            ${QT_DECLARATIVE_INCLUDE_DIR}
 #            ${QT_QTSCRIPTTOOLS_INCLUDE_DIR}
 #            ${QT_PHONON_INCLUDE_DIR}
         
-        set (QT4_LIBRARY_DIR  
-            ${QT_LIBRARY_DIR})
-        
-	if (ANDROID)
-            set (QT4_LIBRARIES 
-                ${QT_LIBRARIES})
-        else ()
-            set (QT4_LIBRARIES 
+        set(QT4_LIBRARY_DIR ${QT_LIBRARY_DIR})
+
+        if (ANDROID)
+            set(QT4_LIBRARIES ${QT_LIBRARIES})
+        else()
+            set(QT4_LIBRARIES 
                 ${QT_LIBRARIES}
                 ${QT_QTCORE_LIBRARY}
                 ${QT_QTGUI_LIBRARY}
@@ -126,18 +112,14 @@ macro (configure_qt4)
                 ${QT_QTNETWORK_LIBRARY}
                 ${QT_QTXML_LIBRARY}
                 ${QT_QTSCRIPT_LIBRARY}
-                ${QT_DECLARATIVE_LIBRARY}
-                ${QT_QTWEBKIT_LIBRARY})            
-
-#            ${QT_QTSCRIPTTOOLS_LIBRARY}
-#            ${QT_PHONON_LIBRARY}       
-
-	endif()
-
+                ${QT_QTWEBKIT_LIBRARY})
+#                ${QT_DECLARATIVE_LIBRARY}
+#                ${QT_QTSCRIPTTOOLS_LIBRARY}
+#                ${QT_PHONON_LIBRARY}
+        endif()
     endif ()
-    
-    sagase_configure_report (QT4)
-endmacro (configure_qt4)
+    sagase_configure_report(QT4)
+endmacro(configure_qt4)
 
 macro (configure_python)
     sagase_configure_package (PYTHON
@@ -174,7 +156,7 @@ macro (configure_python_qt)
 endmacro (configure_python_qt)
 
 macro (configure_qtpropertybrowser)
-    if (NOT MSVC)
+    if (NOT MSVC AND NOT APPLE)
       sagase_configure_package (QT_PROPERTY_BROWSER
           NAMES QtPropertyBrowser QtSolutions_PropertyBrowser-2.5 QtSolutions_PropertyBrowser-head
           COMPONENTS QtPropertyBrowser QtSolutions_PropertyBrowser-2.5 QtSolutions_PropertyBrowser-head
@@ -215,9 +197,9 @@ macro(use_package_knet)
         set (KNET_DIR ${KNET_DIR} CACHE PATH "KNET_DIR dependency path" FORCE)
     endif ()
     if ("${KNET_DIR}" STREQUAL "")
-        if (MSVC)
+        if (MSVC OR APPLE)
             set(KNET_DIR ${ENV_TUNDRA_DEP_PATH}/kNet)
-        else()
+        else() # Remove this when Linux build directories are unified with the other OSes
             set(KNET_DIR ${ENV_TUNDRA_DEP_PATH})
         endif()
     endif()
@@ -245,9 +227,9 @@ macro(use_package_bullet)
         set (BULLET_DIR ${BULLET_DIR} CACHE PATH "BULLET_DIR dependency path" FORCE)
     endif ()
     if ("${BULLET_DIR}" STREQUAL "")
-        if (MSVC)
+        if (MSVC OR APPLE)
             set(BULLET_DIR ${ENV_TUNDRA_DEP_PATH}/Bullet)
-        else()
+        else() # Remove this when Linux build directories are unified with the other OSes
             set(BULLET_DIR ${ENV_TUNDRA_DEP_PATH})
         endif()
     endif()
@@ -297,19 +279,15 @@ macro(link_package_bullet)
 endmacro()
 
 macro(use_package_ogg)
-    if (MSVC)
-        if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/ogg/include/ogg) 
-            # Using full-built or prebuilt deps made from fullbuild.
-            include_directories(${ENV_TUNDRA_DEP_PATH}/ogg/include)
-        else ()
-            # For old prebuilt VS2008/VS2010 deps. TODO: safe to remove?
-            include_directories(${ENV_TUNDRA_DEP_PATH}/libogg/include)
-            link_directories(${ENV_TUNDRA_DEP_PATH}/libogg/lib)
-        endif ()
-    elseif (APPLE)
-        include_directories(${ENV_TUNDRA_DEP_PATH}/include/ogg)
-        link_directories(${ENV_TUNDRA_DEP_PATH}/lib)
-    endif()
+    if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/ogg/include/ogg) 
+        # Using full-built or prebuilt deps made from fullbuild.
+        include_directories(${ENV_TUNDRA_DEP_PATH}/ogg/include)
+        link_directories(${ENV_TUNDRA_DEP_PATH}/ogg/lib)
+    else ()
+        # For old prebuilt VS2008/VS2010 deps. TODO: safe to remove?
+        include_directories(${ENV_TUNDRA_DEP_PATH}/libogg/include)
+        link_directories(${ENV_TUNDRA_DEP_PATH}/libogg/lib)
+    endif ()
 endmacro()
 
 macro(link_package_ogg)
@@ -337,19 +315,15 @@ macro(link_package_ogg)
 endmacro()
 
 macro(use_package_vorbis)
-    if (MSVC)
-        if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/vorbis/include/vorbis) 
-            # Using full-built or prebuilt deps made from fullbuild.
-            include_directories(${ENV_TUNDRA_DEP_PATH}/vorbis/include)
-        else ()
-            # For old prebuilt VS2008/VS2010 deps. TODO: safe to remove?
-            include_directories(${ENV_TUNDRA_DEP_PATH}/libvorbis/include)
-            link_directories(${ENV_TUNDRA_DEP_PATH}/libvorbis/lib)
-        endif ()
-    elseif (APPLE)
-        include_directories(${ENV_TUNDRA_DEP_PATH}/include/vorbis)
-        link_directories(${ENV_TUNDRA_DEP_PATH}/lib)
-    endif()
+    if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/vorbis/include/vorbis) 
+        # Using full-built or prebuilt deps made from fullbuild.
+        include_directories(${ENV_TUNDRA_DEP_PATH}/vorbis/include)
+        link_directories(${ENV_TUNDRA_DEP_PATH}/vorbis/lib)
+    else ()
+        # For old prebuilt VS2008/VS2010 deps. TODO: safe to remove?
+        include_directories(${ENV_TUNDRA_DEP_PATH}/libvorbis/include)
+        link_directories(${ENV_TUNDRA_DEP_PATH}/libvorbis/lib)
+    endif ()
 endmacro()
 
 macro(link_package_vorbis)
@@ -383,19 +357,15 @@ macro(link_package_vorbis)
 endmacro()
 
 macro(use_package_theora)
-    if (MSVC)
-        if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/theora/include/theora) 
-            # Using full-built or prebuilt deps made from fullbuild.
-            include_directories(${ENV_TUNDRA_DEP_PATH}/theora/include)
-        else ()
-            # For old prebuilt VS2008/VS2010 deps. TODO: safe to remove?
-            include_directories(${ENV_TUNDRA_DEP_PATH}/libtheora/include)
-            link_directories(${ENV_TUNDRA_DEP_PATH}/libtheora/lib)
-        endif ()
-    elseif (APPLE)
-        include_directories(${ENV_TUNDRA_DEP_PATH}/include/theora)
-        link_directories(${ENV_TUNDRA_DEP_PATH}/lib)
-    endif()
+    if (IS_DIRECTORY ${ENV_TUNDRA_DEP_PATH}/theora/include/theora) 
+        # Using full-built or prebuilt deps made from fullbui
+        include_directories(${ENV_TUNDRA_DEP_PATH}/theora/include)
+        link_directories(${ENV_TUNDRA_DEP_PATH}/theora/lib)
+    else ()
+        # For old prebuilt VS2008/VS2010 deps. TODO: safe to remove
+        include_directories(${ENV_TUNDRA_DEP_PATH}/libtheora/include)
+        link_directories(${ENV_TUNDRA_DEP_PATH}/libtheora/lib)
+    endif ()
 endmacro()
 
 macro(link_package_theora)
@@ -420,13 +390,11 @@ macro(link_package_theora)
 endmacro()
 
 macro(use_package_qtpropertybrowser)
-    if (MSVC)
-        include_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/src) # For full-built deps.
-        include_directories(${ENV_TUNDRA_DEP_PATH}/qtpropertybrowser/include) # For prebuilt deps mirrored from full-built deps.
-        include_directories(${ENV_TUNDRA_DEP_PATH}/QtPropertyBrowser/includes) # For prebuilt deps vs2008.
-        link_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/lib) # For full-built deps.
-        link_directories(${ENV_TUNDRA_DEP_PATH}/QtPropertyBrowser/lib) # For prebuilt deps vs2008.
-    endif()
+    include_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/src) # For full-built deps.
+    include_directories(${ENV_TUNDRA_DEP_PATH}/qtpropertybrowser/include) # For prebuilt deps mirrored from full-built deps.
+    include_directories(${ENV_TUNDRA_DEP_PATH}/QtPropertyBrowser/includes) # For prebuilt deps vs2008.
+    link_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/lib) # For full-built deps.
+    link_directories(${ENV_TUNDRA_DEP_PATH}/QtPropertyBrowser/lib) # For prebuilt deps vs2008.
 endmacro()
 
 macro(link_package_qtpropertybrowser)
@@ -437,8 +405,9 @@ macro(link_package_qtpropertybrowser)
 endmacro()
 
 macro(use_package_assimp)
-    if (WIN32)
+    if (WIN32 OR APPLE)
         if ("${ENV_ASSIMP_DIR}" STREQUAL "")
+           message (STATUS "-- Defaulting to ${ENV_TUNDRA_DEP_PATH}/assimp")
            set(ASSIMP_DIR ${ENV_TUNDRA_DEP_PATH}/assimp)
         else ()
             message (STATUS "-- Using from env variable ASSIMP_DIR")
@@ -446,7 +415,7 @@ macro(use_package_assimp)
         endif()
         include_directories(${ASSIMP_DIR}/include)
         link_directories(${ASSIMP_DIR}/lib)
-    else() # Linux, note: mac will also come here..
+    elseif (LINUX)
         if ("${ENV_ASSIMP_DIR}" STREQUAL "")
             set(ASSIMP_DIR ${ENV_TUNDRA_DEP_PATH})
         else ()
