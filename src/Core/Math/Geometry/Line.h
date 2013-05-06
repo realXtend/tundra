@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -59,6 +59,8 @@ public:
 		@see class LineSegment, ToLineSegment(). */
 	explicit Line(const LineSegment &lineSegment);
 
+	bool IsFinite() const;
+
 	/// Gets a point along the line at the given distance.
 	/** Use this function to convert a 1D parametric point along the Line to a 3D point in the linear space.
 		@param distance The point to compute. GetPoint(0) will return pos. GetPoint(t) will return a point
@@ -68,16 +70,21 @@ public:
 		@see pos, dir. */
 	float3 GetPoint(float distance) const;
 
+	/// Translates this Line in world space.
+	/** @param offset The amount of displacement to apply to this Line, in world space coordinates.
+		@see Transform(). */
+	void Translate(const float3 &offset);
+
 	/// Applies a transformation to this line, in-place.
-	/** @see classes float3x3, float3x4, float4x4, Quat. */
+	/** @see Translate(), classes float3x3, float3x4, float4x4, Quat. */
 	void Transform(const float3x3 &transform);
 	void Transform(const float3x4 &transform);
 	void Transform(const float4x4 &transform);
 	void Transform(const Quat &transform);
 
 	/// Tests if the given object is fully contained on this line.
-	/** @param distanceThreshold The magnitude of the epsilon test threshold to use. Since a Line 
-		is a 1D object in a 3D space, an epsilon threshold is used to allow errors caused by floating-point 
+	/** @param distanceThreshold The magnitude of the epsilon test threshold to use. Since a Line
+		is a 1D object in a 3D space, an epsilon threshold is used to allow errors caused by floating-point
 		inaccuracies.
 		@return True if this line contains the given object, up to the given distance threshold.
 		@see class LineSegment, class Ray, Distance(), ClosestPoint(), Intersects(). */
@@ -94,12 +101,12 @@ public:
 	/// Computes the distance between this line and the given object.
 	/** This function finds the nearest pair of points on this and the given object, and computes their distance.
 		If the two objects intersect, or one object is contained inside the other, the returned distance is zero.
-		@param d [out] If specified, receives the parametric distance along this line that 
+		@param d [out] If specified, receives the parametric distance along this line that
 			specifies the closest point on this line to the given object. The value returned here can be negative.
 			This pointer may be null.
 		@see Contains(), Intersects(), ClosestPoint(), GetPoint(). */
 	float Distance(const float3 &point, float *d = 0) const;
-	/** @param d2 [out] If specified, receives the parametric distance along the other line that specifies the 
+	/** @param d2 [out] If specified, receives the parametric distance along the other line that specifies the
 		closest point on that line to this line. The value returned here can be negative. This pointer may
 		be null. */
 	float Distance(const Ray &other, float *d, float *d2 = 0) const;
@@ -114,12 +121,12 @@ public:
 	/// Computes the closest point on this line to the given object.
 	/** If the other object intersects this line, this function will return an arbitrary point inside
 		the region of intersection.
-		@param d [out] If specified, receives the parametric distance along this line that 
+		@param d [out] If specified, receives the parametric distance along this line that
 			specifies the closest point on this line to the given object. The value returned here can be negative.
 			This pointer may be null.
 		@see Contains(), Distance(), Intersects(), GetPoint(). */
 	float3 ClosestPoint(const float3 &targetPoint, float *d = 0) const;
-	/** @param d2 [out] If specified, receives the parametric distance along the other line that specifies the 
+	/** @param d2 [out] If specified, receives the parametric distance along the other line that specifies the
 		closest point on that line to this line. The value returned here can be negative. This pointer may
 		be null. */
 	float3 ClosestPoint(const Ray &other, float *d = 0, float *d2 = 0) const;
@@ -130,12 +137,12 @@ public:
 		@param outV [out] If specified, receives the barycentric V-coordinate (in two-coordinate barycentric UV convention)
 			representing the closest point on the triangle to this line. This pointer may be null.
 		@see Contains(), Distance(), Intersects(), GetPoint(), Triangle::Point(float u, float v). */
-	float3 ClosestPoint(const Triangle &triangle, float *outU, float *outV, float *d) const;
+	float3 ClosestPoint(const Triangle &triangle, float *outU = 0, float *outV = 0, float *d = 0) const;
 
-	/// Tests whether this line and the given object intersect.	   
-	/** Both objects are treated as "solid", meaning that if one of the objects is fully contained inside 
+	/// Tests whether this line and the given object intersect.	
+	/** Both objects are treated as "solid", meaning that if one of the objects is fully contained inside
 		another, this function still returns true.
-		@param d [out] If specified, this parameter will receive the parametric distance of 
+		@param d [out] If specified, this parameter will receive the parametric distance of
 			the intersection point along this object. Use the GetPoint(d) function
 			to get the actual point of intersection. This pointer may be null.
 		@param intersectionPoint [out] If specified, receives the actual point of intersection. This pointer
@@ -148,11 +155,13 @@ public:
 		the point of intersection. This pointer may be null. */
 	bool Intersects(const Sphere &s, float3 *intersectionPoint = 0, float3 *intersectionNormal = 0, float *d = 0) const;
 	/** @param dNear [out] If specified, receives the distance along this line to where the line enters
-		the bounding box. This pointer may be null.
+		the bounding box.
 		@param dFar [out] If specified, receives the distance along this line to where the line exits
-		the bounding box. This pointer may be null. */
-	bool Intersects(const AABB &aabb, float *dNear, float *dFar) const;
-	bool Intersects(const OBB &obb, float *dNear, float *dFar) const;
+		the bounding box. */
+	bool Intersects(const AABB &aabb, float &dNear, float &dFar) const;
+	bool Intersects(const AABB &aabb) const;
+	bool Intersects(const OBB &obb, float &dNear, float &dFar) const;
+	bool Intersects(const OBB &obb) const;
 	bool Intersects(const Capsule &capsule) const;
 	bool Intersects(const Polygon &polygon) const;
 	bool Intersects(const Frustum &frustum) const;
@@ -163,7 +172,7 @@ public:
 
 	/// Converts this Line to a Ray.
 	/** The pos and dir members of the returned Ray will be equal to this Line. The only difference is
-		that a Line extends to infinity in two directions, whereas the returned Ray spans only in 
+		that a Line extends to infinity in two directions, whereas the returned Ray spans only in
 		the positive direction.
 		@see dir, Line::Line, class Ray, ToLineSegment(). */
 	Ray ToRay() const;
@@ -173,6 +182,23 @@ public:
 		@return A LineSegment with point a at pos, and point b at pos + d * dir.
 		@see pos, dir, Line::Line, class LineSegment, ToRay(). */
 	LineSegment ToLineSegment(float d) const;
+
+	/// Converts this Line to a LineSegment.
+	/** @param dStart Specifies the position of the first endpoint along this Line. This parameter may be negative,
+		in which case the starting point lies to the opposite direction of the Line.
+		@param dEnd Specifies the position of the second endpoint along this Line. This parameter may also be negative.
+		@return A LineSegment with point a at pos + dStart * dir, and point b at pos + dEnd * dir.
+		@see pos, dir, Line::Line, class LineSegment, ToLine(). */
+	LineSegment ToLineSegment(float dStart, float dEnd) const;
+
+	/// Projects this Line onto the given 1D axis direction vector.
+	/** This function collapses this Line onto an 1D axis for the purposes of e.g. separate axis test computations.
+		The function returns a 1D range [outMin, outMax] denoting the interval of the projection.
+		@param direction The 1D axis to project to. This vector may be unnormalized, in which case the output
+			of this function gets scaled by the length of this vector.
+		@param outMin [out] Returns the minimum extent of this object along the projection axis.
+		@param outMax [out] Returns the maximum extent of this object along the projection axis. */
+	void ProjectToAxis(const float3 &direction, float &outMin, float &outMax) const;
 
 	/// Tests if the given three points are collinear.
 	/** This function tests whether the given three functions all lie on the same line.
@@ -200,6 +226,10 @@ Line operator *(const Quat &transform, const Line &line);
 #ifdef MATH_QT_INTEROP
 Q_DECLARE_METATYPE(Line)
 Q_DECLARE_METATYPE(Line*)
+#endif
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+std::ostream &operator <<(std::ostream &o, const Line &line);
 #endif
 
 MATH_END_NAMESPACE

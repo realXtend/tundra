@@ -147,7 +147,7 @@ bool EC_GraphicsViewCanvas::IsMouseOnTopOfCanvas(QPoint & mousePos, float2 & uv)
     Ray mouseRay = mainCamera->ScreenPointToRay(mousePos.x(), mousePos.y());
     RaycastResult *result = 0;
     EC_Mesh *mesh = ParentEntity() ? ParentEntity()->GetComponent<EC_Mesh>().get() : 0;
-    if (mesh && mouseRay.Intersects(mesh->WorldOBB(), 0, 0))
+    if (mesh && mouseRay.Intersects(mesh->WorldOBB()))
     {
         result = world->Renderer()->Raycast(mousePos.x(), mousePos.y());
         uv.x = result->u;

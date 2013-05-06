@@ -633,13 +633,14 @@ WARN_LOGFILE           =
 # configuration options related to the input files
 #---------------------------------------------------------------------------
 
-# The INPUT tag can be used to specify the files and/or directories that contain 
+# The INPUT tag can be used to specify the files and/or directories that contain
 # documented source files. You may enter file names like "myfile.cpp" or 
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = ../../../Core/Framework/Transform.h \
-                         ../../../Core/Math \
+
+INPUT                  = ../../../Core/TundraCore/Framework/Transform.h \
+                         ../../../Core/Math
                          ../../../Core/TundraCore/Framework/ConfigAPI.h
 
 # This tag can be used to specify the character encoding of the source files 

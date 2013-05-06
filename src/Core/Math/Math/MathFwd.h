@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 	@brief */
 #pragma once
 
+#include "Math/MathBuildConfig.h"
 #include "Math/MathNamespace.h"
 
 // The CONST_WIN32 is a #define which resolves to 'const' on Windows, and null on other
@@ -28,6 +29,21 @@
 #define CONST_WIN32 const
 #else
 #define CONST_WIN32
+#endif
+
+#ifdef _MSC_VER
+#define NAMELESS_UNION_BEGIN \
+	__pragma(warning(push)) \
+	__pragma(warning(disable:4201))
+
+#define NAMELESS_UNION_END \
+	__pragma(warning(pop))
+
+#else
+
+#define NAMELESS_UNION_BEGIN union {
+#define NAMELESS_UNION_END };
+
 #endif
 
 #if !defined(MATH_ENABLE_STL_SUPPORT) && !defined(assert)
@@ -53,6 +69,9 @@ class ScaleOp;
 class AABB;
 class Capsule;
 class Circle;
+#ifdef Complex
+#undef Complex
+#endif
 class Complex;
 class Cone;
 class Cylinder;
@@ -68,13 +87,15 @@ class Polyhedron;
 class Polynomial;
 class Quat;
 class Ray;
-class Rect;
 class Sphere;
 class TranslateOp;
 class Torus;
 class ScaleOp;
 class Triangle;
+class LCG;
 
 MATH_END_NAMESPACE
 
-class LCG;
+#ifdef MATH_GRAPHICSENGINE_INTEROP
+class VertexBuffer;
+#endif

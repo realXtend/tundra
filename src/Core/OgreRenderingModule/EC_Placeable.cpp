@@ -740,9 +740,9 @@ void EC_Placeable::OnComponentAdded(IComponent* component, AttributeChange::Type
 
 void EC_Placeable::SetPosition(float x, float y, float z)
 {
-    assume(isfinite(x));
-    assume(isfinite(y));
-    assume(isfinite(z));
+    assume(IsFinite(x));
+    assume(IsFinite(y));
+    assume(IsFinite(z));
     Transform newtrans = transform.Get();
     newtrans.SetPos(x, y, z);
     transform.Set(newtrans, AttributeChange::Default);

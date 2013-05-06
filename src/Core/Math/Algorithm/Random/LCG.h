@@ -1,39 +1,50 @@
+/* Copyright Jukka Jylänki
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License. */
+
 /** @file LCG.h
 	@author Jukka Jylänki
-
-	This work is copyrighted material and may NOT be used for any kind of commercial or 
-	personal advantage and may NOT be copied or redistributed without prior consent
-	of the author(s). 
-
-	@brief A linear congruential random number generator.
-*/
+	@brief A linear congruential random number generator. */
 #pragma once
+
+#include "Math/MathBuildConfig.h"
+#include "Math/MathNamespace.h"
 
 #include "Types.h"
 
 /** @brief A linear congruential random number generator.
 
 	Uses D.H. Lehmer's Linear Congruential Method (1949) for generating random numbers.
-	Supports both Multiplicative Congruential Method (increment==0) and 
+	Supports both Multiplicative Congruential Method (increment==0) and
 	Mixed Congruential Method (increment!=0)
 	It is perhaps the simplest and fastest method to generate pseudo-random numbers on
 	a computer. Per default uses the values for Minimal Standard LCG.
 	http://en.wikipedia.org/wiki/Linear_congruential_generator
-	http://www.math.rutgers.edu/~greenfie/currentcourses/sem090/pdfstuff/jp.pdf 
+	http://www.math.rutgers.edu/~greenfie/currentcourses/sem090/pdfstuff/jp.pdf
 
-    Pros:
-    <ul>
-        <li> Easy to implement.
-        <li> Fast.
-    </ul>
+	Pros:
+	<ul>
+	    <li> Easy to implement.
+	    <li> Fast.
+	</ul>
 
-    Cons:
-    <ul>
-        <li> NOT safe for cryptography because of the easily calculatable sequential 
+	Cons:
+	<ul>
+	    <li> NOT safe for cryptography because of the easily calculatable sequential
 	        correlation between successive calls. A case study:
 	        http://www.cigital.com/papers/download/developer_gambling.php
 
-		<li> Tends to have less random low-order bits (compared to the high-order bits)
+	    <li> Tends to have less random low-order bits (compared to the high-order bits)
 	         Thus, NEVER do something like this:
 
 	           u32 numBetween1And10 = 1 + LCGRand.Int() % 10;
@@ -45,20 +56,23 @@
 	         or simply
 	
 	           u32 numBetween1And10 = LCGRand.Float(1.f, 10.f);
-    </ul> */
+	</ul> */
+
+MATH_BEGIN_NAMESPACE
+
 class LCG
 {
 public:
-    /// Initializes the generator from the current system clock.
-    LCG();
+	/// Initializes the generator from the current system clock.
+	LCG();
 	/// Initializes the generator using a custom seed.
-	LCG(u32 seed, u32 multiplier = 69621, 
+	LCG(u32 seed, u32 multiplier = 69621,
 		u32 increment = 0, u32 modulus = 0x7FFFFFFF /* 2^31 - 1 */)
 	{
 		Seed(seed, multiplier, increment, modulus);
 	}
 
-    /// Reinitializes the generator to the new settings.
+	/// Reinitializes the generator to the new settings.
 	void Seed(u32 seed, u32 multiplier = 69621, u32 increment = 0, u32 modulus = 0x7FFFFFFF);
 
 	/// Returns an integer in the range [0, MaxInt()]
@@ -70,7 +84,7 @@ public:
 	u32 IntFast();
 
 	/// Returns an integer in the range [a, b]
-    /** @param a Lower bound, inclusive.
+	/** @param a Lower bound, inclusive.
 	    @param b Upper bound, inclusive.
 	    @return An integer in the range [a, b] */
 	int Int(int a, int b);
@@ -79,7 +93,7 @@ public:
 	float Float();
 
 	/// Returns a float in the range [a, b[.
-    /** @param a Lower bound, inclusive.
+	/** @param a Lower bound, inclusive.
 	    @param b Upper bound, exclusive.
 	    @return A float in the range [a, b[ */
 	float Float(float a, float b);
@@ -93,6 +107,9 @@ private:
 };
 
 #ifdef MATH_QT_INTEROP
+#include <qmetatype.h>
 Q_DECLARE_METATYPE(LCG)
 Q_DECLARE_METATYPE(LCG*)
 #endif
+
+MATH_END_NAMESPACE

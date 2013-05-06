@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
 /** @file float3x3.cpp
 	@author Jukka Jylänki
 	@brief */
+#include "Math/float3x3.h"
 #include <string.h>
 #include "assume.h"
 #include "Math/MathFunc.h"
 #include "Math/float3.h"
 #include "Math/float4.h"
-#include "Math/float3x3.h"
 #include "Math/float3x4.h"
 #include "Math/float4x4.h"
 #include "Matrix.inl"
@@ -28,6 +28,10 @@
 #include "Algorithm/Random/LCG.h"
 #include "Geometry/Plane.h"
 #include "TransformOps.h"
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+#include <iostream>
+#endif
 
 MATH_BEGIN_NAMESPACE
 
@@ -89,7 +93,7 @@ float3x3 float3x3::RotateFromTo(const float3 &sourceDirection, const float3 &tar
 
 float3x3 float3x3::RandomRotation(LCG &lcg)
 {
-	// The easiest way to generate a random orientation is through quaternions, so convert a 
+	// The easiest way to generate a random orientation is through quaternions, so convert a
 	// random quaternion to a rotation matrix.
 	return FromQuat(Quat::RandomRotation(lcg));
 }
@@ -177,7 +181,7 @@ float3x3 float3x3::FromEulerXYZ(float x, float y, float z)
 {
 	float3x3 r;
 	Set3x3PartRotateEulerXYZ(r, x, y, z);
-	assume(r.Equals(float3x3::RotateX(x) * float3x3::RotateY(y) * float3x3::RotateX(z)));
+	assume(r.Equals(float3x3::RotateX(x) * float3x3::RotateY(y) * float3x3::RotateZ(z)));
 	return r;
 }
 
@@ -248,8 +252,8 @@ float3 float3x3::GetScale() const
 
 float3x3 float3x3::ShearX(float yFactor, float zFactor)
 {
-	assume(isfinite(yFactor));
-	assume(isfinite(zFactor));
+	assume(MATH_NS::IsFinite(yFactor));
+	assume(MATH_NS::IsFinite(zFactor));
 	return float3x3(1.f, yFactor, zFactor,
 	                0.f,     1.f,     0.f,
 	                0.f,     0.f,     1.f);
@@ -257,8 +261,8 @@ float3x3 float3x3::ShearX(float yFactor, float zFactor)
 
 float3x3 float3x3::ShearY(float xFactor, float zFactor)
 {
-	assume(isfinite(xFactor));
-	assume(isfinite(zFactor));
+	assume(MATH_NS::IsFinite(xFactor));
+	assume(MATH_NS::IsFinite(zFactor));
 	return float3x3(1.f,     0.f,     0.f,
 	                xFactor, 1.f, zFactor,
 	                0.f,     0.f,     1.f);
@@ -266,8 +270,8 @@ float3x3 float3x3::ShearY(float xFactor, float zFactor)
 
 float3x3 float3x3::ShearZ(float xFactor, float yFactor)
 {
-	assume(isfinite(xFactor));
-	assume(isfinite(yFactor));
+	assume(MATH_NS::IsFinite(xFactor));
+	assume(MATH_NS::IsFinite(yFactor));
 	return float3x3(1.f,         0.f, 0.f,
 	                0.f,         1.f, 0.f,
 	                xFactor, yFactor, 1.f);
@@ -408,7 +412,7 @@ void float3x3::ScaleRow(int row, float scalar)
 	if (row < 0 || row >= Rows)
 		return;
 #endif
-	assume(isfinite(scalar));
+	assume(MATH_NS::IsFinite(scalar));
 	Row(row) *= scalar;
 }
 
@@ -458,9 +462,9 @@ void float3x3::SetRow(int row, float x, float y, float z)
 	if (row < 0 || row >= Rows)
 		return;
 #endif
-	assume(isfinite(x));
-	assume(isfinite(y));
-	assume(isfinite(z));
+	assume(MATH_NS::IsFinite(x));
+	assume(MATH_NS::IsFinite(y));
+	assume(MATH_NS::IsFinite(z));
 	v[row][0] = x;
 	v[row][1] = y;
 	v[row][2] = z;
@@ -489,9 +493,9 @@ void float3x3::SetCol(int column, float x, float y, float z)
 	if (column < 0 || column >= Cols)
 		return;
 #endif
-	assume(isfinite(x));
-	assume(isfinite(y));
-	assume(isfinite(z));
+	assume(MATH_NS::IsFinite(x));
+	assume(MATH_NS::IsFinite(y));
+	assume(MATH_NS::IsFinite(z));
 	v[0][column] = x;
 	v[1][column] = y;
 	v[2][column] = z;
@@ -627,8 +631,8 @@ float3x3 float3x3::LookAt(const float3 &localForward, const float3 &targetDirect
 
 	// Generate the third basis vector for the world space.
 	float3 worldRight = worldUp.Cross(targetDirection).Normalized();
-	// Since the input worldUp vector is not necessarily perpendicular to the targetDirection vector, 
-	// we need to compute the real world space up vector that the "head" of the object will point 
+	// Since the input worldUp vector is not necessarily perpendicular to the targetDirection vector,
+	// we need to compute the real world space up vector that the "head" of the object will point
 	// towards when the model is looking towards the desired target direction.
 	float3 perpWorldUp = targetDirection.Cross(worldRight).Normalized();
 	
@@ -640,7 +644,7 @@ float3x3 float3x3::LookAt(const float3 &localForward, const float3 &targetDirect
 	// 3. localForward must be mapped to targetDirection. (M * localForward = targetDirection)
 	// i.e. we want to map the basis A to basis B.
 
-	// This matrix M exists, and it is an orthonormal rotation matrix with a determinant of +1, because 
+	// This matrix M exists, and it is an orthonormal rotation matrix with a determinant of +1, because
 	// the bases A and B are orthonormal with the same handedness.
 
 	// Below, use the notation that (a,b,c) is a 3x3 matrix with a as its first column, b second, and c third.
@@ -694,7 +698,37 @@ float float3x3::Determinant() const
 	const float h = v[2][1];
 	const float i = v[2][2];
 
+	/* a b c
+	   d e f
+	   g h i */
+
+	// Perform a direct cofactor expansion:
 	return a*(e*i - f*h) + b*(f*g - d*i) + c*(d*h - e*g);
+}
+
+float float3x3::DeterminantSymmetric() const
+{
+	assume(IsSymmetric());
+	const float a = v[0][0];
+	const float b = v[0][1];
+	const float c = v[0][2];
+	const float d = v[1][1];
+	const float e = v[1][2];
+	const float f = v[2][2];
+
+	/* If the matrix is symmetric, it is of form
+	   a b c
+	   b d e
+	   c e f
+	*/
+
+	// A direct cofactor expansion gives
+	// det = a * (df - ee) -b * (bf - ce) + c * (be-dc)
+	//     = adf - aee - bbf + bce + bce - ccd
+	//     = adf - aee - bbf - ccd + 2*bce
+	//     = a(df-ee) + b(2*ce - bf) - ccd
+
+	return a * (d*f - e*e) + b * (2.f * c * e - b * f) - c*c*d;
 }
 
 #define SKIPNUM(val, skip) (val < skip ? val : skip + 1)
@@ -730,7 +764,8 @@ float3x3 float3x3::Adjugate() const
 	return a;
 }
 */
-bool float3x3::Inverse()
+
+bool float3x3::Inverse(float epsilon)
 {
 #ifdef MATH_ASSERT_CORRECTNESS
 	float3x3 orig = *this;
@@ -738,10 +773,34 @@ bool float3x3::Inverse()
 
 	// There exists a generic matrix inverse calculator that uses Gaussian elimination.
 	// It would be invoked by calling
-	// return InverseMatrix(*this);
-	// Instead, compute the inverse directly using Cramer's rule.
+	// return InverseMatrix(*this, epsilon);
+
+	float3x3 i = *this;
+	bool success = InverseMatrix(i, epsilon);
+	if (!success)
+		return false;
+
+#ifdef MATH_ASSERT_CORRECTNESS
+	float3x3 id = orig * i;
+	float3x3 id2 = i * orig;
+	mathassert(id.IsIdentity(0.5f));
+	mathassert(id2.IsIdentity(0.5f));
+#endif
+
+	*this = i;
+	return true;
+}
+
+bool float3x3::InverseFast(float epsilon)
+{
+#ifdef MATH_ASSERT_CORRECTNESS
+	float3x3 orig = *this;
+#endif
+
+	// Compute the inverse directly using Cramer's rule.
+	// Warning: This method is numerically very unstable!
 	float d = Determinant();
-	if (EqualAbs(d, 0.f))
+	if (EqualAbs(d, 0.f, epsilon))
 		return false;
 
 	d = 1.f / d;
@@ -757,9 +816,122 @@ bool float3x3::Inverse()
 	i[2][0] = d * (v[1][0] * v[2][1] - v[1][1] * v[2][0]);
 	i[2][1] = d * (v[2][0] * v[0][1] - v[0][0] * v[2][1]);
 	i[2][2] = d * (v[0][0] * v[1][1] - v[0][1] * v[1][0]);
-	*this = i;
 
-	mathassert((orig * *this).IsIdentity());
+#ifdef MATH_ASSERT_CORRECTNESS
+	float3x3 id = orig * i;
+	float3x3 id2 = i * orig;
+	mathassert(id.IsIdentity(0.5f));
+	mathassert(id2.IsIdentity(0.5f));
+#endif
+
+	*this = i;
+	return true;
+}
+
+bool float3x3::SolveAxb(float3 b, float3 &x) const
+{
+	// Solve by pivotization.
+	float v00 = v[0][0];
+	float v10 = v[1][0];
+	float v20 = v[2][0];
+
+	float v01 = v[0][1];
+	float v11 = v[1][1];
+	float v21 = v[2][1];
+
+	float v02 = v[0][2];
+	float v12 = v[1][2];
+	float v22 = v[2][2];
+
+	float av00 = Abs(v00);
+	float av10 = Abs(v10);
+	float av20 = Abs(v20);
+
+	// Find which item in first column has largest absolute value.
+	if (av10 >= av00 && av10 >= av20)
+	{
+		Swap(v00, v10);
+		Swap(v01, v11);
+		Swap(v02, v12);
+		Swap(b[0], b[1]);
+	}
+	else if (v20 >= v00)
+	{
+		Swap(v00, v20);
+		Swap(v01, v21);
+		Swap(v02, v22);
+		Swap(b[0], b[2]);
+	}
+
+	/* a b c | x
+	   d e f | y
+	   g h i | z , where |a| >= |d| && |a| >= |g| */
+
+	if (EqualAbs(v00, 0.f))
+		return false;
+
+	// Scale row so that leading element is one.
+	float denom = 1.f / v00;
+//	v00 = 1.f;
+	v01 *= denom;
+	v02 *= denom;
+	b[0] *= denom;
+
+	/* 1 b c | x
+	   d e f | y
+	   g h i | z */
+
+	// Zero first column of second and third rows.
+	v11 -= v10 * v01;
+	v12 -= v10 * v02;
+	b[1] -= v10 * b[0];
+
+	v21 -= v20 * v01;
+	v22 -= v20 * v02;
+	b[2] -= v20 * b[0];
+
+	/* 1 b c | x
+	   0 e f | y
+	   0 h i | z */
+
+	// Pivotize again.
+	if (Abs(v21) > Abs(v11))
+	{
+		Swap(v11, v21);
+		Swap(v12, v22);
+		Swap(b[1], b[2]);
+	}
+
+	if (EqualAbs(v11, 0.f))
+		return false;
+
+	/* 1 b c | x
+	   0 e f | y
+	   0 h i | z, where |e| >= |h| */
+
+	denom = 1.f / v11;
+//	v11 = 1.f;
+	v12 *= denom;
+	b[1] *= denom;
+
+	/* 1 b c | x
+	   0 1 f | y
+	   0 h i | z */
+
+	v22 -= v21 * v12;
+	b[2] -= v21 * b[1];
+
+	/* 1 b c | x
+	   0 1 f | y
+	   0 0 i | z */
+
+	if (EqualAbs(v22, 0.f))
+		return false;
+
+	x[2] = b[2] / v22;
+	x[1] = b[1] - x[2] * v12;
+	x[0] = b[0] - x[2] * v02 - x[1] * v01;
+
 	return true;
 }
 
@@ -836,6 +1008,46 @@ void float3x3::InverseOrthonormal()
 	mathassert(!orig.IsInvertible()|| (orig * *this).IsIdentity());
 }
 
+bool float3x3::InverseSymmetric()
+{
+	assume(IsSymmetric());
+	const float a = v[0][0];
+	const float b = v[0][1];
+	const float c = v[0][2];
+	const float d = v[1][1];
+	const float e = v[1][2];
+	const float f = v[2][2];
+
+	/* If the matrix is symmetric, it is of form
+	   a b c
+	   b d e
+	   c e f
+	*/
+
+	// A direct cofactor expansion gives
+	// det = a * (df - ee) + b * (ce - bf) + c * (be-dc)
+
+	const float df_ee = d*f - e*e;
+	const float ce_bf = c*e - b*f;
+	const float be_dc = b*e - d*c;
+
+	float det = a * df_ee + b * ce_bf + c * be_dc; // = DeterminantSymmetric();
+	if (EqualAbs(det, 0.f))
+		return false;
+	det = 1.f / det;
+	
+	// The inverse of a symmetric matrix will also be symmetric, so can avoid some computations altogether.
+
+	v[0][0] = det * df_ee;
+	v[1][0] = v[0][1] = det * ce_bf;
+	v[0][2] = v[2][0] = det * be_dc;
+	v[1][1] = det * (a*f - c*c);
+	v[1][2] = v[2][1] = det * (c*b - a*e);
+	v[2][2] = det * (a*d - b*b);
+
+	return true;
+}
+
 void float3x3::Transpose()
 {
 	Swap(v[0][1], v[1][0]);
@@ -895,6 +1107,9 @@ void float3x3::RemoveScale()
 	float y = Row(1).Normalize();
 	float z = Row(2).Normalize();
 	assume(x != 0 && y != 0 && z != 0 && "float3x3::RemoveScale failed!");
+	MARK_UNUSED(x);
+	MARK_UNUSED(y);
+	MARK_UNUSED(z);
 }
 
 float3 float3x3::Transform(const float3 &vector) const
@@ -1060,7 +1275,7 @@ float3x3 float3x3::operator -() const
 
 float3x3 &float3x3::operator *=(float scalar)
 {
-	assume(isfinite(scalar));
+	assume(MATH_NS::IsFinite(scalar));
 	for(int y = 0; y < Rows; ++y)
 		for(int x = 0; x < Cols; ++x)
 			v[y][x] *= scalar;
@@ -1070,7 +1285,7 @@ float3x3 &float3x3::operator *=(float scalar)
 
 float3x3 &float3x3::operator /=(float scalar)
 {
-	assume(isfinite(scalar));
+	assume(MATH_NS::IsFinite(scalar));
 	assume(!EqualAbs(scalar, 0));
 	float invScalar = 1.f / scalar;
 	for(int y = 0; y < Rows; ++y)
@@ -1104,7 +1319,7 @@ bool float3x3::IsFinite() const
 {
 	for(int y = 0; y < Rows; ++y)
 		for(int x = 0; x < Cols; ++x)
-			if (!isfinite(v[y][x]))
+			if (!MATH_NS::IsFinite(v[y][x]))
 				return false;
 	return true;
 }
@@ -1123,45 +1338,39 @@ bool float3x3::IsLowerTriangular(float epsilon) const
 {
 	return EqualAbs(v[0][1], 0.f, epsilon)
 	    && EqualAbs(v[0][2], 0.f, epsilon)
-	    && EqualAbs(v[0][3], 0.f, epsilon)
-	    && EqualAbs(v[1][2], 0.f, epsilon)
-	    && EqualAbs(v[1][3], 0.f, epsilon)
-	    && EqualAbs(v[2][3], 0.f, epsilon);
+	    && EqualAbs(v[1][2], 0.f, epsilon);
 }
 
 bool float3x3::IsUpperTriangular(float epsilon) const
 {
 	return EqualAbs(v[1][0], 0.f, epsilon)
 	    && EqualAbs(v[2][0], 0.f, epsilon)
-	    && EqualAbs(v[3][0], 0.f, epsilon)
-	    && EqualAbs(v[2][1], 0.f, epsilon)
-	    && EqualAbs(v[3][1], 0.f, epsilon)
-	    && EqualAbs(v[3][2], 0.f, epsilon);
+	    && EqualAbs(v[2][1], 0.f, epsilon);
 }
 
-bool float3x3::IsInvertible(float /*epsilon*/) const
+bool float3x3::IsInvertible(float epsilon) const
 {
-	///@todo Optimize.
-	float3x3 copy = *this;
-	return copy.Inverse();
+	float d = Determinant();
+	bool isSingular = EqualAbs(d, 0.f, epsilon);
+	mathassert(float3x3(*this).Inverse(epsilon) != isSingular); // IsInvertible() and Inverse() must match!
+	return !isSingular;
 }
 
 bool float3x3::IsSymmetric(float epsilon) const
 {
-	for(int y = 0; y < Rows; ++y)
-		for(int x = y+1; x < Cols; ++x)
-			if (!EqualAbs(v[y][x], v[x][y], epsilon))
-				return false;
-	return true;
+	return EqualAbs(v[0][1], v[1][0], epsilon) &&
+		EqualAbs(v[0][2], v[2][0], epsilon) &&
+		EqualAbs(v[1][2], v[2][1], epsilon);
 }
 
 bool float3x3::IsSkewSymmetric(float epsilon) const
 {
-	for(int y = 0; y < Rows; ++y)
-		for(int x = y; x < Cols; ++x)
-			if (!EqualAbs(v[y][x], -v[x][y], epsilon))
-				return false;
-	return true;
+	return EqualAbs(v[0][0], 0.f, epsilon) &&
+		EqualAbs(v[1][1], 0.f, epsilon) &&
+		EqualAbs(v[2][2], 0.f, epsilon) &&
+		EqualAbs(v[0][1], -v[1][0], epsilon) &&
+		EqualAbs(v[0][2], -v[2][0], epsilon) &&
+		EqualAbs(v[1][2], -v[2][1], epsilon);
 }
 
 bool float3x3::HasUnitaryScale(float epsilon) const
@@ -1214,7 +1423,7 @@ bool float3x3::Equals(const float3x3 &other, float epsilon) const
 std::string float3x3::ToString() const
 {
 	char str[256];
-	sprintf(str, "(%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f)", 
+	sprintf(str, "(%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f) (%.2f, %.2f, %.2f)",
 		v[0][0], v[0][1], v[0][2],
 		v[1][0], v[1][1], v[1][2],
 		v[2][0], v[2][1], v[2][2]);
@@ -1225,7 +1434,7 @@ std::string float3x3::ToString() const
 std::string float3x3::ToString2() const
 {
 	char str[256];
-	sprintf(str, "float3x3(X:(%.2f,%.2f,%.2f) Y:(%.2f,%.2f,%.2f) Z:(%.2f,%.2f,%.2f)", 
+	sprintf(str, "float3x3(X:(%.2f,%.2f,%.2f) Y:(%.2f,%.2f,%.2f) Z:(%.2f,%.2f,%.2f)",
 		v[0][0], v[1][0], v[2][0],
 		v[0][1], v[1][1], v[2][1],
 		v[0][2], v[1][2], v[2][2]);

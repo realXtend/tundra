@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,9 +17,7 @@
 	@brief */
 #pragma once
 
-#ifdef MATH_ENABLE_STL_SUPPORT
-#include <cassert>
-#endif
+#include "myassert.h"
 #include "Math/MathFwd.h"
 #include "Types.h"
 
@@ -58,13 +56,13 @@ inline int ExtractLSB(unsigned long *value)
 		LSBT<0>::val = 0,
 		LSBT<1>::val = 1,
 		LSBT<2>::val = 11,
-		LSBT<24>::val = 11111111 11111111 11111111. 
+		LSBT<24>::val = 11111111 11111111 11111111.
 	LSBT<33> and greater are undefined. */
 template<int Bits>
 class LSBT
 {
 public:
-	enum { val = (1 << Bits) - 1 };
+	static const u32 val = (1 << Bits) - 1;
 };
 
 /// @cond FULL
@@ -73,14 +71,14 @@ template<>
 class LSBT<32>
 {
 public:
-	enum { val = 0xFFFFFFFF };
+	static const u32 val = 0xFFFFFFFF;
 };
 
 template<>
 class LSBT<31>
 {
 public:
-	enum { val = 0x7FFFFFFF };
+	static const u32 val = 0x7FFFFFFF;
 };
 
 /// @endcond
@@ -96,9 +94,17 @@ inline u32 LSB(u32 bits)
 	return (1 << bits) - 1;
 }
 
-/** @brief A template-computed enum to create a mask of given amount of bits at given position of a u32 variable. 
+inline u64 LSB64(u64 bits)
+{
+	assert(bits <= 64);
+	if (bits >= 64)
+		return 0xFFFFFFFFFFFFFFFFULL;
+	return (1 << bits) - 1;
+}
 
-	For example, 
+/** @brief A template-computed enum to create a mask of given amount of bits at given position of a u32 variable.
+
+	For example,
 	BitMaskT<0,0>::val == 0,
 	BitMaskT<0,8>::val == 11111111,
 	BitMaskT<4, 12>::val == 11111111 11110000, etc.
@@ -108,15 +114,20 @@ class BitMaskT
 {
 public:
 //	enum { val = (Pow<2, Bits>::val - 1) << Pos };		// Alternate way to calculate this value.
-	enum { val = LSBT<Pos+Bits>::val & ~LSBT<Pos>::val }; // But this is nicer.
+	static const u32 val = LSBT<Pos+Bits>::val & ~LSBT<Pos>::val; // But this is nicer.
 };
 
-/** @return A mask with the given number of bits set at the given position of a u32 variable. This is 
+/** @return A mask with the given number of bits set at the given position of a u32 variable. This is
 	the runtime-equivalent of BitMaskT.
 	For example, BitMask(4,4)==11110000. */
 inline u32 BitMask(u32 pos, u32 bits)
 {
 	return LSB(pos + bits) & ~LSB(pos);
+}
+
+inline u64 BitMask64(u64 pos, u64 bits)
+{
+	return LSB64(pos + bits) & ~LSB64(pos);
 }
 
 /** @return The given 4 bit fields packed into a single larger bitfield.
@@ -127,23 +138,23 @@ template<typename ResultType, typename InputType,
 ResultType PackBits(InputType a, InputType r, InputType g, InputType b)
 {
 	return (ResultType)(
-		(ResultType)a << APos & BitMaskT<APos, ABits>::val | 
-		(ResultType)r << RPos & BitMaskT<RPos, RBits>::val |
-		(ResultType)g << GPos & BitMaskT<GPos, GBits>::val |
-		(ResultType)b << BPos & BitMaskT<BPos, BBits>::val);
+		((ResultType)a << APos & BitMaskT<APos, ABits>::val) |
+		((ResultType)r << RPos & BitMaskT<RPos, RBits>::val) |
+		((ResultType)g << GPos & BitMaskT<GPos, GBits>::val) |
+		((ResultType)b << BPos & BitMaskT<BPos, BBits>::val));
 }
 
 /** @return The given 4 bit fields packed into a single larger bitfield. */
 template<typename ResultType, typename InputType>
-ResultType PackBits(int APos, int ABits, int RPos, int RBits, 
-									  int GPos, int GBits, int BPos, int BBits, 
+ResultType PackBits(int APos, int ABits, int RPos, int RBits,
+									  int GPos, int GBits, int BPos, int BBits,
 									  InputType a, InputType r, InputType g, InputType b)
 {
 	return (ResultType)(
-		(ResultType)a << APos & BitMask(APos, ABits) | 
-		(ResultType)r << RPos & BitMask(RPos, RBits) |
-		(ResultType)g << GPos & BitMask(GPos, GBits) |
-		(ResultType)b << BPos & BitMask(BPos, BBits));
+		((ResultType)a << APos & BitMask(APos, ABits)) |
+		((ResultType)r << RPos & BitMask(RPos, RBits)) |
+		((ResultType)g << GPos & BitMask(GPos, GBits)) |
+		((ResultType)b << BPos & BitMask(BPos, BBits)));
 }
 
 /** Extracts the given adjacent bits from a larger bitfield. Aggressively templatized version.

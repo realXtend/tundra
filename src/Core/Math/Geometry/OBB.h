@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ MATH_BEGIN_NAMESPACE
 
 /// A 3D arbitrarily oriented bounding box.
 /** This data structure represents a box in 3D space. The local axes of this box can be arbitrarily oriented/rotated
-	with respect to the global world coordinate system. This allows OBBs to more tightly bound objects than AABBs do, 
+	with respect to the global world coordinate system. This allows OBBs to more tightly bound objects than AABBs do,
 	which always align with the world space axes. This flexibility has the drawback that the geometry tests and operations
 	involving OBBs are more costly, and representing an OBB in memory takes more space (15 floats vs 6 floats). */
 class OBB
@@ -42,9 +42,9 @@ public:
 	/// Specifies normalized direction vectors for the local axes. [noscript] [similarOverload: pos]
 	/** axis[0] specifies the +X direction in the local space of this OBB, axis[1] the +Y direction and axis[2]
 		the +Z direction.
-		The scale of these vectors is always normalized. The (half-)length of the OBB along its local axes is
+		The scale of these vectors is always normalized. The half-length of the OBB along its local axes is
 		specified by the vector r.
-		The axis vectors must always be orthonormal. Be sure to guarantee that condition holds if you 
+		The axis vectors must always be orthonormal. Be sure to guarantee that condition holds if you
 		directly set to this member variable. */
 	float3 axis[3];
 
@@ -63,6 +63,8 @@ public:
 		@see class AABB, SetFrom(), MinimalEnclosingAABB(). */
 	OBB(const AABB &aabb);
 
+	int NumEdges() const { return 12; }
+
 	/// Sets this structure to a degenerate OBB that does not have any volume.
 	/** This function sets pos=(0,0,0), r = (-inf,-inf,-inf) and axis=float3x3::identity for this OBB.
 		@note This function operates in-place. After calling this function, this OBB is degenerate.
@@ -77,7 +79,7 @@ public:
 		@see classes AABB, float3x3, float3x4, float4x4, Quat, MinimalEnclosingAABB(). */
 	void SetFrom(const AABB &aabb);
 	/** @param transform If a transformation matrix is supplied, this transformation is applied to the AABB before
-		representing it as an oriented bounding box. The basis of this matrix is assumed to be orthogonal, which 
+		representing it as an oriented bounding box. The basis of this matrix is assumed to be orthogonal, which
 		means no projection or shear is allowed. Additionally, the matrix must contain only uniform scaling. */
 	void SetFrom(const AABB &aabb, const float3x3 &transform);
 	void SetFrom(const AABB &aabb, const float3x4 &transform);
@@ -90,19 +92,23 @@ public:
 		@see class Sphere, MinimalEnclosingSphere(). */
 	void SetFrom(const Sphere &sphere);
 
+#ifdef MATH_CONTAINERLIB_SUPPORT
 	/// Sets this OBB to enclose the given polyhedron.		
 	/** This function computes the smallest OBB (in terms of volume) that contains the given polyhedron, and stores the result in this structure.
 		@note An OBB cannot generally exactly represent a polyhedron. Converting a polyhedron to an OBB loses some features of the polyhedron.
 		@return True if the resulting OBB is not degenerate, false otherwise. In either case, the old values of this OBB are destroyed.
 		@see SetFromApproximate(), ToPolyhedron(). */
 	bool SetFrom(const Polyhedron &polyhedron);
+#endif
 
+#if 0
 	/// Sets this OBB to enclose the given point cloud.
 	/** This functions uses principal component analysis to generate an approximation of the smallest OBB that encloses the
 		given point set. The resulting OBB will always contain all the specified points, but might not be the optimally
 		smallest OBB in terms of volume.
 		@see SetFrom(), ToPolyhedron(), PCAEnclosingOBB(). */
 	void SetFromApproximate(const float3 *pointArray, int numPoints);
+#endif
 
 	/// Converts this OBB to a polyhedron.
 	/** This function returns a polyhedron representation of this OBB. This conversion is exact, meaning that the returned
@@ -116,11 +122,13 @@ public:
 		@see SetFrom(), MaximalContainedAABB(), MinimalEnclosingSphere(), MaximalContainedSphere(). */
 	AABB MinimalEnclosingAABB() const;
 
+#if 0
 	/// Returns the largest AABB that can fit inside this OBB.
 	/** This function computes the largest AABB that can fit inside this OBB. This AABB is unique up to the center point of the
 		AABB. The returned AABB will be centered to the center point of this OBB.
 		@see MinimalEnclosingAABB(), MinimalEnclosingSphere(), MaximalContainedSphere(). */
 	AABB MaximalContainedAABB() const;
+#endif
 
 	/// Returns the smallest sphere that contains this OBB.
 	/** This function computes the optimal minimum volume sphere that encloses this OBB.
@@ -128,7 +136,7 @@ public:
 	Sphere MinimalEnclosingSphere() const;
 
 	/// Returns the largest sphere that can fit inside this OBB. [similarOverload: MinimalEnclosingSphere]
-	/** This function computes the largest sphere that can fit inside this OBB. This sphere is unique up to the center point 
+	/** This function computes the largest sphere that can fit inside this OBB. This sphere is unique up to the center point
 		of the sphere. The returned sphere will be positioned to the same center point as this OBB.
 		@see MinimalEnclosingSphere(), MaximalContainedAABB(), MaximalContainedSphere(). */
 	Sphere MaximalContainedSphere() const;
@@ -211,7 +219,7 @@ public:
 	LineSegment Edge(int edgeIndex) const;
 
 	/// Returns a corner point of this OBB.
-	/** This function generates one of the eight corner points of this OBB. 
+	/** This function generates one of the eight corner points of this OBB.
 		@param cornerIndex The index of the corner point to generate, in the range [0, 7].
 		 The points are returned in the order 0: ---, 1: --+, 2: -+-, 3: -++, 4: +--, 5: +-+, 6: ++-, 7: +++. (corresponding the XYZ axis directions).
 		@todo Draw a diagram that shows which index generates which edge.
@@ -223,10 +231,19 @@ public:
 		this point is not necessarily unique.
 		@param direction The direction vector of the direction to find the extreme point. This vector may
 			be unnormalized, but may not be null.
-		@return An extreme point of this OBB in the given direction. The returned point is always a 
+		@return An extreme point of this OBB in the given direction. The returned point is always a
 			corner point of this OBB.
 		@see CornerPoint(). */
 	float3 ExtremePoint(const float3 &direction) const;
+
+	/// Projects this OBB onto the given 1D axis direction vector.
+	/** This function collapses this OBB onto an 1D axis for the purposes of e.g. separate axis test computations.
+		The function returns a 1D range [outMin, outMax] denoting the interval of the projection.
+		@param direction The 1D axis to project to. This vector may be unnormalized, in which case the output
+			of this function gets scaled by the length of this vector.
+		@param outMin [out] Returns the minimum extent of this object along the projection axis.
+		@param outMax [out] Returns the maximum extent of this object along the projection axis. */
+	void ProjectToAxis(const float3 &direction, float &outMin, float &outMax) const;
 
 	/// Returns a point on an edge of this OBB.
 	/** @param edgeIndex The index of the edge to generate a point to, in the range [0, 11]. @todo Document which index generates which one.
@@ -249,7 +266,7 @@ public:
 	float3 FacePoint(int faceIndex, float u, float v) const;
 
 	/// Returns the plane of the given face of this OBB.
-	/** The normal of the plane points outwards from this OBB, i.e. towards the space that 
+	/** The normal of the plane points outwards from this OBB, i.e. towards the space that
 		is not part of the OBB.
 		@param faceIndex The index of the face to get, in the range [0, 5].
 		@see PointInside(), Edge(), CornerPoint(), PointOnEdge(), FaceCenterPoint(), FacePoint(). */
@@ -269,12 +286,13 @@ public:
 	/** @param dir The direction vector to project the point array to. This vector does not need to be normalized.
 		@param pointArray [in] The list of points to process.
 		@param numPoints The number of elements in pointArray.
-		@param idxSmallest [out] The index of the smallest point along the given direction will be received here. 
+		@param idxSmallest [out] The index of the smallest point along the given direction will be received here.
 			This pointer may be left null, if this information is of no interest.
-		@param idxLargest [out] The index of the largest point along the given direction will be received here. 
+		@param idxLargest [out] The index of the largest point along the given direction will be received here.
 			This pointer may be left null, if this information is of no interest. */
-	static void ExtremePointsAlongDirection(const float3 &dir, const float3 *pointArray, int numPoints, int *idxSmallest, int *idxLargest);
+	static void ExtremePointsAlongDirection(const float3 &dir, const float3 *pointArray, int numPoints, int &idxSmallest, int &idxLargest);
 
+#if 0
 	/// Generates an OBB that encloses the given point set.
 	/** This function uses principal component analysis as the heuristics to generate the OBB. The returned OBB
 		is not necessarily the optimal OBB that encloses the given point set.
@@ -282,6 +300,12 @@ public:
 		@param numPoints The number of elements in the input array.
 		@see SetFromApproximate(). */
 	static OBB PCAEnclosingOBB(const float3 *pointArray, int numPoints);
+#endif
+
+#ifdef MATH_CONTAINERLIB_SUPPORT
+	///\todo This function is strongly WIP! (Works, but is very very slow!)
+	static OBB OptimalEnclosingOBB(const float3 *pointArray, int numPoints);
+#endif
 
 	/// Generates a random point inside this OBB.
 	/** The points are distributed uniformly.
@@ -309,7 +333,7 @@ public:
 	void Translate(const float3 &offset);
 
 	/// Applies a uniform scale to this OBB.
-	/** This function scales this OBB structure in-place, using the given center point as the origin 
+	/** This function scales this OBB structure in-place, using the given center point as the origin
 		for the scaling operation.
 		@param centerPoint Specifies the center of the scaling operation, in global (world) space.
 		@param scaleFactor The uniform scale factor to apply to each global (world) space axis.
@@ -317,7 +341,7 @@ public:
 	void Scale(const float3 &centerPoint, float scaleFactor);
 
 	/// Applies a non-uniform scale to the local axes of this OBB.
-	/** This function scales this OBB structure in-place, using the given global space center point as 
+	/** This function scales this OBB structure in-place, using the given global space center point as
 		the origin for the scaling operation.
 		@param centerPoint Specifies the center of the scaling operation, in global (world) space.
 		@param scaleFactor The non-uniform scale factors to apply to each local axis of this OBB.
@@ -343,7 +367,7 @@ public:
 	/// Computes the distance between this OBB and the given object.
 	/** This function finds the nearest pair of points on this and the given object, and computes their distance.
 		If the two objects intersect, or one object is contained inside the other, the returned distance is zero.
-		@todo Add OBB::Distance(Line/Ray/LineSegment/Plane/Triangle/Polygon/Circle/Disc/AABB/OBB/Capsule/Frustum/Polyhedron). 
+		@todo Add OBB::Distance(Line/Ray/LineSegment/Plane/Triangle/Polygon/Circle/Disc/AABB/OBB/Capsule/Frustum/Polyhedron).
 		@see Contains(), Intersects(), ClosestPoint(). */
 	float Distance(const float3 &point) const;
 	float Distance(const Sphere &sphere) const;
@@ -363,28 +387,34 @@ public:
 	bool Contains(const Frustum &frustum) const;
 	bool Contains(const Polyhedron &polyhedron) const;
 
-	/// Tests whether this OBB and the given object intersect.	   
-	/** Both objects are treated as "solid", meaning that if one of the objects is fully contained inside 
-		another, this function still returns true. (e.g. in case a line segment is contained inside this OBB, 
+	/// Tests whether this OBB and the given object intersect.
+	/** Both objects are treated as "solid", meaning that if one of the objects is fully contained inside
+		another, this function still returns true. (e.g. in case a line segment is contained inside this OBB,
 		or this OBB is contained inside a Sphere, etc.)
 		The first parameter of this function specifies the other object to test against.
+		The OBB-OBB intersection test is from Christer Ericson's book Real-Time Collision Detection, p. 101-106.
+		See http://realtimecollisiondetection.net/ [groupSyntax]
+		@param obb The other oriented bounding box to test intersection with.
+		@param epsilon The OBB-OBB test utilizes a SAT test to detect the intersection. A robust implementation requires
+			an epsilon threshold to test that the used axes are not degenerate.
 		@see Contains(), Distance(), ClosestPoint().
 		@todo Add Intersects(Circle/Disc). */
-	bool Intersects(const AABB &aabb) const;
-	/** @param epsilon The OBB-OBB test utilizes a SAT test to detect the intersection. A robust implementation requires
-			an epsilon threshold to test that the used axes are not degenerate. */
 	bool Intersects(const OBB &obb, float epsilon = 1e-3f) const;
+	bool Intersects(const AABB &aabb) const;
 	bool Intersects(const Plane &plane) const;
-	/** @param dNear [out] If specified, receives the parametric distance along the line denoting where the line entered the
-			OBB. This pointer may be null.
-		@param dFar [out] If specified, receives the parametric distance along the line denoting where the line exited the
-			OBB. This pointer may be null. */
-	bool Intersects(const Ray &ray, float *dNear, float *dFar) const;
-	bool Intersects(const Line &line, float *dNear, float *dFar) const;
-	bool Intersects(const LineSegment &lineSegment, float *dNear, float *dFar) const;
+	/** @param dNear [out] If specified, receives the parametric distance along the line denoting where the
+			line entered this OBB.
+		@param dFar [out] If specified, receives the parametric distance along the line denoting where the
+			line exited this OBB. */
+	bool Intersects(const Ray &ray, float &dNear, float &dFar) const;
+	bool Intersects(const Ray &ray) const;
+	bool Intersects(const Line &line, float &dNear, float &dFar) const;
+	bool Intersects(const Line &line) const;
+	bool Intersects(const LineSegment &lineSegment, float &dNear, float &dFar) const;
+	bool Intersects(const LineSegment &lineSegment) const;
 	/** @param closestPointOnOBB [out] If specified, receives the closest point on this OBB To the given sphere. This
 			pointer may be null. */
-	bool Intersects(const Sphere &sphere, float3 *closestPointOnOBB) const;
+	bool Intersects(const Sphere &sphere, float3 *closestPointOnOBB = 0) const;
 	bool Intersects(const Capsule &capsule) const;
 	bool Intersects(const Triangle &triangle) const;
 	bool Intersects(const Polygon &polygon) const;
@@ -392,25 +422,25 @@ public:
 	bool Intersects(const Polyhedron &polyhedron) const;
 
 	/// Expands this OBB to enclose the given object. The axis directions of this OBB remain intact.
-	/** This function operates in-place. This function does not necessarily result in an OBB that is an 
+	/** This function operates in-place. This function does not necessarily result in an OBB that is an
 		optimal fit for the previous OBB and the given point. */
 	void Enclose(const float3 &point);
 
 	/// Generates an unindexed triangle mesh representation of this OBB.
-	/** @param x The number of faces to generate along the X axis. This value must be >= 1.
-		@param y The number of faces to generate along the Y axis. This value must be >= 1.
-		@param z The number of faces to generate along the Z axis. This value must be >= 1.
-		@param outPos [out] An array of size numVertices which will receive a triangle list 
+	/** @param numFacesX The number of faces to generate along the X axis. This value must be >= 1.
+		@param numFacesY The number of faces to generate along the Y axis. This value must be >= 1.
+		@param numFacesZ The number of faces to generate along the Z axis. This value must be >= 1.
+		@param outPos [out] An array of size numVertices which will receive a triangle list
 							of vertex positions. Cannot be null.
-		@param outNormal [out] An array of size numVertices which will receive vertex normals. 
+		@param outNormal [out] An array of size numVertices which will receive vertex normals.
 							   If this parameter is null, vertex normals are not returned.
-		@param outUV [out] An array of size numVertices which will receive vertex UV coordinates. 
+		@param outUV [out] An array of size numVertices which will receive vertex UV coordinates.
 							   If this parameter is null, a UV mapping is not generated.
 		The number of vertices that outPos, outNormal and outUV must be able to contain is
 		(x*y + x*z + y*z)*2*6. If x==y==z==1, then a total of 36 vertices are required. Call
 		NumVerticesInTriangulation to obtain this value.
 		@see ToPolyhedron(), ToEdgeList(), NumVerticesInTriangulation(). */
-	void Triangulate(int x, int y, int z, float3 *outPos, float3 *outNormal, float2 *outUV) const;
+	void Triangulate(int numFacesX, int numFacesY, int numFacesZ, float3 *outPos, float3 *outNormal, float2 *outUV, bool ccwIsFrontFacing) const;
 
 	/// Returns the number of vertices that the Triangulate() function will output with the given subdivision parameters.
 	/** @see Triangulate(). */
@@ -453,11 +483,25 @@ public:
 	/* @return This function returns a Polyhedron that represents the set of points that are contained in this OBB
 		and the given Polyhedron. */
 //	Polyhedron Intersection(const Polyhedron &polyhedron) const;
+
+#ifdef MATH_GRAPHICSENGINE_INTEROP
+	void Triangulate(VertexBuffer &vb, int numFacesX, int numFacesY, int numFacesZ, bool ccwIsFrontFacing) const;
+	void ToLineList(VertexBuffer &vb) const;
+#endif
 };
+
+OBB operator *(const float3x3 &transform, const OBB &obb);
+OBB operator *(const float3x4 &transform, const OBB &obb);
+OBB operator *(const float4x4 &transform, const OBB &obb);
+OBB operator *(const Quat &transform, const OBB &obb);
 
 #ifdef MATH_QT_INTEROP
 Q_DECLARE_METATYPE(OBB)
 Q_DECLARE_METATYPE(OBB*)
+#endif
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+std::ostream &operator <<(std::ostream &o, const OBB &obb);
 #endif
 
 MATH_END_NAMESPACE

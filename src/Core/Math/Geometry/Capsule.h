@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public:
 	float r;
 
 	/// The default constructor does not initialize any members of this class.
-	/** This means that the values of the members l and r are both undefined after creating a new capsule using 
+	/** This means that the values of the members l and r are both undefined after creating a new capsule using
 		this default constructor. Remember to assign to them before use.
 		@see l, r. */
 	Capsule() {}
@@ -94,6 +94,15 @@ public:
 			be unnormalized, but may not be null.
 		@return The extreme point of this Capsule in the given direction. */
 	float3 ExtremePoint(const float3 &direction) const;
+
+	/// Projects this Capsule onto the given 1D axis direction vector.
+	/** This function collapses this Capsule onto an 1D axis for the purposes of e.g. separate axis test computations.
+		The function returns a 1D range [outMin, outMax] denoting the interval of the projection.
+		@param direction The 1D axis to project to. This vector may be unnormalized, in which case the output
+			of this function gets scaled by the length of this vector.
+		@param outMin [out] Returns the minimum extent of this object along the projection axis.
+		@param outMax [out] Returns the maximum extent of this object along the projection axis. */
+	void ProjectToAxis(const float3 &direction, float &outMin, float &outMax) const;
 
 	/// Returns the topmost point of this Capsule.
 	/** <img src="CapsuleFunctions.png" />
@@ -181,7 +190,7 @@ public:
 	void Translate(const float3 &offset);
 
 	/// Applies a uniform scale to this Capsule.
-	/** This function scales this capsule structure in-place, using the given center point as the origin 
+	/** This function scales this capsule structure in-place, using the given center point as the origin
 		for the scaling operation.
 		@param centerPoint Specifies the center of the scaling operation, in world space.
 		@param scaleFactor The uniform scale factor to apply to each world space axis.
@@ -189,7 +198,7 @@ public:
 	void Scale(const float3 &centerPoint, float scaleFactor);
 
 	/// Applies a transformation to this capsule.
-	/** @param transform The transformation to apply to this capsule. This transformation must be 
+	/** @param transform The transformation to apply to this capsule. This transformation must be
 		affine, and must contain an orthogonal set of column vectors (may not contain shear or projection).
 		The transformation can only contain uniform scale, and may not contain mirroring.
 		@see Translate(), Scale(), classes float3x3, float3x4, float4x4, Quat. */
@@ -207,7 +216,7 @@ public:
 	/// Computes the distance between this capsule and the given object.
 	/** This function finds the nearest pair of points on this and the given object, and computes their distance.
 		If the two objects intersect, or one object is contained inside the other, the returned distance is zero.
-		@todo Add Distance(Triangle/Polygon/Circle/Disc/Capsule). 
+		@todo Add Distance(Triangle/Polygon/Circle/Disc/Capsule).
 		@see Contains(), Intersects(), ClosestPoint(). */
 	float Distance(const float3 &point) const;
 	float Distance(const Plane &plane) const;
@@ -232,9 +241,9 @@ public:
 	bool Contains(const Frustum &frustum) const;
 	bool Contains(const Polyhedron &polyhedron) const;
 
-	/// Tests whether this capsule and the given object intersect.	   
-	/** Both objects are treated as "solid", meaning that if one of the objects is fully contained inside 
-		another, this function still returns true. (e.g. in case a line segment is contained inside this capsule, 
+	/// Tests whether this capsule and the given object intersect.	
+	/** Both objects are treated as "solid", meaning that if one of the objects is fully contained inside
+		another, this function still returns true. (e.g. in case a line segment is contained inside this capsule,
 		or this capsule is contained inside a Sphere, etc.)
 		The first parameter of this function specifies the other object to test against.
 		@see Contains(), Distance(), ClosestPoint().
@@ -263,9 +272,18 @@ public:
 #endif
 };
 
+Capsule operator *(const float3x3 &transform, const Capsule &capsule);
+Capsule operator *(const float3x4 &transform, const Capsule &capsule);
+Capsule operator *(const float4x4 &transform, const Capsule &capsule);
+Capsule operator *(const Quat &transform, const Capsule &capsule);
+
 #ifdef MATH_QT_INTEROP
 Q_DECLARE_METATYPE(Capsule)
 Q_DECLARE_METATYPE(Capsule*)
+#endif
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+std::ostream &operator <<(std::ostream &o, const Capsule &capsule);
 #endif
 
 MATH_END_NAMESPACE

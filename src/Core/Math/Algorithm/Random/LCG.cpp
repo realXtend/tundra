@@ -1,16 +1,28 @@
+/* Copyright Jukka Jylänki
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License. */
+
 /** @file LCG.cpp
 	@author Jukka Jylänki
+	@brief Implementation of the linear congruential random number generator. */
 
-	This work is copyrighted material and may NOT be used for any kind of commercial or 
-	personal advantage and may NOT be copied or redistributed without prior consent
-	of the author(s). 
-
-	@brief A linear congruential random number generator.
-*/
-
-#include "Math/MathFunc.h"
 #include "Algorithm/Random/LCG.h"
+#include "Math/MathFunc.h"
 #include "Time/Clock.h"
+#include "Types.h"
+#include "myassert.h"
+
+MATH_BEGIN_NAMESPACE
 
 LCG::LCG()
 {
@@ -58,17 +70,17 @@ u32 LCG::Int()
 	// Currently we cast everything to 64-bit to avoid overflow, which is quite dumb.
 
 	// Create the new random number
-#ifdef WIN32
-	unsigned __int64 newNum = ((unsigned __int64)lastNumber * (unsigned __int64)multiplier + (unsigned __int64)increment) % (unsigned __int64)modulus;
+//#ifdef WIN32
+	u64 newNum = ((u64)lastNumber * (u64)multiplier + (u64)increment) % (u64)modulus;
 //	u32 m = lastNumber * multiplier;
 //	u32 i = m + increment;
 //	u32 f = i & 0x7FFFFFFF;
 //	u32 m = (lastNumber * 214013 + 2531011) & 0x7FFFFFFF;
 //	unsigned __int64 newNum = (lastNumber * multiplier + increment) & 0x7FFFFFFF;
-#else
+//#else
 	// On console platform, we rely on using smaller sequences.
-	unsigned long newNum = ((unsigned long)lastNumber * (unsigned long)multiplier + (unsigned long)increment) % (unsigned long)modulus;
-#endif
+//	unsigned long newNum = ((unsigned long)lastNumber * (unsigned long)multiplier + (unsigned long)increment) % (unsigned long)modulus;
+//#endif
 	// Save the newly generated random number to use as seed for the next one.
 //	lastNumber = m;//(u32)newNum;
 	lastNumber = (u32)newNum;
@@ -102,3 +114,5 @@ float LCG::Float(float a, float b)
 
 	return Float()*(b-a)+a;
 }
+
+MATH_END_NAMESPACE

@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,14 +15,15 @@
 /** @file float3.cpp
 	@author Jukka Jylänki
 	@brief */
+#include "Math/float3.h"
 #ifdef MATH_ENABLE_STL_SUPPORT
-#include <cassert>
+#include <iostream>
+#include "myassert.h"
 #include <utility>
 #endif
 #include <stdlib.h>
 
 #include "Math/float2.h"
-#include "Math/float3.h"
 #include "Math/float4.h"
 #include "Math/float3x3.h"
 #include "Geometry/Line.h"
@@ -68,17 +69,17 @@ float3::float3(const float *data)
 }
 
 float *float3::ptr()
-{ 
+{
 	return &x;
-} 
+}
 
 const float *float3::ptr() const
-{ 
+{
 	return &x;
-} 
+}
 
 CONST_WIN32 float float3::At(int index) const
-{ 
+{
 	assume(index >= 0);
 	assume(index < Size);
 #ifndef MATH_ENABLE_INSECURE_OPTIMIZATIONS
@@ -89,7 +90,7 @@ CONST_WIN32 float float3::At(int index) const
 }
 
 float &float3::At(int index)
-{ 
+{
 	assume(index >= 0);
 	assume(index < Size);
 #ifndef MATH_ENABLE_INSECURE_OPTIMIZATIONS
@@ -125,22 +126,21 @@ float4 float3::Swizzled(int i, int j, int k, int l) const
 }
 
 float float3::LengthSq() const
-{ 
+{
 	return x*x + y*y + z*z;
 }
 
 float float3::Length() const
-{ 
+{
 	return sqrtf(LengthSq());
 }
 
 float float3::Normalize()
-{ 
+{
 	assume(IsFinite());
-	float lengthSq = LengthSq();
-	if (lengthSq > 1e-6f)
+	float length = Length();
+	if (length > 1e-6f)
 	{
-		float length = sqrtf(lengthSq); 
 		*this *= 1.f / length;
 		return length;
 	}
@@ -156,6 +156,7 @@ float3 float3::Normalized() const
 	float3 copy = *this;
 	float oldLength = copy.Normalize();
 	assume(oldLength > 0.f && "float3::Normalized() failed!");
+	MARK_UNUSED(oldLength);
 	return copy;
 }
 
@@ -197,7 +198,7 @@ bool float3::IsZero(float epsilonSq) const
 
 bool float3::IsFinite() const
 {
-	return isfinite(x) && isfinite(y) && isfinite(z);
+	return MATH_NS::IsFinite(x) && MATH_NS::IsFinite(y) && MATH_NS::IsFinite(z);
 }
 
 bool float3::IsPerpendicular(const float3 &other, float epsilon) const
@@ -205,23 +206,28 @@ bool float3::IsPerpendicular(const float3 &other, float epsilon) const
 	return fabs(Dot(other)) <= epsilon;
 }
 
+bool MUST_USE_RESULT float3::AreCollinear(const float3 &p1, const float3 &p2, const float3 &p3, float epsilon)
+{
+	return (p2-p1).Cross(p3-p1).LengthSq() <= epsilon;
+}
+
 #ifdef MATH_ENABLE_STL_SUPPORT
 std::string float3::ToString() const
-{ 
+{
 	char str[256];
 	sprintf(str, "(%.3f, %.3f, %.3f)", x, y, z);
 	return std::string(str);
 }
 
 std::string float3::SerializeToString() const
-{ 
+{
 	char str[256];
 	sprintf(str, "%f %f %f", x, y, z);
 	return std::string(str);
 }
 #endif
 
-float3 float3::FromString(const char *str)
+float3 MUST_USE_RESULT float3::FromString(const char *str)
 {
 	assume(str);
 	if (!str)
@@ -230,9 +236,13 @@ float3 float3::FromString(const char *str)
 		++str;
 	float3 f;
 	f.x = (float)strtod(str, const_cast<char**>(&str));
+	while(*str == ' ' || *str == '\t') ///\todo Propagate this to other FromString functions.
+		++str;
 	if (*str == ',' || *str == ';')
 		++str;
 	f.y = (float)strtod(str, const_cast<char**>(&str));
+	while(*str == ' ' || *str == '\t') ///\todo Propagate this to other FromString functions.
+		++str;
 	if (*str == ',' || *str == ';')
 		++str;
 	f.z = (float)strtod(str, const_cast<char**>(&str));
@@ -330,6 +340,26 @@ float3 float3::Clamp(float floor, float ceil) const
 	return Min(ceil).Max(floor);
 }
 
+float3 float3::ClampLength(float maxLength) const
+{
+	float lenSq = LengthSq();
+	if (lenSq > maxLength*maxLength)
+		return *this * (maxLength / Sqrt(lenSq));
+	else
+		return *this;
+}
+
+float3 float3::ClampLength(float minLength, float maxLength) const
+{
+	float lenSq = LengthSq();
+	if (lenSq > maxLength*maxLength)
+		return *this * (maxLength / Sqrt(lenSq));
+	else if (lenSq < minLength*minLength)
+		return *this * (minLength / Sqrt(lenSq));
+	else
+		return *this;
+}
+
 float float3::DistanceSq(const float3 &rhs) const
 {
 	float dx = x - rhs.x;
@@ -374,17 +404,15 @@ float float3::Dot(const float3 &rhs) const
 
 Cross product is anti-commutative, i.e. a x b == -b x a.
 It distributes over addition, meaning that a x (b + c) == a x b + a x c,
-and combines with scalar multiplication: (sa) x b == a x (sb). 
+and combines with scalar multiplication: (sa) x b == a x (sb).
 i x j == -(j x i) == k,
 (j x k) == -(k x j) == i,
 (k x i) == -(i x k) == j. */
 float3 float3::Cross(const float3 &rhs) const
 {
-	float3 dst;
-	dst.x = y * rhs.z - z * rhs.y;
-	dst.y = z * rhs.x - x * rhs.z;
-	dst.z = x * rhs.y - y * rhs.x;
-	return dst;
+	return float3(y * rhs.z - z * rhs.y,
+	              z * rhs.x - x * rhs.z,
+	              x * rhs.y - y * rhs.x);
 }
 
 float3x3 float3::OuterProduct(const float3 &rhs) const
@@ -419,7 +447,12 @@ float3 float3::AnotherPerpendicular(const float3 &hint, const float3 &hint2) con
 	return v.Normalized();
 }
 
-float float3::ScalarTripleProduct(const float3 &u, const float3 &v, const float3 &w)
+float3 float3::RandomPerpendicular(LCG &rng) const
+{
+	return Perpendicular(RandomDir(rng));
+}
+
+float MUST_USE_RESULT float3::ScalarTripleProduct(const float3 &u, const float3 &v, const float3 &w)
 {
 	return u.Cross(v).Dot(w);
 }
@@ -456,7 +489,13 @@ float3 float3::ProjectToNorm(const float3 &direction) const
 
 float float3::AngleBetween(const float3 &other) const
 {
-	return acos(Dot(other)) / sqrt(LengthSq() * other.LengthSq());
+	float cosa = Dot(other) / sqrt(LengthSq() * other.LengthSq());
+	if (cosa >= 1.f)
+		return 0.f;
+	else if (cosa <= -1.f)
+		return pi;
+	else
+		return acos(cosa);
 }
 
 float float3::AngleBetweenNorm(const float3 &other) const
@@ -485,7 +524,7 @@ float3 float3::Lerp(const float3 &b, float t) const
 	return (1.f - t) * *this + t * b;
 }
 
-float3 float3::Lerp(const float3 &a, const float3 &b, float t)
+float3 MUST_USE_RESULT float3::Lerp(const float3 &a, const float3 &b, float t)
 {
 	return a.Lerp(b, t);
 }
@@ -507,16 +546,16 @@ void float3::Orthogonalize(const float3 &a, float3 &b, float3 &c)
 		c -= c.ProjectTo(b);
 }
 
-bool float3::AreOrthogonal(const float3 &a, const float3 &b, float epsilon)
+bool MUST_USE_RESULT float3::AreOrthogonal(const float3 &a, const float3 &b, float epsilon)
 {
 	return a.IsPerpendicular(b, epsilon);
 }
 
-bool float3::AreOrthogonal(const float3 &a, const float3 &b, const float3 &c, float epsilon)
+bool MUST_USE_RESULT float3::AreOrthogonal(const float3 &a, const float3 &b, const float3 &c, float epsilon)
 {
 	return a.IsPerpendicular(b, epsilon) &&
-		   a.IsPerpendicular(c, epsilon) &&
-		   b.IsPerpendicular(c, epsilon);
+	       a.IsPerpendicular(c, epsilon) &&
+	       b.IsPerpendicular(c, epsilon);
 }
 
 void float3::Orthonormalize(float3 &a, float3 &b)
@@ -541,23 +580,23 @@ void float3::Orthonormalize(float3 &a, float3 &b, float3 &c)
 	c.Normalize();
 }
 
-bool float3::AreOrthonormal(const float3 &a, const float3 &b, float epsilon)
+bool MUST_USE_RESULT float3::AreOrthonormal(const float3 &a, const float3 &b, float epsilon)
 {
 	return a.IsPerpendicular(b, epsilon) && a.IsNormalized(epsilon*epsilon) && b.IsNormalized(epsilon*epsilon);
 }
 
-bool float3::AreOrthonormal(const float3 &a, const float3 &b, const float3 &c, float epsilon)
+bool MUST_USE_RESULT float3::AreOrthonormal(const float3 &a, const float3 &b, const float3 &c, float epsilon)
 {
 	return a.IsPerpendicular(b, epsilon) &&
-		   a.IsPerpendicular(c, epsilon) &&
-		   b.IsPerpendicular(c, epsilon) &&
-		   a.IsNormalized(epsilon*epsilon) &&
-		   b.IsNormalized(epsilon*epsilon) &&
-		   c.IsNormalized(epsilon*epsilon);
+	       a.IsPerpendicular(c, epsilon) &&
+	       b.IsPerpendicular(c, epsilon) &&
+	       a.IsNormalized(epsilon*epsilon) &&
+	       b.IsNormalized(epsilon*epsilon) &&
+	       c.IsNormalized(epsilon*epsilon);
 }
 
-float3 float3::FromScalar(float scalar)
-{ 
+float3 MUST_USE_RESULT float3::FromScalar(float scalar)
+{
 	return float3(scalar, scalar, scalar);
 }
 
@@ -583,7 +622,7 @@ void float3::SetFromSphericalCoordinates(float azimuth, float inclination, float
 	z = cx * Cos(azimuth) * radius;
 }
 
-float3 float3::FromSphericalCoordinates(float azimuth, float inclination, float radius)
+float3 MUST_USE_RESULT float3::FromSphericalCoordinates(float azimuth, float inclination, float radius)
 {
 	float3 v;
 	v.SetFromSphericalCoordinates(azimuth, inclination, radius);
@@ -598,7 +637,7 @@ void float3::SetFromSphericalCoordinates(float azimuth, float inclination)
 	z = cx * Cos(azimuth);
 }
 
-float3 float3::FromSphericalCoordinates(float azimuth, float inclination)
+float3 MUST_USE_RESULT float3::FromSphericalCoordinates(float azimuth, float inclination)
 {
 	float3 v;
 	v.SetFromSphericalCoordinates(azimuth, inclination);
@@ -608,7 +647,7 @@ float3 float3::FromSphericalCoordinates(float azimuth, float inclination)
 float3 float3::ToSphericalCoordinates() const
 {
 	// R_y * R_x * (0,0,length) = (cosx*siny, -sinx, cosx*cosy).
-	float3 v;
+	float3 v = *this;
 	float len = v.Normalize();
 	if (len <= 1e-5f)
 		return float3::zero;
@@ -628,15 +667,15 @@ float2 float3::ToSphericalCoordinatesNormalized() const
 bool float3::Equals(const float3 &other, float epsilon) const
 {
 	return fabs(x - other.x) < epsilon &&
-			fabs(y - other.y) < epsilon &&
-			fabs(z - other.z) < epsilon;
+	       fabs(y - other.y) < epsilon &&
+	       fabs(z - other.z) < epsilon;
 }
 
 bool float3::Equals(float x_, float y_, float z_, float epsilon) const
 {
 	return fabs(x - x_) < epsilon &&
-			fabs(y - y_) < epsilon &&
-			fabs(z - z_) < epsilon;
+	       fabs(y - y_) < epsilon &&
+	       fabs(z - z_) < epsilon;
 }
 
 float4 float3::ToPos4() const
@@ -649,22 +688,22 @@ float4 float3::ToDir4() const
 	return float4(*this, 0.f);
 }
 
-float3 float3::RandomDir(LCG &lcg, float length)
+float3 MUST_USE_RESULT float3::RandomDir(LCG &lcg, float length)
 {
 	return Sphere(float3(0,0,0), length).RandomPointOnSurface(lcg);
 }
 
-float3 float3::RandomSphere(LCG &lcg, const float3 &center, float radius)
+float3 MUST_USE_RESULT float3::RandomSphere(LCG &lcg, const float3 &center, float radius)
 {
 	return Sphere(center, radius).RandomPointInside(lcg);
 }
 
-float3 float3::RandomBox(LCG &lcg, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax)
+float3 MUST_USE_RESULT float3::RandomBox(LCG &lcg, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax)
 {
 	return RandomBox(lcg, float3(xmin, ymin, zmin), float3(xmax, ymax, zmax));
 }
 
-float3 float3::RandomBox(LCG &lcg, const float3 &minValues, const float3 &maxValues)
+float3 MUST_USE_RESULT float3::RandomBox(LCG &lcg, const float3 &minValues, const float3 &maxValues)
 {
 	return AABB(minValues, maxValues).RandomPointInside(lcg);
 }
