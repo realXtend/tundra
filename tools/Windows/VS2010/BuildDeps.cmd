@@ -1,2 +1,2 @@
 @cd ..
-BuildDeps.cmd "Visual Studio 10"
+@BuildDeps.cmd "Visual Studio 10"
