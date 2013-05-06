@@ -1,15 +1,17 @@
 #!/bin/bash
-# script to build naali and most deps.
+# Script to build Tundra and most deps.
 
 set -e
 set -x
 
-# script to build naali and most deps.
+# Script to build Tundra and most deps.
 #
 # note: you need to enable the universe and multiverse software sources
 # as this script attempts to get part of the deps using apt-get
 
-viewer=$(dirname $(readlink -f $0))/..
+# TODO rename viewer to tundra
+viewer=$(dirname $(readlink -f $0))/../..
+# TODO rename naali-deps to tundra-deps
 deps=$viewer/../naali-deps
 mkdir -p $deps
 deps=$(cd $deps && pwd)
@@ -28,6 +30,7 @@ mkdir -p $tarballs $build $prefix/{lib,share,etc,include} $tags
 export OGRE_HOME=$prefix
 export PATH=$prefix/bin:$PATH
 export PKG_CONFIG_PATH=$prefix/lib/pkgconfig
+# TODO rename NAALI_DEP_PATH to TUNDRA_DEP_PATH
 export NAALI_DEP_PATH=$prefix
 export LDFLAGS="-L$prefix/lib -Wl,-rpath -Wl,$prefix/lib"
 export LIBRARY_PATH=$prefix/lib
@@ -45,7 +48,6 @@ else
     boostpackage=libboost-all-dev
 fi
 
-
 if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|katya|julia|isadora|quantal|nadia" && tty >/dev/null; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
     sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
@@ -62,11 +64,8 @@ if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|kat
      libqt4-opengl-dev libqtwebkit-dev \
      libspeexdsp-dev libprotobuf-dev \
      libvlc-dev
-fi
 
-
-
-if lsb_release -d | egrep -q -e "Debian GNU/Linux" && tty >/dev/null; then
+elif lsb_release -d | egrep -q -e "Debian GNU/Linux" && tty >/dev/null; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
     sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
      build-essential g++ $boostpackage libois-dev \
@@ -82,6 +81,9 @@ if lsb_release -d | egrep -q -e "Debian GNU/Linux" && tty >/dev/null; then
      libqt4-opengl-dev libqtwebkit-dev \
      libspeexdsp-dev libprotobuf-dev \
      libvlc-dev
+
+else
+    echo "Unknown Linux distribution, please update the build script for your distro and file a pull request, or file a bug report on the tracker."
 fi
 
 what=bullet-2.81-rev2613
@@ -227,6 +229,8 @@ else
         sudo apt-get build-dep libogre-dev
     elif lsb_release -d | egrep -q -e "Debian GNU/Linux" && tty >/dev/null; then
         sudo apt-get build-dep libogre-1.8-dev
+    else
+        echo "Unknown Linux distribution, please update the build script for your distro and file a pull request, or file a bug report on the tracker."
     fi
     cd $what
     hg checkout v1-8 # Make sure we are in the right branch
