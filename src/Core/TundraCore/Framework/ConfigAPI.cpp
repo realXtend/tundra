@@ -37,7 +37,7 @@ void ConfigAPI::PrepareDataFolder(QString configFolder)
         }
     }
     configFolder_ = GuaranteeTrailingSlash(config.absolutePath());
-    LogInfo("* Config directory: " + configFolder_);
+    LogInfo("* Config directory       : " + QDir::toNativeSeparators(configFolder_));
 }
 
 QString ConfigAPI::GetFilePath(const QString &file) const

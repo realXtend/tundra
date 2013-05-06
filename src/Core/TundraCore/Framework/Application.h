@@ -7,6 +7,8 @@
 #include <QApplication>
 #include <QStringList>
 
+#include <vector>
+
 class QDir;
 class QGraphicsView;
 class QTranslator;
@@ -18,16 +20,24 @@ class Framework;
 class TUNDRACORE_API Application : public QApplication
 {
     Q_OBJECT
-    Q_PROPERTY(QString currentWorkingDirectory READ CurrentWorkingDirectory WRITE SetCurrentWorkingDirectory)
-    Q_PROPERTY(QString installationDirectory READ InstallationDirectory)
-    Q_PROPERTY(QString userDataDirectory READ UserDataDirectory)
-    Q_PROPERTY(QString userDocumentsDirectory READ UserDocumentsDirectory)
-    Q_PROPERTY(QString organizationName READ OrganizationName)
-    Q_PROPERTY(QString applicationName READ ApplicationName)
-    Q_PROPERTY(QString version READ Version)
-    Q_PROPERTY(QString platform READ Platform)
-    Q_PROPERTY(QString fullIdentifier READ FullIdentifier)
-    Q_PROPERTY(double targetFpsLimit READ TargetFpsLimit WRITE SetTargetFpsLimit)
+
+    Q_PROPERTY(QString currentWorkingDirectory READ CurrentWorkingDirectory WRITE SetCurrentWorkingDirectory) /**< @copydoc CurrentWorkingDirectory */
+    Q_PROPERTY(QString installationDirectory READ InstallationDirectory)    /**< @copydoc InstallationDirectory */
+    Q_PROPERTY(QString userDataDirectory READ UserDataDirectory)            /**< @copydoc UserDataDirectory */
+    Q_PROPERTY(QString userDocumentsDirectory READ UserDocumentsDirectory)  /**< @copydoc UserDocumentsDirectory */
+
+    Q_PROPERTY(QString organizationName READ OrganizationName)  /**< @copydoc OrganizationName */
+    Q_PROPERTY(QString applicationName READ ApplicationName)    /**< @copydoc ApplicationName */
+    Q_PROPERTY(QString fullIdentifier READ FullIdentifier)      /**< @copydoc FullIdentifier */
+    Q_PROPERTY(QString platform READ Platform)                  /**< @copydoc Platform */
+        
+    Q_PROPERTY(QString version READ Version)                    /**< @copydoc Version */
+    Q_PROPERTY(uint majorVersion READ MajorVersion)             /**< @copydoc MajorVersion */
+    Q_PROPERTY(uint minorVersion READ MinorVersion)             /**< @copydoc MinorVersion */
+    Q_PROPERTY(uint majorPatchVersion READ MajorPatchVersion)   /**< @copydoc MajorPatchVersion */
+    Q_PROPERTY(uint minorPatchVersion READ MinorPatchVersion)   /**< @copydoc MinorPatchVersion */
+
+    Q_PROPERTY(double targetFpsLimit READ TargetFpsLimit WRITE SetTargetFpsLimit) /**< @copydoc TargetFpsLimit */
 
 public:
     /// Constructs the application singleton.
@@ -100,6 +110,18 @@ public:
     /** Returns C string as this information needs to be accessible without memory allocation for Windows minidump generation. */
     static const char *Version();
 
+    /// Returns the major version.
+    uint MajorVersion() const { return versionNumbers[0]; }
+
+    /// Returns the minor version.
+    uint MinorVersion() const { return versionNumbers[1]; }
+
+    /// Returns the major patch version.
+    uint MajorPatchVersion() const { return versionNumbers[2]; }
+
+    /// Returns the minor patch version.
+    uint MinorPatchVersion() const { return versionNumbers[3]; }
+    
     /// Returns the operating system/platform. Possible return values 'win' for windows, 'mac' for Mac OSX or 'x11' for linux, empty string for unresolved.
     /// This is intended for scripting languages, as sometimes you need to do OS specific UI changes with Qt etc.
     static QString Platform();
@@ -150,4 +172,5 @@ private:
     static const char *applicationName;
     static const char *version;
     double targetFpsLimit;
+    std::vector<uint> versionNumbers;
 };
