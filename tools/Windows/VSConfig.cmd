@@ -26,12 +26,8 @@ set INTEL_ARCH=ia32
 :: Visual Studio platform name.
 set VS_PLATFORM=Win32
 
-:: DEPS_POSTFIX is appended to the build deps directory. Note that this is currently only appended when doing x64 build.
-:: TODO set DEPS_POSTFIX=-x86 when 32-bit build is not the default on Windows anymore.
-set DEPS_POSTFIX=
-:: VS_VER and VC_VER are convenience variables used f.ex. for filenames
-
 :: Split the string for closer inspection.
+:: VS_VER and VC_VER are convenience variables used f.ex. for filenames.
 set GENERATOR_SPLIT=%GENERATOR:"=%
 set GENERATOR_SPLIT=%GENERATOR_SPLIT: =,%
 FOR %%i IN (%GENERATOR_SPLIT%) DO (
@@ -52,7 +48,6 @@ FOR %%i IN (%GENERATOR_SPLIT%) DO (
         set TARGET_ARCH=x64
         set INTEL_ARCH=intel64
         set VS_PLATFORM=x64
-        set DEPS_POSTFIX=-x64
     )
 )
 
@@ -80,15 +75,10 @@ set TOOLS=%CD%\tools\Windows
 set TUNDRA_DIR="%CD%"
 set TUNDRA_BIN=%CD%\bin
 
-:: Fetch and build the dependencies to a dedicated directory depending on the used VS version.
-:: For now, use the old deps dir for VS2008 build, but deps-%VS_VER% for other VS version
-:: TODO consider if the existing VS2008 should be renamed by the script to deps-vs2008 for consistency.
-IF %VS_VER%==vs2008 (
-    set DEPS=%CD%\deps
-) ELSE (
-    set DEPS=%CD%\deps-%VS_VER%
-)
-
-set DEPS=%DEPS%%DEPS_POSTFIX%
+:: Fetch and build the dependencies to a dedicated directory depending on the used VS version and target architecture.
+set DEPS=%CD%\deps-%VS_VER%-%TARGET_ARCH%
+:: TODO For now, use the old deps dir (simply "deps") for 32-bit VS2008 build, but deps-%VS_VER% for all other combinations.
+:: In the future we'll migrate to using full deps identifier always.
+IF %VS_VER%==vs2008 IF %TARGET_ARCH%==x86 set DEPS=%CD%\deps
 
 cd %TOOLS%
