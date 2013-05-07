@@ -851,7 +851,7 @@ IF NOT EXIST "%DEPS%\theora". (
     svn checkout http://svn.xiph.org/tags/theora/libtheora-1.1.1/ "%DEPS%\theora"
 )
 
-IF NOT EXIST "%DEPS%\theora\%WIN32_OR_X64%\Release_SSE2\libtheora_static.lib". (
+IF NOT EXIST "%DEPS%\theora\win32\VS2008\%WIN32_OR_X64%\Release_SSE2\libtheora_static.lib". (
     cd "%DEPS%\theora\win32\VS2008"
     cecho {0D}Building Theora. Please be patient, this will take a while.{# #}{\n}
     MSBuild libtheora_static.sln /p:configuration=Debug /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
@@ -1072,23 +1072,24 @@ IF NOT EXIST "%DEPS%\qxmpp\". (
 )
 
 :: ZLIB
-IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". (
+set ZLIB_VERSION=1.2.8
+IF NOT EXIST "%DEPS%\zlib-%ZLIB_VERSION%.tar.gz". (
    CD "%DEPS%"
    rmdir /S /Q "%DEPS%\zlib"
-   cecho {0D}Downloading zlib 1.2.7{# #}{\n}
-   wget http://zlib.net/zlib-1.2.7.tar.gz
-   IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". GOTO :ERROR
+   cecho {0D}Downloading zlib %ZLIB_VERSION%{# #}{\n}
+   wget http://zlib.net/zlib-%ZLIB_VERSION%.tar.gz
+   IF NOT EXIST "%DEPS%\zlib-%ZLIB_VERSION%.tar.gz". GOTO :ERROR
 ) ELSE (
-   cecho {0D}zlib 1.2.7 already downloaded. Skipping.{# #}{\n}
+   cecho {0D}zlib %ZLIB_VERSION% already downloaded. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%DEPS%\zlib". (
     cd "%DEPS%"
-    cecho {0D}Extracting zlib 1.2.7 package to "%DEPS%\zlib"{# #}{\n}
+    cecho {0D}Extracting zlib %ZLIB_VERSION% package to "%DEPS%\zlib"{# #}{\n}
     mkdir zlib
-    7za e -y zlib-1.2.7.tar.gz
-    7za x -y -ozlib zlib-1.2.7.tar
-    del /Q zlib-1.2.7.tar
+    7za e -y zlib-%ZLIB_VERSION%.tar.gz
+    7za x -y -ozlib zlib-%ZLIB_VERSION%.tar
+    del /Q zlib-%ZLIB_VERSION%.tar
 )
 
 IF NOT EXIST "%DEPS%\zlib\lib\Release\zlibstat.lib". (
@@ -1097,7 +1098,7 @@ IF NOT EXIST "%DEPS%\zlib\lib\Release\zlibstat.lib". (
     mkdir lib\Release
     mkdir lib\Debug
     mkdir include
-    cd zlib-1.2.7
+    cd zlib-%ZLIB_VERSION%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
     IF %VS_ARCH%==x64 (
@@ -1110,42 +1111,43 @@ IF NOT EXIST "%DEPS%\zlib\lib\Release\zlibstat.lib". (
 
     cd ..\..
     cd contrib\vstudio\%VC_VER%
-    cecho {0D}Building zlib 1.2.7{# #}{\n}
-    MSBuild zlibvc.sln /p:configuration="Release" /nologo /m:%NUMBER_OF_PROCESSORS%
-    MSBuild zlibvc.sln /p:configuration="Debug" /nologo /m:%NUMBER_OF_PROCESSORS%
+    cecho {0D}Building zlib %ZLIB_VERSION%{# #}{\n}
+    MSBuild zlibvc.sln /p:configuration="Release" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+    MSBuild zlibvc.sln /p:configuration="Debug" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
     cd ..\..\..
     copy /Y contrib\vstudio\%VC_VER%\%VS_ARCH%\ZlibStatRelease\zlibstat.lib ..\lib\Release
     copy /Y contrib\vstudio\%VC_VER%\%VS_ARCH%\ZlibStatDebug\zlibstat.lib ..\lib\Debug   
     copy /Y *.h ..\include\
 ) ELSE (
-   cecho {0D}zlib 1.2.7 already built. Skipping.{# #}{\n}
+   cecho {0D}zlib %ZLIB_VERSION% already built. Skipping.{# #}{\n}
 )
 
 :: ZZIPLIB
-IF NOT EXIST "%DEPS%\zziplib-0.13.59.tar.bz2". (
+set ZZIPLIB_VERSION=0.13.59
+IF NOT EXIST "%DEPS%\zziplib-%ZZIPLIB_VERSION%.tar.bz2". (
     cd "%DEPS%"
     rmdir /S /Q "%DEPS%\zziplib"
-    cecho {0D}Downloading zziplib 0.13.59{# #}{\n}
-    wget http://sourceforge.net/projects/zziplib/files/zziplib13/0.13.59/zziplib-0.13.59.tar.bz2/download
-    IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". GOTO :ERROR
+    cecho {0D}Downloading zziplib %ZZIPLIB_VERSION%{# #}{\n}
+    wget http://sourceforge.net/projects/zziplib/files/zziplib13/%ZZIPLIB_VERSION%/zziplib-%ZZIPLIB_VERSION%.tar.bz2/download
+    IF NOT EXIST "%DEPS%\zziplib-%ZZIPLIB_VERSION%.tar.bz2". GOTO :ERROR
 ) ELSE (
-    cecho {0D}zziplib 0.13.59 already downloaded. Skipping.{# #}{\n}
+    cecho {0D}zziplib %ZZIPLIB_VERSION% already downloaded. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%DEPS%\zziplib". (
     CD "%DEPS%"
-    cecho {0D}Extracting zziplib 0.13.59 package to "%DEPS%\zziplib"{# #}{\n}
+    cecho {0D}Extracting zziplib %ZZIPLIB_VERSION% package to "%DEPS%\zziplib"{# #}{\n}
     mkdir zziplib
-    7za e -y zziplib-0.13.59.tar.bz2
-    7za x -y -ozziplib zziplib-0.13.59.tar
-    del /Q zziplib-0.13.59.tar
+    7za e -y zziplib-%ZZIPLIB_VERSION%.tar.bz2
+    7za x -y -ozziplib zziplib-%ZZIPLIB_VERSION%.tar
+    del /Q zziplib-%ZZIPLIB_VERSION%.tar
 )
 
 IF NOT EXIST "%DEPS%\zziplib\lib\zziplib.lib". (
    cd "%DEPS%\zziplib"
    mkdir lib
    mkdir include\zzip
-   cd zziplib-0.13.59\msvc8
+   cd zziplib-%ZZIPLIB_VERSION%\msvc8
 
    :: Use a custom project file as zziblib does not ship with vs2008 project files.
    :: Additionally its include/lib paths are not proper for it to find our zlib build and it has weird lib name postfixes.
@@ -1153,15 +1155,15 @@ IF NOT EXIST "%DEPS%\zziplib\lib\zziplib.lib". (
    cecho {0D}Building zziplib from premade project %TOOLS%\Mods\vs2008-zziplib.vcproj{# #}{\n}
    copy /Y "%TOOLS%\Mods\vs2008-zziplib.vcproj" zziplib.vcproj
    IF NOT %VS_VER%==vs2008 VCUpgrade /nologo zziplib.vcproj
-   MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Debug /nologo  /m:%NUMBER_OF_PROCESSORS%
+   MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Release /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+   MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Debug /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
    
    :: Copy results to lib/include
    copy /Y zziplib.lib ..\..\lib
    copy /Y zziplibd.lib ..\..\lib
    copy /Y ..\zzip\*.h ..\..\include\zzip
 ) ELSE (
-   cecho {0D}zlib 1.2.7 already built. Skipping.{# #}{\n}
+   cecho {0D}zziplib %ZZIPLIB_VERSION% already built. Skipping.{# #}{\n}
 )
 
 echo.
