@@ -70,7 +70,7 @@ echo.
 cecho {0A}Script configuration:{# #}{\n}
 cecho {0D}  CMake Generator      = %GENERATOR%{# #}{\n}
 echo    - Passed to CMake -G option.
-cecho {0D}  Target Architecture  = %VS_ARCH%{# #}{\n}
+cecho {0D}  Target Architecture  = %TARGET_ARCH%{# #}{\n}
 echo    - Whether were doing 32-bit (x86) or 64-bit (x64) build.
 cecho {0D}  Dependency Directory = %DEPS%{# #}{\n}
 echo    - The directory where Tundra dependencies are fetched and built.
@@ -160,7 +160,7 @@ IF NOT EXIST "%DEPS%\openssl\src". (
 IF NOT EXIST "%DEPS%\openssl\bin\ssleay32.dll". (
     cd "%DEPS%\openssl\src"
     cecho {0D}Configuring OpenSSL build.{# #}{\n}
-    IF %VS_ARCH%==x64 (
+    IF %TARGET_ARCH%==x64 (
         perl Configure VC-WIN64A --prefix=%DEPS%\openssl
     ) ELSE (
         perl Configure VC-WIN32 --prefix=%DEPS%\openssl
@@ -169,7 +169,7 @@ IF NOT EXIST "%DEPS%\openssl\bin\ssleay32.dll". (
 
     REM Build Makefiles  with assembly language files. ml.exe is a part of Visual Studio
     cecho {0D}Building OpenSSL. Please be patient, this will take a while.{# #}{\n}    
-    if %VS_ARCH%==x64 (
+    if %TARGET_ARCH%==x64 (
         call ms\do_win64a.bat
     ) else (
         call ms\do_masm.bat
@@ -801,7 +801,7 @@ IF NOT EXIST "%DEPS%\ogg". (
     svn checkout http://svn.xiph.org/tags/ogg/libogg-1.3.0/ "%DEPS%\ogg"
 )
 
-IF NOT EXIST "%DEPS%\ogg\win32\%VS2008_OR_VS2010%\%WIN32_OR_X64%\Release\libogg_static.lib". (
+IF NOT EXIST "%DEPS%\ogg\win32\%VS2008_OR_VS2010%\%VS_PLATFORM%\Release\libogg_static.lib". (
     cd "%DEPS%\ogg\win32\%VS2008_OR_VS2010%"
     cecho {0D}Building Ogg. Please be patient, this will take a while.{# #}{\n}
     MSBuild libogg_static.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
@@ -817,7 +817,7 @@ IF NOT EXIST "%DEPS%\vorbis". (
     svn checkout http://svn.xiph.org/tags/vorbis/libvorbis-1.3.3/ "%DEPS%\vorbis"
 )
 
-IF NOT EXIST "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%\%WIN32_OR_X64%\Release\libvorbis_static.lib". (
+IF NOT EXIST "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%\%VS_PLATFORM%\Release\libvorbis_static.lib". (
     cd "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%"
     cecho {0D}Building Vorbis. Please be patient, this will take a while.{# #}{\n}
     MSBuild vorbis_static.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
@@ -833,7 +833,7 @@ IF NOT EXIST "%DEPS%\theora". (
     svn checkout http://svn.xiph.org/tags/theora/libtheora-1.1.1/ "%DEPS%\theora"
 )
 
-IF NOT EXIST "%DEPS%\theora\win32\VS2008\%WIN32_OR_X64%\Release_SSE2\libtheora_static.lib". (
+IF NOT EXIST "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\Release_SSE2\libtheora_static.lib". (
     cd "%DEPS%\theora\win32\VS2008"
     cecho {0D}Building Theora. Please be patient, this will take a while.{# #}{\n}
     MSBuild libtheora_static.sln /p:configuration=Debug /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
@@ -950,7 +950,7 @@ IF NOT EXIST "%DEPS%\celt\lib\Release\libcelt.lib" (
         mkdir "%DEPS%\celt\lib\Debug\"
         mkdir "%DEPS%\celt\lib\Release\"
     )
-    IF %VS_ARCH%==x64 (
+    IF %TARGET_ARCH%==x64 (
         copy /Y X64\Debug\libcelt.lib "%DEPS%\celt\lib\Debug\"
         copy /Y X64\Release\libcelt.lib "%DEPS%\celt\lib\Release\"
     ) ELSE (
@@ -1080,7 +1080,7 @@ IF NOT EXIST "%DEPS%\zlib\lib\Release\zlibstat.lib". (
     cd zlib-%ZLIB_VERSION%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-    IF %VS_ARCH%==x64 (
+    IF %TARGET_ARCH%==x64 (
         cd contrib\masmx64
         call bld_ml64.bat
     ) ELSE (
@@ -1094,8 +1094,8 @@ IF NOT EXIST "%DEPS%\zlib\lib\Release\zlibstat.lib". (
     MSBuild zlibvc.sln /p:configuration="Release" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
     MSBuild zlibvc.sln /p:configuration="Debug" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
     cd ..\..\..
-    copy /Y contrib\vstudio\%VC_VER%\%VS_ARCH%\ZlibStatRelease\zlibstat.lib ..\lib\Release
-    copy /Y contrib\vstudio\%VC_VER%\%VS_ARCH%\ZlibStatDebug\zlibstat.lib ..\lib\Debug   
+    copy /Y contrib\vstudio\%VC_VER%\%TARGET_ARCH%\ZlibStatRelease\zlibstat.lib ..\lib\Release
+    copy /Y contrib\vstudio\%VC_VER%\%TARGET_ARCH%\ZlibStatDebug\zlibstat.lib ..\lib\Debug   
     copy /Y *.h ..\include\
 ) ELSE (
    cecho {0D}zlib %ZLIB_VERSION% already built. Skipping.{# #}{\n}
