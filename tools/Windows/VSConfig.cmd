@@ -20,9 +20,10 @@ IF "!GENERATOR!"=="" (
 )
 
 :: Figure out the build configuration from the CMake generator string.
-:: VS_ARCH - are we building 32-bit or 64-bit version.
-set VS_ARCH=x86
-set WIN32_OR_X64=Win32
+:: Are we building 32-bit or 64-bit version.
+set TARGET_ARCH=x86
+:: Visual Studio platform name.
+set VS_PLATFORM=Win32
 
 :: DEPS_POSTFIX is appended to the build deps directory. Note that this is currently only appended when doing x64 build.
 :: TODO set DEPS_POSTFIX=-x86 when 32-bit build is not the default on Windows anymore.
@@ -47,8 +48,8 @@ FOR %%i IN (%GENERATOR_SPLIT%) DO (
     )
     REM Are going to perform a 64-bit build?
     IF %%i==Win64 (
-        set VS_ARCH=x64
-        set WIN32_OR_X64=x64
+        set TARGET_ARCH=x64
+        set VS_PLATFORM=x64
         set DEPS_POSTFIX=-x64
     )
 )
