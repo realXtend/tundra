@@ -399,36 +399,32 @@ IF NOT EXIST "%DEPS%\boost". (
 :SKIP_BOOST
 
 IF NOT EXIST "%DEPS%\assimp\". (
-   cecho {0D}Checking out OpenAssetImport library from https://assimp.svn.sourceforge.net/svnroot/assimp/trunk into "%DEPS%\assimp".{# #}{\n}
-   cd "%DEPS%"
-   :: Note the fixed revision number. OpenAssetImport does not have an up-to-date tagged release, so fix to a recent revision of trunk.
-   svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk assimp
+    cecho {0D}Checking out OpenAssetImport library from https://assimp.svn.sourceforge.net/svnroot/assimp/trunk into "%DEPS%\assimp".{# #}{\n}
+    cd "%DEPS%"
+    :: Note the fixed revision number. OpenAssetImport does not have an up-to-date tagged release, so fix to a recent revision of trunk.
+    svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk assimp
+)
 
-   cd assimp
-   IF %USE_BOOST%==FALSE (
-      :: Tweaks CMakeLists.txt to set ASSIMP_ENABLE_BOOST_WORKAROUND on.
-      sed s/"ASSIMP_ENABLE_BOOST_WORKAROUND OFF"/"ASSIMP_ENABLE_BOOST_WORKAROUND ON"/g <CMakeLists.txt >CMakeLists.txt.sed
-      del CMakeLists.txt
-      rename CMakeLists.txt.sed CMakeLists.txt
-   )
+IF NOT EXIST "%DEPS%\assimp\bin\Release\assimp.dll". (
+    cd cd "%DEPS%\assimp"
+    IF %USE_BOOST%==FALSE (
+        :: Tweaks CMakeLists.txt to set ASSIMP_ENABLE_BOOST_WORKAROUND on.
+        sed s/"ASSIMP_ENABLE_BOOST_WORKAROUND OFF"/"ASSIMP_ENABLE_BOOST_WORKAROUND ON"/g <CMakeLists.txt >CMakeLists.txt.sed
+        del CMakeLists.txt
+        rename CMakeLists.txt.sed CMakeLists.txt
+    )
 
-   cmake -G %GENERATOR%
-   
-   :: Debug build.
-   MSBuild Assimp.sln /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild Assimp.sln /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild Assimp.sln /p:configuration=RelWithDebInfo /nologo /m:%NUMBER_OF_PROCESSORS%
+    cmake -G %GENERATOR%
+
+    MSBuild Assimp.sln /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild Assimp.sln /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild Assimp.sln /p:configuration=RelWithDebInfo /nologo /m:%NUMBER_OF_PROCESSORS%
 ) ELSE (
-   ::TODO Even if %DEPS%\assimp exists, we have no guarantee that assimp is built successfully for real
-   cecho {0D}OpenAssetImport already built. Skipping.{# #}{\n}
+    cecho {0D}OpenAssetImport already built. Skipping.{# #}{\n}
 )
 
 :: Copy the correct runtime to /bin for this run
-IF %BUILD_RELEASE% == TRUE (
-   copy /Y "%DEPS%\assimp\bin\Release\assimp.dll" "%TUNDRA_BIN%"
-) ELSE (
-   copy /Y "%DEPS%\assimp\bin\RelWithDebInfo\assimp.dll" "%TUNDRA_BIN%"
-)
+copy /Y "%DEPS%\assimp\bin\%BUILD_TYPE%\assimp.dll" "%TUNDRA_BIN%"
 copy /Y "%DEPS%\assimp\bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
 
 IF NOT EXIST "%DEPS%\kNet\". (
