@@ -952,7 +952,7 @@ IF NOT EXIST "%DEPS%\celt\.git" (
    call git checkout -b v0.11.1 v0.11.1
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    mkdir msvc
-   copy /Y config.h msvc\config.h
+   copy /Y libcelt\config.h msvc\config.h
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Celt already cloned. Skipping.{# #}{\n}
