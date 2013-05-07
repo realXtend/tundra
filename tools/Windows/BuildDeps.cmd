@@ -747,39 +747,42 @@ IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 :: QtPropertyBrowser
 IF NOT EXIST "%DEPS%\qt-solutions". (
-   cecho {0D}Cloning QtPropertyBrowser into "%DEPS%\qt-solutions".{# #}{\n}
-   cd "%DEPS%"
-   call git clone https://git.gitorious.org/qt-solutions/qt-solutions.git
-   IF NOT EXIST "%DEPS%\qt-solutions\.git" GOTO :ERROR
-   cd qt-solutions\qtpropertybrowser
+    cecho {0D}Cloning QtPropertyBrowser into "%DEPS%\qt-solutions".{# #}{\n}
+    cd "%DEPS%"
+    call git clone https://git.gitorious.org/qt-solutions/qt-solutions.git
+    IF NOT EXIST "%DEPS%\qt-solutions\.git" GOTO :ERROR
+)
 
-   REM Don't build examples.
-   sed -e "s/SUBDIRS+=examples//" < qtpropertybrowser.pro > qtpropertybrowser.pro.sed
-   del qtpropertybrowser.pro
-   ren qtpropertybrowser.pro.sed qtpropertybrowser.pro
+IF NOT EXIST "%DEPS%\qt-solutions\qtpropertybrowser\lib\QtSolutions_PropertyBrowser-head.dll" (
+    cd "%DEPS%\qt-solutions\qtpropertybrowser"
 
-   call configure -library
-   qmake
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   IF %USE_JOM%==TRUE (
-      cecho {0D}- Building QtPropertyBrowser with jom{# #}{\n}
-      "%DEPS%\qt\jom\jom.exe"
-   ) ELSE (
-      cecho {0D}- Building QtPropertyBrowser with nmake{# #}{\n}
-      nmake /nologo
-   )
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   :: Force deployment
-   del /Q "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head*.dll"
+    REM Don't build examples.
+    sed -e "s/SUBDIRS+=examples//" < qtpropertybrowser.pro > qtpropertybrowser.pro.sed
+    del qtpropertybrowser.pro
+    ren qtpropertybrowser.pro.sed qtpropertybrowser.pro
+
+    call configure -library
+    qmake
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    IF %USE_JOM%==TRUE (
+        cecho {0D}- Building QtPropertyBrowser with jom{# #}{\n}
+        "%DEPS%\qt\jom\jom.exe"
+    ) ELSE (
+        cecho {0D}- Building QtPropertyBrowser with nmake{# #}{\n}
+        nmake /nologo
+    )
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    :: Force deployment
+    del /Q "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head*.dll"
 ) ELSE (
-   cecho {0D}QtPropertyBrowser already built. Skipping.{# #}{\n}
+    cecho {0D}QtPropertyBrowser already built. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head.dll". (
-   cecho {0D}Deploying QtPropertyBrowser DLLs.{# #}{\n}
-   copy /Y "%DEPS%\qt-solutions\qtpropertybrowser\lib\QtSolutions_PropertyBrowser-head*.dll" "%TUNDRA_BIN%"
+    cecho {0D}Deploying QtPropertyBrowser DLLs.{# #}{\n}
+    copy /Y "%DEPS%\qt-solutions\qtpropertybrowser\lib\QtSolutions_PropertyBrowser-head*.dll" "%TUNDRA_BIN%"
 ) ELSE (
-   cecho {0D}QtPropertyBrowser DLLs already deployed. Skipping.{# #}{\n}
+    cecho {0D}QtPropertyBrowser DLLs already deployed. Skipping.{# #}{\n}
 )
 
 :: OpenAL
