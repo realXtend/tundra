@@ -26,11 +26,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			CharacterSet="2"
 			>
-			<Tool
-				Name="VCPreBuildEventTool"
-				Description="del $(ConfigurationName)\vc80.idb"
-				CommandLine="del $(ConfigurationName)\vc80.idb"
-			/>
+
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
@@ -83,11 +79,7 @@
 			<Tool
 				Name="VCFxCopTool"
 			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				Description="del $(ConfigurationName)\vc80.idb"
-				CommandLine="del $(ConfigurationName)\vc80.idb"
-			/>
+
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
@@ -97,11 +89,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			CharacterSet="2"
 			>
-			<Tool
-				Name="VCPreBuildEventTool"
-				Description="del $(ConfigurationName)\vc80.idb"
-				CommandLine="del $(ConfigurationName)\vc80.idb"
-			/>
+
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
@@ -156,11 +144,7 @@
 			<Tool
 				Name="VCFxCopTool"
 			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				Description="del $(ConfigurationName)\vc80.idb"
-				CommandLine="del $(ConfigurationName)\vc80.idb"
-			/>
+
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
@@ -170,11 +154,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			CharacterSet="2"
 			>
-			<Tool
-				Name="VCPreBuildEventTool"
-				Description="del $(ConfigurationName)\vc80.idb"
-				CommandLine="del $(ConfigurationName)\vc80.idb"
-			/>
+
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
@@ -228,11 +208,7 @@
 			<Tool
 				Name="VCFxCopTool"
 			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				Description="del $(ConfigurationName)\vc80.idb"
-				CommandLine="del $(ConfigurationName)\vc80.idb"
-			/>
+
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
@@ -242,11 +218,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			CharacterSet="2"
 			>
-			<Tool
-				Name="VCPreBuildEventTool"
-				Description="del $(ConfigurationName)\vc80.idb"
-				CommandLine="del $(ConfigurationName)\vc80.idb"
-			/>
+
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
@@ -302,11 +274,7 @@
 			<Tool
 				Name="VCFxCopTool"
 			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				Description="del $(ConfigurationName)\vc80.idb"
-				CommandLine="del $(ConfigurationName)\vc80.idb"
-			/>
+
 		</Configuration>
 	</Configurations>
 	<References>
