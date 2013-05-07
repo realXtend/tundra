@@ -9,8 +9,8 @@ deps-prebuilt/*
 *.user
 *.pdb
 *.idb
-*.vcproj
-*.vcxproj
+#*.vcproj
+#*.vcxproj
 *.vcxproj.filters
 *.lib
 *.sln
