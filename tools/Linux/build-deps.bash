@@ -48,7 +48,6 @@ else
     boostpackage=libboost-all-dev
 fi
 
-
 if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|katya|julia|isadora|quantal|nadia" && tty >/dev/null; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
     sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
@@ -65,6 +64,26 @@ if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|kat
      libqt4-opengl-dev libqtwebkit-dev \
      libspeexdsp-dev libprotobuf-dev \
      libvlc-dev
+
+elif lsb_release -d | egrep -q -e "Debian GNU/Linux" && tty >/dev/null; then
+        which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
+    sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
+     build-essential g++ $boostpackage libois-dev \
+     ccache libqt4-dev python-dev freeglut3-dev \
+     libxml2-dev cmake libalut-dev libtheora-dev ed \
+     liboil0.3-dev mercurial unzip xsltproc libois-dev libxrandr-dev \
+     libspeex-dev nvidia-cg-toolkit subversion \
+     libfreetype6-dev libfreeimage-dev libzzip-dev \
+     libxaw7-dev libgl1-mesa-dev libglu1-mesa-dev \
+     libvlc-dev libspeexdsp-dev libprotobuf-dev \
+     libprotobuf-c0 libprotobuf-c0-dev \
+     protobuf-c-compiler protobuf-compiler \
+     libqt4-opengl-dev libqtwebkit-dev \
+     libspeexdsp-dev libprotobuf-dev \
+     libvlc-dev
+
+else
+    echo "Unknown Linux distribution, please update the build script for your distro and file a pull request, or file a bug report on the tracker."
 fi
 
 what=bullet-2.81-rev2613
@@ -206,9 +225,12 @@ else
         hg clone https://bitbucket.org/clb/ogre-safe-nocrashes
     fi
 
-
     if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|quantal" && tty >/dev/null; then
-    sudo apt-get build-dep libogre-dev
+        sudo apt-get build-dep libogre-dev
+    elif lsb_release -d | egrep -q -e "Debian GNU/Linux" && tty >/dev/null; then
+        sudo apt-get build-dep libogre-1.8-dev
+    else
+        echo "Unknown Linux distribution, please update the build script for your distro and file a pull request, or file a bug report on the tracker."
     fi
     cd $what
     hg checkout v1-8 # Make sure we are in the right branch
