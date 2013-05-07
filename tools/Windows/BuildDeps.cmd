@@ -815,53 +815,48 @@ IF NOT EXIST "%DEPS%\OpenAL\libs\Win32\OpenAL32.lib". (
 
 :: Ogg
 IF NOT EXIST "%DEPS%\ogg". (
-   cecho {0D}Cloning Ogg into "%DEPS%\ogg".{# #}{\n}
-   svn checkout http://svn.xiph.org/tags/ogg/libogg-1.3.0/ "%DEPS%\ogg"
-   :: TODO ideally we would do cd "%DEPS%\ogg\win32\%VS_VER%" here, but ogg has no VS2012 directory currently
-   IF %VS_VER%==vs2008 (
-      cd "%DEPS%\ogg\win32\VS2008"
-   ) ELSE (
-      cd "%DEPS%\ogg\win32\VS2010"
-   )
+    cecho {0D}Cloning Ogg into "%DEPS%\ogg".{# #}{\n}
+    svn checkout http://svn.xiph.org/tags/ogg/libogg-1.3.0/ "%DEPS%\ogg"
+)
 
-   cecho {0D}Building Ogg. Please be patient, this will take a while.{# #}{\n}
-   MSBuild libogg_static.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild libogg_static.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+IF NOT EXIST "%DEPS%\ogg\win32\%VS2008_OR_VS2010%\%WIN32_OR_X64%\Release\libogg_static.lib". (
+    cd "%DEPS%\ogg\win32\%VS2008_OR_VS2010%"
+    cecho {0D}Building Ogg. Please be patient, this will take a while.{# #}{\n}
+    MSBuild libogg_static.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libogg_static.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-   cecho {0D}Ogg already built. Skipping.{# #}{\n}
+    cecho {0D}Ogg already built. Skipping.{# #}{\n}
 )
 
 :: Vorbis
 IF NOT EXIST "%DEPS%\vorbis". (
-   cecho {0D}Cloning Vorbis into "%DEPS%\vorbis".{# #}{\n}
-   svn checkout http://svn.xiph.org/tags/vorbis/libvorbis-1.3.3/ "%DEPS%\vorbis"
-   :: TODO ideally we would do cd "%DEPS%\ogg\win32\%VS_VER%" here, but ogg has no VS2012 directory currently
-   IF %VS_VER%==vs2008 (
-      cd "%DEPS%\vorbis\win32\VS2008"
-   ) ELSE (
-      cd "%DEPS%\vorbis\win32\VS2010"
-   )
-   echo %CD%
+    cecho {0D}Cloning Vorbis into "%DEPS%\vorbis".{# #}{\n}
+    svn checkout http://svn.xiph.org/tags/vorbis/libvorbis-1.3.3/ "%DEPS%\vorbis"
+)
 
-   cecho {0D}Building Vorbis. Please be patient, this will take a while.{# #}{\n}
-   MSBuild vorbis_static.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild vorbis_static.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+IF NOT EXIST "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%\%WIN32_OR_X64%\Release\libvorbis_static.lib". (
+    cd "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%"
+    cecho {0D}Building Vorbis. Please be patient, this will take a while.{# #}{\n}
+    MSBuild vorbis_static.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild vorbis_static.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-   cecho {0D}Vorbis already built. Skipping.{# #}{\n}
+    cecho {0D}Vorbis already built. Skipping.{# #}{\n}
 )
 
 :: Theora
 IF NOT EXIST "%DEPS%\theora". (
-   cecho {0D}Cloning Theora into "%DEPS%\theora".{# #}{\n}
-   svn checkout http://svn.xiph.org/tags/theora/libtheora-1.1.1/ "%DEPS%\theora"
-   cd "%DEPS%\theora\win32\VS2008"
+    cecho {0D}Cloning Theora into "%DEPS%\theora".{# #}{\n}
+    svn checkout http://svn.xiph.org/tags/theora/libtheora-1.1.1/ "%DEPS%\theora"
+)
 
-   cecho {0D}Building Theora. Please be patient, this will take a while.{# #}{\n}
-   MSBuild libtheora_static.sln /p:configuration=Debug /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild libtheora_static.sln /p:configuration=Release_SSE2 /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+IF NOT EXIST "%DEPS%\theora\%WIN32_OR_X64%\Release_SSE2\libtheora_static.lib". (
+    cd "%DEPS%\theora\win32\VS2008"
+    cecho {0D}Building Theora. Please be patient, this will take a while.{# #}{\n}
+    MSBuild libtheora_static.sln /p:configuration=Debug /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libtheora_static.sln /p:configuration=Release_SSE2 /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    REM IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Theora already built. Skipping.{# #}{\n}
 )
@@ -902,7 +897,7 @@ IF NOT EXIST "%DEPS%\protobuf". (
    
    cecho {0D}Extracting Google Protobuf 2.4.1 sources to "%DEPS%\protobuf".{# #}{\n}
    7za x -y protobuf-2.4.1.zip
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   REM IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    ren protobuf-2.4.1 protobuf
    IF NOT EXIST "%DEPS%\protobuf". (
       cecho {0E}Failed to rename %DEPS%\protobuf-2.4.1 to %DEPS%\protobuf. Permission denied for your account?{# #}{\n}
@@ -919,6 +914,7 @@ IF NOT EXIST "%DEPS%\protobuf\vsprojects\Debug\libprotobuf.lib". (
     cd "%DEPS%\protobuf\vsprojects"
     IF %VS_VER%==vs2008 (
         :: Upgrade the VS2005 files to VS2008
+        :: TODO 64-bit VS2008 not yet possible on VS2008!
         cecho {0D}Upgrading Google Protobuf project files.{# #}{\n}
         vcbuild /c /upgrade libprotobuf.vcproj $ALL
         vcbuild /c /upgrade libprotoc.vcproj Release
@@ -959,21 +955,35 @@ IF NOT EXIST "%DEPS%\celt\.git" (
    cecho {0D}Celt already cloned. Skipping.{# #}{\n}
 )
 
-IF NOT EXIST "%DEPS%\celt\lib\libcelt.lib" (
-   cd "%DEPS%\celt\libcelt"
-   IF %VS_VER%==vs2008 (
-      :: The project does not provide VS2008 solution file
-      cecho {0D}Copying VS2008 project file to "%DEPS%\celt\libcelt\libcelt.vcproj."{# #}{\n}
-      copy /Y "%TOOLS%\Mods\libcelt.vcproj" "%DEPS%\celt\libcelt"
-      IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   )
-   cecho {0D}Building Celt 0.11.1.{# #}{\n}
-   MSBuild libcelt.%VCPROJ_FILE_EXT% /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild libcelt.%VCPROJ_FILE_EXT% /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   IF NOT EXIST "%DEPS%\celt\include\celt". mkdir %DEPS%\celt\include\celt
-   copy /Y "*.h" "%DEPS%\celt\include\celt\"
+IF NOT EXIST "%DEPS%\celt\lib\Release\libcelt.lib" (
+    cd "%DEPS%\celt\libcelt"
+    :: We need custom project files that have also x64 configurations.
+    :: Also, the project does not even provide a VS2008 project file to begin with.
+    copy /Y "%TOOLS%\Mods\libcelt.%VCPROJ_FILE_EXT%" "%DEPS%\celt\libcelt"
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
+    cecho {0D}Building Celt 0.11.1.{# #}{\n}
+    MSBuild libcelt.%VCPROJ_FILE_EXT% /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libcelt.%VCPROJ_FILE_EXT% /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+
+    :: Copy libs
+    IF NOT EXIST "%DEPS%\celt\lib". (
+        mkdir "%DEPS%\celt\lib\Debug\"
+        mkdir "%DEPS%\celt\lib\Release\"
+    )
+    IF %VS_ARCH%==x64 (
+        copy /Y X64\Debug\libcelt.lib "%DEPS%\celt\lib\Debug\"
+        copy /Y X64\Release\libcelt.lib "%DEPS%\celt\lib\Release\"
+    ) ELSE (
+        copy /Y lib\Debug\libcelt.lib "%DEPS%\celt\lib\Release\"
+        copy /Y lib\Release\libcelt.lib "%DEPS%\celt\lib\Release\"
+    )
+
+    :: Copy headers
+    IF NOT EXIST "%DEPS%\celt\include\celt". mkdir "%DEPS%\celt\include\celt"
+    copy /Y "*.h" "%DEPS%\celt\include\celt\"
 ) ELSE (
-   cecho {0D}Celt already built. Skipping.{# #}{\n}
+    cecho {0D}Celt already built. Skipping.{# #}{\n}
 )
 
 :: VLC
@@ -1073,59 +1083,66 @@ IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". (
 )
 
 IF NOT EXIST "%DEPS%\zlib". (
-   CD "%DEPS%"
-   cecho {0D}Extracting zlib 1.2.7 package to "%DEPS%\zlib"{# #}{\n}
-   mkdir zlib
-   7za e -y zlib-1.2.7.tar.gz
-   7za x -y -ozlib zlib-1.2.7.tar
-   del /Q zlib-1.2.7.tar
-   cecho {0D}Building zlib 1.2.7{# #}{\n}
-   cd zlib
-   mkdir lib
-   mkdir lib\Release
-   mkdir lib\Debug
-   mkdir include
-   cd zlib-1.2.7
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cd "%DEPS%"
+    cecho {0D}Extracting zlib 1.2.7 package to "%DEPS%\zlib"{# #}{\n}
+    mkdir zlib
+    7za e -y zlib-1.2.7.tar.gz
+    7za x -y -ozlib zlib-1.2.7.tar
+    del /Q zlib-1.2.7.tar
+)
 
-   cd contrib\masmx86
-   call bld_ml32.bat
+IF NOT EXIST "%DEPS%\zlib\lib\Release\zlibstat.lib". (
+    cd "%DEPS%\zlib"
+    mkdir lib
+    mkdir lib\Release
+    mkdir lib\Debug
+    mkdir include
+    cd zlib-1.2.7
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-   cd ..\..
-   cd contrib\vstudio\%VC_VER%
+    IF %VS_ARCH%==x64 (
+        cd contrib\masmx64
+        call bld_ml64.bat
+    ) ELSE (
+        cd contrib\masmx86
+        call bld_ml32.bat
+    )
 
-   MSBuild zlibvc.sln /p:configuration="Release" /p:Platform="Win32" /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild zlibvc.sln /p:configuration="Debug" /p:Platform="Win32" /nologo /m:%NUMBER_OF_PROCESSORS%
-
-   REM IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-
-   cd ..\..\..
-   copy /Y contrib\vstudio\%VC_VER%\x86\ZlibStatRelease\zlibstat.lib ..\lib\Release
-   copy /Y contrib\vstudio\%VC_VER%\x86\ZlibStatDebug\zlibstat.lib ..\lib\Debug
-   copy /Y *.h ..\include\
+    cd ..\..
+    cd contrib\vstudio\%VC_VER%
+    cecho {0D}Building zlib 1.2.7{# #}{\n}
+    MSBuild zlibvc.sln /p:configuration="Release" /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild zlibvc.sln /p:configuration="Debug" /nologo /m:%NUMBER_OF_PROCESSORS%
+    cd ..\..\..
+    copy /Y contrib\vstudio\%VC_VER%\%VS_ARCH%\ZlibStatRelease\zlibstat.lib ..\lib\Release
+    copy /Y contrib\vstudio\%VC_VER%\%VS_ARCH%\ZlibStatDebug\zlibstat.lib ..\lib\Debug   
+    copy /Y *.h ..\include\
 ) ELSE (
    cecho {0D}zlib 1.2.7 already built. Skipping.{# #}{\n}
 )
 
 :: ZZIPLIB
 IF NOT EXIST "%DEPS%\zziplib-0.13.59.tar.bz2". (
-  CD "%DEPS%"
-  rmdir /S /Q "%DEPS%\zziplib"
-  cecho {0D}Downloading zziplib 0.13.59{# #}{\n}
-  wget http://sourceforge.net/projects/zziplib/files/zziplib13/0.13.59/zziplib-0.13.59.tar.bz2/download
-  IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". GOTO :ERROR
+    cd "%DEPS%"
+    rmdir /S /Q "%DEPS%\zziplib"
+    cecho {0D}Downloading zziplib 0.13.59{# #}{\n}
+    wget http://sourceforge.net/projects/zziplib/files/zziplib13/0.13.59/zziplib-0.13.59.tar.bz2/download
+    IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". GOTO :ERROR
 ) ELSE (
-   cecho {0D}zziplib 0.13.59 already downloaded. Skipping.{# #}{\n}
+    cecho {0D}zziplib 0.13.59 already downloaded. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%DEPS%\zziplib". (
-   CD "%DEPS%"
-   cecho {0D}Extracting zziplib 0.13.59 package to "%DEPS%\zziplib"{# #}{\n}
-   mkdir zziplib
-   7za e -y zziplib-0.13.59.tar.bz2
-   7za x -y -ozziplib zziplib-0.13.59.tar
-   del /Q zziplib-0.13.59.tar
-   cd zziplib
+    CD "%DEPS%"
+    cecho {0D}Extracting zziplib 0.13.59 package to "%DEPS%\zziplib"{# #}{\n}
+    mkdir zziplib
+    7za e -y zziplib-0.13.59.tar.bz2
+    7za x -y -ozziplib zziplib-0.13.59.tar
+    del /Q zziplib-0.13.59.tar
+)
+
+IF NOT EXIST "%DEPS%\zziplib\lib\zziplib.lib". (
+   cd "%DEPS%\zziplib"
    mkdir lib
    mkdir include\zzip
    cd zziplib-0.13.59\msvc8
@@ -1148,14 +1165,14 @@ IF NOT EXIST "%DEPS%\zziplib". (
 )
 
 echo.
-cecho {0A}Tundra dependencies built.{# #}{\n}
+%TOOLS%\Utils\cecho {0A}Tundra dependencies built.{# #}{\n}
 set PATH=%ORIGINAL_PATH%
 cd %TOOLS%
 GOTO :EOF
 
 :ERROR
 echo.
-Utils\cecho {0C}An error occurred! Aborting!{# #}{\n}
+%TOOLS%\Utils\cecho {0C}An error occurred! Aborting!{# #}{\n}
 set PATH=%ORIGINAL_PATH%
 cd %TOOLS%
 pause
