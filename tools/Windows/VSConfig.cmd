@@ -22,6 +22,8 @@ IF "!GENERATOR!"=="" (
 :: Figure out the build configuration from the CMake generator string.
 :: VS_ARCH - are we building 32-bit or 64-bit version.
 set VS_ARCH=x86
+set WIN32_OR_X64=Win32
+
 :: DEPS_POSTFIX is appended to the build deps directory. Note that this is currently only appended when doing x64 build.
 :: TODO set DEPS_POSTFIX=-x86 when 32-bit build is not the default on Windows anymore.
 set DEPS_POSTFIX=
@@ -46,15 +48,19 @@ FOR %%i IN (%GENERATOR_SPLIT%) DO (
     REM Are going to perform a 64-bit build?
     IF %%i==Win64 (
         set VS_ARCH=x64
+        set WIN32_OR_X64=x64
         set DEPS_POSTFIX=-x64
     )
 )
 
 :: VS project file extension differs on different VS versions
+:: VS2008_OR_VS2010 is "vs2008" when building with VS 2008 and "vs2010" on all newer VS versions.
 IF %VS_VER%==vs2008 (
     set VCPROJ_FILE_EXT=vcproj
+    set VS2008_OR_VS2010=vs2008
 ) ELSE (
     set VCPROJ_FILE_EXT=vcxproj
+    set VS2008_OR_VS2010=vs2010
 )
 
 :: QT_PLATFORM is used when building Qt.
