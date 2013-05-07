@@ -89,8 +89,8 @@ macro (configure_celt)
                    celt     # for celt.h
         PREFIXES ${CELT_ROOT}
                  ${ENV_TUNDRA_DEP_PATH}
-                 ${CELT_ROOT}/libcelt/Debug
-                 ${CELT_ROOT}/libcelt/Release)
+                 ${CELT_ROOT}/lib/Debug
+                 ${CELT_ROOT}/lib/Release)
     sagase_configure_report (CELT)
 endmacro (configure_celt)
 
