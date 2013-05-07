@@ -645,16 +645,11 @@ IF %USE_BOOST%==FALSE (
         del _tbb_windef.h
         rename _tbb_windef.h.sed _tbb_windef.h  
     )
-
-    REM Copy TBB DLLs.
-    REM TODO Currently hardcoded to the 32-bit versions.
-    IF NOT EXIST "%TUNDRA_BIN%\tbb.dll". (
-      copy /Y "%TBB_HOME%\bin\ia32\%VC_VER%\tbb.dll" "%TUNDRA_BIN%"
-    )
-    IF NOT EXIST "%TUNDRA_BIN%\tbb_debug.dll". (
-      copy /Y "%TBB_HOME%\bin\ia32\%VC_VER%\tbb_debug.dll" "%TUNDRA_BIN%"
-    )
 )
+
+:: Copy TBB DLLs.
+copy /Y "%TBB_HOME%\bin\%INTEL_ARCH%\%VC_VER%\tbb_debug.dll" "%TUNDRA_BIN%"
+copy /Y "%TBB_HOME%\bin\%INTEL_ARCH%\%VC_VER%\tbb.dll" "%TUNDRA_BIN%"
 
 cd "%DEPS%\ogre-safe-nocrashes"
 IF NOT EXIST OGRE.sln. (

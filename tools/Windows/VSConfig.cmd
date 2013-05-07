@@ -22,6 +22,7 @@ IF "!GENERATOR!"=="" (
 :: Figure out the build configuration from the CMake generator string.
 :: Are we building 32-bit or 64-bit version.
 set TARGET_ARCH=x86
+set INTEL_ARCH=ia32
 :: Visual Studio platform name.
 set VS_PLATFORM=Win32
 
@@ -49,6 +50,7 @@ FOR %%i IN (%GENERATOR_SPLIT%) DO (
     REM Are going to perform a 64-bit build?
     IF %%i==Win64 (
         set TARGET_ARCH=x64
+        set INTEL_ARCH=intel64
         set VS_PLATFORM=x64
         set DEPS_POSTFIX=-x64
     )
