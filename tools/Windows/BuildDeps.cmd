@@ -591,21 +591,27 @@ cd "%DEPS%\ogre-safe-nocrashes"
 :: TODO Use newer dependencies when updating Ogre to newer version
 :: http://sourceforge.net/projects/ogre/files/ogre-dependencies-vc%%2B%%2B/1.9/OgreDependencies_MSVC_20120819.zip/download
 IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
-   cecho {0D}Downloading Ogre prebuilt dependencies package.{# #}{\n}
-   wget "http://garr.dl.sourceforge.net/project/ogre/ogre-dependencies-vc%%2B%%2B/1.7/OgreDependencies_MSVC_20101231.zip"
-   IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
-      cecho {0C}Error downloading Ogre depencencies! Aborting!{# #}{\n}
-      GOTO :EOF
-   )
+    cecho {0D}Downloading Ogre prebuilt dependencies package.{# #}{\n}
+    wget "http://garr.dl.sourceforge.net/project/ogre/ogre-dependencies-vc%%2B%%2B/1.7/OgreDependencies_MSVC_20101231.zip"
+    IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
+        cecho {0C}Error downloading Ogre depencencies! Aborting!{# #}{\n}
+        GOTO :ERROR
+    )
 
-   cecho {0D}Extracting Ogre prebuilt dependencies package.{# #}{\n}
-   7za x -y OgreDependencies_MSVC_20101231.zip
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cecho {0D}Extracting Ogre prebuilt dependencies package.{# #}{\n}
+    7za x -y OgreDependencies_MSVC_20101231.zip
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-   cecho {0D}Building Ogre prebuilt dependencies package. Please be patient, this will take a while.{# #}{\n}
-   MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cecho {0D}Building Ogre prebuilt dependencies package. Please be patient, this will take a while.{# #}{\n}
+    MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
+    REM TODO For some reason zlib x64 libs end up to wrong directories, so must copy them manually.
+    IF %TARGET_ARCH%==x64 (
+        copy /Y Dependencies\src\zlib-1.2.3\projects\visualc6\Win32_LIB_Debug\zlibd.lib Dependencies\lib\Debug
+        copy /Y Dependencies\src\zlib-1.2.3\projects\visualc6\Win32_LIB_Release\zlib.lib Dependencies\lib\Release
+    )
 )
 
 :: Use Intel Thread Building Blocks for Ogre's threading if Boost is not used.
@@ -653,15 +659,15 @@ copy /Y "%TBB_HOME%\bin\%INTEL_ARCH%\%VC_VER%\tbb.dll" "%TUNDRA_BIN%"
 
 cd "%DEPS%\ogre-safe-nocrashes"
 IF NOT EXIST OGRE.sln. (
-   :: If not wanting to use Boost with Ogre, we need slightly tweaked version of Ogre's Dependencies.cmake
-   :: which doesn't enforce usage of Boost if it's found regardless of the value of OGRE_USE_BOOST
-   IF %USE_BOOST%==FALSE (
-      copy /Y "%TOOLS%\Mods\OgreNoBoost_Dependencies.cmake_" "%DEPS%\ogre-safe-nocrashes\CMake\Dependencies.cmake"
-   )
-   cecho {0D}Running cmake for ogre-safe-nocrashes.{# #}{\n}
-REM   cmake -G %GENERATOR% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1 -DOGRE_PROFILING:BOOL=ON
-   cmake -G %GENERATOR% -DTBB_HOME=%TBB_HOME% -DOGRE_USE_BOOST:BOOL=%USE_BOOST% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    :: If not wanting to use Boost with Ogre, we need slightly tweaked version of Ogre's Dependencies.cmake
+    :: which doesn't enforce usage of Boost if it's found regardless of the value of OGRE_USE_BOOST
+    IF %USE_BOOST%==FALSE (
+        copy /Y "%TOOLS%\Mods\OgreNoBoost_Dependencies.cmake_" "%DEPS%\ogre-safe-nocrashes\CMake\Dependencies.cmake"
+    )
+    cecho {0D}Running cmake for ogre-safe-nocrashes.{# #}{\n}
+    cmake -G %GENERATOR% -DTBB_HOME=%TBB_HOME% -DOGRE_USE_BOOST:BOOL=%USE_BOOST% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF ^
+        -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 
 cecho {0D}Building ogre-safe-nocrashes. Please be patient, this will take a while.{# #}{\n}
