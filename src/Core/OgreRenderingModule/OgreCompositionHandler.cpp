@@ -221,7 +221,7 @@ QStringList OgreCompositionHandler::CompositorParameters(const std::string &comp
                     name.replace(" FP", "");
 
                     Ogre::GpuConstantType type = (Ogre::GpuConstantType)typeValuePair.begin().key().toInt();
-                    int numElems = Ogre::GpuConstantDefinition::getElementSize(type, false);
+                    size_t numElems = Ogre::GpuConstantDefinition::getElementSize(type, false);
                     QStringList values = typeValuePair.begin().value().toString().split(" ");
                     QString value;
                     for(int i = 0; i < values.size() && i < numElems; ++i)

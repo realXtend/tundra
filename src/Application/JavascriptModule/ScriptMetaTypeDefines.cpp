@@ -106,7 +106,7 @@ Q_DECLARE_METATYPE(SoundChannelPtr);
 
 QScriptValue qScriptValueFromAssetMap(QScriptEngine *engine, const AssetMap &assetMap)
 {
-    QScriptValue v = engine->newArray(assetMap.size());
+    QScriptValue v = engine->newArray((uint)assetMap.size());
     int idx = 0;
     /// \todo Want to change this to an associative array on the script side.
     for(AssetMap::const_iterator iter = assetMap.begin(); iter != assetMap.end(); ++iter)
@@ -125,7 +125,7 @@ void qScriptValueToAssetMap(const QScriptValue &/*value*/, AssetMap &/*assetMap*
 
 QScriptValue qScriptValueFromAssetTransferMap(QScriptEngine *engine, const AssetTransferMap &assetMap)
 {
-    QScriptValue v = engine->newArray(assetMap.size());
+    QScriptValue v = engine->newArray((uint)assetMap.size());
     int idx = 0;
     for(AssetTransferMap::const_iterator iter = assetMap.begin(); iter != assetMap.end(); ++iter)
     {
@@ -162,7 +162,7 @@ void qScriptValueToKeyBindingMap(const QScriptValue &value, InputAPI::KeyBinding
 
 QScriptValue qScriptValueFromAssetStoragePtrVector(QScriptEngine *engine, const AssetStorageVector& vec)
 {
-    QScriptValue v = engine->newArray(vec.size());
+    QScriptValue v = engine->newArray((uint)vec.size());
     int idx = 0;
     for(std::vector<AssetStoragePtr>::const_iterator iter = vec.begin(); iter != vec.end(); ++iter)
     {

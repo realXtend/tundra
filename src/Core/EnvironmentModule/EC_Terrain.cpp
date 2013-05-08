@@ -824,7 +824,7 @@ void GetUnskinnedMeshGeometry(
     size_t next_offset = 0;
     size_t index_offset = 0;
     size_t vertex_count = 0;
-    size_t index_count = 0;
+    uint index_count = 0;
 
     assert(mesh);
 
@@ -1142,7 +1142,7 @@ void EC_Terrain::UpdateTerrainPatchMaterial(int patchX, int patchY)
     if (!patch.entity)
         return;
 
-    for(size_t i = 0; i < patch.entity->getNumSubEntities(); ++i)
+    for(uint i = 0; i < patch.entity->getNumSubEntities(); ++i)
     {
         Ogre::SubEntity *sub = patch.entity->getSubEntity(i);
         if (sub)

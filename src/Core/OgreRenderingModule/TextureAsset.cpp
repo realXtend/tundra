@@ -97,13 +97,13 @@ bool TextureAsset::DecompressCRNtoDDS(const u8 *crnData, size_t crnNumBytes, std
     
     // Texture data
     crnd::crn_texture_info textureInfo;
-    if (!crnd::crnd_get_texture_info((void*)crnData, crnNumBytes, &textureInfo))
+    if (!crnd::crnd_get_texture_info((void*)crnData, (crnd::uint32)crnNumBytes, &textureInfo))
     {
         LogError("CRN texture info parsing failed, invalid input data.");
         return false;
     }
     // Begin unpack
-    crnd::crnd_unpack_context crnContext = crnd::crnd_unpack_begin((void*)crnData, crnNumBytes);
+    crnd::crnd_unpack_context crnContext = crnd::crnd_unpack_begin((void*)crnData, (crnd::uint32)crnNumBytes);
     if (!crnContext)
     {
         LogError("CRN texture data unpacking failed, invalid input data.");
@@ -329,8 +329,8 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
         // 1. Not all textures need mipmaps, i.e. if the texture is always shown with 1:1 texel-to-pixel ratio, then the mip levels are never needed.
         // 2. Ogre has a bug on Apple, that it fails to generate mipmaps for .dds files which contain only one mip level and are DXT1-compressed (it tries to autogenerate, but always results in black texture data)
         // 3. If the texture is updated dynamically, we might not afford to regenerate mips at each update.
-        int numMipmapsInImage = image.getNumMipmaps(); // Note: This is actually numMipmaps - 1: Ogre doesn't think the first level is a mipmap.
-        int numMipmapsToUseOnGPU = Ogre::MIP_DEFAULT;
+        size_t numMipmapsInImage = image.getNumMipmaps(); // Note: This is actually numMipmaps - 1: Ogre doesn't think the first level is a mipmap.
+        Ogre::uint numMipmapsToUseOnGPU = Ogre::MIP_DEFAULT;
         if (numMipmapsInImage == 0 && nameInternal.endsWith(".dds", Qt::CaseInsensitive))
             numMipmapsToUseOnGPU = 0;
 
@@ -531,7 +531,7 @@ QImage TextureAsset::ToQImage(Ogre::Texture* tex, size_t faceIndex, size_t mipma
         return QImage();
     }
 
-    QImage img(ogreImage.getWidth(), ogreImage.getHeight(), fmt);
+    QImage img((int)ogreImage.getWidth(), (int)ogreImage.getHeight(), fmt);
     assert(img.byteCount() == (int)ogreImage.getSize());
     memcpy(img.bits(), ogreImage.getData(), img.byteCount());
 
@@ -549,14 +549,14 @@ QImage TextureAsset::ToQImage(size_t faceIndex, size_t mipmapLevel) const
     return ToQImage(ogreTexture.get(), faceIndex, mipmapLevel);
 }
 
-uint TextureAsset::Height() const
+size_t TextureAsset::Height() const
 {
     if (!ogreTexture.get())
         return 0;
     return ogreTexture->getHeight();
 }
 
-uint TextureAsset::Width() const
+size_t TextureAsset::Width() const
 {
     if (!ogreTexture.get())
         return 0;
@@ -596,7 +596,7 @@ void TextureAsset::SetContents(size_t newWidth, size_t newHeight, const u8 *data
     if (!ogreTexture.get())
     {
         ogreTexture = Ogre::TextureManager::getSingleton().createManual(NameInternal().toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
-            newWidth, newHeight, regenerateMipMaps ? Ogre::MIP_UNLIMITED : 0, ogreFormat, usage);
+            (Ogre::uint)newWidth, (Ogre::uint)newHeight, regenerateMipMaps ? Ogre::MIP_UNLIMITED : 0, ogreFormat, usage);
         if (!ogreTexture.get())
         {
             LogError("TextureAsset::SetContents failed: Cannot create texture asset \"" + ToString() + "\" to name \"" + Name() + "\" and size " + QString::number(newWidth) + "x" + QString::number(newHeight) + "!");
@@ -813,10 +813,10 @@ void TextureAsset::CompressTexture()
     
     for (size_t level = 0; level < imageBoxes.size(); ++level)
     {
-        int compressedSize = squish::GetStorageRequirements(imageBoxes[level].right, imageBoxes[level].bottom, flags);
+        int compressedSize = squish::GetStorageRequirements((int)imageBoxes[level].right, (int)imageBoxes[level].bottom, flags);
         LogDebug("Compressing level " + QString::number(level) + " " + QString::number(imageBoxes[level].right) + "x" + QString::number(imageBoxes[level].bottom) + " into " + QString::number(compressedSize) + " bytes");
         unsigned char* compressedData = new unsigned char[compressedSize];
-        squish::CompressImage((squish::u8*)imageData[level], imageBoxes[level].right, imageBoxes[level].bottom, compressedData, flags);
+        squish::CompressImage((squish::u8*)imageData[level], (int)imageBoxes[level].right, (int)imageBoxes[level].bottom, compressedData, flags);
         compressedImageData.push_back(compressedData);
     }
     
@@ -839,7 +839,7 @@ void TextureAsset::CompressTexture()
             /// \todo Fix bug in ogre-safe-nocrashes branch. It also affects Ogre's loading of already compressed DDS files
             
             size_t numRows = (buf->getHeight() + 3) / 4;
-            int sourceStride = (buf->getWidth() + 3) / 4 * bytesPerBlock;
+            size_t sourceStride = (buf->getWidth() + 3) / 4 * bytesPerBlock;
             unsigned char* src = compressedImageData[level];
             
             Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(buf.get());
@@ -934,7 +934,7 @@ void TextureAsset::ReduceTextureSize()
                 /// \todo Fix bug in ogre-safe-nocrashes branch
                 size_t bytesPerBlock = sourceFormat == Ogre::PF_DXT1 ? 8 : 16;
                 size_t numRows = (buf->getHeight() + 3) / 4;
-                int destStride = (buf->getWidth() + 3) / 4 * bytesPerBlock;
+                size_t destStride = (buf->getWidth() + 3) / 4 * bytesPerBlock;
                 unsigned char* dest = levelData;
                 
                 Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(buf.get());
@@ -1020,7 +1020,7 @@ void TextureAsset::ReduceTextureSize()
                 /// \todo Fix bug in ogre-safe-nocrashes branch. It also affects Ogre's loading of already compressed DDS files
                 size_t bytesPerBlock = sourceFormat == Ogre::PF_DXT1 ? 8 : 16;
                 size_t numRows = (buf->getHeight() + 3) / 4;
-                int sourceStride = (buf->getWidth() + 3) / 4 * bytesPerBlock;
+                size_t sourceStride = (buf->getWidth() + 3) / 4 * bytesPerBlock;
                 unsigned char* src = imageData[level];
                 
                 Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(buf.get());

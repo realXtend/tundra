@@ -58,7 +58,7 @@ QString WStringToQString(const std::wstring &str)
 {
     if (str.length() == 0)
         return "";
-    return QStringfromWCharArray(str.data(), str.size());
+    return QStringfromWCharArray(str.data(), (int)str.size());
 }
 
 std::wstring ToWString(const std::string &str)

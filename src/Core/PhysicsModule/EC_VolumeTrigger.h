@@ -99,7 +99,7 @@ public slots:
     /** Use with GetEntityInside() to get all entities inside this volume.
         @note Return value is invalidated by physics update.
         @return Number of entities inside this volume */
-    int GetNumEntitiesInside() const;
+    size_t GetNumEntitiesInside() const;
 
     /// Gets entity that is inside this volume trigger with specified index.
     /** Use with GetNumEntitiesInside() to get all entities inside this volume.

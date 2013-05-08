@@ -47,7 +47,7 @@ void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr)
     
     StanHull::HullDesc desc;
     desc.SetHullFlag(StanHull::QF_TRIANGLES);
-    desc.mVcount = vertices.size();
+    desc.mVcount = (uint)vertices.size();
     desc.mVertices = &vertices[0].x;
     desc.mVertexStride = sizeof(float3);
     desc.mSkinWidth = 0.01f; // Hardcoded skin width
@@ -88,7 +88,7 @@ void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<float3>& dest)
         const Ogre::VertexElement* posElem = vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
         Ogre::HardwareVertexBufferSharedPtr vbuf = vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
         unsigned char* vertices = static_cast<unsigned char*>(vbuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-        uint vertexSize = vbuf->getVertexSize();
+        size_t vertexSize = vbuf->getVertexSize();
         float* pReal = 0;
         
         Ogre::IndexData* index_data = submesh->indexData;

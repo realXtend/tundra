@@ -185,8 +185,8 @@ void MeshPreviewEditor::Update()
         // Create image of texture, and show it into label.
 
         u8* p = static_cast<u8 *>(pixels.data);
-        int width = pixels.getWidth();
-        int height = pixels.getHeight();
+        uint width = (uint)pixels.getWidth();
+        uint height = (uint)pixels.getHeight();
 
         QImage img = ConvertToQImage(p, width, height, 4);
 
