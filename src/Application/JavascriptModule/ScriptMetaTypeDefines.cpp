@@ -273,6 +273,9 @@ static QScriptValue math_MathBreakOnAssume(QScriptContext * /*context*/, QScript
 
 void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 {
+    // C/C++ standard library typedef size_t
+    qRegisterMetaType<size_t>("size_t");
+
     // Core integer type defines
     qRegisterMetaType<s8>("s8");
     qRegisterMetaType<u8>("u8");
@@ -284,6 +287,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qRegisterMetaType<u64>("u64");
 
     // JS -> C++: Enables correct JS 'number' type to our typedef conversion. Hits when slots take in eg. u32 as a parameter.
+    qScriptRegisterMetaType(engine, toScriptU32OrSmaller<size_t>, fromScriptUInt<size_t>);
     qScriptRegisterMetaType(engine, toScriptS32OrSmaller<s8>, fromScriptChar<s8>);
     qScriptRegisterMetaType(engine, toScriptU32OrSmaller<u8>, fromScriptUChar<u8>);
     qScriptRegisterMetaType(engine, toScriptS32OrSmaller<s16>, fromScriptShort<s16>);
