@@ -55,7 +55,7 @@ public slots:
         if (assetData.size() == 0)
             return QByteArray();
         else
-            return QByteArray((const char*)&assetData[0], assetData.size());
+            return QByteArray((const char*)&assetData[0], (int)assetData.size());
     }
 
     QByteArray RawReplyData() const { return replyData; }

@@ -317,7 +317,7 @@ void EC_Hydrax::ConfigLoadSucceeded(AssetPtr asset)
 
     std::vector<u8> rawData;
     asset->SerializeTo(rawData);
-    QString configData = QString::fromAscii((const char*)&rawData[0], rawData.size());
+    QString configData = QString::fromAscii((const char*)&rawData[0], (int)rawData.size());
 
     if (configData.isEmpty())
     {

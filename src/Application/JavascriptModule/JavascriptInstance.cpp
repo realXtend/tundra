@@ -172,7 +172,7 @@ void JavascriptInstance::Load()
     }
 
     bool useAssetAPI = !scriptRefs_.empty();
-    unsigned numScripts = useAssetAPI ? scriptRefs_.size() : 1;
+    size_t numScripts = useAssetAPI ? scriptRefs_.size() : 1;
 
     // Determine based on code origin whether it can be trusted with system access or not
     if (useAssetAPI)
@@ -190,7 +190,7 @@ void JavascriptInstance::Load()
     }
 
     // Check the validity of the syntax in the input.
-    for (unsigned i = 0; i < numScripts; ++i)
+    for (size_t i = 0; i < numScripts; ++i)
     {
         QString scriptSourceFilename = (useAssetAPI ? scriptRefs_[i]->Name() : sourceFile);
         QString &scriptContent = (useAssetAPI ? scriptRefs_[i]->scriptContent : program_);
@@ -295,10 +295,10 @@ void JavascriptInstance::Run()
         return;
 
     bool useAssets = !scriptRefs_.empty();
-    unsigned numScripts = useAssets ? scriptRefs_.size() : 1;
+    size_t numScripts = useAssets ? scriptRefs_.size() : 1;
     includedFiles.clear();
     
-    for (unsigned i = 0; i < numScripts; ++i)
+    for (size_t i = 0; i < numScripts; ++i)
     {
         PROFILE(JSInstance_Evaluate);
         QString scriptSourceFilename = (useAssets ? scriptRefs_[i]->Name() : sourceFile);

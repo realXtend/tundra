@@ -200,7 +200,7 @@ void EC_DynamicComponent::RemoveAttribute(const QString &id, AttributeChange::Ty
 
 void EC_DynamicComponent::RemoveAllAttributes(AttributeChange::Type change)
 {
-    for(unsigned i = attributes.size() - 1; i < attributes.size(); --i)
+    for(size_t i = attributes.size() - 1; i < attributes.size(); --i)
     {
         if (attributes[i])
         {
@@ -373,7 +373,7 @@ bool EC_DynamicComponent::ContainsAttribute(const QString &id) const
 
 void EC_DynamicComponent::SerializeToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<u8>(attributes.size());
+    dest.Add<u8>((u8)attributes.size());
     // For now, transmit all values as strings
     AttributeVector::const_iterator iter = attributes.begin();
     while(iter != attributes.end())

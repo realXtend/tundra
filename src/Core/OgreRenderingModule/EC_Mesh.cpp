@@ -446,7 +446,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
     {
         attachment_entities_.resize(newsize);
         attachment_nodes_.resize(newsize);
-        for(uint i = oldsize; i < newsize; ++i)
+        for(size_t i = oldsize; i < newsize; ++i)
         {
             attachment_entities_[i] = 0;
             attachment_nodes_[i] = 0;
@@ -1408,13 +1408,13 @@ bool EC_Mesh::Raycast(Ogre::Entity* meshEntity, const Ray& ray, float* distance,
             pos = static_cast<unsigned char*>(vbufPos->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
         }
 
-        unsigned posOffset = posElem->getOffset();
-        unsigned posSize = vbufPos->getVertexSize();
+        size_t posOffset = posElem->getOffset();
+        size_t posSize = vbufPos->getVertexSize();
         
         // Texcoord element is not mandatory
         unsigned char* texCoord = 0;
-        unsigned texOffset = 0;
-        unsigned texSize = 0;
+        size_t texOffset = 0;
+        size_t texSize = 0;
         Ogre::HardwareVertexBufferSharedPtr vbufTex;
         const Ogre::VertexElement *texElem = vertexData->vertexDeclaration->findElementBySemantic(Ogre::VES_TEXTURE_COORDINATES);
         if (texElem)

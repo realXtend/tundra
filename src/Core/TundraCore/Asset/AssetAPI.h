@@ -405,7 +405,7 @@ public slots:
     AssetTransferMap CurrentTransfers() const { return currentTransfers; }
 
     /// A utility function that counts the number of current asset transfers.
-    int NumCurrentTransfers() const { return currentTransfers.size(); }
+    size_t NumCurrentTransfers() const { return currentTransfers.size(); }
     
     /// Return the current asset dependency map (debugging)
     const AssetDependenciesMap& DebugGetAssetDependencies() const { return assetDependencies; }

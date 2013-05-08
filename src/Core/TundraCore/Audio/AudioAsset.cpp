@@ -111,7 +111,7 @@ bool AudioAsset::LoadFromRawPCMWavData(const u8 *data, size_t numBytes, bool ste
 
     // Copy the new data over.
     std::vector<u8> tmpData(data, data + numBytes);
-    alBufferData(handle, openALFormat, &tmpData[0], tmpData.size(), frequency);
+    alBufferData(handle, openALFormat, &tmpData[0], (ALsizei)tmpData.size(), frequency);
     ALenum error = alGetError();
     if (error != AL_NONE)
     {

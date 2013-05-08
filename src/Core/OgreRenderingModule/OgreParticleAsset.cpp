@@ -71,10 +71,10 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data, size_t numBytes, boo
                 line_vec = Ogre::StringUtil::split(line, "\t ");
 #else
                 Ogre::vector<Ogre::String>::type vec = Ogre::StringUtil::split(line,"\t ");
-                int size = vec.size();
+                size_t size = vec.size();
                 line_vec.resize(size);
 
-                for(int i = 0; i < size; ++i)
+                for(size_t i = 0; i < size; ++i)
                     line_vec[i] = vec[i];
 #endif
                 // Process opening/closing braces
@@ -193,7 +193,7 @@ bool OgreParticleAsset::SerializeTo(std::vector<u8> &data, const QString &serial
     return true;
 }
 
-int OgreParticleAsset::GetNumTemplates() const
+size_t OgreParticleAsset::GetNumTemplates() const
 {
     return templates.size();
 }

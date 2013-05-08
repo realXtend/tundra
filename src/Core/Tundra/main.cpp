@@ -68,7 +68,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         argv.push_back(arguments[i].c_str());
     
     if (argv.size())
-        return run(argv.size(), (char**)&argv[0]);
+        return run((int)argv.size(), (char**)&argv[0]);
     else
         return run(0, 0);
 }

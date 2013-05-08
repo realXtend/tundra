@@ -56,8 +56,10 @@ class ENVIRONMENT_MODULE_API EC_Terrain : public IComponent
     COMPONENT_NAME("EC_Terrain", 11)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Terrain(Scene* scene);
+    /// @endcond
     virtual ~EC_Terrain();
 
     /// Specifies the transformation matrix of the terrain
@@ -65,11 +67,11 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
 
     /// The number of patches to generate in the terrain in the horizontal direction, in the range [0, 256].
-    Q_PROPERTY(int xPatches READ getxPatches WRITE setxPatches);
+    Q_PROPERTY(uint xPatches READ getxPatches WRITE setxPatches);
     DEFINE_QPROPERTY_ATTRIBUTE(int, xPatches);
 
     /// The number of patches to generate in the terrain in the vertical direction, in the range [0, 256].
-    Q_PROPERTY(int yPatches READ getyPatches WRITE setyPatches);
+    Q_PROPERTY(uint yPatches READ getyPatches WRITE setyPatches);
     DEFINE_QPROPERTY_ATTRIBUTE(int, yPatches);
 
     /// Texture U coordinate scaling factor.

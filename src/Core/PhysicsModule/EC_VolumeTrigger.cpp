@@ -42,7 +42,7 @@ QList<EntityWeakPtr> EC_VolumeTrigger::GetEntitiesInside() const
     return ret;
 }
 
-int EC_VolumeTrigger::GetNumEntitiesInside() const
+size_t EC_VolumeTrigger::GetNumEntitiesInside() const
 {
     return entities_.size();
 }
