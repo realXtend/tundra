@@ -117,7 +117,7 @@ class IntegerTestRunner : public QObject
 {
     Q_OBJECT
     /* C++ -> JS properties */
-    Q_PROPERTY(entity_id_t propSizeT READ getSizeT)
+    Q_PROPERTY(size_t propSizeT READ getSizeT)
     Q_PROPERTY(entity_id_t propEntityId READ getEntityId)
     Q_PROPERTY(component_id_t propComponentId READ getComponentId)
     Q_PROPERTY(s8 propS8 READ getS8)
