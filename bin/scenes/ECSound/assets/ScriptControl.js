@@ -1,22 +1,14 @@
 //allows editing
 //physics.SetRunPhysics(false);
 
-//print("<-- ECSound test ScriptControl.js --:");
-
-//Look for Entities with name Collision box and set RigidBody's mass to 2.0
-var entityList = scene.GetEntityIdsWithComponent("EC_Script");
-
-//print(entityList);
-
-for( i in entityList)
+// Look for Entities with Script component and name "CollisionBox" and set RigidBody's mass to 2.0
+var entities = scene.EntitiesWithComponent("EC_Script");
+for(i in entities)
 {
-
-	entity = scene.GetEntityRaw(entityList[i]);
-	if(entity.name == "CollisionBox")
-	{
-		entity.rigidbody.mass = 2.0;
-		entity.rigidbody.friction = 1.0;
-	}
-	
-
+    entity = entities[i];
+    if (entity.name == "CollisionBox")
+    {
+        entity.rigidbody.mass = 2.0;
+        entity.rigidbody.friction = 1.0;
+    }
 }
