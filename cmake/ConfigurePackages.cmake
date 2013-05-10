@@ -254,10 +254,7 @@ macro(use_package_bullet)
 endmacro()
 
 macro(link_package_bullet)
-    # TODO just checking for RelWithDebInfo dir doesn't necessary cut it as user could have modified 
-    # the build script and built Release instead during initial deps build. This is however very unlikely.
     if (WIN32) # Full-build deps 
-        link_directories(${TARGET_NAME}/lib/$(ConfigurationName))
         target_link_libraries(${TARGET_NAME} debug LinearMath.lib debug BulletDynamics.lib BulletCollision.lib)
         target_link_libraries(${TARGET_NAME} optimized LinearMath.lib optimized BulletDynamics.lib optimized BulletCollision.lib)
     else()
