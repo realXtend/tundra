@@ -71,13 +71,28 @@ Application::Application(Framework *owner, int &argc, char **argv) :
     appActivated(true),
     nativeTranslator(new QTranslator),
     appTranslator(new QTranslator),
-    targetFpsLimit(60.0)
-    ,splashScreen(0)
+    targetFpsLimit(60.0),
+    splashScreen(0)
 {
     // Reflect our versioning information to Qt internals, if something tries to obtain it straight from there.
     QApplication::setOrganizationName(organizationName);
     QApplication::setApplicationName(applicationName);
     QApplication::setApplicationVersion(version);
+
+    // Parse version number parts.
+    QStringList numberList = QString(version).split('.');
+    if (numberList.size() > 4)
+        LogWarning("[Application]: More than 4 numbers given for application version. Ignoring extra numbers.");
+    for(int i=0; i<numberList.size() && i<4; ++i)
+    {
+        bool ok = false;
+        uint versionNumber = numberList[i].trimmed().toUInt(&ok);
+        if (!ok) versionNumber = 0;
+        versionNumbers.push_back(versionNumber);
+    }
+    // Guarantee trailing zeros.
+    while(versionNumbers.size() < 4)
+        versionNumbers.push_back(0);
 
 #ifdef Q_WS_MAC
     QDir::setCurrent(QCoreApplication::applicationDirPath());
@@ -375,6 +390,7 @@ QString Application::InstallationDirectory()
 
 QString Application::UserDataDirectory()
 {
+    QString qstr;
 #ifdef _WINDOWS
     LPITEMIDLIST pidl;
 
@@ -385,7 +401,7 @@ QString Application::UserDataDirectory()
     SHGetPathFromIDListW(pidl, str);
     CoTaskMemFree(pidl);
 
-    return WStringToQString(str) + "\\" + ApplicationName();
+    qstr = WStringToQString(str) + "\\" + ApplicationName();
 #else
     ///\todo Convert to QString instead of std::string.
     char *ppath = 0;
@@ -393,12 +409,18 @@ QString Application::UserDataDirectory()
     if (ppath == 0)
         throw Exception("Failed to get HOME environment variable.");
 
-    return QString(ppath) + "/." + ApplicationName();
+    qstr = QString(ppath) + "/." + ApplicationName();
 #endif
+
+    // Apply trailing slash
+    if (!qstr.endsWith(QDir::separator()))
+        qstr += QDir::separator();
+    return qstr;
 }
 
 QString Application::UserDocumentsDirectory()
 {
+    QString qstr;
 #ifdef _WINDOWS
     LPITEMIDLIST pidl;
 
@@ -409,11 +431,16 @@ QString Application::UserDocumentsDirectory()
     SHGetPathFromIDListW(pidl, str);
     CoTaskMemFree(pidl);
 
-    return WStringToQString(str) + '\\' + ApplicationName();
+    qstr = WStringToQString(str) + '\\' + ApplicationName();
 #else
     ///\todo Review. Is this desirable?
-    return UserDataDirectory();
+    qstr = UserDataDirectory();
 #endif
+
+    // Apply trailing slash
+    if (!qstr.endsWith(QDir::separator()))
+        qstr += QDir::separator();
+    return qstr;
 }
 
 QString Application::ParseWildCardFilename(const QString& input)
@@ -717,9 +744,10 @@ int TUNDRACORE_API run(int argc, char **argv)
         int return_value = EXIT_SUCCESS;
 
         // Initialization prints
-        LogInfo("Starting up " + QString(Application::ApplicationName()));
-        LogInfo("* Working directory: " + QDir::currentPath());
-        LogInfo("* Installation directory: " + Application::InstallationDirectory());
+        LogInfo("Starting up " + Application::FullIdentifier());
+        LogInfo("* Installation directory : " + Application::InstallationDirectory());
+        LogInfo("* Working directory      : " + Application::CurrentWorkingDirectory());
+        LogInfo("* User data directory    : " + Application::UserDataDirectory());
 
     // Create application object
 #if !defined(_DEBUG) || !defined (_MSC_VER)

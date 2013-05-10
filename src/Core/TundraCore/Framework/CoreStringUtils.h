@@ -16,10 +16,10 @@ public:
 };
 /// @endcond
 
-QString TUNDRACORE_API QStringfromWCharArray(const wchar_t *string, int size);
+QString TUNDRACORE_API QStringFromWCharArray(const wchar_t *string, int size);
 
 /// Warning: Does not null-terminate the output. Prefer to use QStringToWString instead!
-int TUNDRACORE_API QStringtoWCharArray(QString qstr, wchar_t *array);
+int TUNDRACORE_API QStringToWCharArray(const QString &qstr, wchar_t *array);
 
 std::wstring TUNDRACORE_API QStringToWString(const QString &qstr);
 QString TUNDRACORE_API WStringToQString(const std::wstring &str);

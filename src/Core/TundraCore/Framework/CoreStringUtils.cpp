@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "CoreStringUtils.h"
 
-QString QStringfromWCharArray(const wchar_t *string, int size)
+QString QStringFromWCharArray(const wchar_t *string, int size)
 {
     QString qstr;
     if (sizeof(wchar_t) == sizeof(QChar))
@@ -12,7 +12,7 @@ QString QStringfromWCharArray(const wchar_t *string, int size)
         return qstr.fromUcs4((uint *)string, size);
 }
 
-int QStringtoWCharArray(QString qstr, wchar_t *array)
+int QStringToWCharArray(const QString &qstr, wchar_t *array)
 {
     if (sizeof(wchar_t) == sizeof(QChar))
     {
@@ -50,7 +50,7 @@ std::wstring QStringToWString(const QString &qstr)
     std::wstring str;
     str.resize(qstr.length());
 
-    str.resize(QStringtoWCharArray(qstr, &(*str.begin())));
+    str.resize(QStringToWCharArray(qstr, &(*str.begin())));
     return str;
 }
 
@@ -58,7 +58,7 @@ QString WStringToQString(const std::wstring &str)
 {
     if (str.length() == 0)
         return "";
-    return QStringfromWCharArray(str.data(), (int)str.size());
+    return QStringFromWCharArray(str.data(), (int)str.size());
 }
 
 std::wstring ToWString(const std::string &str)
