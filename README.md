@@ -38,7 +38,7 @@ The Tundra dependencies are acquired and built using an automated build script:
 
 ### Linux
 
-Currently only Ubuntu is officially supported. See [tools/Ubuntu/build-deps.bash] for distro-specific build scripts. 
+Currently only Ubuntu, Mint, Debian, and Kali are officially supported. See [tools/Linux/build-deps.bash] for the unified build script. 
 
 ### OS X
 
