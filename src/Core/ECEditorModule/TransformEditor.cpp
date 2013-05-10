@@ -69,7 +69,7 @@ void TransformEditor::SetSelection(const QList<EntityPtr> &entities)
     AppendSelection(entities);
     
     // If settings window was hidden, show it again now
-    if (editorSettings && !editorSettings->isVisible())
+    if (editorSettings && !editorSettings->isVisible() && !targets.isEmpty())
         editorSettings->show();
 }
 
@@ -452,7 +452,6 @@ void TransformEditor::CreateGizmo()
     QPoint pos = s->GetFramework()->Config()->Get(configData).toPoint();
     UiMainWindow::EnsurePositionWithinDesktop(editorSettings, pos);
     editorSettings->setWindowFlags(Qt::Tool);
-    editorSettings->show();
 #endif
 }
 
