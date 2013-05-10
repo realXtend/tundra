@@ -449,8 +449,8 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
     {
         if ((CloudType)cloudType.Get() == Volumetric)
         {
-            float skyxCoverage = cloudCoverage.Get() / 100.f; // [0,1]
-            float skyxSize = cloudAverageSize.Get() / 100.f; // [0,1]
+            float skyxCoverage = Min<float>(1.0f, Max<float>(0.0f, cloudCoverage.Get()) / 100.f); // Clamp to [0.0,1.0]
+            float skyxSize = Min<float>(1.0f, Max<float>(0.0f, cloudAverageSize.Get()) / 100.f);  // Clamp to [0.0,1.0]
             impl->skyX->getVCloudsManager()->getVClouds()->setWheater(skyxCoverage, skyxSize, false);
         }
     }
