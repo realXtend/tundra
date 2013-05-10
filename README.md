@@ -42,7 +42,7 @@ Currently only Ubuntu, Mint, Debian, and Kali are officially supported. See [too
 
 ### OS X
 
-See [tools/build-mac-deps.bash] for automated dependency and Tundra build script.
+See [tools/OSX/BuildDeps.bash] for automated dependency and Tundra build script.
 
 Developer Documentation
 -----------------------
