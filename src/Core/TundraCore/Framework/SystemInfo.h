@@ -18,30 +18,32 @@
 
 #pragma once
 
+#include "TundraCoreApi.h"
+
 class QString;
 
 /// Returns the operating system information, for example "Microsoft Windows 8 (build 9200), 64-bit".
 /** @note Currently only implemented on Windows. */
-QString OsDisplayString();
+QString TUNDRACORE_API OsDisplayString();
 
 /// Returns the total amount of available physical memory in bytes.
 /** @note Currently only implemented on Windows. */
-unsigned long long TotalSystemPhysicalMemory();
+unsigned long long TUNDRACORE_API TotalSystemPhysicalMemory();
 
 /// Returns A readable string of the processor as given by cpuid, like "AMD Turion(tm) X2 Dual-Core Mobile RM-74".
 /** @note Currently only implemented on Windows. */
-QString ProcessorBrandName();
+QString TUNDRACORE_API ProcessorBrandName();
 
 /// Returns "GenuineIntel" or "AuthenticAMD" or something similar.
 /** @note Currently only implemented on Windows. */
-QString ProcessorCpuIdString();
+QString TUNDRACORE_API ProcessorCpuIdString();
 
 /// Returns technical information about the processor.
 /** @note Currently only implemented on Windows. */
-QString ProcessorExtendedCpuIdInfo();
+QString TUNDRACORE_API ProcessorExtendedCpuIdInfo();
 
 /// Returns the clock speed of the given core, in MHz.
 /** @note This is nominal, not actual. The value is read from registry.
     @param coreIndex Core index, [0, NumberOfCores[
     @note Currently only implemented on Windows. */
-unsigned long CpuSpeedFromRegistry(unsigned long coreIndex);
+unsigned long TUNDRACORE_API CpuSpeedFromRegistry(unsigned long coreIndex);
