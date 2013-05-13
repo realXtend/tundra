@@ -14,15 +14,15 @@ macro(configure_vlc)
     sagase_configure_report (VLC)
 endmacro()
 
-# Do some checks, VC10 is out of the question as building from 
+# Do some checks, VC10 and 64-bit builds are out of the question as building from 
 # sources is impossible on with VC tools (said by the vlc project).
-# And they only ship VC9 binaries, and even then you need to create the .lib files by hand
+# And they only ship 32-bit VC9 binaries, and even then you need to create the .lib files by hand
 #
 # Linux and mac are doable but code changes are propably needed.
 
 if (UNIX OR APPLE)
     set (SHOULD_RUN 1)
-elseif (WIN32 AND VC90)
+elseif (WIN32 AND MSVC9 AND NOT CMAKE_CL_64)
     set (SHOULD_RUN 1)
 else ()
     set (SHOULD_RUN 0)
@@ -38,7 +38,7 @@ if (SHOULD_RUN)
     UiFolder ()
 
     file (GLOB CPP_FILES *.cpp)
-    if (WIN32 AND VC90)
+    if (WIN32 AND MSVC9)
         include_directories(windows/)
         file(GLOB H_FILES *.h windows/*.h)
     else() # Omit stdint.h in other platforms.
