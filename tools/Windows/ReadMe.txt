@@ -10,9 +10,9 @@ BuildDeps.cmd                   Master script for building dependencies from com
 BuildTundraDebug.cmd            Script for building Debug Tundra from command-line.
 BuildTundraRelWithdDebInfo.cmd  Script for building RelWithDebInfo Tundra from command-line.
 RunCMake.cmd                    Master script for running CMake for Tundra.
-                                Should be called with a valid CMage generator string, f.ex.: 'RunCMake "Visual Studio 11 Win64"'.
+                                Should be called with a valid CMage generator string, f.ex.: 'RunCMake "Visual Studio 10 Win64"'.
 VSConfig.cmd                    Master script containing various utility variables used by the build scripts.
-                                Should be called from the build scripts with a valid CMage generator string, f.ex. 'VSConfig "Visual Studio 11 Win64"'.
+                                Should be called from the build scripts with a valid CMage generator string, f.ex. 'VSConfig "Visual Studio 10 Win64"'.
 CleanBuild.bat                  Cleans up after possible previous Tundra build in order to guarantee a fresh build next time.
 
 DEPRECATED:
