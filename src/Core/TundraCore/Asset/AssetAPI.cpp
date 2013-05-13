@@ -447,17 +447,15 @@ AssetPtr AssetAPI::CreateAssetFromFile(QString assetType, QString assetFile)
     }
 }
 
-void AssetAPI::ForgetAsset(QString assetRef, bool removeDiskSource)
+bool AssetAPI::ForgetAsset(QString assetRef, bool removeDiskSource)
 {
-    AssetPtr asset = GetAsset(assetRef);
-    if (asset.get())
-        ForgetAsset(asset, removeDiskSource);
+    return ForgetAsset(GetAsset(assetRef), removeDiskSource);
 }
 
-void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
+bool AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
 {
-    if (!asset)
-        return;
+    if (!asset.get())
+        return false;
 
     emit AssetAboutToBeRemoved(asset);
 
@@ -481,11 +479,53 @@ void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
     if (iter == assets.end())
     {
         LogError("AssetAPI::ForgetAsset called on asset \"" + asset->Name() + "\", which does not exist in AssetAPI!");
-        return;
+        return false;
     }
     if (diskSourceChangeWatcher && !asset->DiskSource().isEmpty())
         diskSourceChangeWatcher->removePath(asset->DiskSource());
     assets.erase(iter);
+    return true;
+}
+
+bool AssetAPI::ForgetBundle(QString bundleRef, bool removeDiskSource)
+{
+    return ForgetBundle(GetBundle(bundleRef), removeDiskSource);
+}
+
+bool AssetAPI::ForgetBundle(AssetBundlePtr bundle, bool removeDiskSource)
+{
+    if (!bundle.get())
+        return false;
+
+    emit AssetAboutToBeRemoved(bundle);
+
+    // If we are supposed to remove the cached (or original for local assets) version of the asset, do so.
+    if (removeDiskSource && !bundle->DiskSource().isEmpty())
+    {
+        emit DiskSourceAboutToBeRemoved(bundle);
+
+        // Remove disk watcher before deleting the file. Otherwise we get tons of spam and not wanted reload tries.
+        if (diskSourceChangeWatcher)
+            diskSourceChangeWatcher->removePath(bundle->DiskSource());
+        if (assetCache)
+            assetCache->DeleteAsset(bundle->Name());
+        bundle->SetDiskSource("");
+    }
+
+    // Do an explicit unload of the asset before deletion (the dtor of each asset has to do unload as well, but this handles the cases where
+    // some object left a dangling strong ref to an asset).
+    bundle->Unload();
+
+    AssetBundleMap::iterator iter = assetBundles.find(bundle->Name());
+    if (iter == assetBundles.end())
+    {
+        LogError("AssetAPI::ForgetBundle called on asset \"" + bundle->Name() + "\", which does not exist in AssetAPI!");
+        return false;
+    }
+    if (diskSourceChangeWatcher && !bundle->DiskSource().isEmpty())
+        diskSourceChangeWatcher->removePath(bundle->DiskSource());
+    assetBundles.erase(iter);
+    return true;
 }
 
 void AssetAPI::DeleteAssetFromStorage(QString assetRef)
@@ -631,28 +671,14 @@ void AssetAPI::ForgetAllAssets()
     readyTransfers.clear();
     readySubTransfers.clear();
 
-    // Note that this wont unload the individual sub asset, only the bundle. 
-    // Sub assets are unloaded from the assets map below.
+    // ForgetBundle removes the bundle it is given to from the assetBundles map, so this loop terminates.
+    // All bundle sub assets are unloaded from the assets map below.
     while(assetBundles.size() > 0)
-    {
-        AssetBundleMap::iterator iter = assetBundles.begin();
-        if (iter != assetBundles.end())
-        {
-            AssetBundlePtr bundle = iter->second;
-            if (bundle.get())
-            {
-                bundle->Unload();
-                bundle.reset();
-            }
-            assetBundles.erase(iter);
-        }
-        else
-            break; 
-    }
+        ForgetBundle(assetBundles.begin()->second, false);
     assetBundles.clear();
     bundleMonitors.clear();
 
-    // ForgetAsset removes the asset it is given to from the assets list, so this loop terminates.
+    // ForgetAsset removes the asset it is given to from the assets map, so this loop terminates.
     while(assets.size() > 0)
         ForgetAsset(assets.begin()->second, false);
     assets.clear();
@@ -1395,6 +1421,22 @@ AssetPtr AssetAPI::GetAsset(QString assetRef) const
     if (iter != assets.end())
         return iter->second;
     return AssetPtr();
+}
+
+AssetBundlePtr AssetAPI::GetBundle(QString bundleRef) const
+{
+    // First try to see if the ref has an exact match.
+    AssetBundleMap::const_iterator iter = assetBundles.find(bundleRef);
+    if (iter != assetBundles.end())
+        return iter->second;
+
+    // If not, normalize and resolve the lookup of the given asset bundle.
+    bundleRef = ResolveAssetRef("", bundleRef);
+
+    iter = assetBundles.find(bundleRef);
+    if (iter != assetBundles.end())
+        return iter->second;
+    return AssetBundlePtr();
 }
 
 void AssetAPI::Update(f64 frametime)

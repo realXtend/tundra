@@ -48,7 +48,6 @@ class TUNDRACORE_API AssetAPI : public QObject
 
 public:
     AssetAPI(Framework *fw, bool headless);
-
     ~AssetAPI();
 
 public:
@@ -250,6 +249,10 @@ public slots:
     /// @note The "name" of an asset is in most cases the URL ref of the asset, so use this function to query an asset by name.
     AssetPtr GetAsset(QString assetRef) const;
 
+    /// Returns the given asset bundle by full URL ref if it exists, or null otherwise.
+    /// @note The "name" of an asset is in most cases the URL ref of the asset bundle, so use this function to query an asset bundle by name.
+    AssetBundlePtr GetBundle(QString bundleRef) const;
+
     /// Returns the asset cache object that generates a disk source for all assets.
     AssetCache *Cache() const { return assetCache; }
 
@@ -311,10 +314,21 @@ public slots:
     /** Any assets depending on this asset will break.
         @param assetRef A valid assetRef that is in the asset system. If this asset ref does not exist, this call will do nothing.
         @param removeDiskSource If true, the disk source of the asset is also deleted. In most cases, this is the locally cached version of the remote file,
-                but for example for local assets, this is the asset itself.
+               but for example for local assets, this is the asset itself.
+        @return True if asset was located and unloaded, false otherwise.
         @note Calling ForgetAsset on an asset will unload it from the system. Do not dereference the asset after calling this function. */
-    void ForgetAsset(AssetPtr asset, bool removeDiskSource);
-    void ForgetAsset(QString assetRef, bool removeDiskSource); /**< @overload */
+    bool ForgetAsset(AssetPtr asset, bool removeDiskSource);
+    bool ForgetAsset(QString assetRef, bool removeDiskSource); /**< @overload */
+
+    /// Removes the given asset bundle from the system and frees up all resources related to it, except its sub assets.
+    /** @param bundleRef A valid bundleRef that is in the asset system. If this asset ref does not exist, this call will do nothing.
+        @param removeDiskSource If true, the disk source of the asset is also deleted. In most cases, this is the locally cached version of the remote file,
+               but for example for local assets, this is the asset itself.
+        @return True if asset bundle was located and unloaded, false otherwise.
+        @note Calling ForgetBundle on an asset bundle will unload it from the system. Do not dereference the asset after calling this function. 
+        @note Calling ForgetBundle will not unload any sub assets that might be loaded from this bundle. For this use ForgetAsset. */
+    bool ForgetBundle(AssetBundlePtr bundle, bool removeDiskSource);
+    bool ForgetBundle(QString bundleRef, bool removeDiskSource); /**< @overload */
 
     /// Sends an asset deletion request to the remote asset storage the asset resides in.
     /// @note Calling DeleteAssetFromStorage on an asset will unload it from the system, *and* delete the disk source of this asset. Do not dereference 
@@ -336,7 +350,7 @@ public slots:
         @param assetName The name to give to the asset in the storage.
         @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
 
-        @note This function will never return 0, but insted will throw Exception (CoreException.h) if passed data is invalid. */
+        @note This function will never return 0, but instead will throw Exception (CoreException.h) if passed data is invalid. */
     AssetUploadTransferPtr UploadAssetFromFile(const QString &filename, AssetStoragePtr destination, const QString &assetName);
 
     /// Uploads an asset from the given data in memory to an asset storage.
@@ -355,7 +369,7 @@ public slots:
         @param assetName The name to give to the asset in the storage.
         @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
 
-        @note This function will never return 0, but insted will throw Exception (CoreException.h) if passed data is invalid. */
+        @note This function will never return 0, but instead will throw Exception (CoreException.h) if passed data is invalid. */
     AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const QString &assetName);
 
     /// Unloads all known assets, and removes them from the list of internal assets known to the Asset API.
@@ -437,12 +451,18 @@ signals:
     /// Emitted before an asset is going to be forgotten.
     void AssetAboutToBeRemoved(AssetPtr asset);
 
+    /// Emitted before an asset bundle is going to be forgotten.
+    void AssetAboutToBeRemoved(AssetBundlePtr bundle);
+
     /// Emitted before an assets disk source will be removed.
     void DiskSourceAboutToBeRemoved(AssetPtr asset);
-    
+
+    /// Emitted before an asset bundles disk source will be removed.
+    void DiskSourceAboutToBeRemoved(AssetBundlePtr bundle);
+
     /// An asset's disk source has been modified. Practically only emitted for files in the asset cache.
     void AssetDiskSourceChanged(AssetPtr asset);
-    
+
     /// Emitted when an asset has been uploaded
     void AssetUploaded(const QString &assetRef);
 
@@ -451,7 +471,7 @@ signals:
 
     /// Emitted when an asset storage has been added
     void AssetStorageAdded(AssetStoragePtr storage);
-    
+
     /// Emitted when the contents of an asset disk source has changed. ///\todo Implement.
     //void AssetDiskSourceChanged(AssetPtr asset);
 
