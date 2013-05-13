@@ -885,26 +885,15 @@ IF NOT EXIST "%DEPS%\protobuf". (
 :: is set properly. Because of this we can skip copying things to /lib /bin /include folders.
 IF NOT EXIST "%DEPS%\protobuf\vsprojects\Debug\libprotobuf.lib". (
     cd "%DEPS%\protobuf\vsprojects"
-    IF %GENERATOR%==%GENERATOR_VS2008% (
-        :: Upgrade the VS2005 files to VS2008
-        :: TODO 64-bit VS2008 not yet possible on VS2008!
-        cecho {0D}Upgrading Google Protobuf project files.{# #}{\n}
-        vcbuild /c /upgrade libprotobuf.vcproj $ALL
-        vcbuild /c /upgrade libprotoc.vcproj Release
-        vcbuild /c /upgrade protoc.vcproj Release
-        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-    ) ELSE (
-        :: Command-line upgrading from VS2005 format to VS2010 (or newer) format fails,
-        :: so must use files converted by the Visual Studio Conversion Wizard.
-        copy /Y "%TOOLS%\Mods\vs2010-protobuf.sln_" protobuf.sln
-        copy /Y "%TOOLS%\Mods\vs2010-libprotobuf.vcxproj_" libprotobuf.vcxproj
-        copy /Y "%TOOLS%\Mods\vs2010-libprotoc.vcxproj_" libprotoc.vcxproj
-        copy /Y "%TOOLS%\Mods\vs2010-protoc.vcxproj_" protoc.vcxproj
-    )
+    :: Must use custom solution and project files in order to be able to build with VC10 and/or as 64-bit.
+    copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-protobuf.sln" protobuf.sln
+    copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-libprotobuf.%VCPROJ_FILE_EXT%" libprotobuf.%VCPROJ_FILE_EXT%
+    copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-libprotoc.%VCPROJ_FILE_EXT%" libprotoc.%VCPROJ_FILE_EXT%
+    copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-protoc.%VCPROJ_FILE_EXT%" protoc.%VCPROJ_FILE_EXT%
     echo.
     cecho {0D}Building Google Protobuf. Please be patient, this will take a while.{# #}{\n}
-    MSBuild protobuf.sln /p:configuration=Debug /p:platform="%VS_PLATFORM%" /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-    MSBuild protobuf.sln /p:configuration=Release /p:platform="%VS_PLATFORM%" /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild protobuf.sln /p:configuration=Debug /p:platform="%VS_PLATFORM%" /t:libprotobuf;libprotoc;protoc /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild protobuf.sln /p:configuration=Release /p:platform="%VS_PLATFORM%" /t:libprotobuf;libprotoc;protoc /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Google Protobuf already built. Skipping.{# #}{\n}
@@ -959,60 +948,57 @@ IF NOT EXIST "%DEPS%\celt\lib\Release\libcelt.lib" (
     cecho {0D}Celt already built. Skipping.{# #}{\n}
 )
 
-:: VLC
-IF NOT %GENERATOR%==%GENERATOR_VS2008% (
-   cecho {0D}VLC is not binary-compatible with non-VS2008 binaries, skipping.{# #}{\n}
-   GOTO :SKIP_VLC
-)
+:: VLC, only usable with 32-bit VC9 builds.
+IF %VS_VER%==vs2008 IF %TARGET_ARCH%==x86 (
+    IF NOT EXIST "%DEPS%\vlc-2.0.1-win32.zip". (
+        CD "%DEPS%"
+        rmdir /S /Q "%DEPS%\vlc"
+        cecho {0D}Downloading VLC 2.0.1{# #}{\n}
+        wget http://sourceforge.net/projects/vlc/files/2.0.1/win32/vlc-2.0.1-win32.zip/download
+        IF NOT EXIST "%DEPS%\vlc-2.0.1-win32.zip". GOTO :ERROR
+    ) ELSE (
+        cecho {0D}VLC 2.0.1 already downloaded. Skipping.{# #}{\n}
+    )
 
-IF NOT EXIST "%DEPS%\vlc-2.0.1-win32.zip". (
-  CD "%DEPS%"
-  rmdir /S /Q "%DEPS%\vlc"
-  cecho {0D}Downloading VLC 2.0.1{# #}{\n}
-  wget http://sourceforge.net/projects/vlc/files/2.0.1/win32/vlc-2.0.1-win32.zip/download
-  IF NOT EXIST "%DEPS%\vlc-2.0.1-win32.zip". GOTO :ERROR
+    IF NOT EXIST "%DEPS%\vlc". (
+        CD "%DEPS%"
+        mkdir vlc
+        cecho {0D}Extracting VLC 2.0.1 package to "%DEPS%\vlc\vlc-2.0.1"{# #}{\n}
+        7za x -y -ovlc vlc-2.0.1-win32.zip
+        cd vlc
+        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+        mkdir lib
+        mkdir include
+        mkdir bin\plugins\vlcplugins
+        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+        :: Copy from extraced location to our subfolders
+        cecho {0D}Copying needed VLC 2.0.1 files to \bin \lib and \include{# #}{\n}
+        copy /Y vlc-2.0.1\*.dll bin\
+        xcopy /E /I /C /H /R /Y vlc-2.0.1\plugins\*.* bin\plugins\vlcplugins
+        xcopy /E /I /C /H /R /Y vlc-2.0.1\sdk\include\*.* include
+        copy /Y vlc-2.0.1\sdk\lib\*.lib lib\
+        :: Remove extracted folder, not needed anymore
+        rmdir /S /Q vlc-2.0.1
+        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+        :: Force deployment and clean vlc plugins cache file
+        del /Q "%TUNDRA_BIN%\libvlc.dll"
+        rmdir /S /Q "%TUNDRA_BIN%\plugins\vlcplugins"
+        del /Q "%TUNDRA_BIN%\plugins\plugins*.dat"
+        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    ) ELSE (
+        cecho {0D}VLC 2.0.1 already extracted. Skipping.{# #}{\n}
+    )
+
+    IF NOT EXIST "%TUNDRA_BIN%\libvlc.dll". (
+        cecho {0D}Deploying VLC 2.0.1 DLLs to Tundra bin\{# #}{\n}
+        xcopy /E /I /C /H /R /Y "%DEPS%\vlc\bin\*.*" "%TUNDRA_BIN%"
+        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    ) ELSE (
+        cecho {0D}VLC 2.0.1 already deployed. Skipping.{# #}{\n}
+    )
 ) ELSE (
-   cecho {0D}VLC 2.0.1 already downloaded. Skipping.{# #}{\n}
+   cecho {0D}VLC is not binary-compatible with non-32-bit non-VS2008 binaries, skipping.{# #}{\n}
 )
-
-IF NOT EXIST "%DEPS%\vlc". (
-   CD "%DEPS%"
-   mkdir vlc
-   cecho {0D}Extracting VLC 2.0.1 package to "%DEPS%\vlc\vlc-2.0.1"{# #}{\n}
-   7za x -y -ovlc vlc-2.0.1-win32.zip
-   cd vlc
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   mkdir lib
-   mkdir include
-   mkdir bin\plugins\vlcplugins
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   :: Copy from extraced location to our subfolders
-   cecho {0D}Copying needed VLC 2.0.1 files to \bin \lib and \include{# #}{\n}
-   copy /Y vlc-2.0.1\*.dll bin\
-   xcopy /E /I /C /H /R /Y vlc-2.0.1\plugins\*.* bin\plugins\vlcplugins
-   xcopy /E /I /C /H /R /Y vlc-2.0.1\sdk\include\*.* include
-   copy /Y vlc-2.0.1\sdk\lib\*.lib lib\
-   :: Remove extracted folder, not needed anymore
-   rmdir /S /Q vlc-2.0.1
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   :: Force deployment and clean vlc plugins cache file
-   del /Q "%TUNDRA_BIN%\libvlc.dll"
-   rmdir /S /Q "%TUNDRA_BIN%\plugins\vlcplugins"
-   del /Q "%TUNDRA_BIN%\plugins\plugins*.dat"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-) ELSE (
-   cecho {0D}VLC 2.0.1 already extracted. Skipping.{# #}{\n}
-)
-
-IF NOT EXIST "%TUNDRA_BIN%\libvlc.dll". (
-   cecho {0D}Deploying VLC 2.0.1 DLLs to Tundra bin\{# #}{\n}
-   xcopy /E /I /C /H /R /Y "%DEPS%\vlc\bin\*.*" "%TUNDRA_BIN%"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-) ELSE (
-   cecho {0D}VLC 2.0.1 already deployed. Skipping.{# #}{\n}
-)
-
-:SKIP_VLC
 
 ::qxmpp
 IF NOT EXIST "%DEPS%\qxmpp\". (
