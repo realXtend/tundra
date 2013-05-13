@@ -1091,8 +1091,8 @@ IF NOT EXIST "%DEPS%\zlib\lib\Release\zlibstat.lib". (
     cd ..\..
     cd contrib\vstudio\%VC_VER%
     cecho {0D}Building zlib %ZLIB_VERSION%{# #}{\n}
-    MSBuild zlibvc.sln /p:configuration="Release" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
-    MSBuild zlibvc.sln /p:configuration="Debug" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+    MSBuild zlibvc.sln /p:configuration="Release" /p:platform="%VS_PLATFORM%" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+    MSBuild zlibvc.sln /p:configuration="Debug" /p:platform="%VS_PLATFORM%" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
     cd ..\..\..
     copy /Y contrib\vstudio\%VC_VER%\%TARGET_ARCH%\ZlibStatRelease\zlibstat.lib ..\lib\Release
     copy /Y contrib\vstudio\%VC_VER%\%TARGET_ARCH%\ZlibStatDebug\zlibstat.lib ..\lib\Debug   
