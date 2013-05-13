@@ -4,6 +4,7 @@
 @echo off
 
 set GENERATOR=%1
+
 :: Supported Visual Studio versions:
 ::set GENERATOR_VS2012="Visual Studio 11"
 ::set GENERATOR_VS2012_WIN64="Visual Studio 11 Win64"
@@ -17,6 +18,11 @@ set GENERATOR_DEFAULT=%GENERATOR_VS2008%
 IF "!GENERATOR!"=="" (
     set GENERATOR=%GENERATOR_DEFAULT%
     Utils\cecho {0E}VSConfig.cmd: Warning: Generator not passed - using the default %GENERATOR_DEFAULT%.{# #}{\n}
+)
+
+IF NOT !GENERATOR!==%GENERATOR_VS2008% IF NOT !GENERATOR!==%GENERATOR_VS2008_WIN64% IF NOT !GENERATOR!==%GENERATOR_VS2010% IF NOT !GENERATOR!==%GENERATOR_VS2010_WIN64% (
+    Utils\cecho {0C}VSConfig.cmd: Invalid or unsupported CMake generator string passed: !GENERATOR!. Cannot proceed, aborting!{# #}{\n}
+    GOTO :EOF
 )
 
 :: Figure out the build configuration from the CMake generator string.
@@ -77,7 +83,7 @@ set TUNDRA_BIN=%CD%\bin
 
 :: Fetch and build the dependencies to a dedicated directory depending on the used VS version and target architecture.
 set DEPS=%CD%\deps-%VS_VER%-%TARGET_ARCH%
-:: TODO For now, use the old deps dir (simply "deps") for 32-bit VS2008 build, but deps-%VS_VER% for all other combinations.
+:: TODO For now, use the old deps dir (simply "deps") for 32-bit VS2008 build, but deps-%VS_VER%-%TARGET_ARCH% for all other combinations.
 :: In the future we'll migrate to using full deps identifier always.
 IF %VS_VER%==vs2008 IF %TARGET_ARCH%==x86 set DEPS=%CD%\deps
 
