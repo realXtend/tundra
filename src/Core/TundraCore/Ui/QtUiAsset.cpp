@@ -155,7 +155,7 @@ QByteArray QtUiAsset::GetRefReplacedAssetData() const
 {
     if (originalData.size() == 0)
         return QByteArray();
-    QByteArray refRewrittenData((const char *)&originalData[0], originalData.size());
+    QByteArray refRewrittenData((const char *)&originalData[0], (int)originalData.size());
 
     // The AssetRef indices need to be adjusted with an offset after rewriting each ref, since the lengths of the refs change in the file.
     // This variable tracks the accumulated byte offset that takes this into account.

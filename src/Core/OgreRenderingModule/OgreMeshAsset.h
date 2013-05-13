@@ -63,7 +63,7 @@ public slots:
     /// Returns the given triangle of the mesh data.
     Triangle Tri(int submeshIndex, int triangleIndex);
 
-    int NumSubmeshes();
+    size_t NumSubmeshes();
 
     int NumTris(int submeshIndex);
 

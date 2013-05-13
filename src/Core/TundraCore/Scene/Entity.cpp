@@ -446,7 +446,7 @@ void Entity::SerializeToBinary(kNet::DataSerializer &dst) const
             comp_bytes.resize(64 * 1024);
             kNet::DataSerializer comp_dest(comp_bytes.data(), comp_bytes.size());
             i->second->SerializeToBinary(comp_dest);
-            comp_bytes.resize(comp_dest.BytesFilled());
+            comp_bytes.resize((int)comp_dest.BytesFilled());
             
             dst.Add<u32>(comp_bytes.size());
             dst.AddArray<u8>((const u8*)comp_bytes.data(), comp_bytes.size());

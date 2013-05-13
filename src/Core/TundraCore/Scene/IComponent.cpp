@@ -249,7 +249,7 @@ void IComponent::AddAttribute(IAttribute* attr)
     // If attribute is static (member variable attributes), we can just push_back it.
     if (!attr->IsDynamic())
     {
-        attr->index = attributes.size();
+        attr->index = (u8)attributes.size();
         attr->owner = this;
         attributes.push_back(attr);
     }
@@ -266,7 +266,7 @@ void IComponent::AddAttribute(IAttribute* attr)
                 return;
             }
         }
-        attr->index = attributes.size();
+        attr->index = (u8)attributes.size();
         attr->owner = this;
         attributes.push_back(attr);
     }
@@ -481,7 +481,7 @@ void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type cha
 
 void IComponent::SerializeToBinary(kNet::DataSerializer& dest) const
 {
-    dest.Add<u8>(attributes.size());
+    dest.Add<u8>((u8)attributes.size());
     for(uint i = 0; i < attributes.size(); ++i)
         if (attributes[i])
             attributes[i]->ToBinary(dest);

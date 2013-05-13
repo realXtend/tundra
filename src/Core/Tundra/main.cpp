@@ -8,7 +8,6 @@ int TUNDRACORE_API run(int argc, char **argv);
 
 #ifdef ANDROID
 #include "StaticPluginRegistry.h"
-
 /// \todo Eliminate the need to list static plugins explicitly here
 REGISTER_STATIC_PLUGIN(OgreRenderingModule)
 REGISTER_STATIC_PLUGIN(PhysicsModule)
@@ -18,7 +17,11 @@ REGISTER_STATIC_PLUGIN(AssetModule)
 REGISTER_STATIC_PLUGIN(JavascriptModule)
 REGISTER_STATIC_PLUGIN(AvatarModule)
 REGISTER_STATIC_PLUGIN(DebugStatsModule)
+#endif
 
+#if defined(_WIN64) && defined(_DEBUG)
+#include <kNet/64BitAllocDebugger.h>
+BottomMemoryAllocator bma; // Use kNet's BottomMemoryAllocator on to catch potential 64-bit memory allocation bugs early on.
 #endif
 
 #if defined(_MSC_VER) // Windows application entry point.
@@ -68,7 +71,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
         argv.push_back(arguments[i].c_str());
     
     if (argv.size())
-        return run(argv.size(), (char**)&argv[0]);
+        return run((int)argv.size(), (char**)&argv[0]);
     else
         return run(0, 0);
 }

@@ -106,7 +106,7 @@ Q_DECLARE_METATYPE(SoundChannelPtr);
 
 QScriptValue qScriptValueFromAssetMap(QScriptEngine *engine, const AssetMap &assetMap)
 {
-    QScriptValue v = engine->newArray(assetMap.size());
+    QScriptValue v = engine->newArray((uint)assetMap.size());
     int idx = 0;
     /// \todo Want to change this to an associative array on the script side.
     for(AssetMap::const_iterator iter = assetMap.begin(); iter != assetMap.end(); ++iter)
@@ -125,7 +125,7 @@ void qScriptValueToAssetMap(const QScriptValue &/*value*/, AssetMap &/*assetMap*
 
 QScriptValue qScriptValueFromAssetTransferMap(QScriptEngine *engine, const AssetTransferMap &assetMap)
 {
-    QScriptValue v = engine->newArray(assetMap.size());
+    QScriptValue v = engine->newArray((uint)assetMap.size());
     int idx = 0;
     for(AssetTransferMap::const_iterator iter = assetMap.begin(); iter != assetMap.end(); ++iter)
     {
@@ -162,7 +162,7 @@ void qScriptValueToKeyBindingMap(const QScriptValue &value, InputAPI::KeyBinding
 
 QScriptValue qScriptValueFromAssetStoragePtrVector(QScriptEngine *engine, const AssetStorageVector& vec)
 {
-    QScriptValue v = engine->newArray(vec.size());
+    QScriptValue v = engine->newArray((uint)vec.size());
     int idx = 0;
     for(std::vector<AssetStoragePtr>::const_iterator iter = vec.begin(); iter != vec.end(); ++iter)
     {
@@ -273,6 +273,9 @@ static QScriptValue math_MathBreakOnAssume(QScriptContext * /*context*/, QScript
 
 void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 {
+    // C/C++ standard library typedef size_t
+    qRegisterMetaType<size_t>("size_t");
+
     // Core integer type defines
     qRegisterMetaType<s8>("s8");
     qRegisterMetaType<u8>("u8");
@@ -284,6 +287,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qRegisterMetaType<u64>("u64");
 
     // JS -> C++: Enables correct JS 'number' type to our typedef conversion. Hits when slots take in eg. u32 as a parameter.
+    qScriptRegisterMetaType(engine, toScriptU32OrSmaller<size_t>, fromScriptUInt<size_t>);
     qScriptRegisterMetaType(engine, toScriptS32OrSmaller<s8>, fromScriptChar<s8>);
     qScriptRegisterMetaType(engine, toScriptU32OrSmaller<u8>, fromScriptUChar<u8>);
     qScriptRegisterMetaType(engine, toScriptS32OrSmaller<s16>, fromScriptShort<s16>);

@@ -550,7 +550,7 @@ void OgreWorld::OnUpdated(float timeStep)
     else
         visibleEntities_.clear();
     
-    for (unsigned i = visibilityTrackedEntities_.size() - 1; i < visibilityTrackedEntities_.size(); --i)
+    for (size_t i = visibilityTrackedEntities_.size() - 1; i < visibilityTrackedEntities_.size(); --i)
     {
         // Check if the entity has expired; erase from list in that case
         if (visibilityTrackedEntities_[i].expired())
