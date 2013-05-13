@@ -19,9 +19,9 @@ REGISTER_STATIC_PLUGIN(AvatarModule)
 REGISTER_STATIC_PLUGIN(DebugStatsModule)
 #endif
 
-#ifdef _WIN64 // Use kNet's BottomMemoryAllocator on to catch potential 64-bit memory allocation bugs early on.
+#if defined(_WIN64) && defined(_DEBUG)
 #include <kNet/64BitAllocDebugger.h>
-BottomMemoryAllocator bma;
+BottomMemoryAllocator bma; // Use kNet's BottomMemoryAllocator on to catch potential 64-bit memory allocation bugs early on.
 #endif
 
 #if defined(_MSC_VER) // Windows application entry point.
