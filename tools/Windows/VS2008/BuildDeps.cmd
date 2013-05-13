@@ -1,2 +1,3 @@
 @cd ..
-BuildDeps.cmd "Visual Studio 9 2008"
+@call BuildDeps.cmd "Visual Studio 9 2008"
+@cd VS2008

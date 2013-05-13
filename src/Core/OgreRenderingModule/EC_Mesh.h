@@ -354,7 +354,7 @@ public slots:
     /// Returns number of attachments.
     /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
         @note returns just the size of attachment vector, so check individually that attachments actually exist */
-    uint NumAttachments() const { return attachment_entities_.size(); }
+    size_t NumAttachments() const { return attachment_entities_.size(); }
     /// Returns number of materials (submeshes) in attachment mesh entity.
     /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
     uint NumAttachmentMaterials(uint index) const;
@@ -390,7 +390,7 @@ public slots:
     Quat GetBoneDerivedOrientation(const QString& boneName) { return BoneDerivedOrientation(boneName); } /**< @deprecated use BoneDerivedOrientation instead. @todo Add warning print. */
     float GetMorphWeight(const QString& morphName) const { return MorphWeight(morphName); } /**< @deprecated use MorphWeight instead. @todo Add warning print. */
     float GetAttachmentMorphWeight(unsigned index, const QString& morphName) const { return AttachmentMorphWeight(index, morphName); } /**< @deprecated use AttachmentMorphWeight instead. @todo Add warning print. */
-    uint GetNumAttachments() const { return NumAttachments(); } /**< @deprecated Use NumAttachments instead. @todo Add warning print. */
+    size_t GetNumAttachments() const { return NumAttachments(); } /**< @deprecated Use NumAttachments instead. @todo Add warning print. */
     uint GetAttachmentNumMaterials(uint index) const { return NumAttachmentMaterials(index); } /**< @deprecated use NumAttachmentMaterials instead. @todo Add warning print. */
     const std::string& GetAttachmentMaterialName(uint index, uint submeshIndex) const { return AttachmentMaterialName(index, submeshIndex); } /**< @deprecated use AttachmentMaterialName instead. @todo Add warning print. */
 

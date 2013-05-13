@@ -103,10 +103,10 @@ public slots:
     QImage ToQImage(size_t faceIndex = 0, size_t mipmapLevel = 0) const;
 
     /// Get height of the texture. Return 0 if not loaded.
-    uint Height() const;
+    size_t Height() const;
 
     /// Get width of the texture. Return 0 if not loaded.
-    uint Width() const;
+    size_t Width() const;
 
     /// Texture extension.
     QString NameSuffix() const;

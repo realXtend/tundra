@@ -578,7 +578,7 @@ ShaderParameterMap GatherShaderParameters(const Ogre::MaterialPtr &material, boo
                             size_t count = paramDef.elementSize * paramDef.arraySize;
                             QVector<float> paramValue;
                             QVector<float>::iterator iter;
-                            paramValue.resize(count);
+                            paramValue.resize((int)count);
                             verPtr->_readRawConstants(paramDef.physicalIndex, count, &*paramValue.begin());
 
                             QTextStream vector_string;
@@ -641,7 +641,7 @@ ShaderParameterMap GatherShaderParameters(const Ogre::MaterialPtr &material, boo
                                 size_t count = paramDef.elementSize * paramDef.arraySize;
                                 QVector<float> paramValue;
                                 QVector<float>::iterator iter;
-                                paramValue.resize(count);
+                                paramValue.resize((int)count);
 
                                 fragPtr->_readRawConstants(paramDef.physicalIndex, count, &*paramValue.begin());
 

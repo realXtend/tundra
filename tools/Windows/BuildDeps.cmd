@@ -62,23 +62,27 @@ IF %GENERATOR%=="" (
 )
 
 :: If we use VS2008, framework path (for msbuild) may not be correctly set. Manually attempt to add in that case
-IF %GENERATOR%==%GENERATOR_VS2008% set PATH=C:\Windows\Microsoft.NET\Framework\v3.5;%PATH%
+IF %VS_VER%==vs2008 set PATH=C:\Windows\Microsoft.NET\Framework\v3.5;%PATH%
 
 :: Print user-defined variables
 cecho {F0}This script fetches and builds all Tundra dependencies{# #}{\n}
 echo.
 cecho {0A}Script configuration:{# #}{\n}
-cecho {0D}  CMake Generator    = %GENERATOR%{# #}{\n}
-echo    - Passed to CMake -G option
-cecho {0D}  Use Boost          = %USE_BOOST%{# #}{\n}
+cecho {0D}  CMake Generator      = %GENERATOR%{# #}{\n}
+echo    - Passed to CMake -G option.
+cecho {0D}  Target Architecture  = %TARGET_ARCH%{# #}{\n}
+echo    - Whether were doing 32-bit (x86) or 64-bit (x64) build.
+cecho {0D}  Dependency Directory = %DEPS%{# #}{\n}
+echo    - The directory where Tundra dependencies are fetched and built.
+cecho {0D}  Use Boost            = %USE_BOOST%{# #}{\n}
 echo    - Configures whether dependencies kNet, Ogre, and AssImp are built using Boost.
-cecho {0D}  Build Release      = %BUILD_RELEASE%{# #}{\n}
+cecho {0D}  Build Release        = %BUILD_RELEASE%{# #}{\n}
 echo    - Build Release mode in addition to RelWithDebInfo when possible.
 echo      Default is disabled, enable if you are planning to deploy
 echo      Tundra in Release mode.
-cecho {0D}  Build OpenSSL      = %BUILD_OPENSSL%{# #}{\n}
+cecho {0D}  Build OpenSSL        = %BUILD_OPENSSL%{# #}{\n}
 echo    - Build OpenSSL, requires Active Perl.
-cecho {0D}  Build Qt with JOM  = %USE_JOM%{# #}{\n}
+cecho {0D}  Build Qt with JOM    = %USE_JOM%{# #}{\n}
 echo    - Use jom.exe instead of nmake.exe to build qmake projects.
 echo      Default enabled as jom is significantly faster by usin all CPUs.
 echo.
@@ -154,18 +158,27 @@ IF NOT EXIST "%DEPS%\openssl\src". (
 )
 
 IF NOT EXIST "%DEPS%\openssl\bin\ssleay32.dll". (
-   cd "%DEPS%\openssl\src"
-   cecho {0D}Configuring OpenSSL build.{# #}{\n}
-   perl Configure VC-WIN32 --prefix=%DEPS%\openssl
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   REM Build Makefiles  with assembly language files. ml.exe is a part of Visual Studio
-   call ms\do_masm.bat
-   cecho {0D}Building OpenSSL. Please be patient, this will take a while.{# #}{\n}
-   nmake -f ms\ntdll.mak
-   nmake -f ms\ntdll.mak install
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   REM We (re)built OpenSSL, so delete ssleay32.dll in Tundra bin\ to force DLL deployment below.
-   del /Q "%TUNDRA_BIN%\ssleay32.dll"
+    cd "%DEPS%\openssl\src"
+    cecho {0D}Configuring OpenSSL build.{# #}{\n}
+    IF %TARGET_ARCH%==x64 (
+        perl Configure VC-WIN64A --prefix=%DEPS%\openssl
+    ) ELSE (
+        perl Configure VC-WIN32 --prefix=%DEPS%\openssl
+    )
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
+    REM Build Makefiles  with assembly language files. ml.exe is a part of Visual Studio
+    cecho {0D}Building OpenSSL. Please be patient, this will take a while.{# #}{\n}    
+    if %TARGET_ARCH%==x64 (
+        call ms\do_win64a.bat
+    ) else (
+        call ms\do_masm.bat
+    )
+    nmake -f ms\ntdll.mak
+    nmake -f ms\ntdll.mak install
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    REM We (re)built OpenSSL, so delete ssleay32.dll in Tundra bin\ to force DLL deployment below.
+    del /Q "%TUNDRA_BIN%\ssleay32.dll"
 ) ELSE (
    cecho {0D}OpenSSL already built. Skipping.{# #}{\n}
 )
@@ -324,7 +337,6 @@ IF NOT EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
 
 :: Bullet physics engine
 :: version 2.81 sp1, svn rev 2613
-
 IF NOT EXIST "%DEPS%\bullet\". (
     cecho {0D}Cloning Bullet into "%DEPS%\bullet".{# #}{\n}
     cd "%DEPS%"
@@ -334,7 +346,9 @@ IF NOT EXIST "%DEPS%\bullet\". (
     IF NOT EXIST BULLET_PHYSICS.sln. (
         cecho {0D}Running CMake for Bullet.{# #}{\n}
         IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
-         cmake . -G %GENERATOR% -DBUILD_DEMOS:BOOL=OFF -DBUILD_EXTRAS:BOOL=OFF -DBUILD_INTEL_OPENCL_DEMOS:BOOL=OFF -DBUILD_NVIDIA_OPENCL_DEMOS:BOOL=OFF -DBUILD_UNIT_TESTS:BOOL=OFF -DUSE_DX11:BOOL=OFF-DBUILD_AMD_OPENCL_DEMOS:BOOL=OFF -DCMAKE_DEBUG_POSTFIX= -DCMAKE_MINSIZEREL_POSTFIX= -DCMAKE_RELWITHDEBINFO_POSTFIX=
+        cmake . -G %GENERATOR% -DBUILD_DEMOS:BOOL=OFF -DBUILD_EXTRAS:BOOL=OFF -DBUILD_INTEL_OPENCL_DEMOS:BOOL=OFF ^
+            -DBUILD_NVIDIA_OPENCL_DEMOS:BOOL=OFF -DBUILD_UNIT_TESTS:BOOL=OFF -DUSE_DX11:BOOL=OFF -DBUILD_AMD_OPENCL_DEMOS:BOOL=OFF ^
+            -DCMAKE_DEBUG_POSTFIX= -DCMAKE_MINSIZEREL_POSTFIX= -DCMAKE_RELWITHDEBINFO_POSTFIX=
         IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     )
 
@@ -386,36 +400,32 @@ IF NOT EXIST "%DEPS%\boost". (
 :SKIP_BOOST
 
 IF NOT EXIST "%DEPS%\assimp\". (
-   cecho {0D}Checking out OpenAssetImport library from https://assimp.svn.sourceforge.net/svnroot/assimp/trunk into "%DEPS%\assimp".{# #}{\n}
-   cd "%DEPS%"
-   :: Note the fixed revision number. OpenAssetImport does not have an up-to-date tagged release, so fix to a recent revision of trunk.
-   svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk assimp
+    cecho {0D}Checking out OpenAssetImport library from https://assimp.svn.sourceforge.net/svnroot/assimp/trunk into "%DEPS%\assimp".{# #}{\n}
+    cd "%DEPS%"
+    :: Note the fixed revision number. OpenAssetImport does not have an up-to-date tagged release, so fix to a recent revision of trunk.
+    svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk assimp
+)
 
-   cd assimp
-   IF %USE_BOOST%==FALSE (
-      :: Tweaks CMakeLists.txt to set ASSIMP_ENABLE_BOOST_WORKAROUND on.
-      sed s/"ASSIMP_ENABLE_BOOST_WORKAROUND OFF"/"ASSIMP_ENABLE_BOOST_WORKAROUND ON"/g <CMakeLists.txt >CMakeLists.txt.sed
-      del CMakeLists.txt
-      rename CMakeLists.txt.sed CMakeLists.txt
-   )
+IF NOT EXIST "%DEPS%\assimp\bin\Release\assimp.dll". (
+    cd cd "%DEPS%\assimp"
+    IF %USE_BOOST%==FALSE (
+        :: Tweaks CMakeLists.txt to set ASSIMP_ENABLE_BOOST_WORKAROUND on.
+        sed s/"ASSIMP_ENABLE_BOOST_WORKAROUND OFF"/"ASSIMP_ENABLE_BOOST_WORKAROUND ON"/g <CMakeLists.txt >CMakeLists.txt.sed
+        del CMakeLists.txt
+        rename CMakeLists.txt.sed CMakeLists.txt
+    )
 
-   cmake -G %GENERATOR%
-   
-   :: Debug build.
-   MSBuild Assimp.sln /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild Assimp.sln /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild Assimp.sln /p:configuration=RelWithDebInfo /nologo /m:%NUMBER_OF_PROCESSORS%
+    cmake -G %GENERATOR%
+
+    MSBuild Assimp.sln /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild Assimp.sln /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild Assimp.sln /p:configuration=RelWithDebInfo /nologo /m:%NUMBER_OF_PROCESSORS%
 ) ELSE (
-   ::TODO Even if %DEPS%\assimp exists, we have no guarantee that assimp is built successfully for real
-   cecho {0D}OpenAssetImport already built. Skipping.{# #}{\n}
+    cecho {0D}OpenAssetImport already built. Skipping.{# #}{\n}
 )
 
 :: Copy the correct runtime to /bin for this run
-IF %BUILD_RELEASE% == TRUE (
-   copy /Y "%DEPS%\assimp\bin\Release\assimp.dll" "%TUNDRA_BIN%"
-) ELSE (
-   copy /Y "%DEPS%\assimp\bin\RelWithDebInfo\assimp.dll" "%TUNDRA_BIN%"
-)
+copy /Y "%DEPS%\assimp\bin\%BUILD_TYPE%\assimp.dll" "%TUNDRA_BIN%"
 copy /Y "%DEPS%\assimp\bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
 
 set BUILD_KNET=TRUE
@@ -475,7 +485,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xml.dll". (
    :: We need to patch pp-iterator.h in order to make it compile with newer Visual Studio versions:
    :: http://stackoverflow.com/questions/2791525/stl-operator-behavior-change-with-visual-studio-2010
    :: Also cannot use QMake as it results in linker errors, so instead generate vcproj files and build using MSBuild.
-   IF NOT %GENERATOR%==%GENERATOR_VS2008% (
+   IF NOT %VS_VER%==vs2008 (
       copy /Y "%TOOLS%\Mods\QtScriptGenerator_pp-iterator.h" "%DEPS%\qtscriptgenerator\generator\parser\rpp\pp-iterator.h"
       qmake -tp vc
       cecho {0D}Building qtscript plugins. Please be patient, this will take a while.{# #}{\n}
@@ -596,21 +606,27 @@ cd "%DEPS%\ogre-safe-nocrashes"
 :: TODO Use newer dependencies when updating Ogre to newer version
 :: http://sourceforge.net/projects/ogre/files/ogre-dependencies-vc%%2B%%2B/1.9/OgreDependencies_MSVC_20120819.zip/download
 IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
-   cecho {0D}Downloading Ogre prebuilt dependencies package.{# #}{\n}
-   wget "http://garr.dl.sourceforge.net/project/ogre/ogre-dependencies-vc%%2B%%2B/1.7/OgreDependencies_MSVC_20101231.zip"
-   IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
-      cecho {0C}Error downloading Ogre depencencies! Aborting!{# #}{\n}
-      GOTO :EOF
-   )
+    cecho {0D}Downloading Ogre prebuilt dependencies package.{# #}{\n}
+    wget "http://garr.dl.sourceforge.net/project/ogre/ogre-dependencies-vc%%2B%%2B/1.7/OgreDependencies_MSVC_20101231.zip"
+    IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
+        cecho {0C}Error downloading Ogre depencencies! Aborting!{# #}{\n}
+        GOTO :ERROR
+    )
 
-   cecho {0D}Extracting Ogre prebuilt dependencies package.{# #}{\n}
-   7za x -y OgreDependencies_MSVC_20101231.zip
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cecho {0D}Extracting Ogre prebuilt dependencies package.{# #}{\n}
+    7za x -y OgreDependencies_MSVC_20101231.zip
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-   cecho {0D}Building Ogre prebuilt dependencies package. Please be patient, this will take a while.{# #}{\n}
-   MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cecho {0D}Building Ogre prebuilt dependencies package. Please be patient, this will take a while.{# #}{\n}
+    MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
+    REM TODO For some reason zlib x64 libs end up to wrong directories, so must copy them manually.
+    IF %TARGET_ARCH%==x64 (
+        copy /Y Dependencies\src\zlib-1.2.3\projects\visualc6\Win32_LIB_Debug\zlibd.lib Dependencies\lib\Debug
+        copy /Y Dependencies\src\zlib-1.2.3\projects\visualc6\Win32_LIB_Release\zlib.lib Dependencies\lib\Release
+    )
 )
 
 :: Use Intel Thread Building Blocks for Ogre's threading if Boost is not used.
@@ -650,28 +666,23 @@ IF %USE_BOOST%==FALSE (
         del _tbb_windef.h
         rename _tbb_windef.h.sed _tbb_windef.h
     )
-
-    REM Copy TBB DLLs.
-    REM TODO Currently hardcoded to the 32-bit versions.
-    IF NOT EXIST "%TUNDRA_BIN%\tbb.dll". (
-      copy /Y "%TBB_HOME%\bin\ia32\%VC_VER%\tbb.dll" "%TUNDRA_BIN%"
-    )
-    IF NOT EXIST "%TUNDRA_BIN%\tbb_debug.dll". (
-      copy /Y "%TBB_HOME%\bin\ia32\%VC_VER%\tbb_debug.dll" "%TUNDRA_BIN%"
-    )
 )
+
+:: Copy TBB DLLs.
+copy /Y "%TBB_HOME%\bin\%INTEL_ARCH%\%VC_VER%\tbb_debug.dll" "%TUNDRA_BIN%"
+copy /Y "%TBB_HOME%\bin\%INTEL_ARCH%\%VC_VER%\tbb.dll" "%TUNDRA_BIN%"
 
 cd "%DEPS%\ogre-safe-nocrashes"
 IF NOT EXIST OGRE.sln. (
-   :: If not wanting to use Boost with Ogre, we need slightly tweaked version of Ogre's Dependencies.cmake
-   :: which doesn't enforce usage of Boost if it's found regardless of the value of OGRE_USE_BOOST
-   IF %USE_BOOST%==FALSE (
-      copy /Y "%TOOLS%\Mods\OgreNoBoost_Dependencies.cmake_" "%DEPS%\ogre-safe-nocrashes\CMake\Dependencies.cmake"
-   )
-   cecho {0D}Running cmake for ogre-safe-nocrashes.{# #}{\n}
-REM   cmake -G %GENERATOR% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1 -DOGRE_PROFILING:BOOL=ON
-   cmake -G %GENERATOR% -DTBB_HOME=%TBB_HOME% -DOGRE_USE_BOOST:BOOL=%USE_BOOST% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    :: If not wanting to use Boost with Ogre, we need slightly tweaked version of Ogre's Dependencies.cmake
+    :: which doesn't enforce usage of Boost if it's found regardless of the value of OGRE_USE_BOOST
+    IF %USE_BOOST%==FALSE (
+        copy /Y "%TOOLS%\Mods\OgreNoBoost_Dependencies.cmake_" "%DEPS%\ogre-safe-nocrashes\CMake\Dependencies.cmake"
+    )
+    cecho {0D}Running cmake for ogre-safe-nocrashes.{# #}{\n}
+    cmake -G %GENERATOR% -DTBB_HOME=%TBB_HOME% -DOGRE_USE_BOOST:BOOL=%USE_BOOST% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF ^
+        -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 
 cecho {0D}Building ogre-safe-nocrashes. Please be patient, this will take a while.{# #}{\n}
@@ -751,39 +762,42 @@ IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 :: QtPropertyBrowser
 IF NOT EXIST "%DEPS%\qt-solutions". (
-   cecho {0D}Cloning QtPropertyBrowser into "%DEPS%\qt-solutions".{# #}{\n}
-   cd "%DEPS%"
-   call git clone https://git.gitorious.org/qt-solutions/qt-solutions.git
-   IF NOT EXIST "%DEPS%\qt-solutions\.git" GOTO :ERROR
-   cd qt-solutions\qtpropertybrowser
+    cecho {0D}Cloning QtPropertyBrowser into "%DEPS%\qt-solutions".{# #}{\n}
+    cd "%DEPS%"
+    call git clone https://git.gitorious.org/qt-solutions/qt-solutions.git
+    IF NOT EXIST "%DEPS%\qt-solutions\.git" GOTO :ERROR
+)
 
-   REM Don't build examples.
-   sed -e "s/SUBDIRS+=examples//" < qtpropertybrowser.pro > qtpropertybrowser.pro.sed
-   del qtpropertybrowser.pro
-   ren qtpropertybrowser.pro.sed qtpropertybrowser.pro
+IF NOT EXIST "%DEPS%\qt-solutions\qtpropertybrowser\lib\QtSolutions_PropertyBrowser-head.dll" (
+    cd "%DEPS%\qt-solutions\qtpropertybrowser"
 
-   call configure -library
-   qmake
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   IF %USE_JOM%==TRUE (
-      cecho {0D}- Building QtPropertyBrowser with jom{# #}{\n}
-      "%DEPS%\qt\jom\jom.exe"
-   ) ELSE (
-      cecho {0D}- Building QtPropertyBrowser with nmake{# #}{\n}
-      nmake /nologo
-   )
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   :: Force deployment
-   del /Q "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head*.dll"
+    REM Don't build examples.
+    sed -e "s/SUBDIRS+=examples//" < qtpropertybrowser.pro > qtpropertybrowser.pro.sed
+    del qtpropertybrowser.pro
+    ren qtpropertybrowser.pro.sed qtpropertybrowser.pro
+
+    call configure -library
+    qmake
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    IF %USE_JOM%==TRUE (
+        cecho {0D}- Building QtPropertyBrowser with jom{# #}{\n}
+        "%DEPS%\qt\jom\jom.exe"
+    ) ELSE (
+        cecho {0D}- Building QtPropertyBrowser with nmake{# #}{\n}
+        nmake /nologo
+    )
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    :: Force deployment
+    del /Q "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head*.dll"
 ) ELSE (
-   cecho {0D}QtPropertyBrowser already built. Skipping.{# #}{\n}
+    cecho {0D}QtPropertyBrowser already built. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head.dll". (
-   cecho {0D}Deploying QtPropertyBrowser DLLs.{# #}{\n}
-   copy /Y "%DEPS%\qt-solutions\qtpropertybrowser\lib\QtSolutions_PropertyBrowser-head*.dll" "%TUNDRA_BIN%"
+    cecho {0D}Deploying QtPropertyBrowser DLLs.{# #}{\n}
+    copy /Y "%DEPS%\qt-solutions\qtpropertybrowser\lib\QtSolutions_PropertyBrowser-head*.dll" "%TUNDRA_BIN%"
 ) ELSE (
-   cecho {0D}QtPropertyBrowser DLLs already deployed. Skipping.{# #}{\n}
+    cecho {0D}QtPropertyBrowser DLLs already deployed. Skipping.{# #}{\n}
 )
 
 :: OpenAL
@@ -801,53 +815,48 @@ IF NOT EXIST "%DEPS%\OpenAL\libs\Win32\OpenAL32.lib". (
 
 :: Ogg
 IF NOT EXIST "%DEPS%\ogg". (
-   cecho {0D}Cloning Ogg into "%DEPS%\ogg".{# #}{\n}
-   svn checkout http://svn.xiph.org/tags/ogg/libogg-1.3.0/ "%DEPS%\ogg"
-   :: TODO ideally we would do cd "%DEPS%\ogg\win32\%VS_VER%" here, but ogg has no VS2012 directory currently
-   IF %GENERATOR%==%GENERATOR_VS2008% (
-      cd "%DEPS%\ogg\win32\VS2008"
-   ) ELSE (
-      cd "%DEPS%\ogg\win32\VS2010"
-   )
+    cecho {0D}Cloning Ogg into "%DEPS%\ogg".{# #}{\n}
+    svn checkout http://svn.xiph.org/tags/ogg/libogg-1.3.0/ "%DEPS%\ogg"
+)
 
-   cecho {0D}Building Ogg. Please be patient, this will take a while.{# #}{\n}
-   MSBuild libogg_static.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild libogg_static.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+IF NOT EXIST "%DEPS%\ogg\win32\%VS2008_OR_VS2010%\%VS_PLATFORM%\Release\libogg_static.lib". (
+    cd "%DEPS%\ogg\win32\%VS2008_OR_VS2010%"
+    cecho {0D}Building Ogg. Please be patient, this will take a while.{# #}{\n}
+    MSBuild libogg_static.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libogg_static.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-   cecho {0D}Ogg already built. Skipping.{# #}{\n}
+    cecho {0D}Ogg already built. Skipping.{# #}{\n}
 )
 
 :: Vorbis
 IF NOT EXIST "%DEPS%\vorbis". (
-   cecho {0D}Cloning Vorbis into "%DEPS%\vorbis".{# #}{\n}
-   svn checkout http://svn.xiph.org/tags/vorbis/libvorbis-1.3.3/ "%DEPS%\vorbis"
-   :: TODO ideally we would do cd "%DEPS%\ogg\win32\%VS_VER%" here, but ogg has no VS2012 directory currently
-   IF %GENERATOR%==%GENERATOR_VS2008% (
-      cd "%DEPS%\vorbis\win32\VS2008"
-   ) ELSE (
-      cd "%DEPS%\vorbis\win32\VS2010"
-   )
-   echo %CD%
+    cecho {0D}Cloning Vorbis into "%DEPS%\vorbis".{# #}{\n}
+    svn checkout http://svn.xiph.org/tags/vorbis/libvorbis-1.3.3/ "%DEPS%\vorbis"
+)
 
-   cecho {0D}Building Vorbis. Please be patient, this will take a while.{# #}{\n}
-   MSBuild vorbis_static.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild vorbis_static.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+IF NOT EXIST "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%\%VS_PLATFORM%\Release\libvorbis_static.lib". (
+    cd "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%"
+    cecho {0D}Building Vorbis. Please be patient, this will take a while.{# #}{\n}
+    MSBuild vorbis_static.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild vorbis_static.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-   cecho {0D}Vorbis already built. Skipping.{# #}{\n}
+    cecho {0D}Vorbis already built. Skipping.{# #}{\n}
 )
 
 :: Theora
 IF NOT EXIST "%DEPS%\theora". (
-   cecho {0D}Cloning Theora into "%DEPS%\theora".{# #}{\n}
-   svn checkout http://svn.xiph.org/tags/theora/libtheora-1.1.1/ "%DEPS%\theora"
-   cd "%DEPS%\theora\win32\VS2008"
+    cecho {0D}Cloning Theora into "%DEPS%\theora".{# #}{\n}
+    svn checkout http://svn.xiph.org/tags/theora/libtheora-1.1.1/ "%DEPS%\theora"
+)
 
-   cecho {0D}Building Theora. Please be patient, this will take a while.{# #}{\n}
-   MSBuild libtheora_static.sln /p:configuration=Debug /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild libtheora_static.sln /p:configuration=Release_SSE2 /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+IF NOT EXIST "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\Release_SSE2\libtheora_static.lib". (
+    cd "%DEPS%\theora\win32\VS2008"
+    cecho {0D}Building Theora. Please be patient, this will take a while.{# #}{\n}
+    MSBuild libtheora_static.sln /p:configuration=Debug /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libtheora_static.sln /p:configuration=Release_SSE2 /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    REM IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Theora already built. Skipping.{# #}{\n}
 )
@@ -888,7 +897,7 @@ IF NOT EXIST "%DEPS%\protobuf". (
    
    cecho {0D}Extracting Google Protobuf 2.4.1 sources to "%DEPS%\protobuf".{# #}{\n}
    7za x -y protobuf-2.4.1.zip
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+   REM IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    ren protobuf-2.4.1 protobuf
    IF NOT EXIST "%DEPS%\protobuf". (
       cecho {0E}Failed to rename %DEPS%\protobuf-2.4.1 to %DEPS%\protobuf. Permission denied for your account?{# #}{\n}
@@ -903,8 +912,9 @@ IF NOT EXIST "%DEPS%\protobuf". (
 :: is set properly. Because of this we can skip copying things to /lib /bin /include folders.
 IF NOT EXIST "%DEPS%\protobuf\vsprojects\Debug\libprotobuf.lib". (
     cd "%DEPS%\protobuf\vsprojects"
-    IF %GENERATOR%==%GENERATOR_VS2008% (
+    IF %VS_VER%==vs2008 (
         :: Upgrade the VS2005 files to VS2008
+        :: TODO 64-bit VS2008 not yet possible on VS2008!
         cecho {0D}Upgrading Google Protobuf project files.{# #}{\n}
         vcbuild /c /upgrade libprotobuf.vcproj $ALL
         vcbuild /c /upgrade libprotoc.vcproj Release
@@ -939,31 +949,45 @@ IF NOT EXIST "%DEPS%\celt\.git" (
    call git checkout -b v0.11.1 v0.11.1
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    mkdir msvc
-   copy /Y config.h msvc\config.h
+   copy /Y libcelt\config.h msvc\config.h
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Celt already cloned. Skipping.{# #}{\n}
 )
 
-IF NOT EXIST "%DEPS%\celt\lib\libcelt.lib" (
-   cd "%DEPS%\celt\libcelt"
-   IF %GENERATOR%==%GENERATOR_VS2008% (
-      :: The project does not provide VS2008 solution file
-      cecho {0D}Copying VS2008 project file to "%DEPS%\celt\libcelt\libcelt.vcproj."{# #}{\n}
-      copy /Y "%TOOLS%\Mods\libcelt.vcproj" "%DEPS%\celt\libcelt"
-      IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   )
-   cecho {0D}Building Celt 0.11.1.{# #}{\n}
-   MSBuild libcelt.%VCPROJ_FILE_EXT% /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild libcelt.%VCPROJ_FILE_EXT% /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   IF NOT EXIST "%DEPS%\celt\include\celt". mkdir %DEPS%\celt\include\celt
-   copy /Y "*.h" "%DEPS%\celt\include\celt\"
+IF NOT EXIST "%DEPS%\celt\lib\Release\libcelt.lib" (
+    cd "%DEPS%\celt\libcelt"
+    :: We need custom project files that have also x64 configurations.
+    :: Also, the project does not even provide a VS2008 project file to begin with.
+    copy /Y "%TOOLS%\Mods\libcelt.%VCPROJ_FILE_EXT%" "%DEPS%\celt\libcelt"
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
+    cecho {0D}Building Celt 0.11.1.{# #}{\n}
+    MSBuild libcelt.%VCPROJ_FILE_EXT% /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libcelt.%VCPROJ_FILE_EXT% /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+
+    :: Copy libs
+    IF NOT EXIST "%DEPS%\celt\lib". (
+        mkdir "%DEPS%\celt\lib\Debug\"
+        mkdir "%DEPS%\celt\lib\Release\"
+    )
+    IF %TARGET_ARCH%==x64 (
+        copy /Y X64\Debug\libcelt.lib "%DEPS%\celt\lib\Debug\"
+        copy /Y X64\Release\libcelt.lib "%DEPS%\celt\lib\Release\"
+    ) ELSE (
+        copy /Y lib\Debug\libcelt.lib "%DEPS%\celt\lib\Release\"
+        copy /Y lib\Release\libcelt.lib "%DEPS%\celt\lib\Release\"
+    )
+
+    :: Copy headers
+    IF NOT EXIST "%DEPS%\celt\include\celt". mkdir "%DEPS%\celt\include\celt"
+    copy /Y "*.h" "%DEPS%\celt\include\celt\"
 ) ELSE (
-   cecho {0D}Celt already built. Skipping.{# #}{\n}
+    cecho {0D}Celt already built. Skipping.{# #}{\n}
 )
 
 :: VLC
-IF NOT %GENERATOR%==%GENERATOR_VS2008% (
+IF NOT %VS_VER%==vs2008 (
    cecho {0D}VLC is not binary-compatible with non-VS2008 binaries, skipping.{# #}{\n}
    GOTO :SKIP_VLC
 )
@@ -1048,100 +1072,109 @@ IF NOT EXIST "%DEPS%\qxmpp\". (
 )
 
 :: ZLIB
-IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". (
+set ZLIB_VERSION=1.2.8
+IF NOT EXIST "%DEPS%\zlib-%ZLIB_VERSION%.tar.gz". (
    CD "%DEPS%"
    rmdir /S /Q "%DEPS%\zlib"
-   cecho {0D}Downloading zlib 1.2.7{# #}{\n}
-   wget http://zlib.net/zlib-1.2.7.tar.gz
-   IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". GOTO :ERROR
+   cecho {0D}Downloading zlib %ZLIB_VERSION%{# #}{\n}
+   wget http://zlib.net/zlib-%ZLIB_VERSION%.tar.gz
+   IF NOT EXIST "%DEPS%\zlib-%ZLIB_VERSION%.tar.gz". GOTO :ERROR
 ) ELSE (
-   cecho {0D}zlib 1.2.7 already downloaded. Skipping.{# #}{\n}
+   cecho {0D}zlib %ZLIB_VERSION% already downloaded. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%DEPS%\zlib". (
-   CD "%DEPS%"
-   cecho {0D}Extracting zlib 1.2.7 package to "%DEPS%\zlib"{# #}{\n}
-   mkdir zlib
-   7za e -y zlib-1.2.7.tar.gz
-   7za x -y -ozlib zlib-1.2.7.tar
-   del /Q zlib-1.2.7.tar
-   cecho {0D}Building zlib 1.2.7{# #}{\n}
-   cd zlib
-   mkdir lib
-   mkdir lib\Release
-   mkdir lib\Debug
-   mkdir include
-   cd zlib-1.2.7
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cd "%DEPS%"
+    cecho {0D}Extracting zlib %ZLIB_VERSION% package to "%DEPS%\zlib"{# #}{\n}
+    mkdir zlib
+    7za e -y zlib-%ZLIB_VERSION%.tar.gz
+    7za x -y -ozlib zlib-%ZLIB_VERSION%.tar
+    del /Q zlib-%ZLIB_VERSION%.tar
+)
 
-   cd contrib\masmx86
-   call bld_ml32.bat
+IF NOT EXIST "%DEPS%\zlib\lib\Release\zlibstat.lib". (
+    cd "%DEPS%\zlib"
+    mkdir lib
+    mkdir lib\Release
+    mkdir lib\Debug
+    mkdir include
+    cd zlib-%ZLIB_VERSION%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-   cd ..\..
-   cd contrib\vstudio\%VC_VER%
+    IF %TARGET_ARCH%==x64 (
+        cd contrib\masmx64
+        call bld_ml64.bat
+    ) ELSE (
+        cd contrib\masmx86
+        call bld_ml32.bat
+    )
 
-   MSBuild zlibvc.sln /p:configuration="Release" /p:Platform="Win32" /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild zlibvc.sln /p:configuration="Debug" /p:Platform="Win32" /nologo /m:%NUMBER_OF_PROCESSORS%
-
-   REM IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-
-   cd ..\..\..
-   copy /Y contrib\vstudio\%VC_VER%\x86\ZlibStatRelease\zlibstat.lib ..\lib\Release
-   copy /Y contrib\vstudio\%VC_VER%\x86\ZlibStatDebug\zlibstat.lib ..\lib\Debug
-   copy /Y *.h ..\include\
+    cd ..\..
+    cd contrib\vstudio\%VC_VER%
+    cecho {0D}Building zlib %ZLIB_VERSION%{# #}{\n}
+    MSBuild zlibvc.sln /p:configuration="Release" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+    MSBuild zlibvc.sln /p:configuration="Debug" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+    cd ..\..\..
+    copy /Y contrib\vstudio\%VC_VER%\%TARGET_ARCH%\ZlibStatRelease\zlibstat.lib ..\lib\Release
+    copy /Y contrib\vstudio\%VC_VER%\%TARGET_ARCH%\ZlibStatDebug\zlibstat.lib ..\lib\Debug   
+    copy /Y *.h ..\include\
 ) ELSE (
-   cecho {0D}zlib 1.2.7 already built. Skipping.{# #}{\n}
+   cecho {0D}zlib %ZLIB_VERSION% already built. Skipping.{# #}{\n}
 )
 
 :: ZZIPLIB
-IF NOT EXIST "%DEPS%\zziplib-0.13.59.tar.bz2". (
-  CD "%DEPS%"
-  rmdir /S /Q "%DEPS%\zziplib"
-  cecho {0D}Downloading zziplib 0.13.59{# #}{\n}
-  wget http://sourceforge.net/projects/zziplib/files/zziplib13/0.13.59/zziplib-0.13.59.tar.bz2/download
-  IF NOT EXIST "%DEPS%\zlib-1.2.7.tar.gz". GOTO :ERROR
+set ZZIPLIB_VERSION=0.13.59
+IF NOT EXIST "%DEPS%\zziplib-%ZZIPLIB_VERSION%.tar.bz2". (
+    cd "%DEPS%"
+    rmdir /S /Q "%DEPS%\zziplib"
+    cecho {0D}Downloading zziplib %ZZIPLIB_VERSION%{# #}{\n}
+    wget http://sourceforge.net/projects/zziplib/files/zziplib13/%ZZIPLIB_VERSION%/zziplib-%ZZIPLIB_VERSION%.tar.bz2/download
+    IF NOT EXIST "%DEPS%\zziplib-%ZZIPLIB_VERSION%.tar.bz2". GOTO :ERROR
 ) ELSE (
-   cecho {0D}zziplib 0.13.59 already downloaded. Skipping.{# #}{\n}
+    cecho {0D}zziplib %ZZIPLIB_VERSION% already downloaded. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%DEPS%\zziplib". (
-   CD "%DEPS%"
-   cecho {0D}Extracting zziplib 0.13.59 package to "%DEPS%\zziplib"{# #}{\n}
-   mkdir zziplib
-   7za e -y zziplib-0.13.59.tar.bz2
-   7za x -y -ozziplib zziplib-0.13.59.tar
-   del /Q zziplib-0.13.59.tar
-   cd zziplib
+    CD "%DEPS%"
+    cecho {0D}Extracting zziplib %ZZIPLIB_VERSION% package to "%DEPS%\zziplib"{# #}{\n}
+    mkdir zziplib
+    7za e -y zziplib-%ZZIPLIB_VERSION%.tar.bz2
+    7za x -y -ozziplib zziplib-%ZZIPLIB_VERSION%.tar
+    del /Q zziplib-%ZZIPLIB_VERSION%.tar
+)
+
+IF NOT EXIST "%DEPS%\zziplib\lib\zziplib.lib". (
+   cd "%DEPS%\zziplib"
    mkdir lib
    mkdir include\zzip
-   cd zziplib-0.13.59\msvc8
+   cd zziplib-%ZZIPLIB_VERSION%\msvc8
 
    :: Use a custom project file as zziblib does not ship with vs2008 project files.
    :: Additionally its include/lib paths are not proper for it to find our zlib build and it has weird lib name postfixes.
    :: It's nicer to use a tailored file rathern than copy duplicates under the zziblib source tree.
    cecho {0D}Building zziplib from premade project %TOOLS%\Mods\vs2008-zziplib.vcproj{# #}{\n}
    copy /Y "%TOOLS%\Mods\vs2008-zziplib.vcproj" zziplib.vcproj
-   IF NOT %GENERATOR%==%GENERATOR_VS2008% VCUpgrade /nologo zziplib.vcproj
-   MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Debug /nologo  /m:%NUMBER_OF_PROCESSORS%
+   IF NOT %VS_VER%==vs2008 VCUpgrade /nologo zziplib.vcproj
+   MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Release /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+   MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Debug /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
    
    :: Copy results to lib/include
    copy /Y zziplib.lib ..\..\lib
    copy /Y zziplibd.lib ..\..\lib
    copy /Y ..\zzip\*.h ..\..\include\zzip
 ) ELSE (
-   cecho {0D}zlib 1.2.7 already built. Skipping.{# #}{\n}
+   cecho {0D}zziplib %ZZIPLIB_VERSION% already built. Skipping.{# #}{\n}
 )
 
 echo.
-cecho {0A}Tundra dependencies built.{# #}{\n}
+%TOOLS%\Utils\cecho {0A}Tundra dependencies built.{# #}{\n}
 set PATH=%ORIGINAL_PATH%
 cd %TOOLS%
 GOTO :EOF
 
 :ERROR
 echo.
-Utils\cecho {0C}An error occurred! Aborting!{# #}{\n}
+%TOOLS%\Utils\cecho {0C}An error occurred! Aborting!{# #}{\n}
 set PATH=%ORIGINAL_PATH%
 cd %TOOLS%
 pause

@@ -56,8 +56,10 @@ class ENVIRONMENT_MODULE_API EC_Terrain : public IComponent
     COMPONENT_NAME("EC_Terrain", 11)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Terrain(Scene* scene);
+    /// @endcond
     virtual ~EC_Terrain();
 
     /// Specifies the transformation matrix of the terrain
@@ -65,12 +67,12 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
 
     /// The number of patches to generate in the terrain in the horizontal direction, in the range [0, 256].
-    Q_PROPERTY(int xPatches READ getxPatches WRITE setxPatches);
-    DEFINE_QPROPERTY_ATTRIBUTE(int, xPatches);
+    Q_PROPERTY(uint xPatches READ getxPatches WRITE setxPatches);
+    DEFINE_QPROPERTY_ATTRIBUTE(uint, xPatches);
 
     /// The number of patches to generate in the terrain in the vertical direction, in the range [0, 256].
-    Q_PROPERTY(int yPatches READ getyPatches WRITE setyPatches);
-    DEFINE_QPROPERTY_ATTRIBUTE(int, yPatches);
+    Q_PROPERTY(uint yPatches READ getyPatches WRITE setyPatches);
+    DEFINE_QPROPERTY_ATTRIBUTE(uint, yPatches);
 
     /// Texture U coordinate scaling factor.
     Q_PROPERTY(float uScale READ getuScale WRITE setuScale);
@@ -92,7 +94,7 @@ public:
     void GetTerrainHeightRange(float &minHeight, float &maxHeight) const;
 
     /// Each patch is a square containing this many vertices per side.
-    static const int cPatchSize = 16;
+    static const uint cPatchSize = 16;
 
     /// Describes a single patch that is present in the scene.
     /** A patch can be in one of the following three states:
@@ -105,10 +107,10 @@ public:
         Patch():x(0),y(0), node(0), entity(0), patch_geometry_dirty(true) {}
 
         /// X-coordinate on the grid of patches. In the range [0, EC_Terrain::PatchWidth()].
-        int x;
+        uint x;
 
         /// Y-coordinate on the grid of patches. In the range [0, EC_Terrain::PatchHeight()].
-        int y;
+        uint y;
 
         /// Typically this will be a 16x16 array of height values in world coordinates.
         /// If the length is zero, this patch hasn't been loaded in yet.
@@ -129,11 +131,11 @@ public:
         bool patch_geometry_dirty;
 
         /// Call only when you've checked that this patch has been loaded in.
-        float GetHeightValue(int x, int y) const { return heightData[y*cPatchSize+x]; }
+        float GetHeightValue(uint x, uint y) const { return heightData[y*cPatchSize+x]; }
     };
     
     /// @return The patch at given (x,y) coordinates. Pass in values in range [0, PatchWidth()/PatchHeight[.
-    Patch &GetPatch(int patchX, int patchY)
+    Patch &GetPatch(uint patchX, uint patchY)
     {
         assert(patchX >= 0);
         assert(patchY >= 0);
@@ -143,7 +145,7 @@ public:
     }
 
     /// @return The patch at given (x,y) coordinates. Pass in values in range [0, PatchWidth()/PatchHeight[. Read only.
-    const Patch &GetPatch(int patchX, int patchY) const
+    const Patch &GetPatch(uint patchX, uint patchY) const
     {
         assert(patchX >= 0);
         assert(patchY >= 0);
@@ -157,14 +159,14 @@ public:
     /// @param patchY The patch to read from, [0, PatchHeight()[.
     /// @param xinside The vertex inside the patch to compute the normal for, [0, cPatchSize[.
     /// @param yinside The vertex inside the patch to compute the normal for, [0, cPatchSize[.
-    float3 CalculateNormal(int x, int y, int xinside, int yinside) const;
+    float3 CalculateNormal(uint x, uint y, uint xinside, uint yinside) const;
 
-    float3 CalculateNormal(int mapX, int mapY) const { return CalculateNormal( (int) mapX / cPatchSize, (int) mapY / cPatchSize, mapX % cPatchSize, mapY % cPatchSize); }
+    float3 CalculateNormal(uint mapX, uint mapY) const { return CalculateNormal( (uint) mapX / cPatchSize, (uint) mapY / cPatchSize, mapX % cPatchSize, mapY % cPatchSize); }
 
 public slots:
     /// Returns true if the given patch exists, i.e. whether the given coordinates are within the current terrain patch dimensions.
     /** This function does not tell whether the data for the patch is actually loaded on the CPU or the GPU. */
-    bool PatchExists(int patchX, int patchY) const
+    bool PatchExists(uint patchX, uint patchY) const
     {
         return patchX >= 0 && patchY >= 0 && patchX < patchWidth && patchY < patchHeight && patchY * patchWidth + patchX < (int)patches.size();
     }
@@ -172,8 +174,8 @@ public slots:
     /// Returns true if all the patches on the terrain are loaded on the CPU, i.e. if all the terrain height data has been streamed in from the server side.
     bool AllPatchesLoaded() const
     {
-        for(int y = 0; y < patchHeight; ++y)
-            for(int x = 0; x < patchWidth; ++x)
+        for(uint y = 0; y < patchHeight; ++y)
+            for(uint x = 0; x < patchWidth; ++x)
                 if (!PatchExists(x,y) || GetPatch(x,y).heightData.size() == 0 || GetPatch(x,y).node == 0)
                     return false;
 
@@ -183,12 +185,12 @@ public slots:
     /// Returns the height value on the given terrain grid point.
     /// @param x In the range [0, EC_Terrain::PatchWidth * EC_Terrain::cPatchSize [.
     /// @param y In the range [0, EC_Terrain::PatchHeight * EC_Terrain::cPatchSize [.
-    float GetPoint(int x, int y) const;
+    float GetPoint(uint x, uint y) const;
 
     /// Sets a new height value to the given terrain map vertex. Marks the patch that vertex is part of dirty,
     /// but does not immediately recreate the GPU surfaces. Use the RegenerateDirtyTerrainPatches() function
     /// to regenerate the visible Ogre mesh geometry.
-    void SetPointHeight(int x, int y, float height);
+    void SetPointHeight(uint x, uint y, float height);
     
     /// Returns the point on the terrain in world space that lies on top of the given world space coordinate.
     /// @param point The point in world space to get the corresponding map point (in world space) for.
@@ -255,11 +257,11 @@ public slots:
     void Destroy();
 
     /// Releases all GPU resources used for the given patch.
-    void DestroyPatch(int patchX, int patchY);
+    void DestroyPatch(uint patchX, uint patchY);
 
     /// Makes all the vertices of the given patch flat with the given height value.
     /** Dirties the patch, but does not regenerate it. */
-    void MakePatchFlat(int patchX, int patchY, float heightValue);
+    void MakePatchFlat(uint patchX, uint patchY, float heightValue);
 
     /// Makes the whole terrain flat with the given height value.
     /** Dirties the whole terrain, but does not regenerate it. */
@@ -278,17 +280,17 @@ public slots:
     /// This differs from the xPatches attribute in that the PatchWidth tells how many patches there
     /// are *currently initialized*, whereas xPatches tells the number of patches wide the terrain is
     /// going to be, as soon as we get a chance to update the new geometry data.
-    int PatchWidth() const { return patchWidth; }
+    uint PatchWidth() const { return patchWidth; }
 
     /// Returns how many patches there are in the terrain in the y-direction.
     /// This value is understood in the similar way as above.
-    int PatchHeight() const { return patchHeight; }
+    uint PatchHeight() const { return patchHeight; }
 
     /// Returns the number of vertices in the whole terrain in the local X-direction.
-    int VerticesWidth() const { return PatchWidth() * cPatchSize; }
+    uint VerticesWidth() const { return PatchWidth() * cPatchSize; }
 
     /// Returns the number of vertices in the whole terrain in the local Y-direction.
-    int VerticesHeight() const { return PatchHeight() * cPatchSize; }
+    uint VerticesHeight() const { return PatchHeight() * cPatchSize; }
 
     /// Saves the height map data and the associated per-vertex attributes to a file. This is a binary
     /// dump file, and as a convention, use the file suffix ".ntf" for these.
@@ -359,7 +361,7 @@ public slots:
     /// Resizes the terrain and recreates it.
     /// newWidth and newHeight are the size of the new terrain, in # patches.
     /// oldPatchStartX&Y specify the patch offset to copy the old terrain height values from.
-    void Resize(int newWidth, int newHeight, int oldPatchStartX = 0, int oldPatchStartY = 0);
+    void Resize(uint newWidth, uint newHeight, uint oldPatchStartX = 0, uint oldPatchStartY = 0);
 
 signals:
     /// Emitted when the terrain data is regenerated.
@@ -383,10 +385,10 @@ private:
     /** After this function returns, the 'root' member node will exist, unless Ogre rendering subsystem fails. */
     void CreateRootNode();
 
-    void CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY);
+    void CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, uint patchX, uint patchY);
 
     /// Sets the given patch to use the currently set material and textures.
-    void UpdateTerrainPatchMaterial(int patchX, int patchY);
+    void UpdateTerrainPatchMaterial(uint patchX, uint patchY);
 
     /// Updates the root node transform from the current attribute values, if the root node exists.
     void UpdateRootNodeTransform();
@@ -394,24 +396,24 @@ private:
     /// Readjusts the terrain to contain the given number of patches in the horizontal and vertical directions.
     /** Preserves as much of the terrain height data as possible. Dirties the patches, but does not regenerate them.
         @note This function does not adjust the xPatches or yPatches attributes. */
-    void ResizeTerrain(int newPatchWidth, int newPatchHeight);
+    void ResizeTerrain(uint newPatchWidth, uint newPatchHeight);
 
     /// Updates the terrain material with the new texture on the given texture unit index.
     /// @param index The texture unit index to set the new texture to.
     /// @param textureName The Ogre texture resource name to set.
-    void SetTerrainMaterialTexture(int index, const QString &textureName);
+    void SetTerrainMaterialTexture(uint index, const QString &textureName);
 
     /// Creates Ogre geometry data for the single given patch, or updates the geometry for an existing
     /// patch if the associated Ogre resources already exist.
-    void GenerateTerrainGeometryForOnePatch(int patchX, int patchY);
+    void GenerateTerrainGeometryForOnePatch(uint patchX, uint patchY);
 
     shared_ptr<AssetRefListener> heightMapAsset;
 
     /// For all terrain patches, we maintain a global parent/root node to be able to transform the whole terrain at one go.
     Ogre::SceneNode *rootNode;
 
-    int patchWidth;
-    int patchHeight;
+    uint patchWidth;
+    uint patchHeight;
 
     /// Specifies the asset source from which the height map is currently loaded from. Used to shadow the heightMap attribute so that if
     /// the same value is received from the network, reloading the terrain can be avoided.

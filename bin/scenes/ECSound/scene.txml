@@ -514,5 +514,12 @@
    <attribute value="0.000000 0.000000 0.000000 1.000000" name="Orientation"/>
    <attribute value="true" name="Draw first"/>
   </component>
+  <component temporary="false" type="EC_EnvironmentLight" sync="true">
+   <attribute value="0.639000 0.639000 0.639000 1.000000" name="Sunlight color"/>
+   <attribute value="0.364000 0.364000 0.364000 1.000000" name="Ambient light color"/>
+   <attribute value="-1.000000 -1.000000 -1.000000" name="Sunlight direction vector"/>
+   <attribute value="true" name="Sunlight cast shadows"/>
+   <attribute value="1.000000" name="Brightness"/>
+  </component>
  </entity>
 </scene>

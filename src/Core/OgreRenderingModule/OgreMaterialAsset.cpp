@@ -902,7 +902,7 @@ bool OgreMaterialAsset::SetTexture(int techIndex, int passIndex, int texUnitInde
         return false;
     
     // Calculate the absolute reference index so that we know which reference to change. This requires going through all the texture units up to this.
-    int refIndex = 0;
+    size_t refIndex = 0;
     bool refIndexFound = false;
     for (int t = 0; (!refIndexFound) && t <= techIndex; ++t)
     {
@@ -924,7 +924,7 @@ bool OgreMaterialAsset::SetTexture(int techIndex, int passIndex, int texUnitInde
     }
     
     // If the reference vector does not have enough space (new texture assignment to a previously no-texture unit, add new slot
-    if (refIndex >= (int)references_.size())
+    if (refIndex >= references_.size())
     {
         references_.resize(references_.size() + 1);
         refIndex = references_.size() - 1;
@@ -1981,7 +1981,7 @@ bool OgreMaterialAsset::SetTextureUnitAttribute(Ogre::TextureUnitState* texUnit,
 void OgreMaterialAsset::OnTransferSucceeded(AssetPtr asset)
 {
     IAssetTransfer* transfer = static_cast<IAssetTransfer*>(sender());
-    for (unsigned i = pendingApplies.size() - 1; i < pendingApplies.size(); --i)
+    for (size_t i = pendingApplies.size() - 1; i < pendingApplies.size(); --i)
     {
         PendingTextureApply& entry = pendingApplies[i];
         if (entry.transfer == transfer)
@@ -2009,7 +2009,7 @@ void OgreMaterialAsset::OnTransferSucceeded(AssetPtr asset)
 
 void OgreMaterialAsset::OnTransferFailed(IAssetTransfer* transfer, QString reason)
 {
-    for (unsigned i = pendingApplies.size() - 1; i < pendingApplies.size(); --i)
+    for (size_t i = pendingApplies.size() - 1; i < pendingApplies.size(); --i)
     {
         PendingTextureApply& entry = pendingApplies[i];
         if (entry.transfer == transfer)

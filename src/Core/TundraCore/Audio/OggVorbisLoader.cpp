@@ -20,7 +20,7 @@ namespace
 class OggMemDataSource
 {
 public:
-    OggMemDataSource(const u8* data, uint size) :
+    OggMemDataSource(const u8* data, size_t size) :
         data_(data),
         size_(size),
         position_(0)
@@ -29,8 +29,9 @@ public:
 
     size_t Read(void* ptr, size_t size)
     {
-        uint max_read = size_ - position_;
-        if (size > max_read) size = max_read;
+        size_t max_read = size_ - position_;
+        if (size > max_read)
+            size = max_read;
         if (size)
         {
             memcpy(ptr, &data_[position_], size);
@@ -41,43 +42,41 @@ public:
 
     int Seek(ogg_int64_t offset, int whence)
     {
-        ogg_int64_t new_pos = position_;
+        size_t new_pos = position_;
         switch (whence)
         {
         case SEEK_SET:
             new_pos = offset;
             break;
-            
         case SEEK_CUR:
             new_pos += offset;
             break;
-            
         case SEEK_END:
             new_pos = size_ + offset;
             break;
-        }    
-         
-        if ((new_pos < 0) || (new_pos > size_))
+        }
+
+        if (new_pos < 0 || new_pos > size_)
             return -1;
-        position_ = (uint)new_pos;
+        position_ = new_pos;
         return 0;
     }
-    
+
     long Tell() const
     {
         return (long)position_;
-    }            
-        
+    }
+
 private:
     const u8* data_;
-    uint size_;
-    uint position_;        
+    size_t size_;
+    size_t position_;
 };
 
 size_t OggReadCallback(void* ptr, size_t size, size_t nmemb, void* datasource)
 {
     OggMemDataSource* source = (OggMemDataSource*)datasource;
-    return source->Read(ptr, size * nmemb);         
+    return source->Read(ptr, size * nmemb);
 }
 
 int OggSeekCallback(void* datasource, ogg_int64_t offset, int whence)
@@ -87,7 +86,7 @@ int OggSeekCallback(void* datasource, ogg_int64_t offset, int whence)
 }
 
 long OggTellCallback(void* datasource)
-{   
+{
     OggMemDataSource* source = (OggMemDataSource*)datasource;
     return source->Tell();
 }

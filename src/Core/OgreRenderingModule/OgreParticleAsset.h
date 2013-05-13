@@ -24,7 +24,7 @@ public:
     virtual std::vector<AssetReference> FindReferences() const;
 
     /// Returns the number of templates in this particle system asset.
-    int GetNumTemplates() const;
+    size_t GetNumTemplates() const;
 
     /// Returns the name of the template at the given index.
     QString GetTemplateName(int index) const;

@@ -273,7 +273,7 @@ QByteArray IAsset::RawData(const QString serializationParameters) const
 { 
     std::vector<u8> data; 
     if (SerializeTo(data, serializationParameters) && data.size() > 0) 
-        return QByteArray((const char*)&data[0], data.size()); 
+        return QByteArray((const char*)&data[0], (int)data.size()); 
     else 
         return QByteArray();
 }

@@ -49,9 +49,9 @@ struct MsgLoginReply
 	{
 		dst.Add<u8>(success);
 		dst.AddVLE<kNet::VLE8_16_32>(userID);
-		dst.Add<u16>(loginReplyData.size());
+		dst.Add<u16>((u16)loginReplyData.size());
 		if (loginReplyData.size() > 0)
-			dst.AddArray<s8>(&loginReplyData[0], loginReplyData.size());
+			dst.AddArray<s8>(&loginReplyData[0], (u32)loginReplyData.size());
 	}
 
 	inline void DeserializeFrom(kNet::DataDeserializer &src)
