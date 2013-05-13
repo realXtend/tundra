@@ -406,7 +406,7 @@ IF NOT EXIST "%DEPS%\assimp\". (
 )
 
 IF NOT EXIST "%DEPS%\assimp\bin\Release\assimp.dll". (
-    cd cd "%DEPS%\assimp"
+    cd "%DEPS%\assimp"
     IF %USE_BOOST%==FALSE (
         :: Tweaks CMakeLists.txt to set ASSIMP_ENABLE_BOOST_WORKAROUND on.
         sed s/"ASSIMP_ENABLE_BOOST_WORKAROUND OFF"/"ASSIMP_ENABLE_BOOST_WORKAROUND ON"/g <CMakeLists.txt >CMakeLists.txt.sed
@@ -603,8 +603,8 @@ IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
     cecho {0D}Building Ogre prebuilt dependencies package. Please be patient, this will take a while.{# #}{\n}
-    MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-    MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=Debug /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=Release /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
     REM TODO For some reason zlib x64 libs end up to wrong directories, so must copy them manually.
@@ -804,8 +804,8 @@ IF NOT EXIST "%DEPS%\ogg". (
 IF NOT EXIST "%DEPS%\ogg\win32\%VS2008_OR_VS2010%\%VS_PLATFORM%\Release\libogg_static.lib". (
     cd "%DEPS%\ogg\win32\%VS2008_OR_VS2010%"
     cecho {0D}Building Ogg. Please be patient, this will take a while.{# #}{\n}
-    MSBuild libogg_static.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-    MSBuild libogg_static.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libogg_static.sln /p:configuration=Debug /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libogg_static.sln /p:configuration=Release  /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
     cecho {0D}Ogg already built. Skipping.{# #}{\n}
@@ -820,8 +820,8 @@ IF NOT EXIST "%DEPS%\vorbis". (
 IF NOT EXIST "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%\%VS_PLATFORM%\Release\libvorbis_static.lib". (
     cd "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%"
     cecho {0D}Building Vorbis. Please be patient, this will take a while.{# #}{\n}
-    MSBuild vorbis_static.sln /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-    MSBuild vorbis_static.sln /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild vorbis_static.sln /p:configuration=Debug /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild vorbis_static.sln /p:configuration=Release /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
     cecho {0D}Vorbis already built. Skipping.{# #}{\n}
@@ -836,8 +836,8 @@ IF NOT EXIST "%DEPS%\theora". (
 IF NOT EXIST "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\Release_SSE2\libtheora_static.lib". (
     cd "%DEPS%\theora\win32\VS2008"
     cecho {0D}Building Theora. Please be patient, this will take a while.{# #}{\n}
-    MSBuild libtheora_static.sln /p:configuration=Debug /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-    MSBuild libtheora_static.sln /p:configuration=Release_SSE2 /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libtheora_static.sln /p:configuration=Debug /p:platform="%VS_PLATFORM%" /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libtheora_static.sln /p:configuration=Release_SSE2 /p:platform="%VS_PLATFORM%" /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     REM IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Theora already built. Skipping.{# #}{\n}
@@ -852,15 +852,9 @@ IF NOT EXIST "%DEPS%\speex". (
    cd speex\win32\VS2008
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-   cecho {0D}Building Speex. Please be patient, this will take a while.{# #}{\n}
-   MSBuild libspeex.sln /p:configuration=Debug /t:libspeex /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild libspeex.sln /p:configuration=Release /t:libspeex /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   :: For some reason /t:libspeex;libspeexdsp wont build the dsp lib, so do it separately.
-   :: Only build release because the target directory and name are the same for debug and release.
-   MSBuild libspeexdsp\libspeexdsp.%VCPROJ_FILE_EXT% /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   :: Copy libspeex.lib also to \lib
-   copy /Y Win32\Release\libspeex.lib "%DEPS%\speex\lib"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    MSBuild libspeex.sln /p:configuration=Debug /p:platform="%VS_PLATFORM%" /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libspeex.sln /p:configuration=Release /p:platform="%VS_PLATFORM%" /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Speex already built. Skipping.{# #}{\n}
 )
@@ -909,8 +903,8 @@ IF NOT EXIST "%DEPS%\protobuf\vsprojects\Debug\libprotobuf.lib". (
     )
     echo.
     cecho {0D}Building Google Protobuf. Please be patient, this will take a while.{# #}{\n}
-    MSBuild protobuf.sln /p:configuration=Debug /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-    MSBuild protobuf.sln /p:configuration=Release /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild protobuf.sln /p:configuration=Debug /p:platform="%VS_PLATFORM%" /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild protobuf.sln /p:configuration=Release /p:platform="%VS_PLATFORM%" /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Google Protobuf already built. Skipping.{# #}{\n}
@@ -942,8 +936,8 @@ IF NOT EXIST "%DEPS%\celt\lib\Release\libcelt.lib" (
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
     cecho {0D}Building Celt 0.11.1.{# #}{\n}
-    MSBuild libcelt.%VCPROJ_FILE_EXT% /p:configuration=Debug /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-    MSBuild libcelt.%VCPROJ_FILE_EXT% /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libcelt.%VCPROJ_FILE_EXT% /p:configuration=Debug /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libcelt.%VCPROJ_FILE_EXT% /p:configuration=Release /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
 
     :: Copy libs
     IF NOT EXIST "%DEPS%\celt\lib". (
@@ -1134,8 +1128,8 @@ IF NOT EXIST "%DEPS%\zziplib\lib\zziplib.lib". (
    cecho {0D}Building zziplib from premade project %TOOLS%\Mods\vs2008-zziplib.vcproj{# #}{\n}
    copy /Y "%TOOLS%\Mods\vs2008-zziplib.vcproj" zziplib.vcproj
    IF NOT %GENERATOR%==%GENERATOR_VS2008% VCUpgrade /nologo zziplib.vcproj
-   MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Release /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
-   MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Debug /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+   MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Release /p:platform="%VS_PLATFORM%" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+   MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Debug /p:platform="%VS_PLATFORM%" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
    
    :: Copy results to lib/include
    copy /Y zziplib.lib ..\..\lib
