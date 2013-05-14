@@ -274,8 +274,8 @@ void OgreMeshAsset::CreateKdTree()
         
         // Texcoord element is not mandatory
         unsigned char *texCoord = 0;
-        unsigned texOffset = 0;
-        unsigned texSize = 0;
+        size_t texOffset = 0;
+        size_t texSize = 0;
         Ogre::HardwareVertexBufferSharedPtr vbufTex;
         const Ogre::VertexElement *texElem = vertexData->vertexDeclaration->findElementBySemantic(Ogre::VES_TEXTURE_COORDINATES);
         if (texElem)

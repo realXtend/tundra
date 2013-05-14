@@ -330,7 +330,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
         // 2. Ogre has a bug on Apple, that it fails to generate mipmaps for .dds files which contain only one mip level and are DXT1-compressed (it tries to autogenerate, but always results in black texture data)
         // 3. If the texture is updated dynamically, we might not afford to regenerate mips at each update.
         size_t numMipmapsInImage = image.getNumMipmaps(); // Note: This is actually numMipmaps - 1: Ogre doesn't think the first level is a mipmap.
-        Ogre::uint numMipmapsToUseOnGPU = Ogre::MIP_DEFAULT;
+        int numMipmapsToUseOnGPU = (int)Ogre::MIP_DEFAULT;
         if (numMipmapsInImage == 0 && nameInternal.endsWith(".dds", Qt::CaseInsensitive))
             numMipmapsToUseOnGPU = 0;
 
@@ -343,14 +343,14 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
             // Furthermore, it may still allocate virtual memory address space due to using AGP memory mapping (we would not actually need a dynamic texture, but there's no way to tell Ogre that)
             if (assetAPI->GetFramework()->HasCommandLineParameter("--d3ddefaultpool"))
             {
-                ogreTexture = Ogre::TextureManager::getSingleton().createManual(ogreAssetName.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,image.getWidth(), 
-                    image.getHeight(), numMipmapsToUseOnGPU, image.getFormat(), Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+                ogreTexture = Ogre::TextureManager::getSingleton().createManual(ogreAssetName.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+                    Ogre::TEX_TYPE_2D, (Ogre::uint)image.getWidth(), (Ogre::uint)image.getHeight(), numMipmapsToUseOnGPU, image.getFormat(), Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
                 ogreTexture->loadImage(image);
             }
             else
             {
-                ogreTexture = Ogre::TextureManager::getSingleton().loadImage(ogreAssetName.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image, Ogre::TEX_TYPE_2D, 
-                    numMipmapsToUseOnGPU);
+                ogreTexture = Ogre::TextureManager::getSingleton().loadImage(ogreAssetName.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image,
+                    Ogre::TEX_TYPE_2D, numMipmapsToUseOnGPU);
             }
         }
         else
