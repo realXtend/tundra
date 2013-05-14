@@ -89,29 +89,35 @@ echo.
 
 :: Print scripts usage information
 cecho {0A}Requirements for a successful execution:{# #}{\n}
-echo   1. Install SVN and make sure 'svn' is accessible from PATH.
-echo    - http://tortoisesvn.net/downloads.html, install with command line tools!
-echo   2. Install Hg and make sure 'hg' is accessible from PATH.
-echo    - http://tortoisehg.bitbucket.org/
-echo   3. Install Git and make sure 'git' is accessible from PATH.
-echo    - http://code.google.com/p/tortoisegit/
-echo   4. Install DirectX SDK June 2010.
-echo    - http://www.microsoft.com/download/en/details.aspx?id=6812
-echo   5. Install CMake and make sure 'cmake' is accessible from PATH.
-echo    - http://www.cmake.org/
-echo   6. Install Visual Studio 2008/2010 with SP1 (Express is ok).
-echo    - http://www.microsoft.com/download/en/details.aspx?id=14597
-echo   7. Install Windows SDK.
-echo    - http://www.microsoft.com/download/en/details.aspx?id=8279
+echo    1. Install SVN and make sure 'svn' is accessible from PATH.
+echo     - http://tortoisesvn.net/downloads.html, install with command line tools!
+echo    2. Install Hg and make sure 'hg' is accessible from PATH.
+echo     - http://tortoisehg.bitbucket.org/
+echo    3. Install Git and make sure 'git' is accessible from PATH.
+echo     - http://code.google.com/p/tortoisegit/
+echo    4. Install DirectX SDK June 2010.
+echo     - http://www.microsoft.com/download/en/details.aspx?id=6812
+echo    5. Install CMake and make sure 'cmake' is accessible from PATH.
+echo     - http://www.cmake.org/
+echo    6. Install Visual Studio 2008/2010 (Express is ok, but see section 7).
+echo     - http://www.microsoft.com/visualstudio/eng/downloads
+cecho {0E}   7. Optional: Make sure you have the Visual Studio x64 tools installed{# #}{\n}
+cecho {0E}      before installing the Visual Studio Service Pack 1 (section 8), if{# #}{\n}
+cecho {0E}      wanting to build Tundra as a 64-bit application.{# #}{\n}
+cecho {0E}      NOTE: The x64 tools are not available for the Express editions.{# #}{\n}
+echo    8. Install Visual Studio 2008/2010 Service Pack 1.
+echo     - http://www.microsoft.com/en-us/download/details.aspx?id=23691
+echo    9. Install Windows SDK.
+echo     - http://www.microsoft.com/download/en/details.aspx?id=8279
 
 IF %BUILD_OPENSSL%==TRUE (
-   echo   8. To build OpenSSL install Active Perl and set perl.exe to PATH.
-   echo    - http://www.activestate.com/activeperl/downloads
-   cecho {0E}     NOTE: Perl needs to be before git in PATH, otherwise the git{# #}{\n}
-   cecho {0E}     provided perl.exe will be used and OpenSSL build will fail.{# #}{\n}
-   echo   9. Execute this file from Visual Studio 2008/2010 Command Prompt.
+   echo   10. To build OpenSSL install Active Perl and set perl.exe to PATH.
+   echo     - http://www.activestate.com/activeperl/downloads
+   cecho {0E}      NOTE: Perl needs to be before git in PATH, otherwise the git{# #}{\n}
+   cecho {0E}      provided perl.exe will be used and OpenSSL build will fail.{# #}{\n}
+   echo   11. Execute this file from Visual Studio 2008/2010 ^(x64^) Command Prompt.
 ) ELSE (
-   echo   8. Execute this file from Visual Studio 2008/2010 Command Prompt.
+   echo   10. Execute this file from Visual Studio 2008/2010 ^(x64^) Command Prompt.
 )
 echo.
 
