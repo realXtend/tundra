@@ -77,8 +77,8 @@ void SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPt
     }
     
     // Add the attribute array to the main serializer
-    ds.AddVLE<kNet::VLE8_16_32>(attrDs.BytesFilled());
-    ds.AddArray<u8>((unsigned char*)attrDataBuffer_, attrDs.BytesFilled());
+    ds.AddVLE<kNet::VLE8_16_32>((u32)attrDs.BytesFilled());
+    ds.AddArray<u8>((unsigned char*)attrDataBuffer_, (u32)attrDs.BytesFilled());
 }
 
 SyncManager::SyncManager(TundraLogicModule* owner) :
@@ -1016,7 +1016,7 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
         if (posSendType == 0 && rotSendType == 0 && scaleSendType == 0 && velSendType == 0 && angVelSendType == 0)
             continue;
 
-        int bitIdx = ds.BitsFilled();
+        size_t bitIdx = ds.BitsFilled();
         UNREFERENCED_PARAM(bitIdx)
         ds.AddVLE<kNet::VLE8_16_32>(ess.id); // Sends max. 32 bits.
 
@@ -1115,7 +1115,7 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
 
 //        std::cout << "pos: " << posSendType << ", rot: " << rotSendType << ", scale: " << scaleSendType << ", vel: " << velSendType << ", angvel: " << angVelSendType << std::endl;
 
-        int bitsEnd = ds.BitsFilled();
+        size_t bitsEnd = ds.BitsFilled();
         UNREFERENCED_PARAM(bitsEnd)
         ess.lastNetworkSendTime = kNet::Clock::Tick();
     }
@@ -1508,7 +1508,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     
                     // Now, if remaining dirty bits exist, they must be sent in the edit attributes message. These are the majority of our network data.
                     changedAttributes_.clear();
-                    unsigned numBytes = (attrs.size() + 7) >> 3;
+                    unsigned numBytes = ((unsigned)attrs.size() + 7) >> 3;
                     for (unsigned i = 0; i < numBytes; ++i)
                     {
                         u8 byte = compState.dirtyAttributes[i];
@@ -1541,13 +1541,13 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                         kNet::DataSerializer attrDataDs(attrDataBuffer_, 16 * 1024);
                         
                         // There are changed attributes. Check if it is more optimal to send attribute indices, or the whole bitmask
-                        unsigned bitsMethod1 = changedAttributes_.size() * 8 + 8;
-                        unsigned bitsMethod2 = attrs.size();
+                        unsigned bitsMethod1 = (unsigned)changedAttributes_.size() * 8 + 8;
+                        unsigned bitsMethod2 = (unsigned)attrs.size();
                         // Method 1: indices
                         if (bitsMethod1 <= bitsMethod2)
                         {
                             attrDataDs.Add<kNet::bit>(0);
-                            attrDataDs.Add<u8>(changedAttributes_.size());
+                            attrDataDs.Add<u8>((u8)changedAttributes_.size());
                             for (unsigned i = 0; i < changedAttributes_.size(); ++i)
                             {
                                 attrDataDs.Add<u8>(changedAttributes_[i]);
@@ -1571,8 +1571,8 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                         }
                         
                         // Add the attribute data array to the main serializer
-                        editAttrsDs.AddVLE<kNet::VLE8_16_32>(attrDataDs.BytesFilled());
-                        editAttrsDs.AddArray<u8>((unsigned char*)attrDataBuffer_, attrDataDs.BytesFilled());
+                        editAttrsDs.AddVLE<kNet::VLE8_16_32>((u32)attrDataDs.BytesFilled());
+                        editAttrsDs.AddArray<u8>((unsigned char*)attrDataBuffer_, (u32)attrDataDs.BytesFilled());
                         
                         // Now zero out all remaining dirty bits
                         for (unsigned i = 0; i < numBytes; ++i)
@@ -1835,7 +1835,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
         replyDs.AddVLE<kNet::VLE8_16_32>(sceneID);
         replyDs.AddVLE<kNet::VLE8_16_32>(senderEntityID & UniqueIdGenerator::LAST_REPLICATED_ID);
         replyDs.AddVLE<kNet::VLE8_16_32>(entityID & UniqueIdGenerator::LAST_REPLICATED_ID);
-        replyDs.AddVLE<kNet::VLE8_16_32>(componentIdRewrites.size());
+        replyDs.AddVLE<kNet::VLE8_16_32>((u32)componentIdRewrites.size());
         for (unsigned i = 0; i < componentIdRewrites.size(); ++i)
         {
             replyDs.AddVLE<kNet::VLE8_16_32>(componentIdRewrites[i].first & UniqueIdGenerator::LAST_REPLICATED_ID);
@@ -1979,7 +1979,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
         kNet::DataSerializer replyDs(createEntityBuffer_, 64 * 1024);
         replyDs.AddVLE<kNet::VLE8_16_32>(sceneID);
         replyDs.AddVLE<kNet::VLE8_16_32>(entityID & UniqueIdGenerator::LAST_REPLICATED_ID);
-        replyDs.AddVLE<kNet::VLE8_16_32>(componentIdRewrites.size());
+        replyDs.AddVLE<kNet::VLE8_16_32>((u32)componentIdRewrites.size());
         for (unsigned i = 0; i < componentIdRewrites.size(); ++i)
         {
             replyDs.AddVLE<kNet::VLE8_16_32>(componentIdRewrites[i].first & UniqueIdGenerator::LAST_REPLICATED_ID);
