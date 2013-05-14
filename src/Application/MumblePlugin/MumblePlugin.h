@@ -14,30 +14,8 @@
 #include <QScriptEngine>
 #include <QPointer>
 
-/** I watched Naali and Tundra Mumble functionality being developed for a long time.
-    At the time the module was MumbleVoipModule and it was "over engineered" partly due to Naalis
-    architectural demands. I've since rewritten parts of the module in multiple occasions,
-    both in Tundra 1.x transition and Tundra 2.x transition. The complex messaging model between 
-    the Murmur server -> libmumbleclient -> Tundra was always an issue. Also libmumbleclient was not developed
-    by anyone but the realXtend Tundra devs and it had substantial amount of bugs that crashed our application
-    constantly. 
-    
-    For the MumblePlugin rewrite from scratch I've decided to link directly to Google Protobufs, Celt, Speex 
-    and OpenSSL to remove unwanted layers of complexity. The boost asio networking (from libmumbeclient)
-    has been replaced with Qt networking. I also decided to not go and invent the wheel 
-    again but read the Mumble client code to learn and in some cases reused their code as is. All source
-    files from the Mumble repository https://github.com/mumble-voip/mumble have been modified in some way,
-    for example adding namespace to avoid collisions in Tundra and remove header file includes that are not present
-    or remove whole classes or sections of code. All Mumble source code is located in the mumble subfolder 
-    of this project and license notices have been preserved as per requested by the license. 
-    Anyone deploying Tundra with this module will also need to distribute the license with the binary, you can find the
-    license from mumble/MumbleLicence.txt.
-    
-    Credit where credit is due: Thanks to pcgod for the original thin mumble client written with boost networking
-    https://github.com/pcgod/libmumbleclient and the folks at mumble project https://github.com/mumble-voip/mumble.
-    Both projects were thoroughly examined and both codebases heavily influenced how MumblePlugin turned out.
-
-    Main features:
+/// Provides Mumble-based VoIP functionality.
+/** Main features:
     - SSL TCP for tunneled input and output voice traffic and general protocol messages.
     - Encrypted UDP for input and output voice traffic.
     - Network mode auto detection and on the fly change from TCP to UDP and from UDP to TCP. This switch is done
@@ -49,24 +27,19 @@
     - Positional audio playback, transmission and audible radius from active sound listener. These can be set from audio wizard. @see RunAudioWizard.
     - Extensive Qt signals for everything that is going on, easy to hook to these and provide a client GUI and scene interaction. 
       Signals can be found from MumblePlugin, MumbleChannel and MumbleUser classes. In scripting you can access this functionality with 'mumble' eg. mumble.Connect(...);
-*/
+
+    @note Based heavily on https://github.com/pcgod/libmumbleclient and https://github.com/mumble-voip/mumble
+    @note All Mumble source code is located in the mumble subfolder of this project and license notices have been preserved as per requested by the license.
+        Anyone deploying Tundra with this module will also need to distribute the license with the binary, you can find the license from mumble/MumbleLicence.txt. */
 class MumblePlugin : public IModule
 {
-
-Q_OBJECT
+    Q_OBJECT
 
 public:
-    /// Constructor.
     MumblePlugin();
-
-    /// Deconstructor.
     virtual ~MumblePlugin();
-
-    /// IModule override.
-    void Initialize();
-
-    /// IModule override.
-    void Uninitialize();
+    void Initialize(); ///< IModule override.
+    void Uninitialize();///< IModule override.
 
     /// This is for internal use only, to be called from AudioProcessor.
     /// @see Signal UserPositionalChange
@@ -378,5 +351,5 @@ private:
 
     int qobjTimerId_;
 
-    QString LC;
+    const QString LC;
 };

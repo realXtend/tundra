@@ -6,8 +6,18 @@
 #include "MumbleNetworkHandler.h"
 #include "MumbleData.h"
 #include "AudioProcessor.h"
-
+#include "MumbleScriptTypeDefines.h"
+// Disable warnings leaking from protobuf
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4244)
+#pragma warning(disable : 4100)
+#pragma warning(disable : 4125)
+#endif
 #include "Mumble.pb.h"
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 #include "mumble/SSL.h"
 
 #include "Framework.h"
@@ -17,15 +27,12 @@
 #include "ConsoleAPI.h"
 #include "ConfigAPI.h"
 #include "LoggingFunctions.h"
-
 #include "IRenderer.h"
 #include "Scene/Scene.h"
 #include "Entity.h"
 #include "EC_Placeable.h"
 #include "EC_SoundListener.h"
-
 #include "JavascriptModule.h"
-#include "MumbleScriptTypeDefines.h"
 
 using namespace MumbleNetwork;
 using namespace MumbleAudio;

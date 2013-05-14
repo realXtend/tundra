@@ -8,7 +8,6 @@
 #include "IRenderer.h"
 #include "CoreException.h"
 #include "Application.h"
-#include "VersionInfo.h"
 #include "ConfigAPI.h"
 #include "PluginAPI.h"
 #include "LoggingFunctions.h"
@@ -126,9 +125,7 @@ Framework::Framework(int argc_, char** argv_) :
     profiler(0),
 #endif
     profilerQObj(0),
-    renderer(0),
-    apiVersionInfo(0),
-    applicationVersionInfo(0)
+    renderer(0)
 {
     // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
     instance = this;
@@ -206,12 +203,6 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--clientExtrapolationTime"] = "Rigid body extrapolation time on client in milliseconds. Default 66."; // TundraProtocolModule
     cmdLineDescs.commands["--noClientPhysics"] = "Disables rigid body handoff to client simulation after no movement packets received from server."; // TundraProtocolModule
     cmdLineDescs.commands["--dumpProfiler"] = "Dump profiling blocks to console every 5 seconds."; // DebugStatsModule
-    
-    apiVersionInfo = new VersionInfo(Application::Version());
-    applicationVersionInfo = new VersionInfo(Application::Version());
-
-    LogInfo("* API version         : " + apiVersionInfo->Version());
-    LogInfo("* Application version : " + Application::FullIdentifier());
 
     if (HasCommandLineParameter("--help"))
     {
@@ -228,8 +219,6 @@ Framework::Framework(int argc_, char** argv_) :
         Exit();
         return;
     }
-
-    PrintStartupOptions();
 
     // In headless mode, no main UI/rendering window is initialized.
     if (HasCommandLineParameter("--headless"))
@@ -271,8 +260,9 @@ Framework::Framework(int argc_, char** argv_) :
     scene = new SceneAPI(this);
     plugin = new PluginAPI(this);
     asset = new AssetAPI(this, headless);
+
     // Prepare asset cache, if used.
-    QString assetCacheDir = Application::UserDataDirectory() + QDir::separator() + "assetcache";
+    QString assetCacheDir = Application::UserDataDirectory() + "assetcache";
     if (CommandLineParameters("--assetcachedir").size() > 0)
         assetCacheDir = Application::ParseWildCardFilename(CommandLineParameters("--assetcachedir").last());
     if (CommandLineParameters("--assetcachedir").size() > 1)
@@ -296,9 +286,9 @@ Framework::Framework(int argc_, char** argv_) :
     RegisterDynamicObject("audio", audio);
     RegisterDynamicObject("application", application);
     RegisterDynamicObject("config", config);
-    RegisterDynamicObject("apiversion", apiVersionInfo);
-    RegisterDynamicObject("applicationversion", applicationVersionInfo);
     RegisterDynamicObject("profiler", profilerQObj);
+
+    PrintStartupOptions();
 }
 
 Framework::~Framework()
@@ -316,9 +306,6 @@ Framework::~Framework()
     SAFE_DELETE(scene);
     SAFE_DELETE(frame);
     SAFE_DELETE(ui);
-
-    SAFE_DELETE(apiVersionInfo);
-    SAFE_DELETE(applicationVersionInfo);
 
     // This delete must be the last one in Framework since application derives QApplication.
     // When we delete QApplication, we must have ensured that all QObjects have been deleted.
@@ -527,16 +514,6 @@ PluginAPI *Framework::Plugins() const
 IRenderer *Framework::Renderer() const
 {
     return renderer;
-}
-
-VersionInfo *Framework::ApiVersion() const
-{
-    return apiVersionInfo;
-}
-
-VersionInfo *Framework::ApplicationVersion() const
-{
-    return applicationVersionInfo;
 }
 
 void Framework::RegisterRenderer(IRenderer *renderer_)

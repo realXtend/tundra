@@ -6,14 +6,10 @@ function log(msg)
 
 print("");
 
-if (!apiversion)
-    log("API version < 1.0, cannot query API version!");
-else
-    log("API version: string=" + apiversion.version + " major=" + apiversion.major + " minor=" + apiversion.minor + " major patch=" + apiversion.majorPatch + " minor patch=" + apiversion.minorPatch);
-
-if (!applicationversion)
-    log("API version < 1.0, cannot query Application information!");
-else
-    log("Tundra application identifier = " + application.fullIdentifier);
+log("Application version: " + application.version);
+log("  major       = " + application.majorVersion); 
+log("  minor       = " + application.minorVersion); 
+log("  major patch = " + application.majorPatchVersion);
+log("  minor patch = " + application.minorPatchVersion);
 
 print("");

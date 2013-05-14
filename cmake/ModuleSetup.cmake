@@ -79,6 +79,12 @@ macro (final_target)
             endif()
         endif ()
     endif ()
+
+    if (NOT "${PROJECT_TYPE}" STREQUAL "")
+        message (STATUS "-- project type:")
+        message (STATUS "       ${PROJECT_TYPE}")
+        set_target_properties (${TARGET_NAME} PROPERTIES FOLDER ${PROJECT_TYPE})
+    endif ()
     
     # pretty printing
     message ("")

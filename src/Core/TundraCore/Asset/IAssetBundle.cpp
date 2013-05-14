@@ -27,14 +27,34 @@ QString IAssetBundle::Name() const
     return name_;
 }
 
-void IAssetBundle::SetDiskSource(QString diskSource)
+AssetStoragePtr IAssetBundle::AssetStorage() const
 {
-    diskSource_ = diskSource;
+    return storage.lock();
+}
+
+AssetProviderPtr IAssetBundle::AssetProvider() const
+{
+    return provider.lock();
 }
 
 QString IAssetBundle::DiskSource() const
 {
     return diskSource_;
+}
+
+void IAssetBundle::SetAssetProvider(AssetProviderPtr provider_)
+{
+    provider = provider_;
+}
+
+void IAssetBundle::SetAssetStorage(AssetStoragePtr storage_)
+{
+    storage = storage_;
+}
+
+void IAssetBundle::SetDiskSource(QString diskSource)
+{
+    diskSource_ = diskSource;
 }
 
 void IAssetBundle::Unload()
