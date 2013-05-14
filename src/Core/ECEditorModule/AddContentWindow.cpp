@@ -970,14 +970,14 @@ void AddContentWindow::GenerateStorageComboBoxContents()
             ///\todo Make the font gray and ideally disable the possibility to select the item altogether.
             QFont font = QApplication::font();
             font.setItalic(true);
-            storageComboBox->setItemData(i+2, font, Qt::FontRole); // i+2 as we already have the DefaultStorage and DoNotAlterAssetReferences
+            storageComboBox->setItemData((int)i+2, font, Qt::FontRole); // i+2 as we already have the DefaultStorage and DoNotAlterAssetReferences
         }
         if (def && storages[i] == def) // Bold default storage.
         {
             QFont font = QApplication::font();
             font.setBold(true);
-            storageComboBox->setItemData(i+2, font, Qt::FontRole); // i+2 as we already have the DefaultStorage and DoNotAlterAssetReferences
-            storageComboBox->setCurrentIndex(i+2);
+            storageComboBox->setItemData((int)i+2, font, Qt::FontRole); // i+2 as we already have the DefaultStorage and DoNotAlterAssetReferences
+            storageComboBox->setCurrentIndex((int)i+2);
         }
     }
 }

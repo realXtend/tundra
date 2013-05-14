@@ -44,16 +44,16 @@ struct MsgEntityAction
 		{
             // This function has been manually modified, and not generated using the MessageCompiler tool.
             // kNet does not support setting VLE fields as dynamicCount length fields.
-            return (size_t)kNet::VLE8_16_32::GetEncodedBitLength(parameter.size()) / 8 + parameter.size()*1;
+            return (size_t)kNet::VLE8_16_32::GetEncodedBitLength((u32)parameter.size()) / 8 + parameter.size()*1;
 		}
 
 		inline void SerializeTo(kNet::DataSerializer &dst) const
 		{
             // This function has been manually modified, and not generated using the MessageCompiler tool.
             // kNet does not support setting VLE fields as dynamicCount length fields.
-			dst.AddVLE<kNet::VLE8_16_32>(parameter.size());
+			dst.AddVLE<kNet::VLE8_16_32>((u32)parameter.size());
 			if (parameter.size() > 0)
-				dst.AddArray<s8>(&parameter[0], parameter.size());
+				dst.AddArray<s8>(&parameter[0], (u32)parameter.size());
 		}
 
 		inline void DeserializeFrom(kNet::DataDeserializer &src)
@@ -80,11 +80,11 @@ struct MsgEntityAction
 	inline void SerializeTo(kNet::DataSerializer &dst) const
 	{
 		dst.Add<u32>(entityId);
-		dst.Add<u8>(name.size());
+		dst.Add<u8>((u8)name.size());
 		if (name.size() > 0)
-			dst.AddArray<s8>(&name[0], name.size());
+			dst.AddArray<s8>(&name[0], (u32)name.size());
 		dst.Add<u8>(executionType);
-		dst.Add<u8>(parameters.size());
+		dst.Add<u8>((u8)parameters.size());
 		for(size_t i = 0; i < parameters.size(); ++i)
 			kNet::TypeSerializer<S_parameters>::SerializeTo(dst, parameters[i]);
 	}
