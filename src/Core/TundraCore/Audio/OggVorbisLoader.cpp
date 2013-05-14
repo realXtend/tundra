@@ -66,18 +66,18 @@ public:
     long Tell() const
     {
         return (long)position_;
-    }            
-        
+    }
+
 private:
     const u8* data_;
     uint size_;
-    uint position_;        
+    uint position_;
 };
 
 size_t OggReadCallback(void* ptr, size_t size, size_t nmemb, void* datasource)
 {
     OggMemDataSource* source = (OggMemDataSource*)datasource;
-    return source->Read(ptr, size * nmemb);         
+    return source->Read(ptr, size * nmemb);
 }
 
 int OggSeekCallback(void* datasource, ogg_int64_t offset, int whence)
@@ -121,7 +121,7 @@ bool LoadOggVorbisFromFileInMemory(const u8 *fileData, size_t numBytes, std::vec
     cb.seek_func = &OggSeekCallback;
     cb.tell_func = &OggTellCallback;
     cb.close_func = 0;
-                   
+    
     int ret = ov_open_callbacks(&src, &vf, 0, 0, cb);
     if (ret < 0)
     {

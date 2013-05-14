@@ -109,9 +109,8 @@ bool AudioAsset::LoadFromRawPCMWavData(const u8 *data, size_t numBytes, bool ste
     else if (stereo && !is16Bit) openALFormat = AL_FORMAT_STEREO8;
     else /* (!stereo && !is16Bit)*/ openALFormat = AL_FORMAT_MONO8;
 
-    // Copy the new data over.
-    std::vector<u8> tmpData(data, data + numBytes);
-    alBufferData(handle, openALFormat, &tmpData[0], tmpData.size(), frequency);
+    // Copy the new data over
+    alBufferData(handle, openALFormat, (const ALvoid*)data, numBytes, frequency);
     ALenum error = alGetError();
     if (error != AL_NONE)
     {

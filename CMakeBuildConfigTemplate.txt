@@ -133,6 +133,11 @@ AddProject(Core EnvironmentModule)      # Optional in theory, if you drop Physic
 
 ###### OPTIONAL PLUGINS ######
 message("\n=========== Configuring Optional Plugins ===========\n")
+# Add addons projects if they have been checked out from the separate repository
+if (EXISTS src/TundraAddons)
+    add_subdirectory(src/TundraAddons)
+endif ()
+
 if (NOT ANDROID)
     AddProject(Core ECEditorModule)                 # Provides tools for managing scenes, entities, entity-components and assets.
 endif()
@@ -141,22 +146,11 @@ AddProject(Application AvatarModule)            # Provides EC_Avatar. Depends on
 AddProject(Application DebugStatsModule)        # Enables a developer window for debugging. Depends on OgreRenderingModule, EnvironmentModule, and PhysicsModule.
 AddProject(Application SkyXHydrax)              # Provides photorealistic sky and water components by utilizing SkyX and Hydrax Ogre add-ons.
 AddProject(Application JavascriptModule)        # Allows QtScript-created scene script instances.
-if (NOT APPLE) # Python and PythonQt are not available currently on Mac.
-    if ("$ENV{TUNDRA_PYTHON_ENABLED}" STREQUAL "TRUE") 
-        AddProject(Application PythonScriptModule)      # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, TundraLogicModule, AvatarModule SceneWidgetComponents
-    endif ()
-endif()
-# BROWSER_SHARED_DATA_ENABLED controls if we need to link SceneWidgetComponents against BrowserUiPlugin
-# in order to get shared data accross all WebView components. This is optional and can be turned off with setting this to 0.
-set(BROWSER_SHARED_DATA_ENABLED 1)
 AddProject(Application SceneWidgetComponents)   # Provides ECs for injecting various QWidgets to the 3D scene eg. EC_WebView.
-AddProject(Application BrowserUiPlugin)         # Provides a browser UI for the client. Features multi-tabbed browsing, web login to servers, classic login, world/web bookmarks, web page caching etc.
 if (NOT ANDROID)
     AddProject(Application MumblePlugin)            # VOIP communication, implements a Mumble client for the Murmur server. Depends on JavascriptModule, OgreRenderingModule and TundraProtocolModule.
-    AddProject(Application VlcPlugin)              # Adds media playback capabilities with libVLC and entity components.
 endif()
 
-#AddProject(Application KinectModule)           # Reads Kinect for video, depth and skeleton data and emits it from the 'kinect' dynamic object. Only works on Windows with Visual Studio 10 with VC100 compiler.
 if (NOT ANDROID)
     AddProject(Application CAVEStereoModule)        # Provides multi-windowed rendering views for CAVE setups and stereoscopy view modes.
     AddProject(Application OgreAssetEditorModule)   # Enables various asset editors. Depends on OgreRenderingModule.
@@ -168,5 +162,6 @@ endif ()
 
 #AddProject(Application AssetInterestPlugin)    # Options to only keep assets below certain distance threshold in memory. Can also unload all non used assets from memory. Exposed to scripts so scenes can set the behaviour.
 AddProject(Application CanvasPlugin)            # Component that draws a graphics scene with any number of widgets into a mesh and provides 3D mouse input.
-#AddProject(Application XMPPModule)              # A module that implements XMPP-based chat.
 AddProject(Application ArchivePlugin)          # Provides archived asset bundle capabilities. Enables example sub asset referencing into eg. zip files.
+
+
