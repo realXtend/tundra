@@ -14,7 +14,8 @@
 
 ZipAssetBundle::ZipAssetBundle(AssetAPI *owner, const QString &type, const QString &name) :
     IAssetBundle(owner, type, name),
-    archive_(0)
+    archive_(0),
+    fileCount_(-1)
 {
 }
 
@@ -26,6 +27,7 @@ ZipAssetBundle::~ZipAssetBundle()
 void ZipAssetBundle::DoUnload()
 {
     Close();
+    fileCount_ = -1;
 }
 
 bool ZipAssetBundle::DeserializeFromDiskSource()
@@ -84,6 +86,7 @@ bool ZipAssetBundle::DeserializeFromDiskSource()
                 uncompressing++;
 
             files_ << file;
+            fileCount_++;
         }
     }
     
