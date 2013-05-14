@@ -125,7 +125,7 @@ public:
 
     /// Appends information text to the item that the asset is unloaded.
     /** @param value. If true, "(Unloaded)" is appended to the item text. If false, the aforementiond text is removed. */
-//    void MarkUnloaded(bool value);
+    //void MarkUnloaded(bool value);
 
     /// Decorates the item (text + color) accordingly to the asset properties.
     /** @param asset Asset which this item represents. */
@@ -162,8 +162,14 @@ public:
 
     bool Contains(const QString &assetRef) const;
 
+    /// Return shared ptr to the asset bundle. Always remember to check that the pointer is not null.
+    AssetBundlePtr AssetBundle() const;
+
+    /// Returns shared pointer to the asset. Always remember to check that the pointer is not null.
+    AssetStoragePtr Storage() const;
+
 private:
-    AssetBundleWeakPtr assetBundle;
+    AssetBundleWeakPtr assetBundle; ///< Weak pointer to the asset bundle.
 };
 
 /// Represents selection of AssetTreeWidget items.
