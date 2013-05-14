@@ -103,27 +103,28 @@ public slots:
     ScenePtr Scene() const { return scene_.lock(); }
 
     /// Renders an axis-aligned bounding box.
-    void DebugDrawAABB(const AABB &aabb, float r, float g, float b, bool depthTest = true);
-    void DebugDrawAABB(const AABB &aabb, const Color &clr, bool depthTest = true) { DebugDrawAABB(aabb, clr.r, clr.g, clr.b, depthTest); } /**< @overload @param clr Color, alpha is ignored. */
+    void DebugDrawAABB(const AABB &aabb, const Color &clr, bool depthTest = true);
+    void DebugDrawAABB(const AABB &aabb, float r, float g, float b, bool depthTest = true) { DebugDrawAABB(aabb, Color(r, g, b), depthTest); } /**< @overload */
     /// Renders an arbitrarily oriented bounding box.
-    void DebugDrawOBB(const OBB &obb, float r, float g, float b, bool depthTest = true);
-    void DebugDrawOBB(const OBB &obb, const Color &clr, bool depthTest = true) { DebugDrawOBB(obb, clr.r, clr.g, clr.b, depthTest); } /**< @overload @param clr Color, alpha is ignored. */
+    void DebugDrawOBB(const OBB &obb, const Color &clr, bool depthTest = true);
+    void DebugDrawOBB(const OBB &obb, float r, float g, float b, bool depthTest = true) { DebugDrawOBB(obb, Color(r, g, b), depthTest); } /**< @overload */
     /// Renders a line.
-    void DebugDrawLine(const float3 &start, const float3 &end, float r, float g, float b, bool depthTest = true);
-    void DebugDrawLine(const float3 &start, const float3 &end, const Color &clr, bool depthTest = true) { DebugDrawLine(start, end, clr.r, clr.g, clr.b, depthTest); } /**< @overload @param clr Color, alpha is ignored. */
+    void DebugDrawLine(const float3 &start, const float3 &end, const Color &clr, bool depthTest = true);
+    void DebugDrawLine(const float3 &start, const float3 &end, float r, float g, float b, bool depthTest = true){ DebugDrawLine(start, end, Color(r, g, b), depthTest); } /**< @overload */
     /// Renders a plane.
-    void DebugDrawPlane(const Plane &plane, float r, float g, float b, const float3 &refPoint = float3(0,0,0), float uSpacing = 1.f, float vSpacing = 1.f, 
-        int uSegments = 10, int vSegments = 10, bool depthTest = true);
-    void DebugDrawPlane(const Plane &plane, const Color &clr, const float3 &refPoint = float3::zero, float uSpacing = 1.f, float vSpacing = 1.f,  int uSegments = 10, int vSegments = 10, bool depthTest = true) { DebugDrawPlane(plane, clr.r, clr.g, clr.b, refPoint, uSpacing, vSpacing, uSegments, vSegments, depthTest); } /**< @overload @param clr Color, alpha is ignored. */
+    void DebugDrawPlane(const Plane &plane, const Color &clr, const float3 &refPoint = float3::zero,
+        float uSpacing = 1.f, float vSpacing = 1.f,  int uSegments = 10, int vSegments = 10, bool depthTest = true);
+    void DebugDrawPlane(const Plane &plane, float r, float g, float b, const float3 &refPoint = float3::zero,
+        float uSpacing = 1.f, float vSpacing = 1.f, int uSegments = 10, int vSegments = 10, bool depthTest = true) { DebugDrawPlane(plane, Color(r, g, b), refPoint, uSpacing, vSpacing, uSegments, vSegments, depthTest); } /**< @overload */
     /// Renders a line segment.
-    void DebugDrawLineSegment(const LineSegment &l, float r, float g, float b, bool depthTest = true);
-    void DebugDrawLineSegment(const LineSegment &l, const Color &clr, bool depthTest = true) { DebugDrawLineSegment(l, clr.r, clr.g, clr.b, depthTest); } /**< @overload @param clr Color, alpha is ignored. */
+    void DebugDrawLineSegment(const LineSegment &l, const Color &clr, bool depthTest = true);
+    void DebugDrawLineSegment(const LineSegment &l, float r, float g, float b, bool depthTest = true) { DebugDrawLineSegment(l, Color(r, g, b), depthTest); } /**< @overload */
     /// Renders a transformation of an object.
-    void DebugDrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b, bool depthTest = true);
-    void DebugDrawTransform(const Transform &t, float axisLength, float boxSize, const Color &clr, bool depthTest = true) { DebugDrawTransform(t, axisLength, boxSize, clr.r, clr.g, clr.b, depthTest); } /**< @overload @param clr Color, alpha is ignored. */
+    void DebugDrawTransform(const Transform &t, float axisLength, float boxSize, const Color &clr, bool depthTest = true);
+    void DebugDrawTransform(const Transform &t, float axisLength, float boxSize, float r, float g, float b, bool depthTest = true) { DebugDrawTransform(t, axisLength, boxSize, Color(r, g, b), depthTest); } /**< @overload */
     /// Renders a transformation of an object.
-    void DebugDrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, float r, float g, float b, bool depthTest = true);
-    void DebugDrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, const Color &clr, bool depthTest = true) { DebugDrawFloat3x4(t, axisLength, boxSize, clr.r, clr.g, clr.b, depthTest); } /**< @overload @param clr Color, alpha is ignored. */
+    void DebugDrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, const Color &clr, bool depthTest = true);
+    void DebugDrawFloat3x4(const float3x4 &t, float axisLength, float boxSize, float r, float g, float b, bool depthTest = true) { DebugDrawFloat3x4(t, axisLength, boxSize, Color(r, g, b), depthTest); } /**< @overload */
     /// Renders a transform's local X, Y & Z axes in world space, with scaling
     void DebugDrawAxes(const float3x4 &t, bool depthTest = true);
     /// Renders a debug representation of a light.
@@ -131,21 +132,21 @@ public slots:
         @param lightType 0=point, 1=spot, 2=directional
         @param range Range of the light (point and spot lights only)
         @param spotAngle Spotlight cone outer angle in degrees (spot lights only) */
-    void DebugDrawLight(const float3x4 &t, int lightType, float range, float spotAngle, float r, float g, float b, bool depthTest = true);
-    void DebugDrawLight(const float3x4 &t, int lightType, float range, float spotAngle, const Color &clr, bool depthTest = true) { DebugDrawLight(t, lightType, range, spotAngle, clr.r, clr.g, clr.b, depthTest); } /**< @overload @param clr Color, alpha is ignored. */
+    void DebugDrawLight(const float3x4 &t, int lightType, float range, float spotAngle, const Color &clr, bool depthTest = true);
+    void DebugDrawLight(const float3x4 &t, int lightType, float range, float spotAngle, float r, float g, float b, bool depthTest = true) { DebugDrawLight(t, lightType, range, spotAngle, Color(r, g, b), depthTest); } /**< @overload */
     /// Renders a hollow circle.
     /// @param numSubdivisions The number of edges to subdivide the circle into. This value must be at least 3.
-    void DebugDrawCircle(const Circle &c, int numSubdivisions, float r, float g, float b, bool depthTest = true);
-    void DebugDrawCircle(const Circle &c, int numSubdivisions, const Color &clr, bool depthTest = true) { DebugDrawCircle(c, numSubdivisions, clr.r, clr.g, clr.b, depthTest); } /**< @overload @param clr Color, alpha is ignored. */
+    void DebugDrawCircle(const Circle &c, int numSubdivisions, const Color &clr, bool depthTest = true);
+    void DebugDrawCircle(const Circle &c, int numSubdivisions, float r, float g, float b, bool depthTest = true) { DebugDrawCircle(c, numSubdivisions, Color(r, g, b), depthTest); } /**< @overload */
     /// Renders a simple box-like debug camera.
-    void DebugDrawCamera(const float3x4 &t, float size, float r, float g, float b, bool depthTest = true);
-    void DebugDrawCamera(const float3x4 &t, float size, const Color &clr, bool depthTest = true) { DebugDrawCamera(t, size, clr.r, clr.g, clr.b, depthTest); } /**< @overload @param clr Color, alpha is ignored. */
+    void DebugDrawCamera(const float3x4 &t, float size, const Color &clr, bool depthTest = true);
+    void DebugDrawCamera(const float3x4 &t, float size, float r, float g, float b, bool depthTest = true) { DebugDrawCamera(t, size, Color(r, g, b), depthTest); } /**< @overload */
     /// Renders a visualization for a spatial EC_Sound object.
-    void DebugDrawSoundSource(const float3 &soundPos, float soundInnerRadius, float soundOuterRadius, float r, float g, float b, bool depthTest = true);
-    void DebugDrawSoundSource(const float3 &soundPos, float soundInnerRadius, float soundOuterRadius, const Color &clr, bool depthTest = true) { DebugDrawSoundSource(soundPos, soundInnerRadius, soundOuterRadius, clr.r, clr.g, clr.b, depthTest); } /**< @overload @param clr Color, alpha is ignored. */
+    void DebugDrawSoundSource(const float3 &soundPos, float soundInnerRadius, float soundOuterRadius, const Color &clr, bool depthTest = true);
+    void DebugDrawSoundSource(const float3 &soundPos, float soundInnerRadius, float soundOuterRadius, float r, float g, float b, bool depthTest = true) { DebugDrawSoundSource(soundPos, soundInnerRadius, soundOuterRadius, Color(r, g, b), depthTest); } /**< @overload */
     /// Renders a sphere as geosphere.
-    void DebugDrawSphere(const float3& center, float radius, int vertices, float r, float g, float b, bool depthTest = true);
-    void DebugDrawSphere(const float3& center, float radius, int vertices, const Color &clr, bool depthTest = true) { DebugDrawSphere(center, radius, vertices, clr.r, clr.g, clr.b, depthTest); } /**< @overload @param clr Color, alpha is ignored. */
+    void DebugDrawSphere(const float3& center, float radius, int vertices, const Color &clr, bool depthTest = true);
+    void DebugDrawSphere(const float3& center, float radius, int vertices, float r, float g, float b, bool depthTest = true) { DebugDrawSphere(center, radius, vertices, Color(r, g, b), depthTest); } /**< @overload */
 
 signals:
     /// An entity has entered the view

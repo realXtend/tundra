@@ -60,7 +60,8 @@ setup_install_files (${TUNDRA_BIN}/plugins/TundraInstallationDirectory.txt "plug
 setup_install_files (${TUNDRA_BIN}/../README.md)      # Readme
 setup_install_files (${TUNDRA_BIN}/../LICENSE)        # Licence
 setup_install_files (${TUNDRA_BIN}/../WhatsNew.txt)   # Whats new
-setup_install_files_find (${TUNDRA_BIN} "*.xml")      # Tundra executable config xml files
+setup_install_files (${TUNDRA_BIN}/plugins.xml)       # Default startup config
+setup_install_files (${TUNDRA_BIN}/viewer.xml)        # Viewer startup config
 setup_install_files_find (${TUNDRA_BIN}/dox "*.txt" Release|Debug|RelWithDebInfo "dox") # Doc files used in installer
 
 # Install certain things only in non BUILD_SDK_ONLY mode

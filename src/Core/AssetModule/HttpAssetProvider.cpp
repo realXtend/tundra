@@ -646,10 +646,12 @@ AssetStoragePtr HttpAssetProvider::GetStorageForAssetRef(const QString &assetRef
     QString protocolPath;
     AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(assetRef, 0, &namedStorage, &protocolPath);
     for (size_t i = 0; i < storages.size(); ++i)
+    {
         if (refType == AssetAPI::AssetRefNamedStorage && storages[i]->Name() == namedStorage)
-    return storages[i];
+            return storages[i];
         else if (refType == AssetAPI::AssetRefExternalUrl && assetRef.startsWith(storages[i]->baseAddress, Qt::CaseInsensitive))
-    return storages[i];
+            return storages[i];
+    }
 
     return HttpAssetStoragePtr();
 }
