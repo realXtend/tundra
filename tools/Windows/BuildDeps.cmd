@@ -504,7 +504,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xml.dll". (
    cd ..
    cd qtbindings
 
-   sed -e "s/qtscript_phonon //" -e "s/qtscript_opengl //" -e "s/qtscript_uitools //" < qtbindings.pro > qtbindings.pro.sed
+   sed -e "s/qtscript_phonon //" -e "s/qtscript_opengl //" -e "s/qtscript_uitools //" -e "s/qtscript_xml_patterns //" < qtbindings.pro > qtbindings.pro.sed
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    del /Q qtbindings.pro
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
