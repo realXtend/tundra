@@ -306,20 +306,21 @@ set QMAKESPEC=%DEPS%\qt\mkspecs\%QT_PLATFORM%
 set QTDIR=%DEPS%\qt
 
 IF NOT EXIST "%TUNDRA_BIN%\QtWebKit4.dll". (
-   cecho {0D}Deploying Qt DLLs to Tundra bin\.{# #}{\n}
-   copy /Y "%DEPS%\qt\bin\*.dll" "%TUNDRA_BIN%"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   mkdir "%TUNDRA_BIN%\qtplugins"
-   xcopy /E /I /C /H /R /Y "%DEPS%\qt\plugins\*.*" "%TUNDRA_BIN%\qtplugins"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   :: Clean out some definately not needed Qt DLLs from bin
-   :: QtCLucene does not have a public API and QtDesigner* are for QtCreator etc.
-   :: Others we could (should) remove right here: QtSvg, QtSql, QtTest and QtHelp.
-   del /Q "%TUNDRA_BIN%\QtCLucene*.dll"
-   del /Q "%TUNDRA_BIN%\QtDesigner*.dll"
+    cecho {0D}Deploying Qt DLLs to Tundra bin\.{# #}{\n}
+    copy /Y "%DEPS%\qt\bin\*.dll" "%TUNDRA_BIN%"
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    mkdir "%TUNDRA_BIN%\qtplugins"
+    xcopy /E /I /C /H /R /Y "%DEPS%\qt\plugins\*.*" "%TUNDRA_BIN%\qtplugins"
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    :: Clean out some definately not needed Qt DLLs from bin
+    del /Q "%TUNDRA_BIN%\QtCLucene*.dll"
+    del /Q "%TUNDRA_BIN%\QtDesigner*.dll"
+    del /Q "%TUNDRA_BIN%\QtHelp*.dll"
+    del /Q "%TUNDRA_BIN%\QtScriptTools*.dll"
+    del /Q "%TUNDRA_BIN%\QtSql*.dll"
+    del /Q "%TUNDRA_BIN%\QtSvg*.dll"
+    del /Q "%TUNDRA_BIN%\QtTest*.dll"
 )
-
-
 
 :: Bullet physics engine
 :: version 2.81 sp1, svn rev 2613
@@ -417,36 +418,47 @@ IF %BUILD_RELEASE% == TRUE (
 )
 copy /Y "%DEPS%\assimp\bin\Debug\assimpD.dll" "%TUNDRA_BIN%"
 
+set BUILD_KNET=TRUE
 IF NOT EXIST "%DEPS%\kNet\". (
-   cecho {0D}Cloning kNet from https://github.com/juj/kNet into "%DEPS%\kNet".{# #}{\n}
-   cd "%DEPS%"
-   call git clone https://github.com/juj/kNet
-   IF NOT EXIST "%DEPS%\kNet\.git" GOTO :ERROR
+    cecho {0D}Cloning kNet from https://github.com/juj/kNet into "%DEPS%\kNet".{# #}{\n}
+    cd "%DEPS%"
+    call git clone https://github.com/juj/kNet
+    IF NOT EXIST "%DEPS%\kNet\.git" GOTO :ERROR
 ) ELSE (
-   cecho {0D}Updating kNet to newest version from https://github.com/juj/kNet.{# #}{\n}
-   cd "%DEPS%\kNet"
-   call git pull
+    cecho {0D}Updating kNet to newest version from https://github.com/juj/kNet.{# #}{\n}
+    cd "%DEPS%\kNet"
+    call git pull >"%DEPS%\kNet\git-check"
+    set /p KNET_GIT_CHECK=<"%DEPS%\kNet\git-check"
+    echo !KNET_GIT_CHECK!
+    IF "!KNET_GIT_CHECK!"=="Already up-to-date." set BUILD_KNET=FALSE
+    del "%DEPS%\kNet\git-check"
 )
 
 cd "%DEPS%\kNet"
-:: TODO/NOTE: USE_BOOST not possible to configure from command-line with kNet's
-:: default (stable) branch yet, so tweak the CMakeLists.txt manually for now.
-sed s/"set(USE_BOOST TRUE)"/"option(USE_BOOST \"Specifies whether Boost is used.\" TRUE)"/g <CMakeLists.txt >CMakeLists.txt.sed
-del CMakeLists.txt
-rename CMakeLists.txt.sed CMakeLists.txt
-
 IF NOT EXIST kNet.sln. (
-   cecho {0D}Running cmake for kNet.{# #}{\n}
-   del /Q CMakeCache.txt
-   cmake . -G %GENERATOR% -DBOOST_ROOT=%BOOST_ROOT% -DUSE_BOOST:BOOL=%USE_BOOST%
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cecho {0D}Running cmake for kNet.{# #}{\n}
+
+    REM TODO/NOTE: USE_BOOST not possible to configure from command-line with kNet's
+    REM default (stable) branch yet, so tweak the CMakeLists.txt manually for now.
+    sed s/"set(USE_BOOST TRUE)"/"option(USE_BOOST \"Specifies whether Boost is used.\" TRUE)"/g <CMakeLists.txt >CMakeLists.txt.sed
+    del CMakeLists.txt
+    rename CMakeLists.txt.sed CMakeLists.txt
+
+    del /Q CMakeCache.txt
+    cmake . -G %GENERATOR% -DBOOST_ROOT=%BOOST_ROOT% -DUSE_BOOST:BOOL=%USE_BOOST%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    set BUILD_KNET=TRUE
 )
 
-cecho {0D}Building kNet. Please be patient, this will take a while.{# #}{\n}
-MSBuild kNet.sln /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
-MSBuild kNet.sln /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
-MSBuild kNet.sln /p:configuration=RelWithDebInfo /nologo /m:%NUMBER_OF_PROCESSORS%
-IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+IF %BUILD_KNET%==TRUE (
+    cecho {0D}Building kNet. Please be patient, this will take a while.{# #}{\n}
+    MSBuild kNet.sln /p:configuration=Debug /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild kNet.sln /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild kNet.sln /p:configuration=RelWithDebInfo /nologo /m:%NUMBER_OF_PROCESSORS%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+) ELSE (
+    cecho {0D}kNet already built and up to date. Skipping.{# #}{\n}
+)
 
 IF NOT EXIST "%DEPS%\qtscriptgenerator\.git". (
    cecho {0D}Cloning QtScriptGenerator into "%DEPS%\qtscriptgenerator".{# #}{\n}
@@ -522,7 +534,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xml.dll". (
    )
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-   cecho {0D}QtScriptGenerator skipped.{# #}{\n}
+   cecho {0D}QtScriptGenerator already built. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%TUNDRA_BIN%\qtplugins\script\qtscript_core.dll". (
@@ -534,17 +546,20 @@ IF NOT EXIST "%TUNDRA_BIN%\qtplugins\script\qtscript_core.dll". (
 )
 
 IF NOT EXIST "%DEPS%\realxtend-tundra-deps\.git". (
-   cecho {0D}Cloning realxtend-tundra-deps repository into "%DEPS%\realxtend-tundra-deps".{# #}{\n}
-   cd "%DEPS%"
-   call git clone https://code.google.com/p/realxtend-tundra-deps
-   IF NOT EXIST "%DEPS%\realxtend-tundra-deps\.git" GOTO :ERROR
-
-   cd "%DEPS%\realxtend-tundra-deps"
-   call git checkout sources
+    cecho {0D}Cloning realxtend-tundra-deps repository into "%DEPS%\realxtend-tundra-deps".{# #}{\n}
+    REM Only clone/fetch the sources branch. Skipping the prebuilt binary branches as they are huge.
+    cd "%DEPS%"
+    call git init realxtend-tundra-deps
+    cd realxtend-tundra-deps
+    call git fetch https://code.google.com/p/realxtend-tundra-deps/ sources:refs/remotes/origin/sources
+    call git remote add origin https://code.google.com/p/realxtend-tundra-deps/
+    call git checkout sources
+    IF NOT EXIST "%DEPS%\realxtend-tundra-deps\.git" GOTO :ERROR
 ) ELSE (
-   cecho {0D}Updating realxtend-tundra-deps to newest.{# #}{\n}
-   cd "%DEPS%\realxtend-tundra-deps"
-   call git pull origin
+    cecho {0D}Updating realxtend-tundra-deps to newest.{# #}{\n}
+    cd "%DEPS%\realxtend-tundra-deps"
+    call git fetch origin sources:refs/remotes/origin/sources
+    git rebase origin/sources
 )
 
 set OGRE_HOME=%DEPS%\ogre-safe-nocrashes\SDK
@@ -676,6 +691,9 @@ copy /Y "%DEPS%\ogre-safe-nocrashes\bin\%BUILD_TYPE%\*.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 copy /Y "%DEPS%\ogre-safe-nocrashes\Dependencies\bin\Release\cg.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+del /Q "%TUNDRA_BIN%\OgrePaging*.dll"
+del /Q "%TUNDRA_BIN%\OgreRTShaderSystem*.dll"
+del /Q "%TUNDRA_BIN%\OgreTerrain*.dll"
 
 cecho {0E}NOTE: Skipping PythonQt build for now!{# #}{\n}
 REM IF NOT EXIST "%DEPS%\realxtend-tundra-deps\PythonQt\lib\PythonQt.lib". (
@@ -836,22 +854,25 @@ IF NOT EXIST "%DEPS%\theora". (
 
 :: Speex
 IF NOT EXIST "%DEPS%\speex". (
-   cd "%DEPS%"
-   :: Speex does not have a tagged release for VS2008! So, check out trunk instead.
-   cecho {0D}Cloning Speex into "%DEPS%\speex".{# #}{\n}
-   svn checkout http://svn.xiph.org/trunk/speex/ speex
-   cd speex\win32\VS2008
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cd "%DEPS%"
+    :: Speex does not have a tagged release for VS2008! So, check out trunk instead.
+    cecho {0D}Cloning Speex into "%DEPS%\speex".{# #}{\n}
+    svn checkout http://svn.xiph.org/trunk/speex/ speex
+)
 
-   cecho {0D}Building Speex. Please be patient, this will take a while.{# #}{\n}
-   MSBuild libspeex.sln /p:configuration=Debug /t:libspeex /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   MSBuild libspeex.sln /p:configuration=Release /t:libspeex /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   :: For some reason /t:libspeex;libspeexdsp wont build the dsp lib, so do it separately.
-   :: Only build release because the target directory and name are the same for debug and release.
-   MSBuild libspeexdsp\libspeexdsp.%VCPROJ_FILE_EXT% /p:configuration=Release /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
-   :: Copy libspeex.lib also to \lib
-   copy /Y Win32\Release\libspeex.lib "%DEPS%\speex\lib"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+IF NOT EXIST "%DEPS%\speex\lib\Release\libspeexdsp.lib". (
+    cd "%DEPS%\speex\win32\VS2008"
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
+    cecho {0D}Building Speex. Please be patient, this will take a while.{# #}{\n}
+    :: The default libspeex.sln has the libspeexdsp project disabled, so we must use our own custom solution file.
+    copy /Y "%TOOLS%\Mods\libspeex.sln" libspeex.sln
+    :: Also, the libspeexdsp.vcproj poorly outputs the resulted library to the same directory using the same filename
+    :: regardless of the used configuration so we must work around that too.
+    copy /Y "%TOOLS%\Mods\libspeexdsp.vcproj" libspeexdsp\libspeexdsp.vcproj
+    MSBuild libspeex.sln /p:configuration=Debug /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libspeex.sln /p:configuration=Release /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Speex already built. Skipping.{# #}{\n}
 )

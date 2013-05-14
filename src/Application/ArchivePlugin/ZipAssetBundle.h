@@ -38,6 +38,10 @@ public:
     virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
 
     /// IAssetBundle override.
+    /** This does not include sub folders inside the zip file to this count, files in sub folders will be counted. */
+    virtual int SubAssetCount() const { return fileCount_; }
+
+    /// IAssetBundle override.
     virtual std::vector<u8> GetSubAssetData(const QString &subAssetName);
 
     /// IAssetBundle override.
@@ -62,6 +66,9 @@ private:
     
     /// Zip sub assets.
     ZipFileList files_;
+
+    /// Count of files inside this zip.
+    int fileCount_;
 };
 
 typedef shared_ptr<ZipAssetBundle> ArchiveAssetPtr;

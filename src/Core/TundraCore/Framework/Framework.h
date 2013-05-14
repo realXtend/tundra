@@ -135,16 +135,6 @@ public slots:
     /// Returns core API Plugin object.
     PluginAPI *Plugins() const;
 
-    /// The Tundra API version information of this build.
-    /** May differ from the end user application version of the default distribution, i.e. app may change when api stays same.
-        @todo Delete/simplify. */
-    VersionInfo *ApiVersion() const;
-
-    /// The Tundra application version information of this build.
-    /** @sa Application
-        @todo Delete/simplify. */
-    VersionInfo *ApplicationVersion() const;
-
     /// Returns raw module pointer.
     /** @param name Name of the module.
         @note Do not store the returned raw module pointer anywhere or make a weak_ptr/shared_ptr out of it. */
@@ -207,9 +197,6 @@ private:
 
     /// Stores all command line parameters and startup options specified in the Config XML files.
     QStringList startupOptions;
-
-    /// @todo Delete/simplify.
-    VersionInfo *apiVersionInfo, *applicationVersionInfo;
 
     /// Framework owns the memory of all the modules in the system. These are freed when Framework is exiting.
     std::vector<shared_ptr<IModule> > modules;

@@ -54,15 +54,12 @@ public:
     DebugLines(const std::string& name);
     ~DebugLines();
 
-    void addLine (const float3& from, const float3& to, const float3& color)
+    void addLine(const float3 &from, const float3 &to, const Color &color)
     {
         DebugLine newLine;
         newLine._start = from;
         newLine._end = to;
-        newLine._color.r = color.x;
-        newLine._color.g = color.y;
-        newLine._color.b = color.z;
-        newLine._color.a = 1.0f;
+        newLine._color = color;
         _lines.push_back(newLine);
     }
 
@@ -73,7 +70,6 @@ public:
     Ogre::Real getBoundingRadius (void) const;
 
 protected:
-
     std::vector<DebugLine> _lines;
     Ogre::HardwareVertexBufferSharedPtr _vbuf;
 };
