@@ -27,6 +27,7 @@
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "IAsset.h"
+#include "ConfigAPI.h"
 
 #ifdef EC_Script_ENABLED
 #include "IScriptInstance.h"
@@ -46,199 +47,182 @@
 #include <QTextEdit>
 #include <QTableWidget>
 #include <QMenu>
+#include <QDesktopServices>
+#include <QString>
 
 #include <btBulletDynamicsCommon.h>
-
 #include <OgreFontManager.h>
-
 #include <kNet/Network.h>
+
+#include "TreeWidgetUtils.h"
 
 #include "MemoryLeakCheck.h"
 
 using namespace std;
 
 const QString DEFAULT_LOG_DIR("logs");
+const QString OGRE_DUMP_FILENAME("profiler-ogre-stats.txt");
+const QString SCENECOMPLEXITY_DUMP_FILENAME("profiler-scene-stats.txt");
+const QString PERFLOGGER_DUMP_FILENAME("profiler-performance-logger.txt");
 
 TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     QWidget(parent),
-    framework_(fw)
-{
-    QUiLoader loader;
-    QFile file(Application::InstallationDirectory() + "data/ui/profiler.ui");
-    file.open(QFile::ReadOnly);
-    contents_widget_ = loader.load(&file, this);
-    assert(contents_widget_);
-    file.close();
-
+    framework_(fw),
+    profilerInTreeMode_(false),
+    profilerShowUnused_(false),
+    frameFimeUpdatePosX_(0),
+    logThreshold_(100.0f),
+    visibility_(false)
+{       
+    ui_.setupUi(this);
     setWindowTitle(tr("Profiler"));
-
-    QVBoxLayout *layout = new QVBoxLayout;
-    assert(layout);
-    layout->addWidget(contents_widget_);
-    layout->setContentsMargins(0,0,0,0);
-    setLayout(layout);
-
-    tree_profiling_data_ = findChild<QTreeWidget*>("treeProfilingData");
-    treeBulletStats = findChild<QTreeWidget*>("treeBulletStats");
-    combo_timing_refresh_interval_ = findChild<QComboBox*>("comboTimingRefreshInterval");
-    tab_widget_ = findChild<QTabWidget*>("tabWidget");
-    label_frame_time_history_ = findChild<QLabel*>("labelFrameTimeHistory");
-    label_top_frame_time_ = findChild<QLabel*>("labelTopFrameTime");
-    label_time_per_frame_ = findChild<QLabel*>("labelTimePerFrame");
-    labelTimings = findChild<QLabel*>("labelTimings");
-    assert(tab_widget_);
-    assert(tree_profiling_data_);
-    assert(combo_timing_refresh_interval_);
-    assert(label_frame_time_history_);
-    assert(label_top_frame_time_);
-
-    // Create a QImage object and set it in label.
-    QImage frameTimeHistory(label_frame_time_history_->width(), label_frame_time_history_->height(), QImage::Format_RGB32);
-    frameTimeHistory.fill(0xFF000000);
-    label_frame_time_history_->setPixmap(QPixmap::fromImage(frameTimeHistory));
-
-    tree_profiling_data_->header()->resizeSection(0, 300);
-    tree_profiling_data_->header()->resizeSection(1, 60);
-    tree_profiling_data_->header()->resizeSection(2, 50);
-    tree_profiling_data_->header()->resizeSection(3, 50);
-    tree_profiling_data_->header()->resizeSection(4, 50);
-
-    connect(tab_widget_, SIGNAL(currentChanged(int)), this, SLOT(OnProfilerWindowTabChanged(int)));
-
-    show_profiler_tree_ = false;
-    show_unused_ = false;
-
-    push_button_toggle_tree_ = findChild<QPushButton*>("pushButtonToggleTree");
-    push_button_collapse_all_ = findChild<QPushButton*>("pushButtonCollapseAll");
-    push_button_expand_all_ = findChild<QPushButton*>("pushButtonExpandAll");
-    push_button_show_unused_ = findChild<QPushButton*>("pushButtonShowUnused");
-    assert(push_button_toggle_tree_);
-    assert(push_button_collapse_all_);
-    assert(push_button_expand_all_);
-    assert(push_button_show_unused_);
-
-    tree_asset_cache_ = findChild<QTreeWidget*>("treeAssetCache");
-    tree_asset_transfers_ = findChild<QTreeWidget*>("treeAssetTransfers");
-    assert(tree_asset_cache_);
-    assert(tree_asset_transfers_);
-    tree_asset_cache_->header()->resizeSection(1, 60);
-    tree_asset_transfers_->header()->resizeSection(0, 240);
-    tree_asset_transfers_->header()->resizeSection(1, 90);
-    tree_asset_transfers_->header()->resizeSection(2, 90);
     
-    text_scenecomplexity_ = findChild<QTextEdit*>("textSceneComplexity");
-    assert(text_scenecomplexity_);
+    // Load settings before connecting any UI signals.
+    LoadSettings();
     
-    tree_rendertargets_ = findChild<QTreeWidget*>("treeRenderTargets");
-    assert(tree_rendertargets_);
-    tree_rendertargets_->header()->resizeSection(0, 220);
-    tree_rendertargets_->header()->resizeSection(1, 50);
-    tree_rendertargets_->header()->resizeSection(2, 50);
-    tree_rendertargets_->header()->resizeSection(3, 50);
-    tree_rendertargets_->header()->resizeSection(4, 60);
-    tree_rendertargets_->header()->resizeSection(5, 55);
-    tree_rendertargets_->header()->resizeSection(6, 60);
-    tree_rendertargets_->header()->resizeSection(7, 60);
-    tree_rendertargets_->header()->resizeSection(8, 60);
-    tree_rendertargets_->header()->resizeSection(9, 60);
-    tree_rendertargets_->header()->resizeSection(10, 60);
-    tree_rendertargets_->header()->resizeSection(11, 90);
-    tree_rendertargets_->header()->resizeSection(12, 90);
-    tree_rendertargets_->header()->resizeSection(13, 800);
+    /** Hide unused UI elements so users wont be confused. Left in the ui file if we are to reimplement/enable these features.
+        @todo Should we enable threshold again logging? Currently not used by DebugStatsModule. */
+    ui_.loggerThresholdTitle->hide();
+    ui_.loggerSpinbox->hide();
+    ui_.loggerApply->hide();
     
-    tree_texture_assets_ = findChild<QTreeWidget* >("textureDataTree"); 
-    tree_mesh_assets_ = findChild<QTreeWidget* >("meshDataTree");
-    tree_material_assets_ = findChild<QTreeWidget*>("materialDataTree");
-    tree_skeleton_assets_ = findChild<QTreeWidget*>("skeletonDataTree");
-    tree_compositor_assets_ = findChild<QTreeWidget*>("compositorDataTree");
-    tree_gpu_assets_ = findChild<QTreeWidget*>("gpuDataTree");
-    tree_font_assets_ = findChild<QTreeWidget*>("fontDataTree");
-
-    QList<QPushButton* > buttons = findChildren<QPushButton* >();
-    for(int i = 0; i < buttons.size(); ++i )
-        if (buttons[i]->objectName().contains("arrange") )
-            connect(buttons[i], SIGNAL(clicked()), this, SLOT(Arrange()));
-
-    connect(push_button_toggle_tree_, SIGNAL(pressed()), this, SLOT(ToggleTreeButtonPressed()));
-    connect(push_button_collapse_all_, SIGNAL(pressed()), this, SLOT(CollapseAllButtonPressed()));
-    connect(push_button_expand_all_, SIGNAL(pressed()), this, SLOT(ExpandAllButtonPressed()));
-    connect(push_button_show_unused_, SIGNAL(pressed()), this, SLOT(ShowUnusedButtonPressed()));
-
-    connect(findChild<QPushButton*>("pushButtonDumpOgreStats"), SIGNAL(pressed()), this, SLOT(DumpOgreResourceStatsToFile()));
-    connect(findChild<QPushButton*>("buttonDumpSceneComplexity"), SIGNAL(pressed()), this, SLOT(DumpSceneComplexityToFile()));
-
-    label_scripts_ = findChild<QLabel*>("labelScriptsInfo");
-    table_scripts_ = findChild<QTableWidget*>("tableWidgetScripts");
-    table_scripts_->horizontalHeader()->resizeSection(3, 80);
-    table_scripts_->horizontalHeader()->resizeSection(4, 60);
-    table_scripts_->horizontalHeader()->resizeSection(5, 70);
-    table_scripts_->horizontalHeader()->resizeSection(6, 55);
-    table_scripts_->horizontalHeader()->resizeSection(7, 55);
-    table_scripts_->horizontalHeader()->resizeSection(8, 60);
-    table_scripts_->horizontalHeader()->resizeSection(9, 60);
-    table_scripts_->horizontalHeader()->resizeSection(10, 55);
-    table_scripts_->horizontalHeader()->resizeSection(11, 60);
-    
-    frame_time_update_x_pos_ = 0;
-    logThreshold_ = 100.0;
-
-    QDoubleSpinBox* box = findChild<QDoubleSpinBox* >("loggerSpinbox");
-    if (box != 0)
-    {
-        box->setRange(0.0, 1000.0);
-        box->setValue(logThreshold_);
-    }
-    
-    QPushButton* apply = findChild<QPushButton*>("loggerApply");
-    if (apply != 0)
-    {
-        apply->setCheckable(true);
-        connect(apply, SIGNAL(clicked()), this, SLOT(ChangeLoggerThreshold()));
-    }
-
     // Set/init working directory for log files.
     logDirectory_ = Application::UserDataDirectory();
     if (!logDirectory_.exists(DEFAULT_LOG_DIR))
         logDirectory_.mkdir(DEFAULT_LOG_DIR);
     logDirectory_.cd(DEFAULT_LOG_DIR);
-    ///\todo Regression. Reimplement support for meshes and other types
-//    connect(tree_mesh_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowAsset(QTreeWidgetItem*, int)));
-    connect(tree_texture_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowAsset(QTreeWidgetItem*, int)));
+
+    // Tab change
+    connect(ui_.tabWidget, SIGNAL(currentChanged(int)), this, SLOT(RefreshProfilerTabWidget(int)));
+    connect(ui_.ogreTabWidget, SIGNAL(currentChanged(int)), this, SLOT(RefreshOgreTabWidget(int)));
+
+    // Tree/table header resizing
+    ui_.treeProfilingData->header()->resizeSection(0, 300);
+    ui_.treeProfilingData->header()->resizeSection(1, 60);
+    ui_.treeProfilingData->header()->resizeSection(2, 50);
+    ui_.treeProfilingData->header()->resizeSection(3, 50);
+    ui_.treeProfilingData->header()->resizeSection(4, 50);
+
+    ui_.treeAssetCache->header()->resizeSection(1, 60);
+
+    ui_.treeAssetTransfers->header()->resizeSection(0, 240);
+    ui_.treeAssetTransfers->header()->resizeSection(1, 90);
+    ui_.treeAssetTransfers->header()->resizeSection(2, 90);
+
+    ui_.treeRenderTargets->header()->resizeSection(0, 220);
+    ui_.treeRenderTargets->header()->resizeSection(1, 50);
+    ui_.treeRenderTargets->header()->resizeSection(2, 50);
+    ui_.treeRenderTargets->header()->resizeSection(3, 50);
+    ui_.treeRenderTargets->header()->resizeSection(4, 60);
+    ui_.treeRenderTargets->header()->resizeSection(5, 55);
+    ui_.treeRenderTargets->header()->resizeSection(6, 60);
+    ui_.treeRenderTargets->header()->resizeSection(7, 60);
+    ui_.treeRenderTargets->header()->resizeSection(8, 60);
+    ui_.treeRenderTargets->header()->resizeSection(9, 60);
+    ui_.treeRenderTargets->header()->resizeSection(10, 60);
+    ui_.treeRenderTargets->header()->resizeSection(11, 90);
+    ui_.treeRenderTargets->header()->resizeSection(12, 90);
+    ui_.treeRenderTargets->header()->resizeSection(13, 800);
+
+    ui_.tableWidgetScripts->horizontalHeader()->resizeSection(3, 80);
+    ui_.tableWidgetScripts->horizontalHeader()->resizeSection(4, 60);
+    ui_.tableWidgetScripts->horizontalHeader()->resizeSection(5, 70);
+    ui_.tableWidgetScripts->horizontalHeader()->resizeSection(6, 55);
+    ui_.tableWidgetScripts->horizontalHeader()->resizeSection(7, 55);
+    ui_.tableWidgetScripts->horizontalHeader()->resizeSection(8, 60);
+    ui_.tableWidgetScripts->horizontalHeader()->resizeSection(9, 60);
+    ui_.tableWidgetScripts->horizontalHeader()->resizeSection(10, 55);
+    ui_.tableWidgetScripts->horizontalHeader()->resizeSection(11, 60);
+
+    // Connect all "arrange" buttons
+    QList<QPushButton*> buttons = findChildren<QPushButton* >();
+    for(int i=0; i<buttons.size(); ++i)
+        if (buttons[i]->objectName().contains("arrange") )
+            connect(buttons[i], SIGNAL(clicked()), this, SLOT(ArrangeOgreDataTree()));
+            
+    // Filter line edit
+    connect(ui_.timingBlockFilter, SIGNAL(textEdited(const QString&)), this, SLOT(RefreshTimingPage()));
+
+    // Connect buttons
+    connect(ui_.pushButtonToggleTree, SIGNAL(pressed()), this, SLOT(ToggleTreeButtonPressed()));
+    connect(ui_.pushButtonCollapseAll, SIGNAL(pressed()), this, SLOT(CollapseAllButtonPressed()));
+    connect(ui_.pushButtonExpandAll, SIGNAL(pressed()), this, SLOT(ExpandAllButtonPressed()));
+    connect(ui_.pushButtonShowUnused, SIGNAL(pressed()), this, SLOT(ShowUnusedButtonPressed()));
+    connect(ui_.pushButtonDumpOgreStats, SIGNAL(pressed()), this, SLOT(DumpOgreResourceStatsToFile()));
+    connect(ui_.buttonDumpSceneComplexity, SIGNAL(pressed()), this, SLOT(DumpSceneComplexityToFile()));
+    
+    ui_.pushButtonToggleTree->setText(profilerInTreeMode_ ? "Flat View" : "Tree View");
+    ui_.pushButtonDumpOgreStats->setText("Dump stats to " + QDir::toNativeSeparators(logDirectory_.absoluteFilePath(OGRE_DUMP_FILENAME)));
+    ui_.buttonDumpSceneComplexity->setText("Dump stats to " + QDir::toNativeSeparators(logDirectory_.absoluteFilePath(SCENECOMPLEXITY_DUMP_FILENAME)));
+
+    ui_.loggerSpinbox->setRange(0.0, 1000.0);
+    ui_.loggerSpinbox->setValue(logThreshold_);
+
+    ui_.loggerApply->setCheckable(true);
+    connect(ui_.loggerApply, SIGNAL(clicked()), this, SLOT(ChangeLoggerThreshold()));
+
+    /// @todo Regression. Reimplement support for meshes and other types
+    //connect(ui_.meshDataTree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowAsset(QTreeWidgetItem*, int)));
+    connect(ui_.textureDataTree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowAsset(QTreeWidgetItem*, int)));
 
     // Add a context menu to Textures, Meshes and Materials widgets.
-    if (tree_texture_assets_)
-    {
-        tree_texture_assets_->installEventFilter(this);
-        menu_texture_assets_ = new QMenu(tree_texture_assets_);
-        menu_texture_assets_->setAttribute(Qt::WA_DeleteOnClose);
-        QAction *copyAssetName = new QAction(tr("Copy"), menu_texture_assets_);
-        connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyTextureAssetName()));
-        menu_texture_assets_->addAction(copyAssetName);
-    }
-    if (tree_mesh_assets_)
-    {
-        tree_mesh_assets_->installEventFilter(this);
-        menu_mesh_assets_ = new QMenu(tree_mesh_assets_);
-        menu_mesh_assets_->setAttribute(Qt::WA_DeleteOnClose);
-        QAction *copyAssetName = new QAction(tr("Copy"), menu_mesh_assets_);
-        connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMeshAssetName()));
-        menu_mesh_assets_->addAction(copyAssetName);
-    }
-    if (tree_material_assets_)
-    {
-        tree_material_assets_->installEventFilter(this);
-        menu_material_assets_ = new QMenu(tree_material_assets_);
-        menu_material_assets_->setAttribute(Qt::WA_DeleteOnClose);
-        QAction *copyAssetName = new QAction(tr("Copy"), menu_material_assets_);
-        connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMaterialAssetName()));
-        menu_material_assets_->addAction(copyAssetName);
-    }
+    ui_.textureDataTree->installEventFilter(this);
+    menuTextureAssets_ = new QMenu(ui_.textureDataTree);
+    menuTextureAssets_->setAttribute(Qt::WA_DeleteOnClose);
+    QAction *copyAssetName = new QAction(tr("Copy"), menuTextureAssets_);
+    connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyTextureAssetName()));
+    menuTextureAssets_->addAction(copyAssetName);
 
-    profiler_update_timer_.setSingleShot(true);
-    connect(&profiler_update_timer_, SIGNAL(timeout()), this, SLOT(RefreshProfilerWindow()));
+    ui_.meshDataTree->installEventFilter(this);
+    menuMeshAssets_ = new QMenu(ui_.meshDataTree);
+    menuMeshAssets_->setAttribute(Qt::WA_DeleteOnClose);
+    copyAssetName = new QAction(tr("Copy"), menuMeshAssets_);
+    connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMeshAssetName()));
+    menuMeshAssets_->addAction(copyAssetName);
 
-    connect(findChild<QPushButton*>("buttonRefresh"), SIGNAL(pressed()), this, SLOT(RefreshProfilingData()));
-    connect(combo_timing_refresh_interval_, SIGNAL(currentIndexChanged(int)), this, SLOT(TimingRefreshIntervalChanged()));
+    ui_.materialDataTree->installEventFilter(this);
+    menuMaterialAssets_ = new QMenu(ui_.materialDataTree);
+    menuMaterialAssets_->setAttribute(Qt::WA_DeleteOnClose);
+    copyAssetName = new QAction(tr("Copy"), menuMaterialAssets_);
+    connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMaterialAssetName()));
+    menuMaterialAssets_->addAction(copyAssetName);
+
+    updateTimer_.setSingleShot(true);
+    connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(Refresh()));
+
+    connect(ui_.buttonRefresh, SIGNAL(pressed()), this, SLOT(RefreshTimingPage()));
+    connect(ui_.comboTimingRefreshInterval, SIGNAL(currentIndexChanged(int)), this, SLOT(OnTimingIntervalChanged()));
+    
+    OnTimingIntervalChanged();
+}
+
+TimeProfilerWindow::~TimeProfilerWindow()
+{
+    SaveSettings();
+}
+
+void TimeProfilerWindow::LoadSettings()
+{
+    ConfigData config(ConfigAPI::FILE_FRAMEWORK, "profiler");
+    
+    ui_.tabWidget->setCurrentIndex(framework_->Config()->DeclareSetting(config, "mainPageIndex", 0).toInt());
+    ui_.ogreTabWidget->setCurrentIndex(framework_->Config()->DeclareSetting(config, "ogrePageIndex", 0).toInt());
+    ui_.comboTimingRefreshInterval->setCurrentIndex(framework_->Config()->DeclareSetting(config, "timingRefreshIntervalIndex", 0).toInt());
+    profilerInTreeMode_ = framework_->Config()->DeclareSetting(config, "timingInTreeMode", false).toBool();
+    profilerShowUnused_ = framework_->Config()->DeclareSetting(config, "timingShowUnused", false).toBool();
+    ui_.timingBlockFilter->setText(framework_->Config()->DeclareSetting(config, "timingFilters", "").toString());
+}
+
+void TimeProfilerWindow::SaveSettings()
+{
+    ConfigData config(ConfigAPI::FILE_FRAMEWORK, "profiler");
+    
+    framework_->Config()->Write(config, "mainPageIndex", ui_.tabWidget->currentIndex());
+    framework_->Config()->Write(config, "ogrePageIndex", ui_.ogreTabWidget->currentIndex());
+    framework_->Config()->Write(config, "timingRefreshIntervalIndex", ui_.comboTimingRefreshInterval->currentIndex());
+    framework_->Config()->Write(config, "timingInTreeMode", profilerInTreeMode_);
+    framework_->Config()->Write(config, "timingShowUnused", profilerShowUnused_);
+    framework_->Config()->Write(config, "timingFilters", ui_.timingBlockFilter->text().trimmed());
 }
 
 namespace
@@ -264,12 +248,12 @@ bool TimeProfilerWindow::eventFilter(QObject *obj, QEvent *event)
     if (event->type() == QEvent::ContextMenu)
     {
         QTreeWidget *widget = dynamic_cast<QTreeWidget*>(obj);
-        if (widget == tree_texture_assets_)
-            menu_texture_assets_->popup(framework_->Ui()->MainWindow()->mapFromGlobal(QCursor::pos()));
-        if (widget == tree_mesh_assets_)
-            menu_mesh_assets_->popup(framework_->Ui()->MainWindow()->mapFromGlobal(QCursor::pos()));
-        if (widget == tree_material_assets_)
-            menu_material_assets_->popup(framework_->Ui()->MainWindow()->mapFromGlobal(QCursor::pos()));
+        if (widget == ui_.textureDataTree && menuTextureAssets_)
+            menuTextureAssets_->popup(framework_->Ui()->MainWindow()->mapFromGlobal(QCursor::pos()));
+        if (widget == ui_.meshDataTree && menuMeshAssets_)
+            menuMeshAssets_->popup(framework_->Ui()->MainWindow()->mapFromGlobal(QCursor::pos()));
+        if (widget == ui_.materialDataTree && menuMaterialAssets_)
+            menuMaterialAssets_->popup(framework_->Ui()->MainWindow()->mapFromGlobal(QCursor::pos()));
 
         return true;
     }
@@ -278,17 +262,17 @@ bool TimeProfilerWindow::eventFilter(QObject *obj, QEvent *event)
 
 void TimeProfilerWindow::CopyTextureAssetName()
 {
-    CopySelectedItemName(tree_texture_assets_);
+    CopySelectedItemName(ui_.textureDataTree);
 }
 
 void TimeProfilerWindow::CopyMeshAssetName()
 {
-    CopySelectedItemName(tree_mesh_assets_);
+    CopySelectedItemName(ui_.meshDataTree);
 }
 
 void TimeProfilerWindow::CopyMaterialAssetName()
 {
-    CopySelectedItemName(tree_material_assets_);
+    CopySelectedItemName(ui_.materialDataTree);
 }
 
 void TimeProfilerWindow::ShowAsset(QTreeWidgetItem* item, int column)
@@ -296,7 +280,7 @@ void TimeProfilerWindow::ShowAsset(QTreeWidgetItem* item, int column)
     AssetPtr asset = framework_->Asset()->GetAsset(item->text(0));
     if (!asset)
     {
-        LogError("TimeProfilerWindow::ShowAsset: could not obtain asset " + item->text(0));
+        LogError("[Profiler]: ShowAsset: could not obtain asset " + item->text(0));
         return;
     }
 
@@ -313,10 +297,10 @@ void TimeProfilerWindow::ShowAsset(QTreeWidgetItem* item, int column)
         }
 }
 
-void TimeProfilerWindow::RefreshScriptProfilingData()
+void TimeProfilerWindow::RefreshScriptsPage()
 {
-    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 15 || !table_scripts_ || !label_scripts_)
-        return;   
+    if (!visibility_ || ui_.tabWidget->currentIndex() != 4)
+        return;
     
 #ifdef EC_Script_ENABLED
     QTime t;
@@ -324,13 +308,13 @@ void TimeProfilerWindow::RefreshScriptProfilingData()
     
     if (!framework_->Scene()->MainCameraScene())
     {
-        label_scripts_->setText("Scene is null, no scripts running.");
+        ui_.labelScriptsInfo->setText("Scene is null, no scripts running.");
         return;
     }
     EntityList scripts = framework_->Scene()->MainCameraScene()->GetEntitiesWithComponent(EC_Script::TypeNameStatic());
     if (scripts.empty())
     {
-        label_scripts_->setText("No scripts running in the scene");
+        ui_.labelScriptsInfo->setText("No scripts running in the scene");
         return;
     }
     
@@ -368,7 +352,7 @@ void TimeProfilerWindow::RefreshScriptProfilingData()
             QString scriptRefCombined = scriptRefs.join(", ");
                 
             QTableWidgetItem *existingItem = 0;
-            foreach(QTableWidgetItem *item, table_scripts_->findItems(idStr, Qt::MatchExactly))
+            foreach(QTableWidgetItem *item, ui_.tableWidgetScripts->findItems(idStr, Qt::MatchExactly))
             {
                 if (item->column() == 0)
                 {
@@ -380,14 +364,14 @@ void TimeProfilerWindow::RefreshScriptProfilingData()
             if (!existingItem)
             {
                 // Create new cell and init data
-                int row = table_scripts_->rowCount();
-                table_scripts_->insertRow(row);
-                table_scripts_->setItem(row, 0, new QTableWidgetItem(idStr));
-                table_scripts_->setItem(row, 1, new QTableWidgetItem(ent->Name()));
-                table_scripts_->setItem(row, 2, new QTableWidgetItem(script->Name()));
+                int row = ui_.tableWidgetScripts->rowCount();
+                ui_.tableWidgetScripts->insertRow(row);
+                ui_.tableWidgetScripts->setItem(row, 0, new QTableWidgetItem(idStr));
+                ui_.tableWidgetScripts->setItem(row, 1, new QTableWidgetItem(ent->Name()));
+                ui_.tableWidgetScripts->setItem(row, 2, new QTableWidgetItem(script->Name()));
                 for (int i=0; i<keys.size(); i++)
-                    table_scripts_->setItem(row, i+3, new QTableWidgetItem(QString::number(dump.value(keys[i], 0))));
-                table_scripts_->setItem(row, table_scripts_->columnCount()-1, new QTableWidgetItem(scriptRefCombined));
+                    ui_.tableWidgetScripts->setItem(row, i+3, new QTableWidgetItem(QString::number(dump.value(keys[i], 0))));
+                ui_.tableWidgetScripts->setItem(row, ui_.tableWidgetScripts->columnCount()-1, new QTableWidgetItem(scriptRefCombined));
                 createdNew = true;
             }
             else 
@@ -395,37 +379,37 @@ void TimeProfilerWindow::RefreshScriptProfilingData()
                 int row = existingItem->row();
                 
                 // Update names, they might have been renamed. Only set when changed to save update rendering costs.
-                if (table_scripts_->item(row, 1) && table_scripts_->item(row, 1)->text() != ent->Name()) 
-                    table_scripts_->item(row, 1)->setText(ent->Name());
-                if (table_scripts_->item(row, 2) && table_scripts_->item(row, 2)->text() != script->Name()) 
-                    table_scripts_->item(row, 2)->setText(script->Name());
+                if (ui_.tableWidgetScripts->item(row, 1) && ui_.tableWidgetScripts->item(row, 1)->text() != ent->Name()) 
+                    ui_.tableWidgetScripts->item(row, 1)->setText(ent->Name());
+                if (ui_.tableWidgetScripts->item(row, 2) && ui_.tableWidgetScripts->item(row, 2)->text() != script->Name()) 
+                    ui_.tableWidgetScripts->item(row, 2)->setText(script->Name());
                     
                 // Iterate dump map with column keys
                 for (int i=0; i<keys.size(); i++)
                 {
                     uint value = dump.value(keys[i], 0);
                     QString valueStr = QString::number(value);
-                    if (table_scripts_->item(row, i+3)) 
+                    if (ui_.tableWidgetScripts->item(row, i+3)) 
                     {
                         // Only update if value changed or toUint() fails
                         bool ok = false;
-                        uint cellValue = table_scripts_->item(row, i+3)->text().toUInt(&ok);
+                        uint cellValue = ui_.tableWidgetScripts->item(row, i+3)->text().toUInt(&ok);
                         if (ok)
                         {
                             if (cellValue != value)
                             {
                                 int difference = value - cellValue;
                                 QString diffString = (difference < 0 ? " (" : " (+") + QString::number(difference) + ")";
-                                table_scripts_->item(row, i+3)->setText(valueStr + diffString);
+                                ui_.tableWidgetScripts->item(row, i+3)->setText(valueStr + diffString);
                             }
                         }
                         else
-                            table_scripts_->item(row, i+3)->setText(valueStr);
+                            ui_.tableWidgetScripts->item(row, i+3)->setText(valueStr);
                     }
                 }
                 
                 // Update script refs
-                QTableWidgetItem *refsColumnItem = table_scripts_->item(row, table_scripts_->columnCount()-1);
+                QTableWidgetItem *refsColumnItem = ui_.tableWidgetScripts->item(row, ui_.tableWidgetScripts->columnCount()-1);
                 if (refsColumnItem && refsColumnItem->text() != scriptRefCombined)
                     refsColumnItem->setText(scriptRefCombined);
             }
@@ -435,20 +419,20 @@ void TimeProfilerWindow::RefreshScriptProfilingData()
     // This is done to show the entity/component name nicely at all times
     if (createdNew)
     {
-        table_scripts_->resizeColumnToContents(0);
-        table_scripts_->resizeColumnToContents(1);
-        table_scripts_->resizeColumnToContents(2);
+        ui_.tableWidgetScripts->resizeColumnToContents(0);
+        ui_.tableWidgetScripts->resizeColumnToContents(1);
+        ui_.tableWidgetScripts->resizeColumnToContents(2);
     }
         
     // If any removed entities/scripts are found, nuke the whole table.
     // It will get a fresh update on the next cycle, and is whole lot easier than
     // removing row by row as the indexes change when removed.
     bool clearTable = false;
-    for (int i=0; i<table_scripts_->rowCount(); i++)
+    for (int i=0; i<ui_.tableWidgetScripts->rowCount(); i++)
     {
-        if (table_scripts_->item(i, 0))
+        if (ui_.tableWidgetScripts->item(i, 0))
         {
-            entity_id_t id = table_scripts_->item(i, 0)->text().toUInt();
+            entity_id_t id = ui_.tableWidgetScripts->item(i, 0)->text().toUInt();
             if (!processedParentEnts.contains(id))
             {
                 clearTable = true;
@@ -458,25 +442,23 @@ void TimeProfilerWindow::RefreshScriptProfilingData()
     }
     if (clearTable)
     {
-        table_scripts_->clearContents();
-        while(table_scripts_->rowCount() > 0)
-            table_scripts_->removeRow(0);
+        ui_.tableWidgetScripts->clearContents();
+        while(ui_.tableWidgetScripts->rowCount() > 0)
+            ui_.tableWidgetScripts->removeRow(0);
     }
     
     int elapsed = t.elapsed();
-    label_scripts_->setText(QString("<span style=\"color:rgb(120,120,120);\">Information gathered in " + (elapsed <= 0 ? "<1" : QString::number(elapsed)) + " msec</span>"));
+    ui_.labelScriptsInfo->setText(QString("<span style=\"color:rgb(120,120,120);\">Information gathered in " + (elapsed <= 0 ? "<1" : QString::number(elapsed)) + " msec</span>"));
         
-    QTimer::singleShot(1000, this, SLOT(RefreshScriptProfilingData()));
+    QTimer::singleShot(1000, this, SLOT(RefreshScriptsPage()));
 #else
-    label_scripts_->setText("EC_Script not enabled in the build, cannot show information.");
+    ui_.labelScriptsInfo->setText("EC_Script not enabled in the build, cannot show information.");
 #endif
 }
 
 void TimeProfilerWindow::ChangeLoggerThreshold()
 {
-     QDoubleSpinBox* box = findChild<QDoubleSpinBox* >("loggerSpinbox");
-     if (box != 0)
-        logThreshold_ = box->value();
+    logThreshold_ = ui_.loggerSpinbox->value();
 }
 
 /** @cond PRIVATE */
@@ -498,50 +480,47 @@ bool LessThen(const QTreeWidgetItem* left, const QTreeWidgetItem* right)
 }
 /** @endcond */
 
-void TimeProfilerWindow::Arrange()
+void TimeProfilerWindow::ArrangeOgreDataTree()
 {
-    if (!tab_widget_)
+    if (!ui_.ogreTabWidget)
         return;
-
-    QString name = QObject::sender()->objectName();
 
     QTreeWidget* widget = 0;
-    switch (tab_widget_->currentIndex())
+    QString name = QObject::sender()->objectName();
+    
+    switch (ui_.ogreTabWidget->currentIndex())
     {
-    case 8:  // Texture
-        widget =  tree_texture_assets_;
-        break;
-    case 9: // Mesh
-        widget =  tree_mesh_assets_;
-        break;
-    case 10: // Material
-        widget =  tree_material_assets_;
-        break;
-    case 11:
-        widget =  tree_skeleton_assets_;
-        break;
-    case 12:
-        widget = tree_compositor_assets_ ;
-        break;
-    case 13:
-        widget = tree_gpu_assets_;
-        break;
-    case 14:
-        widget = tree_font_assets_;
-        break;
+        case 4: // Material
+            widget =  ui_.materialDataTree;
+            break;
+        case 5: // Texture
+            widget =  ui_.textureDataTree;
+            break;
+        case 6: // Mesh
+            widget =  ui_.meshDataTree;
+            break;
+        case 7: // Skeleton
+            widget =  ui_.skeletonDataTree;
+            break;
+        case 8: // GPU Programs
+            widget = ui_.gpuDataTree;
+            break;
+        case 9: // Compositors
+            widget = ui_.compositorDataTree;
+            break;
+        case 10: // Fonts
+            widget = ui_.fontDataTree;
+            break;
     }
-
-    if (widget == 0)
+    if (!widget)
         return;
 
+    // By name
     if (name.contains("name") )
-    {
-        // By name
         widget->sortItems(0, Qt::AscendingOrder);
-    }
+    // By size
     else if (name.contains("size") )
     {
-        // By size
         int va = widget->topLevelItemCount();
         QList<QTreeWidgetItem* > items;
         for(int i = va; i--;)
@@ -563,42 +542,42 @@ void TimeProfilerWindow::Arrange()
 
 void TimeProfilerWindow::ToggleTreeButtonPressed()
 {
-    show_profiler_tree_ = !show_profiler_tree_;
-    tree_profiling_data_->clear();
-
-    if (show_profiler_tree_)
+    profilerInTreeMode_ = !profilerInTreeMode_;
+    ui_.treeProfilingData->clear();
+    
+    if (profilerInTreeMode_)
     {
         RefreshProfilingDataTree(1.f); // The passed 1.f value is bogus, but after the first timed update, the widget will get the proper timings.
-        push_button_toggle_tree_->setText("Top");
+        ui_.pushButtonToggleTree->setText("Flat View");
     }
     else
     {
         RefreshProfilingDataList(1.f); // The passed 1.f value is bogus, but after the first timed update, the widget will get the proper timings.
-        push_button_toggle_tree_->setText("Tree");
+        ui_.pushButtonToggleTree->setText("Tree View");
     }
 }
 
 void TimeProfilerWindow::CollapseAllButtonPressed()
 {
-    tree_profiling_data_->collapseAll();
+    ui_.treeProfilingData->collapseAll();
 }
 
 void TimeProfilerWindow::ExpandAllButtonPressed()
 {
-    tree_profiling_data_->expandAll();
+    ui_.treeProfilingData->expandAll();
 }
 
 void TimeProfilerWindow::ShowUnusedButtonPressed()
 {
-    show_unused_ = !show_unused_;
-    tree_profiling_data_->clear();
+    profilerShowUnused_ = !profilerShowUnused_;
+    ui_.treeProfilingData->clear();
 
-    if (show_unused_)
-        push_button_show_unused_->setText("Hide Unused");
+    if (profilerShowUnused_)
+        ui_.pushButtonShowUnused->setText("Hide Unused");
     else
-        push_button_show_unused_->setText("Show Unused");
+        ui_.pushButtonShowUnused->setText("Show Unused");
 
-    if (show_profiler_tree_)
+    if (profilerInTreeMode_)
         RefreshProfilingDataTree(1.f);  // The passed 1.f value is bogus, but after the first timed update, the widget will get the proper timings.
     else
         RefreshProfilingDataList(1.f);  // The passed 1.f value is bogus, but after the first timed update, the widget will get the proper timings.
@@ -623,57 +602,130 @@ void ColorTreeWidgetItemByTime(QTreeWidgetItem *item, float time)
 	item->setForeground(0, QBrush(q));
 }
 
-void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
+void TimeProfilerWindow::RefreshProfilerTabWidget(int pageIndex)
 {
-    if (newPage == -1)
-        newPage = tab_widget_->currentIndex();
+    if (pageIndex < 0)
+        pageIndex = ui_.tabWidget->currentIndex();
 
-    switch(newPage)
+    switch(pageIndex)
     {
-    case 0:
-        RefreshProfilingData();
-        break;
-    case 2:
-        RefreshOgreProfilingWindow();
-        break;
-    case 3:
-        RefreshAssetProfilingData();
-        break;
-    case 4:
-        RefreshSceneComplexityProfilingData();
-        break;
-    case 5:
-        RefreshRenderTargetProfilingData();
-        break;
-    case 6: // Textures
-        RefreshAssetData(Ogre::TextureManager::getSingleton(), tree_texture_assets_, "texture");
-        break;
-    case 7: // Meshes
-        RefreshAssetData(Ogre::MeshManager::getSingleton(), tree_mesh_assets_, "mesh");
-        break;
-    case 8: // Material
-        RefreshAssetData(Ogre::MaterialManager::getSingleton(), tree_material_assets_, "material");
-        break;
-    case 9: // Skeleton
-        RefreshAssetData(Ogre::SkeletonManager::getSingleton(), tree_skeleton_assets_, "skeleton");
-        break;
-    case 10: // Composition
-        RefreshAssetData(Ogre::CompositorManager::getSingleton(), tree_compositor_assets_, "compositor");
-        break;
-    case 11: // Gpu assets
-        RefreshAssetData(Ogre::HighLevelGpuProgramManager::getSingleton(), tree_gpu_assets_, "gpuasset");
-        break;
-    case 12: // Font assets
-        RefreshAssetData(Ogre::FontManager::getSingleton(), tree_font_assets_, "font");
-        break;
-    case 13: // OgreSceneTree
-        PopulateOgreSceneTree();
-        break;
-    case 14: // Bullet collision statistics
-        PopulateBulletStats();
-        break;
-    case 15: // Scripts
-        RefreshScriptProfilingData();
+        // Timing
+        case 0:
+        {
+            RefreshTimingPage();
+            break;
+        }
+        // Frame
+        case 1:
+        {
+            ResizeFrameTimeHistoryGraph();
+            break;
+        }
+        // Ogre
+        case 2:
+        {
+            RefreshOgreTabWidget();
+            break;
+        }
+        // Bullet
+        case 3:
+        {
+            RefreshBulletPage();
+            break;
+        }
+        // Scripts
+        case 4:
+        {
+            RefreshScriptsPage();
+            break;
+        }
+        // Assets
+        case 5:
+        {
+            RefreshAssetsPage();
+            break;
+        }
+    }
+}
+
+
+void TimeProfilerWindow::RefreshOgreTabWidget(int pageIndex)
+{
+    if (!isVisible())
+        return;
+
+    if (pageIndex < 0)
+        pageIndex = ui_.ogreTabWidget->currentIndex();
+
+    switch(pageIndex)
+    {
+        // Overview
+        case 0:
+        {
+            RefreshOgreOverviewPage();
+            break;
+        }
+        // Scene Complexity
+        case 1:
+        {
+            RefreshOgreSceneComplexityPage();
+            break;
+        }
+        // Scene Hierarchy
+        case 2:
+        {
+            RefreshOgreSceneHierarchyPage();
+            break;
+        }
+        // Render Targets
+        case 3:
+        {
+            RefreshOgreRenderTargetPage();
+            break;
+        }
+        // Materials
+        case 4:
+        {
+            RefreshOgreDataTree(Ogre::MaterialManager::getSingleton(), ui_.materialDataTree, "material");
+            break;
+        }
+        // Textures
+        case 5:
+        {
+            RefreshOgreDataTree(Ogre::TextureManager::getSingleton(), ui_.textureDataTree, "texture");
+            break;
+        }
+        // Meshes
+        case 6:
+        {
+            RefreshOgreDataTree(Ogre::MeshManager::getSingleton(), ui_.meshDataTree, "mesh");
+            break;
+        }
+
+        // Skeletons
+        case 7:
+        {
+            RefreshOgreDataTree(Ogre::SkeletonManager::getSingleton(), ui_.skeletonDataTree, "skeleton");
+            break;
+        }
+        // GPU Programs
+        case 8:
+        {
+            RefreshOgreDataTree(Ogre::HighLevelGpuProgramManager::getSingleton(), ui_.gpuDataTree, "gpuasset");
+            break;
+        }
+        // Compositors
+        case 9:
+        {
+            RefreshOgreDataTree(Ogre::CompositorManager::getSingleton(), ui_.compositorDataTree, "compositor");
+            break;
+        }
+        // Fonts
+        case 10:
+        {
+            RefreshOgreDataTree(Ogre::FontManager::getSingleton(), ui_.fontDataTree, "font");
+            break;
+        }
     }
 }
 
@@ -722,7 +774,7 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
 
         QTreeWidgetItem *item = FindItemByName(qtNode, node->Name().c_str());
 
-        if (timings_node && timings_node->num_called_custom_ == 0 && !show_unused_ && !QString(node->Name().c_str()).startsWith("Thread"))
+        if (timings_node && timings_node->num_called_custom_ == 0 && !profilerShowUnused_ && !QString(node->Name().c_str()).startsWith("Thread"))
         {
             if (item)
                 delete item;
@@ -807,6 +859,16 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
     }
 }
 
+void TimeProfilerWindow::ResizeFrameTimeHistoryGraph()
+{
+    if (!ui_.tabWidget || ui_.tabWidget->currentIndex() != 1)
+        return;
+
+    QImage frameTimeHistory(ui_.frametimes->width()-25, ui_.frametimes->height()-75, QImage::Format_RGB32);
+    frameTimeHistory.fill(Qt::black);
+    ui_.labelFrameTimeHistory->setPixmap(QPixmap::fromImage(frameTimeHistory));
+}
+
 void TimeProfilerWindow::RedrawFrameTimeHistoryGraphDelta(const std::vector<std::pair<u64, double> > &frameTimes)
 {
     ///\todo Implement.
@@ -831,12 +893,11 @@ void DumpProfilerSpikes(ProfilerNodeTree *node, float limit, int frameNumber)
 
 void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair<u64, double> > &frameTimes)
 {
-    if (!tab_widget_ || tab_widget_->currentIndex() != 1)
+    if (!ui_.tabWidget || ui_.tabWidget->currentIndex() != 1)
         return;
 
     PROFILE(DebugStats_DrawTimeHistoryGraph);
-//    QPixmap picture(label_frame_time_history_->width(), label_frame_time_history_->height());
-    const QPixmap *pixmap = label_frame_time_history_->pixmap();
+    const QPixmap *pixmap = ui_.labelFrameTimeHistory->pixmap();
     QImage image = pixmap->toImage();
 
 #ifdef _WINDOWS
@@ -899,12 +960,12 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
     if (vertLine15FPS >= 1)
         painter.fillRect(0, vertLine15FPS, image.width()-1, 3, QColor(0xFF, 0x00, 0x00, 0x80));
 
-    label_frame_time_history_->setPixmap(QPixmap::fromImage(image));
+    ui_.labelFrameTimeHistory->setPixmap(QPixmap::fromImage(image));
 
     // Update max Time/frame label.
     char str[256];
     sprintf(str, "%dms", (int)(maxTime*1000.f + 0.49f));
-    label_top_frame_time_->setText(str);
+    ui_.labelTopFrameTime->setText(str);
 
     // Update smoothed avg time/frame label.
     double avg = 0;
@@ -919,88 +980,32 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
     }
     float timePerFrame = static_cast<float>(avg * 1000.0/denom); 
     sprintf(str, "%.2f msecs/frame.", timePerFrame);
-    label_time_per_frame_->setText(str);
-
-    //if (timePerFrame >= logThreshold_ )
-    //     DumpNodeData();
-
-    QPushButton *loggerEnabled = findChild<QPushButton*>("loggerApply");
-    if (loggerEnabled && loggerEnabled->isChecked())
-    {
-        float threshold = 100.f;
-        QDoubleSpinBox* box = findChild<QDoubleSpinBox* >("loggerSpinbox");
-        if (box != 0)
-            threshold = (float)box->value();
+    ui_.labelTimePerFrame->setText(str);
 
 #ifdef PROFILING
+    if (ui_.loggerApply->isChecked())
+    {
         Profiler &profiler = *framework_->GetProfiler();
         profiler.Lock();
-        DumpProfilerSpikes(profiler.GetRoot(), threshold, framework_->Frame()->FrameNumber());
+        DumpProfilerSpikes(profiler.GetRoot(), static_cast<float>(ui_.loggerSpinbox->value()), framework_->Frame()->FrameNumber());
         profiler.Release();
-#endif
     }
+#endif
 }
-
-/*
-void TimeProfilerWindow::DumpNodeData()
-{
-   
-    QFile file("performancelogger.txt");
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
-         return;
-
-    if (tree_profiling_data_ == 0)
-        return;
-
-    QTextStream out(&file);
-    
-    // Refresh tree data. 
-    RefreshProfilingDataTree();
-
-    // Now write data from tree to file
-    QTreeWidgetItemIterator it(tree_profiling_data_);
-    int cols = tree_profiling_data_->columnCount();
-
-    out<<endl;
-    out<<"#---------------- FRAME -----------------------------";
-    out<<endl;
-    out<<endl;
-
-    while(*it) 
-     {
-         QString name = (*it)->text(0);
-         if (name.contains("thread", Qt::CaseInsensitive) && !name.contains("ThreadTask") )
-             out<<endl;
-
-         for(int i = 0; i < cols; ++i)
-            out<<(*it)->text(i)<<" ";
-         
-         out<<endl;
-         ++it;
-     }
-           
-    file.close();
-}
-*/
 
 void TimeProfilerWindow::DoThresholdLogging()
 {
 #ifdef PROFILING
-     QPushButton* button = findChild<QPushButton* >("loggerApply");
-     if (button == 0)
-         return;
-
-     if (tab_widget_->currentIndex() != 1 && button->isChecked())
+     if (ui_.tabWidget->currentIndex() != 1 && ui_.loggerApply->isChecked())
      {
-        button->setChecked(false);
+        ui_.loggerApply->setChecked(false);
         return;
      }
 
-     if (tab_widget_->currentIndex() == 1 && !button->isChecked())
+     if (ui_.tabWidget->currentIndex() == 1 && !ui_.loggerApply->isChecked())
         return;
 
-    assert(logDirectory_.exists());
-    QFile file(logDirectory_.path() + "/performancelogger.txt");
+    QFile file(logDirectory_.absoluteFilePath(PERFLOGGER_DUMP_FILENAME));
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
          return;
 
@@ -1020,11 +1025,11 @@ void TimeProfilerWindow::DoThresholdLogging()
             continue;
 
         /*
-        QTreeWidgetItem *item = FindItemByName(tree_profiling_data_, node->Name().c_str());
+        QTreeWidgetItem *item = FindItemByName(ui_.treeProfilingData, node->Name().c_str());
         if (!item)
         {
             item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(node->Name().c_str())));
-            tree_profiling_data_->addTopLevelItem(item);
+            ui_.treeProfilingData->addTopLevelItem(item);
         }
         */
 
@@ -1170,18 +1175,7 @@ void TimeProfilerWindow::FillThresholdLogger(QTextStream& out, const ProfilerNod
 
 void TimeProfilerWindow::resizeEvent(QResizeEvent *event)
 {
-//    contents_widget_->resize(this->width()-10, this->height()-10);
-//    tab_widget_->resize(this->width()-20, this->height()-20);
-//    tree_profiling_data_->resize(this->width()-40, this->height()-80);
-
-    label_frame_time_history_->resize(this->width()-75, this->height()-75);
-
-//    tree_sim_stats_->resize(this->width()-40, this->height()-80);
-
-    QImage frameTimeHistory(label_frame_time_history_->width(), label_frame_time_history_->height(), QImage::Format_RGB32);
-    frameTimeHistory.fill(0);
-    label_frame_time_history_->setPixmap(QPixmap::fromImage(frameTimeHistory));
-
+    ResizeFrameTimeHistoryGraph();
 }
 
 void TimeProfilerWindow::showEvent(QShowEvent *event)
@@ -1198,19 +1192,17 @@ void TimeProfilerWindow::hideEvent(QHideEvent  *event)
 
 int TimeProfilerWindow::ReadProfilingRefreshInterval()
 {
-    assert(combo_timing_refresh_interval_);
-
     // Positive values denote
     const int refreshTimes[] = { -1, 10000, 5000, 2000, 1000, 500 };
 
-    int selection = combo_timing_refresh_interval_->currentIndex();
+    int selection = ui_.comboTimingRefreshInterval->currentIndex();
     return refreshTimes[min(max(selection, 0), (int)(sizeof(refreshTimes)/sizeof(refreshTimes[0])-1))];
 }
 
-void TimeProfilerWindow::TimingRefreshIntervalChanged()
+void TimeProfilerWindow::OnTimingIntervalChanged()
 {
-    findChild<QPushButton*>("buttonRefresh")->setEnabled(ReadProfilingRefreshInterval() <= 0);
-    RefreshProfilerWindow();
+    ui_.buttonRefresh->setEnabled(ReadProfilingRefreshInterval() <= 0);
+    Refresh();
 }
 
 template<typename T>
@@ -1227,52 +1219,43 @@ int CountSize(Ogre::MapIterator<T> iter)
 
 static std::string ReadOgreManagerStatus(Ogre::ResourceManager &manager)
 {
-    char str[256];
+    QString budget = QString::fromStdString(kNet::FormatBytes((u64)manager.getMemoryBudget()));
+    QString usage = QString::fromStdString(kNet::FormatBytes((u64)manager.getMemoryUsage()));
+    if (budget.lastIndexOf(".") >= budget.lastIndexOf(" ")-3) budget.insert(budget.lastIndexOf(" "), "0");
+    if (budget.endsWith(" B")) budget += " ";
+    if (usage.lastIndexOf(".") >= usage.lastIndexOf(" ")-3) usage.insert(usage.lastIndexOf(" "), "0");
+    if (usage.endsWith(" B")) usage += " ";
+
     Ogre::ResourceManager::ResourceMapIterator iter = manager.getResourceIterator();
-    sprintf(str, "Budget: %s, Usage: %s, # of resources: %d",
-        kNet::FormatBytes((u64)manager.getMemoryBudget()).c_str(),
-        kNet::FormatBytes((u64)manager.getMemoryUsage()).c_str(),
-        CountSize(iter));
-    return str;
+    return QString("Budget: %1    Usage: %2     Resource count: %3").arg(budget, 12).arg(usage, 12).arg(CountSize(iter), 6).toStdString();
 }
 
-void TimeProfilerWindow::RefreshOgreProfilingWindow()
+void TimeProfilerWindow::RefreshOgreOverviewPage()
 {
-    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 2)
+    if (!visibility_ || ui_.ogreTabWidget->currentIndex() != 0)
         return;
 
     Ogre::Root *root = Ogre::Root::getSingletonPtr();
-    assert(root);
-/*
-    Ogre::CompositorManager
-    Ogre::TextureManager
-    Ogre::MeshManager
-    Ogre::MaterialManager
-    Ogre::SkeletonManager
-    Ogre::HighLevelGpuProgramManager
-    Ogre::FontManager
-*/
-/*
-    Ogre::ControllerManager
-    Ogre::DefaultHardwareBufferManager
-    Ogre::GpuProgramManager
-    Ogre::OverlayManager
-    Ogre::ParticleSystemManager
-*/
-//    Ogre::SceneManagerEnumerator::SceneManagerIterator iter = root->getSceneManagerIterator();
-    findChild<QLabel*>("labelNumSceneManagers")->setText(QString("%1").arg(CountSize(root->getSceneManagerIterator())));
-    findChild<QLabel*>("labelNumArchives")->setText(QString("%1").arg(CountSize(Ogre::ArchiveManager::getSingleton().getArchiveIterator())));
+    if (!root)
+    {
+        LogError("[Profiler]: RefreshOgreOverviewPage: Ogre Root is null, cannot continue!");
+        return;
+    }
+
+    ui_.labelNumSceneManagers->setText(QString("%1").arg(CountSize(root->getSceneManagerIterator())));
+    ui_.labelNumArchives->setText(QString("%1").arg(CountSize(Ogre::ArchiveManager::getSingleton().getArchiveIterator())));
 
     if (!framework_->IsHeadless())
-        findChild<QLabel*>("labelTextureManager")->setText(ReadOgreManagerStatus(Ogre::TextureManager::getSingleton()).c_str());
+        ui_.labelTextureManager->setText(ReadOgreManagerStatus(Ogre::TextureManager::getSingleton()).c_str());
     else
-        findChild<QLabel*>("labelTextureManager")->setText("Texture information not available in headless mode.");
-    findChild<QLabel*>("labelMeshManager")->setText(ReadOgreManagerStatus(Ogre::MeshManager::getSingleton()).c_str());
-    findChild<QLabel*>("labelMaterialManager")->setText(ReadOgreManagerStatus(Ogre::MaterialManager::getSingleton()).c_str());
-    findChild<QLabel*>("labelSkeletonManager")->setText(ReadOgreManagerStatus(Ogre::SkeletonManager::getSingleton()).c_str());
-    findChild<QLabel*>("labelCompositorManager")->setText(ReadOgreManagerStatus(Ogre::CompositorManager::getSingleton()).c_str());
-    findChild<QLabel*>("labelGPUProgramManager")->setText(ReadOgreManagerStatus(Ogre::HighLevelGpuProgramManager::getSingleton()).c_str());
-    findChild<QLabel*>("labelFontManager")->setText(ReadOgreManagerStatus(Ogre::FontManager::getSingleton()).c_str());
+        ui_.labelTextureManager->setText("Texture information not available in headless mode.");
+
+    ui_.labelMeshManager->setText(ReadOgreManagerStatus(Ogre::MeshManager::getSingleton()).c_str());
+    ui_.labelMaterialManager->setText(ReadOgreManagerStatus(Ogre::MaterialManager::getSingleton()).c_str());
+    ui_.labelSkeletonManager->setText(ReadOgreManagerStatus(Ogre::SkeletonManager::getSingleton()).c_str());
+    ui_.labelCompositorManager->setText(ReadOgreManagerStatus(Ogre::CompositorManager::getSingleton()).c_str());
+    ui_.labelGPUProgramManager->setText(ReadOgreManagerStatus(Ogre::HighLevelGpuProgramManager::getSingleton()).c_str());
+    ui_.labelFontManager->setText(ReadOgreManagerStatus(Ogre::FontManager::getSingleton()).c_str());
 
     OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (renderer.get() && renderer->GetActiveOgreWorld().get())
@@ -1280,20 +1263,20 @@ void TimeProfilerWindow::RefreshOgreProfilingWindow()
         Ogre::SceneManager *scene = renderer->GetActiveOgreWorld()->OgreSceneManager();
         if (scene)
         {
-            findChild<QLabel*>("labelCameras")->setText(QString("%1").arg(CountSize(scene->getCameraIterator())));
-            findChild<QLabel*>("labelAnimations")->setText(QString("%1").arg(CountSize(scene->getAnimationIterator())));
-            findChild<QLabel*>("labelAnimationStates")->setText(QString("%1").arg(CountSize(scene->getAnimationStateIterator())));
-            findChild<QLabel*>("labelLights")->setText(QString("%1").arg(CountSize(scene->getMovableObjectIterator(Ogre::LightFactory::FACTORY_TYPE_NAME))));
-            findChild<QLabel*>("labelEntities")->setText(QString("%1").arg(CountSize(scene->getMovableObjectIterator(Ogre::EntityFactory::FACTORY_TYPE_NAME))));
-            findChild<QLabel*>("labelBillboardSets")->setText(QString("%1").arg(CountSize(scene->getMovableObjectIterator(Ogre::BillboardSetFactory::FACTORY_TYPE_NAME))));
-            findChild<QLabel*>("labelManualObjects")->setText(QString("%1").arg(CountSize(scene->getMovableObjectIterator(Ogre::ManualObjectFactory::FACTORY_TYPE_NAME))));
-            findChild<QLabel*>("labelBillboardChains")->setText(QString("%1").arg(CountSize(scene->getMovableObjectIterator(Ogre::BillboardChainFactory::FACTORY_TYPE_NAME))));
-            findChild<QLabel*>("labelRibbonTrails")->setText(QString("%1").arg(CountSize(scene->getMovableObjectIterator(Ogre::RibbonTrailFactory::FACTORY_TYPE_NAME))));
-            findChild<QLabel*>("labelParticleSystems")->setText(QString("%1").arg(CountSize(scene->getMovableObjectIterator(Ogre::ParticleSystemFactory::FACTORY_TYPE_NAME))));
+            ui_.labelCameras->setText(QString("%1").arg(CountSize(scene->getCameraIterator())));
+            ui_.labelAnimations->setText(QString("%1").arg(CountSize(scene->getAnimationIterator())));
+            ui_.labelAnimationStates->setText(QString("%1").arg(CountSize(scene->getAnimationStateIterator())));
+            ui_.labelLights->setText(QString("%1").arg(CountSize(scene->getMovableObjectIterator(Ogre::LightFactory::FACTORY_TYPE_NAME))));
+            ui_.labelEntities->setText(QString("%1").arg(CountSize(scene->getMovableObjectIterator(Ogre::EntityFactory::FACTORY_TYPE_NAME))));
+            ui_.labelBillboardSets->setText(QString("%1").arg(CountSize(scene->getMovableObjectIterator(Ogre::BillboardSetFactory::FACTORY_TYPE_NAME))));
+            ui_.labelManualObjects->setText(QString("%1").arg(CountSize(scene->getMovableObjectIterator(Ogre::ManualObjectFactory::FACTORY_TYPE_NAME))));
+            ui_.labelBillboardChains->setText(QString("%1").arg(CountSize(scene->getMovableObjectIterator(Ogre::BillboardChainFactory::FACTORY_TYPE_NAME))));
+            ui_.labelRibbonTrails->setText(QString("%1").arg(CountSize(scene->getMovableObjectIterator(Ogre::RibbonTrailFactory::FACTORY_TYPE_NAME))));
+            ui_.labelParticleSystems->setText(QString("%1").arg(CountSize(scene->getMovableObjectIterator(Ogre::ParticleSystemFactory::FACTORY_TYPE_NAME))));
         }
     }
 
-    profiler_update_timer_.start(500);
+    updateTimer_.start(500);
 }
 
 static void DumpOgreResManagerStatsToFile(Ogre::ResourceManager &manager, std::ofstream &file)
@@ -1340,41 +1323,77 @@ static void DumpOgreResManagerStatsToFile(Ogre::ResourceManager &manager, std::o
 
 void TimeProfilerWindow::DumpOgreResourceStatsToFile()
 {
-    std::ofstream file("ogrestats.txt");
-    file << "Ogre Texture Manager:" << std::endl;
+    QString path = QDir::toNativeSeparators(logDirectory_.absoluteFilePath(OGRE_DUMP_FILENAME));
+
+    std::ofstream file(path.toStdString().c_str());
+    
+    file << std::endl << "=======================================================" << std::endl;
+    file << "COMPRESSED MANAGER STATS";
+    file << std::endl << "=======================================================" << std::endl << std::endl;
+    
+    file << "Ogre Texture Manager      " << ReadOgreManagerStatus(Ogre::TextureManager::getSingleton()) << std::endl;
+    file << "Ogre Mesh Manager         " << ReadOgreManagerStatus(Ogre::MeshManager::getSingleton()) << std::endl;
+    file << "Ogre Material Manager     " << ReadOgreManagerStatus(Ogre::MaterialManager::getSingleton()) << std::endl;
+    file << "Ogre Skeleton Manager     " << ReadOgreManagerStatus(Ogre::SkeletonManager::getSingleton()) << std::endl;
+    file << "Ogre Compositor Manager   " << ReadOgreManagerStatus(Ogre::CompositorManager::getSingleton()) << std::endl;
+    file << "Ogre GPUProgram Manager   " << ReadOgreManagerStatus(Ogre::HighLevelGpuProgramManager::getSingleton()) << std::endl;
+    file << "Ogre Font Manager         " << ReadOgreManagerStatus(Ogre::FontManager::getSingleton()) << std::endl;
+
+    file << std::endl << "=======================================================" << std::endl;
+    file << "DETAILED MANAGER STATS";
+    file << std::endl << "=======================================================" << std::endl << std::endl;
+            
+    file << "Ogre Texture Manager:" << std::endl << "==============================" << std::endl;
     DumpOgreResManagerStatsToFile(Ogre::TextureManager::getSingleton(), file);
-    file << std::endl << std::endl << std::endl << "Ogre Mesh Manager:" << std::endl;
+    file << std::endl << std::endl << std::endl << "Ogre Mesh Manager" << std::endl << "==============================" << std::endl;
     DumpOgreResManagerStatsToFile(Ogre::MeshManager::getSingleton(), file);
-    file << std::endl << std::endl << std::endl << "Ogre Material Manager:" << std::endl;
+    file << std::endl << std::endl << std::endl << "Ogre Material Manager" << std::endl << "==============================" << std::endl;
     DumpOgreResManagerStatsToFile(Ogre::MaterialManager::getSingleton(), file);
-    file << std::endl << std::endl << std::endl << "Ogre Skeleton Manager:" << std::endl;
+    file << std::endl << std::endl << std::endl << "Ogre Skeleton Manager" << std::endl << "==============================" << std::endl;
     DumpOgreResManagerStatsToFile(Ogre::SkeletonManager::getSingleton(), file);
-    file << std::endl << std::endl << std::endl << "Ogre Compositor Manager:" << std::endl;
+    file << std::endl << std::endl << std::endl << "Ogre Compositor Manager" << std::endl << "==============================" << std::endl;
     DumpOgreResManagerStatsToFile(Ogre::CompositorManager::getSingleton(), file);
-    file << std::endl << std::endl << std::endl << "Ogre GPUProgram Manager:" << std::endl;
+    file << std::endl << std::endl << std::endl << "Ogre GPUProgram Manager" << std::endl << "==============================" << std::endl;
     DumpOgreResManagerStatsToFile(Ogre::HighLevelGpuProgramManager::getSingleton(), file);
-    file << std::endl << std::endl << std::endl << "Ogre Font Manager:" << std::endl;
+    file << std::endl << std::endl << std::endl << "Ogre Font Manager" << std::endl;
     DumpOgreResManagerStatsToFile(Ogre::FontManager::getSingleton(), file);
+    file.close();
+    
+    if (QFile::exists(path))
+    {
+        LogInfo("[Profiler]: Wrote Ogre stats to " + path);
+        QDesktopServices::openUrl(QUrl("file:///" + QDir::toNativeSeparators(logDirectory_.path()), QUrl::TolerantMode));
+    }
+    else
+        LogError("[Profiler]: Failed to write Ogre stats to " + path);
 }
 
 void TimeProfilerWindow::DumpSceneComplexityToFile()
-{
-    if (!text_scenecomplexity_)
-        return;
+{       
+    QString path = QDir::toNativeSeparators(logDirectory_.absoluteFilePath(SCENECOMPLEXITY_DUMP_FILENAME));
     
-    std::ofstream file("scenestats.txt");
-    file << text_scenecomplexity_->toPlainText().toStdString();
+    std::ofstream file(path.toStdString().c_str());
+    file << ui_.textSceneComplexity->toPlainText().toStdString();
+    file.close();
+
+    if (QFile::exists(path))
+    {
+        LogInfo("[Profiler]: Wrote Scene Complexity stats to " + path);
+        QDesktopServices::openUrl(QUrl("file:///" + QDir::toNativeSeparators(logDirectory_.path()), QUrl::TolerantMode));
+    }
+    else
+        LogError("[Profiler]: Failed to write Scene Complexity stats to " + path);
 }
 
-void TimeProfilerWindow::RefreshProfilerWindow()
+void TimeProfilerWindow::Refresh()
 {
-    OnProfilerWindowTabChanged(tab_widget_->currentIndex());
+    RefreshProfilerTabWidget();
 }
 
-void TimeProfilerWindow::RefreshProfilingData()
+void TimeProfilerWindow::RefreshTimingPage()
 {
 #ifdef PROFILING
-    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 0)
+    if (!visibility_ || ui_.tabWidget->currentIndex() != 0)
         return;
 
     static tick_t timePrev = GetCurrentClockTime();
@@ -1385,7 +1404,7 @@ void TimeProfilerWindow::RefreshProfilingData()
     double msecsOccurred = (double)(timeNow - timePrev) * 1000.0 / timerFrequency;
     timePrev = timeNow;
 
-    if (labelTimings)
+    if (ui_.labelTimings)
     {
         Profiler &profiler = *framework_->GetProfiler();
         profiler.Lock();
@@ -1400,29 +1419,26 @@ void TimeProfilerWindow::RefreshProfilingData()
         }
         else
             sprintf(str, "- FPS");
-        labelTimings->setText(str);
+        ui_.labelTimings->setText(str);
         profiler.Release();
     }
 
-    if (show_profiler_tree_)
+    if (profilerInTreeMode_)
         RefreshProfilingDataTree(msecsOccurred);
     else
         RefreshProfilingDataList(msecsOccurred);
 
     int refreshInterval = ReadProfilingRefreshInterval();
     if (refreshInterval > 0) // If refreshInterval < 0, we treat it as 'user refreshes manually'.
-        profiler_update_timer_.start(refreshInterval);
+        updateTimer_.start(refreshInterval);
 #endif
 }
 
 void TimeProfilerWindow::RefreshProfilingDataTree(float msecsOccurred)
 {
 #ifdef PROFILING
-//    Profiler *profiler = ProfilerSection::GetProfiler();
-
     Profiler &profiler = *framework_->GetProfiler();
     profiler.Lock();
-//    ProfilerNodeTree *node = profiler.Lock().get();
     ProfilerNodeTree *node = profiler.GetRoot();
 
     int numFrames = 1;
@@ -1434,16 +1450,16 @@ void TimeProfilerWindow::RefreshProfilingDataTree(float msecsOccurred)
     for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
         node = iter->get();
-
-        const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
-
-        QTreeWidgetItem *item = FindItemByName(tree_profiling_data_, node->Name().c_str());
+        QString profilingBlockName(node->Name().c_str());
+        
+        QTreeWidgetItem *item = FindItemByName(ui_.treeProfilingData, node->Name().c_str());
         if (!item)
         {
-            item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(node->Name().c_str())));
-            tree_profiling_data_->addTopLevelItem(item);
+            item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(profilingBlockName));
+            ui_.treeProfilingData->addTopLevelItem(item);
         }
-
+            
+        const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
         if (timings_node)
         {
             char str[256] = "-";
@@ -1451,6 +1467,7 @@ void TimeProfilerWindow::RefreshProfilingDataTree(float msecsOccurred)
             item->setText(1, str);
             sprintf(str, "%.2f", (float)timings_node->num_called_custom_ / numFrames);
             item->setText(2, str);
+            
             if (timings_node->num_called_custom_ > 0 && timings_node->custom_elapsed_min_ < 1e8)
             {
                 sprintf(str, "%.2fms", timings_node->custom_elapsed_min_*1000.f);
@@ -1458,6 +1475,7 @@ void TimeProfilerWindow::RefreshProfilingDataTree(float msecsOccurred)
             }
             else
                 item->setText(3, "-");
+
             if (timings_node->num_called_custom_ > 0)
             {
                 sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / timings_node->num_called_custom_);
@@ -1507,8 +1525,17 @@ void TimeProfilerWindow::RefreshProfilingDataTree(float msecsOccurred)
 
         FillProfileTimingWindow(item, node, numFrames, msecsOccurred / 1000.f);
     }
-    Physics::UpdateBulletProfilingData(tree_profiling_data_->invisibleRootItem(), numFrames);
+    
+    Physics::UpdateBulletProfilingData(ui_.treeProfilingData->invisibleRootItem(), numFrames);
     profiler.Release();
+    
+    // Filter
+    /// @todo Implement TreeWidgetSearch to take in QStringList of filters, case sensitivity enum and exact match boolean.
+    QStringList filters = TimingFilters();
+    if (!filters.isEmpty())
+        TreeWidgetSearch(ui_.treeProfilingData, 0, filters.first());
+    else
+        TreeWidgetSearch(ui_.treeProfilingData, 0, "");
 #endif
 }
 
@@ -1533,6 +1560,34 @@ bool ProfilingNodeLessThan(const ProfilerNode *a, const ProfilerNode *b)
     return aTimePerFrame > bTimePerFrame;
 }
 
+QStringList TimeProfilerWindow::TimingFilters()
+{
+    QStringList filters;
+    QString input = ui_.timingBlockFilter->text().trimmed();
+    if (!input.isEmpty())
+    {
+        foreach(const QString &filter, input.split(",", QString::SkipEmptyParts))
+        {
+            if (!filter.trimmed().isEmpty())
+                filters << filter.trimmed().toLower();
+        }
+    }
+    return filters;
+}
+
+bool TimeProfilerWindow::IsTimingItemFiltered(const QString &name, const QStringList &filters)
+{
+    if (filters.isEmpty())
+        return false;
+    if (name.isEmpty())
+        return true;
+
+    foreach(const QString &filter, filters)
+        if (name.contains(filter, Qt::CaseInsensitive))
+            return false;
+    return true;
+}
+
 void TimeProfilerWindow::RefreshProfilingDataList(float msecsOccurred)
 {
 #ifdef PROFILING
@@ -1544,7 +1599,9 @@ void TimeProfilerWindow::RefreshProfilingDataList(float msecsOccurred)
     CollectProfilerNodes(root, nodes);
     std::sort(nodes.begin(), nodes.end(), ProfilingNodeLessThan);
 
-    tree_profiling_data_->clear();
+    ui_.treeProfilingData->clear();
+
+    QStringList filters = TimingFilters();
 
     int numFrames = 1;
     ProfilerNode *processFrameNode = dynamic_cast<ProfilerNode*>(profiler.FindBlockByName("Framework_ProcessOneFrame")); // We use this node to estimate FPS for display.
@@ -1556,11 +1613,17 @@ void TimeProfilerWindow::RefreshProfilingDataList(float msecsOccurred)
         const ProfilerNode *timings_node = *iter;
         assert(timings_node);
 
-        if (timings_node->num_called_custom_ == 0 && !show_unused_)
+        if (timings_node->num_called_custom_ == 0 && !profilerShowUnused_)
             continue;
 
-        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(timings_node->Name().c_str())));
-        tree_profiling_data_->addTopLevelItem(item);
+        QString profilingBlockName(timings_node->Name().c_str());
+
+        // The flat list is always created from scratch, so we can skip creating items that are filtered out.
+        if (IsTimingItemFiltered(profilingBlockName, filters))
+            continue;
+
+        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(profilingBlockName));
+        ui_.treeProfilingData->addTopLevelItem(item);
 
         char str[256] = "-";
         sprintf(str, "%d", (int)timings_node->num_called_custom_);
@@ -1658,17 +1721,18 @@ void RedrawHistoryGraph(const std::vector<double> &data, QLabel *label)
     label->setPixmap(QPixmap::fromImage(image));
 }
 
-void TimeProfilerWindow::RefreshAssetProfilingData()
+void TimeProfilerWindow::RefreshAssetsPage()
 {
-    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 3)
+    if (!visibility_ || ui_.tabWidget->currentIndex() != 5)
         return;
 
-    tree_asset_cache_->clear();
-    tree_asset_transfers_->clear();
-/*     /// \todo Regression. Reimplement using the Asset API. -jj.
+    ui_.treeAssetCache->clear();
+    ui_.treeAssetTransfers->clear();
 
+    /// @todo Regression. Reimplement using the Asset API. -jj.
+/*  
     shared_ptr<Asset ServiceInterface> asset_service = 
-        framework_->GetS erviceM anager()->Get Service<AssetServiceInterface>(Service::ST_Asset).lock();
+        framework_->GetServiceManager()->GetService<AssetServiceInterface>(Service::ST_Asset).lock();
     if (!asset_service)
         return;
         
@@ -1677,7 +1741,7 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
     while(i != cache_map.end())
     {
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList());
-        tree_asset_cache_->addTopLevelItem(item);
+        ui_.treeAssetCache->addTopLevelItem(item);
         
         item->setText(0, QString(i->first.c_str()));
         item->setText(1, QString(QString("%1").arg(i->second.count_)));
@@ -1691,7 +1755,7 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
     while(j != transfer_vector.end())
     {
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList());
-        tree_asset_transfers_->addTopLevelItem(item);
+        ui_.treeAssetTransfers->addTopLevelItem(item);
         
         item->setText(0, QString((*j).id_.c_str()));
         item->setText(1, QString((*j).type_.c_str()));
@@ -1701,28 +1765,33 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
         ++j;
     }
 
-    QTimer::singleShot(500, this, SLOT(RefreshAssetProfilingData()));
-    */
+    QTimer::singleShot(500, this, SLOT(RefreshAssetsPage()));
+*/
 }
 
-void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
+void TimeProfilerWindow::RefreshOgreSceneComplexityPage()
 {
-    if (!visibility_ || !text_scenecomplexity_ || !tab_widget_ || tab_widget_->currentIndex() != 4)
+    if (!visibility_ || ui_.ogreTabWidget->currentIndex() != 1)
         return;
     
     Scene *scene = framework_->Scene()->MainCameraScene();
     if (!scene)
+    {
+        ui_.textSceneComplexity->setHtml("<pre><br><b>There is no active scene to profile</b>");
         return;
+    }
     
     OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     assert(renderer);
     if (!renderer)
         return;
-    
+
     Ogre::Root *root = Ogre::Root::getSingletonPtr();
-    assert(root);
     if (!root)
+    {
+        LogError("[Profiler]: RefreshOgreSceneComplexityPage: Ogre Root is null, cannot continue!");
         return;
+    }
     
     Ogre::RenderSystem* rendersys = root->getRenderSystem();
     assert(rendersys);
@@ -1749,13 +1818,14 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
             avgfps = floor(target->getAverageFPS() * 100.0f) / 100.0f;
     }
     
-    text << "Viewport" << std::endl;
-    text << "# of currently visible entities: " << visible_entities << std::endl;
-    text << "# of total batches rendered last frame: " << batches << std::endl;
-    text << "# of total triangles rendered last frame: " << triangles << std::endl;
-    text << "# of avg. triangles per batch: " << triangles / (batches ? batches : 1) << std::endl;
-    text << "Avg. FPS: " << avgfps << std::endl;
-    text << std::endl;
+    text << "<pre>";
+    text << "<span style='color:green;'><b>Average FPS</b> " << avgfps << "</span><br><br>";
+    text << "<b>Viewport</b>" << "<br>";
+    text << QString("  %1").arg("# of currently visible entities ", -45).toStdString() << visible_entities << "<br>";
+    text << QString("  %1").arg("# of total batches rendered last frame ", -45).toStdString() << batches << "<br>";
+    text << QString("  %1").arg("# of total triangles rendered last frame ", -45).toStdString() << triangles << "<br>";
+    text << QString("  %1").arg("# of avg. triangles per batch ", -45).toStdString() << triangles / (batches ? batches : 1) << "<br>";
+    text << "<br>";
     
     uint entities = 0;
     uint prims = 0;
@@ -1821,10 +1891,11 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
         // Get Ogre meshes from terrain EC
         else if (terrain)
         {
-            for(int y = 0; y < terrain->PatchHeight(); ++y)
-                for(int x = 0; x < terrain->PatchWidth(); ++x)
+            for(uint y=0; y<terrain->PatchHeight(); ++y)
+            {
+                for(uint x=0; x<terrain->PatchWidth(); ++x)
                 {
-                    Ogre::SceneNode *node = terrain->GetPatch(x, y).node;
+                    Ogre::SceneNode *node = terrain->GetPatch(static_cast<int>(x), static_cast<int>(y)).node;
                     if (!node)
                         continue;
                     if (!node->numAttachedObjects())
@@ -1841,6 +1912,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
                         GetTexturesFromMaterials(temp_mat, scene_textures);
                     }
                 }
+            }
         }
         
         {
@@ -1865,13 +1937,13 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
             other_meshes.insert(mesh);
     }
     
-    text << "Scene" << std::endl;
-    text << "# of entities in the scene: " << entities << std::endl;
-    text << "# of prims with geometry in the scene: " << prims << std::endl;
-    text << "# of invisible prims in the scene: " << invisible_prims << std::endl;
-    text << "# of mesh entities in the scene: " << meshentities << std::endl;
-    text << "# of animated entities in the scene: " << animated << std::endl;
-    text << std::endl;
+    text << "<b>Scene</b>" << "<br>";
+    text << QString("  %1").arg("# of entities in the scene ", -45).toStdString() << entities << "<br>";
+    text << QString("  %1").arg("# of prims with geometry in the scene ", -45).toStdString() << prims << "<br>";
+    text << QString("  %1").arg("# of invisible prims in the scene ", -45).toStdString() << invisible_prims << "<br>";
+    text << QString("  %1").arg("# of mesh entities in the scene ", -45).toStdString() << meshentities << "<br>";
+    text << QString("  %1").arg("# of animated entities in the scene ", -45).toStdString() << animated << "<br>";
+    text << "<br>";
     
     // Count total vertices/triangles per mesh
     std::set<Ogre::Mesh*>::iterator mi = all_meshes.begin();
@@ -1895,17 +1967,17 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
         ++mi;
     }
     
-    text << "Ogre Meshes" << std::endl;
-    text << "# of loaded meshes: " << all_meshes.size() << std::endl;
-    text << "# of unique meshes in scene: " << scene_meshes.size() << std::endl;
-    text << "# of mesh instances in scene: " << mesh_instances << std::endl;
-    text << "Total mesh data size: (" << scene_meshes_size / 1024 << " KBytes scene)+(" << other_meshes_size / 1024 << " KBytes other)" << std::endl;
-    text << "# of vertices in the meshes: " << mesh_vertices << std::endl;
-    text << "# of triangles in the meshes: " << mesh_triangles << std::endl;
-    text << "# of vertices in the scene: " << mesh_instance_vertices << std::endl;
-    text << "# of triangles in the scene: " << mesh_instance_triangles << std::endl;
-    text << "# of avg. triangles in the scene per mesh: " << mesh_instance_triangles / (mesh_instances ? mesh_instances : 1) << std::endl;
-    text << std::endl;
+    text << "<b>Ogre Meshes</b>" << "<br>";
+    text << QString("  %1").arg("# of loaded meshes ", -45).toStdString() << all_meshes.size() << "<br>";
+    text << QString("  %1").arg("# of unique meshes in scene ", -45).toStdString() << scene_meshes.size() << "<br>";
+    text << QString("  %1").arg("# of mesh instances in scene ", -45).toStdString() << mesh_instances << "<br>";
+    text << QString("  %1").arg("# of vertices in the meshes ", -45).toStdString() << mesh_vertices << "<br>";
+    text << QString("  %1").arg("# of triangles in the meshes ", -45).toStdString() << mesh_triangles << "<br>";
+    text << QString("  %1").arg("# of vertices in the scene ", -45).toStdString() << mesh_instance_vertices << "<br>";
+    text << QString("  %1").arg("# of triangles in the scene ", -45).toStdString() << mesh_instance_triangles << "<br>";
+    text << QString("  %1").arg("# of avg. triangles in the scene per mesh ", -45).toStdString() << mesh_instance_triangles / (mesh_instances ? mesh_instances : 1) << "<br>";
+    text << QString("  %1").arg("Total mesh data size ", -45).toStdString() << "(" << scene_meshes_size / 1024 << " KBytes scene) + (" << other_meshes_size / 1024 << " KBytes other)" << "<br>";
+    text << "<br>";
     
     // Go through all textures and see which of them are in the scene
     Ogre::ResourceManager::ResourceMapIterator tex_iter = ((Ogre::ResourceManager*)Ogre::TextureManager::getSingletonPtr())->getResourceIterator();
@@ -2002,23 +2074,23 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     if (!other_tex_pixels)
         other_tex_pixels = 1;
     
-    text << "Ogre Textures" << std::endl;
-    text << "# of loaded textures: " << all_textures.size() << std::endl;
-    text << "Texture data size in scene: " << scene_tex_size / 1024 << " KBytes" << std::endl;
-    text << "Texture data size total: " << total_tex_size / 1024 << " KBytes" << std::endl;
-    text << "Texture dimensions: " << std::endl;
-    text << "> 2048: (" << scene_tex_categories[0] << " scene)+(" << other_tex_categories[0] << " other)" << std::endl;
-    text << "> 1024: (" << scene_tex_categories[1] << " scene)+(" << other_tex_categories[1] << " other)" << std::endl;
-    text << "> 512: (" << scene_tex_categories[2] << " scene)+(" << other_tex_categories[2] << " other)" << std::endl;
-    text << "> 256: (" << scene_tex_categories[3] << " scene)+(" << other_tex_categories[3] << " other)" << std::endl;
-    text << "smaller: (" << scene_tex_categories[4] << " scene)+(" << other_tex_categories[4] << " other)" << std::endl;
-    text << "Avg. bytes/pixel: (" << floor(((float)scene_tex_size / scene_tex_pixels) * 100.0f) / 100.f
-                   << " scene)/(" << floor(((float)total_tex_size / total_tex_pixels) * 100.0f) / 100.f 
-                   << " total)" << std::endl;
-    text << std::endl;
+    text << "<b>Ogre Textures</b>" << "<br>";
+    text << QString("  %1").arg("# of loaded textures ", -45).toStdString() << all_textures.size() << "<br>";
+    text << QString("  %1").arg("Texture data size in scene ", -45).toStdString() << scene_tex_size / 1024 << " KBytes" << "<br>";
+    text << QString("  %1").arg("Texture data size total ", -45).toStdString() << total_tex_size / 1024 << " KBytes" << "<br>";
+    text << QString("  %1").arg("Average. bytes/pixel ", -45).toStdString() 
+         << "(" << floor(((float)scene_tex_size / scene_tex_pixels) * 100.0f) / 100.f << " scene) / " 
+         << "(" << floor(((float)total_tex_size / total_tex_pixels) * 100.0f) / 100.f << " total)" << "<br>";
+    text << QString("  %1").arg("<b>Texture dimensions</b> ", -45).toStdString() << "<br>";
+    text << QString("    %1").arg("&gt; 2048 px ", -46).toStdString() << "(" << scene_tex_categories[0] << " scene) + (" << other_tex_categories[0] << " other)" << "<br>";
+    text << QString("    %1").arg("&gt; 1024 px ", -46).toStdString() << "(" << scene_tex_categories[1] << " scene) + (" << other_tex_categories[1] << " other)" << "<br>";
+    text << QString("    %1").arg("&gt;  512 px ", -46).toStdString() << "(" << scene_tex_categories[2] << " scene) + (" << other_tex_categories[2] << " other)" << "<br>";
+    text << QString("    %1").arg("&gt;  256 px ", -46).toStdString() << "(" << scene_tex_categories[3] << " scene) + (" << other_tex_categories[3] << " other)" << "<br>";
+    text << QString("    %1").arg("&lt;= 256 px ", -46).toStdString() << "(" << scene_tex_categories[4] << " scene) + (" << other_tex_categories[4] << " other)" << "<br>";
+    text << "<br>";
     
-    text << "Ogre Materials" << std::endl;
-    text << "# of materials total: " << GetNumResources(Ogre::MaterialManager::getSingleton()) << std::endl;
+    text << "<b>Ogre Materials</b>" << "<br>";
+    text << QString("  %1").arg("# of materials total ", -45).toStdString() << GetNumResources(Ogre::MaterialManager::getSingleton()) << "<br>";
     
     uint vertex_shaders = 0;
     uint pixel_shaders = 0;
@@ -2039,35 +2111,39 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
                 pixel_shaders++;
         }
     }
-    text << "# of vertex shaders total: " << vertex_shaders << std::endl;
-    text << "# of pixel shaders total: " << pixel_shaders << std::endl;
-    text << std::endl;
+    text << QString("  %1").arg("# of vertex shaders total ", -45).toStdString() << vertex_shaders << "<br>";
+    text << QString("  %1").arg("# of pixel shaders total ", -45).toStdString() << pixel_shaders << "<br>";
+    text << "<br>";
     
-    text << "# of loaded skeletons: " << GetNumResources(Ogre::SkeletonManager::getSingleton()) << std::endl;
-    text << std::endl;
-    
+    text << "<b>Ogre Skeletons</b>" << "<br>";
+    text << QString("  %1").arg("# of loaded skeletons ", -45).toStdString() << GetNumResources(Ogre::SkeletonManager::getSingleton()) << "<br>";
+    text << "<br>";
+    text << "</pre>";
+
     // Update only if no selection
-    QTextCursor cursor(text_scenecomplexity_->textCursor());
-    bool text_selected = cursor.hasSelection();
-    if (!text_selected)
+    QTextCursor cursor(ui_.textSceneComplexity->textCursor());
+    if (!cursor.hasSelection())
     {
         // Save previous pos, update & restore pos
         int cursorPos = cursor.position();
         int anchorPos = cursor.anchor();
         int scrollPos = 0;
-        if (text_scenecomplexity_->verticalScrollBar())
-            scrollPos = text_scenecomplexity_->verticalScrollBar()->value();
+        if (ui_.textSceneComplexity->verticalScrollBar())
+            scrollPos = ui_.textSceneComplexity->verticalScrollBar()->value();
         
-        text_scenecomplexity_->setPlainText(text.str().c_str());
+        ui_.textSceneComplexity->setHtml(text.str().c_str());
         
+        // Restore cursor position
         cursor.setPosition(anchorPos);
         cursor.setPosition(cursorPos, QTextCursor::KeepAnchor);
-        text_scenecomplexity_->setTextCursor(cursor);
-        if (text_scenecomplexity_->verticalScrollBar())
-            text_scenecomplexity_->verticalScrollBar()->setValue(scrollPos);
+        ui_.textSceneComplexity->setTextCursor(cursor);
+
+        // Restore scroll position
+        if (ui_.textSceneComplexity->verticalScrollBar())
+            ui_.textSceneComplexity->verticalScrollBar()->setValue(scrollPos);
     }
     
-    QTimer::singleShot(500, this, SLOT(RefreshSceneComplexityProfilingData()));
+    QTimer::singleShot(500, this, SLOT(RefreshOgreSceneComplexityPage()));
 }
 
 void TimeProfilerWindow::GetVerticesAndTrianglesFromMesh(Ogre::Mesh* mesh, uint& vertices, uint& triangles)
@@ -2345,73 +2421,83 @@ void AddOgreScene(QTreeWidgetItem *parent, Ogre::SceneManager *scene)
     AddOgreSceneNode(sceneItem, scene->getRootSceneNode());    
 }
 
-void TimeProfilerWindow::PopulateOgreSceneTree()
+void TimeProfilerWindow::RefreshOgreSceneHierarchyPage()
 {
-    QTreeWidget *tree = findChild<QTreeWidget* >("sceneDataTree");
-    if (!tree)
+    if (!visibility_ || ui_.ogreTabWidget->currentIndex() != 2)
         return;
 
-    tree->clear();
+    ui_.sceneDataTree->clear();
 
     Ogre::Root *root = Ogre::Root::getSingletonPtr();
-    assert(root);
+    if (!root)
+    {
+        LogError("[Profiler]: RefreshOgreSceneHierarchyPage: Ogre Root is null, cannot continue!");
+        return;
+    }
 
     Ogre::SceneManagerEnumerator::SceneManagerIterator iter = root->getSceneManagerIterator();
     while(iter.hasMoreElements())
     {
         Ogre::SceneManager *scene = iter.getNext();
         if (scene)
-            AddOgreScene(tree->invisibleRootItem(), scene);
+            AddOgreScene(ui_.sceneDataTree->invisibleRootItem(), scene);
     }    
 }
 
-void TimeProfilerWindow::PopulateBulletStats()
+void TimeProfilerWindow::RefreshBulletPage()
 {
+    if (!visibility_ || ui_.tabWidget->currentIndex() != 3)
+        return;
+
+    ui_.treeBulletStats->clear();
+        
     Scene *scene = framework_->Scene()->MainCameraScene();
     if (!scene)
         return;
+
     shared_ptr<Physics::PhysicsWorld> physics = scene->GetWorld<Physics::PhysicsWorld>();
     const std::set<std::pair<const btCollisionObject*, const btCollisionObject*> > &collisions = physics->PreviousFrameCollisions();
 
-    treeBulletStats->clear();
     for(std::set<std::pair<const btCollisionObject*, const btCollisionObject*> >::const_iterator iter = collisions.begin(); iter != collisions.end(); ++iter)
     {
         const btCollisionObject* objectA = iter->first;
         const btCollisionObject* objectB = iter->second;
+
         EC_RigidBody* bodyA = static_cast<EC_RigidBody*>(objectA->getUserPointer());
         EC_RigidBody* bodyB = static_cast<EC_RigidBody*>(objectB->getUserPointer());
-        if (!bodyA || !bodyB)
-            continue;
-
-        Entity* entityA = bodyA->ParentEntity();
-        Entity* entityB = bodyB->ParentEntity();
+        Entity* entityA = bodyA != 0 ? bodyA->ParentEntity() : 0;
+        Entity* entityB = bodyB != 0 ? bodyB->ParentEntity() : 0;
         if (!entityA || !entityB)
             continue;
 
+        static const char *shapeType[] = { "Box", "Sphere", "Cylinder", "Capsule", "TriMesh", "HeightField", "ConvexHull" };
+
         QStringList item;
         item << entityA->Name();
-        static const char *shapeType[] = { "Box", "Sphere", "Cylinder", "Capsule", "TriMesh", "HeightField", "ConvexHull" };
         item << shapeType[bodyA->shapeType.Get()];
         item << entityB->Name();
         item << shapeType[bodyB->shapeType.Get()];
 
-        treeBulletStats->insertTopLevelItem(0, new QTreeWidgetItem(item, 0));
+        ui_.treeBulletStats->insertTopLevelItem(0, new QTreeWidgetItem(item, 0));
     }
-    if (tab_widget_->currentIndex() == 14)
-        QTimer::singleShot(1000, this, SLOT(PopulateBulletStats()));
+
+    QTimer::singleShot(1000, this, SLOT(RefreshBulletPage()));
 }
 
-void TimeProfilerWindow::RefreshRenderTargetProfilingData()
+void TimeProfilerWindow::RefreshOgreRenderTargetPage()
 {
-    if (!visibility_ || !text_scenecomplexity_ || !tab_widget_ || tab_widget_->currentIndex() != 5)
+    if (!visibility_ || ui_.ogreTabWidget->currentIndex() != 3)
         return;
     
-    tree_rendertargets_->clear();
+    ui_.treeRenderTargets->clear();
     
     Ogre::Root *root = Ogre::Root::getSingletonPtr();
-    assert(root);
     if (!root)
+    {
+        LogError("[Profiler]: RefreshOgreRenderTargetPage: Ogre Root is null, cannot continue!");
         return;
+    }
+
     Ogre::RenderSystem* rendersys = root->getRenderSystem();
     assert(rendersys);
     if (!rendersys)
@@ -2421,7 +2507,7 @@ void TimeProfilerWindow::RefreshRenderTargetProfilingData()
     {
         Ogre::RenderTarget* target = iter.getNext();
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList());
-        tree_rendertargets_->addTopLevelItem(item);
+        ui_.treeRenderTargets->addTopLevelItem(item);
         
         item->setText(0, QString(target->getName().c_str()));
         item->setText(1, QString("%1").arg(target->getWidth()));
@@ -2449,36 +2535,18 @@ void TimeProfilerWindow::RefreshRenderTargetProfilingData()
         item->setText(13, QString(details.str().c_str()));
     }
     
-    QTimer::singleShot(500, this, SLOT(RefreshRenderTargetProfilingData()));
+    QTimer::singleShot(500, this, SLOT(RefreshOgreRenderTargetPage()));
 }
 
-
-void TimeProfilerWindow::RefreshTextureProfilingData()
-{
-    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 6)
-        return;
-
-    Ogre::ResourceManager::ResourceMapIterator iter = Ogre::TextureManager::getSingleton().getResourceIterator();
-
-    while(iter.hasMoreElements())
-    {
-        Ogre::ResourcePtr resource = iter.getNext();
-        // Is there already this kind of element? 
-        QTreeWidgetItem *item = FindItemByName(tree_texture_assets_, resource->getName().c_str());
-        if (item == 0) 
-            item = new QTreeWidgetItem(tree_texture_assets_);
-
-        FillItem(item, resource, "texture");
-    }
-}
+/// @cond PRIVATE
 
 /// Derive the tree widget item to implement a custom sort predicate that sorts certain columns by numbers. 
-/// @cond PRIVATE
+
 class OgreAssetTreeWidgetItem : public QTreeWidgetItem
 {
 public:
-    OgreAssetTreeWidgetItem(QTreeWidget *parent)
-    :QTreeWidgetItem(parent)
+    OgreAssetTreeWidgetItem(QTreeWidget *parent) :
+        QTreeWidgetItem(parent)
     {
     }
 
@@ -2499,8 +2567,8 @@ public:
 class OgreTextureAssetTreeWidgetItem : public QTreeWidgetItem
 {
 public:
-    OgreTextureAssetTreeWidgetItem(QTreeWidget *parent)
-    :QTreeWidgetItem(parent)
+    OgreTextureAssetTreeWidgetItem(QTreeWidget *parent) : 
+        QTreeWidgetItem(parent)
     {
     }
 
@@ -2524,8 +2592,8 @@ public:
 class OgreMeshAssetTreeWidgetItem : public QTreeWidgetItem
 {
 public:
-    OgreMeshAssetTreeWidgetItem(QTreeWidget *parent)
-    :QTreeWidgetItem(parent)
+    OgreMeshAssetTreeWidgetItem(QTreeWidget *parent) :
+        QTreeWidgetItem(parent)
     {
     }
 
@@ -2557,9 +2625,10 @@ public:
         }
     }
 };
+
 /// @endcond
 
-void TimeProfilerWindow::RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget, QString drawType)
+void TimeProfilerWindow::RefreshOgreDataTree(Ogre::ResourceManager& manager, QTreeWidget* widget, QString drawType)
 {
     // Clear tree.
     widget->clear();
@@ -2589,7 +2658,7 @@ void TimeProfilerWindow::RefreshAssetData(Ogre::ResourceManager& manager, QTreeW
                 item = new OgreAssetTreeWidgetItem(widget);
         }
 
-        FillItem(item, resource, drawType);
+        FillOgreDataTreeItem(item, resource, drawType);
     }
     for(int i = 0; i < widget->columnCount(); ++i)
         widget->resizeColumnToContents(i);
@@ -2703,7 +2772,7 @@ QString IndexSumString(Ogre::MeshPtr mesh)
     return str;
 }
 
-void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource, QString viewType)
+void TimeProfilerWindow::FillOgreDataTreeItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource, QString viewType)
 {
     if (item == 0)
         return;
@@ -2755,4 +2824,9 @@ void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr
     item->setText(i+7, resource->isPrepared()  ? "Yes" : "No");
     item->setText(i+8, QString::number(resource->getLoadingState()));
     item->setText(i+9, QString::number(resource->getStateCount()));
+}
+
+void TimeProfilerWindow::SetVisibility(bool visibility)
+{
+    visibility_ = visibility;
 }

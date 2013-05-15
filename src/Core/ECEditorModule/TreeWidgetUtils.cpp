@@ -9,6 +9,8 @@
 #include "DebugOperatorNew.h"
 #include "MemoryLeakCheck.h"
 
+#include "TreeWidgetUtils.h"
+
 void TreeWidgetSearch(QTreeWidget *treeWidget, int column, const QString &filter)
 {
     QString f = filter.trimmed();

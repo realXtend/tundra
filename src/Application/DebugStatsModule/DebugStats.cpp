@@ -57,12 +57,9 @@ void DebugStatsModule::Initialize()
     enableProfilerLogDump = framework_->HasCommandLineParameter("--dumpProfiler");
 
     framework_->Console()->RegisterCommand("prof", "Shows the profiling window.",
-        this, SLOT(ShowProfilingWindow()));
+        this, SLOT(ShowProfilerWindow()));
     framework_->Console()->RegisterCommand("exec", "Invokes an Entity Action on an entity (debugging).",
         this, SLOT(Exec(const QStringList &)));
-
-    framework_->Console()->RegisterCommand("rprof", "Refreshes the profiler time display.",
-        this, SLOT(RefreshProfilingWindow()));
 
     inputContext = framework_->Input()->RegisterInputContext("DebugStatsInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
@@ -75,18 +72,18 @@ void DebugStatsModule::HandleKeyPressed(KeyEvent *e)
 
     const QKeySequence showProfiler = framework_->Input()->KeyBinding("ShowProfilerWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_P));
     if (QKeySequence(e->keyCode | e->modifiers) == showProfiler)
-        ShowProfilingWindow();
+        ShowProfilerWindow();
 }
 
 void DebugStatsModule::StartProfiling(bool visible)
 {
     profilerWindow_->SetVisibility(visible);
-    // -1 means start updating currently selected tab
+
     if (visible)
-        profilerWindow_->OnProfilerWindowTabChanged(-1); 
+        profilerWindow_->Refresh(); 
 }
 
-void DebugStatsModule::ShowProfilingWindow()
+void DebugStatsModule::ShowProfilerWindow()
 {
     // If the window is already created toggle its visibility. If visible, bring it to front.
     if (profilerWindow_)
@@ -104,10 +101,9 @@ void DebugStatsModule::ShowProfilingWindow()
     profilerWindow_->show();
 }
 
-void DebugStatsModule::RefreshProfilingWindow()
+TimeProfilerWindow *DebugStatsModule::ProfilerWindow() const
 {
-    if (profilerWindow_)
-        profilerWindow_->RefreshProfilingData();
+    return profilerWindow_.data();
 }
 
 void DebugStatsModule::Update(f64 frametime)
@@ -137,14 +133,12 @@ void DebugStatsModule::Update(f64 frametime)
     if (frameTimes.size() > 2048) // Maintain an upper bound in the frame history.
         frameTimes.erase(frameTimes.begin());
 
-    if (profilerWindow_)
+    if (profilerWindow_ && profilerWindow_->isVisible())
     {
-        if (!profilerWindow_->isVisible())
-            return;
         profilerWindow_->RedrawFrameTimeHistoryGraph(frameTimes);
-//        profilerWindow_->DoThresholdLogging();
+        /// @todo Should this be enabled back?
+        //profilerWindow_->DoThresholdLogging();
     }
-
 }
 
 void DebugStatsModule::Exec(const QStringList &params)
