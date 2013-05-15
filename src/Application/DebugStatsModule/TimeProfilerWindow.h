@@ -11,17 +11,7 @@
 #include <QString>
 #include <Ogre.h>
 
-class QTreeWidget;
-class QComboBox;
-class QTabWidget;
-class QLabel;
-class QTreeWidget;
-class QTreeWidgetItem;
-class QTextEdit;
-class QMenu;
-class QPushButton;
-class QTextStream;
-class QTableWidget;
+#include "ui_ProfilerWindow.h"
 
 class Framework;
 class ProfilerNodeTree;
@@ -35,105 +25,122 @@ class TimeProfilerWindow : public QWidget
 public:
     /// The ctor adds this window to scene, but does not show it.
     explicit TimeProfilerWindow(Framework *fw, QWidget *parent = 0);
+    ~TimeProfilerWindow();
+
+    // Graph updates.
+    void ResizeFrameTimeHistoryGraph();
     void RedrawFrameTimeHistoryGraph(const std::vector<std::pair<u64, double> > &frameTimes);
     void RedrawFrameTimeHistoryGraphDelta(const std::vector<std::pair<u64, double> > &frameTimes);
+    
+    // Threshold logging
     void DoThresholdLogging();
 
 public slots:
-    void RefreshProfilingData();
-    void OnProfilerWindowTabChanged(int newPage);
-    void RefreshOgreProfilingWindow();
+    /// Set visibility
+    /** @note This does not modify widget visibility but and internal one. */
+    void SetVisibility(bool visibility);
+    
+    /// Refresh currently visible view.
+    void Refresh();
 
-    void RefreshTextureProfilingData();
+private slots:    
+    // Refresh tab widgets.
+    void RefreshProfilerTabWidget(int pageIndex = -1);
+    void RefreshOgreTabWidget(int pageIndex = -1);
+
+    // Top level pages.
+    void RefreshTimingPage();
+    void RefreshBulletPage();
+    void RefreshScriptsPage();
+    void RefreshAssetsPage();
+
+    // Ogre pages.
+    void RefreshOgreOverviewPage();
+    void RefreshOgreSceneComplexityPage();
+    void RefreshOgreSceneHierarchyPage();
+    void RefreshOgreRenderTargetPage();
+
+    // Log file dumping.
+    void DumpOgreResourceStatsToFile();
+    void DumpSceneComplexityToFile();   
+    
+    // UI action handlers.
+    void ChangeLoggerThreshold();
     void ToggleTreeButtonPressed();
     void CollapseAllButtonPressed();
     void ExpandAllButtonPressed();
     void ShowUnusedButtonPressed();
-    void RefreshAssetProfilingData();
-    void RefreshSceneComplexityProfilingData();
-    void RefreshRenderTargetProfilingData();
-    void DumpOgreResourceStatsToFile();
-    void DumpSceneComplexityToFile();
-    void Arrange();
-    //void DumpNodeData();
-    void ChangeLoggerThreshold();
-    void SetVisibility(bool visibility) { visibility_ = visibility; }
+    
+    // Ogre data tree refresh.
+    void ArrangeOgreDataTree();
+    void RefreshOgreDataTree(Ogre::ResourceManager& manager, QTreeWidget* widget, QString drawType);
+    
+    // Assets.
     void ShowAsset(QTreeWidgetItem* item, int column);
-    void RefreshScriptProfilingData();
-
-signals:
-    void Visible(bool visible);
-
-protected:
-    void resizeEvent(QResizeEvent *event);
-    void showEvent(QShowEvent *event);
-    void hideEvent(QHideEvent *event);
-
-private slots:
     void CopyTextureAssetName();
     void CopyMeshAssetName();
     void CopyMaterialAssetName();
-    void PopulateBulletStats();
-    void TimingRefreshIntervalChanged();
-    void RefreshProfilerWindow();
 
-private:
+    // Main profiler block refresh internal.
+    int ReadProfilingRefreshInterval();
+    void OnTimingIntervalChanged();
+    
+    // Load previous settings from config.
+    void LoadSettings();
+    
+    // Save current settings to a config.
+    void SaveSettings();
+
+signals:
+    /// Emitted on show/hide.
+    void Visible(bool visible);
+
+protected:
+    // QWidget overrides.
+    void resizeEvent(QResizeEvent *event);
+    void showEvent(QShowEvent *event);
+    void hideEvent(QHideEvent *event);
     bool eventFilter(QObject *obj, QEvent *event);
-
+    
+private:
     void FillThresholdLogger(QTextStream& out, const ProfilerNodeTree *profilerNode);
     void FillProfileTimingWindow(QTreeWidgetItem *qtNode, const ProfilerNodeTree *profilerNode, int numFrames, float frameTotalTimeSecs);
-    int ReadProfilingRefreshInterval();
+
+    void CollectProfilerNodes(ProfilerNodeTree *node, std::vector<const ProfilerNode *> &dst);
     void RefreshProfilingDataTree(float msecsOccurred);
     void RefreshProfilingDataList(float msecsOccurred);
-    void CollectProfilerNodes(ProfilerNodeTree *node, std::vector<const ProfilerNode *> &dst);
-    void FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource, QString drawType);
-    void RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget, QString drawType);
+    
+    void FillOgreDataTreeItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource, QString drawType);
+
     uint GetNumResources(Ogre::ResourceManager& manager);
     void GetVerticesAndTrianglesFromMesh(Ogre::Mesh* mesh, size_t& vertices, size_t& triangles);
     void GetMaterialsFromEntity(Ogre::Entity* entity, std::set<Ogre::Material*>& dest);
     void GetTexturesFromMaterials(const std::set<Ogre::Material*>& materials, std::set<Ogre::Texture*>& dest);
+    
+    QStringList TimingFilters();
+    bool IsTimingItemFiltered(const QString &name, const QStringList &filters);
 
-    void PopulateOgreSceneTree();
-
+    /// Framework ptr.
     Framework *framework_;
-    int frame_time_update_x_pos_;
-    /// If true, profiling data is shown in a tree, otherwise using a flat list.
-    bool show_profiler_tree_;
-    bool show_unused_;
-    bool visibility_;
-    QTimer profiler_update_timer_;
-    float logThreshold_;
-    /// Directory.for log files.
+    
+    // Ui.
+    Ui::ProfilerWindow ui_;
+
+    /// Log file directory.
     QDir logDirectory_;
 
-    QTreeWidget *tree_profiling_data_;
-    QTreeWidget *treeBulletStats;
-    QComboBox *combo_timing_refresh_interval_;
-    QTabWidget *tab_widget_;
-    QWidget *contents_widget_;
-    QLabel *label_frame_time_history_;
-    QLabel *label_top_frame_time_;
-    QLabel *label_time_per_frame_;
-    QLabel *labelTimings;
+    // Popup menus.
+    QMenu *menuTextureAssets_;
+    QMenu *menuMeshAssets_;
+    QMenu *menuMaterialAssets_;
 
-    QPushButton *push_button_toggle_tree_;
-    QPushButton *push_button_collapse_all_;
-    QPushButton *push_button_expand_all_;
-    QPushButton *push_button_show_unused_;
-    QTreeWidget *tree_asset_cache_;
-    QTreeWidget *tree_asset_transfers_;
-    QTreeWidget *tree_rendertargets_;
-    QTreeWidget* tree_texture_assets_;
-    QMenu *menu_texture_assets_;
-    QTreeWidget* tree_mesh_assets_; 
-    QMenu *menu_mesh_assets_;
-    QTreeWidget* tree_material_assets_;
-    QMenu *menu_material_assets_;
-    QTreeWidget* tree_skeleton_assets_;
-    QTreeWidget* tree_compositor_assets_;
-    QTreeWidget* tree_gpu_assets_;
-    QTreeWidget* tree_font_assets_;
-    QTextEdit* text_scenecomplexity_;
-    QTableWidget *table_scripts_;
-    QLabel *label_scripts_;
+    // Main update timer.
+    QTimer updateTimer_;
+
+    bool profilerInTreeMode_;       ///< If true, profiling data is shown in a tree, otherwise using a flat list.
+    bool profilerShowUnused_;       ///< Show unused profiler blocks.
+    bool visibility_;               ///< Is profiler currently visible (afaik can be false even if widget is showing).
+    
+    float logThreshold_;
+    int frameFimeUpdatePosX_;
 };
