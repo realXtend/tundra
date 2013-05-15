@@ -33,9 +33,11 @@ public:
 
 public slots:
     /// Creates and shows the profiling window.
-    void ShowProfilingWindow();
+    void ShowProfilerWindow();
 
-    void RefreshProfilingWindow();
+    /// Returns the current profiler window.
+    /** @return Current profiler window or null if not open */
+    TimeProfilerWindow *ProfilerWindow() const;
 
 private slots:
     /// Starts profiling if the profiler widget is visible.
