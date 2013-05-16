@@ -62,7 +62,7 @@ IF %GENERATOR%=="" (
 )
 
 :: If we use VS2008, framework path (for msbuild) may not be correctly set. Manually attempt to add in that case
-IF %GENERATOR%==%GENERATOR_VS2008% set PATH=C:\Windows\Microsoft.NET\Framework\v3.5;%PATH%
+IF %VS_VER%==vs2008 set PATH=C:\Windows\Microsoft.NET\Framework\v3.5;%PATH%
 
 :: Print user-defined variables
 cecho {F0}This script fetches and builds all Tundra dependencies{# #}{\n}
