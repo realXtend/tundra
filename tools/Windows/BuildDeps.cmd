@@ -285,18 +285,13 @@ IF NOT EXIST %QT_ISNSTALL_WEBKIT_DLL_FILENAME%. (
 
    cd %QTDIR%
 
-   IF NOT EXIST "configure.cache". (
-      cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}
-      configure -platform %QT_PLATFORM% -%DEBUG_OR_RELEASE% -opensource -prefix "%DEPS%\qt" -shared -ltcg ^
-        -no-qt3support -no-opengl -no-openvg -no-dbus -no-phonon -no-phonon-backend -no-multimedia -no-audio-backend ^
-        -no-declarative -no-xmlpatterns -nomake examples -nomake demos ^
-        -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
+  cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}
+  configure -platform %QT_PLATFORM% -%DEBUG_OR_RELEASE% -opensource -prefix "%DEPS%\qt" -shared -ltcg ^
+    -no-qt3support -no-opengl -no-openvg -no-dbus -no-phonon -no-phonon-backend -no-multimedia -no-audio-backend ^
+    -no-declarative -no-xmlpatterns -nomake examples -nomake demos ^
+    -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
+  IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-      IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   ) ELSE (
-      cecho {0D}Qt already configured. Remove %QTDIR%\configure.cache to trigger a reconfigure.{# #}{\n}
-   )
-   
    cecho {0D}Building %DEBUG_OR_RELEASE% Qt. Please be patient, this will take a while.{# #}{\n}
    IF %USE_JOM%==TRUE (
       cecho {0D}- Building Qt with jom{# #}{\n}
