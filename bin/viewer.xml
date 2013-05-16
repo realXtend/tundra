@@ -17,14 +17,10 @@
   <plugin path="SkyXHydrax" />                  <!-- Depends on OgreRenderingModule -->
   <plugin path="OgreAssetEditorModule" />       <!-- Depends on OgreRenderingModule -->
   <plugin path="DebugStatsModule" />            <!-- DebugStatsModule depends on OgreRenderingModule, EnvironmentModule, OgreAssetEditorModule and AssetModule -->
-  <plugin path="BrowserUiPlugin" />             <!-- Depends on JavascriptModule -->
   <plugin path="SceneWidgetComponents" />       <!-- Depends on OgreRenderingModule and TundraProtocolModule (and optionally on BrowserUiPlugin) -->
-  <plugin path="PythonScriptModule" />          <!-- Depends on OgreRenderingModule, TundraProtocolModule -->
   <plugin path="MumblePlugin" />                <!-- Depends on OgreRenderingModule, JavascriptModule and TundraLogicModule -->
-  <plugin path="VlcPlugin" />                   <!-- Depends on SceneWidgetComponents -->
   <plugin path="CAVEStereoModule" />            <!-- Depends on OgreRenderingModule -->
   <plugin path="CanvasPlugin" />                <!-- Depends on OgreRenderingModule -->
-  <plugin path="XMPPModule" />                  <!-- Does not depend on any other module -->
 
   <!-- NOTE: The startup .js scripts are specified only by base name of the file. Don's specify a path here. Place the startup .js scripts to /bin/jsmodules/startup/. -->
   <!-- Important: The file names specified here are case sensitive even on Windows! -->
