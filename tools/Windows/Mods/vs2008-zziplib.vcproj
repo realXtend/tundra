@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="zziplib"
 	ProjectGUID="{CB440073-2ED3-48CE-A1A1-B6EACB3A44BD}"
 	Keyword="Win32Proj"
@@ -10,6 +10,9 @@
 	<Platforms>
 		<Platform
 			Name="Win32"
+		/>
+		<Platform
+			Name="x64"
 		/>
 	</Platforms>
 	<ToolFiles>
@@ -23,11 +26,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			CharacterSet="2"
 			>
-			<Tool
-				Name="VCPreBuildEventTool"
-				Description="del $(ConfigurationName)\vc80.idb"
-				CommandLine="del $(ConfigurationName)\vc80.idb"
-			/>
+
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
@@ -80,11 +79,7 @@
 			<Tool
 				Name="VCFxCopTool"
 			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				Description="del $(ConfigurationName)\vc80.idb"
-				CommandLine="del $(ConfigurationName)\vc80.idb"
-			/>
+
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
@@ -94,11 +89,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			CharacterSet="2"
 			>
-			<Tool
-				Name="VCPreBuildEventTool"
-				Description="del $(ConfigurationName)\vc80.idb"
-				CommandLine="del $(ConfigurationName)\vc80.idb"
-			/>
+
 			<Tool
 				Name="VCCustomBuildTool"
 			/>
@@ -153,11 +144,137 @@
 			<Tool
 				Name="VCFxCopTool"
 			/>
+
+		</Configuration>
+		<Configuration
+			Name="Debug|x64"
+			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
+			CharacterSet="2"
+			>
+
 			<Tool
-				Name="VCPostBuildEventTool"
-				Description="del $(ConfigurationName)\vc80.idb"
-				CommandLine="del $(ConfigurationName)\vc80.idb"
+				Name="VCCustomBuildTool"
 			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="..;../msvc/zlib/include;../../../zlib/include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+				AdditionalDependencies="zlibstat.lib"
+				OutputFile="zziplibd.lib"
+				AdditionalLibraryDirectories="../msvc/zlib/lib;../../../zlib/lib/Debug"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+
+		</Configuration>
+		<Configuration
+			Name="Release|x64"
+			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
+			CharacterSet="2"
+			>
+
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				OmitFramePointers="true"
+				AdditionalIncludeDirectories="..;../msvc/zlib/include;../../../zlib/include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
+				StringPooling="true"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+				AdditionalDependencies="zlibstat.lib"
+				OutputFile="zziplib.lib"
+				AdditionalLibraryDirectories="../msvc/zlib/lib;../../../zlib/lib/Release"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+
 		</Configuration>
 	</Configurations>
 	<References>
@@ -173,6 +290,10 @@
 			</File>
 			<File
 				RelativePath="..\zzip\err.c"
+				>
+			</File>
+			<File
+				RelativePath="..\zzip\fetch.c"
 				>
 			</File>
 			<File
@@ -193,10 +314,6 @@
 			</File>
 			<File
 				RelativePath="..\zzip\zip.c"
-				>
-			</File>
-            <File
-				RelativePath="..\zzip\fetch.c"
 				>
 			</File>
 		</Filter>
@@ -233,6 +350,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\zzip\fetch.h"
+				>
+			</File>
+			<File
 				RelativePath="..\zzip\file.h"
 				>
 			</File>
@@ -254,10 +375,6 @@
 			</File>
 			<File
 				RelativePath="..\zzip\zzip.h"
-				>
-			</File>
-            <File
-				RelativePath="..\zzip\fetch.h"
 				>
 			</File>
 		</Filter>

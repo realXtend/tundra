@@ -73,7 +73,7 @@ void EC_Terrain::UpdateSignals()
     }
 }
 
-void EC_Terrain::MakePatchFlat(int x, int y, float heightValue)
+void EC_Terrain::MakePatchFlat(uint x, uint y, float heightValue)
 {
     Patch &patch = GetPatch(x, y);
     patch.heightData.clear();
@@ -83,49 +83,49 @@ void EC_Terrain::MakePatchFlat(int x, int y, float heightValue)
 
 void EC_Terrain::MakeTerrainFlat(float heightValue)
 {
-    for(int y = 0; y < this->yPatches.Get(); ++y)
-        for(int x = 0; x < this->xPatches.Get(); ++x)
+    for(uint y = 0; y < this->yPatches.Get(); ++y)
+        for(uint x = 0; x < this->xPatches.Get(); ++x)
             MakePatchFlat(x, y, heightValue);
 }
 
-void EC_Terrain::ResizeTerrain(int newPatchWidth, int newPatchHeight)
+void EC_Terrain::ResizeTerrain(uint newPatchWidth, uint newPatchHeight)
 {
     PROFILE(EC_Terrain_ResizeTerrain);
 
-    const int maxPatchSize = 256;
+    const uint maxPatchSize = 256;
     // Do an artificial limit to a preset N patches per side. (This limit is way too large already for the current terrain vertex LOD management.)
-    newPatchWidth = max(1, min(maxPatchSize, newPatchWidth));
-    newPatchHeight = max(1, min(maxPatchSize, newPatchHeight));
+    newPatchWidth = max(1U, min(maxPatchSize, newPatchWidth));
+    newPatchHeight = max(1U, min(maxPatchSize, newPatchHeight));
 
     if (newPatchWidth == patchWidth && newPatchHeight == patchHeight)
         return;
 
     // If the width changes, we need to also regenerate the old right-most column to generate the new seams. (If we are shrinking, this is not necessary)
     if (patchWidth < newPatchWidth)
-        for(int y = 0; y < patchHeight; ++y)
+        for(uint y = 0; y < patchHeight; ++y)
             GetPatch(patchWidth-1, y).patch_geometry_dirty = true;
 
     // If the height changes, we need to also regenerate the old top-most row to generate the new seams. (If we are shrinking, this is not necessary)
     if (patchHeight < newPatchHeight)
-        for(int x = 0; x < patchWidth; ++x)
+        for(uint x = 0; x < patchWidth; ++x)
             GetPatch(x, patchHeight-1).patch_geometry_dirty = true;
 
     // First delete all the patches that will not be part of the newly-sized terrain (user shrinked the terrain in one or two dimensions)
-    for(int y = newPatchHeight; y < patchHeight; ++y)
-        for(int x = 0; x < patchWidth; ++x)
+    for(uint y = newPatchHeight; y < patchHeight; ++y)
+        for(uint x = 0; x < patchWidth; ++x)
             DestroyPatch(x, y);
-    for(int x = newPatchWidth; x < patchWidth; ++x) // We hav esome overlap here with above, but it's ok since DestroyPatch is benign.
-        for(int y = 0; y < patchHeight; ++y)
+    for(uint x = newPatchWidth; x < patchWidth; ++x) // We hav esome overlap here with above, but it's ok since DestroyPatch is benign.
+        for(uint y = 0; y < patchHeight; ++y)
             DestroyPatch(x, y);
 
     // Now create the new terrain patch storage and copy the old height values over.
     std::vector<Patch> newPatches(newPatchWidth * newPatchHeight);
-    for(int y = 0; y < min(patchHeight, newPatchHeight); ++y)
-        for(int x = 0; x < min(patchWidth, newPatchWidth); ++x)
+    for(uint y = 0; y < min(patchHeight, newPatchHeight); ++y)
+        for(uint x = 0; x < min(patchWidth, newPatchWidth); ++x)
             newPatches[y * newPatchWidth + x] = GetPatch(x, y);
     patches = newPatches;
-    int oldPatchWidth = patchWidth;
-    int oldPatchHeight = patchHeight;
+    uint oldPatchWidth = patchWidth;
+    uint oldPatchHeight = patchHeight;
     patchWidth = newPatchWidth;
     patchHeight = newPatchHeight;
 
@@ -133,16 +133,16 @@ void EC_Terrain::ResizeTerrain(int newPatchWidth, int newPatchHeight)
 
     const float initialPatchHeight = 0.f;
 
-    for(int y = oldPatchHeight; y < newPatchHeight; ++y)
-        for(int x = 0; x < patchWidth; ++x)
+    for(uint y = oldPatchHeight; y < newPatchHeight; ++y)
+        for(uint x = 0; x < patchWidth; ++x)
             MakePatchFlat(x, y, initialPatchHeight);
-    for(int x = oldPatchWidth; x < newPatchWidth; ++x) // We have some overlap here with above, but it's ok since DestroyPatch is benign.
-        for(int y = 0; y < patchHeight; ++y)
+    for(uint x = oldPatchWidth; x < newPatchWidth; ++x) // We have some overlap here with above, but it's ok since DestroyPatch is benign.
+        for(uint y = 0; y < patchHeight; ++y)
             MakePatchFlat(x, y, initialPatchHeight);
 
     // Tell each patch which coordinate in the grid they lie in.
-    for(int y = 0; y < patchHeight; ++y)
-        for(int x = 0; x < patchWidth; ++x)
+    for(uint y = 0; y < patchHeight; ++y)
+        for(uint x = 0; x < patchWidth; ++x)
         {
             GetPatch(x,y).x = x;
             GetPatch(x,y).y = y;
@@ -196,8 +196,8 @@ void EC_Terrain::MaterialAssetLoaded(AssetPtr asset_)
     currentMaterial = ogreMaterial->ogreAssetName;
 
     // Also, we need to update each geometry patch to use the new material.
-    for(int y = 0; y < patchHeight; ++y)
-        for(int x = 0; x < patchWidth; ++x)
+    for(uint y = 0; y < patchHeight; ++y)
+        for(uint x = 0; x < patchWidth; ++x)
             UpdateTerrainPatchMaterial(x, y);
 }
 
@@ -237,9 +237,9 @@ void EC_Terrain::TerrainAssetLoaded(AssetPtr asset_)
     }
 }
 
-void EC_Terrain::DestroyPatch(int x, int y)
+void EC_Terrain::DestroyPatch(uint x, uint y)
 {
-    if (x >= patchWidth || y >= patchHeight || x < 0 || y < 0)
+    if (x >= patchWidth || y >= patchHeight)
         return;
 
     assert(GetFramework());
@@ -280,8 +280,8 @@ void EC_Terrain::DestroyPatch(int x, int y)
 
 void EC_Terrain::Destroy()
 {
-    for(int y = 0; y < patchHeight; ++y)
-        for(int x = 0; x < patchWidth; ++x)
+    for(uint y = 0; y < patchHeight; ++y)
+        for(uint x = 0; x < patchWidth; ++x)
             DestroyPatch(x, y);
 
     if (!GetFramework())
@@ -298,12 +298,8 @@ void EC_Terrain::Destroy()
     }
 }
 
-float EC_Terrain::GetPoint(int x, int y) const
+float EC_Terrain::GetPoint(uint x, uint y) const
 {
-    if (x < 0)
-        x = 0;
-    if (y < 0)
-        y = 0;
     if (x >= cPatchSize * patchWidth)
         x = cPatchSize * patchWidth - 1;
     if (y >= cPatchSize * patchHeight)
@@ -312,31 +308,12 @@ float EC_Terrain::GetPoint(int x, int y) const
     return GetPatch(x / cPatchSize, y / cPatchSize).heightData[(y % cPatchSize) * cPatchSize + (x % cPatchSize)];
 }
 
-void EC_Terrain::SetPointHeight(int x, int y, float height)
+void EC_Terrain::SetPointHeight(uint x, uint y, float height)
 {
-    if (x < 0 || y < 0 || x >= cPatchSize * patchWidth || y >= cPatchSize * patchHeight)
+    if (x >= cPatchSize * patchWidth || y >= cPatchSize * patchHeight)
         return; // Out of bounds signals are silently ignored.
 
     GetPatch(x / cPatchSize, y / cPatchSize).heightData[(y % cPatchSize) * cPatchSize + (x % cPatchSize)] = height;
-}
-
-namespace
-{
-    Ogre::Matrix4 GetWorldTransform(Ogre::SceneNode *node)
-    {
-        Ogre::Quaternion rot = node->_getDerivedOrientation();
-        Ogre::Vector3 trans = node->_getDerivedPosition();
-        Ogre::Vector3 scale = node->_getDerivedScale();
-
-        Ogre::Matrix4 worldTM;
-        worldTM.makeTransform(trans, scale, rot);
-
-        // In Ogre 1.7.1 we could simply use the following line, but since we're also supporting Ogre 1.6.4 for now, the above
-        // lines are used instead, which work in both.
-        // Ogre::Matrix4 worldTM = rootNode->_getFullTransform(); // local->world. 
-
-        return worldTM;
-    }
 }
 
 float3 EC_Terrain::GetPointOnMap(const float3 &point) const 
@@ -346,7 +323,7 @@ float3 EC_Terrain::GetPointOnMap(const float3 &point) const
         LogError("GetPointOnMap called before rootNode initialized, returning zeros");
         return float3(0, 0, 0);
     }
-    Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
+    Ogre::Matrix4 worldTM = rootNode->_getFullTransform();
 
     // Note: heightmap X & Y correspond to X & Z world axes, while height is world Y
     Ogre::Matrix4 inv = worldTM.inverse(); // world->local
@@ -363,7 +340,7 @@ float3 EC_Terrain::GetPointOnMapLocal(const float3 &point) const
         LogError("GetPointOnMapLocal called before rootNode initialized, returning zeros");
         return float3(0, 0, 0);
     }
-    Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
+    Ogre::Matrix4 worldTM = rootNode->_getFullTransform();
 
     // Note: heightmap X & Y correspond to X & Z world axes, while height is world Y
     Ogre::Matrix4 inv = worldTM.inverse(); // world->local
@@ -385,15 +362,15 @@ bool EC_Terrain::IsOnTopOfMap(const float3 &point) const
 
 float EC_Terrain::GetInterpolatedHeightValue(float x, float y) const
 {
-    int xFloor = (int)floor(x);
-    int xCeil = (int)ceil(x);
-    int yFloor = (int)floor(y);
-    int yCeil = (int)ceil(y);
+    uint xFloor = (uint)floor(x);
+    uint xCeil = (uint)ceil(x);
+    uint yFloor = (uint)floor(y);
+    uint yCeil = (uint)ceil(y);
 
-    xFloor = Clamp(xFloor, 0, PatchWidth() * cPatchSize - 1);
-    xCeil = Clamp(xCeil, 0, PatchWidth() * cPatchSize - 1);
-    yFloor = Clamp(yFloor, 0, PatchHeight() * cPatchSize - 1);
-    yCeil = Clamp(yCeil, 0, PatchHeight() * cPatchSize - 1);
+    xFloor = Clamp(xFloor, 0U, PatchWidth() * cPatchSize - 1);
+    xCeil = Clamp(xCeil, 0U, PatchWidth() * cPatchSize - 1);
+    yFloor = Clamp(yFloor, 0U, PatchHeight() * cPatchSize - 1);
+    yCeil = Clamp(yCeil, 0U, PatchHeight() * cPatchSize - 1);
 
     float u = fmod(x, 1.f);
     float v = fmod(y, 1.f);
@@ -443,7 +420,7 @@ float3 EC_Terrain::Tangent(const float3 &worldPoint, const float3 &worldDir) con
 
 float3x4 EC_Terrain::WorldTransform() const
 {
-    Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
+    Ogre::Matrix4 worldTM = rootNode->_getFullTransform();
     return float4x4(worldTM).Float3x4Part();
 }
 
@@ -452,15 +429,15 @@ void EC_Terrain::GetTriangleNormals(float x, float y, float3 &n1, float3 &n2, fl
     x = max(0.f, min((float)VerticesWidth()-1.f, x));
     y = max(0.f, min((float)VerticesHeight()-1.f, y));
 
-    int xFloor = (int)floor(x);
-    int xCeil = (int)ceil(x);
-    int yFloor = (int)floor(y);
-    int yCeil = (int)ceil(y);
+    uint xFloor = (uint)floor(x);
+    uint xCeil = (uint)ceil(x);
+    uint yFloor = (uint)floor(y);
+    uint yCeil = (uint)ceil(y);
 
-    xFloor = Clamp(xFloor, 0, PatchWidth() * cPatchSize - 1);
-    xCeil = Clamp(xCeil, 0, PatchWidth() * cPatchSize - 1);
-    yFloor = Clamp(yFloor, 0, PatchHeight() * cPatchSize - 1);
-    yCeil = Clamp(yCeil, 0, PatchHeight() * cPatchSize - 1);
+    xFloor = Clamp(xFloor, 0U, PatchWidth() * cPatchSize - 1);
+    xCeil = Clamp(xCeil, 0U, PatchWidth() * cPatchSize - 1);
+    yFloor = Clamp(yFloor, 0U, PatchHeight() * cPatchSize - 1);
+    yCeil = Clamp(yCeil, 0U, PatchHeight() * cPatchSize - 1);
 
     float xFrac = fmod(x, 1.f);
     float yFrac = fmod(y, 1.f);
@@ -491,15 +468,15 @@ void EC_Terrain::GetTriangleVertices(float x, float y, float3 &v1, float3 &v2, f
     x = max(0.f, min((float)VerticesWidth()-1.f, x));
     y = max(0.f, min((float)VerticesHeight()-1.f, y));
 
-    int xFloor = (int)floor(x);
-    int xCeil = (int)ceil(x);
-    int yFloor = (int)floor(y);
-    int yCeil = (int)ceil(y);
+    uint xFloor = (uint)floor(x);
+    uint xCeil = (uint)ceil(x);
+    uint yFloor = (uint)floor(y);
+    uint yCeil = (uint)ceil(y);
 
-    xFloor = Clamp(xFloor, 0, PatchWidth() * cPatchSize - 1);
-    xCeil = Clamp(xCeil, 0, PatchWidth() * cPatchSize - 1);
-    yFloor = Clamp(yFloor, 0, PatchHeight() * cPatchSize - 1);
-    yCeil = Clamp(yCeil, 0, PatchHeight() * cPatchSize - 1);
+    xFloor = Clamp(xFloor, 0U, PatchWidth() * cPatchSize - 1);
+    xCeil = Clamp(xCeil, 0U, PatchWidth() * cPatchSize - 1);
+    yFloor = Clamp(yFloor, 0U, PatchHeight() * cPatchSize - 1);
+    yCeil = Clamp(yCeil, 0U, PatchHeight() * cPatchSize - 1);
 
     float xFrac = fmod(x, 1.f);
     float yFrac = fmod(y, 1.f);
@@ -532,7 +509,7 @@ float3 EC_Terrain::GetPlaneNormal(float x, float y) const
     // h1 to h3 are the three terrain height points in local coordinate space.
     float3 normal = (h3-h2).Cross(h3-h1);
 
-    float4x4 worldTM = GetWorldTransform(rootNode);
+    float4x4 worldTM = rootNode->_getFullTransform();
     return worldTM.MulDir(normal).Normalized();
 }
 
@@ -545,19 +522,19 @@ float3 EC_Terrain::GetInterpolatedNormal(float x, float y) const
     // h1 to h3 are the three terrain height points in local coordinate space.
     float3 normal = (1.f - u - v) * n1 + u * n2 + v * n3;
 
-    float4x4 worldTM = GetWorldTransform(rootNode);
+    float4x4 worldTM = rootNode->_getFullTransform();
     return worldTM.MulDir(normal).Normalized();
 }
 
-float3 EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside) const
+float3 EC_Terrain::CalculateNormal(uint x, uint y, uint xinside, uint yinside) const
 {
-    int px = x * cPatchSize + xinside;
-    int py = y * cPatchSize + yinside;
+    uint px = x * cPatchSize + xinside;
+    uint py = y * cPatchSize + yinside;
 
-    int xNext = Clamp(px+1, 0, patchWidth * cPatchSize - 1);
-    int yNext = Clamp(py+1, 0, patchHeight * cPatchSize - 1);
-    int xPrev = Clamp(px-1, 0, patchWidth * cPatchSize - 1);
-    int yPrev = Clamp(py-1, 0, patchHeight * cPatchSize - 1);
+    uint xNext = Clamp(px+1, 0U, patchWidth * cPatchSize - 1);
+    uint yNext = Clamp(py+1, 0U, patchHeight * cPatchSize - 1);
+    uint xPrev = Clamp(px-1, 0U, patchWidth * cPatchSize - 1);
+    uint yPrev = Clamp(py-1, 0U, patchHeight * cPatchSize - 1);
 
     float x_slope = GetPoint(xPrev, py) - GetPoint(xNext, py);
     if ((px <= 0) || (px >= patchWidth * cPatchSize))
@@ -753,12 +730,12 @@ bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
 
     // Note: In the following, we round down, so if the image size is not a multiple of cPatchSize (== 16),
     // we will not use the whole image contents.
-    xPatches.Set(image.getWidth() / cPatchSize, AttributeChange::Disconnected);
-    yPatches.Set(image.getHeight() / cPatchSize, AttributeChange::Disconnected);
+    xPatches.Set((uint)image.getWidth() / cPatchSize, AttributeChange::Disconnected);
+    yPatches.Set((uint)image.getHeight() / cPatchSize, AttributeChange::Disconnected);
     ResizeTerrain(xPatches.Get(), yPatches.Get());
 
-    for(int y = 0; y < yPatches.Get() * cPatchSize; ++y)
-        for(int x = 0; x < xPatches.Get() * cPatchSize; ++x)
+    for(uint y = 0; y < yPatches.Get() * cPatchSize; ++y)
+        for(uint x = 0; x < xPatches.Get() * cPatchSize; ++x)
         {
             Ogre::ColourValue c = image.getColourAt(x, y, 0);
             float height = offset + scale * (c.r + c.g + c.b) / 3.f; // Treat the image as a grayscale heightmap field with the color in range [0,1].
@@ -776,8 +753,8 @@ bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
 
 bool EC_Terrain::SaveToImageFile(QString filename, float minHeight, float maxHeight)
 {
-    const int xVertices = xPatches.Get() * cPatchSize;
-    const int yVertices = yPatches.Get() * cPatchSize;
+    const uint xVertices = xPatches.Get() * cPatchSize;
+    const uint yVertices = yPatches.Get() * cPatchSize;
 
     if (minHeight <= -1e8f)
         minHeight = GetTerrainMinHeight();
@@ -787,11 +764,11 @@ bool EC_Terrain::SaveToImageFile(QString filename, float minHeight, float maxHei
     std::vector<uchar> imageData(3*xVertices*yVertices, 0);
 
     if (maxHeight - minHeight > 1e-5f) // If the terrain is not flat, read the actual values. If the terrain is flat, a black image is outputted.
-        for(int y = 0; y < yPatches.Get() * cPatchSize; ++y)
-            for(int x = 0; x < xPatches.Get() * cPatchSize; ++x)
+        for(uint y = 0; y < yPatches.Get() * cPatchSize; ++y)
+            for(uint x = 0; x < xPatches.Get() * cPatchSize; ++x)
             {
                 float height = 255.f * (GetPoint(x, y) - minHeight) / (maxHeight - minHeight);
-                int h = min(255, max((int)height, 0));
+                uint h = min(255U, max((uint)height, 0U));
                 imageData[(y*xVertices+x)*3] = imageData[(y*xVertices+x)*3+1] = imageData[(y*xVertices+x)*3+2] = (uchar)h;
             }
     
@@ -824,7 +801,7 @@ void GetUnskinnedMeshGeometry(
     size_t next_offset = 0;
     size_t index_offset = 0;
     size_t vertex_count = 0;
-    size_t index_count = 0;
+    uint index_count = 0;
 
     assert(mesh);
 
@@ -850,7 +827,7 @@ void GetUnskinnedMeshGeometry(
 
         // Add the indices
         submeshstartindex[i] = index_count;
-        index_count += submesh->indexData->indexCount;
+        index_count += (uint)submesh->indexData->indexCount;
     }
 
     // Allocate space for the vertices and indices
@@ -1082,8 +1059,8 @@ void EC_Terrain::GenerateFromOgreMesh(QString ogreMeshResourceName, const Ogre::
 
 void EC_Terrain::AffineTransform(float scale, float offset)
 {
-    for(int y = 0; y < yPatches.Get() * cPatchSize; ++y)
-        for(int x = 0; x < xPatches.Get() * cPatchSize; ++x)
+    for(uint y = 0; y < yPatches.Get() * cPatchSize; ++y)
+        for(uint x = 0; x < xPatches.Get() * cPatchSize; ++x)
             SetPointHeight(x, y, GetPoint(x, y) * scale + offset);
 }
 
@@ -1092,8 +1069,8 @@ void EC_Terrain::RemapHeightValues(float minHeight, float maxHeight)
     float minHeightCur = 1e9f;
     float maxHeightCur = -1e9f;
 
-    for(int y = 0; y < yPatches.Get() * cPatchSize; ++y)
-        for(int x = 0; x < xPatches.Get() * cPatchSize; ++x)
+    for(uint y = 0; y < yPatches.Get() * cPatchSize; ++y)
+        for(uint x = 0; x < xPatches.Get() * cPatchSize; ++x)
         {
             minHeightCur = min(minHeightCur, GetPoint(x, y));
             maxHeightCur = max(maxHeightCur, GetPoint(x, y));
@@ -1109,9 +1086,9 @@ void EC_Terrain::RemapHeightValues(float minHeight, float maxHeight)
     AffineTransform((maxHeight - minHeight) / (maxHeightCur - minHeightCur), minHeight - minHeightCur);
 }
 
-void EC_Terrain::SetTerrainMaterialTexture(int index, const QString &textureName)
+void EC_Terrain::SetTerrainMaterialTexture(uint index, const QString &textureName)
 {
-    if (index < 0 || index > 4)
+    if (index > 4)
         return;
 
 //    Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
@@ -1135,14 +1112,14 @@ void EC_Terrain::SetTerrainMaterialTexture(int index, const QString &textureName
 //        LogWarning("Ogre material " + std::string(terrainMaterialName) + " not found!");
 }
 
-void EC_Terrain::UpdateTerrainPatchMaterial(int patchX, int patchY)
+void EC_Terrain::UpdateTerrainPatchMaterial(uint patchX, uint patchY)
 {
     Patch &patch = GetPatch(patchX, patchY);
 
     if (!patch.entity)
         return;
 
-    for(size_t i = 0; i < patch.entity->getNumSubEntities(); ++i)
+    for(uint i = 0; i < patch.entity->getNumSubEntities(); ++i)
     {
         Ogre::SubEntity *sub = patch.entity->getSubEntity(i);
         if (sub)
@@ -1194,7 +1171,7 @@ void EC_Terrain::AttachTerrainRootNode()
     }
 }
 
-void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
+void EC_Terrain::GenerateTerrainGeometryForOnePatch(uint patchX, uint patchY)
 {
     PROFILE(EC_Terrain_GenerateTerrainGeometryForOnePatch);
 
@@ -1375,7 +1352,7 @@ void EC_Terrain::CreateRootNode()
     UpdateRootNodeTransform();
 }
 
-void EC_Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY)
+void EC_Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, uint patchX, uint patchY)
 {
     if (world_.expired())
         return;
@@ -1429,11 +1406,11 @@ float EC_Terrain::GetTerrainMaxHeight() const
     return maxHeight;
 }
 
-void EC_Terrain::Resize(int newWidth, int newHeight, int oldPatchStartX, int oldPatchStartY)
+void EC_Terrain::Resize(uint newWidth, uint newHeight, uint oldPatchStartX, uint oldPatchStartY)
 {
     std::vector<Patch> newPatches(newWidth * newHeight);
-    for(int y = 0; y < newHeight && y + oldPatchStartY < yPatches.Get(); ++y)
-        for(int x = 0; x < newWidth && x + oldPatchStartX < xPatches.Get(); ++x)
+    for(uint y = 0; y < newHeight && y + oldPatchStartY < yPatches.Get(); ++y)
+        for(uint x = 0; x < newWidth && x + oldPatchStartX < xPatches.Get(); ++x)
             newPatches[y * newWidth + x] = patches[(y + oldPatchStartY) * xPatches.Get() + x + oldPatchStartX];
 
     patches = newPatches;
@@ -1467,8 +1444,8 @@ void EC_Terrain::RegenerateDirtyTerrainPatches()
     EC_Placeable *position = parentEntity->GetComponent<EC_Placeable>().get();
     if (!GetFramework()->IsHeadless() && (!position || position->visible.Get())) // Only need to create GPU resources if the placeable itself is visible.
     {
-        for(int y = 0; y < patchHeight; ++y)
-            for(int x = 0; x < patchWidth; ++x)
+        for(uint y = 0; y < patchHeight; ++y)
+            for(uint x = 0; x < patchWidth; ++x)
             {
                 EC_Terrain::Patch &scenePatch = GetPatch(x, y);
                 if (!scenePatch.patch_geometry_dirty || scenePatch.heightData.size() == 0)
@@ -1483,10 +1460,10 @@ void EC_Terrain::RegenerateDirtyTerrainPatches()
                     {  1, -1 }, {  1, 0 }, {  1, 1 }
                 };
 
-                for(int i = 0; i < 8; ++i)
+                for(uint i = 0; i < 8; ++i)
                 {
-                    int nX = x + neighbors[i][0];
-                    int nY = y + neighbors[i][1];
+                    uint nX = x + neighbors[i][0];
+                    uint nY = y + neighbors[i][1];
                     if (nX >= 0 && nX < patchWidth &&
                         nY >= 0 && nY < patchHeight &&
                         GetPatch(nX, nY).heightData.size() == 0)

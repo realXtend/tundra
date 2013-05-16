@@ -45,9 +45,9 @@ struct MsgLogin
 
 	inline void SerializeTo(kNet::DataSerializer &dst) const
 	{
-		dst.Add<u16>(loginData.size());
+		dst.Add<u16>((u16)loginData.size());
 		if (loginData.size() > 0)
-			dst.AddArray<s8>(&loginData[0], loginData.size());
+			dst.AddArray<s8>(&loginData[0], (u32)loginData.size());
 	}
 
 	inline void DeserializeFrom(kNet::DataDeserializer &src)

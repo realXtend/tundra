@@ -97,7 +97,7 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
 
     EntityPtr entity = MAKE_SHARED(Entity, framework_, id, this);
     entity->SetTemporary(temporary);
-    for(size_t i = 0 ; i < (size_t)components.size(); ++i)
+    for(int i = 0 ; i < (int)components.size(); ++i)
     {
         ComponentPtr newComp = framework_->Scene()->CreateComponentByName(this, components[i]);
         if (newComp)
@@ -543,7 +543,7 @@ bool Scene::SaveSceneBinary(const QString& filename, bool getTemporary, bool get
             iter->second->SerializeToBinary(dest);
     }
     
-    bytes.resize(dest.BytesFilled());
+    bytes.resize((int)dest.BytesFilled());
     QFile scenefile(filename);
     if (scenefile.open(QFile::WriteOnly))
     {
@@ -1418,7 +1418,7 @@ void Scene::UpdateAttributeInterpolations(float frametime)
     
     interpolating_ = true;
     
-    for(uint i = interpolations_.size() - 1; i < interpolations_.size(); --i)
+    for(size_t i = interpolations_.size() - 1; i < interpolations_.size(); --i)
     {
         AttributeInterpolation& interp = interpolations_[i];
         bool finished = false;

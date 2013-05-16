@@ -933,7 +933,7 @@ void OgreMaterialEditor::PopulateShaderAttributes(int techIndex, int passIndex)
         QTabWidget *passTabWidget = static_cast<QTabWidget *>(techniqueTabWidget->widget(techIndex));
         static_cast<QGridLayout *>(passTabWidget->widget(passIndex)->layout())->addWidget(shaderAttributeTable);
 
-        int numColumns = 3;
+        size_t numColumns = 3;
         int row = 0;
         while(it.hasNext())
         {
@@ -962,7 +962,7 @@ void OgreMaterialEditor::PopulateShaderAttributes(int techIndex, int passIndex)
             shaderAttributeTable->setItem(row, 1, typeItem);
 
             // The number of elements we really want to show
-            int numElems = Ogre::GpuConstantDefinition::getElementSize(type, false);
+            size_t numElems = Ogre::GpuConstantDefinition::getElementSize(type, false);
             QStringList values = typeValuePair.begin().value().toString().split(" ");
             for(int i = 0; i  < values.size(); ++i)
             {
@@ -986,7 +986,7 @@ void OgreMaterialEditor::PopulateShaderAttributes(int techIndex, int passIndex)
         }
 
         // Resize to fit the value with most elements.
-        shaderAttributeTable->setColumnCount(numColumns);
+        shaderAttributeTable->setColumnCount((int)numColumns);
 
         QStringList labels;
         labels << tr("Name") << tr("Type") << tr("Value") + "[0]";

@@ -96,7 +96,7 @@ bool AudioAsset::LoadFromRawPCMWavData(const u8 *data, size_t numBytes, bool ste
 #ifndef TUNDRA_NO_AUDIO
     if (!data || numBytes == 0)
     {
-        LogError("Null data passed in AudioAsset::LoadFromWavData!");
+        LogError("AudioAsset::LoadFromRawPCMWavData: Null data passed in!");
         return false;
     }
 
@@ -109,8 +109,7 @@ bool AudioAsset::LoadFromRawPCMWavData(const u8 *data, size_t numBytes, bool ste
     else if (stereo && !is16Bit) openALFormat = AL_FORMAT_STEREO8;
     else /* (!stereo && !is16Bit)*/ openALFormat = AL_FORMAT_MONO8;
 
-    // Copy the new data over
-    alBufferData(handle, openALFormat, (const ALvoid*)data, numBytes, frequency);
+    alBufferData(handle, openALFormat, (const ALvoid*)data, (ALsizei)numBytes, frequency);
     ALenum error = alGetError();
     if (error != AL_NONE)
     {
@@ -132,7 +131,7 @@ bool AudioAsset::LoadFromSoundBuffer(const SoundBuffer &buffer)
 {
     if (buffer.data.size() == 0)
     {
-        LogError("Null data passed in AudioAsset::LoadFromSoundBuffer!");
+        LogError("AudioAsset::LoadFromSoundBuffer: Null data passed in!");
         return false;
     }
 

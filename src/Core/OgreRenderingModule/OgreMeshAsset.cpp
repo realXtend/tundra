@@ -198,7 +198,7 @@ RayQueryResult OgreMeshAsset::Raycast(const Ray &ray)
         {
             if (triangleIndex < subMeshTriangleCounts[i])
             {
-                visitor.result.submeshIndex = i;
+                visitor.result.submeshIndex = (unsigned)i;
                 break;
             }
             else
@@ -224,7 +224,7 @@ Triangle OgreMeshAsset::Tri(int submeshIndex, int triangleIndex)
     return meshData.Object(triangleIndex);
 }
 
-int OgreMeshAsset::NumSubmeshes()
+size_t OgreMeshAsset::NumSubmeshes()
 {
     if (subMeshTriangleCounts.size() == 0)
         CreateKdTree();
@@ -269,13 +269,13 @@ void OgreMeshAsset::CreateKdTree()
 
         unsigned char *pos = (unsigned char*)vbufPos->lock(Ogre::HardwareBuffer::HBL_READ_ONLY);
         assert(pos);
-        unsigned posOffset = posElem->getOffset();
-        unsigned posSize = vbufPos->getVertexSize();
+        size_t posOffset = posElem->getOffset();
+        size_t posSize = vbufPos->getVertexSize();
         
         // Texcoord element is not mandatory
         unsigned char *texCoord = 0;
-        unsigned texOffset = 0;
-        unsigned texSize = 0;
+        size_t texOffset = 0;
+        size_t texSize = 0;
         Ogre::HardwareVertexBufferSharedPtr vbufTex;
         const Ogre::VertexElement *texElem = vertexData->vertexDeclaration->findElementBySemantic(Ogre::VES_TEXTURE_COORDINATES);
         if (texElem)
@@ -332,7 +332,7 @@ void OgreMeshAsset::CreateKdTree()
             normal.Normalize();
             normals.push_back(normal);
         }
-        subMeshTriangleCounts.push_back(indexData->indexCount / 3);
+        subMeshTriangleCounts.push_back((int)(indexData->indexCount / 3));
         
         vbufPos->unlock();
         if (!vbufTex.isNull() && vbufTex != vbufPos)
