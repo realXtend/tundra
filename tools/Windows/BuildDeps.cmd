@@ -491,7 +491,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xml.dll". (
    :: We need to patch pp-iterator.h in order to make it compile with newer Visual Studio versions:
    :: http://stackoverflow.com/questions/2791525/stl-operator-behavior-change-with-visual-studio-2010
    :: Also cannot use QMake as it results in linker errors, so instead generate vcproj files and build using MSBuild.
-   IF NOT %GENERATOR%==%GENERATOR_VS2008% (
+   IF NOT %VS_VER%==vs2008 (
       copy /Y "%TOOLS%\Mods\QtScriptGenerator_pp-iterator.h" "%DEPS%\qtscriptgenerator\generator\parser\rpp\pp-iterator.h"
       qmake -tp vc
       cecho {0D}Building qtscript plugins. Please be patient, this will take a while.{# #}{\n}
@@ -1146,7 +1146,7 @@ IF NOT EXIST "%DEPS%\zziplib\lib\zziplib.lib". (
    :: It's nicer to use a tailored file rathern than copy duplicates under the zziblib source tree.
    cecho {0D}Building zziplib from premade project %TOOLS%\Mods\vs2008-zziplib.vcproj{# #}{\n}
    copy /Y "%TOOLS%\Mods\vs2008-zziplib.vcproj" zziplib.vcproj
-   IF NOT %GENERATOR%==%GENERATOR_VS2008% VCUpgrade /nologo zziplib.vcproj
+   IF NOT %VS_VER%==vs2008 VCUpgrade /nologo zziplib.vcproj
    MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Release /p:platform="%VS_PLATFORM%" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
    MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Debug /p:platform="%VS_PLATFORM%" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
    
