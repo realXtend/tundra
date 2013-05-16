@@ -278,52 +278,52 @@ set QTDIR=%DEPS%\qt\qt-src-%QT_VER%
 set QMAKESPEC=%QTDIR%\mkspecs\%QT_PLATFORM%
 
 IF NOT EXIST %QT_ISNSTALL_WEBKIT_DLL_FILENAME%. (
-   IF NOT EXIST "%QTDIR%". (
-      cecho {0E}Warning: %QTDIR% does not exist, extracting Qt failed?.{# #}{\n}
-      GOTO :ERROR
-   )
+    IF NOT EXIST "%QTDIR%". (
+        cecho {0E}Warning: %QTDIR% does not exist, extracting Qt failed?.{# #}{\n}
+        GOTO :ERROR
+    )
 
-   cd %QTDIR%
+    cd %QTDIR%
+    IF EXIST configure.cache. del /Q configure.cache
+    cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}
+    configure -platform %QT_PLATFORM% -%DEBUG_OR_RELEASE% -opensource -prefix "%DEPS%\qt" -shared -ltcg ^
+        -no-qt3support -no-opengl -no-openvg -no-dbus -no-phonon -no-phonon-backend -no-multimedia -no-audio-backend ^
+        -no-declarative -no-xmlpatterns -nomake examples -nomake demos ^
+        -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-  cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}
-  configure -platform %QT_PLATFORM% -%DEBUG_OR_RELEASE% -opensource -prefix "%DEPS%\qt" -shared -ltcg ^
-    -no-qt3support -no-opengl -no-openvg -no-dbus -no-phonon -no-phonon-backend -no-multimedia -no-audio-backend ^
-    -no-declarative -no-xmlpatterns -nomake examples -nomake demos ^
-    -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
-  IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-
-   cecho {0D}Building %DEBUG_OR_RELEASE% Qt. Please be patient, this will take a while.{# #}{\n}
-   IF %USE_JOM%==TRUE (
-      cecho {0D}- Building Qt with jom{# #}{\n}
-      "%DEPS%\qt\jom\jom.exe"
+    cecho {0D}Building %DEBUG_OR_RELEASE% Qt. Please be patient, this will take a while.{# #}{\n}
+    IF %USE_JOM%==TRUE (
+        cecho {0D}- Building Qt with jom{# #}{\n}
+        "%DEPS%\qt\jom\jom.exe"
    ) ELSE (
-      cecho {0D}- Building Qt with nmake{# #}{\n}
-      nmake /nologo
+        cecho {0D}- Building Qt with nmake{# #}{\n}
+        nmake /nologo
    )
 
-   IF NOT EXIST "%QTDIR%\lib\QtWebKit%POSTFIX_D%4.dll". (
-      cecho {0E}Warning: %QTDIR%\lib\QtWebKit%POSTFIX_D%4.dll not present, Qt build failed?.{# #}{\n}
-      GOTO :ERROR
-   )
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    IF NOT EXIST "%QTDIR%\lib\QtWebKit%POSTFIX_D%4.dll". (
+        cecho {0E}Warning: %QTDIR%\lib\QtWebKit%POSTFIX_D%4.dll not present, Qt build failed?.{# #}{\n}
+        GOTO :ERROR
+    )
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-   :: Don't use jom for install. It seems to hang easily, maybe beacuse it tries to use multiple cores.
-   cecho {0D}Installing Qt to %DEPS%\qt{# #}{\n}
-   nmake install
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    :: Don't use jom for install. It seems to hang easily, maybe beacuse it tries to use multiple cores.
+    cecho {0D}Installing Qt to %DEPS%\qt{# #}{\n}
+    nmake install
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-   IF NOT EXIST %QT_ISNSTALL_WEBKIT_DLL_FILENAME%. (
-      cecho {0E}Warning: %QT_ISNSTALL_WEBKIT_DLL_FILENAME% not present, Qt install failed?.{# #}{\n}
-      GOTO :ERROR
-   )
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    IF NOT EXIST %QT_ISNSTALL_WEBKIT_DLL_FILENAME%. (
+        cecho {0E}Warning: %QT_ISNSTALL_WEBKIT_DLL_FILENAME% not present, Qt install failed?.{# #}{\n}
+        GOTO :ERROR
+    )
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
    :: We (re)built Qt, so delete QtWebKit4.dll in Tundra bin\ to force DLL deployment below.
-   IF EXIST "%TUNDRA_BIN%\QtWebKit%POSTFIX_D%4.dll". (
-      del /Q "%TUNDRA_BIN%\QtWebKit%POSTFIX_D%4.dll"
-   )
+    IF EXIST "%TUNDRA_BIN%\QtWebKit%POSTFIX_D%4.dll". (
+        del /Q "%TUNDRA_BIN%\QtWebKit%POSTFIX_D%4.dll"
+    )
 ) ELSE (
-   cecho {0D}Qt already built. Skipping.{# #}{\n}
+    cecho {0D}Qt already built. Skipping.{# #}{\n}
 )
 
 :: Setup now built Qt to PATH (for qmake.exe), QTDIR and QMAKESPEC.
