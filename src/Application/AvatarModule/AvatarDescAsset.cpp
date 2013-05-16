@@ -82,7 +82,7 @@ void AvatarDescAsset::DoUnload()
 bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool /*allowAsynchronous*/)
 {
     // Store the raw XML as a string
-    QByteArray bytes((const char *)data, numBytes);
+    QByteArray bytes((const char *)data, (int)numBytes);
     avatarAppearanceXML_ = QString(bytes);
     
     // Then try to parse
@@ -543,7 +543,7 @@ void AvatarDescAsset::RemoveAttachment(uint index)
         emit AppearanceChanged();
     }
     else
-        LogError("Failed to remove attachment at index " + QString::number(index) + "! Only " + attachments_.size() + "  attachments exist on the avatar asset!");
+        LogError("Failed to remove attachment at index " + QString::number(index) + "! Only " + QString::number(attachments_.size()) + "  attachments exist on the avatar asset!");
 }
 
 void AvatarDescAsset::RemoveAttachmentsByCategory(QString category)
@@ -559,7 +559,7 @@ void AvatarDescAsset::RemoveAttachmentsByCategory(QString category)
     }
 
     // Remove the attachments, starting from the end of the vector.
-    for (int i = toRemove.size()-1; i >= 0; --i)
+    for (int i = (int)toRemove.size()-1; i >= 0; --i)
         RemoveAttachment(toRemove[i]);
 }
 
@@ -573,7 +573,7 @@ void AvatarDescAsset::AddAttachment(AssetPtr assetPtr)
         return;
     }
 
-    QString string = QString::fromUtf8((char*)&data[0], data.size());
+    QString string = QString::fromUtf8((char*)&data[0], (int)data.size());
 
     QDomDocument attachDoc("Attachment");
     if (!attachDoc.setContent(string))
@@ -611,9 +611,8 @@ const QString& AvatarDescAsset::GetProperty(const QString& name)
 
 void AvatarDescAsset::AssetReferencesChanged()
 {
-    unsigned assets = FindReferences().size();
     // If no references (unlikely), send AppearanceChanged() immediately
-    if (!assets)
+    if (FindReferences().empty())
         emit AppearanceChanged();
     else
     {

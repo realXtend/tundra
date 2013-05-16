@@ -15,9 +15,13 @@
 
 #include <set>
 
-class QTreeWidgetItem;
 class Framework;
+class QTreeWidgetItem;
+
 class AssetTreeWidget;
+class AssetItem;
+class AssetStorageItem;
+class AssetBundleItem;
 
 /// The main UI for managing asset storages and assets.
 /** Assets window can be used either for generic browsing and maintaining of all known
@@ -47,7 +51,11 @@ public slots:
 
     /// Adds new asset to the tree widget.
     /** @param asset New asset. */
-    void AddAsset(AssetPtr asset);
+    void AddAsset(const AssetPtr &asset);
+
+    /// Adds new asset bundle to the tree widget.
+    /** @param bundle New bundle. */
+    void AddBundle(const AssetBundlePtr &bundle);
 
     /// Removes asset from the tree widget.
     /** @param asset Asset to be removed. */
@@ -78,14 +86,32 @@ private:
     /// Initializes the UI.
     void Initialize();
 
-    /// Event filter to catch and react to child widget events
-    virtual bool eventFilter(QObject *obj, QEvent *e);
+    /// Creates a storage item as a top level item.
+    AssetStorageItem *CreateStorageItem(const AssetStoragePtr &storage);
+
+    /// Creates and parents a bundle item to the appropriate storage item or to default no storage item.
+    AssetBundleItem *CreateBundleItem(const AssetBundlePtr &bundle);
+
+    /// Creates and parents a asset item to the appropriate storage or asset bundle item or to default no storage item.
+    AssetItem *CreateAssetItem(const AssetPtr &asset);
+
+    /// Finds a @c bundle item recursively from the tree starting from @c parent.
+    AssetBundleItem *FindBundleItemRecursive(QTreeWidgetItem *parent, const AssetBundlePtr &bundle);
+
+    /// Finds a bundle item recursively with @c subAssetRef from the tree starting from @c parent.
+    AssetBundleItem *FindBundleItemRecursive(QTreeWidgetItem *parent, const QString &subAssetRef);
+
+    /// Finds a @asset item recursively with from the tree starting from @c parent.
+    AssetItem *FindAssetItemRecursive(QTreeWidgetItem *parent, const AssetPtr &asset);
+
+    /// Finds parent for @c item. T must implement `AssetStoragePtr AssetStorage()` and `QString Name()`.
+    template <typename T>
+    QTreeWidgetItem *FindParentItem(const T &item);
 
     /// If @c asset has asset references, adds the asset references as children to the @c parent.
     /** @param asset Asset to be added to the tree widget.
         @param parent The newly created (parent) item. */
     void AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent);
-
 
     /// As C++ standard weak_ptr doesn't provide less than operator (or any comparison operators for that matter), we need to provide it ourselves.
     struct AssetWeakPtrLessThan
@@ -95,7 +121,7 @@ private:
 
     Framework *framework;
     AssetTreeWidget *treeWidget; ///< Tree widget showing the assets.
-    QTreeWidgetItem *noProviderItem; ///< "No provider" parent item for assets without storage.
+    QTreeWidgetItem *noStorageItem; ///< "No Storage" parent item for assets without storage.
     std::set<AssetWeakPtr, AssetWeakPtrLessThan> alreadyAdded; ///< Set of already added assets.
     QLineEdit *searchField;
     QPushButton *expandAndCollapseButton;

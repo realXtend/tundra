@@ -845,8 +845,8 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
     QueryPerformanceCounter(&now);
     QueryPerformanceFrequency(&freq);
 #endif
-    const int numEntries = min<int>(frameTimes.size(), image.width());
-    const int firstEntry = max<int>(0, frameTimes.size() - numEntries);
+    const int numEntries = min((int)frameTimes.size(), image.width());
+    const int firstEntry = max(0, (int)frameTimes.size() - numEntries);
 
     double maxTime = 1.0 / 60;
     for(size_t i = firstEntry; i < frameTimes.size(); ++i)
@@ -911,7 +911,7 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
     double denom = 0;
     double smoothFactor = 1.0;
     const double smoothCoeff = 0.8;
-    for(int j = 0, i = frameTimes.size()-1; i >= 0 && j < 10; ++j)
+    for(int j = 0, i = (int)frameTimes.size()-1; i >= 0 && j < 10; ++j)
     {
         avg += frameTimes[i].second * smoothFactor;
         denom += smoothFactor;
@@ -1327,7 +1327,7 @@ static void DumpOgreResManagerStatsToFile(Ogre::ResourceManager &manager, std::o
 
     file << "By descending size: " << std::endl;
     std::sort(resources.begin(), resources.end());
-    for(int i = resources.size()-1; i >= 0; --i)
+    for(int i = (int)resources.size()-1; i >= 0; --i)
     {
         if (!resources[i].isLoaded)
             file << "(";
@@ -1628,7 +1628,7 @@ void RedrawHistoryGraph(const std::vector<double> &data, QLabel *label)
     painter.fillRect(0, 0, image.width()-1, image.height()-1, QColor(0,0,0));
 
     const int barWidth = 3;
-    const int numElems = min<int>((image.width()+barWidth-1)/barWidth, data.size());
+    const int numElems = min(((int)image.width()+barWidth-1)/barWidth, (int)data.size());
 
     double maxVal = 0;
     for(int i = 0; i < numElems; ++i)
@@ -1643,7 +1643,7 @@ void RedrawHistoryGraph(const std::vector<double> &data, QLabel *label)
     if (time % modulus2 >= modulus)
         swap(colorEven, colorOdd);
 
-    for(int i = data.size()-1, x = image.width()-1-barWidth; i >= 0 && x > -barWidth; --i, x -= barWidth)
+    for(int i = (int)data.size()-1, x = image.width()-1-barWidth; i >= 0 && x > -barWidth; --i, x -= barWidth)
     {
         double r = 1.0 - min<double>(1.0, data[i] / maxVal);
         int y = (int)((image.height()-1)*r);
@@ -1732,8 +1732,8 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     std::ostringstream text;
 
     uint visible_entities = renderer->GetActiveOgreWorld()->VisibleEntities().size();
-    uint batches = 0;
-    uint triangles = 0;
+    size_t batches = 0;
+    size_t triangles = 0;
     float avgfps = 0.0f;
 
     // Get overall batchcount/trianglecount/fps data
@@ -1769,13 +1769,13 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     std::set<Ogre::Texture*> all_textures;
     std::set<Ogre::Texture*> scene_textures;
     std::set<Ogre::Texture*> other_textures;
-    uint scene_meshes_size = 0;
-    uint other_meshes_size = 0;
-    uint mesh_vertices = 0;
-    uint mesh_triangles = 0;
-    uint mesh_instance_vertices = 0;
-    uint mesh_instance_triangles = 0;
-    uint mesh_instances = 0;
+    size_t scene_meshes_size = 0;
+    size_t other_meshes_size = 0;
+    size_t mesh_vertices = 0;
+    size_t mesh_triangles = 0;
+    size_t mesh_instance_vertices = 0;
+    size_t mesh_instance_triangles = 0;
+    size_t mesh_instances = 0;
     
     // Loop through entities to see mesh usage
     for(Scene::iterator iter = scene->begin(); iter != scene->end(); ++iter)
@@ -1821,8 +1821,8 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
         // Get Ogre meshes from terrain EC
         else if (terrain)
         {
-            for(int y = 0; y < terrain->PatchHeight(); ++y)
-                for(int x = 0; x < terrain->PatchWidth(); ++x)
+            for(uint y = 0; y < terrain->PatchHeight(); ++y)
+                for(uint x = 0; x < terrain->PatchWidth(); ++x)
                 {
                     Ogre::SceneNode *node = terrain->GetPatch(x, y).node;
                     if (!node)
@@ -1924,12 +1924,12 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     }
     
     // Count total/scene texture byte sizes and amount of total pixels
-    uint scene_tex_size = 0;
-    uint total_tex_size = 0;
-    uint other_tex_size = 0;
-    uint scene_tex_pixels = 0;
-    uint total_tex_pixels = 0;
-    uint other_tex_pixels = 0;
+    size_t scene_tex_size = 0;
+    size_t total_tex_size = 0;
+    size_t other_tex_size = 0;
+    size_t scene_tex_pixels = 0;
+    size_t total_tex_pixels = 0;
+    size_t other_tex_pixels = 0;
     std::set<Ogre::Texture*>::iterator ti = scene_textures.begin();
     while(ti != scene_textures.end())
     {
@@ -1964,7 +1964,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     ti = scene_textures.begin();
     while(ti != scene_textures.end())
     {
-        uint dimension = max((*ti)->getWidth(), (*ti)->getHeight());
+        size_t dimension = max((*ti)->getWidth(), (*ti)->getHeight());
         if (dimension > 2048)
             scene_tex_categories[0]++;
         else if (dimension > 1024)
@@ -1981,7 +1981,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     ti = other_textures.begin();
     while(ti != other_textures.end())
     {
-        uint dimension = max((*ti)->getWidth(), (*ti)->getHeight());
+        size_t dimension = max((*ti)->getWidth(), (*ti)->getHeight());
         if (dimension > 2048)
             other_tex_categories[0]++;
         else if (dimension > 1024)
@@ -2070,10 +2070,10 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     QTimer::singleShot(500, this, SLOT(RefreshSceneComplexityProfilingData()));
 }
 
-void TimeProfilerWindow::GetVerticesAndTrianglesFromMesh(Ogre::Mesh* mesh, uint& vertices, uint& triangles)
+void TimeProfilerWindow::GetVerticesAndTrianglesFromMesh(Ogre::Mesh* mesh, size_t & vertices, size_t & triangles)
 {
     // Count total vertices/triangles for each mesh instance
-    for(uint i = 0; i < mesh->getNumSubMeshes(); ++i)
+    for(unsigned short  i = 0; i < mesh->getNumSubMeshes(); ++i)
     {
         Ogre::SubMesh* submesh = mesh->getSubMesh(i);
         if (submesh)
@@ -2246,7 +2246,7 @@ void AddOgreSubEntity(QTreeWidgetItem *parent, Ogre::SubEntity *node, int idx)
     if (submesh && submesh->vertexData && !submesh->useSharedVertices && submesh->vertexData->vertexDeclaration)
     {
         Ogre::VertexDeclaration *vd = submesh->vertexData->vertexDeclaration;
-        for(size_t i = 0; i < vd->getElementCount(); ++i)
+        for(unsigned short i = 0; i < (unsigned short)vd->getElementCount(); ++i)
             AddOgreVertexElement(item, vd->getElement(i), i);
     }
 }
@@ -2296,7 +2296,7 @@ void AddOgreMovableObject(QTreeWidgetItem *parent, Ogre::MovableObject *node)
             AddNewItem(nodeItem, "Ogre::SkeletonInstance: (no skeleton)");
         else
             AddNewItem(nodeItem, ("Ogre::SkeletonInstance: " + e->getSkeleton()->getName()).c_str());
-        for(size_t i = 0; i < e->getNumSubEntities(); ++i)
+        for(unsigned i = 0; i < e->getNumSubEntities(); ++i)
             AddOgreSubEntity(nodeItem, e->getSubEntity(i), i);
     }
 }
@@ -2646,7 +2646,7 @@ QString OgrePixelFormatToString(Ogre::PixelFormat fmt)
     }
 }
 
-void CountNumVertices(Ogre::MeshPtr mesh, int &vertices, int &indices)
+void CountNumVertices(Ogre::MeshPtr mesh, size_t &vertices, size_t &indices)
 {
     vertices = 0;
     indices = 0;
@@ -2731,8 +2731,7 @@ void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr
         if (mesh.get())
         {
             item->setText(2, QString::number(mesh->getNumSubMeshes()));
-            int numVertices;
-            int numIndices;
+            size_t numVertices, numIndices;
             CountNumVertices(mesh, numVertices, numIndices);
             item->setText(3, QString::number(numVertices) + " (" + VertexSumString(mesh) + ")");
             item->setText(4, QString::number(numIndices) + " (" + IndexSumString(mesh) + ")");

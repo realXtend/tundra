@@ -187,7 +187,7 @@ void DebugStatsModule::Exec(const QStringList &params)
             return;
         }
 
-        for(size_t i = 3; i < (size_t)params.size(); ++i)
+        for(int i = 3; i < params.size(); ++i)
             execParameters << params[i];
 
         entity->Exec((EntityAction::ExecTypeField)type, params[1], execParameters);

@@ -1238,8 +1238,8 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name, AssetStoragePtr st
     /// calls, and have the caller directly set the storage?
     if (!storage)
     {
-        asset->SetAssetProvider(GetProviderForAssetRef(type, name));
-        asset->SetAssetStorage(GetStorageForAssetRef(name));
+        asset->SetAssetProvider(ProviderForAssetRef(type, name));
+        asset->SetAssetStorage(StorageForAssetRef(name));
     }
     else
     {
@@ -1283,6 +1283,9 @@ AssetBundlePtr AssetAPI::CreateNewAssetBundle(QString type, QString name)
         LogError("AssetAPI:CreateNewAssetBundle: IAssetTypeFactory::CreateEmptyAsset(type \"" + type + "\", name: \"" + name + "\") failed to create asset!");
         return AssetBundlePtr();
     }
+
+    assetBundle->SetAssetProvider(ProviderForAssetRef(type, name));
+    assetBundle->SetAssetStorage(StorageForAssetRef(name));
 
     // Remember this asset bundle in the global AssetAPI storage.
     assetBundles[name] = assetBundle;

@@ -865,7 +865,7 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
         return;
     }
 
-    QByteArray data_qt((const char *)&data[0], data.size());
+    QByteArray data_qt((const char *)&data[0], (int)data.size());
     if (data_qt.isEmpty())
     {
         LogError("SceneStructureModule::HandleSceneDescLoaded:Failed to convert txml data to QByteArray.");

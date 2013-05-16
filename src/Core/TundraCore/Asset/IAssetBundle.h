@@ -53,19 +53,35 @@ public slots:
         @return Absolute disk source path if available, empty string otherwise.*/
     virtual QString GetSubAssetDiskSource(const QString &subAssetName) = 0;
 
+    /// Returns the sub asset count in this bundle.
+    /** @return Count of the assets or -1 if count is unknown. */
+    virtual int SubAssetCount() const { return -1; }
+
     /// Returns the type of this asset bundle. The type of an asset cannot change during the lifetime of the instance of an asset.
     QString Type() const;
 
     /// Returns the unique name of this asset bundle. The name of an asset cannot change during the lifetime of the instance of an asset.
     QString Name() const;
 
-    /// Specifies the file from which this asset can be reloaded, if it is unloaded in between. 
-    void SetDiskSource(QString diskSource);
+    /// Returns the asset storage this bundle was loaded from.
+    AssetStoragePtr AssetStorage() const;
+
+    /// Returns the asset provider this bundle was loaded from.
+    AssetProviderPtr AssetProvider() const;
 
     /// Returns the absolute path name to the file that contains the disk-cached version of this asset.
     /** For some assets, this is the cache file containing this asset, but for assets from some providers (e.g. LocalAssetProvider),
         this is the actual source filename of the asset. */
     QString DiskSource() const;
+
+    /// Saves the provider this bundle was downloaded from. Intended to be only called internally by Asset API at bundle load time.
+    void SetAssetProvider(AssetProviderPtr provider);
+
+    /// Saves the storage this bundle was downloaded from. Intended to be only called internally by Asset API at bundle load time.
+    void SetAssetStorage(AssetStoragePtr storage);
+
+    /// Specifies the file from which this asset can be reloaded, if it is unloaded in between.
+    void SetDiskSource(QString diskSource);
 
     /// Unloads this asset bundle from memory.
     void Unload();
@@ -100,6 +116,12 @@ protected:
 
     /// This path specifies a local filename from which this asset can be reloaded if necessary.
     QString diskSource_;
+
+    /// Specifies the provider this asset was downloaded from. May be null.
+    AssetProviderWeakPtr provider;
+
+    /// Specifies the storage this asset was downloaded from. May be null.
+    AssetStorageWeakPtr storage;
 };
 
 /// @cond PRIVATE

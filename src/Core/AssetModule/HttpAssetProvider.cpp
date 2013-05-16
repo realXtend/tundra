@@ -321,7 +321,7 @@ AssetUploadTransferPtr HttpAssetProvider::UploadAssetFromFileInMemory(const u8 *
     request.setUrl(QUrl(dstUrl));
     request.setRawHeader("User-Agent", "realXtend Tundra");
 
-    QByteArray dataArray((const char*)data, numBytes);
+    QByteArray dataArray((const char*)data, (int)numBytes);
     QNetworkReply *reply = networkAccessManager->put(request, dataArray);
 
     AssetUploadTransferPtr transfer = MAKE_SHARED(IAssetUploadTransfer);
@@ -646,10 +646,12 @@ AssetStoragePtr HttpAssetProvider::GetStorageForAssetRef(const QString &assetRef
     QString protocolPath;
     AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(assetRef, 0, &namedStorage, &protocolPath);
     for (size_t i = 0; i < storages.size(); ++i)
+    {
         if (refType == AssetAPI::AssetRefNamedStorage && storages[i]->Name() == namedStorage)
-    return storages[i];
+            return storages[i];
         else if (refType == AssetAPI::AssetRefExternalUrl && assetRef.startsWith(storages[i]->baseAddress, Qt::CaseInsensitive))
-    return storages[i];
+            return storages[i];
+    }
 
     return HttpAssetStoragePtr();
 }

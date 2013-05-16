@@ -1277,7 +1277,7 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
                     entity->SerializeToBinary(dest);
             }
 
-            bytes.resize(dest.BytesFilled());
+            bytes.resize((int)dest.BytesFilled());
         }
     }
 

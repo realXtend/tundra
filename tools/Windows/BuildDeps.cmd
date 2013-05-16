@@ -101,29 +101,35 @@ echo.
 
 :: Print scripts usage information
 cecho {0A}Requirements for a successful execution:{# #}{\n}
-echo   1. Install SVN and make sure 'svn' is accessible from PATH.
-echo    - http://tortoisesvn.net/downloads.html, install with command line tools!
-echo   2. Install Hg and make sure 'hg' is accessible from PATH.
-echo    - http://tortoisehg.bitbucket.org/
-echo   3. Install Git and make sure 'git' is accessible from PATH.
-echo    - http://code.google.com/p/tortoisegit/
-echo   4. Install DirectX SDK June 2010.
-echo    - http://www.microsoft.com/download/en/details.aspx?id=6812
-echo   5. Install CMake and make sure 'cmake' is accessible from PATH.
-echo    - http://www.cmake.org/
-echo   6. Install Visual Studio 2008/2010 with SP1 (Express is ok).
-echo    - http://www.microsoft.com/download/en/details.aspx?id=14597
-echo   7. Install Windows SDK.
-echo    - http://www.microsoft.com/download/en/details.aspx?id=8279
+echo    1. Install SVN and make sure 'svn' is accessible from PATH.
+echo     - http://tortoisesvn.net/downloads.html, install with command line tools!
+echo    2. Install Hg and make sure 'hg' is accessible from PATH.
+echo     - http://tortoisehg.bitbucket.org/
+echo    3. Install Git and make sure 'git' is accessible from PATH.
+echo     - http://code.google.com/p/tortoisegit/
+echo    4. Install DirectX SDK June 2010.
+echo     - http://www.microsoft.com/download/en/details.aspx?id=6812
+echo    5. Install CMake and make sure 'cmake' is accessible from PATH.
+echo     - http://www.cmake.org/
+echo    6. Install Visual Studio 2008/2010 (Express is ok, but see section 7).
+echo     - http://www.microsoft.com/visualstudio/eng/downloads
+cecho {0E}   7. Optional: Make sure you have the Visual Studio x64 tools installed{# #}{\n}
+cecho {0E}      before installing the Visual Studio Service Pack 1 (section 8), if{# #}{\n}
+cecho {0E}      wanting to build Tundra as a 64-bit application.{# #}{\n}
+cecho {0E}      NOTE: The x64 tools are not available for the Express editions.{# #}{\n}
+echo    8. Install Visual Studio 2008/2010 Service Pack 1.
+echo     - http://www.microsoft.com/en-us/download/details.aspx?id=23691
+echo    9. Install Windows SDK.
+echo     - http://www.microsoft.com/download/en/details.aspx?id=8279
 
 IF %BUILD_OPENSSL%==TRUE (
-   echo   8. To build OpenSSL install Active Perl and set perl.exe to PATH.
-   echo    - http://www.activestate.com/activeperl/downloads
-   cecho {0E}     NOTE: Perl needs to be before git in PATH, otherwise the git{# #}{\n}
-   cecho {0E}     provided perl.exe will be used and OpenSSL build will fail.{# #}{\n}
-   echo   9. Execute this file from Visual Studio 2008/2010 Command Prompt.
+   echo   10. To build OpenSSL install Active Perl and set perl.exe to PATH.
+   echo     - http://www.activestate.com/activeperl/downloads
+   cecho {0E}      NOTE: Perl needs to be before git in PATH, otherwise the git{# #}{\n}
+   cecho {0E}      provided perl.exe will be used and OpenSSL build will fail.{# #}{\n}
+   echo   11. Execute this file from Visual Studio 2008/2010 ^(x64^) Command Prompt.
 ) ELSE (
-   echo   8. Execute this file from Visual Studio 2008/2010 Command Prompt.
+   echo   10. Execute this file from Visual Studio 2008/2010 ^(x64^) Command Prompt.
 )
 echo.
 
@@ -415,7 +421,7 @@ IF NOT EXIST "%DEPS%\assimp\". (
     svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk assimp
 )
 
-IF NOT EXIST "%DEPS%\assimp\bin\%BUILD_TYPE%\assimp%POSTFIX_D%.dll". (
+IF NOT EXIST "%DEPS%\assimp\bin\Release\assimp.dll". (
     cd "%DEPS%\assimp"
     IF %USE_BOOST%==FALSE (
         :: Tweaks CMakeLists.txt to set ASSIMP_ENABLE_BOOST_WORKAROUND on.
@@ -519,7 +525,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xml%POSTFIX_D%.dl
    cd ..
    cd qtbindings
 
-   sed -e "s/qtscript_phonon //" -e "s/qtscript_opengl //" -e "s/qtscript_uitools //" < qtbindings.pro > qtbindings.pro.sed
+   sed -e "s/qtscript_phonon //" -e "s/qtscript_opengl //" -e "s/qtscript_uitools //" -e "s/qtscript_xml_patterns //" < qtbindings.pro > qtbindings.pro.sed
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    del /Q qtbindings.pro
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -629,9 +635,8 @@ IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\Dependencies\src". (
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 
-IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\Dependencies\lib\%DEBUG_OR_RELEASE%\FreeImage%POSTFIX_D%.lib". (
-    cecho {0D}Building %DEBUG_OR_RELEASE% Ogre prebuilt dependencies package. Please be patient, this will take a while.{# #}{\n}
-    MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=%DEBUG_OR_RELEASE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    cecho {0D}Building Ogre prebuilt dependencies package. Please be patient, this will take a while.{# #}{\n}
+    MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
     REM TODO For some reason zlib x64 libs end up to wrong directories, so must copy them manually.
@@ -824,8 +829,9 @@ IF NOT EXIST "%DEPS%\ogg". (
 
 IF NOT EXIST "%DEPS%\ogg\win32\%VS2008_OR_VS2010%\%VS_PLATFORM%\%DEBUG_OR_RELEASE%\libogg_static.lib". (
     cd "%DEPS%\ogg\win32\%VS2008_OR_VS2010%"
+
     cecho {0D}Building %DEBUG_OR_RELEASE% Ogg. Please be patient, this will take a while.{# #}{\n}
-    MSBuild libogg_static.sln /p:configuration=%DEBUG_OR_RELEASE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libogg_static.sln /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
     cecho {0D}Ogg already built. Skipping.{# #}{\n}
@@ -840,7 +846,7 @@ IF NOT EXIST "%DEPS%\vorbis". (
 IF NOT EXIST "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%\%VS_PLATFORM%\%DEBUG_OR_RELEASE%\libvorbis_static.lib". (
     cd "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%"
     cecho {0D}Building %DEBUG_OR_RELEASE% Vorbis. Please be patient, this will take a while.{# #}{\n}
-    MSBuild vorbis_static.sln /p:configuration=%DEBUG_OR_RELEASE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild vorbis_static.sln /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
     cecho {0D}Vorbis already built. Skipping.{# #}{\n}
@@ -916,23 +922,13 @@ IF NOT EXIST "%DEPS%\protobuf". (
 :: is set properly. Because of this we can skip copying things to /lib /bin /include folders.
 IF NOT EXIST "%DEPS%\protobuf\vsprojects\%DEBUG_OR_RELEASE%\libprotobuf.lib". (
     cd "%DEPS%\protobuf\vsprojects"
-    IF %VS_VER%==vs2008 (
-        :: Upgrade the VS2005 files to VS2008
-        :: TODO 64-bit VS2008 not yet possible on VS2008!
-        cecho {0D}Upgrading Google Protobuf project files.{# #}{\n}
-        vcbuild /c /upgrade libprotobuf.vcproj $ALL
-        vcbuild /c /upgrade libprotoc.vcproj Release
-        vcbuild /c /upgrade protoc.vcproj Release
-        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-    ) ELSE (
-        :: Command-line upgrading from VS2005 format to VS2010 (or newer) format fails,
-        :: so must use files converted by the Visual Studio Conversion Wizard.
-        copy /Y "%TOOLS%\Mods\vs2010-protobuf.sln_" protobuf.sln
-        copy /Y "%TOOLS%\Mods\vs2010-libprotobuf.vcxproj_" libprotobuf.vcxproj
-        copy /Y "%TOOLS%\Mods\vs2010-libprotoc.vcxproj_" libprotoc.vcxproj
-        copy /Y "%TOOLS%\Mods\vs2010-protoc.vcxproj_" protoc.vcxproj
-    )
+    :: Must use custom solution and project files in order to be able to build with VC10 and/or as 64-bit.
+    copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-protobuf.sln" protobuf.sln
+    copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-libprotobuf.%VCPROJ_FILE_EXT%" libprotobuf.%VCPROJ_FILE_EXT%
+    copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-libprotoc.%VCPROJ_FILE_EXT%" libprotoc.%VCPROJ_FILE_EXT%
+    copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-protoc.%VCPROJ_FILE_EXT%" protoc.%VCPROJ_FILE_EXT%
     echo.
+
     cecho {0D}Building %DEBUG_OR_RELEASE% Google Protobuf. Please be patient, this will take a while.{# #}{\n}
     MSBuild protobuf.sln /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -986,60 +982,57 @@ IF NOT EXIST "%DEPS%\celt\lib\%DEBUG_OR_RELEASE%\libcelt.lib" (
     cecho {0D}Celt already built. Skipping.{# #}{\n}
 )
 
-:: VLC
-IF NOT %VS_VER%==vs2008 (
-   cecho {0D}VLC is not binary-compatible with non-VS2008 binaries, skipping.{# #}{\n}
-   GOTO :SKIP_VLC
-)
+:: VLC, only usable with 32-bit VC9 builds.
+IF %VS_VER%==vs2008 IF %TARGET_ARCH%==x86 (
+    IF NOT EXIST "%DEPS%\vlc-2.0.1-win32.zip". (
+        CD "%DEPS%"
+        rmdir /S /Q "%DEPS%\vlc"
+        cecho {0D}Downloading VLC 2.0.1{# #}{\n}
+        wget http://sourceforge.net/projects/vlc/files/2.0.1/win32/vlc-2.0.1-win32.zip/download
+        IF NOT EXIST "%DEPS%\vlc-2.0.1-win32.zip". GOTO :ERROR
+    ) ELSE (
+        cecho {0D}VLC 2.0.1 already downloaded. Skipping.{# #}{\n}
+    )
 
-IF NOT EXIST "%DEPS%\vlc-2.0.1-win32.zip". (
-  CD "%DEPS%"
-  rmdir /S /Q "%DEPS%\vlc"
-  cecho {0D}Downloading VLC 2.0.1{# #}{\n}
-  wget http://sourceforge.net/projects/vlc/files/2.0.1/win32/vlc-2.0.1-win32.zip/download
-  IF NOT EXIST "%DEPS%\vlc-2.0.1-win32.zip". GOTO :ERROR
+    IF NOT EXIST "%DEPS%\vlc". (
+        CD "%DEPS%"
+        mkdir vlc
+        cecho {0D}Extracting VLC 2.0.1 package to "%DEPS%\vlc\vlc-2.0.1"{# #}{\n}
+        7za x -y -ovlc vlc-2.0.1-win32.zip
+        cd vlc
+        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+        mkdir lib
+        mkdir include
+        mkdir bin\plugins\vlcplugins
+        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+        :: Copy from extraced location to our subfolders
+        cecho {0D}Copying needed VLC 2.0.1 files to \bin \lib and \include{# #}{\n}
+        copy /Y vlc-2.0.1\*.dll bin\
+        xcopy /E /I /C /H /R /Y vlc-2.0.1\plugins\*.* bin\plugins\vlcplugins
+        xcopy /E /I /C /H /R /Y vlc-2.0.1\sdk\include\*.* include
+        copy /Y vlc-2.0.1\sdk\lib\*.lib lib\
+        :: Remove extracted folder, not needed anymore
+        rmdir /S /Q vlc-2.0.1
+        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+        :: Force deployment and clean vlc plugins cache file
+        del /Q "%TUNDRA_BIN%\libvlc.dll"
+        rmdir /S /Q "%TUNDRA_BIN%\plugins\vlcplugins"
+        del /Q "%TUNDRA_BIN%\plugins\plugins*.dat"
+        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    ) ELSE (
+        cecho {0D}VLC 2.0.1 already extracted. Skipping.{# #}{\n}
+    )
+
+    IF NOT EXIST "%TUNDRA_BIN%\libvlc.dll". (
+        cecho {0D}Deploying VLC 2.0.1 DLLs to Tundra bin\{# #}{\n}
+        xcopy /E /I /C /H /R /Y "%DEPS%\vlc\bin\*.*" "%TUNDRA_BIN%"
+        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    ) ELSE (
+        cecho {0D}VLC 2.0.1 already deployed. Skipping.{# #}{\n}
+    )
 ) ELSE (
-   cecho {0D}VLC 2.0.1 already downloaded. Skipping.{# #}{\n}
+   cecho {0D}VLC is not binary-compatible with non-32-bit non-VS2008 binaries, skipping.{# #}{\n}
 )
-
-IF NOT EXIST "%DEPS%\vlc". (
-   CD "%DEPS%"
-   mkdir vlc
-   cecho {0D}Extracting VLC 2.0.1 package to "%DEPS%\vlc\vlc-2.0.1"{# #}{\n}
-   7za x -y -ovlc vlc-2.0.1-win32.zip
-   cd vlc
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   mkdir lib
-   mkdir include
-   mkdir bin\plugins\vlcplugins
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   :: Copy from extraced location to our subfolders
-   cecho {0D}Copying needed VLC 2.0.1 files to \bin \lib and \include{# #}{\n}
-   copy /Y vlc-2.0.1\*.dll bin\
-   xcopy /E /I /C /H /R /Y vlc-2.0.1\plugins\*.* bin\plugins\vlcplugins
-   xcopy /E /I /C /H /R /Y vlc-2.0.1\sdk\include\*.* include
-   copy /Y vlc-2.0.1\sdk\lib\*.lib lib\
-   :: Remove extracted folder, not needed anymore
-   rmdir /S /Q vlc-2.0.1
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   :: Force deployment and clean vlc plugins cache file
-   del /Q "%TUNDRA_BIN%\libvlc.dll"
-   rmdir /S /Q "%TUNDRA_BIN%\plugins\vlcplugins"
-   del /Q "%TUNDRA_BIN%\plugins\plugins*.dat"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-) ELSE (
-   cecho {0D}VLC 2.0.1 already extracted. Skipping.{# #}{\n}
-)
-
-IF NOT EXIST "%TUNDRA_BIN%\libvlc.dll". (
-   cecho {0D}Deploying VLC 2.0.1 DLLs to Tundra bin\{# #}{\n}
-   xcopy /E /I /C /H /R /Y "%DEPS%\vlc\bin\*.*" "%TUNDRA_BIN%"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-) ELSE (
-   cecho {0D}VLC 2.0.1 already deployed. Skipping.{# #}{\n}
-)
-
-:SKIP_VLC
 
 :: QXmpp
 :: Build either Release or Debug

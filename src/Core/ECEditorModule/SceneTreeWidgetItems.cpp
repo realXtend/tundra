@@ -250,8 +250,29 @@ void AssetItem::SetText(IAsset *asset)
     QString name;
     QString subAssetName;
     AssetAPI::ParseAssetRef(asset->Name(), 0, 0, 0, 0, &name, 0, 0, &subAssetName);
+
     if (!subAssetName.isEmpty())
         name = subAssetName;
+    else
+    {
+        // Find the topmost item.
+        QTreeWidgetItem *p = parent();
+        while (p != 0 && p->parent() != 0)
+            p = p->parent();
+
+        // If this item is in a storage item, trim away the base url to leave only the relative path from it.
+        AssetStorageItem *storageItem = dynamic_cast<AssetStorageItem*>(p);
+        if (storageItem && storageItem->Storage().get())
+        {
+            QString storageUrl = storageItem->Storage()->BaseURL();
+            if (asset->Name().startsWith(storageUrl))
+                name = asset->Name().right(asset->Name().length()-storageUrl.length());
+            else
+                name = asset->Name(); // Use full url ref as this asset does not belong to the top level parent storage.
+        }
+        else if (!subAssetName.isEmpty())
+            name = subAssetName;
+    }
 
     // "File missing" red
     // "No disk source" red
@@ -262,7 +283,7 @@ void AssetItem::SetText(IAsset *asset)
     QString unloadedText = QApplication::translate("AssetItem", "Unloaded");
     QString fileMissingText = QApplication::translate("AssetItem", "File missing");
     QString noDiskSourceText = QApplication::translate("AssetItem", "No disk source");
-//    QString readOnlyText = QApplication::translate("AssetItem", "Read-only");
+    //QString readOnlyText = QApplication::translate("AssetItem", "Read-only");
     QString memoryOnlyText = QApplication::translate("AssetItem", "Memory-only");
 
     bool unloaded = !asset->IsLoaded();
@@ -345,9 +366,28 @@ AssetStoragePtr AssetStorageItem::Storage() const
 AssetBundleItem::AssetBundleItem(const AssetBundlePtr &bundle, QTreeWidgetItem *parent) :
     QTreeWidgetItem(parent),
     assetBundle(bundle)
-
 {
-    setText(0, QApplication::translate("AssetBundleItem", "Asset Bundle (") + bundle->Name() + ")");
+    QString name;
+    AssetAPI::ParseAssetRef(bundle->Name(), 0, 0, 0, 0, &name);
+
+    // Find the topmost item.
+    QTreeWidgetItem *p = this->parent();
+    while (p != 0 && p->parent() != 0)
+        p = p->parent();
+
+    // If this item is in a storage item, trim away the base url to leave only the relative path from it.
+    AssetStorageItem *storageItem = dynamic_cast<AssetStorageItem*>(p);
+    if (storageItem && storageItem->Storage().get())
+    {
+        QString storageUrl = storageItem->Storage()->BaseURL();
+        if (bundle->Name().startsWith(storageUrl))
+            name = bundle->Name().right(bundle->Name().length()-storageUrl.length());
+    }
+
+    int subAssetCount = bundle->SubAssetCount();
+    if (subAssetCount != -1)
+        name = QString("%1 (%2 assets)").arg(name).arg(subAssetCount);
+    setText(0, name);
 }
 
 bool AssetBundleItem::Contains(const QString &assetRef) const
@@ -356,6 +396,18 @@ bool AssetBundleItem::Contains(const QString &assetRef) const
     // of time. So lets do a starts with string check. This should not produce misses if AssetAPI has
     // parsed the asset ref correctly to the bundle and the asset itself.
     return (!assetBundle.expired() && assetRef.startsWith(assetBundle.lock()->Name(), Qt::CaseInsensitive));
+}
+
+AssetBundlePtr AssetBundleItem::AssetBundle() const
+{
+    return assetBundle.lock();
+}
+
+AssetStoragePtr AssetBundleItem::Storage() const
+{
+    if (assetBundle.expired())
+        return AssetStoragePtr();
+    return assetBundle.lock()->AssetStorage();
 }
 
 // AssetSelection

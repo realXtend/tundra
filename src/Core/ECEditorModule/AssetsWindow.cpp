@@ -39,7 +39,8 @@ namespace
 
 AssetsWindow::AssetsWindow(Framework *fw, QWidget *parent) :
     QWidget(parent),
-    framework(fw)
+    framework(fw),
+    noStorageItem(0)
 {
     Initialize();
     PopulateTreeWidget();
@@ -48,6 +49,7 @@ AssetsWindow::AssetsWindow(Framework *fw, QWidget *parent) :
 AssetsWindow::AssetsWindow(const QString &assetType_, Framework *fw, QWidget *parent) :
     QWidget(parent),
     framework(fw),
+    noStorageItem(0),
     assetType(assetType_)
 {
     Initialize();
@@ -88,99 +90,59 @@ void AssetsWindow::PopulateTreeWidget()
 {
     treeWidget->clear();
     alreadyAdded.clear();
+
     // Create "No provider" for assets without storage.
-    noProviderItem = new QTreeWidgetItem;
-    noProviderItem->setText(0, tr("No provider"));
+    SAFE_DELETE(noStorageItem);
+    noStorageItem = new QTreeWidgetItem();
+    noStorageItem->setText(0, tr("No Storage"));
 
-    AssetStoragePtr defaultStorage = framework->Asset()->DefaultAssetStorage();
-
+    // Iterate storages
+    CreateStorageItem(framework->Asset()->DefaultAssetStorage());
     foreach(const AssetStoragePtr &storage, framework->Asset()->AssetStorages())
-    {
-        AssetStorageItem *item = new AssetStorageItem(storage);
-        //item->setText(0, storage->ToString());
-        treeWidget->addTopLevelItem(item);
-//        item->setData(0, Qt::UserRole, QVariant(storage->Name()));
+        CreateStorageItem(storage);
 
-        // The current default storage is bolded.
-        if (storage == defaultStorage)
-        {
-            QFont font = item->font(0);
-            font.setBold(true);
-            item->setFont(0, font);
-        }
-    }
+    // Iterate asset bundles
     std::pair<QString, AssetBundlePtr> bundlePair;
     foreach(bundlePair, framework->Asset()->AssetBundles())
-    {
-        AssetBundleItem *item = new AssetBundleItem(bundlePair.second);
-        treeWidget->addTopLevelItem(item);
-    }
+        AddBundle(bundlePair.second);
 
+    // Iterate assets
     std::pair<QString, AssetPtr> pair;
     foreach(pair, framework->Asset()->Assets())
-    {
-        if (alreadyAdded.find(pair.second) == alreadyAdded.end())
-        {
-            // If we're viewing only specific asset type, ignore non-matching assets.
-            if (!assetType.isEmpty() && assetType != pair.second->Type() && assetType != "Binary" )
-                continue;
-            AddAsset(pair.second);
-        }
-    }
+         AddAsset(pair.second);
 
-    treeWidget->addTopLevelItem(noProviderItem);
-    noProviderItem->setHidden(noProviderItem->childCount() == 0);
+    // Add the no provider last and hide if no children.
+    treeWidget->addTopLevelItem(noStorageItem);
+    noStorageItem->setHidden(noStorageItem->childCount() == 0);
 }
 
-void AssetsWindow::AddAsset(AssetPtr asset)
+void AssetsWindow::AddAsset(const AssetPtr &asset)
 {
     if (alreadyAdded.find(asset) != alreadyAdded.end())
-    {
-        LogWarning("Trying to already existing asset " + asset->ToString() + " to AssetsWindow. Ignoring.");
         return;
-    }
+    if (!assetType.isEmpty() && assetType != asset->Type())
+        return;
 
-    AssetItem *item = new AssetItem(asset);
+    AssetItem *item = CreateAssetItem(asset);
+    if (!item)
+        return;
     AddChildren(asset, item);
 
     connect(asset.get(), SIGNAL(Loaded(AssetPtr)), SLOT(UpdateAssetItem(AssetPtr)), Qt::UniqueConnection);
     connect(asset.get(), SIGNAL(Unloaded(IAsset *)), SLOT(UpdateAssetItem(IAsset *)), Qt::UniqueConnection);
     connect(asset.get(), SIGNAL(PropertyStatusChanged(IAsset *)), SLOT(UpdateAssetItem(IAsset *)), Qt::UniqueConnection);
 
-    bool parentItemFound = false;
-    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
-    {
-        if (asset->AssetStorage()) // Inspect storage items only and find the right one.
-        {
-            AssetStorageItem *storageItem = dynamic_cast<AssetStorageItem *>(treeWidget->topLevelItem(i));
-            if (storageItem && storageItem->Storage() == asset->AssetStorage())
-            {
-                storageItem->addChild(item);
-                parentItemFound = true;
-                break;
-            }
-        }
-        else // Inspect asset bundles
-        {
-            AssetBundleItem *bundleItem = dynamic_cast<AssetBundleItem *>(treeWidget->topLevelItem(i));
-            if (bundleItem && bundleItem->Contains(asset->Name()))
-            {
-                bundleItem->addChild(item);
-                parentItemFound = true;
-                break;
-            }
-        }
-    }
-
-    if (!parentItemFound)
-        noProviderItem->addChild(item);
-
-    noProviderItem->setHidden(noProviderItem->childCount() == 0);
+    noStorageItem->setHidden(noStorageItem->childCount() == 0);
 
     // If we have an ongoing search, make sure that the new item is compared too.
     QString searchFilter = searchField->text().trimmed();
-    if (!searchFilter.isEmpty() && searchFilter != tr("Search..."))
+    if (!searchFilter.isEmpty())
         TreeWidgetSearch(treeWidget, 0, searchFilter);
+}
+
+void AssetsWindow::AddBundle(const AssetBundlePtr &bundle)
+{
+    CreateBundleItem(bundle);
 }
 
 void AssetsWindow::RemoveAsset(AssetPtr asset)
@@ -227,7 +189,7 @@ void AssetsWindow::Initialize()
     // Append asset type if we're viewing only assets of specific type.
     if (!assetType.isEmpty())
         setWindowTitle(windowTitle() + ": " + assetType);
-    resize(300, 400);
+    resize(450, 450);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 5, 5, 5);
@@ -238,9 +200,7 @@ void AssetsWindow::Initialize()
     treeWidget->setHeaderHidden(true);
 
     searchField = new QLineEdit(this);
-    searchField->setText(tr("Search..."));
-    searchField->setStyleSheet("color:grey;");
-    searchField->installEventFilter(this);
+    searchField->setPlaceholderText(tr("Search..."));
 
     expandAndCollapseButton = new QPushButton(tr("Expand All"), this);
 
@@ -260,42 +220,6 @@ void AssetsWindow::Initialize()
     connect(treeWidget, SIGNAL(itemCollapsed(QTreeWidgetItem*)), SLOT(CheckTreeExpandStatus(QTreeWidgetItem*)));
     connect(treeWidget, SIGNAL(itemExpanded(QTreeWidgetItem*)), SLOT(CheckTreeExpandStatus(QTreeWidgetItem*)));
     connect(treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(AssetDoubleClicked(QTreeWidgetItem*, int)));
-}
-
-bool AssetsWindow::eventFilter(QObject *obj, QEvent *e)
-{
-    if (searchField && searchField == obj)
-    {
-        switch (e->type())
-        {
-        case QEvent::FocusIn:
-        {
-            QString currentText = searchField->text();
-            if (currentText == tr("Search..."))
-            {
-                searchField->setText("");
-                searchField->setStyleSheet("color:black;");
-            }
-            else if (!currentText.isEmpty())
-            {
-                // Calling selectAll() directly here won't do anything
-                // as the ongoing QFocusEvent will overwrite what it does.
-                QTimer::singleShot(1, searchField, SLOT(selectAll()));
-            }
-            break;
-        }
-        case QEvent::FocusOut:
-            if (searchField->text().simplified().isEmpty())
-            {
-                searchField->setText(tr("Search..."));
-                searchField->setStyleSheet("color:grey;");
-            }
-            break;
-        default:
-            break;
-        }
-    }
-    return QWidget::eventFilter(obj, e);
 }
 
 void AssetsWindow::AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent)
@@ -400,4 +324,137 @@ void AssetsWindow::Cancel()
 {
     emit PickCanceled();
     close();
+}
+
+AssetStorageItem *AssetsWindow::CreateStorageItem(const AssetStoragePtr &storage)
+{
+    for (int i=0; i<treeWidget->topLevelItemCount(); ++i)
+    {
+        AssetStorageItem *existing = dynamic_cast<AssetStorageItem*>(treeWidget->topLevelItem(i));
+        if (existing && storage == existing->Storage())
+            return 0;
+    }
+
+    AssetStorageItem *item = new AssetStorageItem(storage);
+    treeWidget->addTopLevelItem(item);
+
+    if (storage == framework->Asset()->DefaultAssetStorage())
+    {
+        QFont font = item->font(0);
+        font.setBold(true);
+        item->setFont(0, font);
+    }
+    return item;
+}
+
+AssetBundleItem *AssetsWindow::CreateBundleItem(const AssetBundlePtr &bundle)
+{
+    for (int i=0; i<treeWidget->topLevelItemCount(); ++i)
+        if (FindBundleItemRecursive(treeWidget->topLevelItem(i), bundle))
+            return 0;
+
+    QTreeWidgetItem *p = FindParentItem(bundle);
+    AssetBundleItem *item = new AssetBundleItem(bundle, p);
+    p->addChild(item);
+    return item;
+}
+
+AssetItem *AssetsWindow::CreateAssetItem(const AssetPtr &asset)
+{
+    for (int i=0; i<treeWidget->topLevelItemCount(); ++i)
+        if (FindAssetItemRecursive(treeWidget->topLevelItem(i), asset))
+            return 0;
+
+    QTreeWidgetItem *p = FindParentItem(asset);
+    AssetItem *item = new AssetItem(asset, p);
+    p->addChild(item);
+    return item;
+}
+
+AssetBundleItem *AssetsWindow::FindBundleItemRecursive(QTreeWidgetItem *parent, const AssetBundlePtr &bundle)
+{
+    if (!parent || parent->childCount() == 0)
+        return false;
+
+    AssetBundleItem *result = 0;
+    for (int i=0; i<parent->childCount(); ++i)
+    {
+        AssetBundleItem *existing = dynamic_cast<AssetBundleItem*>(parent->child(i));
+        if (existing && existing->AssetBundle() == bundle)
+            result = existing;
+        else
+            result = FindBundleItemRecursive(parent->child(i), bundle);
+        if (result)
+            break;
+    }
+    return result;
+}
+
+AssetBundleItem *AssetsWindow::FindBundleItemRecursive(QTreeWidgetItem *parent, const QString &subAssetRef)
+{
+    if (!parent || parent->childCount() == 0)
+        return false;
+
+    AssetBundleItem *result = 0;
+    for (int i=0; i<parent->childCount(); ++i)
+    {
+        AssetBundleItem *existing = dynamic_cast<AssetBundleItem*>(parent->child(i));
+        if (existing && existing->Contains(subAssetRef))
+            result = existing;
+        else
+            result = FindBundleItemRecursive(parent->child(i), subAssetRef);
+        if (result)
+            break;
+    }
+    return result;
+}
+
+AssetItem *AssetsWindow::FindAssetItemRecursive(QTreeWidgetItem *parent, const AssetPtr &asset)
+{
+    if (!parent || parent->childCount() == 0)
+        return false;
+
+    AssetItem *result = 0;
+    for (int i=0; i<parent->childCount(); ++i)
+    {
+        AssetItem *existing = dynamic_cast<AssetItem*>(parent->child(i));
+        if (existing && existing->Asset() == asset)
+            result = existing;
+        else
+            result = FindAssetItemRecursive(parent->child(i), asset);
+        if (result)
+            break;
+    }
+    return result;
+}
+
+template <typename T>
+QTreeWidgetItem *AssetsWindow::FindParentItem(const T &item)
+{
+    QString subAssetPart;
+    AssetAPI::ParseAssetRef(item->Name(), 0, 0, 0, 0, 0, 0, 0, &subAssetPart);
+
+    for (int i=0; i<treeWidget->topLevelItemCount(); ++i)
+    {
+        AssetStorageItem *existingStorage = dynamic_cast<AssetStorageItem*>(treeWidget->topLevelItem(i));
+        if (existingStorage && existingStorage->Storage() == item->AssetStorage())
+        {
+            // If this is a sub asset to a bundle, find the bundle item from this storage.
+            if (!subAssetPart.isEmpty())
+            {
+                AssetBundleItem *existingBundle = FindBundleItemRecursive(existingStorage, item->Name());
+                if (existingBundle)
+                    return existingBundle;
+            }
+            return existingStorage;
+        }
+    }
+    // If this is a sub asset to a bundle, try to find the bundle also from no storage item.
+    if (!subAssetPart.isEmpty())
+    {
+        AssetBundleItem *existingBundle = FindBundleItemRecursive(noStorageItem, item->Name());
+        if (existingBundle)
+            return existingBundle;
+    }
+    return noStorageItem;
 }

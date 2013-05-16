@@ -46,12 +46,12 @@ struct MsgAssetDiscovery
 
 	inline void SerializeTo(kNet::DataSerializer &dst) const
 	{
-		dst.Add<u8>(assetRef.size());
+		dst.Add<u8>((u8)assetRef.size());
 		if (assetRef.size() > 0)
-			dst.AddArray<s8>(&assetRef[0], assetRef.size());
-		dst.Add<u8>(assetType.size());
+			dst.AddArray<s8>(&assetRef[0], (u32)assetRef.size());
+		dst.Add<u8>((u8)assetType.size());
 		if (assetType.size() > 0)
-			dst.AddArray<s8>(&assetType[0], assetType.size());
+			dst.AddArray<s8>(&assetType[0], (u32)assetType.size());
 	}
 
 	inline void DeserializeFrom(kNet::DataDeserializer &src)
