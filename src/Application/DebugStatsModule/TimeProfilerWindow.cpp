@@ -65,14 +65,25 @@ const QString OGRE_DUMP_FILENAME("profiler-ogre-stats.txt");
 const QString SCENECOMPLEXITY_DUMP_FILENAME("profiler-scene-stats.txt");
 const QString PERFLOGGER_DUMP_FILENAME("profiler-performance-logger.txt");
 
+namespace
+{
+    void CopySelectedItemName(QTreeWidget *treeWidget)
+    {
+        QTreeWidgetItem *item = treeWidget != 0 ? treeWidget->currentItem() : 0;
+        if (!item)
+            return;
+        QClipboard *clipboard = QApplication::clipboard();
+        clipboard->setText(item->text(0));
+    }
+}
+
 TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     QWidget(parent),
     framework_(fw),
-    profilerInTreeMode_(false),
-    profilerShowUnused_(false),
     frameFimeUpdatePosX_(0),
     logThreshold_(100.0f),
-    visibility_(false)
+    visibility_(false),
+    contextMenu_(0)
 {       
     ui_.setupUi(this);
     setWindowTitle(tr("Profiler"));
@@ -91,6 +102,12 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     if (!logDirectory_.exists(DEFAULT_LOG_DIR))
         logDirectory_.mkdir(DEFAULT_LOG_DIR);
     logDirectory_.cd(DEFAULT_LOG_DIR);
+    
+    // Event filters
+    ui_.treeProfilingData->installEventFilter(this);
+    ui_.textureDataTree->installEventFilter(this);
+    ui_.meshDataTree->installEventFilter(this);
+    ui_.materialDataTree->installEventFilter(this);
 
     // Tab change
     connect(ui_.tabWidget, SIGNAL(currentChanged(int)), this, SLOT(RefreshProfilerTabWidget(int)));
@@ -144,14 +161,12 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     connect(ui_.timingBlockFilter, SIGNAL(textEdited(const QString&)), this, SLOT(RefreshTimingPage()));
 
     // Connect buttons
-    connect(ui_.pushButtonToggleTree, SIGNAL(pressed()), this, SLOT(ToggleTreeButtonPressed()));
-    connect(ui_.pushButtonCollapseAll, SIGNAL(pressed()), this, SLOT(CollapseAllButtonPressed()));
-    connect(ui_.pushButtonExpandAll, SIGNAL(pressed()), this, SLOT(ExpandAllButtonPressed()));
-    connect(ui_.pushButtonShowUnused, SIGNAL(pressed()), this, SLOT(ShowUnusedButtonPressed()));
+    connect(ui_.radioButtonFlat, SIGNAL(toggled(bool)), this, SLOT(OnTimingViewModeChanged()));
+    connect(ui_.radioButtonTree, SIGNAL(toggled(bool)), this, SLOT(OnTimingViewModeChanged()));
+    connect(ui_.checkBoxShowUnused, SIGNAL(toggled(bool)), this, SLOT(OnShowUnusedPressed()));
     connect(ui_.pushButtonDumpOgreStats, SIGNAL(pressed()), this, SLOT(DumpOgreResourceStatsToFile()));
     connect(ui_.buttonDumpSceneComplexity, SIGNAL(pressed()), this, SLOT(DumpSceneComplexityToFile()));
     
-    ui_.pushButtonToggleTree->setText(profilerInTreeMode_ ? "Flat View" : "Tree View");
     ui_.pushButtonDumpOgreStats->setText("Dump stats to " + QDir::toNativeSeparators(logDirectory_.absoluteFilePath(OGRE_DUMP_FILENAME)));
     ui_.buttonDumpSceneComplexity->setText("Dump stats to " + QDir::toNativeSeparators(logDirectory_.absoluteFilePath(SCENECOMPLEXITY_DUMP_FILENAME)));
 
@@ -161,31 +176,9 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     ui_.loggerApply->setCheckable(true);
     connect(ui_.loggerApply, SIGNAL(clicked()), this, SLOT(ChangeLoggerThreshold()));
 
-    /// @todo Regression. Reimplement support for meshes and other types
+    /// @todo Regression. Reimplement support for double clicking to inspect assets. Problem is that these are Ogre ref not AssetAPI refs.
     //connect(ui_.meshDataTree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowAsset(QTreeWidgetItem*, int)));
-    connect(ui_.textureDataTree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowAsset(QTreeWidgetItem*, int)));
-
-    // Add a context menu to Textures, Meshes and Materials widgets.
-    ui_.textureDataTree->installEventFilter(this);
-    menuTextureAssets_ = new QMenu(ui_.textureDataTree);
-    menuTextureAssets_->setAttribute(Qt::WA_DeleteOnClose);
-    QAction *copyAssetName = new QAction(tr("Copy"), menuTextureAssets_);
-    connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyTextureAssetName()));
-    menuTextureAssets_->addAction(copyAssetName);
-
-    ui_.meshDataTree->installEventFilter(this);
-    menuMeshAssets_ = new QMenu(ui_.meshDataTree);
-    menuMeshAssets_->setAttribute(Qt::WA_DeleteOnClose);
-    copyAssetName = new QAction(tr("Copy"), menuMeshAssets_);
-    connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMeshAssetName()));
-    menuMeshAssets_->addAction(copyAssetName);
-
-    ui_.materialDataTree->installEventFilter(this);
-    menuMaterialAssets_ = new QMenu(ui_.materialDataTree);
-    menuMaterialAssets_->setAttribute(Qt::WA_DeleteOnClose);
-    copyAssetName = new QAction(tr("Copy"), menuMaterialAssets_);
-    connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMaterialAssetName()));
-    menuMaterialAssets_->addAction(copyAssetName);
+    //connect(ui_.textureDataTree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowAsset(QTreeWidgetItem*, int)));
 
     updateTimer_.setSingleShot(true);
     connect(&updateTimer_, SIGNAL(timeout()), this, SLOT(Refresh()));
@@ -199,6 +192,8 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
 TimeProfilerWindow::~TimeProfilerWindow()
 {
     SaveSettings();
+
+    SAFE_DELETE(contextMenu_);
 }
 
 void TimeProfilerWindow::LoadSettings()
@@ -208,9 +203,12 @@ void TimeProfilerWindow::LoadSettings()
     ui_.tabWidget->setCurrentIndex(framework_->Config()->DeclareSetting(config, "mainPageIndex", 0).toInt());
     ui_.ogreTabWidget->setCurrentIndex(framework_->Config()->DeclareSetting(config, "ogrePageIndex", 0).toInt());
     ui_.comboTimingRefreshInterval->setCurrentIndex(framework_->Config()->DeclareSetting(config, "timingRefreshIntervalIndex", 0).toInt());
-    profilerInTreeMode_ = framework_->Config()->DeclareSetting(config, "timingInTreeMode", false).toBool();
-    profilerShowUnused_ = framework_->Config()->DeclareSetting(config, "timingShowUnused", false).toBool();
+    ui_.radioButtonTree->setChecked(framework_->Config()->DeclareSetting(config, "timingInTreeMode", false).toBool());
     ui_.timingBlockFilter->setText(framework_->Config()->DeclareSetting(config, "timingFilters", "").toString());
+    ui_.checkBoxShowUnused->setChecked(framework_->Config()->DeclareSetting(config, "timingShowUnused", false).toBool());
+    
+    if (!ui_.radioButtonTree->isChecked())
+        ui_.radioButtonFlat->setChecked(true);
 }
 
 void TimeProfilerWindow::SaveSettings()
@@ -220,27 +218,9 @@ void TimeProfilerWindow::SaveSettings()
     framework_->Config()->Write(config, "mainPageIndex", ui_.tabWidget->currentIndex());
     framework_->Config()->Write(config, "ogrePageIndex", ui_.ogreTabWidget->currentIndex());
     framework_->Config()->Write(config, "timingRefreshIntervalIndex", ui_.comboTimingRefreshInterval->currentIndex());
-    framework_->Config()->Write(config, "timingInTreeMode", profilerInTreeMode_);
-    framework_->Config()->Write(config, "timingShowUnused", profilerShowUnused_);
+    framework_->Config()->Write(config, "timingInTreeMode", ui_.radioButtonTree->isChecked());
     framework_->Config()->Write(config, "timingFilters", ui_.timingBlockFilter->text().trimmed());
-}
-
-namespace
-{
-    /// Takes the currentItem() of the given widget and copies the text of its first column to clipboard, if it exists.
-    void CopySelectedItemName(QTreeWidget *treeWidget)
-    {
-        if (!treeWidget)
-            return;
-
-        QTreeWidgetItem *item = treeWidget->currentItem();
-
-        if (!item)
-            return;
-
-        QClipboard *clipboard = QApplication::clipboard();
-        clipboard->setText(item->text(0));
-    }
+    framework_->Config()->Write(config, "timingShowUnused", ui_.checkBoxShowUnused->isChecked());
 }
 
 bool TimeProfilerWindow::eventFilter(QObject *obj, QEvent *event)
@@ -248,13 +228,37 @@ bool TimeProfilerWindow::eventFilter(QObject *obj, QEvent *event)
     if (event->type() == QEvent::ContextMenu)
     {
         QTreeWidget *widget = dynamic_cast<QTreeWidget*>(obj);
-        if (widget == ui_.textureDataTree && menuTextureAssets_)
-            menuTextureAssets_->popup(framework_->Ui()->MainWindow()->mapFromGlobal(QCursor::pos()));
-        if (widget == ui_.meshDataTree && menuMeshAssets_)
-            menuMeshAssets_->popup(framework_->Ui()->MainWindow()->mapFromGlobal(QCursor::pos()));
-        if (widget == ui_.materialDataTree && menuMaterialAssets_)
-            menuMaterialAssets_->popup(framework_->Ui()->MainWindow()->mapFromGlobal(QCursor::pos()));
-
+        if (widget == ui_.textureDataTree)
+        {
+            SAFE_DELETE_LATER(contextMenu_);
+            contextMenu_ = new QMenu();
+            contextMenu_->addAction(tr("Copy name to clipboard"), this, SLOT(CopyTextureAssetName()));            
+            contextMenu_->popup(QCursor::pos());
+        }
+        else if (widget == ui_.meshDataTree)
+        {
+            SAFE_DELETE_LATER(contextMenu_);
+            contextMenu_ = new QMenu();
+            contextMenu_->addAction(tr("Copy name to clipboard"), this, SLOT(CopyMeshAssetName()));            
+            contextMenu_->popup(QCursor::pos());
+        }
+        else if (widget == ui_.materialDataTree)
+        {
+            SAFE_DELETE_LATER(contextMenu_);
+            contextMenu_ = new QMenu();
+            contextMenu_->addAction(tr("Copy name to clipboard"), this, SLOT(CopyMaterialAssetName()));            
+            contextMenu_->popup(QCursor::pos());
+        }
+        else if (widget == ui_.treeProfilingData && ui_.radioButtonTree->isChecked())
+        {
+            SAFE_DELETE_LATER(contextMenu_);
+            contextMenu_ = new QMenu();
+            contextMenu_->addAction(tr("Expand All"), this, SLOT(OnExpandAllPressed()));
+            contextMenu_->addAction(tr("Collapse All"), this, SLOT(OnCollapseAllPressed()));
+            contextMenu_->popup(QCursor::pos());
+        }
+        else
+            return false;
         return true;
     }
     return false;
@@ -290,11 +294,13 @@ void TimeProfilerWindow::ShowAsset(QTreeWidgetItem* item, int column)
 
     framework_->Ui()->EmitContextMenuAboutToOpen(&dummyMenu, targets);
     foreach(QAction* action, dummyMenu.actions())
+    {
         if (action->text() == "Open")
         {
             action->activate(QAction::ActionEvent());
             break;
         }
+    }
 }
 
 void TimeProfilerWindow::RefreshScriptsPage()
@@ -540,49 +546,38 @@ void TimeProfilerWindow::ArrangeOgreDataTree()
     }
 }
 
-void TimeProfilerWindow::ToggleTreeButtonPressed()
+void TimeProfilerWindow::OnTimingViewModeChanged()
 {
-    profilerInTreeMode_ = !profilerInTreeMode_;
     ui_.treeProfilingData->clear();
-    
-    if (profilerInTreeMode_)
-    {
-        RefreshProfilingDataTree(1.f); // The passed 1.f value is bogus, but after the first timed update, the widget will get the proper timings.
-        ui_.pushButtonToggleTree->setText("Flat View");
-    }
+ 
+    // The passed 1.f value is bogus, but after the first timed update, the widget will get the proper timings.
+    if (ui_.radioButtonTree->isChecked())
+        RefreshProfilingDataTree(1.f); 
     else
-    {
-        RefreshProfilingDataList(1.f); // The passed 1.f value is bogus, but after the first timed update, the widget will get the proper timings.
-        ui_.pushButtonToggleTree->setText("Tree View");
-    }
+        RefreshProfilingDataList(1.f);
 }
 
-void TimeProfilerWindow::CollapseAllButtonPressed()
+void TimeProfilerWindow::OnCollapseAllPressed()
 {
     ui_.treeProfilingData->collapseAll();
 }
 
-void TimeProfilerWindow::ExpandAllButtonPressed()
+void TimeProfilerWindow::OnExpandAllPressed()
 {
     ui_.treeProfilingData->expandAll();
 }
 
-void TimeProfilerWindow::ShowUnusedButtonPressed()
+void TimeProfilerWindow::OnShowUnusedPressed()
 {
-    profilerShowUnused_ = !profilerShowUnused_;
     ui_.treeProfilingData->clear();
 
-    if (profilerShowUnused_)
-        ui_.pushButtonShowUnused->setText("Hide Unused");
+    // The passed 1.f value is bogus, but after the first timed update, the widget will get the proper timings.
+    if (ui_.radioButtonTree->isChecked())
+        RefreshProfilingDataTree(1.f);  
     else
-        ui_.pushButtonShowUnused->setText("Show Unused");
+        RefreshProfilingDataList(1.f);
 
-    if (profilerInTreeMode_)
-        RefreshProfilingDataTree(1.f);  // The passed 1.f value is bogus, but after the first timed update, the widget will get the proper timings.
-    else
-        RefreshProfilingDataList(1.f);  // The passed 1.f value is bogus, but after the first timed update, the widget will get the proper timings.
-
-    ExpandAllButtonPressed();
+    OnExpandAllPressed();
 }
 
 void ColorTreeWidgetItemByTime(QTreeWidgetItem *item, float time)
@@ -763,6 +758,8 @@ static QTreeWidgetItem *FindItemByName(QTreeWidget *parent, const char *name)
 
 void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const ProfilerNodeTree *profilerNode, int numFrames, float frameTotalTimeSecs)
 {
+    bool showUnused = ui_.checkBoxShowUnused->isChecked();
+
     const ProfilerNode *parentNode = dynamic_cast<const ProfilerNode*>(profilerNode);
 
     const ProfilerNodeTree::NodeList &children = profilerNode->GetChildren();
@@ -774,7 +771,7 @@ void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const 
 
         QTreeWidgetItem *item = FindItemByName(qtNode, node->Name().c_str());
 
-        if (timings_node && timings_node->num_called_custom_ == 0 && !profilerShowUnused_ && !QString(node->Name().c_str()).startsWith("Thread"))
+        if (timings_node && timings_node->num_called_custom_ == 0 && !showUnused && !QString(node->Name().c_str()).startsWith("Thread"))
         {
             if (item)
                 delete item;
@@ -1202,6 +1199,8 @@ int TimeProfilerWindow::ReadProfilingRefreshInterval()
 void TimeProfilerWindow::OnTimingIntervalChanged()
 {
     ui_.buttonRefresh->setEnabled(ReadProfilingRefreshInterval() <= 0);
+    ui_.buttonRefresh->setVisible(ReadProfilingRefreshInterval() <= 0);
+
     Refresh();
 }
 
@@ -1387,7 +1386,8 @@ void TimeProfilerWindow::DumpSceneComplexityToFile()
 
 void TimeProfilerWindow::Refresh()
 {
-    RefreshProfilerTabWidget();
+    if (isVisible())
+        RefreshProfilerTabWidget();
 }
 
 void TimeProfilerWindow::RefreshTimingPage()
@@ -1404,26 +1404,27 @@ void TimeProfilerWindow::RefreshTimingPage()
     double msecsOccurred = (double)(timeNow - timePrev) * 1000.0 / timerFrequency;
     timePrev = timeNow;
 
-    if (ui_.labelTimings)
+    // Update timings
+    Profiler &profiler = *framework_->GetProfiler();
+    profiler.Lock();
+
+    // We use this node to estimate FPS for display.
+    ProfilerNode *processFrameNode = dynamic_cast<ProfilerNode*>(profiler.FindBlockByName("Framework_ProcessOneFrame"));
+    if (processFrameNode)
     {
-        Profiler &profiler = *framework_->GetProfiler();
-        profiler.Lock();
-
-        int numFrames = 1;
-        ProfilerNode *processFrameNode = dynamic_cast<ProfilerNode*>(profiler.FindBlockByName("Framework_ProcessOneFrame")); // We use this node to estimate FPS for display.
-        char str[256];
-        if (processFrameNode)
-        {
-            numFrames = std::max<int>(processFrameNode->num_called_custom_, 1);
-            sprintf(str, "%.2f FPS (%.2f msecs/frame)", (numFrames * 1000.f / msecsOccurred), msecsOccurred / numFrames);
-        }
-        else
-            sprintf(str, "- FPS");
-        ui_.labelTimings->setText(str);
-        profiler.Release();
+        int numFrames = std::max<int>(processFrameNode->num_called_custom_, 1);
+        ui_.labelTimings->setText(QString("%1 FPS").arg(QString::number((double)(numFrames * 1000.f / msecsOccurred), 'f', 2)));
+        ui_.labelTimings2->setText(QString("(%1 msecs/frame)").arg(QString::number((double)(msecsOccurred / numFrames), 'f', 2)));
     }
+    else
+    {
+        ui_.labelTimings->setText("- FPS");
+        ui_.labelTimings2->setText("");
+    }
+    
+    profiler.Release();
 
-    if (profilerInTreeMode_)
+    if (ui_.radioButtonTree->isChecked())
         RefreshProfilingDataTree(msecsOccurred);
     else
         RefreshProfilingDataList(msecsOccurred);
@@ -1530,10 +1531,9 @@ void TimeProfilerWindow::RefreshProfilingDataTree(float msecsOccurred)
     profiler.Release();
     
     // Filter
-    /// @todo Implement TreeWidgetSearch to take in QStringList of filters, case sensitivity enum and exact match boolean.
     QStringList filters = TimingFilters();
     if (!filters.isEmpty())
-        TreeWidgetSearch(ui_.treeProfilingData, 0, filters.first());
+        TreeWidgetSearch(ui_.treeProfilingData, 0, filters);
     else
         TreeWidgetSearch(ui_.treeProfilingData, 0, "");
 #endif
@@ -1601,6 +1601,7 @@ void TimeProfilerWindow::RefreshProfilingDataList(float msecsOccurred)
 
     ui_.treeProfilingData->clear();
 
+    bool showUnused = ui_.checkBoxShowUnused->isChecked();
     QStringList filters = TimingFilters();
 
     int numFrames = 1;
@@ -1613,7 +1614,7 @@ void TimeProfilerWindow::RefreshProfilingDataList(float msecsOccurred)
         const ProfilerNode *timings_node = *iter;
         assert(timings_node);
 
-        if (timings_node->num_called_custom_ == 0 && !profilerShowUnused_)
+        if (timings_node->num_called_custom_ == 0 && !showUnused)
             continue;
 
         QString profilingBlockName(timings_node->Name().c_str());

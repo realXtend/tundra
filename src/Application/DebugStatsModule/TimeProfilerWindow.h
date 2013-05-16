@@ -66,10 +66,10 @@ private slots:
     
     // UI action handlers.
     void ChangeLoggerThreshold();
-    void ToggleTreeButtonPressed();
-    void CollapseAllButtonPressed();
-    void ExpandAllButtonPressed();
-    void ShowUnusedButtonPressed();
+    void OnTimingViewModeChanged();
+    void OnCollapseAllPressed();
+    void OnExpandAllPressed();
+    void OnShowUnusedPressed();
     
     // Ogre data tree refresh.
     void ArrangeOgreDataTree();
@@ -129,17 +129,14 @@ private:
     /// Log file directory.
     QDir logDirectory_;
 
-    // Popup menus.
-    QMenu *menuTextureAssets_;
-    QMenu *menuMeshAssets_;
-    QMenu *menuMaterialAssets_;
+    // Right click context menu.
+    QMenu *contextMenu_;
 
     // Main update timer.
     QTimer updateTimer_;
 
-    bool profilerInTreeMode_;       ///< If true, profiling data is shown in a tree, otherwise using a flat list.
-    bool profilerShowUnused_;       ///< Show unused profiler blocks.
-    bool visibility_;               ///< Is profiler currently visible (afaik can be false even if widget is showing).
+    // Is profiler currently visible (afaik can be false even if widget is showing).
+    bool visibility_;
     
     float logThreshold_;
     int frameFimeUpdatePosX_;
