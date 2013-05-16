@@ -27,14 +27,17 @@ Tundra uses [CMake] as its build system and depends on various other open source
 
 ### Windows
 
-Visual Studio 2008 and 2010 build environments are currently supported. However, be advised that some of the optional dependencies (f.ex. VLC) are not usable with the newer Visual Studio versions. Make sure that you have the latest Visual Studio Service Packs installed.
+Visual Studio 2008 and 2010 build environments are currently supported. Make sure that you have the latest Visual Studio Service Packs installed.
 
 The Tundra dependencies are acquired and built using an automated build script:  
-1. `cd tools\Windows\VS<XXXX>\` and run `BuildDeps.cmd` (depending on the used Visual Studio version). The build script needs to be run in the Visual Studio Command Prompt for build tools and have several other utilities in your PATH. This script will print information what you need to proceed, follow the instructions carefully. You can abort the script with Ctrl+C at this point and setup your environment.  
-2. Once you are done setting up your build environment, hit any key to continue the script as it instructs. The full depedency build will take about 2-3 hours.  
-3. After the script has completed, the dependencies can be found from /deps (for VS2008), or deps-vsXXXX (for newer VS versions). The needed runtime libraries are automatically copied to /bin.  
-4. Now run `CMakeVSXXXX.bat` which resides in the Tundra's root folder. This script will set up the needed build environment variables for CMake and invoke CMake to generate a tundra.sln solution.  
-5. Build Tundra using the solution file.
+1. `cd tools\Windows\VS<VersionNumber>\`  
+2. Run `BuildDeps_<BuildType>`, or `BuildDepsX64_<BuildType>` (if wanting to do a 64-bit build). RelWithDebInfo is recommended for the common development work.  
+   Note that the build script needs to be executed in the Visual Studio (x64 Win64) Command Prompt for having the required build tools and several other utilities in your PATH.  
+   The build script will print information what you need in order to proceed, follow the instructions carefully. You can abort the script with Ctrl+C at this point and setup your environment.  
+3. Once you are done setting up your build environment, hit any key to continue the script as it instructs. The full depedency build might take up to 2 hours.
+4. After the script has completed, the dependencies can be found from either `deps\` (for 32-bit VS2008 build), or `deps-vs<VersionNumber>-<TargetArchitecture>\` (for other build configuration variants). The needed runtime libraries are automatically copied to `bin\`.  
+5. Now run CMake batch script corresponding to your desired build configration. This script will set up the needed build environment variables for CMake and invoke CMake to generate a tundra.sln solution.  
+6. Build Tundra using the solution file.
 
 ### Linux
 
