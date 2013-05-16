@@ -79,15 +79,184 @@ QTabWidget {
          <attribute name="title">
           <string>Timing</string>
          </attribute>
-         <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="2">
-           <widget class="QPushButton" name="buttonRefresh">
-            <property name="text">
-             <string>Refresh</string>
-            </property>
-           </widget>
+         <layout class="QVBoxLayout" name="verticalLayout_8">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QComboBox" name="comboTimingRefreshInterval">
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>Refresh interval</string>
+              </property>
+              <property name="currentIndex">
+               <number>0</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>Manual</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>10 secs</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>5 secs</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2 secs</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1 sec</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>0.5 secs</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="buttonRefresh">
+              <property name="toolTip">
+               <string>Manual refresh</string>
+              </property>
+              <property name="text">
+               <string>Refresh</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>15</width>
+                <height>1</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButtonTree">
+              <property name="toolTip">
+               <string>Show tree view</string>
+              </property>
+              <property name="text">
+               <string>Tree</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButtonFlat">
+              <property name="toolTip">
+               <string>Show flat view</string>
+              </property>
+              <property name="text">
+               <string>Flat</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBoxShowUnused">
+              <property name="toolTip">
+               <string>Show unused profiler blocks</string>
+              </property>
+              <property name="text">
+               <string>Show unused</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>15</width>
+                <height>1</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="labelTimings">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>fps 1</string>
+              </property>
+              <property name="indent">
+               <number>0</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="labelTimings2">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>fps 2</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="timingBlockFilter">
+              <property name="minimumSize">
+               <size>
+                <width>50</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>150</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>Filter shown profiler blocks. Use comma &quot;,&quot; to separate multiple filter items.</string>
+              </property>
+              <property name="placeholderText">
+               <string>Filter...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
-          <item row="1" column="0" colspan="14">
+          <item>
            <widget class="QTreeWidget" name="treeProfilingData">
             <property name="columnCount">
              <number>13</number>
@@ -158,167 +327,6 @@ QTabWidget {
              </property>
             </column>
            </widget>
-          </item>
-          <item row="0" column="7">
-           <widget class="QPushButton" name="pushButtonShowUnused">
-            <property name="text">
-             <string>Show unused</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="6">
-           <widget class="QPushButton" name="pushButtonExpandAll">
-            <property name="text">
-             <string>Expand all</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="5">
-           <widget class="QPushButton" name="pushButtonCollapseAll">
-            <property name="text">
-             <string>Collapse all</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="4">
-           <widget class="QPushButton" name="pushButtonToggleTree">
-            <property name="text">
-             <string>Tree</string>
-            </property>
-            <property name="autoDefault">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="comboTimingRefreshInterval">
-            <property name="currentIndex">
-             <number>0</number>
-            </property>
-            <item>
-             <property name="text">
-              <string>Manual</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>10 secs</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>5 secs</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>2 secs</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>1 sec</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>0.5 secs</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label">
-            <property name="font">
-             <font>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Refresh interval</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="3">
-           <spacer name="horizontalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>15</width>
-              <height>1</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="0" column="9">
-           <widget class="QLabel" name="labelTimings">
-            <property name="font">
-             <font>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>fps</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="8">
-           <spacer name="horizontalSpacer_4">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>15</width>
-              <height>1</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="0" column="13">
-           <widget class="QLineEdit" name="timingBlockFilter">
-            <property name="minimumSize">
-             <size>
-              <width>50</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>150</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="toolTip">
-             <string>Filter shown profiler blocks. Use comma &quot;,&quot; to separate multiple filter items.</string>
-            </property>
-            <property name="placeholderText">
-             <string>Filter...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="10">
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
           </item>
          </layout>
         </widget>
@@ -1801,8 +1809,8 @@ QTabWidget {
          <attribute name="title">
           <string>Bullet</string>
          </attribute>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="0">
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
            <widget class="QTreeWidget" name="treeBulletStats">
             <column>
              <property name="text">

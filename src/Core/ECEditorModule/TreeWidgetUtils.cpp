@@ -11,58 +11,102 @@
 
 #include "TreeWidgetUtils.h"
 
-void TreeWidgetSearch(QTreeWidget *treeWidget, int column, const QString &filter)
+namespace
 {
-    QString f = filter.trimmed();
-
-    // Negation search?
-    bool negation = false;
-    if (!f.isEmpty() && f[0] == '!')
+    void TreeWidgetSearchHelper(QTreeWidgetItem *root, QSet<QTreeWidgetItem*> &handled, QSet<QTreeWidgetItem*> &matched, bool negation, int column, const QString &filter, bool exactMatch, Qt::CaseSensitivity sensitivity, bool expandItems)
     {
-        f = f.mid(1);
-        negation = true;
-    }
-
-    bool expand = f.size() >= 3;
-    QSet<QTreeWidgetItem *> handled;
-
-    QTreeWidgetItemIterator it(treeWidget);
-    while(*it)
-    {
-        QTreeWidgetItem *item = *it;
-        if (!handled.contains(item))
+        for (int i=0; i<root->childCount(); ++i)
         {
-            if (f.isEmpty())
-            {
-                item->setHidden(false);
-            }
-            else if (item->text(column).contains(f, Qt::CaseInsensitive))
+            QTreeWidgetItem *item = root->child(i);
+            if (item && (!exactMatch && item->text(column).contains(filter, sensitivity)) || (exactMatch && item->text(column).compare(filter, sensitivity) == 0))
             {
                 item->setHidden(negation ? true : false);
-                handled.insert(item);
+                matched << item;
 
-                if (expand)
-                    item->setExpanded(expand);
+                if (expandItems && !item->isHidden())
+                    item->setExpanded(true);
 
                 // Make sure that all the parent items are visible too
                 QTreeWidgetItem *parent = 0, *child = item;
                 while((parent = child->parent()) != 0)
                 {
                     parent->setHidden(negation ? true : false);
-                    handled.insert(parent);
-                    if (expand)
-                        parent->setExpanded(expand);
+                    handled << parent;
+                    if (expandItems && !parent->isHidden())
+                        parent->setExpanded(true);
                     child = parent;
                 }
             }
             else
-            {
-                item->setHidden(negation ? false : true);
-            }
+                TreeWidgetSearchHelper(item, handled, matched, negation, column, filter, exactMatch, sensitivity, expandItems);
         }
-
-        ++it;
     }
+}
+
+QSet<QTreeWidgetItem*> TreeWidgetSearch(QTreeWidget *treeWidget, int column, const QString &filter, bool exactMatch, Qt::CaseSensitivity sensitivity, bool expandItems)
+{
+    return TreeWidgetSearch(treeWidget, column, QStringList() << filter, exactMatch, sensitivity, expandItems);
+}
+
+QSet<QTreeWidgetItem*> TreeWidgetSearch(QTreeWidget *treeWidget, int column, const QStringList &filters, bool exactMatch, Qt::CaseSensitivity sensitivity, bool expandItems)
+{
+    QSet<QTreeWidgetItem *> handled;
+    QSet<QTreeWidgetItem *> matched;
+    
+    foreach(QString filter, filters)
+    {
+        filter = filter.trimmed();
+
+        // Negation search?
+        bool negation = (!filter.isEmpty() && filter[0] == '!');
+        if (negation)
+            filter = filter.mid(1);
+
+        QTreeWidgetItemIterator it(treeWidget);
+        while(*it)
+        {
+            QTreeWidgetItem *item = *it; ++it;
+            
+            // This item has been already handled with a previous filter
+            // but we need to check its children matching this filter.
+            if (handled.contains(item))
+            {
+                if (!filter.isEmpty())
+                    TreeWidgetSearchHelper(item, handled, matched, negation, column, filter, exactMatch, sensitivity, expandItems);
+                continue;
+            }
+            
+            // No filter, show everything.
+            if (filter.isEmpty())
+                item->setHidden(false);
+            // Hit with filter to column text
+            else if ((!exactMatch && item->text(column).contains(filter, sensitivity)) || (exactMatch && item->text(column).compare(filter, sensitivity) == 0))
+            {
+                item->setHidden(negation ? true : false);
+                handled << item;
+                matched << item;
+
+                if (expandItems && !item->isHidden())
+                    item->setExpanded(true);
+
+                // Make sure that all the parent items are visible too
+                QTreeWidgetItem *parent = 0, *child = item;
+                while((parent = child->parent()) != 0)
+                {
+                    parent->setHidden(negation ? true : false);
+                    handled << parent;
+                    if (expandItems && !parent->isHidden())
+                        parent->setExpanded(true);
+                    child = parent;
+                }
+            }
+            // No hit
+            else
+                item->setHidden(negation ? false : true);     
+        }
+    }
+    
+    return matched;
 }
 
 bool TreeWidgetExpandOrCollapseAll(QTreeWidget *treeWidget)
