@@ -113,7 +113,7 @@ private:
     void FillOgreDataTreeItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource, QString drawType);
 
     uint GetNumResources(Ogre::ResourceManager& manager);
-    void GetVerticesAndTrianglesFromMesh(Ogre::Mesh* mesh, uint& vertices, uint& triangles);
+    void GetVerticesAndTrianglesFromMesh(Ogre::Mesh* mesh, size_t& vertices, size_t& triangles);
     void GetMaterialsFromEntity(Ogre::Entity* entity, std::set<Ogre::Material*>& dest);
     void GetTexturesFromMaterials(const std::set<Ogre::Material*>& materials, std::set<Ogre::Texture*>& dest);
     
