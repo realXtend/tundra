@@ -13,7 +13,10 @@ class EC_PhysicsConstraint : public IComponent
     Q_OBJECT
     COMPONENT_NAME("EC_PhysicsConstraint", 53)
 public:
+    /// @cond PRIVATE
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_PhysicsConstraint(Scene* scene);
+    /// @endcond
     virtual ~EC_PhysicsConstraint();
 
     enum ConstraintType
