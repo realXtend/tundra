@@ -12,14 +12,13 @@ using namespace Physics;
 
 EC_PhysicsConstraint::EC_PhysicsConstraint(Scene* scene):
     IComponent(scene),
-    enabled(this, "Enabled", false),
-    type(this, "Constraint type", 0),
-    otherEntity(this, "Other entity", EntityReference()),
-    pivotPointA(this, "Pivot point A", float3::zero),
-    pivotPointB(this, "Pivot point B", float3::zero),
-    upperLimit(this, "Upper limit", 0.f),
-    lowerLimit(this, "Lower limit", 0.f)
-
+    INIT_ATTRIBUTE_VALUE(enabled, "Enabled", false),
+    INIT_ATTRIBUTE_VALUE(type, "Constraint type", 0),
+    INIT_ATTRIBUTE_VALUE(otherEntity, "Other entity", EntityReference()),
+    INIT_ATTRIBUTE_VALUE(pivotPointA, "Pivot point A", float3::zero),
+    INIT_ATTRIBUTE_VALUE(pivotPointB, "Pivot point B", float3::zero),
+    INIT_ATTRIBUTE_VALUE(upperLimit, "Upper limit", 0.f),
+    INIT_ATTRIBUTE_VALUE(lowerLimit, "Lower limit", 0.f)
 {
     static AttributeMetadata constraintTypeMetadata;
     static bool metadataInitialized = false;
