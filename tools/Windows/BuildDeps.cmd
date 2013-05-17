@@ -258,16 +258,16 @@ IF NOT EXIST "%DEPS%\qt\jom\jom.exe". (
 :: Enable OpenSSL in the Qt if OpenSSL build is enabled. For some reason if you 
 :: echo QT_OPENSSL_CONFIGURE inside the IF statement it will always be empty. 
 :: Hence the secondary IF to print it out when build is enabled. Only print these if Qt will be built
-SET QT_ISNSTALL_WEBKIT_DLL_FILENAME="%DEPS%\qt\lib\QtWebKit%POSTFIX_D%4.dll"
+SET QT_INSTALL_WEBKIT_DLL_FILENAME="%DEPS%\qt\lib\QtWebKit%POSTFIX_D%4.dll"
 SET QT_OPENSSL_CONFIGURE=
 IF %BUILD_OPENSSL%==TRUE (
-   IF NOT EXIST %QT_ISNSTALL_WEBKIT_DLL_FILENAME%. cecho {0D}Configuring OpenSSL into the Qt build with:{# #}{\n}
+   IF NOT EXIST %QT_INSTALL_WEBKIT_DLL_FILENAME%. cecho {0D}Configuring OpenSSL into the Qt build with:{# #}{\n}
    SET QT_OPENSSL_CONFIGURE=-openssl -I "%DEPS%\openssl\include" -L "%DEPS%\openssl\lib"
 ) ELSE (
-   IF NOT EXIST %QT_ISNSTALL_WEBKIT_DLL_FILENAME%. cecho {0D}OpenSSL build disabled, not confguring OpenSSL to Qt.{# #}{\n}
+   IF NOT EXIST %QT_INSTALL_WEBKIT_DLL_FILENAME%. cecho {0D}OpenSSL build disabled, not confguring OpenSSL to Qt.{# #}{\n}
 )
 IF %BUILD_OPENSSL%==TRUE (
-   IF NOT EXIST %QT_ISNSTALL_WEBKIT_DLL_FILENAME%. echo '%QT_OPENSSL_CONFIGURE%'
+   IF NOT EXIST %QT_INSTALL_WEBKIT_DLL_FILENAME%. echo '%QT_OPENSSL_CONFIGURE%'
 )
 
 :: Set QMAKESPEC and QTDIR in case we are going to build qt. If we don't do this
@@ -277,7 +277,7 @@ IF %BUILD_OPENSSL%==TRUE (
 set QTDIR=%DEPS%\qt\qt-src-%QT_VER%
 set QMAKESPEC=%QTDIR%\mkspecs\%QT_PLATFORM%
 
-IF NOT EXIST %QT_ISNSTALL_WEBKIT_DLL_FILENAME%. (
+IF NOT EXIST %QT_INSTALL_WEBKIT_DLL_FILENAME%. (
     IF NOT EXIST "%QTDIR%". (
         cecho {0E}Warning: %QTDIR% does not exist, extracting Qt failed?.{# #}{\n}
         GOTO :ERROR
@@ -292,14 +292,13 @@ IF NOT EXIST %QT_ISNSTALL_WEBKIT_DLL_FILENAME%. (
         -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-    cecho {0D}Building %DEBUG_OR_RELEASE% Qt. Please be patient, this will take a while.{# #}{\n}
     IF %USE_JOM%==TRUE (
-        cecho {0D}- Building Qt with jom{# #}{\n}
+        cecho {0D}Building %DEBUG_OR_RELEASE% Qt with jom. Please be patient, this will take a while.{# #}{\n}
         "%DEPS%\qt\jom\jom.exe"
-   ) ELSE (
-        cecho {0D}- Building Qt with nmake{# #}{\n}
+    ) ELSE (
+        cecho {0D}Building %DEBUG_OR_RELEASE% Qt with nmake. Please be patient, this will take a while.{# #}{\n}
         nmake /nologo
-   )
+    )
 
     IF NOT EXIST "%QTDIR%\lib\QtWebKit%POSTFIX_D%4.dll". (
         cecho {0E}Warning: %QTDIR%\lib\QtWebKit%POSTFIX_D%4.dll not present, Qt build failed?.{# #}{\n}
@@ -312,8 +311,8 @@ IF NOT EXIST %QT_ISNSTALL_WEBKIT_DLL_FILENAME%. (
     nmake install
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-    IF NOT EXIST %QT_ISNSTALL_WEBKIT_DLL_FILENAME%. (
-        cecho {0E}Warning: %QT_ISNSTALL_WEBKIT_DLL_FILENAME% not present, Qt install failed?.{# #}{\n}
+    IF NOT EXIST %QT_INSTALL_WEBKIT_DLL_FILENAME%. (
+        cecho {0E}Warning: %QT_INSTALL_WEBKIT_DLL_FILENAME% not present, Qt install failed?.{# #}{\n}
         GOTO :ERROR
     )
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -471,6 +470,7 @@ IF %BUILD_KNET%==TRUE (
     cecho {0D}%BUILD_TYPE% kNet already built and up to date. Skipping.{# #}{\n}
 )
 
+:: QtScriptGenerator
 IF NOT EXIST "%DEPS%\qtscriptgenerator\.git". (
    cecho {0D}Cloning QtScriptGenerator into "%DEPS%\qtscriptgenerator".{# #}{\n}
    cd "%DEPS%"
@@ -480,7 +480,9 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\.git". (
    cecho {0D}QtScriptGenerator already cloned. Skipping.{# #}{\n}
 )
 
-IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xml%POSTFIX_D%.dll". (
+:: 1) QtScriptGenerator's generator executable.
+:: For QtScriptGenerator's generator.exe we only need the release build.
+IF NOT EXIST "%DEPS%\qtscriptgenerator\generator\release\generator.exe". (
     cd "%DEPS%\qtscriptgenerator\generator"
     cecho {0D}Running qmake for QtScriptGenerator.{# #}{\n}
     :: We need to patch pp-iterator.h in order to make it compile with newer Visual Studio versions:
@@ -496,21 +498,26 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xml%POSTFIX_D%.dl
         IF NOT %ERRORLEVEL%==0 GOTO :ERROR
         cecho {0D}Building QtScriptGenerator.{# #}{\n}
         IF %USE_JOM%==TRUE (
-            cecho {0D}- Building QtScriptGenerator with jom{# #}{\n}
+            cecho {0D}- Building QtScriptGenerator with jom. Please be patient, this will take a while.{# #}{\n}
             "%DEPS%\qt\jom\jom.exe"
         ) ELSE (
-            cecho {0D}- Building QtScriptGenerator with nmake{# #}{\n}
+            cecho {0D}- Building QtScriptGenerator with nmake. Please be patient, this will take a while.{# #}{\n}
             nmake /nologo
         )
     )
-    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR    
+)
+:: 2) QtScriptGenerator's qtbindings - the actual bindings.
+IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_webkit%POSTFIX_D%.dll". (
+    cd "%DEPS%\qtscriptgenerator\generator"
     cecho {0D}Executing QtScriptGenerator.{# #}{\n}
     call release\generator
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
     cd ..
     cd qtbindings
 
-    sed -e "s/qtscript_phonon //" -e "s/qtscript_opengl //" -e "s/qtscript_uitools //" -e "s/qtscript_xml_patterns //" < qtbindings.pro > qtbindings.pro.sed
+    sed -e "s/qtscript_phonon //" -e "s/qtscript_opengl //" -e "s/qtscript_uitools //" -e "s/qtscript_xmlpatterns //" < qtbindings.pro > qtbindings.pro.sed
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     del /Q qtbindings.pro
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -527,16 +534,15 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xml%POSTFIX_D%.dl
     copy /Y "%TOOLS%\Mods\qtscript_QWebPluginFactory.cpp" "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit"
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-    cecho {0D}Running qmake for qtbindings plugins.{# #}{\n}
+    cecho {0D}Running qmake for QtBindings plugins.{# #}{\n}
     qmake
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-    cecho {0D}Building qtscript plugins. Please be patient, this will take a while.{# #}{\n}
     IF %USE_JOM%==TRUE (
-        cecho {0D}- Building %DEBUG_OR_RELEASE% qtscript plugins with jom{# #}{\n}
-        "%DEPS%\qt\jom\jom.exe" %DEBUG_OR_RELEASE_LOWERCASE%
+        cecho {0D}- Building %DEBUG_OR_RELEASE% QtBindings with jom. Please be patient, this will take a while.{# #}{\n}
+        "%DEPS%\qt\jom\jom.exe"
     ) ELSE (
-        cecho {0D}- Building %DEBUG_OR_RELEASE% qtscript plugins with nmake{# #}{\n}
-        nmake %DEBUG_OR_RELEASE_LOWERCASE%  /nologo
+        cecho {0D}- Building %DEBUG_OR_RELEASE% QtBindings with nmake. Please be patient, this will take a while.{# #}{\n}
+        nmake /nologo
     )
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR    
 ) ELSE (
@@ -624,10 +630,10 @@ IF NOT EXIST OGREDEPS.sln. (
 )
 
 cecho {0D}Building %BUILD_TYPE% Ogre dependencies. Please be patient, this will take a while.{# #}{\n}
-MSBuild OGREDEPS.sln /p:configuration=%BUILD_TYPE% /nologo /m:%NUMBER_OF_PROCESSORS%
+MSBuild OGREDEPS.sln /p:configuration=%BUILD_TYPE% /nologo /m:%NUMBER_OF_PROCESSORS% /clp:ErrorsOnly
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-MSBuild INSTALL.%VCPROJ_FILE_EXT% /p:configuration=%BUILD_TYPE% /nologo
+MSBuild INSTALL.%VCPROJ_FILE_EXT% /p:configuration=%BUILD_TYPE% /nologo /clp:ErrorsOnly
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 :: Use Intel Thread Building Blocks for Ogre's threading if Boost is not used.
@@ -692,7 +698,7 @@ MSBuild OGRE.sln /p:configuration=%BUILD_TYPE% /nologo /m:%NUMBER_OF_PROCESSORS%
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying %BUILD_TYPE% ogre-safe-nocrashes SDK directory.{# #}{\n}
-MSBuild INSTALL.%VCPROJ_FILE_EXT% /p:configuration=%BUILD_TYPE% /nologo
+MSBuild INSTALL.%VCPROJ_FILE_EXT% /p:configuration=%BUILD_TYPE% /nologo /clp:ErrorsOnly
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying %BUILD_TYPE% Ogre DLLs to Tundra bin\ directory.{# #}{\n}
@@ -784,7 +790,7 @@ IF NOT EXIST "%DEPS%\qt-solutions\qtpropertybrowser\lib\QtSolutions_PropertyBrow
 )
 
 cecho {0D}Deploying %DEBUG_OR_RELEASE% QtPropertyBrowser DLLs.{# #}{\n}
-copy /Y "%DEPS%\qt-solutions\qtpropertybrowser\lib\QtSolutions_PropertyBrowser-head*.dll" "%TUNDRA_BIN%"
+copy /Y "%DEPS%\qt-solutions\qtpropertybrowser\lib\QtSolutions_PropertyBrowser-head%POSTFIX_D%.dll" "%TUNDRA_BIN%"
 
 :: OpenAL
 IF NOT EXIST "%DEPS%\OpenAL\libs\Win32\OpenAL32.lib". (
@@ -948,7 +954,8 @@ IF NOT EXIST "%DEPS%\celt\lib\%DEBUG_OR_RELEASE%\libcelt.lib" (
     IF %TARGET_ARCH%==x64 (
         copy /Y X64\%DEBUG_OR_RELEASE%\libcelt.lib "%DEPS%\celt\lib\%DEBUG_OR_RELEASE%\"
     ) ELSE (
-        copy /Y lib\%DEBUG_OR_RELEASE%\libcelt.lib "%DEPS%\celt\lib\%DEBUG_OR_RELEASE%\"
+        copy /Y %DEBUG_OR_RELEASE%\libcelt.lib "%DEPS%\celt\lib\%DEBUG_OR_RELEASE%\"
+        REM copy /Y lib\%DEBUG_OR_RELEASE%\libcelt.lib "%DEPS%\celt\lib\%DEBUG_OR_RELEASE%\"
     )
 
     :: Copy headers
@@ -1028,10 +1035,10 @@ IF NOT EXIST "%DEPS%\qxmpp\". (
     qmake
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     IF %USE_JOM%==TRUE (
-        cecho {0D}- Building %DEBUG_OR_RELEASE% Qxmpp with jom{# #}{\n}
+        cecho {0D}Building %DEBUG_OR_RELEASE% Qxmpp with jom{# #}{\n}
         "%DEPS%\qt\jom\jom.exe" sub-src-all-ordered %DEBUG_OR_RELEASE_LOWERCASE%
     ) ELSE (
-        cecho {0D}- Building %DEBUG_OR_RELEASE% Qxmpp with nmake{# #}{\n}
+        cecho {0D}Building %DEBUG_OR_RELEASE% Qxmpp with nmake{# #}{\n}
         nmake /nologo sub-src-all-ordered  %DEBUG_OR_RELEASE_LOWERCASE%
     )
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
