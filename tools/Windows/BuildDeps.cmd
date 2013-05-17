@@ -32,16 +32,18 @@ IF NOT !BUILD_TYPE!==%BUILD_TYPE_MINSIZEREL% IF NOT !BUILD_TYPE!==%BUILD_TYPE_RE
     pause
     GOTO :EOF
 )
-:: DEBUG_OR_RELEASE is "debug" for Debug build and "release" for all of the Release variants.
-:: Written in lowercase as this value is passed to Qt configure.
+:: DEBUG_OR_RELEASE and DEBUG_OR_RELEASE_LOWERCASE are "Debug" and "debug" for Debug build and "Release" and "release"
+:: for all of the Release variants. Lowercase version exists for Qt/nmake/jom.
 :: POSTFIX_D, POSTFIX_UNDERSCORE_D and POSTFIX_UNDERSCORE_DEBUG are helpers for performing file copies and checking
 :: for existence of files. In release build these variables are empty.
-set DEBUG_OR_RELEASE=release
+set DEBUG_OR_RELEASE=Release
+set DEBUG_OR_RELEASE_LOWERCASE=release
 set POSTFIX_D=
 set POSTFIX_UNDERSCORE_D=
 set POSTFIX_UNDERSCORE_DEBUG=
 IF %BUILD_TYPE%==Debug (
-    set DEBUG_OR_RELEASE=debug
+    set DEBUG_OR_RELEASE=Debug
+    set DEBUG_OR_RELEASE_LOWERCASE=debug
     set POSTFIX_D=d
     set POSTFIX_UNDERSCORE_D=_d
     set POSTFIX_UNDERSCORE_DEBUG=_debug
@@ -175,6 +177,7 @@ IF NOT EXIST "%DEPS%\openssl\src". (
    cecho {0D}OpenSSL already downloaded. Skipping.{# #}{\n}
 )
 
+:: Todo 32-bit vs. 64-bit check.
 IF NOT EXIST "%DEPS%\openssl\bin\ssleay32.dll". (
     cd "%DEPS%\openssl\src"
     cecho {0D}Configuring OpenSSL build.{# #}{\n}
@@ -198,15 +201,12 @@ IF NOT EXIST "%DEPS%\openssl\bin\ssleay32.dll". (
     REM We (re)built OpenSSL, so delete ssleay32.dll in Tundra bin\ to force DLL deployment below.
     del /Q "%TUNDRA_BIN%\ssleay32.dll"
 ) ELSE (
-   cecho {0D}OpenSSL already built. Skipping.{# #}{\n}
+    cecho {0D}OpenSSL already built. Skipping.{# #}{\n}
 )
 
-IF NOT EXIST "%TUNDRA_BIN%\ssleay32.dll". (
-   cd "%DEPS%"
-   cecho {0D}Deploying OpenSSL DLLs to Tundra bin\{# #}{\n}
-   copy /Y "openssl\bin\*.dll" "%TUNDRA_BIN%"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-)
+cecho {0D}Deploying %TARGET_ARCH% OpenSSL DLLs to Tundra bin\{# #}{\n}
+copy /Y "%DEPS%\openssl\bin\*.dll" "%TUNDRA_BIN%"
+IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 :SKIP_OPENSSL
 
@@ -286,7 +286,7 @@ IF NOT EXIST %QT_ISNSTALL_WEBKIT_DLL_FILENAME%. (
     cd %QTDIR%
     IF EXIST configure.cache. del /Q configure.cache
     cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}
-    configure -platform %QT_PLATFORM% -%DEBUG_OR_RELEASE% -opensource -prefix "%DEPS%\qt" -shared -ltcg ^
+    configure -platform %QT_PLATFORM% -%DEBUG_OR_RELEASE_LOWERCASE% -opensource -prefix "%DEPS%\qt" -shared -ltcg ^
         -no-qt3support -no-opengl -no-openvg -no-dbus -no-phonon -no-phonon-backend -no-multimedia -no-audio-backend ^
         -no-declarative -no-xmlpatterns -nomake examples -nomake demos ^
         -qt-zlib -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff %QT_OPENSSL_CONFIGURE%
@@ -317,11 +317,6 @@ IF NOT EXIST %QT_ISNSTALL_WEBKIT_DLL_FILENAME%. (
         GOTO :ERROR
     )
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-
-   :: We (re)built Qt, so delete QtWebKit4.dll in Tundra bin\ to force DLL deployment below.
-    IF EXIST "%TUNDRA_BIN%\QtWebKit%POSTFIX_D%4.dll". (
-        del /Q "%TUNDRA_BIN%\QtWebKit%POSTFIX_D%4.dll"
-    )
 ) ELSE (
     cecho {0D}Qt already built. Skipping.{# #}{\n}
 )
@@ -332,22 +327,20 @@ set PATH=%DEPS%\qt\bin;%PATH%
 set QMAKESPEC=%DEPS%\qt\mkspecs\%QT_PLATFORM%
 set QTDIR=%DEPS%\qt
 
-IF NOT EXIST "%TUNDRA_BIN%\QtWebKit%POSTFIX_D%4.dll". (
-    cecho {0D}Deploying Qt DLLs to Tundra bin\.{# #}{\n}
-    copy /Y "%DEPS%\qt\bin\*.dll" "%TUNDRA_BIN%"
-    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-    mkdir "%TUNDRA_BIN%\qtplugins"
-    xcopy /E /I /C /H /R /Y "%DEPS%\qt\plugins\*.*" "%TUNDRA_BIN%\qtplugins"
-    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-    :: Clean out some definately not needed Qt DLLs from bin
-    del /Q "%TUNDRA_BIN%\QtCLucene*.dll"
-    del /Q "%TUNDRA_BIN%\QtDesigner*.dll"
-    del /Q "%TUNDRA_BIN%\QtHelp*.dll"
-    del /Q "%TUNDRA_BIN%\QtScriptTools*.dll"
-    del /Q "%TUNDRA_BIN%\QtSql*.dll"
-    del /Q "%TUNDRA_BIN%\QtSvg*.dll"
-    del /Q "%TUNDRA_BIN%\QtTest*.dll"
-)
+cecho {0D}Deploying %DEBUG_OR_RELEASE% Qt DLLs to Tundra bin\.{# #}{\n}
+copy /Y "%DEPS%\qt\bin\*.dll" "%TUNDRA_BIN%"
+IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+IF NOT EXIST "%TUNDRA_BIN%\qtplugins". mkdir "%TUNDRA_BIN%\qtplugins"
+xcopy /E /I /C /H /R /Y "%DEPS%\qt\plugins\*.*" "%TUNDRA_BIN%\qtplugins"
+IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+:: Clean out some definately not needed Qt DLLs from bin
+del /Q "%TUNDRA_BIN%\QtCLucene*.dll"
+del /Q "%TUNDRA_BIN%\QtDesigner*.dll"
+del /Q "%TUNDRA_BIN%\QtHelp*.dll"
+del /Q "%TUNDRA_BIN%\QtScriptTools*.dll"
+del /Q "%TUNDRA_BIN%\QtSql*.dll"
+del /Q "%TUNDRA_BIN%\QtSvg*.dll"
+del /Q "%TUNDRA_BIN%\QtTest*.dll"
 
 :: Bullet physics engine
 :: version 2.81 sp1, svn rev 2613
@@ -386,30 +379,26 @@ IF %USE_BOOST%==FALSE (
 )
 
 IF NOT EXIST "%DEPS%\boost". (
-   cecho {0D}Cloning Boost into "%DEPS%\boost".{# #}{\n}
-   cd "%DEPS%"
-   svn checkout http://svn.boost.org/svn/boost/tags/release/Boost_1_49_0 boost
-   IF NOT EXIST "%DEPS%\boost\.svn" GOTO :ERROR
-   IF NOT EXIST "%DEPS%\boost\boost.css" GOTO :ERROR
-   cd "%DEPS%\boost"
-   cecho {0D}Building Boost build script.{# #}{\n}
-   call bootstrap
+    cecho {0D}Cloning Boost into "%DEPS%\boost".{# #}{\n}
+    cd "%DEPS%"
+    svn checkout http://svn.boost.org/svn/boost/tags/release/Boost_1_49_0 boost
+    IF NOT EXIST "%DEPS%\boost\.svn" GOTO :ERROR
+    IF NOT EXIST "%DEPS%\boost\boost.css" GOTO :ERROR
+    cd "%DEPS%\boost"
+    cecho {0D}Building Boost build script.{# #}{\n}
+    call bootstrap
 
-::   cd "%DEPS%\boost\tools\build\v2"
-::   sed s/"# using msvc ;"/"using msvc : 9.0 ;"/g <user-config.jam >user-config.new.jam
-::
-::   del user-config.jam
-::   rename user-config.new.jam user-config.jam
-   copy /Y "%TOOLS%\Mods\boost-user-config-%VS_VER%.jam" "%DEPS%\boost\tools\build\v2\user-config.jam"
+    :: Copy proper config file depending on the used VS version.
+    copy /Y "%TOOLS%\Mods\boost-user-config-%VS_VER%.jam" "%DEPS%\boost\tools\build\v2\user-config.jam"
 
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   cd "%DEPS%\boost"
-   cecho {0D}Building Boost. Please be patient, this will take a while.{# #}{\n}
-   :: Building boost takes ages, so utilize all cores for the build process
-   call .\b2 -j %NUMBER_OF_PROCESSORS% --without-mpi thread regex stage
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cd "%DEPS%\boost"
+    cecho {0D}Building Boost. Please be patient, this will take a while.{# #}{\n}
+    :: Building boost with single core takes ages, so utilize all cores for the build process
+    call .\b2 -j %NUMBER_OF_PROCESSORS% --without-mpi thread regex stage
 ) ELSE (
-   ::TODO Even if %DEPS%\boost exists, we have no guarantee that boost is built successfully for real
-   cecho {0D}Boost already built. Skipping.{# #}{\n}
+    ::TODO Even if %DEPS%\boost exists, we have no guarantee that boost is built successfully for real
+    cecho {0D}Boost already built. Skipping.{# #}{\n}
 )
 
 :SKIP_BOOST
@@ -442,8 +431,10 @@ IF NOT EXIST "%DEPS%\assimp\bin\%BUILD_TYPE%\assimp%POSTFIX_D%.dll". (
 )
 
 :: Copy the correct runtime to /bin for this run
+cecho {0D}Deploying %BUILD_TYPE% OpenAssetImporter DLL to Tundra bin\ directory.{# #}{\n}
 copy /Y "%DEPS%\assimp\bin\%BUILD_TYPE%\assimp%POSTFIX_D%.dll" "%TUNDRA_BIN%"
 
+:: TODO Remove BUILD_KNET when we don't need to hack kNet's CMakeLists.txt anymore
 set BUILD_KNET=TRUE
 IF NOT EXIST "%DEPS%\kNet\". (
     cecho {0D}Cloning kNet from https://github.com/juj/kNet into "%DEPS%\kNet".{# #}{\n}
@@ -477,7 +468,7 @@ IF %BUILD_KNET%==TRUE (
     MSBuild kNet.sln /p:configuration=%BUILD_TYPE% /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-    cecho {0D}kNet already built and up to date. Skipping.{# #}{\n}
+    cecho {0D}%BUILD_TYPE% kNet already built and up to date. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%DEPS%\qtscriptgenerator\.git". (
@@ -490,70 +481,66 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\.git". (
 )
 
 IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_xml%POSTFIX_D%.dll". (
-   cd "%DEPS%\qtscriptgenerator\generator"
-   cecho {0D}Running qmake for QtScriptGenerator.{# #}{\n}
-   :: We need to patch pp-iterator.h in order to make it compile with newer Visual Studio versions:
-   :: http://stackoverflow.com/questions/2791525/stl-operator-behavior-change-with-visual-studio-2010
-   :: Also cannot use QMake as it results in linker errors, so instead generate vcproj files and build using MSBuild.
-   IF NOT %VS_VER%==vs2008 (
-      copy /Y "%TOOLS%\Mods\QtScriptGenerator_pp-iterator.h" "%DEPS%\qtscriptgenerator\generator\parser\rpp\pp-iterator.h"
-      qmake -tp vc
-      cecho {0D}Building %DEBUG_OR_RELEASE% qtscript plugins. Please be patient, this will take a while.{# #}{\n}
-      MSBuild generator.vcxproj /p:configuration=%DEBUG_OR_RELEASE% /nologo /m:%NUMBER_OF_PROCESSORS%
-   ) ELSE (
-      qmake
-      IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-      cecho {0D}Building QtScriptGenerator.{# #}{\n}
-      IF %USE_JOM%==TRUE (
-         cecho {0D}- Building QtScriptGenerator with jom{# #}{\n}
-         "%DEPS%\qt\jom\jom.exe"
-      ) ELSE (
-         cecho {0D}- Building QtScriptGenerator with nmake{# #}{\n}
-         nmake /nologo
-      )
-   )
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   cecho {0D}Executing QtScriptGenerator.{# #}{\n}
-   call release\generator
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   cd ..
-   cd qtbindings
+    cd "%DEPS%\qtscriptgenerator\generator"
+    cecho {0D}Running qmake for QtScriptGenerator.{# #}{\n}
+    :: We need to patch pp-iterator.h in order to make it compile with newer Visual Studio versions:
+    :: http://stackoverflow.com/questions/2791525/stl-operator-behavior-change-with-visual-studio-2010
+    :: Also cannot use QMake as it results in linker errors, so instead generate vcproj files and build using MSBuild.
+    IF NOT %VS_VER%==vs2008 (
+        copy /Y "%TOOLS%\Mods\QtScriptGenerator_pp-iterator.h" "%DEPS%\qtscriptgenerator\generator\parser\rpp\pp-iterator.h"
+        qmake -tp vc
+        cecho {0D}Building QtScriptGenerator. Please be patient, this will take a while.{# #}{\n}
+        MSBuild generator.vcxproj /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
+    ) ELSE (
+        qmake
+        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+        cecho {0D}Building QtScriptGenerator.{# #}{\n}
+        IF %USE_JOM%==TRUE (
+            cecho {0D}- Building QtScriptGenerator with jom{# #}{\n}
+            "%DEPS%\qt\jom\jom.exe"
+        ) ELSE (
+            cecho {0D}- Building QtScriptGenerator with nmake{# #}{\n}
+            nmake /nologo
+        )
+    )
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cecho {0D}Executing QtScriptGenerator.{# #}{\n}
+    call release\generator
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cd ..
+    cd qtbindings
 
-   sed -e "s/qtscript_phonon //" -e "s/qtscript_opengl //" -e "s/qtscript_uitools //" -e "s/qtscript_xml_patterns //" < qtbindings.pro > qtbindings.pro.sed
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   del /Q qtbindings.pro
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   ren qtbindings.pro.sed qtbindings.pro
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    sed -e "s/qtscript_phonon //" -e "s/qtscript_opengl //" -e "s/qtscript_uitools //" -e "s/qtscript_xml_patterns //" < qtbindings.pro > qtbindings.pro.sed
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    del /Q qtbindings.pro
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    ren qtbindings.pro.sed qtbindings.pro
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-   REM Fix bad script generation for webkit.
-   REM TODO: Could try some sed replacement, but can't make the regex escaping rules work from command line.
-   REM sed -e s/"QWebPluginFactory_Extension_values[] = "/"QWebPluginFactory_Extension_values[1] = "// -e "s/qtscript_QWebPluginFactory_Extension_keys[] = /qtscript_QWebPluginFactory_Extension_keys[1] = //" < "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit\qtscript_QWebPluginFactory.cpp" > "%DEPS%\qtscript_QWebPluginFactory.cpp"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   del "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit\qtscript_QWebPluginFactory.cpp"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   REM move "%DEPS%\qtscript_QWebPluginFactory.cpp" "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit"
-   copy /Y "%TOOLS%\Mods\qtscript_QWebPluginFactory.cpp" "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit"
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    REM Fix bad script generation for webkit.
+    REM TODO: Could try some sed replacement, but can't make the regex escaping rules work from command line.
+    REM sed -e s/"QWebPluginFactory_Extension_values[] = "/"QWebPluginFactory_Extension_values[1] = "// -e "s/qtscript_QWebPluginFactory_Extension_keys[] = /qtscript_QWebPluginFactory_Extension_keys[1] = //" < "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit\qtscript_QWebPluginFactory.cpp" > "%DEPS%\qtscript_QWebPluginFactory.cpp"
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    del "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit\qtscript_QWebPluginFactory.cpp"
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    REM move "%DEPS%\qtscript_QWebPluginFactory.cpp" "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit"
+    copy /Y "%TOOLS%\Mods\qtscript_QWebPluginFactory.cpp" "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit"
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-   cecho {0D}Running qmake for qtbindings plugins.{# #}{\n}
-   qmake
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   cecho {0D}Building qtscript plugins. Please be patient, this will take a while.{# #}{\n}
-   IF %USE_JOM%==TRUE (
-      cecho {0D}- Building qtscript plugins with jom{# #}{\n}
-      "%DEPS%\qt\jom\jom.exe" debug
-      IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-      "%DEPS%\qt\jom\jom.exe" release
-   ) ELSE (
-      cecho {0D}- Building qtscript plugins with nmake{# #}{\n}
-      nmake debug /nologo
-      IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-      nmake release /nologo
-   )
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cecho {0D}Running qmake for qtbindings plugins.{# #}{\n}
+    qmake
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    cecho {0D}Building qtscript plugins. Please be patient, this will take a while.{# #}{\n}
+    IF %USE_JOM%==TRUE (
+        cecho {0D}- Building %DEBUG_OR_RELEASE% qtscript plugins with jom{# #}{\n}
+        "%DEPS%\qt\jom\jom.exe" %DEBUG_OR_RELEASE_LOWERCASE%
+    ) ELSE (
+        cecho {0D}- Building %DEBUG_OR_RELEASE% qtscript plugins with nmake{# #}{\n}
+        nmake %DEBUG_OR_RELEASE_LOWERCASE%  /nologo
+    )
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR    
 ) ELSE (
-   cecho {0D}QtScriptGenerator already built. Skipping.{# #}{\n}
+    cecho {0D}QtScriptGenerator already built. Skipping.{# #}{\n}
 )
 
 IF NOT EXIST "%TUNDRA_BIN%\qtplugins\script\qtscript_core%POSTFIX_D%.dll". (
@@ -684,6 +671,7 @@ IF %USE_BOOST%==FALSE (
 )
 
 :: Copy TBB DLLs.
+cecho {0D}Deploying %DEBUG_OR_RELEASE% %INTEL_ARCH% %VC_VER% TBB DLL to Tundra bin\ directory.{# #}{\n}
 copy /Y "%TBB_HOME%\bin\%INTEL_ARCH%\%VC_VER%\tbb%POSTFIX_UNDERSCORE_DEBUG%.dll" "%TUNDRA_BIN%"
 
 cd "%DEPS%\ogre-safe-nocrashes"
@@ -703,15 +691,12 @@ cecho {0D}Building %BUILD_TYPE% ogre-safe-nocrashes. Please be patient, this wil
 MSBuild OGRE.sln /p:configuration=%BUILD_TYPE% /nologo /m:%NUMBER_OF_PROCESSORS%
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-cecho {0D}Deploying ogre-safe-nocrashes SDK directory.{# #}{\n}
+cecho {0D}Deploying %BUILD_TYPE% ogre-safe-nocrashes SDK directory.{# #}{\n}
 MSBuild INSTALL.%VCPROJ_FILE_EXT% /p:configuration=%BUILD_TYPE% /nologo
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-cecho {0D}Deploying Ogre DLLs to Tundra bin\ directory.{# #}{\n}
+cecho {0D}Deploying %BUILD_TYPE% Ogre DLLs to Tundra bin\ directory.{# #}{\n}
 copy /Y "%DEPS%\ogre-safe-nocrashes\bin\%BUILD_TYPE%\*.dll" "%TUNDRA_BIN%"
-IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-:: TODO CG's debug DLL has no postfix and the DLL will overwritten by release DLL in Tundra bin!
-copy /Y "%DEPS%\ogre-safe-nocrashes\Dependencies\bin\%DEBUG_OR_RELEASE%\cg.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 del /Q "%TUNDRA_BIN%\OgrePaging*.dll"
 del /Q "%TUNDRA_BIN%\OgreRTShaderSystem*.dll"
@@ -745,9 +730,9 @@ cecho {0D}Building %BUILD_TYPE% SkyX. Please be patient, this will take a while.
 MSBuild SKYX.sln /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-cecho {0D}Deploying SkyX DLLs to Tundra bin\.{# #}{\n}
+cecho {0D}Deploying %BUILD_TYPE% SkyX DLL to Tundra bin\.{# #}{\n}
 
-copy /Y "%DEPS%\realxtend-tundra-deps\skyx\bin\%BUILD_TYPE%\*.dll" "%TUNDRA_BIN%"
+copy /Y "%DEPS%\realxtend-tundra-deps\skyx\bin\%BUILD_TYPE%\SkyX%POSTFIX_UNDERSCORE_D%.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 :: Hydrax
@@ -763,7 +748,7 @@ cecho {0D}Building %BUILD_TYPE% Hydrax. Please be patient, this will take a whil
 MSBuild Hydrax.sln /p:configuration=%BUILD_TYPE% /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
-cecho {0D}Deploying Hydrax DLLs to Tundra bin\.{# #}{\n}
+cecho {0D}Deploying %BUILD_TYPE% Hydrax DLL to Tundra bin\.{# #}{\n}
 copy /Y "%DEPS%\realxtend-tundra-deps\hydrax\bin\%BUILD_TYPE%\Hydrax%POSTFIX_D%.dll" "%TUNDRA_BIN%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
@@ -787,25 +772,19 @@ IF NOT EXIST "%DEPS%\qt-solutions\qtpropertybrowser\lib\QtSolutions_PropertyBrow
     qmake
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     IF %USE_JOM%==TRUE (
-        cecho {0D}- Building QtPropertyBrowser with jom{# #}{\n}
-        "%DEPS%\qt\jom\jom.exe"
+        cecho {0D}- Building %DEBUG_OR_RELEASE% QtPropertyBrowser with jom{# #}{\n}
+        "%DEPS%\qt\jom\jom.exe" %DEBUG_OR_RELEASE_LOWERCASE%
     ) ELSE (
-        cecho {0D}- Building QtPropertyBrowser with nmake{# #}{\n}
-        nmake /nologo
+        cecho {0D}- Building %DEBUG_OR_RELEASE% QtPropertyBrowser with nmake{# #}{\n}
+        nmake /nologo %DEBUG_OR_RELEASE_LOWERCASE%
     )
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-    :: Force deployment
-    del /Q "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head%POSTFIX_D%.dll"
 ) ELSE (
     cecho {0D}QtPropertyBrowser already built. Skipping.{# #}{\n}
 )
 
-IF NOT EXIST "%TUNDRA_BIN%\QtSolutions_PropertyBrowser-head.dll". (
-    cecho {0D}Deploying QtPropertyBrowser DLLs.{# #}{\n}
-    copy /Y "%DEPS%\qt-solutions\qtpropertybrowser\lib\QtSolutions_PropertyBrowser-head*.dll" "%TUNDRA_BIN%"
-) ELSE (
-    cecho {0D}QtPropertyBrowser DLLs already deployed. Skipping.{# #}{\n}
-)
+cecho {0D}Deploying %DEBUG_OR_RELEASE% QtPropertyBrowser DLLs.{# #}{\n}
+copy /Y "%DEPS%\qt-solutions\qtpropertybrowser\lib\QtSolutions_PropertyBrowser-head*.dll" "%TUNDRA_BIN%"
 
 :: OpenAL
 IF NOT EXIST "%DEPS%\OpenAL\libs\Win32\OpenAL32.lib". (
@@ -832,7 +811,7 @@ IF NOT EXIST "%DEPS%\ogg\win32\%VS2008_OR_VS2010%\%VS_PLATFORM%\%DEBUG_OR_RELEAS
     MSBuild libogg_static.sln /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-    cecho {0D}Ogg already built. Skipping.{# #}{\n}
+    cecho {0D}%DEBUG_OR_RELEASE% Ogg already built. Skipping.{# #}{\n}
 )
 
 :: Vorbis
@@ -847,7 +826,7 @@ IF NOT EXIST "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%\%VS_PLATFORM%\%DEBUG_OR_REL
     MSBuild vorbis_static.sln /p:configuration=%DEBUG_OR_RELEASE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-    cecho {0D}Vorbis already built. Skipping.{# #}{\n}
+    cecho {0D}%DEBUG_OR_RELEASE% Vorbis already built. Skipping.{# #}{\n}
 )
 
 :: Theora
@@ -867,7 +846,7 @@ IF NOT EXIST "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%\libth
     MSBuild libtheora_static.sln /p:configuration=%THEORA_BUILD_TYPE%  /p:platform="%VS_PLATFORM%" /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-   cecho {0D}Theora already built. Skipping.{# #}{\n}
+   cecho {0D}%THEORA_BUILD_TYPE% Theora already built. Skipping.{# #}{\n}
 )
 
 :: Speex
@@ -878,7 +857,7 @@ IF NOT EXIST "%DEPS%\speex". (
     svn checkout http://svn.xiph.org/trunk/speex/ speex
 )
 
-IF NOT EXIST "%DEPS%\speex\lib\libspeexdsp%POSTFIX_D%.lib". (
+IF NOT EXIST "%DEPS%\speex\lib\%DEBUG_OR_RELEASE%\libspeexdsp%POSTFIX_D%.lib". (
     cd "%DEPS%\speex\win32\VS2008"
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
@@ -891,7 +870,7 @@ IF NOT EXIST "%DEPS%\speex\lib\libspeexdsp%POSTFIX_D%.lib". (
     MSBuild libspeex.sln /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-   cecho {0D}Speex already built. Skipping.{# #}{\n}
+   cecho {0D}%DEBUG_OR_RELEASE% Speex already built. Skipping.{# #}{\n}
 )
 
 :: Google Protocol Buffer
@@ -930,7 +909,7 @@ IF NOT EXIST "%DEPS%\protobuf\vsprojects\%DEBUG_OR_RELEASE%\libprotobuf.lib". (
     MSBuild protobuf.sln /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-   cecho {0D}Google Protobuf already built. Skipping.{# #}{\n}
+   cecho {0D}%DEBUG_OR_RELEASE% Google Protobuf already built. Skipping.{# #}{\n}
 )
 
 :: Celt
@@ -976,7 +955,7 @@ IF NOT EXIST "%DEPS%\celt\lib\%DEBUG_OR_RELEASE%\libcelt.lib" (
     IF NOT EXIST "%DEPS%\celt\include\celt". mkdir "%DEPS%\celt\include\celt"
     copy /Y "*.h" "%DEPS%\celt\include\celt\"
 ) ELSE (
-    cecho {0D}Celt already built. Skipping.{# #}{\n}
+    cecho {0D}%DEBUG_OR_RELEASE% Celt already built. Skipping.{# #}{\n}
 )
 
 :: VLC, only usable with 32-bit VC9 builds.
@@ -1032,34 +1011,34 @@ IF %VS_VER%==vs2008 IF %TARGET_ARCH%==x86 (
 )
 
 :: QXmpp
-:: Build either Release or Debug
 IF NOT EXIST "%DEPS%\qxmpp\". (
-   cecho {0D}Cloning qxmpp into "%DEPS%\qxmpp".{# #}{\n}
-   cd "%DEPS%"
-   svn checkout http://qxmpp.googlecode.com/svn/trunk@r1671 qxmpp
-   IF NOT EXIST "%DEPS%\qxmpp\.svn" GOTO :ERROR
-   cecho {0D}Building QXmpp.{# #}{\n}
-   cd qxmpp
-   sed 's/# DEFINES += QXMPP_USE_SPEEX/DEFINES += QXMPP_USE_SPEEX/g' < src\src.pro > src\temp
-   sed 's/# LIBS += -lspeex/LIBS += -L"..\\\..\\\speex\\\lib\\\libspeex.lib -L"..\\\.\\\speex\\\lib\\\libspeexdsp.lib"/g' < src\temp > src\src.pro
-   sed 's/INCLUDEPATH += $$QXMPP_INCLUDE_DIR $$QXMPP_INTERNAL_INCLUDES/INCLUDEPATH += $$QXMPP_INCLUDE_DIR $$QXMPP_INTERNAL_INCLUDES ..\\\..\\\speex\\\include\nDEPENDPATH += ..\\\..\\\speex/g' < src\src.pro > src\temp
-   mv src\temp src\src.pro
-   sed 's/LIBS += $$QXMPP_LIBS/LIBS += $$QXMPP_LIBS -L"..\\\..\\\speex\\\lib\\\libspeex.lib" -L"..\\\..\\\speex\\\lib\\\libspeexdsp.lib"/g' < tests\tests.pro > tests\temp
-   mv tests\temp tests\tests.pro
-   qmake
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   IF %USE_JOM%==TRUE (
-      cecho {0D}- Building qxmpp with jom{# #}{\n}
-      "%DEPS%\qt\jom\jom.exe" sub-src-all-ordered
-   ) ELSE (
-      cecho {0D}- Building qxmpp with nmake{# #}{\n}
-      nmake /nologo sub-src-all-ordered
-   )
-   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-   IF NOT EXIST "%DEPS%\qxmpp\include\qxmpp". mkdir %DEPS%\qxmpp\include\qxmpp
-   copy /Y "src\*.h" "%DEPS%\qxmpp\include\qxmpp\"
+    cecho {0D}Cloning qxmpp into "%DEPS%\qxmpp".{# #}{\n}
+    cd "%DEPS%"
+    svn checkout http://qxmpp.googlecode.com/svn/trunk@r1671 qxmpp
+    IF NOT EXIST "%DEPS%\qxmpp\.svn" GOTO :ERROR
+
+    cecho {0D}Building %DEBUG_OR_RELEASE% QXmpp.{# #}{\n}
+    cd qxmpp
+    sed 's/# DEFINES += QXMPP_USE_SPEEX/DEFINES += QXMPP_USE_SPEEX/g' < src\src.pro > src\temp
+    sed 's/# LIBS += -lspeex/LIBS += -L"..\\\..\\\speex\\\lib\\\libspeex.lib -L"..\\\.\\\speex\\\lib\\\libspeexdsp.lib"/g' < src\temp > src\src.pro
+    sed 's/INCLUDEPATH += $$QXMPP_INCLUDE_DIR $$QXMPP_INTERNAL_INCLUDES/INCLUDEPATH += $$QXMPP_INCLUDE_DIR $$QXMPP_INTERNAL_INCLUDES ..\\\..\\\speex\\\include\nDEPENDPATH += ..\\\..\\\speex/g' < src\src.pro > src\temp
+    mv src\temp src\src.pro
+    sed 's/LIBS += $$QXMPP_LIBS/LIBS += $$QXMPP_LIBS -L"..\\\..\\\speex\\\lib\\\libspeex.lib" -L"..\\\..\\\speex\\\lib\\\libspeexdsp.lib"/g' < tests\tests.pro > tests\temp
+    mv tests\temp tests\tests.pro
+    qmake
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    IF %USE_JOM%==TRUE (
+        cecho {0D}- Building %DEBUG_OR_RELEASE% Qxmpp with jom{# #}{\n}
+        "%DEPS%\qt\jom\jom.exe" sub-src-all-ordered %DEBUG_OR_RELEASE_LOWERCASE%
+    ) ELSE (
+        cecho {0D}- Building %DEBUG_OR_RELEASE% Qxmpp with nmake{# #}{\n}
+        nmake /nologo sub-src-all-ordered  %DEBUG_OR_RELEASE_LOWERCASE%
+    )
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    IF NOT EXIST "%DEPS%\qxmpp\include\qxmpp". mkdir %DEPS%\qxmpp\include\qxmpp
+    copy /Y "src\*.h" "%DEPS%\qxmpp\include\qxmpp\"
 ) ELSE (
-   cecho {0D}qxmpp already built. Skipping.{# #}{\n}
+    cecho {0D}%DEBUG_OR_RELEASE% QXmpp already built. Skipping.{# #}{\n}
 )
 
 :: ZLIB
@@ -1109,7 +1088,7 @@ IF NOT EXIST "%DEPS%\zlib\lib\%DEBUG_OR_RELEASE%\zlibstat.lib". (
     copy /Y contrib\vstudio\%VC_VER%\%TARGET_ARCH%\ZlibStat%DEBUG_OR_RELEASE%\zlibstat.lib ..\lib\%DEBUG_OR_RELEASE%
     copy /Y *.h ..\include\
 ) ELSE (
-   cecho {0D}zlib %ZLIB_VERSION% already built. Skipping.{# #}{\n}
+   cecho {0D}%DEBUG_OR_RELEASE% zlib %ZLIB_VERSION% already built. Skipping.{# #}{\n}
 )
 
 :: ZZIPLIB
@@ -1151,7 +1130,7 @@ IF NOT EXIST "%DEPS%\zziplib\lib\zziplib%POSTFIX_D%.lib". (
     copy /Y zziplib%POSTFIX_D%.lib ..\..\lib
     copy /Y ..\zzip\*.h ..\..\include\zzip
 ) ELSE (
-   cecho {0D}zziplib %ZZIPLIB_VERSION% already built. Skipping.{# #}{\n}
+    cecho {0D}%DEBUG_OR_RELEASE% zziplib %ZZIPLIB_VERSION% already built. Skipping.{# #}{\n}
 )
 
 echo.
