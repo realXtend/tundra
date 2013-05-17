@@ -421,7 +421,7 @@ IF NOT EXIST "%DEPS%\assimp\". (
     svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk assimp
 )
 
-IF NOT EXIST "%DEPS%\assimp\bin\Release\assimp.dll". (
+IF NOT EXIST "%DEPS%\assimp\bin\%BUILD_TYPE%\assimp.dll". (
     cd "%DEPS%\assimp"
     IF %USE_BOOST%==FALSE (
         :: Tweaks CMakeLists.txt to set ASSIMP_ENABLE_BOOST_WORKAROUND on.
@@ -617,33 +617,37 @@ REM   echo add_subdirectory(RenderSystem_NULL) >> "%DEPS%\ogre-safe-nocrashes\Re
 cecho {0D}Updating RenderSystem_NULL to the newest version in ogre-safe-nocrashes.{# #}{\n}
 xcopy /Q /E /I /C /H /R /Y "%DEPS%\realxtend-tundra-deps\RenderSystem_NULL" "%DEPS%\ogre-safe-nocrashes\RenderSystems\RenderSystem_NULL"
 
-cd "%DEPS%\ogre-safe-nocrashes"
-:: TODO Use newer dependencies when updating Ogre to newer version
-:: http://sourceforge.net/projects/ogre/files/ogre-dependencies-vc%%2B%%2B/1.9/OgreDependencies_MSVC_20120819.zip/download
-IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
-    cecho {0D}Downloading Ogre prebuilt dependencies package.{# #}{\n}
-    wget "http://garr.dl.sourceforge.net/project/ogre/ogre-dependencies-vc%%2B%%2B/1.7/OgreDependencies_MSVC_20101231.zip"
-    IF NOT EXIST OgreDependencies_MSVC_20101231.zip. (
-        cecho {0C}Error downloading Ogre depencencies! Aborting!{# #}{\n}
-        GOTO :ERROR
-    )
-)
-
-IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\Dependencies\src". (
-    cecho {0D}Extracting Ogre prebuilt dependencies package.{# #}{\n}
-    7za x -y OgreDependencies_MSVC_20101231.zip
+:: Ogre dependencies
+IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\ogredeps\.hg". (
+    cecho {0D}Cloning Ogre dependencies from https://bitbucket.org/cabalistic/ogredeps into "%DEPS%\ogre-safe-nocrashes\ogredeps".{# #}{\n}
+    cd "%DEPS%\ogre-safe-nocrashes\"
+    hg clone https://bitbucket.org/cabalistic/ogredeps
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\ogredeps\.hg" GOTO :ERROR
+) ELSE (
+    cecho {0D}Updating Ogre dependencies to the newest version from https://bitbucket.org/cabalistic/ogredeps.{# #}{\n}
+    cd "%DEPS%\ogre-safe-nocrashes\ogredeps"
+    hg pull -u
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 
-    cecho {0D}Building Ogre prebuilt dependencies package. Please be patient, this will take a while.{# #}{\n}
-    MSBuild Dependencies\src\OgreDependencies.%VS_VER%.sln /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+cd "%DEPS%\ogre-safe-nocrashes\ogredeps"
+IF NOT EXIST OGREDEPS.sln. (
+    :: We need modified version for couple of the ogredeps CMakeLists.txts in order to support MinSizeRel and RelWithDebInfo builds.
+    copy /Y "%TOOLS%\Mods\ogredeps_CMakeLists.txt" src\CMakeLists.txt
+    copy /Y "%TOOLS%\Mods\ogredeps_Cg_CMakeLists.txt" src\Cg\CMakeLists.txt
+    cecho {0D}Running CMake for Ogre dependencies.{# #}{\n}
+    IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
+    cmake . -G %GENERATOR% -DOGREDEPS_BUILD_OIS:BOOL=OFF -DCMAKE_INSTALL_PREFIX="%DEPS%\ogre-safe-nocrashes\Dependencies"
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-
-    REM TODO For some reason zlib x64 libs end up to wrong directories, so must copy them manually.
-    IF %TARGET_ARCH%==x64 (
-        copy /Y Dependencies\src\zlib-1.2.3\projects\visualc6\Win32_LIB_%DEBUG_OR_RELEASE%\zlib%POSTFIX_D%.lib Dependencies\lib\%DEBUG_OR_RELEASE%
-    )
 )
+
+cecho {0D}Building %BUILD_TYPE% Ogre dependencies. Please be patient, this will take a while.{# #}{\n}
+MSBuild OGREDEPS.sln /p:configuration=%BUILD_TYPE% /nologo /m:%NUMBER_OF_PROCESSORS%
+IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
+MSBuild INSTALL.%VCPROJ_FILE_EXT% /p:configuration=%BUILD_TYPE% /nologo
+IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 :: Use Intel Thread Building Blocks for Ogre's threading if Boost is not used.
 :: Latest 4.0 is used as 4.1 introduces WIN32 API calls that do not work on windows xp.
@@ -651,6 +655,7 @@ IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\Dependencies\src". (
 set TBB_VERSION=tbb40_20120613oss
 set TBB_HOME=%DEPS%\ogre-safe-nocrashes\Dependencies\tbb
 IF %USE_BOOST%==FALSE (
+    cd "%DEPS%\ogre-safe-nocrashes"
     IF NOT EXIST %TBB_VERSION%_win.zip. (
         cecho {0D}Downloading Intel Thread Building Blocks prebuilt package.{# #}{\n}
         wget "http://threadingbuildingblocks.org/sites/default/files/software_releases/windows/%TBB_VERSION%_win.zip"
@@ -1138,17 +1143,17 @@ IF NOT EXIST "%DEPS%\zziplib". (
 
 IF NOT EXIST "%DEPS%\zziplib\lib\zziplib%POSTFIX_D%.lib". (
     cd "%DEPS%\zziplib"
-    mkdir lib
-    mkdir include\zzip
+    IF NOT EXIST lib. mkdir lib
+    IF NOT EXIST include\zzip. mkdir include\zzip
     cd zziplib-%ZZIPLIB_VERSION%\msvc8
 
     :: Use a custom project file as zziblib does not ship with vs2008 project files.
     :: Additionally its include/lib paths are not proper for it to find our zlib build and it has weird lib name postfixes.
     :: It's nicer to use a tailored file rathern than copy duplicates under the zziblib source tree.
-    cecho {0D}Building zziplib from premade project %TOOLS%\Mods\vs2008-zziplib.vcproj{# #}{\n}
+    cecho {0D}Building %DEBUG_OR_RELEASE% zziplib from premade project %TOOLS%\Mods\vs2008-zziplib.vcproj{# #}{\n}
     copy /Y "%TOOLS%\Mods\vs2008-zziplib.vcproj" zziplib.vcproj
-    IF NOT %VS_VER%==vs2008 VCUpgrade /nologo zziplib.vcproj
-    MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=Debug  /p:platform="%VS_PLATFORM%" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+    IF NOT %VS_VER%==vs2008 IF NOT EXIST zziplib.%VCPROJ_FILE_EXT%. VCUpgrade /nologo zziplib.vcproj
+    MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
 
     :: Copy results to lib/include
     copy /Y zziplib%POSTFIX_D%.lib ..\..\lib
