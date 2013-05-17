@@ -126,7 +126,6 @@ public slots:
     u32 EnabledLogChannels() const;
 
     void ToggleConsole();
-
 private:
     Framework *framework;
     CommandMap commands; ///< Stores all the registered console commands.

@@ -14,7 +14,13 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # If TUNDRA_NO_BOOST is set to TRUE, kNet must also be built without Boost dependecy. In order to make the
 # Tundra build fully free of Boost, you must also build Ogre and AssImp, which depend on Boost by default,
 # with Boost disabled. See the dependencies scripts for instructions how to control this.
-option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." TRUE)
+# On Linux & OS X TUNDRA_NO_BOOST can not yet be used
+if (NOT WIN32)
+    option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." FALSE)
+else ()
+    option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." TRUE)
+endif ()
+
 option(TUNDRA_CPP11_ENABLED "Enables C++11 features on Tundra" FALSE)
 
 if (APPLE)
@@ -229,13 +235,15 @@ if (COMMAND cmake_policy)
     cmake_policy(SET CMP0005 NEW)
 endif()
 
-EXEC_PROGRAM(/usr/bin/sw_vers ARGS -productVersion OUTPUT_VARIABLE OSX_MINOR_VERSION_RAW)
-STRING(REGEX REPLACE "10\\.([0-9]).*" "\\1" MACOSX_VERSION "${OSX_MINOR_VERSION_RAW}")
-if(${MACOSX_VERSION} LESS 6)
-    message(FATAL_ERROR "Unsupported version of OS X: ${OSX_MINOR_VERSION_RAW}")
-    return()
-elseif (${MACOSX_VERSION} LESS 7)
-    set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvm.clang.1_0")
+if (APPLE)
+    EXEC_PROGRAM(/usr/bin/sw_vers ARGS -productVersion OUTPUT_VARIABLE OSX_MINOR_VERSION_RAW)
+    STRING(REGEX REPLACE "10\\.([0-9]).*" "\\1" MACOSX_VERSION "${OSX_MINOR_VERSION_RAW}")
+    if(${MACOSX_VERSION} LESS 6)
+        message(FATAL_ERROR "Unsupported version of OS X: ${OSX_MINOR_VERSION_RAW}")
+        return()
+    elseif (${MACOSX_VERSION} LESS 7)
+        set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvm.clang.1_0")
+    endif()
 endif()
 
 # Detect what compiler we are using on Windows
@@ -367,6 +375,11 @@ use_package(OGRE)
 use_package(QT4)
 if (NOT ANDROID)
     use_package(OPENAL)
+endif()
+
+# OSX / Xcode needs Assimp as a global link directory, as it cannot find libassimp otherwise for eg. modules linking to OgreRenderingModule
+if (APPLE)
+    use_package_assimp()
 endif()
 
 # Convenience macro for including all TundraCore subfolders.

@@ -77,7 +77,7 @@ public:
 
     void SetPos(float x, float y, float z)
     {
-        assume(isfinite(x) && isfinite(y) && isfinite(z));
+        assume(IsFinite(x) && IsFinite(y) && IsFinite(z));
         pos.x = x;
         pos.y = y;
         pos.z = z;
@@ -86,7 +86,7 @@ public:
     /// Direcly sets the rotation angles in euler ZYX convention, in degrees.
     void SetRotation(float x, float y, float z)
     {
-        assume(isfinite(x) && isfinite(y) && isfinite(z));
+        assume(IsFinite(x) && IsFinite(y) && IsFinite(z));
         rot.x = x;
         rot.y = y;
         rot.z = z;
@@ -95,7 +95,7 @@ public:
     /// Set scale. Note! scale cannot contain zero value.
     void SetScale(float x, float y, float z)
     {
-        assume(isfinite(x) && isfinite(y) && isfinite(z));
+        assume(IsFinite(x) && IsFinite(y) && IsFinite(z));
         scale.x = x;
         scale.y = y;
         scale.z = z;

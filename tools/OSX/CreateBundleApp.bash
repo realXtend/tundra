@@ -1,12 +1,13 @@
 #!/bin/bash
 
-# To use this script, first configure these paths!
-qtdir=~/QtSDK/Desktop/Qt/4.8.0/gcc
+# Reconfigure thèse paths if necessary!
 startdir=$(pwd)
-cd ../../naali-deps
+cd ../../deps
 depsdir=$(pwd)
 cd build/ogre-safe-nocrashes
 ogredir=$(pwd)
+cd $depsdir/osx-64/qt
+qtdir=$(pwd)
 cd $startdir
 
 echo "Assuming Qt is found at $qtdir."
@@ -19,7 +20,7 @@ qtlibdir=$qtdir/lib
 qtpluginsdir=$qtdir/plugins
 
 # Establish directories we're working in.
-cd ..
+cd ../..
 startdir=$(pwd)
 echo "Assuming $startdir is the Tundra repository root directory."
 mkdir -p build/Tundra.app/ # Hide errors if path doesn't exist.

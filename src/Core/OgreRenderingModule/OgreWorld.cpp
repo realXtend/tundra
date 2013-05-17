@@ -834,7 +834,7 @@ void OgreWorld::DebugDrawSphere(const float3& center, float radius, int vertices
     std::vector<float3> positions(vertices);
 
     Sphere sphere(center, radius);
-    int actualVertices = sphere.Triangulate(&positions[0], 0, 0, vertices);
+    int actualVertices = sphere.Triangulate(&positions[0], 0, 0, vertices, true);
     for (int i = 0; i < actualVertices; i += 3)
     {
         DebugDrawLine(positions[i], positions[i + 1], clr, depthTest);

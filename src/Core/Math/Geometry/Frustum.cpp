@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
 /** @file Frustum.cpp
 	@author Jukka Jylänki
 	@brief Implementation for the Frustum geometry object. */
+#include "Frustum.h"
 #include "Geometry/AABB.h"
 #include "Circle.h"
 #include "Math/MathFunc.h"
-#include "Frustum.h"
 #include "Geometry/Plane.h"
 #include "Geometry/Line.h"
 #include "Geometry/OBB.h"
@@ -33,12 +33,33 @@
 #include "Math/float3x4.h"
 #include "Math/float4.h"
 #include "Math/Quat.h"
+#include "Algorithm/Random/LCG.h"
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+#include <iostream>
+#endif
+
+#if defined(MATH_TINYXML_INTEROP) && defined(MATH_CONTAINERLIB_SUPPORT)
+#include "Container/UString.h"
+#endif
 
 MATH_BEGIN_NAMESPACE
 
 float Frustum::AspectRatio() const
 {
 	return horizontalFov / verticalFov;
+}
+
+float Frustum::NearPlaneWidth() const
+{
+	///\todo Optimize!
+	return NearPlanePos(-1.f, 0.f).Distance(NearPlanePos(1.f, 0.f));
+}
+
+float Frustum::NearPlaneHeight() const
+{
+	///\todo Optimize!
+	return NearPlanePos(0.f, -1.f).Distance(NearPlanePos(0.f, 1.f));
 }
 
 Plane Frustum::NearPlane() const
@@ -54,7 +75,7 @@ Plane Frustum::FarPlane() const
 Plane Frustum::LeftPlane() const
 {
 	float3 left = Cross(up, front);
-	left.ScaleToLength(tan(horizontalFov*0.5f));
+	left.ScaleToLength(Tan(horizontalFov*0.5f));
 	float3 leftSide = front + left;
 	float3 leftSideNormal = Cross(up, leftSide).Normalized();
 	return Plane(pos, leftSideNormal);
@@ -62,8 +83,8 @@ Plane Frustum::LeftPlane() const
 
 Plane Frustum::RightPlane() const
 {
-	float3 right = Cross(front, up);
-	right.ScaleToLength(tan(horizontalFov*0.5f));
+	float3 right = WorldRight();
+	right.ScaleToLength(Tan(horizontalFov*0.5f));
 	float3 rightSide = front + right;
 	float3 rightSideNormal = Cross(rightSide, up).Normalized();
 	return Plane(pos, rightSideNormal);
@@ -72,7 +93,7 @@ Plane Frustum::RightPlane() const
 Plane Frustum::TopPlane() const
 {
 	float3 topSide = front + Tan(verticalFov * 0.5f) * up;
-	float3 right = Cross(front, up);
+	float3 right = WorldRight();
 	float3 topSideNormal = Cross(right, topSide).Normalized();
 	return Plane(pos, topSideNormal);
 }
@@ -85,14 +106,26 @@ Plane Frustum::BottomPlane() const
 	return Plane(pos, bottomSideNormal);
 }
 
+void Frustum::SetWorldMatrix(const float3x4 &worldTransform)
+{
+	pos = worldTransform.TranslatePart();
+	front = -worldTransform.Col(2); // The camera looks towards -Z axis of the given transform.
+	up = worldTransform.Col(1); // The camera up points towards +Y of the given transform.
+	assume(pos.IsFinite());
+	assume(front.IsNormalized());
+	assume(up.IsNormalized());
+	assume(worldTransform.IsColOrthogonal3()); // Front and up must be orthogonal to each other.
+	assume(EqualAbs(worldTransform.Determinant(), 1.f)); // The matrix cannot contain mirroring.
+}
+
 float3x4 Frustum::WorldMatrix() const
 {
 	assume(up.IsNormalized());
 	assume(front.IsNormalized());
 	float3x4 m;
-	m.SetCol(0, up.Cross(front).Normalized());
+	m.SetCol(0, front.Cross(up).Normalized());
 	m.SetCol(1, up);
-	m.SetCol(2, front);
+	m.SetCol(2, -front);
 	m.SetCol(3, pos);
 	assume(!m.HasNegativeScale());
 	return m;
@@ -115,14 +148,14 @@ float4x4 Frustum::ProjectionMatrix() const
 	assume(type == PerspectiveFrustum || type == OrthographicFrustum);
 	if (type == PerspectiveFrustum)
 	{
-		assume(false && "Not implemented!"); /// @todo Implement.
-		return float4x4();
+#if USE_D3D11
+		return float4x4::D3DPerspProjRH(nearPlaneDistance, farPlaneDistance, NearPlaneWidth(), NearPlaneHeight());
+#else
+		return float4x4::OpenGLPerspProjRH(nearPlaneDistance, farPlaneDistance, NearPlaneWidth(), NearPlaneHeight());
+#endif
 	}
 	else
 	{
-		assume(front.Equals(float3(0,0,1)));
-		assume(up.Equals(float3(0,1,0)));
-		// pos assumed to be in center. ///@todo Remove these assumptions.
 		return float4x4::D3DOrthoProjRH(nearPlaneDistance, farPlaneDistance, orthographicWidth, orthographicHeight);
 	}
 }
@@ -133,17 +166,17 @@ float3 Frustum::NearPlanePos(float x, float y) const
 
 	if (type == PerspectiveFrustum)
 	{
-		float frontPlaneHalfWidth = tan(horizontalFov*0.5f)*nearPlaneDistance;
-		float frontPlaneHalfHeight = tan(verticalFov*0.5f)*nearPlaneDistance;
+		float frontPlaneHalfWidth = Tan(horizontalFov*0.5f)*nearPlaneDistance;
+		float frontPlaneHalfHeight = Tan(verticalFov*0.5f)*nearPlaneDistance;
 		x = x * frontPlaneHalfWidth; // Map [-1,1] to [-width/2, width/2].
 		y = y * frontPlaneHalfHeight;  // Map [-1,1] to [-height/2, height/2].
-		float3 right = Cross(up, front).Normalized();
-		return pos + front * nearPlaneDistance + x * right - y * up;
+		float3 right = WorldRight();
+		return pos + front * nearPlaneDistance + x * right + y * up;
 	}
 	else
 	{
-		float3 right = Cross(up, front).Normalized();
-		return pos + front * nearPlaneDistance 
+		float3 right = WorldRight();
+		return pos + front * nearPlaneDistance
 				   + x * orthographicWidth * 0.5f * right
 				   + y * orthographicHeight * 0.5f * up;
 	}
@@ -160,17 +193,17 @@ float3 Frustum::FarPlanePos(float x, float y) const
 
 	if (type == PerspectiveFrustum)
 	{
-		float farPlaneHalfWidth = tan(horizontalFov*0.5f)*farPlaneDistance;
-		float farPlaneHalfHeight = tan(verticalFov*0.5f)*farPlaneDistance;
+		float farPlaneHalfWidth = Tan(horizontalFov*0.5f)*farPlaneDistance;
+		float farPlaneHalfHeight = Tan(verticalFov*0.5f)*farPlaneDistance;
 		x = x * farPlaneHalfWidth;
 		y = y * farPlaneHalfHeight;
-		float3 right = Cross(up, front).Normalized();
-		return pos + front * farPlaneDistance + x * right - y * up;
+		float3 right = WorldRight();
+		return pos + front * farPlaneDistance + x * right + y * up;
 	}
 	else
 	{
-		float3 right = Cross(up, front).Normalized();
-		return pos + front * farPlaneDistance 
+		float3 right = WorldRight();
+		return pos + front * farPlaneDistance
 				   + x * orthographicWidth * 0.5f * right
 				   + y * orthographicHeight * 0.5f * up;
 	}
@@ -201,22 +234,38 @@ float2 Frustum::ScreenToViewportSpace(const float2 &point, int screenWidth, int 
 	return ScreenToViewportSpace(point.x, point.y, screenWidth, screenHeight);
 }
 
-Ray Frustum::LookAt(float x, float y) const
+Ray Frustum::UnProject(float x, float y) const
 {
+	assume(x >= -1.f);
+	assume(x <= 1.f);
+	assume(y >= -1.f);
+	assume(y <= 1.f);
 	if (type == PerspectiveFrustum)
 	{
 		float3 nearPlanePos = NearPlanePos(x, y);
 		return Ray(pos, (nearPlanePos - pos).Normalized());
 	}
 	else
-		return LookAtFromNearPlane(x, y);
+		return UnProjectFromNearPlane(x, y);
 }
 
-Ray Frustum::LookAtFromNearPlane(float x, float y) const
+LineSegment Frustum::UnProjectLineSegment(float x, float y) const
 {
 	float3 nearPlanePos = NearPlanePos(x, y);
 	float3 farPlanePos = FarPlanePos(x, y);
-	return Ray(nearPlanePos, (farPlanePos - nearPlanePos).Normalized());
+	return LineSegment(nearPlanePos, farPlanePos);
+}
+
+Ray Frustum::UnProjectFromNearPlane(float x, float y) const
+{
+	return UnProjectLineSegment(x, y).ToRay();
+}
+
+float3 Frustum::PointInside(float x, float y, float z) const
+{
+	assume(z >= 0.f);
+	assume(z <= 1.f);
+	return UnProjectLineSegment(x, y).GetPoint(z);
 }
 
 float3 Frustum::Project(const float3 &point) const
@@ -229,9 +278,15 @@ float3 Frustum::Project(const float3 &point) const
 bool Frustum::Contains(const float3 &point) const
 {
 	float3 projected = Project(point);
+#ifdef USE_D3D11
 	return projected.x >= -1.f && projected.x <= 1.f &&
 		projected.y >= -1.f && projected.y <= 1.f &&
 		projected.z >= 0.f && projected.z <= 1.f;
+#else
+	return projected.x >= -1.f && projected.x <= 1.f &&
+		projected.y >= -1.f && projected.y <= 1.f &&
+		projected.z >= -1.f && projected.z <= 1.f;
+#endif
 }
 
 bool Frustum::Contains(const LineSegment &lineSegment) const
@@ -302,8 +357,8 @@ float Frustum::Distance(const float3 &point) const
 
 bool Frustum::IsFinite() const
 {
-	return pos.IsFinite() && front.IsFinite() && up.IsFinite() && isfinite(nearPlaneDistance)
-		&& isfinite(farPlaneDistance) && isfinite(horizontalFov) && isfinite(verticalFov);
+	return pos.IsFinite() && front.IsFinite() && up.IsFinite() && MATH_NS::IsFinite(nearPlaneDistance)
+		&& MATH_NS::IsFinite(farPlaneDistance) && MATH_NS::IsFinite(horizontalFov) && MATH_NS::IsFinite(verticalFov);
 }
 
 Plane Frustum::GetPlane(int faceIndex) const
@@ -326,10 +381,27 @@ float Frustum::Volume() const
 	return ToPolyhedron().Volume();
 }
 
-float3 Frustum::RandomPointInside(LCG & /*rng*/) const
+float3 Frustum::FastRandomPointInside(LCG &rng) const
 {
-	assume(false && "Not implemented!"); /// @todo Implement.
-	return float3();
+	return PointInside(rng.Float(-1.f, 1.f), rng.Float(-1.f, 1.f), rng.Float(0.f, 1.f));
+}
+
+float3 Frustum::UniformRandomPointInside(LCG &rng) const
+{
+	if (type == OrthographicFrustum)
+		return FastRandomPointInside(rng);
+	else
+	{
+		OBB o = MinimalEnclosingOBB();
+		for(int numTries = 0; numTries < 1000; ++numTries)
+		{
+			float3 pt = o.RandomPointInside(rng);
+			if (Contains(pt))
+				return pt;
+		}
+		LOGW("Rejection sampling failed in Frustum::UniformRandomPointInside! Producing a non-uniformly distributed point inside the frustum!");
+		return FastRandomPointInside(rng);
+	}
 }
 
 void Frustum::Translate(const float3 &offset)
@@ -391,6 +463,11 @@ void Frustum::GetPlanes(Plane *outArray) const
 		outArray[i] = GetPlane(i);
 }
 
+float3 Frustum::CenterPoint() const
+{
+	return pos + (nearPlaneDistance + farPlaneDistance) * 0.5f * front;
+}
+
 void Frustum::GetCornerPoints(float3 *outPointArray) const
 {
 	assume(outPointArray);
@@ -400,6 +477,27 @@ void Frustum::GetCornerPoints(float3 *outPointArray) const
 #endif
 	for(int i = 0; i < 8; ++i)
 		outPointArray[i] = CornerPoint(i);
+}
+
+LineSegment Frustum::Edge(int edgeIndex) const
+{
+	assume(0 <= edgeIndex && edgeIndex <= 11);
+	switch(edgeIndex)
+	{
+		default: // For release builds where assume() is disabled, return always the first option if out-of-bounds.
+		case 0: return LineSegment(CornerPoint(0), CornerPoint(1));
+		case 1: return LineSegment(CornerPoint(0), CornerPoint(2));
+		case 2: return LineSegment(CornerPoint(0), CornerPoint(4));
+		case 3: return LineSegment(CornerPoint(1), CornerPoint(3));
+		case 4: return LineSegment(CornerPoint(1), CornerPoint(5));
+		case 5: return LineSegment(CornerPoint(2), CornerPoint(3));
+		case 6: return LineSegment(CornerPoint(2), CornerPoint(6));
+		case 7: return LineSegment(CornerPoint(3), CornerPoint(7));
+		case 8: return LineSegment(CornerPoint(4), CornerPoint(5));
+		case 9: return LineSegment(CornerPoint(4), CornerPoint(6));
+		case 10: return LineSegment(CornerPoint(5), CornerPoint(7));
+		case 11: return LineSegment(CornerPoint(6), CornerPoint(7));
+	}
 }
 
 float3 Frustum::CornerPoint(int cornerIndex) const
@@ -421,8 +519,8 @@ float3 Frustum::CornerPoint(int cornerIndex) const
 
 float3 Frustum::ExtremePoint(const float3 &direction) const
 {
-	float3 mostExtreme;
-	float mostExtremeDist = -FLOAT_MAX;
+	float3 mostExtreme = float3::nan;
+	float mostExtremeDist = -FLT_MAX;
 	for(int i = 0; i < 8; ++i)
 	{
 		float3 pt = CornerPoint(i);
@@ -436,6 +534,15 @@ float3 Frustum::ExtremePoint(const float3 &direction) const
 	return mostExtreme;
 }
 
+void Frustum::ProjectToAxis(const float3 &direction, float &outMin, float &outMax) const
+{
+	///\todo Optimize!
+	float3 minPt = ExtremePoint(-direction);
+	float3 maxPt = ExtremePoint(direction);
+	outMin = Dot(minPt, direction);
+	outMax = Dot(maxPt, direction);
+}
+
 AABB Frustum::MinimalEnclosingAABB() const
 {
 	AABB aabb;
@@ -447,8 +554,12 @@ AABB Frustum::MinimalEnclosingAABB() const
 
 OBB Frustum::MinimalEnclosingOBB() const
 {
+	assume(IsFinite());
+	assume(front.IsNormalized());
+	assume(up.IsNormalized());
+
 	OBB obb;
-	obb.pos = (NearPlanePos(0, 0) + FarPlanePos(0, 0)) * 0.5f;
+	obb.pos = pos + (nearPlaneDistance + farPlaneDistance) * 0.5f * front;
 	obb.axis[1] = up;
 	obb.axis[2] = -front;
 	obb.axis[0] = Cross(obb.axis[1], obb.axis[2]);
@@ -469,14 +580,14 @@ Polyhedron Frustum::ToPolyhedron() const
 		p.v.push_back(CornerPoint(i));
 
 	// Generate the 6 faces of this Frustum.
-	const int faces[6][4] = 
-	{ 
-		{ 0, 1, 3, 2 }, // X-
-		{ 4, 6, 7, 5 }, // X+
-		{ 0, 4, 5, 1 }, // Y-
-		{ 7, 6, 2, 3 }, // Y+
-		{ 0, 2, 6, 4 }, // Z-
-		{ 1, 5, 7, 3 }, // Z+
+	const int faces[6][4] =
+	{
+		{ 0, 2, 3, 1 }, // X-
+		{ 4, 5, 7, 6 }, // X+
+		{ 0, 1, 5, 4 }, // Y-
+		{ 7, 3, 2, 6 }, // Y+
+		{ 0, 4, 6, 2 }, // Z-
+		{ 1, 3, 7, 5 }, // Z+
 	};
 
 	for(int f = 0; f < 6; ++f)
@@ -560,6 +671,22 @@ bool Frustum::Intersects(const Polyhedron &polyhedron) const
 	return this->ToPolyhedron().Intersects(polyhedron);
 }
 
+#if defined(MATH_TINYXML_INTEROP) && defined(MATH_CONTAINERLIB_SUPPORT)
+
+void Frustum::DeserializeFromXml(TiXmlElement *e)
+{
+	type = StrCaseEq(e->Attribute("orthographic"), "true") ? OrthographicFrustum : PerspectiveFrustum;
+	pos = float3::FromString(e->Attribute("pos"));
+	front = float3::FromString(e->Attribute("front"));
+	up = float3::FromString(e->Attribute("up"));
+	e->QueryFloatAttribute("nearPlaneDistance", &nearPlaneDistance);
+	e->QueryFloatAttribute("farPlaneDistance", &farPlaneDistance);
+	e->QueryFloatAttribute("horizontalFov", &horizontalFov);
+	e->QueryFloatAttribute("verticalFov", &verticalFov);
+}
+
+#endif
+
 #ifdef MATH_ENABLE_STL_SUPPORT
 
 std::string FrustumTypeToString(FrustumType t)
@@ -573,8 +700,8 @@ std::string FrustumTypeToString(FrustumType t)
 std::string Frustum::ToString() const
 {
 	char str[256];
-	sprintf(str, "Frustum(%s pos:(%.2f, %.2f, %.2f) front:(%.2f, %.2f, %.2f), up:(%.2f, %.2f, %.2f), near: %.2f, far: %.2f, %s: %.2f, %s: %.2f)", 
-		FrustumTypeToString(type).c_str(), pos.x, pos.y, pos.z, front.x, front.y, front.z, 
+	sprintf(str, "Frustum(%s pos:(%.2f, %.2f, %.2f) front:(%.2f, %.2f, %.2f), up:(%.2f, %.2f, %.2f), near: %.2f, far: %.2f, %s: %.2f, %s: %.2f)",
+		FrustumTypeToString(type).c_str(), pos.x, pos.y, pos.z, front.x, front.y, front.z,
 		up.x, up.y, up.z, nearPlaneDistance, farPlaneDistance,
 		type == OrthographicFrustum ? "ortho width:" : "hFov",
 		horizontalFov,
@@ -582,6 +709,41 @@ std::string Frustum::ToString() const
 		verticalFov);
 	return str;
 }
+
+std::ostream &operator <<(std::ostream &o, const Frustum &frustum)
+{
+	o << frustum.ToString();
+	return o;
+}
+
 #endif
+
+Frustum operator *(const float3x3 &transform, const Frustum &frustum)
+{
+	Frustum f(frustum);
+	f.Transform(transform);
+	return f;
+}
+
+Frustum operator *(const float3x4 &transform, const Frustum &frustum)
+{
+	Frustum f(frustum);
+	f.Transform(transform);
+	return f;
+}
+
+Frustum operator *(const float4x4 &transform, const Frustum &frustum)
+{
+	Frustum f(frustum);
+	f.Transform(transform);
+	return f;
+}
+
+Frustum operator *(const Quat &transform, const Frustum &frustum)
+{
+	Frustum f(frustum);
+	f.Transform(transform);
+	return f;
+}
 
 MATH_END_NAMESPACE

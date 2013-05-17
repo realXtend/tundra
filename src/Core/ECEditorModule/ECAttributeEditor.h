@@ -304,6 +304,7 @@ private slots:
     void SaveOriginalValue();
     void RestoreOriginalValue();
     void OpenEditor();
+    void TextEdited(QString text);
 
 private:
     bool IsAssetEditorAvailable() const;
@@ -337,6 +338,7 @@ private slots:
     void SaveOriginalValue();
     void RestoreOriginalValue();
     void OpenEditor();
+    void TextEdited(QString text);
 
 private:
     bool IsAssetEditorAvailable() const;

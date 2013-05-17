@@ -885,8 +885,8 @@ IF NOT EXIST "%DEPS%\speex\lib\Release\libspeexdsp.lib". (
     :: Also, the libspeexdsp.vcproj poorly outputs the resulted library to the same directory using the same filename
     :: regardless of the used configuration so we must work around that too.
     copy /Y "%TOOLS%\Mods\libspeexdsp.vcproj" libspeexdsp\libspeexdsp.vcproj
-    MSBuild libspeex.sln /p:configuration=Debug /p:platform="%VS_PLATFORM%" /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
-    MSBuild libspeex.sln /p:configuration=Release /p:platform="%VS_PLATFORM%" /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libspeex.sln /p:configuration=Debug /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libspeex.sln /p:configuration=Release /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Speex already built. Skipping.{# #}{\n}

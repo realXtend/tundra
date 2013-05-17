@@ -23,10 +23,10 @@ using namespace OgreRenderer;
 
 EC_ParticleSystem::EC_ParticleSystem(Scene* scene):
     IComponent(scene),
-    particleRef(this, "Particle ref", AssetReference("", "OgreParticle")),
-    castShadows(this, "Cast shadows", false),
-    enabled(this, "Enabled", true),
-    renderingDistance(this, "Rendering distance", 0.0f)
+    INIT_ATTRIBUTE_VALUE(particleRef, "Particle ref", AssetReference("", "OgreParticle")),
+    INIT_ATTRIBUTE_VALUE(castShadows, "Cast shadows", false),
+    INIT_ATTRIBUTE_VALUE(enabled, "Enabled", true),
+    INIT_ATTRIBUTE_VALUE(renderingDistance, "Rendering distance", 0.0f)
 {
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();

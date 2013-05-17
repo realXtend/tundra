@@ -120,7 +120,7 @@ bool LoadOggVorbisFromFileInMemory(const u8 *fileData, size_t numBytes, std::vec
     cb.seek_func = &OggSeekCallback;
     cb.tell_func = &OggTellCallback;
     cb.close_func = 0;
-                   
+    
     int ret = ov_open_callbacks(&src, &vf, 0, 0, cb);
     if (ret < 0)
     {

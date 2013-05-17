@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,18 +15,20 @@
 /** @file float2.cpp
 	@author Jukka Jylänki
 	@brief */
-#ifdef MATH_ENABLE_STL_SUPPORT
-#include <cassert>
-#include <utility>
-#include <algorithm>
-#endif
-#include <stdlib.h>
 #include "Math/float2.h"
+#include <stdlib.h>
 #include "Math/float3.h"
 #include "Math/float4.h"
 #include "Math/MathFunc.h"
 #include "Algorithm/Random/LCG.h"
 #include "assume.h"
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+#include "myassert.h"
+#include <iostream>
+#include <utility>
+#include <algorithm>
+#endif
 
 MATH_BEGIN_NAMESPACE
 
@@ -54,17 +56,17 @@ float2::float2(const float *data)
 }
 
 float *float2::ptr()
-{ 
+{
 	return &x;
-} 
+}
 
 const float *float2::ptr() const
-{ 
+{
 	return &x;
-} 
+}
 
 CONST_WIN32 float float2::At(int index) const
-{ 
+{
 	assume(index >= 0);
 	assume(index < Size);
 #ifndef MATH_ENABLE_INSECURE_OPTIMIZATIONS
@@ -75,7 +77,7 @@ CONST_WIN32 float float2::At(int index) const
 }
 
 float &float2::At(int index)
-{ 
+{
 	assume(index >= 0);
 	assume(index < Size);
 #ifndef MATH_ENABLE_INSECURE_OPTIMIZATIONS
@@ -101,17 +103,45 @@ float4 float2::Swizzled(int i, int j, int k, int l) const
 }
 
 float float2::LengthSq() const
-{ 
+{
 	return x*x + y*y;
 }
 
 float float2::Length() const
-{ 
+{
 	return sqrtf(LengthSq());
 }
 
+void float2::SetFromPolarCoordinates(float theta, float length)
+{
+	x = Cos(theta) * length;
+	y = Sin(theta) * length;
+}
+
+float2 float2::FromPolarCoordinates(float theta, float length)
+{
+	float2 euclidean;
+	euclidean.SetFromPolarCoordinates(theta, length);
+	return euclidean;
+}
+
+float2 float2::ToPolarCoordinates() const
+{
+	float radius = Length();
+	if (radius > 1e-4f)
+		return float2(atan2(y, x), radius);
+	else
+		return float2::zero;
+}
+
+float float2::AimedAngle() const
+{
+	assume(!IsZero());
+	return atan2(y, x);
+}
+
 float float2::Normalize()
-{ 
+{
 	assume(IsFinite());
 	float lengthSq = LengthSq();
 	if (lengthSq > 1e-6f)
@@ -132,6 +162,7 @@ float2 float2::Normalized() const
 	float2 copy = *this;
 	float oldLength = copy.Normalize();
 	assume(oldLength > 0.f && "float2::Normalized() failed!");
+	MARK_UNUSED(oldLength);
 	return copy;
 }
 
@@ -169,7 +200,7 @@ bool float2::IsZero(float epsilonSq) const
 
 bool float2::IsFinite() const
 {
-	return isfinite(x) && isfinite(y);
+	return MATH_NS::IsFinite(x) && MATH_NS::IsFinite(y);
 }
 
 bool float2::IsPerpendicular(const float2 &other, float epsilon) const
@@ -189,14 +220,14 @@ bool float2::Equals(float x_, float y_, float epsilon) const
 
 #ifdef MATH_ENABLE_STL_SUPPORT
 std::string float2::ToString() const
-{ 
+{
 	char str[256];
 	sprintf(str, "(%f, %f)", x, y);
 	return std::string(str);
 }
 
 std::string float2::SerializeToString() const
-{ 
+{
 	char str[256];
 	sprintf(str, "%f %f", x, y);
 	return std::string(str);
@@ -212,6 +243,8 @@ float2 float2::FromString(const char *str)
 		++str;
 	float2 f;
 	f.x = (float)strtod(str, const_cast<char**>(&str));
+	while(*str == ' ' || *str == '\t')
+		++str;
 	if (*str == ',' || *str == ';')
 		++str;
 	f.y = (float)strtod(str, const_cast<char**>(&str));
@@ -410,7 +443,7 @@ void float2::Orthonormalize(float2 &a, float2 &b)
 }
 
 float2 float2::FromScalar(float scalar)
-{ 
+{
 	return float2(scalar, scalar);
 }
 
@@ -480,14 +513,14 @@ void float2::ConvexHull(const float2 *pointArray, int numPoints, std::vector<flo
 	if (numPoints == 0)
 		return;
 	outConvexHull.insert(outConvexHull.end(), pointArray, pointArray + numPoints);
-	int convexHullSize = ConvexHullInPlace(&outConvexHull[0], outConvexHull.size());
+	int convexHullSize = ConvexHullInPlace(&outConvexHull[0], (int)outConvexHull.size());
 	outConvexHull.resize(convexHullSize);
 }
 #endif
 
 #ifdef MATH_ENABLE_STL_SUPPORT
-/** This function implements the Graham's Scan algorithm for finding the convex hull of 
-	a 2D point set. The running time is O(nlogn). For details, see 
+/** This function implements the Graham's Scan algorithm for finding the convex hull of
+	a 2D point set. The running time is O(nlogn). For details, see
 	"Introduction to Algorithms, 2nd ed.", by Cormen, Leiserson, Rivest, p.824, or
 	a lecture by Shai Simonson: http://www.aduni.org/courses/algorithms/index.php?view=cw , lecture 02-13-01. */
 int float2::ConvexHullInPlace(float2 *points, int nPoints)
@@ -514,7 +547,7 @@ int float2::ConvexHullInPlace(float2 *points, int nPoints)
 		bool dropLastPointFromHull = false;
 		if (lineALen >= 1e-5f)
 			lineA /= sqrt(lineALen);
-		else 
+		else
 			dropLastPointFromHull = true;
 		if (lineBLen >= 1e-5f)
 			lineB /= sqrt(lineBLen);
@@ -568,13 +601,12 @@ int float2::ConvexHullInPlace(float2 *points, int nPoints)
 }
 #endif
 
-/** Implementation adapted from Christer Ericson's Real-time Collision Detection, p.111. */
-float float2::MinAreaRect(const float2 *pts, int numPoints, float2 &center, float2 &uDir, float2 &vDir)
+float float2::MinAreaRect(const float2 *pts, int numPoints, float2 &center, float2 &uDir, float2 &vDir, float &minU, float &maxU, float &minV, float &maxV)
 {
 	assume(pts || numPoints == 0);
 	if (!pts)
 		return 0.f;
-	float minArea = FLOAT_MAX;
+	float minArea = FLT_MAX;
 
 	// Loop through all edges formed by pairs of points.
 	for(int i = 0, j = numPoints -1; i < numPoints; j = i, ++i)
@@ -612,6 +644,10 @@ float float2::MinAreaRect(const float2 *pts, int numPoints, float2 &center, floa
 			center = pts[j] + 0.5f * ((min0 + max0) * e0 + (min1 + max1) * e1);
 			uDir = e0;
 			vDir = e1;
+			minU = min0;
+			maxU = max0;
+			minV = min1;
+			maxV = max1;
 		}
 	}
 	return minArea;
