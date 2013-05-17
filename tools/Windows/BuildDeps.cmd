@@ -517,6 +517,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_webkit%POSTFIX_D%
     cd ..
     cd qtbindings
 
+    :: Do not generate bindings for unneeded Qt modules.
     sed -e "s/qtscript_phonon //" -e "s/qtscript_opengl //" -e "s/qtscript_uitools //" -e "s/qtscript_xmlpatterns //" < qtbindings.pro > qtbindings.pro.sed
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     del /Q qtbindings.pro
@@ -527,10 +528,9 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_webkit%POSTFIX_D%
     REM Fix bad script generation for webkit.
     REM TODO: Could try some sed replacement, but can't make the regex escaping rules work from command line.
     REM sed -e s/"QWebPluginFactory_Extension_values[] = "/"QWebPluginFactory_Extension_values[1] = "// -e "s/qtscript_QWebPluginFactory_Extension_keys[] = /qtscript_QWebPluginFactory_Extension_keys[1] = //" < "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit\qtscript_QWebPluginFactory.cpp" > "%DEPS%\qtscript_QWebPluginFactory.cpp"
-    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    REM IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     del "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit\qtscript_QWebPluginFactory.cpp"
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-    REM move "%DEPS%\qtscript_QWebPluginFactory.cpp" "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit"
     copy /Y "%TOOLS%\Mods\qtscript_QWebPluginFactory.cpp" "%DEPS%\qtscriptgenerator\generated_cpp\com_trolltech_qt_webkit"
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
@@ -544,18 +544,14 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_webkit%POSTFIX_D%
         cecho {0D}- Building %DEBUG_OR_RELEASE% QtBindings with nmake. Please be patient, this will take a while.{# #}{\n}
         nmake /nologo
     )
-    IF NOT %ERRORLEVEL%==0 GOTO :ERROR    
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
     cecho {0D}QtScriptGenerator already built. Skipping.{# #}{\n}
 )
 
-IF NOT EXIST "%TUNDRA_BIN%\qtplugins\script\qtscript_core%POSTFIX_D%.dll". (
-   cecho {0D}Deploying QtScript plugin DLLs.{# #}{\n}
-   mkdir "%TUNDRA_BIN%\qtplugins\script"
-   xcopy /Q /E /I /C /H /R /Y "%DEPS%\qtscriptgenerator\plugins\script\*.dll" "%TUNDRA_BIN%\qtplugins\script"
-) ELSE (
-   cecho {0D}QtScript plugin DLLs already deployed. Skipping.{# #}{\n}
-)
+cecho {0D}Deploying QtScript binding plugin DLLs.{# #}{\n}
+IF NOT EXIST "%TUNDRA_BIN%\qtplugins\script" mkdir "%TUNDRA_BIN%\qtplugins\script"
+xcopy /Q /E /I /C /H /R /Y "%DEPS%\qtscriptgenerator\plugins\script\*.dll" "%TUNDRA_BIN%\qtplugins\script"
 
 IF NOT EXIST "%DEPS%\realxtend-tundra-deps\.git". (
     cecho {0D}Cloning realxtend-tundra-deps repository into "%DEPS%\realxtend-tundra-deps".{# #}{\n}
