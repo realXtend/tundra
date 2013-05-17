@@ -148,8 +148,8 @@ echo.
 
 :: OpenSSL
 IF %BUILD_OPENSSL%==FALSE (
-   cecho {0D}Building OpenSSL disabled. Skipping.{# #}{\n}
-   GOTO :SKIP_OPENSSL
+    cecho {0D}Building OpenSSL disabled. Skipping.{# #}{\n}
+    GOTO :SKIP_OPENSSL
 )
 
 IF NOT EXIST "%DEPS%\openssl\src". (
@@ -177,14 +177,14 @@ IF NOT EXIST "%DEPS%\openssl\src". (
    cecho {0D}OpenSSL already downloaded. Skipping.{# #}{\n}
 )
 
-:: Todo 32-bit vs. 64-bit check.
-IF NOT EXIST "%DEPS%\openssl\bin\ssleay32.dll". (
+set OPENSSL_OUTPUT_PREFIX=%DEPS%\openssl\out-%VS_VER%-%TARGET_ARCH%
+IF NOT EXIST "%OPENSSL_OUTPUT_PREFIX%\bin\ssleay32.dll". (
     cd "%DEPS%\openssl\src"
     cecho {0D}Configuring OpenSSL build.{# #}{\n}
     IF %TARGET_ARCH%==x64 (
-        perl Configure VC-WIN64A --prefix=%DEPS%\openssl
+        perl Configure VC-WIN64A --prefix=%OPENSSL_OUTPUT_PREFIX%
     ) ELSE (
-        perl Configure VC-WIN32 --prefix=%DEPS%\openssl
+        perl Configure VC-WIN32 --prefix=%OPENSSL_OUTPUT_PREFIX%
     )
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
@@ -198,8 +198,8 @@ IF NOT EXIST "%DEPS%\openssl\bin\ssleay32.dll". (
     nmake -f ms\ntdll.mak
     nmake -f ms\ntdll.mak install
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-    REM We (re)built OpenSSL, so delete ssleay32.dll in Tundra bin\ to force DLL deployment below.
-    del /Q "%TUNDRA_BIN%\ssleay32.dll"
+    xcopy /E /I /C /H /R /Y "%OPENSSL_OUTPUT_PREFIX%\*.*" "%DEPS%\openssl"
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
     cecho {0D}OpenSSL already built. Skipping.{# #}{\n}
 )
