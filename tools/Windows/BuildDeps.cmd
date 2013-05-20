@@ -546,10 +546,10 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_webkit%POSTFIX_D%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     IF %USE_JOM%==TRUE (
         cecho {0D}- Building %DEBUG_OR_RELEASE% QtBindings with jom. Please be patient, this will take a while.{# #}{\n}
-        "%DEPS%\qt\jom\jom.exe" %DEBUG_OR_RELEASE%
+        "%DEPS%\qt\jom\jom.exe" %DEBUG_OR_RELEASE_LOWERCASE%
     ) ELSE (
         cecho {0D}- Building %DEBUG_OR_RELEASE% QtBindings with nmake. Please be patient, this will take a while.{# #}{\n}
-        nmake /nologo %DEBUG_OR_RELEASE%
+        nmake /nologo %DEBUG_OR_RELEASE_LOWERCASE%
     )
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
