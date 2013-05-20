@@ -453,8 +453,9 @@ IF NOT EXIST "%DEPS%\kNet\". (
 cd "%DEPS%\kNet"
 IF NOT EXIST kNet.sln. (
     cecho {0D}Running cmake for kNet.{# #}{\n}
+
     del /Q CMakeCache.txt
-    cmake . -G %GENERATOR% -DBOOST_ROOT=%BOOST_ROOT% -DUSE_BOOST:BOOL=%USE_BOOST%
+    cmake . -G %GENERATOR% -DBOOST_ROOT=%BOOST_ROOT% -DUSE_BOOST:BOOL=%USE_BOOST% -DUSE_TINYXML:BOOL=FALSE
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     set BUILD_KNET=TRUE
 )
