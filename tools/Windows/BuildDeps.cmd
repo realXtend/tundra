@@ -860,7 +860,7 @@ IF NOT EXIST "%DEPS%\speex". (
     svn checkout http://svn.xiph.org/trunk/speex/ speex
 )
 
-IF NOT EXIST "%DEPS%\speex\lib\%DEBUG_OR_RELEASE%\libspeexdsp%POSTFIX_D%.lib". (
+IF NOT EXIST "%DEPS%\speex\lib\%DEBUG_OR_RELEASE%\libspeexdsp.lib". (
     cd "%DEPS%\speex\win32\VS2008"
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
@@ -870,6 +870,7 @@ IF NOT EXIST "%DEPS%\speex\lib\%DEBUG_OR_RELEASE%\libspeexdsp%POSTFIX_D%.lib". (
     :: Also, the libspeexdsp.vcproj poorly outputs the resulted library to the same directory using the same filename
     :: regardless of the used configuration so we must work around that too.
     copy /Y "%TOOLS%\Mods\libspeexdsp.vcproj" libspeexdsp\libspeexdsp.vcproj
+
     MSBuild libspeex.sln /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
@@ -1068,10 +1069,10 @@ IF NOT EXIST "%DEPS%\zlib". (
 
 IF NOT EXIST "%DEPS%\zlib\lib\%DEBUG_OR_RELEASE%\zlibstat.lib". (
     cd "%DEPS%\zlib"
-    mkdir lib
-    mkdir lib\Release
-    mkdir lib\Debug
-    mkdir include
+    IF NOT EXIST lib. mkdir lib
+    IF NOT EXIST lib\Release. mkdir lib\Release
+    IF NOT EXIST lib\Debug. mkdir lib\Debug
+    IF NOT EXIST include. mkdir include
     cd zlib-%ZLIB_VERSION%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
