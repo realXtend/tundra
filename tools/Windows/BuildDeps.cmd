@@ -453,13 +453,6 @@ IF NOT EXIST "%DEPS%\kNet\". (
 cd "%DEPS%\kNet"
 IF NOT EXIST kNet.sln. (
     cecho {0D}Running cmake for kNet.{# #}{\n}
-
-    REM TODO/NOTE: USE_BOOST not possible to configure from command-line with kNet's
-    REM default (stable) branch yet, so tweak the CMakeLists.txt manually for now.
-    sed s/"set(USE_BOOST TRUE)"/"option(USE_BOOST \"Specifies whether Boost is used.\" TRUE)"/g <CMakeLists.txt >CMakeLists.txt.sed
-    del CMakeLists.txt
-    rename CMakeLists.txt.sed CMakeLists.txt
-
     del /Q CMakeCache.txt
     cmake . -G %GENERATOR% -DBOOST_ROOT=%BOOST_ROOT% -DUSE_BOOST:BOOL=%USE_BOOST%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
