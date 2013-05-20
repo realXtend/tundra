@@ -353,6 +353,13 @@ IF NOT EXIST "%DEPS%\bullet\". (
 
 IF NOT EXIST "%DEPS%\bullet\lib\%BUILD_TYPE%\BulletCollision.lib". (
     cd "%DEPS%\bullet\"
+    :: If the CMake generator has changed from the previous run, delete the cache file.
+    :: TODO As the 32-bit and 64-bit dependencies are already in their own dedicated directories, this logic might not be needed. 
+    findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
+    IF NOT %ERRORLEVEL%==0 (
+        IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
+        IF EXIST BULLET_PHYSICS.sln. del /Q BULLET_PHYSICS.sln
+    )
     IF NOT EXIST BULLET_PHYSICS.sln. (
         cecho {0D}Running CMake for Bullet.{# #}{\n}
         IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
@@ -419,6 +426,13 @@ IF NOT EXIST "%DEPS%\assimp\bin\%BUILD_TYPE%\assimp.dll". (
         rename CMakeLists.txt.sed CMakeLists.txt
     )
 
+    :: If the CMake generator has changed from the previous run, delete the cache file.
+    findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
+    IF NOT %ERRORLEVEL%==0 (
+        IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
+        IF EXIST Assimp.sln. del /Q Assimp.sln
+    )
+
     IF NOT EXIST Assimp.sln. (
         cecho {0D}Running CMake for OpenAssetImport.{# #}{\n}
         cmake -G %GENERATOR%
@@ -452,6 +466,12 @@ IF NOT EXIST "%DEPS%\kNet\". (
 )
 
 cd "%DEPS%\kNet"
+:: If the CMake generator has changed from the previous run, delete the cache file.
+findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
+IF NOT %ERRORLEVEL%==0 (
+    IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
+    IF EXIST kNet.sln. del /Q kNet.sln
+)
 IF NOT EXIST kNet.sln. (
     cecho {0D}Running cmake for kNet.{# #}{\n}
 
@@ -461,7 +481,7 @@ IF NOT EXIST kNet.sln. (
     del CMakeLists.txt
     rename CMakeLists.txt.sed CMakeLists.txt
 
-    del /Q CMakeCache.txt
+    IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
     cmake . -G %GENERATOR% -DBOOST_ROOT=%BOOST_ROOT% -DUSE_BOOST:BOOL=%USE_BOOST%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     set BUILD_KNET=TRUE
@@ -622,6 +642,11 @@ IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\ogredeps\.hg". (
 )
 
 cd "%DEPS%\ogre-safe-nocrashes\ogredeps"
+findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
+IF NOT %ERRORLEVEL%==0 (
+    IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
+    IF EXIST OGREDEPS.sln. del /Q OGREDEPS.sln
+)
 IF NOT EXIST OGREDEPS.sln. (
     :: We need modified version for couple of the ogredeps CMakeLists.txts in order to support MinSizeRel and RelWithDebInfo builds.
     copy /Y "%TOOLS%\Mods\ogredeps_CMakeLists.txt" src\CMakeLists.txt
@@ -684,6 +709,12 @@ cecho {0D}Deploying %DEBUG_OR_RELEASE% %INTEL_ARCH% %VC_VER% TBB DLL to Tundra b
 copy /Y "%TBB_HOME%\bin\%INTEL_ARCH%\%VC_VER%\tbb%POSTFIX_UNDERSCORE_DEBUG%.dll" "%TUNDRA_BIN%"
 
 cd "%DEPS%\ogre-safe-nocrashes"
+:: If the CMake generator has changed from the previous run, delete the cache file.
+findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
+IF NOT %ERRORLEVEL%==0 (
+    IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
+    IF EXIST OGRE.sln. del /Q OGRE.sln
+)
 IF NOT EXIST OGRE.sln. (
     :: If not wanting to use Boost with Ogre, we need slightly tweaked version of Ogre's Dependencies.cmake
     :: which doesn't enforce usage of Boost if it's found regardless of the value of OGRE_USE_BOOST
@@ -728,9 +759,15 @@ REM )
 
 :: SkyX
 cd "%DEPS%\realxtend-tundra-deps\skyx"
+:: If the CMake generator has changed from the previous run, delete the cache file.
+findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
+IF NOT %ERRORLEVEL%==0 (
+    IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
+    IF EXIST SKYX.sln. del /Q SKYX.sln
+)
 IF NOT EXIST SKYX.sln. (
    cecho {0D}Running cmake for SkyX.{# #}{\n}
-   del /Q CMakeCache.txt
+   IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
    cmake . -G %GENERATOR% -DUSE_BOOST:BOOL=%USE_BOOST%
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
@@ -746,9 +783,15 @@ IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 :: Hydrax
 cd "%DEPS%\realxtend-tundra-deps\hydrax"
+:: If the CMake generator has changed from the previous run, delete the cache file.
+findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
+IF NOT %ERRORLEVEL%==0 (
+    IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
+    IF EXIST Hydrax.sln. del /Q Hydrax.sln
+)
 IF NOT EXIST Hydrax.sln. (
   cecho {0D}Running cmake for Hydrax.{# #}{\n}
-  del /Q CMakeCache.txt
+  IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
   cmake . -G %GENERATOR%
   IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
