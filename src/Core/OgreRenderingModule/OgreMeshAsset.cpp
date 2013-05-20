@@ -246,7 +246,6 @@ int OgreMeshAsset::NumTris(int submeshIndex)
 
 void OgreMeshAsset::CreateKdTree()
 {
-    meshData.Clear();
     normals.clear();
     uvs.clear();
     subMeshTriangleCounts.clear();
