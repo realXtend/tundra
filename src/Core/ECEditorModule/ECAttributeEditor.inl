@@ -34,7 +34,7 @@ bool ECAttributeEditor<T>::HasIdenticalAttributes() const
     IComponent *lsh_comp = dynamic_cast<IComponent*>((*lsh).lock().get());
     if(!lsh_comp)
         return false;
-    Attribute<T> *lsh_attr = dynamic_cast<Attribute<T>*>(lsh_comp->GetAttribute(name_));
+    Attribute<T> *lsh_attr = dynamic_cast<Attribute<T>*>(lsh_comp->AttributeByName(name_));
 
     IComponent *rsh_comp = 0;
     Attribute<T> *rsh_attr = 0;
@@ -44,7 +44,7 @@ bool ECAttributeEditor<T>::HasIdenticalAttributes() const
         rsh_comp = (*rhs).lock().get();
         if (!rsh_comp) //Ensure that component hasn't expired.
             continue;
-        rsh_attr = dynamic_cast<Attribute<T>*>(rsh_comp->GetAttribute(name_));
+        rsh_attr = dynamic_cast<Attribute<T>*>(rsh_comp->AttributeByName(name_));
         if (!rsh_attr)
             continue;
 
