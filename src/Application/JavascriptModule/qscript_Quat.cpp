@@ -295,7 +295,7 @@ static QScriptValue Quat_AxisFromTo_Quat_const(QScriptContext *context, QScriptE
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Quat_ToAxisAngle_float3_float_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue Quat_ToAxisAngle_float3_float_const(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 2) { printf("Error! Invalid number of arguments passed to function Quat_ToAxisAngle_float3_float_const in file %s, line %d!\nExpected 2, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Quat This = qscriptvalue_cast<Quat>(context->thisObject());
