@@ -354,7 +354,7 @@ IF NOT EXIST "%DEPS%\bullet\". (
 IF NOT EXIST "%DEPS%\bullet\lib\%BUILD_TYPE%\BulletCollision.lib". (
     cd "%DEPS%\bullet\"
     :: If the CMake generator has changed from the previous run, delete the cache file.
-    :: TODO As the 32-bit and 64-bit dependencies are already in their own dedicated directories, this logic might not be needed. 
+    :: This allows us to build projects as both 32-bit and 64-bit with the x64 tools.
     findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
     IF NOT %ERRORLEVEL%==0 (
         IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
