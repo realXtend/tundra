@@ -50,8 +50,8 @@ EC_Mesh::EC_Mesh(Scene* scene) :
     materialMetadata.elementType = "AssetReference";
     meshMaterial.SetMetadata(&materialMetadata);
 
-    meshAsset = AssetRefListenerPtr(new AssetRefListener());
-    skeletonAsset = AssetRefListenerPtr(new AssetRefListener());
+    meshAsset = MAKE_SHARED(AssetRefListener);
+    skeletonAsset = MAKE_SHARED(AssetRefListener);
     
     OgreWorldPtr world = world_.lock();
     if (world)
@@ -162,20 +162,17 @@ void EC_Mesh::SetAttachmentScale(uint index, const float3& scale)
 
 float3 EC_Mesh::AdjustPosition() const
 {
-    Transform transform = nodeTransformation.Get();
-    return transform.pos;
+    return nodeTransformation.Get().pos;
 }
 
 Quat EC_Mesh::AdjustOrientation() const
 {
-    Transform transform = nodeTransformation.Get();
-    return transform.Orientation();
+    return nodeTransformation.Get().Orientation();
 }
 
 float3 EC_Mesh::AdjustScale() const
 {
-    Transform transform = nodeTransformation.Get();
-    return transform.scale;
+    return nodeTransformation.Get().scale;
 }
 
 float3 EC_Mesh::AttachmentPosition(uint index) const
@@ -860,7 +857,7 @@ void EC_Mesh::AttributesChanged()
             }
         }
     }
-    if (nodeTransformation.ValueChanged())
+    if (nodeTransformation.ValueChanged() && adjustment_node_)
     {
         Transform newTransform = nodeTransformation.Get();
         adjustment_node_->setPosition(newTransform.pos);

@@ -118,7 +118,7 @@ static QScriptValue Frustum_GetPlane_int_const(QScriptContext *context, QScriptE
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Frustum_GetPlanes_Plane_ptr_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue Frustum_GetPlanes_Plane_ptr_const(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function Frustum_GetPlanes_Plane_ptr_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());
@@ -162,7 +162,7 @@ static QScriptValue Frustum_ExtremePoint_float3_const(QScriptContext *context, Q
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Frustum_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue Frustum_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Frustum_ProjectToAxis_float3_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Frustum This = qscriptvalue_cast<Frustum>(context->thisObject());

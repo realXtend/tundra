@@ -604,8 +604,8 @@ void MumbleNetworkHandler::PrepareVoicePacket(ByteArrayVector &encodedFrames, Mu
     stream << frameOutSequenceNumber;
     frameOutSequenceNumber++;
 
-    int frameCount = encodedFrames.size();
-    for(int i=0; i<frameCount; ++i)
+    size_t frameCount = encodedFrames.size();
+    for(size_t i = 0; i < frameCount; ++i)
     {
         const QByteArray &qba = encodedFrames.at(i);
         unsigned char head = static_cast<unsigned char>(qba.size());

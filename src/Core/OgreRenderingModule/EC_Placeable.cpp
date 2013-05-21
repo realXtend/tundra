@@ -430,26 +430,20 @@ void EC_Placeable::DetachNode()
 
 void EC_Placeable::Show()
 {
-    if (!sceneNode_)
-        return;
-
-    sceneNode_->setVisible(true);
+    if (sceneNode_)
+        sceneNode_->setVisible(true);
 }
 
 void EC_Placeable::Hide()
 {
-    if (!sceneNode_)
-        return;
-
-    sceneNode_->setVisible(false);
+    if (sceneNode_)
+        sceneNode_->setVisible(false);
 }
 
 void EC_Placeable::ToggleVisibility()
 {
-    if (!sceneNode_)
-        return;
-
-    sceneNode_->flipVisibility();
+    if (sceneNode_)
+        sceneNode_->flipVisibility();
 }
 
 void EC_Placeable::SetParent(Entity *parent, bool preserveWorldTransform)
@@ -667,6 +661,9 @@ void EC_Placeable::RegisterActions()
 
 void EC_Placeable::AttributesChanged()
 {
+    if (!sceneNode_)
+        return; // we're not initialized properly, do not react to attribute changes internally.
+
     // If parent ref or parent bone changed, reattach node to scene hierarchy
     if (parentRef.ValueChanged() || parentBone.ValueChanged())
         AttachNode();
@@ -674,12 +671,12 @@ void EC_Placeable::AttributesChanged()
     if (transform.ValueChanged())
     {
         transform.ClearChangedFlag();
+
         const Transform& trans = transform.Get();
         if (trans.pos.IsFinite())
             sceneNode_->setPosition(trans.pos);
-        
-        Quat orientation = trans.Orientation();
 
+        Quat orientation = trans.Orientation();
         if (orientation.IsFinite())
             sceneNode_->setOrientation(orientation);
         else
@@ -696,11 +693,11 @@ void EC_Placeable::AttributesChanged()
 
         sceneNode_->setScale(scale);
     }
+
     if (drawDebug.ValueChanged())
-    {
         SetShowBoundingBoxRecursive(sceneNode_, drawDebug.Get());
-    }
-    if (visible.ValueChanged() && sceneNode_)
+
+    if (visible.ValueChanged())
         sceneNode_->setVisible(visible.Get());
 }
 
@@ -944,8 +941,13 @@ float3x4 EC_Placeable::LocalToWorld() const
 float3x4 EC_Placeable::WorldToLocal() const
 {
     float3x4 tm = LocalToWorld();
-    bool success = tm.Inverse();
+#ifndef MATH_SILENT_ASSUME
+    bool success = 
+#endif
+    tm.Inverse();
+#ifndef MATH_SILENT_ASSUME
     assume(success);
+#endif
     return tm;
 }
 
@@ -957,7 +959,12 @@ float3x4 EC_Placeable::LocalToParent() const
 float3x4 EC_Placeable::ParentToLocal() const
 {
     float3x4 tm = transform.Get().ToFloat3x4();
-    bool success = tm.Inverse();
+#ifndef MATH_SILENT_ASSUME
+    bool success = 
+#endif
+    tm.Inverse();
+#ifndef MATH_SILENT_ASSUME
     assume(success);
+#endif
     return tm;
 }
