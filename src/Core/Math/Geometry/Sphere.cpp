@@ -49,6 +49,8 @@
 #include "VertexBuffer.h"
 #endif
 
+#include <stdio.h>
+
 MATH_BEGIN_NAMESPACE
 
 Sphere::Sphere(const float3 &center, float radius)
@@ -1185,7 +1187,7 @@ Sphere Sphere::FitThroughPoints(const float3 &a, const float3 &b, const float3 &
 	bool success = FitSphereThroughPoints(ab, ac, s, t);
 	if (!success)
 	{
-		LOGW("Sphere::FitThroughPoints(a,b,c) failed! The three input points are collinear!");
+		printf("Sphere::FitThroughPoints(a,b,c) failed! The three input points are collinear!\n");
 		sphere.SetDegenerate();
 		return sphere;
 	}
@@ -1220,7 +1222,7 @@ Sphere Sphere::FitThroughPoints(const float3 &a, const float3 &b, const float3 &
 	}
 	else
 	{
-		LOGW("Sphere::FitThroughPoints through four points failed! The points lie on the same plane!");
+		printf("Sphere::FitThroughPoints through four points failed! The points lie on the same plane!\n");
 		sphere.SetDegenerate();
 	}
 

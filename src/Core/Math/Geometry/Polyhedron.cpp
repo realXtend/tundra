@@ -41,6 +41,8 @@
 #include "VertexBuffer.h"
 #endif
 
+#include <stdio.h>
+
 MATH_BEGIN_NAMESPACE
 
 void Polyhedron::Face::FlipWindingOrder()
@@ -286,7 +288,7 @@ bool Polyhedron::IsClosed() const
 			int y = f[i].v[j];
 			if (uniqueEdges.find(std::make_pair(x, y)) != uniqueEdges.end())
 			{
-				LOGW("The edge (%d,%d) is used twice. Polyhedron is not simple and closed!", x, y);
+				printf("The edge (%d,%d) is used twice. Polyhedron is not simple and closed!\n", x, y);
 				return false; // This edge is being used twice! Cannot be simple and closed.
 			}
 			uniqueEdges.insert(std::make_pair(x, y));
@@ -300,7 +302,7 @@ bool Polyhedron::IsClosed() const
 		std::pair<int, int> reverse = std::make_pair(iter->second, iter->first);
 		if (uniqueEdges.find(reverse) == uniqueEdges.end())
 		{
-			LOGW("The edge (%d,%d) does not exist. Polyhedron is not closed!", iter->second, iter->first);
+			printf("The edge (%d,%d) does not exist. Polyhedron is not closed!\n", iter->second, iter->first);
 			return false;
 		}
 	}
@@ -327,7 +329,7 @@ bool Polyhedron::IsConvex() const
 			float d = p.SignedDistance(Vertex(i));
 			if (d > 1e-3f) // Tolerate a small epsilon error.
 			{
-				LOGW("Distance of vertex %d from plane %d: %f", i, f, d);
+				printf("Distance of vertex %d from plane %d: %f", i, f, d);
 				return false;
 			}
 		}
@@ -1127,7 +1129,7 @@ Polyhedron Polyhedron::ConvexHull(const float3 *pointArray, int numPoints)
 	for(int j = 0; j < numPoints; ++j)
 	{
 		if (p.f.size() > 5000 && (j & 255) == 0)
-			LOGI("Mergeconvex %d/%d, #vertices %d, #faces %d", j, numPoints, (int)p.v.size(), (int)p.f.size());
+			printf("Mergeconvex %d/%d, #vertices %d, #faces %d\n", j, numPoints, (int)p.v.size(), (int)p.f.size());
 		p.MergeConvex(pointArray[i]);
 
 		mathassert(p.FaceIndicesValid());

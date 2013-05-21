@@ -43,6 +43,8 @@
 #include "Container/UString.h"
 #endif
 
+#include <stdio.h>
+
 MATH_BEGIN_NAMESPACE
 
 float Frustum::AspectRatio() const
@@ -399,7 +401,7 @@ float3 Frustum::UniformRandomPointInside(LCG &rng) const
 			if (Contains(pt))
 				return pt;
 		}
-		LOGW("Rejection sampling failed in Frustum::UniformRandomPointInside! Producing a non-uniformly distributed point inside the frustum!");
+		printf("Rejection sampling failed in Frustum::UniformRandomPointInside! Producing a non-uniformly distributed point inside the frustum!\n");
 		return FastRandomPointInside(rng);
 	}
 }

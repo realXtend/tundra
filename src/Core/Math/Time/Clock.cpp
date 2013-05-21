@@ -29,6 +29,8 @@
 #include "Time/Clock.h"
 #include "myassert.h"
 
+#include <stdio.h>
+
 MATH_BEGIN_NAMESPACE
 
 #ifdef WIN32
@@ -47,13 +49,13 @@ void Clock::InitClockData()
 #ifdef WIN32
 	if (!QueryPerformanceFrequency(&ddwTimerFrequency))
 	{
-		LOG(LogError, "The system doesn't support high-resolution timers!");
+		printf("The system doesn't support high-resolution timers!\n");
 		ddwTimerFrequency.HighPart = (unsigned long)-1;
 		ddwTimerFrequency.LowPart = (unsigned long)-1;
 	}
 
 	if (ddwTimerFrequency.HighPart > 0)
-		LOG(LogError, "Warning: Clock::TicksPerSec will yield invalid timing data!");
+		printf("Warning: Clock::TicksPerSec will yield invalid timing data!\n");
 
 	if (appStartTime == 0)
 	{
