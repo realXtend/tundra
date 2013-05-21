@@ -94,6 +94,7 @@ echo    - Configures whether dependencies kNet, Ogre, and AssImp are built using
 cecho {0D}  Build Type           = %BUILD_TYPE%{# #}{\n}
 echo    - The used build type for the dependencies.
 echo      Defaults to RelWithDebInfo if not specified.
+IF %BUILD_TYPE%==MinSizeRel cecho {0E}     WARNING: MinSizeRel build can suffer from a significant performance loss.{# #}{\n}
 cecho {0D}  Build OpenSSL        = %BUILD_OPENSSL%{# #}{\n}
 echo    - Build OpenSSL, requires Active Perl.
 cecho {0D}  Build Qt with JOM    = %USE_JOM%{# #}{\n}
@@ -354,7 +355,7 @@ IF NOT EXIST "%DEPS%\bullet\". (
 IF NOT EXIST "%DEPS%\bullet\lib\%BUILD_TYPE%\BulletCollision.lib". (
     cd "%DEPS%\bullet\"
     :: If the CMake generator has changed from the previous run, delete the cache file.
-    :: This allows us to build projects as both 32-bit and 64-bit with the x64 tools.
+    :: TODO This logic is not probably necessary as the deps for different generators are already in different dirs.
     findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
     IF NOT %ERRORLEVEL%==0 (
         IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
