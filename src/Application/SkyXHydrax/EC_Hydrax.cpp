@@ -58,12 +58,12 @@ struct EC_Hydrax::EC_HydraxImpl
 
 EC_Hydrax::EC_Hydrax(Scene* scene) :
     IComponent(scene),
-    configRef(this, "Config ref", AssetReference(cDefaultConfig)),
-    visible(this, "Visible", true),
-    position(this, "Position", float3(0.0, 0.0, 0.0)),
-//    noiseModule(this, "Noise module", 0),
-//    noiseType(this, "Noise type", 0),
-//    normalMode(this, "Normal mode", 0),
+    INIT_ATTRIBUTE_VALUE(configRef, "Config ref", AssetReference(cDefaultConfig)),
+    INIT_ATTRIBUTE_VALUE(visible, "Visible", true),
+    INIT_ATTRIBUTE_VALUE(position, "Position", float3(0.0, 0.0, 0.0)),
+//    INIT_ATTRIBUTE_VALUE(noiseModule, "Noise module", 0),
+//    INIT_ATTRIBUTE_VALUE(noiseType, "Noise type", 0),
+//    INIT_ATTRIBUTE_VALUE(normalMode, "Normal mode", 0),
     impl(0)
 {
 /*

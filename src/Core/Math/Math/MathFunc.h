@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,16 +18,15 @@
 #pragma once
 
 #ifdef MATH_ENABLE_STL_SUPPORT
-#include <cassert>
+#include "myassert.h"
 #endif
 #include <math.h>
+#include <cmath>
 #include <float.h>
 
 #include "Types.h"
 #include "Math/MathConstants.h"
 #include "Math/float3.h"
-
-#include "Win.h" // For DebugBreak();
 
 #include "assume.h"
 
@@ -63,7 +62,7 @@ MATH_BEGIN_NAMESPACE
 /// @param v1 The first vector in the dot product. This can either be a C array or a float3.
 /// @param v2 The second vector in the dot product. As opposed to the DOT3() macro, which accesses the elements of this vector
 ///	 as v2[0], v2[1], v2[2], this function accesses the elements as v2[0], v2[stride], v2[2*stride].
-/// @param stride The distance between between the subsequent vector elements in the array v2. 
+/// @param stride The distance between between the subsequent vector elements in the array v2.
 /// @see DOT3(), ABSDOT3(), DOT3_xyz(), DOT4STRIDED().
 #define DOT3STRIDED(v1, v2, stride) ((v1)[0] * (v2)[0] + (v1)[1] * (v2)[stride] + (v1)[2] * (v2)[2*stride])
 
@@ -77,7 +76,7 @@ MATH_BEGIN_NAMESPACE
 /// @param v1 The first vector in the dot product. This can either be a C array or a float4.
 /// @param v2 The second vector in the dot product. As opposed to the DOT4() macro, which accesses the elements of this vector
 ///	 as v2[0], v2[1], v2[2], v2[3], this function accesses the elements as v2[0], v2[stride], v2[2*stride], v2[3*stride].
-/// @param stride The distance between between the subsequent vector elements in the array v2. 
+/// @param stride The distance between between the subsequent vector elements in the array v2.
 /// @see DOT4(), DOT4POS(), DOT4POS_xyz(), DOT4DIR(), DOT4DIR_xyz().
 #define DOT4STRIDED(v1, v2, stride) ((v1)[0] * (v2)[0] + (v1)[1] * (v2)[stride] + (v1)[2] * (v2)[2*stride] + (v1)[3] * (v2)[3*stride])
 
@@ -95,12 +94,12 @@ MATH_BEGIN_NAMESPACE
 /// @see DOT4(), DOT4STRIDED(), DOT4POS(), DOT4DIR(), DOT4DIR_xyz().
 #define DOT4POS_xyz(vec4D, x, y, z) ((vec4D)[0] * (x) + (vec4D)[1] * (y) + (vec4D)[2] * (z) + (vec4D)[3])
 
-/// Computes the dot product of a 4D vector and a direction vector (x,y,z,0). 
+/// Computes the dot product of a 4D vector and a direction vector (x,y,z,0).
 /// @note This function is only provided for convenience, since this is identical to DOT3.
 /// @see DOT3(), DOT4(), DOT4STRIDED(), DOT4POS(), DOT4POS_xyz().
 #define DOT4DIR(vec4D, vecDir) DOT3(vec4D, vecDir)
 
-/// Computes the dot product of a 4D vector and a direction vector (x,y,z,0). 
+/// Computes the dot product of a 4D vector and a direction vector (x,y,z,0).
 /// @note This function is only provided for convenience, since this is identical to DOT3_xyz.
 /// @see DOT3_xyz(), DOT4(), DOT4STRIDED(), DOT4POS(), DOT4POS_xyz(), DOT4DIR().
 #define DOT4DIR_xyz(vec4D, x, y, z) DOT3_xyz(vec4D, x, y, z)
@@ -152,12 +151,18 @@ float Tanh(float x);
 /// Returns true if the given number is a power of 2.
 /** @see RoundUpPow2(), RoundDownPow2(). */
 bool IsPow2(unsigned int number);
-/// Returns the smallest power-of-2 number greater or equal than the given number.
+/// Returns the smallest power-of-2 number (1,2,4,8,16,32,...) greater or equal than the given number.
 /** @see IsPow2(), RoundDownPow2(). */
 unsigned int RoundUpPow2(unsigned int number);
-/// Returns the largest power-of-2 number smaller or equal than the given number.
+/// Returns the largest power-of-2 number (1,2,4,8,16,32,...) smaller or equal than the given number.
 /** @see IsPow2(), RoundUpPow2(). */
 unsigned int RoundDownPow2(unsigned int number);
+
+/// Returns the given number rounded up to the next multiple of n.
+/** @param x The number to round up.
+	@param n The multiple to round x to. The value n must be a power-of-2. */
+int RoundIntUpToMultipleOfPow2(int x, int n);
+
 /// Raises the given base to an integral exponent.
 /** @see Pow(), Exp(). */
 float PowInt(float base, int exponent);
@@ -207,7 +212,9 @@ float Sign(float f);
 float SignOrZero(float f, float epsilon = 1e-8f);
 
 /// Linearly interpolates between a and b.
-/** @param t A value between [0,1]. 
+/** @param t A value between [0,1].
+	@param a The first endpoint to lerp between.
+	@param b The second endpoint to lerp between.
 	@return This function computes a + t*(b-a). That is, if t==0, this function returns a. If t==1, this function returns b.
 		Otherwise, the returned value linearly moves from a to b as t ranges from 0 to 1.
 	@see LerpMod(), InvLerp(), Step(), SmoothStep(), PingPongMod(), Mod(), ModPos(), Frac(). */
@@ -225,7 +232,7 @@ float Step(float y, float x);
 /// See http://msdn.microsoft.com/en-us/library/bb509658(v=vs.85).aspx
 /** @see Lerp(), LerpMod(), InvLerp(), Step(), PingPongMod(), Mod(), ModPos(), Frac(). */
 float SmoothStep(float min, float max, float x);
-/// Limits x to the range [0, mod], but instead of wrapping around from mod to 0, the result will move back 
+/// Limits x to the range [0, mod], but instead of wrapping around from mod to 0, the result will move back
 /// from mod to 0 as x goes from mod to 2*mod.
 /** @see Lerp(), LerpMod(), InvLerp(), Step(), SmoothStep(), Mod(), ModPos(), Frac(). */
 float PingPongMod(float x, float mod);
@@ -248,15 +255,19 @@ float Frac(float x);
 float Sqrt(float x);
 /// Returns 1/sqrt(x). (The reciprocal of the square root of x)
 float RSqrt(float x);
+/// Returns 1/x, the reciprocal of x.
+float Recip(float x);
+/// Returns 1/x, the reciprocal of x, using a fast approximation (SSE rcp instruction).
+float RecipFast(float x);
 
 /// Calculates n! at runtime. Use class FactorialT<N> to evaluate factorials at compile-time.
-int Factorial(int n); 
+int Factorial(int n);
 
-/// Calculates (N nCr K) at runtime with recursion, running time is exponential to n. 
+/// Calculates (N nCr K) at runtime with recursion, running time is exponential to n.
 /// Use class Combinatorial<N, K> to evaluate combinatorials at compile-time.
 int CombinatorialRec(int n, int k);
 
-/// Calculates (N nCr K) at runtime, running time is proportional to n*k. 
+/// Calculates (N nCr K) at runtime, running time is proportional to n*k.
 /// Use class Combinatorial<N, K> to evaluate combinatorials at compile-time.
 int CombinatorialTab(int n, int k);
 
@@ -290,12 +301,38 @@ const T Max(const T &a, const T &b)
 	return a >= b ? a : b;
 }
 
+template<>
+inline const float Max(const float &a, const float &b)
+{
+#ifdef MATH_SSE
+	__m128 maxVal = _mm_max_ss(_mm_set_ss(a), _mm_set_ss(b));
+	float x;
+	_mm_store_ss(&x, maxVal);
+	return x;
+#else
+	return a >= b ? a : b;
+#endif
+}
+
 /// Computes the smallest of three values.
 /** @see Clamp(), Clamp01(), Max(). */
 template<typename T>
 const T Min(const T &a, const T &b, const T &c)
 {
 	return Min(Min(a, b), c);
+}
+
+template<>
+inline const float Min(const float &a, const float &b)
+{
+#ifdef MATH_SSE
+	__m128 minVal = _mm_min_ss(_mm_set_ss(a), _mm_set_ss(b));
+	float x;
+	_mm_store_ss(&x, minVal);
+	return x;
+#else
+	return a <= b ? a : b;
+#endif
 }
 
 /// Computes the largest of three values.
@@ -362,34 +399,53 @@ bool Equal(const T &a, const T &b)
 /** Compares the two values for equality up to a small epsilon. */
 template<> bool inline Equal(const float &a, const float &b) { return Abs(a-b) <= eps; }
 template<> bool inline Equal(const double &a, const double &b) { return Abs(a-b) <= eps; }
+#ifndef EMSCRIPTEN // long double is not supported.
 template<> bool inline Equal(const long double &a, const long double &b) { return Abs(a-b) <= eps; }
+#endif
 
 /** Compares the two values for equality, allowing the given amount of absolute error. */
-bool EqualAbs(float a, float b, float epsilon = 1e-6f);
+bool EqualAbs(float a, float b, float epsilon = 1e-4f);
 
-/** Compares the two values for equality, allowing the given amount of relative error. 
+/** Compares the two values for equality, allowing the given amount of relative error.
 	Beware that for values very near 0, the relative error is significant. */
-bool EqualRel(float a, float b, float maxRelError = 1e-5f);
+bool EqualRel(float a, float b, float maxRelError = 1e-4f);
 
-/** Compares two floats interpreted as integers, see 
-	http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm 
+/** Compares two floats interpreted as integers, see
+	http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm
 	Warning: This comparison is not safe with NANs or INFs. */
 bool EqualUlps(float a, float b, int maxUlps = 10000);
 
-#ifndef isfinite
-/// Returns true if the x is a finite floating-point value, and not a NaN or +/-inf.
-#define isfinite(x) _finite(x)
+/// Returns true if the given value is not an inf or a nan.
+template<typename T> inline bool IsFinite(const T & /*value*/) { return true; }
+
+#ifdef _MSC_VER
+template<> inline bool IsFinite<float>(const float &value) { return _finite((double)value) != 0; }
+template<> inline bool IsFinite<double>(const double &value) { return _finite(value) != 0; }
+
+#ifndef EMSCRIPTEN // long double is not supported.
+template<> inline bool IsFinite<long double>(const long double &value) { return _finite((double)value) != 0; }
 #endif
 
-/// Returns true if the given value is not an inf or a nan.
-template<typename T> inline bool IsFinite(const T &value) { return true; }
-template<> inline bool IsFinite<float>(const float &value) { return isfinite(value) != 0; }
-template<> inline bool IsFinite<double>(const double &value) { return isfinite(value) != 0; }
-template<> inline bool IsFinite<long double>(const long double &value) { return isfinite(value) != 0; }
+#else
+template<> inline bool IsFinite<float>(const float &value) { using namespace std; return isfinite(value) != 0; }
+template<> inline bool IsFinite<double>(const double &value) { using namespace std; return isfinite(value) != 0; }
+
+#ifndef EMSCRIPTEN // long double is not supported.
+template<> inline bool IsFinite<long double>(const long double &value) { using namespace std; return isfinite((double)value) != 0; }
+#endif
+
+#endif
 
 /// Returns true if the given value is +inf or -inf.
-float IsInf(float value);
+inline bool IsInf(float value) { return value == FLOAT_INF || value == -FLOAT_INF; }
+inline bool IsInf(double value) { return value == (double)FLOAT_INF || value == (double)-FLOAT_INF; }
 /// Returns true if the given value is a not-a-number.
-float IsNan(float value);
+inline bool IsNan(float value) { return !(value == value); }
+inline bool IsNan(double value) { return !(value == value); }
+
+#ifndef EMSCRIPTEN // long double is not supported.
+inline bool IsInf(long double value) { return value == (long double)FLOAT_INF || value == (long double)-FLOAT_INF; }
+inline bool IsNan(long double value) { return !(value == value); }
+#endif
 
 MATH_END_NAMESPACE

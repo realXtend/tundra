@@ -21,7 +21,7 @@
 // Windows.h issue: Cannot include winsock2.h after windows.h, so include it before.
 
 // MathGeoLib uses the symbol Polygon. Windows.h gives GDI function Polygon, which Tundra will never use, so kill it.
-#define Polygon Polygon_WINGDI_UNUSED
+#define Polygon Polygon_unused
 
 #include <winsock2.h>
 #include <ws2tcpip.h>

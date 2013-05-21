@@ -38,6 +38,14 @@ static QScriptValue AABB_AABB_Sphere(QScriptContext *context, QScriptEngine *eng
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue AABB_NumEdges_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function AABB_NumEdges_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    AABB This = qscriptvalue_cast<AABB>(context->thisObject());
+    int ret = This.NumEdges();
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue AABB_MinX_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function AABB_MinX_const in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -276,7 +284,7 @@ static QScriptValue AABB_FacePlane_int_const(QScriptContext *context, QScriptEng
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue AABB_GetFacePlanes_Plane_ptr_const(QScriptContext *context, QScriptEngine * /*engine*/)
+static QScriptValue AABB_GetFacePlanes_Plane_ptr_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_GetFacePlanes_Plane_ptr_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     AABB This = qscriptvalue_cast<AABB>(context->thisObject());
@@ -585,6 +593,66 @@ static QScriptValue AABB_Contains_Polyhedron_const(QScriptContext *context, QScr
     return qScriptValueFromValue(engine, ret);
 }
 
+static QScriptValue AABB_Intersects_Ray_float_float_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function AABB_Intersects_Ray_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    AABB This = qscriptvalue_cast<AABB>(context->thisObject());
+    Ray ray = qscriptvalue_cast<Ray>(context->argument(0));
+    float dNear = qscriptvalue_cast<float>(context->argument(1));
+    float dFar = qscriptvalue_cast<float>(context->argument(2));
+    bool ret = This.Intersects(ray, dNear, dFar);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue AABB_Intersects_Ray_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_Intersects_Ray_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    AABB This = qscriptvalue_cast<AABB>(context->thisObject());
+    Ray ray = qscriptvalue_cast<Ray>(context->argument(0));
+    bool ret = This.Intersects(ray);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue AABB_Intersects_Line_float_float_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function AABB_Intersects_Line_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    AABB This = qscriptvalue_cast<AABB>(context->thisObject());
+    Line line = qscriptvalue_cast<Line>(context->argument(0));
+    float dNear = qscriptvalue_cast<float>(context->argument(1));
+    float dFar = qscriptvalue_cast<float>(context->argument(2));
+    bool ret = This.Intersects(line, dNear, dFar);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue AABB_Intersects_Line_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_Intersects_Line_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    AABB This = qscriptvalue_cast<AABB>(context->thisObject());
+    Line line = qscriptvalue_cast<Line>(context->argument(0));
+    bool ret = This.Intersects(line);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue AABB_Intersects_LineSegment_float_float_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function AABB_Intersects_LineSegment_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    AABB This = qscriptvalue_cast<AABB>(context->thisObject());
+    LineSegment lineSegment = qscriptvalue_cast<LineSegment>(context->argument(0));
+    float dNear = qscriptvalue_cast<float>(context->argument(1));
+    float dFar = qscriptvalue_cast<float>(context->argument(2));
+    bool ret = This.Intersects(lineSegment, dNear, dFar);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue AABB_Intersects_LineSegment_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_Intersects_LineSegment_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    AABB This = qscriptvalue_cast<AABB>(context->thisObject());
+    LineSegment lineSegment = qscriptvalue_cast<LineSegment>(context->argument(0));
+    bool ret = This.Intersects(lineSegment);
+    return qScriptValueFromValue(engine, ret);
+}
+
 static QScriptValue AABB_Intersects_Plane_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function AABB_Intersects_Plane_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
@@ -657,7 +725,7 @@ static QScriptValue AABB_Intersects_Polyhedron_const(QScriptContext *context, QS
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue AABB_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine * /*engine*/)
+static QScriptValue AABB_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function AABB_ProjectToAxis_float3_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     AABB This = qscriptvalue_cast<AABB>(context->thisObject());
@@ -786,15 +854,27 @@ static QScriptValue AABB_Intersection_AABB_const(QScriptContext *context, QScrip
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue AABB_IntersectRayAABB_float3_float3_float_float_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue AABB_IntersectLineAABB_float3_float3_float_float_const(QScriptContext *context, QScriptEngine *engine)
 {
-    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function AABB_IntersectRayAABB_float3_float3_float_float_const in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function AABB_IntersectLineAABB_float3_float3_float_float_const in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     AABB This = qscriptvalue_cast<AABB>(context->thisObject());
-    float3 rayPos = qscriptvalue_cast<float3>(context->argument(0));
-    float3 rayDir = qscriptvalue_cast<float3>(context->argument(1));
+    float3 linePos = qscriptvalue_cast<float3>(context->argument(0));
+    float3 lineDir = qscriptvalue_cast<float3>(context->argument(1));
     float tNear = qscriptvalue_cast<float>(context->argument(2));
     float tFar = qscriptvalue_cast<float>(context->argument(3));
-    bool ret = This.IntersectRayAABB(rayPos, rayDir, tNear, tFar);
+    bool ret = This.IntersectLineAABB(linePos, lineDir, tNear, tFar);
+    return qScriptValueFromValue(engine, ret);
+}
+
+static QScriptValue AABB_IntersectLineAABB_CPP_float3_float3_float_float_const(QScriptContext *context, QScriptEngine *engine)
+{
+    if (context->argumentCount() != 4) { printf("Error! Invalid number of arguments passed to function AABB_IntersectLineAABB_CPP_float3_float3_float_float_const in file %s, line %d!\nExpected 4, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
+    AABB This = qscriptvalue_cast<AABB>(context->thisObject());
+    float3 linePos = qscriptvalue_cast<float3>(context->argument(0));
+    float3 lineDir = qscriptvalue_cast<float3>(context->argument(1));
+    float tNear = qscriptvalue_cast<float>(context->argument(2));
+    float tFar = qscriptvalue_cast<float>(context->argument(3));
+    bool ret = This.IntersectLineAABB_CPP(linePos, lineDir, tNear, tFar);
     return qScriptValueFromValue(engine, ret);
 }
 
@@ -915,6 +995,18 @@ static QScriptValue AABB_Contains_selector(QScriptContext *context, QScriptEngin
 
 static QScriptValue AABB_Intersects_selector(QScriptContext *context, QScriptEngine *engine)
 {
+    if (context->argumentCount() == 3 && QSVIsOfType<Ray>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
+        return AABB_Intersects_Ray_float_float_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Ray>(context->argument(0)))
+        return AABB_Intersects_Ray_const(context, engine);
+    if (context->argumentCount() == 3 && QSVIsOfType<Line>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
+        return AABB_Intersects_Line_float_float_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<Line>(context->argument(0)))
+        return AABB_Intersects_Line_const(context, engine);
+    if (context->argumentCount() == 3 && QSVIsOfType<LineSegment>(context->argument(0)) && QSVIsOfType<float>(context->argument(1)) && QSVIsOfType<float>(context->argument(2)))
+        return AABB_Intersects_LineSegment_float_float_const(context, engine);
+    if (context->argumentCount() == 1 && QSVIsOfType<LineSegment>(context->argument(0)))
+        return AABB_Intersects_LineSegment_const(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<Plane>(context->argument(0)))
         return AABB_Intersects_Plane_const(context, engine);
     if (context->argumentCount() == 1 && QSVIsOfType<AABB>(context->argument(0)))
@@ -984,6 +1076,7 @@ QScriptValue ToScriptValue_const_AABB(QScriptEngine *engine, const AABB &value)
 QScriptValue register_AABB_prototype(QScriptEngine *engine)
 {
     QScriptValue proto = engine->newObject();
+    proto.setProperty("NumEdges", engine->newFunction(AABB_NumEdges_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("MinX", engine->newFunction(AABB_MinX_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("MinY", engine->newFunction(AABB_MinY_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("MinZ", engine->newFunction(AABB_MinZ_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
@@ -1028,12 +1121,14 @@ QScriptValue register_AABB_prototype(QScriptEngine *engine)
     proto.setProperty("ClosestPoint", engine->newFunction(AABB_ClosestPoint_float3_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Distance", engine->newFunction(AABB_Distance_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Contains", engine->newFunction(AABB_Contains_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("Intersects", engine->newFunction(AABB_Intersects_selector, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersects", engine->newFunction(AABB_Intersects_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("ProjectToAxis", engine->newFunction(AABB_ProjectToAxis_float3_float_float_const, 3), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Enclose", engine->newFunction(AABB_Enclose_selector, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("toString", engine->newFunction(AABB_toString_const, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("Intersection", engine->newFunction(AABB_Intersection_AABB_const, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    proto.setProperty("IntersectRayAABB", engine->newFunction(AABB_IntersectRayAABB_float3_float3_float_float_const, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("IntersectLineAABB", engine->newFunction(AABB_IntersectLineAABB_float3_float3_float_float_const, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    proto.setProperty("IntersectLineAABB_CPP", engine->newFunction(AABB_IntersectLineAABB_CPP_float3_float3_float_float_const, 4), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     proto.setProperty("metaTypeId", engine->toScriptValue<qint32>((qint32)qMetaTypeId<AABB>()));
     engine->setDefaultPrototype(qMetaTypeId<AABB>(), proto);
     engine->setDefaultPrototype(qMetaTypeId<AABB*>(), proto);

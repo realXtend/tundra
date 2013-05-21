@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,18 @@
 /** @file MathFunc.cpp
 	@author Jukka Jylänki
 	@brief Common mathematical functions. */
+#include "Math/MathFunc.h"
 #ifdef MATH_ENABLE_STL_SUPPORT
 #include <utility>
 #include <algorithm>
 #endif
 
-#include "Math/MathFunc.h"
+#include "myassert.h"
 #include "Math/float2.h"
+
+#ifdef WIN32
+#include <Windows.h>
+#endif
 
 MATH_BEGIN_NAMESPACE
 
@@ -38,59 +43,70 @@ bool MathBreakOnAssume()
 	return mathBreakOnAssume;
 }
 
+bool AssumeFailed()
+{
+	if (mathBreakOnAssume)
+	{
+#if defined(WIN32) && !defined(WIN8RT) // Win8 metro apps don't have DebugBreak.
+		DebugBreak();
+#endif
+	}
+	return mathBreakOnAssume;
+}
+
 float Sin(float angleRadians)
 {
-	return sin(angleRadians);
+	return sinf(angleRadians);
 }
 
 float Cos(float angleRadians)
 {
-	return cos(angleRadians);
+	return cosf(angleRadians);
 }
 
 float Tan(float angleRadians)
 {
-	return tan(angleRadians);
+	return tanf(angleRadians);
 }
 
 float2 SinCos(float angleRadians)
 {
-	return float2(sin(angleRadians), cos(angleRadians));
+	return float2(sinf(angleRadians), cosf(angleRadians));
 }
 
 float Asin(float x)
 {
-	return asin(x);
+	return asinf(x);
 }
 
 float Acos(float x)
 {
-	return acos(x);
+	return acosf(x);
 }
 
 float Atan(float x)
 {
-	return atan(x);
+	return atanf(x);
 }
 
 float Atan2(float y, float x)
 {
-	return atan2(y, x);
+	return atan2f(y, x);
 }
 
 float Sinh(float x)
 {
-	return sinh(x);
+	return sinhf(x);
 }
 
 float Cosh(float x)
 {
-	return cosh(x);
+	return coshf(x);
 }
 
 float Tanh(float x)
 {
-	return tanh(x);
+	return tanhf(x);
 }
 
 bool IsPow2(unsigned int number)
@@ -121,6 +137,12 @@ unsigned int RoundDownPow2(unsigned int x)
 	x |= x >> 8;
 	x |= x >> 16;
 	return x - (x >> 1);
+}
+
+int RoundIntUpToMultipleOfPow2(int x, int n)
+{
+	assert(IsPow2(n));
+	return (x + n-1) & ~(n-1);
 }
 
 float Pow(float base, float exponent)
@@ -273,6 +295,22 @@ float RSqrt(float x)
 	return 1.f / sqrtf(x);
 }
 
+float Recip(float x)
+{
+	return 1.f / x;
+}
+
+float RecipFast(float x)
+{
+#ifdef MATH_SSE
+	__m128 r = _mm_rcp_ss(_mm_set_ss(x));
+	_mm_store_ss(&x, r);
+	return x;
+#else
+	return 1.f / x;
+#endif
+}
+
 /** Uses a recursive approach, not the fastest/brightest method.
 	Note that 13! = 6227020800 overflows already.
 	@return n! = n * (n-1) * (n-2) * ... * 1. */
@@ -287,7 +325,7 @@ int Factorial(int n)
 /** @return Binomial coefficients with recursion, i.e. n choose k, C(n,k) or nCk. */
 int CombinatorialRec(int n, int k)
 {
-	/* We could do: 
+	/* We could do:
 			return factorial(n)/(factorial(n-k)*factorial(k));
 		But prefer the recursive approach instead, because it's not so prone
 		to numerical overflow. This approach uses the idea of the Pascal triangle. */

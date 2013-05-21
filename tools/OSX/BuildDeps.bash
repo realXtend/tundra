@@ -27,8 +27,6 @@ fnDisplayHelpAndExit()
     echo " "
     echo " -rwdi | --release-with-debug-info    Enables debugging information to be included in compile-time"
     echo " "
-    echo " -x | --xcode                         Make Xcode project instead of Makefiles                                      "
-    echo " "
     echo " -nc | --no-run-cmake                 Do not run 'cmake .' after the dependencies are built. (The default is that  "
     echo "                                      'cmake .' is executed to generate Makefiles after all dependencies have been "
     echo "                                      built)."
@@ -91,7 +89,9 @@ ERRORS_OCCURED="0"
 RELWITHDEBINFO="0"
 RUN_CMAKE="1"
 RUN_MAKE="1"
-MAKE_XCODE="0"
+MAKE_XCODE="1"
+USE_BOOST="ON"
+NO_BOOST="OFF" # The variable used in Tundra is called TUNDRA_NO_BOOST, which is opposite of USE_BOOST. We will use this also to specify c++11 usage, since not using boost and using c++11 on Mac are mutually exclusive
 USE_BOOST="OFF"
 NO_BOOST="ON" # The variable used in Tundra is called TUNDRA_NO_BOOST, which is opposite of USE_BOOST. We will use this also to specify c++11 usage, since not using boost and using c++11 on Mac are mutually exclusive
 NPROCS=`sysctl -n hw.ncpu`
@@ -240,6 +240,8 @@ if [[ $OSX_VERSION == 10.8.* ]]; then
     LC_CTYPE_OVERRIDE='export LC_CTYPE="C"'
     LC_CTYPE_RESTORE="export LC_CTYPE=$LC_CTYPE_BAK"
 fi
+
+cd $build
 
 what=qt
 qtversion=4.8.4
@@ -567,7 +569,7 @@ else
     cd kNet
 
     if [ $NO_BOOST == "ON" ]; then
-        git apply $patches/kNet.patch
+        git apply --ignore-space-change --ignore-whitespace $patches/kNet.patch
     else
         $LC_CTYPE_OVERRIDE
         sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" -e "s/USE_BOOST TRUE/USE_BOOST FALSE/" < CMakeLists.txt > x
@@ -636,22 +638,32 @@ if test -d $prefix/$what/lib/Ogre.framework; then
     fi
 else
     cd $build
-    rm -rf $what
 
-    echoInfo "Cloning $what repository, this may take a while..."
-    hg clone $baseurl/$what
-    cd $what
-    hg checkout v1-8
+    if ! test -d $what; then    
+        echoInfo "Cloning $what repository, this may take a while..."
+        hg clone $baseurl/$what
+        cd $what
+        hg checkout v1-8
 
-    # Patches Ogre with the same diff as the commits https://bitbucket.org/sinbad/ogre/commits/80717a535bd72cc5a0e7fcf0c154c9fa7afeea2c and
-    # https://bitbucket.org/sinbad/ogre/commits/96d3083c89ea8b5acd0590a4d59a6e31e7a9fba6 which are in v1-9 branch.
-    # Todo: remove this patch when ogre-safe-nocrashes is updated to Ogre 1.9
-    patch -p0 -i $patches/Ogre.patch
+        # Patches Ogre with the same diff as the commits https://bitbucket.org/sinbad/ogre/commits/80717a535bd72cc5a0e7fcf0c154c9fa7afeea2c and
+        # https://bitbucket.org/sinbad/ogre/commits/96d3083c89ea8b5acd0590a4d59a6e31e7a9fba6 which are in v1-9 branch.
+        # Todo: remove this patch when ogre-safe-nocrashes is updated to Ogre 1.9
+        patch -p1 -i $patches/Ogre.patch
+    else
+        cd $what
+    fi
 
-    curl -L -o $ogredepszip $ogredepsurl$ogredepszip
-    tar xzf $ogredepszip
+    if ! test -d Dependencies; then
+        curl -L -o $ogredepszip $ogredepsurl$ogredepszip
+        tar xzf $ogredepszip
+    fi    
+
     export OGRE_HOME=$build/$what
     echoInfo "Building $what:"
+    if test -f CMakeCache.txt; then
+        rm CMakeCache.txt
+    fi
+ 
     cmake -G Xcode -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DOGRE_USE_BOOST:BOOL=$USE_BOOST -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=0 -DOGRE_CONFIG_THREAD_PROVIDER=none -DOGRE_CONFIG_ENABLE_LIBCPP_SUPPORT:BOOL=$NO_BOOST
     xcodebuild -configuration RelWithDebInfo
 
@@ -686,19 +698,13 @@ else
     cd $what
 
     if [ "$USE_BOOST" == "ON" ]; then
-        $LC_CTYPE_OVERRIDE
-        # Apple's ld does not allow this version number, so override that
-        sed -e 's/(ASSIMP_SV_REVISION 1264)/(ASSIMP_SV_REVISION 1)/' < CMakeLists.txt > temp
-        # Force add boost include path (the same as Ogre's dependencies include path)
-        sed -e 's/INCLUDE_DIRECTORIES( include )/INCLUDE_DIRECTORIES( include )\
-        set (BOOST_INCLUDEDIR "${ENV_OGRE_HOME}\/Dependencies\/include")/' < temp > temp1
-        $LC_CTYPE_RESTORE
+         # Patch assimp (non-c++11 variant)
+        patch -p0 -i $patches/assimp_boost.patch
     else
-        # Patch assimp
+        # Patch assimp 
         patch -p0 -i $patches/assimp.patch
     fi
 
-    mv temp1 CMakeLists.txt
     cmake . -DCMAKE_INSTALL_PREFIX=$prefix/$what
     make -j$NPROCS
     make install
@@ -770,8 +776,9 @@ else
 fi
 
 what=vlc
-baseurl=http://download.videolan.org/pub/videolan/vlc/2.0.1/macosx
-dmgname=vlc-2.0.1-intel64.dmg
+VLCVERSION=1.1.12
+baseurl=http://download.videolan.org/pub/videolan/vlc/$VLCVERSION/macosx
+dmgname=vlc-$VLCVERSION-intel64.dmg
 if test -f $tags/$what-done; then
     echoInfo "$what is done"
 else
@@ -784,7 +791,7 @@ else
     curl -L -o $dmg $baseurl/$dmgname
     hdiutil attach $dmg
 
-    mountpoint=/Volumes/vlc-2.0.1
+    mountpoint=/Volumes/vlc-$VLCVERSION
     cd $mountpoint/VLC.app/Contents/MacOS
     echoInfo "Installing $what into $prefix/$what:"
 

@@ -159,7 +159,8 @@ struct KdTreeRayQueryFirstHitVisitor
         {
             const Triangle &tri = tree.Object(*bucket);
             float u, v, t;
-            bool intersects = Triangle::IntersectLineTri(ray.pos, ray.dir, tri.a, tri.b, tri.c, u, v, t);
+            t = Triangle::IntersectLineTri(ray.pos, ray.dir, tri.a, tri.b, tri.c, u, v);
+            bool intersects = t < std::numeric_limits<float>::infinity();
             if (intersects && t >= tNear && t <= tFar && t < result.t)
             {
                 result.t = t;
@@ -169,6 +170,7 @@ struct KdTreeRayQueryFirstHitVisitor
                 result.barycentricUV = float2(u,v);
             }
             ++bucket;
+            
         }
         return result.t < std::numeric_limits<float>::infinity(); // If we hit a triangle, no need to visit any farther nodes, since we are only interested in the nearest hit.
     }
@@ -244,7 +246,6 @@ int OgreMeshAsset::NumTris(int submeshIndex)
 
 void OgreMeshAsset::CreateKdTree()
 {
-    meshData.Clear();
     normals.clear();
     uvs.clear();
     subMeshTriangleCounts.clear();

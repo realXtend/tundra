@@ -20,16 +20,16 @@
 
 EC_InputMapper::EC_InputMapper(Scene* scene):
     IComponent(scene),
-    contextName(this, "Input context name", "EC_InputMapper"),
-    contextPriority(this, "Input context priority", 90),
-    takeKeyboardEventsOverQt(this, "Take keyboard events over Qt", false),
-    takeMouseEventsOverQt(this, "Take mouse events over Qt", false),
-    executionType(this, "Action execution type", 1),
-    modifiersEnabled(this, "Key modifiers enable", true),
-    enabled(this, "Enable actions", true),
-    keyrepeatTrigger(this, "Trigger on keyrepeats", true),
-    suppressKeyEvents(this, "Suppress used keyboard events", false),
-    suppressMouseEvents(this, "Suppress used mouse events", false)
+    INIT_ATTRIBUTE_VALUE(contextName, "Input context name", "EC_InputMapper"),
+    INIT_ATTRIBUTE_VALUE(contextPriority, "Input context priority", 90),
+    INIT_ATTRIBUTE_VALUE(takeKeyboardEventsOverQt, "Take keyboard events over Qt", false),
+    INIT_ATTRIBUTE_VALUE(takeMouseEventsOverQt, "Take mouse events over Qt", false),
+    INIT_ATTRIBUTE_VALUE(executionType, "Action execution type", 1),
+    INIT_ATTRIBUTE_VALUE(modifiersEnabled, "Key modifiers enable", true),
+    INIT_ATTRIBUTE_VALUE(enabled, "Enable actions", true),
+    INIT_ATTRIBUTE_VALUE(keyrepeatTrigger, "Trigger on keyrepeats", true),
+    INIT_ATTRIBUTE_VALUE(suppressKeyEvents, "Suppress used keyboard events", false),
+    INIT_ATTRIBUTE_VALUE(suppressMouseEvents, "Suppress used mouse events", false)
 {
     static AttributeMetadata executionAttrData;
     static bool metadataInitialized = false;

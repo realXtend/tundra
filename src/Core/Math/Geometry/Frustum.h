@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,13 @@
 #pragma once
 
 #include "Math/MathFwd.h"
+#include "Math/float2.h"
 #include "Math/float3.h"
+#include "Geometry/Ray.h"
+
+#ifdef MATH_TINYXML_INTEROP
+#include "Config/tinyxml/tinyxml.h"
+#endif
 
 MATH_BEGIN_NAMESPACE
 
@@ -33,26 +39,26 @@ enum FrustumType
 class Frustum
 {
 public:
-	/// Specifies whether this frustum is a perspective or an orthographic frustum. 
+	/// Specifies whether this frustum is a perspective or an orthographic frustum.
 	/** [noscript] @todo Remove the noscript attribute. */
 	FrustumType type;
 	/// The eye point of this frustum.
 	/** Specifies the position of the camera (the eye point) for this frustum in world (global) space. [similarOverload: type] */
 	float3 pos;
 	/// The normalized direction this frustum is watching towards. [similarOverload: type]
-	/** This vector is specified in world (global) space. This vector is always normalized. 
+	/** This vector is specified in world (global) space. This vector is always normalized.
 		If you assign to this member directly, be sure to only assign normalized vectors. */
 	float3 front;
 	/// The normalized up direction for this frustum. [similarOverload: type]
-	/** This vector is specified in world (global) space. This vector is always normalized. 
+	/** This vector is specified in world (global) space. This vector is always normalized.
 		If you assign to this member directly, be sure to only assign normalized vectors.
 		@note The vectors front and up must always be orthogonal to each other. */
 	float3 up;
 	/// Distance from the eye point to the front plane. [similarOverload: type]
 	/** This parameter must be positive. If perspective projection is used, this parameter must be strictly positive
 		(0 is not allowed). If orthographic projection is used, 0 is possible (but uncommon, and not recommended).
-		When using the Frustum class to derive perspective projection matrices for a GPU, it should be noted that too 
-		small values cause poor resolution of Z values near the back plane in post-perspective space, if non-linear 
+		When using the Frustum class to derive perspective projection matrices for a GPU, it should be noted that too
+		small values cause poor resolution of Z values near the back plane in post-perspective space, if non-linear
 		depth is used (which is common). The larger this value is, the more resolution there is for the Z values across the
 		depth range. Too large values cause clipping of geometry when they come very near the camera. */
 	float nearPlaneDistance;
@@ -88,6 +94,8 @@ public:
 		@see type, pos, front, up, nearPlaneDistance, farPlaneDistance, horizontalFov, verticalFov, orthographicWidth, orthographicHeight. */
 	Frustum() {}
 
+	int NumEdges() const { return 12; }
+
 	/// Returns the aspect ratio of the view rectangle on the near plane.
 	/** The aspect ratio is the ratio of the width of the viewing rectangle to its height. This can also be computed by
 		the expression horizontalFov / verticalFov. To produce a proper non-stretched image when rendering, this
@@ -95,11 +103,27 @@ public:
 		@see horizontalFov, verticalFov. */
 	float AspectRatio() const;
 
+	/// Computes the direction vector that points logically to the right-hand side of the Frustum.
+	/** This vector together with the member variables 'front' and 'up' form the orthonormal basis of the view frustum.
+		@see pos, front. */
+	float3 WorldRight() const
+	{
+		return Cross(front, up);
+	}
+
 	/// Computes the plane equation of the near plane of this Frustum.
 	/** The normal vector of the returned plane points outwards from the volume inside the frustum, i.e. towards the eye point
 		(towards -front).
 		@see front, FarPlane(), LeftPlane(), RightPlane(), TopPlane(), BottomPlane(), GetPlane(), GetPlanes(). */
 	Plane NearPlane() const;
+
+	/// Computes the width of the near plane quad in world space units.
+	/** @see NearPlaneHeight(). */
+	float NearPlaneWidth() const;
+
+	/// Computes the height of the near plane quad in world space units.
+	/** @see NearPlaneHeight(). */
+	float NearPlaneHeight() const;
 
 	/// Computes the plane equation of the far plane of this Frustum. [similarOverload: NearPlane]
 	/** The normal vector of the returned plane points outwards from the volume inside the frustum, i.e. away from the eye point.
@@ -111,14 +135,14 @@ public:
 	/** The normal vector of the returned plane points outwards from the volume inside the frustum.
 		[indexTitle: Left/Right/Top/BottomPlane]
 		@see NearPlane(), FarPlane(), GetPlane(), GetPlanes(). */
-	Plane LeftPlane() const; 
+	Plane LeftPlane() const;
 	Plane RightPlane() const; ///< [similarOverload: LeftPlane] [hideIndex]
 	Plane TopPlane() const; ///< [similarOverload: LeftPlane] [hideIndex]
 	Plane BottomPlane() const; ///< [similarOverload: LeftPlane] [hideIndex]
 
 	/// Returns the specified plane of this frustum.
 	/** The normal vector of the returned plane points outwards from the volume inside the frustum.
-		@param faceIndex A number in the range [0,5], which returns the plane at the selected index from 
+		@param faceIndex A number in the range [0,5], which returns the plane at the selected index from
 			the array { near, far, left, right, top, bottom }.
 		@see GetPlanes(), NearPlane(), FarPlane(), LeftPlane(), RightPlane(), TopPlane(), BottomPlane(). */
 	Plane GetPlane(int faceIndex) const;
@@ -130,7 +154,15 @@ public:
 		@see GetPlane(), NearPlane(), FarPlane(), LeftPlane(), RightPlane(), TopPlane(), BottomPlane(). */
 	void GetPlanes(Plane *outArray) const;
 
-	/// Generates one of the eight corner points of this Frustum. 
+	float3 CenterPoint() const;
+
+	/// Returns an edge of this Frustum.
+	/** @param edgeIndex The index of the edge line segment to get, in the range [0, 11].
+		@todo Draw a diagram that shows which index generates which edge.
+		@see PointInside(), CornerPoint(), PointOnEdge(), FaceCenterPoint(), FacePoint(). */
+	LineSegment Edge(int edgeIndex) const;
+
+	/// Generates one of the eight corner points of this Frustum.
 	/** @param cornerIndex The index of the corner point to generate, in the range [0, 7].
 		 The points are returned in the order 0: ---, 1: --+, 2: -+-, 3: -++, 4: +--, 5: +-+, 6: ++-, 7: +++.
 		 (corresponding the XYZ axis directions). */
@@ -146,10 +178,25 @@ public:
 		this point is not necessarily unique.
 		@param direction The direction vector of the direction to find the extreme point. This vector may
 			be unnormalized, but may not be null.
-		@return An extreme point of this Frustum in the given direction. The returned point is always a 
+		@return An extreme point of this Frustum in the given direction. The returned point is always a
 			corner point of this Frustum.
 		@see CornerPoint(). */
 	float3 ExtremePoint(const float3 &direction) const;
+
+	/// Projects this Frustum onto the given 1D axis direction vector.
+	/** This function collapses this Frustum onto an 1D axis for the purposes of e.g. separate axis test computations.
+		The function returns a 1D range [outMin, outMax] denoting the interval of the projection.
+		@param direction The 1D axis to project to. This vector may be unnormalized, in which case the output
+			of this function gets scaled by the length of this vector.
+		@param outMin [out] Returns the minimum extent of this object along the projection axis.
+		@param outMax [out] Returns the maximum extent of this object along the projection axis. */
+	void ProjectToAxis(const float3 &direction, float &outMin, float &outMax) const;
+
+	/// Sets the pos, front and up members of this frustum from the given world transform.
+	/** This function sets the 'front' parameter of this Frustum to look towards the -Z axis of the given matrix,
+		and the 'up' parameter of this Frustum to point towards the +Y axis of the given matrix.
+		@param worldTransform An orthonormalized matrix with determinant of +1 (no mirroring). */
+	void SetWorldMatrix(const float3x4 &worldTransform);
 
 	/// Computes the matrix that transforms from the view space to the world (global) space of this Frustum.
 	/** @note The returned matrix is the inverse of the matrix returned by ViewMatrix().
@@ -169,7 +216,7 @@ public:
 
 	/// Computes the matrix that projects from the view space to the projection space of this Frustum.
 	/** @return A projection matrix that performs the view->proj transformation. This matrix is neither
-			invertible or orthonormal. The returned matrix is built to use the convention Matrix * vector 
+			invertible or orthonormal. The returned matrix is built to use the convention Matrix * vector
 			to map a point between these spaces. (as opposed to the convention v*M).
 		@see WorldMatrix(), ViewMatrix(), ViewProjMatrix(). */
 	float4x4 ProjectionMatrix() const;
@@ -179,7 +226,7 @@ public:
 		of concatenation follows the M*v convention of transforming vectors (as opposed to the v*M convention). This
 		multiplication order is used, since the matrices ProjectionMatrix() and ViewMatrix() also follow the M*v convention.
 		@return A matrix that performs the world->view->proj transformation. This matrix is neither invertible or
-			orthonormal. The returned matrix is built to use the convention Matrix * vector 
+			orthonormal. The returned matrix is built to use the convention Matrix * vector
 			to map a point between these spaces. (as opposed to the convention v*M).
 		@see WorldMatrix(), ViewMatrix(), ProjectionMatrix(). */
 	float4x4 ViewProjMatrix() const;
@@ -188,15 +235,29 @@ public:
 	/** The (x,y) coordinate specifies the normalized viewport coordinate through which the ray passes.
 		Both x and y must be in the range [-1,1].
 		Specifying (-1, -1) returns the bottom-left corner of the near plane.
-		The point (1, 1) corresponds to the top-right corner of the near plane.
-		@todo This function will be renamed and replaced with Unproject(float x, float y) and Unproject(const float3 &p); */
-	Ray LookAt(float x, float y) const;
+		The point (1, 1) corresponds to the top-right corner of the near plane. */
+	Ray UnProject(float x, float y) const;
+	Ray UnProject(const float2 &xy) const { return UnProject(xy.x, xy.y); }
 
-	/** Like LookAt, but if the frustum type is PerspectiveFrustum, the ray originates at the near plane, 
+	///\todo Add float3 UnProject(const float3 &point) const;
+	/** Like UnProject, but if the frustum type is PerspectiveFrustum, the ray originates at the near plane,
 		and not at the camera eye point. For orthographic frustum, LookAt and LookAtFromNearPlane are identical
-		(always originates at near plane).
-		@todo This function will be renamed and replaced with Unproject(float x, float y) and Unproject(const float3 &p); */
-	Ray LookAtFromNearPlane(float x, float y) const;
+		(always originates at near plane). */
+	Ray UnProjectFromNearPlane(float x, float y) const;
+
+	/// Returns the world-space line segment of the points that project to the given normalized viewport coordinate (x,y).
+	/** The (x,y) coordinate specifies the normalized viewport coordinate through which the line segment passes.
+		Both x and y must be in the range [-1,1]. */
+	LineSegment UnProjectLineSegment(float x, float y) const;
+
+	/// Returns a point inside this frustum parameterized by three scalar coordinates.
+	/** @param x The horizontal normalized viewport coordinate in the range [-1, 1].
+		@param y The vertical normalized viewport coordinate in the range [-1, 1].
+		@param z The linear depth coordinate in the range [0, 1].
+		@note This function is slightly different than multiplying by inv(view*proj), since depth is handled linearly.
+		@see FastRandomPointInside(), UniformRandomPointInside(). */
+	float3 PointInside(float x, float y, float z) const;
+	float3 PointInside(const float3 &xyz) const { return PointInside(xyz.x, xyz.y, xyz.z); }
 
 	/// Projects the given point onto the near plane of this frustum.
 	/** The (x,y) component of the returned float3 gives the normalized viewport coordinates of the point on the
@@ -255,10 +316,15 @@ public:
 	/// Computes the volume of this Frustum.
 	float Volume() const;
 
-	/// Generates a random point inside this Frustum.
-	/** The points are distributed uniformly.
-		@see class LCG. */
-	float3 RandomPointInside(LCG &rng) const;
+	/// Quickly generates a random point inside this Frustum.
+	/** If the frustum type is orthographic, then the points are uniformly distributed. If the frustum type is perspective, then not.
+		@see class LCG, UniformRandomPointInside(), PointInside(). */
+	float3 FastRandomPointInside(LCG &rng) const;
+
+	/// Generates a uniformly random point inside this Frustum.
+	/** For orthographic frustum type, this function is identical to FastRandomPointInside.
+		@see class LCG, FastRandomPointInside(), PointInside(). */
+	float3 UniformRandomPointInside(LCG &rng) const;
 
 	/// Moves this Frustum by the given offset vector.
 	/** @note This function operates in-place.
@@ -267,7 +333,7 @@ public:
 	void Translate(const float3 &offset);
 
 	/// Applies a transformation to this Frustum.
-	/** @param transform The transformation to apply to this Frustum. This transformation must be 
+	/** @param transform The transformation to apply to this Frustum. This transformation must be
 		affine, and must contain an orthogonal set of column vectors (may not contain shear or projection).
 		The transformation can only contain uniform scale, and may not contain mirroring.
 		@see Translate(), Scale(), classes float3x3, float3x4, float4x4, Quat. */
@@ -321,13 +387,13 @@ public:
 	/// Computes the distance between this Frustum and the given object.
 	/** This function finds the nearest pair of points on this and the given object, and computes their distance.
 		If the two objects intersect, or one object is contained inside the other, the returned distance is zero.
-		@todo Add Frustum::Distance(Line/Ray/LineSegment/Plane/Triangle/Polygon/Circle/Disc/AABB/OBB/Capsule/Frustum/Polyhedron). 
+		@todo Add Frustum::Distance(Line/Ray/LineSegment/Plane/Triangle/Polygon/Circle/Disc/AABB/OBB/Capsule/Frustum/Polyhedron).
 		@see Contains(), Intersects(), ClosestPoint(). */
 	float Distance(const float3 &point) const;
 
-	/// Tests whether this Frustum and the given object intersect.	   
-	/** Both objects are treated as "solid", meaning that if one of the objects is fully contained inside 
-		another, this function still returns true. (e.g. in case a line segment is contained inside this Frustum, 
+	/// Tests whether this Frustum and the given object intersect.	
+	/** Both objects are treated as "solid", meaning that if one of the objects is fully contained inside
+		another, this function still returns true. (e.g. in case a line segment is contained inside this Frustum,
 		or this Frustum is contained inside a Sphere, etc.)
 		The first parameter of this function specifies the other object to test against.
 		@see Contains(), Distance(), ClosestPoint().
@@ -345,6 +411,10 @@ public:
 	bool Intersects(const Frustum &frustum) const;
 	bool Intersects(const Polyhedron &polyhedron) const;
 
+#if defined(MATH_TINYXML_INTEROP) && defined(MATH_CONTAINERLIB_SUPPORT)
+	void DeserializeFromXml(TiXmlElement *e);
+#endif
+
 #ifdef MATH_ENABLE_STL_SUPPORT
 	/// Returns a human-readable representation of this Frustum. Most useful for debugging purposes.
 	std::string ToString() const;
@@ -355,9 +425,18 @@ public:
 #endif
 };
 
+Frustum operator *(const float3x3 &transform, const Frustum &frustum);
+Frustum operator *(const float3x4 &transform, const Frustum &frustum);
+Frustum operator *(const float4x4 &transform, const Frustum &frustum);
+Frustum operator *(const Quat &transform, const Frustum &frustum);
+
 #ifdef MATH_QT_INTEROP
 Q_DECLARE_METATYPE(Frustum)
 Q_DECLARE_METATYPE(Frustum*)
+#endif
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+std::ostream &operator <<(std::ostream &o, const Frustum &frustum);
 #endif
 
 MATH_END_NAMESPACE

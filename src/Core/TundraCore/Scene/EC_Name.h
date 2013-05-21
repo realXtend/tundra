@@ -40,8 +40,8 @@ public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Name(Scene* scene) :
         IComponent(scene),
-        name(this, "Name", ""),
-        description(this, "Description", "")
+        INIT_ATTRIBUTE_VALUE(name, "Name", ""),
+        INIT_ATTRIBUTE_VALUE(description, "Description", "")
     {}
     /// @endcond
 

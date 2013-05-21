@@ -24,8 +24,8 @@ using namespace Physics;
 
 EC_VolumeTrigger::EC_VolumeTrigger(Scene* scene) :
     IComponent(scene),
-    byPivot(this, "By Pivot", false),
-    entities(this, "Entities")
+    INIT_ATTRIBUTE_VALUE(byPivot, "By Pivot", false),
+    INIT_ATTRIBUTE(entities, "Entities")
 {
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()), Qt::UniqueConnection);
 }
@@ -232,6 +232,7 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
             entities_.erase(current);
             if (entity)
             {
+                emit EntityLeave(entity.get());
                 emit entityLeave(entity.get());
                 disconnect(entity.get(), SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Entity*)));
             }
@@ -263,6 +264,7 @@ void EC_VolumeTrigger::OnPhysicsCollision(Entity* otherEntity, const float3& pos
         if (entities_.find(entity) == entities_.end())
         {
             entities_[entity] = true;
+            emit EntityEnter(otherEntity);
             refreshed = true;
             emit entityEnter(otherEntity);
             connect(otherEntity, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Entity*)), Qt::UniqueConnection);
@@ -284,6 +286,7 @@ void EC_VolumeTrigger::OnEntityRemoved(Entity *entity)
     if (i != entities_.end())
     {
         entities_.erase(i);
+        emit EntityLeave(entity);
         emit entityLeave(entity);
     }
 }

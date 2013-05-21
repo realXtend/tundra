@@ -17,6 +17,8 @@
 	@brief A 3D (x,y,z) ordered tuple. */
 #pragma once
 
+#include "MathBuildConfig.h"
+
 #ifdef MATH_ENABLE_STL_SUPPORT
 #include <string>
 #endif
@@ -61,15 +63,17 @@ public:
 	float z;
 
 	/// The default constructor does not initialize any members of this class.
-	/** This means that the values of the members x, y and z are all undefined after creating a new float3 using 
+	/** This means that the values of the members x, y and z are all undefined after creating a new float3 using
 		this default constructor. Remember to assign to them before use.
 		@see x, y, z. */
 	float3() {}
 
+#ifdef MATH_EXPLICIT_COPYCTORS
 	/// The float3 copy constructor.
-	/** The copy constructor is a standard default copy-ctor, but it is explicitly written to be able to automatically pick up 
+	/** The copy constructor is a standard default copy-ctor, but it is explicitly written to be able to automatically pick up
 		this function for script bindings. */
 	float3(const float3 &rhs) { x = rhs.x; y = rhs.y; z = rhs.z; }
+#endif
 
 	/// Constructs a new float3 with the value (x, y, z).
 	/** @see x, y, z. */
@@ -86,7 +90,7 @@ public:
 	/** @param data An array containing three elements for x, y and z. This pointer may not be null. */
 	explicit float3(const float *data);
 
-	/// Casts this float3 to a C array. 
+	/// Casts this float3 to a C array.
 	/** This function does not allocate new memory or make a copy of this float3. This function simply
 		returns a C pointer view to this data structure. Use ptr()[0] to access the x component of this float3,
 		ptr()[1] to access y, and ptr()[2] to access the z component of this float3.
@@ -101,8 +105,8 @@ public:
 	const float *ptr() const;
 
 	/// Accesses an element of this vector using array notation.
-	/** @param index The element to get. Pass in 0 for x, 1 for y and 2 for z. 
-		@note If you have a non-const instance of this class, you can use this notation to set the elements of 
+	/** @param index The element to get. Pass in 0 for x, 1 for y and 2 for z.
+		@note If you have a non-const instance of this class, you can use this notation to set the elements of
 			this vector as well, e.g. vec[1] = 10.f; would set the y-component of this vector.
 		@see ptr(), At(). */
 	float &operator [](int index) { return At(index); }
@@ -110,7 +114,7 @@ public:
 
 	/// Accesses an element of this vector.
 	/** @param index The element to get. Pass in 0 for x, 1 for y, and 2 for z.
-		@note If you have a non-const instance of this class, you can use this notation to set the elements of 
+		@note If you have a non-const instance of this class, you can use this notation to set the elements of
 			this vector as well, e.g. vec.At(1) = 10.f; would set the y-component of this vector.
 		@see ptr(), operator [](). */
 	float &At(int index);
@@ -136,6 +140,8 @@ public:
 	/** This function is identical to the member function Div().
 		@return float3(x / scalar, y / scalar, z / scalar); */
 	float3 operator /(float scalar) const;
+	/// Unary operator + allows this structure to be used in an expression '+x'.
+	float3 operator +() const { return *this; }
 
 	/// Adds a vector to this vector, in-place. [indexTitle: operators +=,-=,*=,/=]
 	/** @return A reference to this. */
@@ -162,7 +168,7 @@ public:
 	float3 Add(const float3 &v) const { return *this + v; }
 
 	/// Adds the vector (s,s,s) to this vector.
-	/// @note Mathematically, the addition of a vector and scalar is not defined in linear space structures, 
+	/// @note Mathematically, the addition of a vector and scalar is not defined in linear space structures,
 	///	 but this function is provided here for syntactical convenience.
 	/// @return (x+s, y+s, z+s).
 	float3 Add(float s) const;
@@ -172,19 +178,19 @@ public:
 	float3 Sub(const float3 &v) const { return *this - v; }
 
 	/// Subtracts the vector (s,s,s) from this vector. [similarOverload: Add] [hideIndex]
-	/// @note Mathematically, the subtraction of a vector by a scalar is not defined in linear space structures, 
+	/// @note Mathematically, the subtraction of a vector by a scalar is not defined in linear space structures,
 	///	 but this function is provided here for syntactical convenience.
 	/// @return (x-s, y-s, z-s).
 	float3 Sub(float s) const;
 
 	/// Subtracts this vector from the vector (s,s,s). [similarOverload: Add] [hideIndex]
-	/// @note Mathematically, the subtraction of a scalar by a vector is not defined in linear space structures, 
+	/// @note Mathematically, the subtraction of a scalar by a vector is not defined in linear space structures,
 	///	 but this function is provided here for syntactical convenience.
 	/// @return (s-x, s-y, s-z).
 	float3 SubLeft(float s) const;
 
 	/// Multiplies this vector by a vector, element-wise. [similarOverload: Add] [hideIndex]
-	/// @note Mathematically, the multiplication of two vectors is not defined in linear space structures, 
+	/// @note Mathematically, the multiplication of two vectors is not defined in linear space structures,
 	///	 but this function is provided here for syntactical convenience.
 	/// @return (x*v.x, y*v.y, z*v.z).
 	float3 Mul(const float3 &v) const;
@@ -194,7 +200,7 @@ public:
 	float3 Mul(float s) const { return *this * s; }
 
 	/// Divides this vector by a vector, element-wise. [similarOverload: Add] [hideIndex]
-	/// @note Mathematically, the division of two vectors is not defined in linear space structures, 
+	/// @note Mathematically, the division of two vectors is not defined in linear space structures,
 	///	 but this function is provided here for syntactical convenience.
 	/// @return (x/v.x, y/v.y, z/v.z).
 	float3 Div(const float3 &v) const;
@@ -204,7 +210,7 @@ public:
 	float3 Div(float s) const { return *this / s; }
 	
 	/// Divides the vector (s,s,s) by this vector, element-wise. [similarOverload: Add] [hideIndex]
-	/// @note Mathematically, the division of a scalar by a vector is not defined in linear space structures, 
+	/// @note Mathematically, the division of a scalar by a vector is not defined in linear space structures,
 	///	 but this function is provided here for syntactical convenience.
 	/// @return (s/x, s/y, s/z).
 	float3 DivLeft(float s) const;
@@ -260,14 +266,14 @@ public:
 		@param i Chooses the element of this vector to pick for the x value of the returned vector, in the range [0, 2].
 		@param j Chooses the element of this vector to pick for the y value of the returned vector, in the range [0, 2].
 		@param k Chooses the element of this vector to pick for the z value of the returned vector, in the range [0, 2].
-		@param l Chooses the element of this vector to pick for the w value of the returned vector, in the range [0, 2]. */		
-	float2 Swizzled(int i, int j) const;
-	float3 Swizzled(int i, int j, int k) const;
+		@param l Chooses the element of this vector to pick for the w value of the returned vector, in the range [0, 2]. */
 	float4 Swizzled(int i, int j, int k, int l) const;
+	float3 Swizzled(int i, int j, int k) const;
+	float2 Swizzled(int i, int j) const;
 
 	/// Generates a new float3 by filling its entries by the given scalar.
 	/** @see float3::float3(float scalar), SetFromScalar(). */
-	static float3 FromScalar(float scalar);
+	static MUST_USE_RESULT float3 FromScalar(float scalar);
 
 	/// Fills each entry of this float3 by the given scalar.
 	/** @see float3::float3(float scalar), FromScalar(). */
@@ -283,14 +289,19 @@ public:
 			This value is typically in the range [-pi, pi] (, or [0, 2pi]).
 		@param inclination The elevation, or pitch, of the vector. This function uses the convention that the +Y axis
 			points towards up, i.e. +Y is the "Zenith direction". This value is typically in the range [-pi/2, pi/2].
-		@param radius The magnitude of the vector. This is usually >= 0, although */
+		@param radius The magnitude of the vector. This is usually >= 0, although passing in the zero vector as radius returns (0,0,0), and passing
+			in a negative radius mirrors the coordinate along the origin.
+		@see FromSphericalCoordinates, ToSphericalCoordinates, ToSphericalCoordinatesNormalized. */
 	void SetFromSphericalCoordinates(float azimuth, float inclination, float radius);
-	static float3 FromSphericalCoordinates(float azimuth, float inclination, float radius);
+	void SetFromSphericalCoordinates(const float3 &spherical) { SetFromSphericalCoordinates(spherical.x, spherical.y, spherical.z); }
+	static MUST_USE_RESULT float3 FromSphericalCoordinates(float azimuth, float inclination, float radius);
+	static MUST_USE_RESULT float3 FromSphericalCoordinates(const float3 &spherical) { return FromSphericalCoordinates(spherical.x, spherical.y, spherical.z); }
 
-	/// Identical to SetFromSphericalCoordinates(azimuth, inclination, radius), except this function sets radius == 1 to generate a normalized 
+	/// Identical to SetFromSphericalCoordinates(azimuth, inclination, radius), except this function sets radius == 1 to generate a normalized
 	/// vector on the unit sphere.
+	/** @see FromSphericalCoordinates, ToSphericalCoordinates, ToSphericalCoordinatesNormalized. */
 	void SetFromSphericalCoordinates(float azimuth, float inclination);
-	static float3 FromSphericalCoordinates(float azimuth, float inclination);
+	static MUST_USE_RESULT float3 FromSphericalCoordinates(float azimuth, float inclination);
 
 	/// @return float4(x,y,z,1).
 	/** @see x, y, z, class float4, ToDir4(). */
@@ -303,14 +314,16 @@ public:
 	/// Converts this euclidean (x,y,z) float3 to spherical coordinates representation in the form (azimuth, inclination, radius).
 	/** @note This corresponsds to the matrix operation R_y * R_x * (0,0,radius), where R_y is a rotation about the y-axis by azimuth,
 			and R_x is a rotation about the x-axis by inclination.
-		@see SetFromSphericalCoordinates. */
+		@note It is valid for the magnitude of this vector to be (very close to) zero, in which case the return value is the zero vector.
+		@see FromSphericalCoordinates, SetFromSphericalCoordinates, ToSphericalCoordinatesNormalized. */
 	float3 ToSphericalCoordinates() const;
 
 	/// Converts this normalized euclidean (x,y,z) float3 to spherical coordinates representation in the form (azimuth, inclination)
-	/** @note This function requires that this float3 is normalized.
+	/** @note This function requires that this float3 is normalized. This function is identical to ToSphericalCoordinates, but is slightly
+			faster in the case this vector is known to be normalized in advance.
 		@note This corresponsds to the matrix operation R_y * R_x * (0,0,radius), where R_y is a rotation about the y-axis by azimuth,
 			and R_x is a rotation about the x-axis by inclination.
-		@see SetFromSphericalCoordinates. */
+		@see ToSphericalCoordinates, FromSphericalCoordinates, SetFromSphericalCoordinates. */
 	float2 ToSphericalCoordinatesNormalized() const;
 
 	/// Computes the length of this vector.
@@ -318,9 +331,9 @@ public:
 		@see LengthSq(), Distance(), DistanceSq(). */
 	float Length() const;
 
-	/// Computes the squared length of this vector. 
+	/// Computes the squared length of this vector.
 	/** Calling this function is faster than calling Length(), since this function avoids computing a square root.
-		If you only need to compare lengths to each other, but are not interested in the actual length values, 
+		If you only need to compare lengths to each other, but are not interested in the actual length values,
 		you can compare by using LengthSq(), instead of Length(), since Sqrt() is an order-preserving
 		(monotonous and non-decreasing) function.
 		@return x*x + y*y + z*z.
@@ -328,13 +341,13 @@ public:
 	float LengthSq() const;
 
 	/// Normalizes this float3.
-	/** In the case of failure, this vector is set to (1, 0, 0), so calling this function will never result in an 
+	/** In the case of failure, this vector is set to (1, 0, 0), so calling this function will never result in an
 		unnormalized vector.
-		@note If this function fails to normalize the vector, no error message is printed, the vector is set to (1,0,0) and 
-			an error code 0 is returned. This is different than the behavior of the Normalized() function, which prints an 
-			error if normalization fails. 
+		@note If this function fails to normalize the vector, no error message is printed, the vector is set to (1,0,0) and
+			an error code 0 is returned. This is different than the behavior of the Normalized() function, which prints an
+			error if normalization fails.
 		@note This function operates in-place.
-		@return The old length of this vector, or 0 if normalization failed. 
+		@return The old length of this vector, or 0 if normalization failed.
 		@see Normalized(). */
 	float Normalize();
 
@@ -351,7 +364,7 @@ public:
 		unnormalized vector.
 		@note This function operates in-place.
 		@return The old length of this vector. If this function returns 0, the scaling failed, and this vector is arbitrarily
-			reset to (newLength, 0, 0). In case of failure, no error message is generated. You are expected to handle the failure 
+			reset to (newLength, 0, 0). In case of failure, no error message is generated. You are expected to handle the failure
 			yourself.
 		@see ScaledToLength(). */
 	float ScaleToLength(float newLength);
@@ -378,6 +391,10 @@ public:
 	/** @see IsNormalized(), IsZero(), IsPerpendicular(), Equals(). */
 	bool IsPerpendicular(const float3 &other, float epsilon = 1e-3f) const;
 
+	/// Tests if the points p1, p2 and p3 lie on a straight line, up to the given epsilon.
+	/** @see AreOrthogonal(), AreOrthonormal(), Line::AreCollinear(). */
+	static MUST_USE_RESULT bool AreCollinear(const float3 &p1, const float3 &p2, const float3 &p3, float epsilon = 1e-4f);
+
 	/// Tests if two vectors are equal, up to the given epsilon.
 	/** @see IsPerpendicular(). */
 	bool Equals(const float3 &other, float epsilon = 1e-3f) const;
@@ -392,9 +409,9 @@ public:
 #endif
 
 	/// Parses a string that is of form "x,y,z" or "(x,y,z)" or "(x;y;z)" or "x y z" to a new float3.
-	static float3 FromString(const char *str);
+	static MUST_USE_RESULT float3 FromString(const char *str);
 #ifdef MATH_ENABLE_STL_SUPPORT
-	static float3 FromString(const std::string &str) { return FromString(str.c_str()); }
+	static MUST_USE_RESULT float3 FromString(const std::string &str) { return FromString(str.c_str()); }
 #endif
 
 	/// @return x + y + z.
@@ -445,17 +462,24 @@ public:
 	/// Returns a vector that has floor <= this[i] <= ceil for each element.
 	float3 Clamp(float floor, float ceil) const;
 	/// Limits each element of this vector between the corresponding elements in floor and ceil.
-	/** @see Min(), Max(), Clamp01(). */
+	/** @see Min(), Max(), Clamp01(), ClampLength(). */
 	float3 Clamp(const float3 &floor, const float3 &ceil) const;
 	/// Limits each element of this vector in the range [0, 1].
-	/** @see Min(), Max(), Clamp(). */
+	/** @see Min(), Max(), Clamp(), ClampLength(). */
 	float3 Clamp01() const;
 
+	/// Returns a copy of this vector, with its length scaled down to maxLength.
+	/** @see Clamp(). */
+	float3 ClampLength(float maxLength) const;
+	/// Returns a copy of this vector, with its length scaled between minLength and maxLength.
+	/** @see Clamp(). */
+	float3 ClampLength(float minLength, float maxLength) const;
+				
 	/// Computes the distance between this point and the given object.
 	/** This function finds the nearest point to this point on the given object, and computes its distance
 		to this point.
 		If this point lies inside the given object, a distance of 0 is returned.
-		@todo Add float3::Distance(Polygon/Circle/Disc/Frustum/Polyhedron). 
+		@todo Add float3::Distance(Polygon/Circle/Disc/Frustum/Polyhedron).
 		@see DistanceSq(), Length(), LengthSq(). */
 	float Distance(const float3 &point) const;
 	float Distance(const Line &line) const;
@@ -470,7 +494,7 @@ public:
 
 	/// Computes the squared distance between this and the given point.
 	/** Calling this function is faster than calling Distance(), since this function avoids computing a square root.
-		If you only need to compare distances to each other, but are not interested in the actual distance values, 
+		If you only need to compare distances to each other, but are not interested in the actual distance values,
 		you can compare by using DistanceSq(), instead of Distance(), since Sqrt() is an order-preserving
 		(monotonous and non-decreasing) function.
 		@see Distance(), Length(), LengthSq(). */
@@ -504,17 +528,21 @@ public:
 		@see Perpendicular(), Cross(). */
 	float3 AnotherPerpendicular(const float3 &hint = float3(0,1,0), const float3 &hint2 = float3(0,0,1)) const;
 
+	/// Generates a random vector that is perpendicular to this vector.
+	/** The distribution is uniformly random. */
+	float3 RandomPerpendicular(LCG &rng) const;
+
 	/// Computes the scalar triple product of the given three vectors.
 	/** @return [u v w] = (u x v) . w = u . (v x w)
 		@see Dot(), Cross(). */
-	static float ScalarTripleProduct(const float3 &u, const float3 &v, const float3 &w);
+	static MUST_USE_RESULT float ScalarTripleProduct(const float3 &u, const float3 &v, const float3 &w);
 
 	/// Returns this vector reflected about a plane with the given normal.
 	/** By convention, both this and the reflected vector point away from the plane with the given normal
 		@see Refract(). */
 	float3 Reflect(const float3 &normal) const;
 
-	/// Refracts this vector about a plane with the given normal. 
+	/// Refracts this vector about a plane with the given normal.
 	/** By convention, the this vector points towards the plane, and the returned vector points away from the plane.
 		When the ray is going from a denser material to a lighter one, total internal reflection can occur.
 		In this case, this function will just return a reflected vector from a call to Reflect().
@@ -554,13 +582,14 @@ public:
 	void Decompose(const float3 &direction, float3 &outParallel, float3 &outPerpendicular) const;
 
 	/// Linearly interpolates between this and the vector b.
-	/** @param t The interpolation weight, in the range [0, 1].
+	/** @param b The target endpoint to lerp towards to.
+		@param t The interpolation weight, in the range [0, 1].
 		@return Lerp(b, 0) returns this vector, Lerp(b, 1) returns the vector b.
 			Lerp(b, 0.5) returns the vector half-way in between the two vectors, and so on.
 			Lerp(b, t) returns (1-t)*this + t*b. */
 	float3 Lerp(const float3 &b, float t) const;
 	/// This function is the same as calling a.Lerp(b, t).
-	static float3 Lerp(const float3 &a, const float3 &b, float t);
+	static MUST_USE_RESULT float3 Lerp(const float3 &a, const float3 &b, float t);
 
 	/// Makes the given vectors linearly independent.
 	/** This function directly follows the Gram-Schmidt procedure on the input vectors.
@@ -572,9 +601,9 @@ public:
 	static void Orthogonalize(const float3 &a, float3 &b, float3 &c);
 
 	/// Returns true if the given vectors are orthogonal to each other.
-	/** @see Orthogonalize(), Orthonormalize(), AreOrthonormal(). */
-	static bool AreOrthogonal(const float3 &a, const float3 &b, float epsilon = 1e-3f);
-	static bool AreOrthogonal(const float3 &a, const float3 &b, const float3 &c, float epsilon = 1e-3f);
+	/** @see Orthogonalize(), Orthonormalize(), AreOrthonormal(), AreCollinear(). */
+	static MUST_USE_RESULT bool AreOrthogonal(const float3 &a, const float3 &b, float epsilon = 1e-3f);
+	static MUST_USE_RESULT bool AreOrthogonal(const float3 &a, const float3 &b, const float3 &c, float epsilon = 1e-3f);
 
 	/// Makes the given vectors linearly independent and normalized in length.
 	/** This function directly follows the Gram-Schmidt procedure on the input vectors.
@@ -586,23 +615,23 @@ public:
 	static void Orthonormalize(float3 &a, float3 &b, float3 &c);
 
 	/// Returns true if the given vectors are orthogonal to each other and all of length 1.
-	/** @see Orthogonalize(), AreOrthogonal(), Orthonormalize(). */
-	static bool AreOrthonormal(const float3 &a, const float3 &b, float epsilon = 1e-3f);
-	static bool AreOrthonormal(const float3 &a, const float3 &b, const float3 &c, float epsilon = 1e-3f);
+	/** @see Orthogonalize(), AreOrthogonal(), Orthonormalize(), AreCollinear(). */
+	static MUST_USE_RESULT bool AreOrthonormal(const float3 &a, const float3 &b, float epsilon = 1e-3f);
+	static MUST_USE_RESULT bool AreOrthonormal(const float3 &a, const float3 &b, const float3 &c, float epsilon = 1e-3f);
 
 	/// Generates a direction vector of the given length.
 	/** The returned vector points at a uniformly random direction.
 		@see RandomSphere(), RandomBox(). */
-	static float3 RandomDir(LCG &lcg, float length = 1.f);
+	static MUST_USE_RESULT float3 RandomDir(LCG &lcg, float length = 1.f);
 	/// Generates a random point inside a sphere.
 	/** The returned point is generated uniformly inside the sphere.
 		@see RandomDir(), RandomBox(). */
-	static float3 RandomSphere(LCG &lcg, const float3 &center, float radius);
+	static MUST_USE_RESULT float3 RandomSphere(LCG &lcg, const float3 &center, float radius);
 	/// Generates a random point inside an axis-aligned box.
 	/** The returned point is generated uniformly inside the box.
 		@see RandomDir(), RandomSphere(). */
-	static float3 RandomBox(LCG &lcg, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax);
-	static float3 RandomBox(LCG &lcg, const float3 &minValues, const float3 &maxValues);
+	static MUST_USE_RESULT float3 RandomBox(LCG &lcg, float xmin, float xmax, float ymin, float ymax, float zmin, float zmax);
+	static MUST_USE_RESULT float3 RandomBox(LCG &lcg, const float3 &minValues, const float3 &maxValues);
 
 	/// Specifies a compile-time constant float3 with value (0, 0, 0).
 	/** @note Due to static data initialization order being undefined in C++, do NOT use this
@@ -675,6 +704,8 @@ inline float3 operator /(float scalar, const float3 &rhs) { return float3::FromS
 inline float Dot(const float3 &a, const float3 &b) { return a.Dot(b); }
 inline float3 Cross(const float3 &a, const float3 &b) { return a.Cross(b); }
 inline float3 Abs(const float3 &a) { return a.Abs(); }
+inline float Length(const float3 &a) { return a.Length(); }
+inline float Distance(const float3 &a, const float3 &b) { return a.Distance(b); }
 inline float3 Min(const float3 &a, const float3 &b) { return a.Min(b); }
 inline float3 Max(const float3 &a, const float3 &b) { return a.Max(b); }
 inline float3 Clamp(const float3 &a, float floor, float ceil) { return a.Clamp(floor, ceil); }

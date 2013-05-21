@@ -597,7 +597,7 @@ void ECEditorWindow::PasteEntity()
         for(uint j = 0; j < attributes.size(); j++)
             if (attributes[j])
             {
-                IAttribute *attribute = component->GetAttribute(attributes[j]->Name());
+                IAttribute *attribute = component->AttributeByName(attributes[j]->Name());
                 if(attribute)
                     attribute->FromString(attributes[j]->ToString(), AttributeChange::Default);
             }

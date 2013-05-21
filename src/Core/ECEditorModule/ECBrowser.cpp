@@ -318,7 +318,7 @@ bool ECBrowser::dropMimeData(QTreeWidgetItem *item, int index, const QMimeData *
                 if(attribute)
                     attribute->Set(QString::fromStdString(asset_id.toStdString()), AttributeChange::Default);
             }
-            else if(attr->TypeName()compare("qvariant", Qt::CaseInsensitive) == 0)
+            else if(attr->TypeName().compare("qvariant", Qt::CaseInsensitive) == 0)
             {
                 Attribute<QVariant> *attribute = dynamic_cast<Attribute<QVariant> *>(attr);
                 if(attribute)
@@ -1008,7 +1008,7 @@ void ECBrowser::DeleteAttribute(QTreeWidgetItem *item)
             continue;
         EC_DynamicComponent *comp = dynamic_cast<EC_DynamicComponent*>(comp_ptr.get());
         if(comp)
-            editorWindow_->GetUndoManager()->Push(new RemoveAttributeCommand(comp_ptr.get()->GetAttribute(item->text(0))));
+            editorWindow_->GetUndoManager()->Push(new RemoveAttributeCommand(comp_ptr.get()->AttributeByName(item->text(0))));
     }
 }
 

@@ -34,13 +34,13 @@ using namespace OgreRenderer;
 
 EC_Terrain::EC_Terrain(Scene* scene) :
     IComponent(scene),
-    nodeTransformation(this, "Transform"),
-    xPatches(this, "Grid Width", 1),
-    yPatches(this, "Grid Height", 1),
-    material(this, "Material", AssetReference("Ogre Media:RexTerrainPCF.material")),
-    heightMap(this, "Heightmap"),
-    uScale(this, "Tex. U scale", 0.13f),
-    vScale(this, "Tex. V scale", 0.13f),
+    INIT_ATTRIBUTE(nodeTransformation, "Transform"),
+    INIT_ATTRIBUTE_VALUE(xPatches, "Grid Width", 1),
+    INIT_ATTRIBUTE_VALUE(yPatches, "Grid Height", 1),
+    INIT_ATTRIBUTE_VALUE(material, "Material", AssetReference("Ogre Media:RexTerrainPCF.material")),
+    INIT_ATTRIBUTE(heightMap, "Heightmap"),
+    INIT_ATTRIBUTE_VALUE(uScale, "Tex. U scale", 0.13f),
+    INIT_ATTRIBUTE_VALUE(vScale, "Tex. V scale", 0.13f),
     patchWidth(1),
     patchHeight(1),
     rootNode(0)

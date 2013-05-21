@@ -17,6 +17,7 @@ public:
 
     /// Takes ownership of the created button.
     QPushButton* AddButton(const QString &objectName, const QString &text);
+    QList<QPushButton*> GetButtons() { return buttons; };
 
 private:
     QList<QPushButton*> buttons;

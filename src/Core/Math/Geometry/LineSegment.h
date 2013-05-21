@@ -1,4 +1,4 @@
-/* Copyright 2011 Jukka Jylänki
+/* Copyright Jukka Jylänki
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -53,10 +53,10 @@ public:
 
 	/// Returns a point on the line.
 	/** @param d The normalized distance along the line segment to compute. If a value in the range [0, 1] is passed, then the
-			returned point lies along this line segment. If some other value is specified, the returned point lies on the 
+			returned point lies along this line segment. If some other value is specified, the returned point lies on the
 			line defined by this line segment, but not inside the interval from a to b.
-		@note The meaning of d here differs from Line::GetPoint and Ray::GetPoint. For the class LineSegment, 
-			GetPoint(0) returns a, and GetPoint(1) returns b. This means that GetPoint(1) will not generally be exactly one unit 
+		@note The meaning of d here differs from Line::GetPoint and Ray::GetPoint. For the class LineSegment,
+			GetPoint(0) returns a, and GetPoint(1) returns b. This means that GetPoint(1) will not generally be exactly one unit
 			away from the starting point of this line segment, as is the case with Line and Ray.
 		@return (1-d)*a + d*b.
 		@see a, b, Line::GetPoint(), Ray::GetPoint(). */
@@ -90,9 +90,14 @@ public:
 		@see a, b.*/
 	float3 ExtremePoint(const float3 &direction) const;
 
+	/// Translates this LineSegment in world space.
+	/** @param offset The amount of displacement to apply to this LineSegment, in world space coordinates.
+		@see Transform(). */
+	void Translate(const float3 &offset);
+
 	/// Applies a transformation to this line.
 	/** This function operates in-place.
-		@see classes float3x3, float3x4, float4x4, Quat. */
+		@see Translate(), classes float3x3, float3x4, float4x4, Quat, Transform(). */
 	void Transform(const float3x3 &transform);
 	void Transform(const float3x4 &transform);
 	void Transform(const float4x4 &transform);
@@ -104,7 +109,7 @@ public:
 	float Length() const;
 	/// Computes the squared length of this line segment.
 	/** Calling this function is faster than calling Length(), since this function avoids computing a square root.
-		If you only need to compare lengths to each other and are not interested in the actual length values, 
+		If you only need to compare lengths to each other and are not interested in the actual length values,
 		you can compare by using LengthSq(), instead of Length(), since Sqrt() is an order-preserving
 		(monotonous and non-decreasing) function. [similarOverload: Length] */
 	float LengthSq() const;
@@ -160,8 +165,8 @@ public:
 	float Distance(const Sphere &other) const;
 	float Distance(const Capsule &other) const;
 
-	/// Tests whether this line segment and the given object intersect.	   
-	/** Both objects are treated as "solid", meaning that if one of the objects is fully contained inside 
+	/// Tests whether this line segment and the given object intersect.	
+	/** Both objects are treated as "solid", meaning that if one of the objects is fully contained inside
 		another, this function still returns true. (for example, if this line segment is contained inside a sphere)
 		@todo Output intersection point. */
 	bool Intersects(const Plane &plane) const;
@@ -171,15 +176,17 @@ public:
 	bool Intersects(const Plane &plane, float *d) const;
 	/** @param intersectionPoint [out] If specified, receives the point of intersection. This pointer may be null. */
 	bool Intersects(const Triangle &triangle, float *d, float3 *intersectionPoint) const;
-	/** @param intersectionNormal [out] If specified, receives the normal vector of the other object at the point of intersection. 
+	/** @param intersectionNormal [out] If specified, receives the normal vector of the other object at the point of intersection.
 			This pointer may be null. */
 	bool Intersects(const Sphere &s, float3 *intersectionPoint = 0, float3 *intersectionNormal = 0, float *d = 0) const;
 	/** @param dNear [out] If specified, receives the parametric distance along this line segment denoting where the line entered the
-			bounding box object. This pointer may be null.
+			bounding box object.
 		@param dFar [out] If specified, receives the parametric distance along this line segment denoting where the line exited the
-			bounding box object. This pointer may be null. */
-	bool Intersects(const AABB &aabb, float *dNear = 0, float *dFar = 0) const;
-	bool Intersects(const OBB &obb, float *dNear, float *dFar) const;
+			bounding box object. */
+	bool Intersects(const AABB &aabb, float &dNear, float &dFar) const;
+	bool Intersects(const AABB &aabb) const;
+	bool Intersects(const OBB &obb, float &dNear, float &dFar) const;
+	bool Intersects(const OBB &obb) const;
 	bool Intersects(const Capsule &capsule) const;
 	bool Intersects(const Polygon &polygon) const;
 	bool Intersects(const Frustum &frustum) const;
@@ -200,6 +207,15 @@ public:
 		@see class Line, ToRay(). */
 	Line ToLine() const;
 
+	/// Projects this LineSegment onto the given 1D axis direction vector.
+	/** This function collapses this LineSegment onto an 1D axis for the purposes of e.g. separate axis test computations.
+		The function returns a 1D range [outMin, outMax] denoting the interval of the projection.
+		@param direction The 1D axis to project to. This vector may be unnormalized, in which case the output
+			of this function gets scaled by the length of this vector.
+		@param outMin [out] Returns the minimum extent of this object along the projection axis.
+		@param outMax [out] Returns the maximum extent of this object along the projection axis. */
+	void ProjectToAxis(const float3 &direction, float &outMin, float &outMax) const;
+
 #ifdef MATH_ENABLE_STL_SUPPORT
 	/// Returns a human-readable representation of this LineSegment. Most useful for debugging purposes.
 	std::string ToString() const;
@@ -207,6 +223,10 @@ public:
 #ifdef MATH_QT_INTEROP
 	operator QString() const { return toString(); }
 	QString toString() const { return QString::fromStdString(ToString()); }
+#endif
+
+#ifdef MATH_GRAPHICSENGINE_INTEROP
+	void ToLineList(VertexBuffer &vb) const;
 #endif
 };
 
@@ -218,6 +238,10 @@ LineSegment operator *(const Quat &transform, const LineSegment &line);
 #ifdef MATH_QT_INTEROP
 Q_DECLARE_METATYPE(LineSegment)
 Q_DECLARE_METATYPE(LineSegment*)
+#endif
+
+#ifdef MATH_ENABLE_STL_SUPPORT
+std::ostream &operator <<(std::ostream &o, const LineSegment &lineSegment);
 #endif
 
 MATH_END_NAMESPACE

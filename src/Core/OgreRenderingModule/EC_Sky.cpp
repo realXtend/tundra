@@ -34,12 +34,12 @@ const char * const cDefaultSkyBoxTextures[cSkyBoxTextureCount] =
 
 EC_Sky::EC_Sky(Scene* scene) :
     IComponent(scene),
-    materialRef(this, "Material", AssetReference("local://RexSkyBox.material", "OgreMaterial")), /**< @todo Shouldn't we be able to use "Ogre Media:RexSkyBox.material"? Doens't seem to work. */
-    textureRefs(this, "Texture", AssetReferenceList("Texture")),
-    orientation(this, "Orientation", Quat::identity),
-    distance(this, "Distance", 999.0), /**< @todo 5000 is the Ogre's default value, but for some reason value geater than 999 makes the sky box black. */
-    drawFirst(this, "Draw first", true),
-    enabled(this, "Enabled", true)
+    INIT_ATTRIBUTE_VALUE(materialRef, "Material", AssetReference("local://RexSkyBox.material", "OgreMaterial")), /**< @todo Shouldn't we be able to use "Ogre Media:RexSkyBox.material"? Doens't seem to work. */
+    INIT_ATTRIBUTE_VALUE(textureRefs, "Texture", AssetReferenceList("Texture")),
+    INIT_ATTRIBUTE_VALUE(orientation, "Orientation", Quat::identity),
+    INIT_ATTRIBUTE_VALUE(distance, "Distance", 999.0), /**< @todo 5000 is the Ogre's default value, but for some reason value geater than 999 makes the sky box black. */
+    INIT_ATTRIBUTE_VALUE(drawFirst, "Draw first", true),
+    INIT_ATTRIBUTE_VALUE(enabled, "Enabled", true)
 {
     if (scene)
         ogreWorld = scene->GetWorld<OgreWorld>();

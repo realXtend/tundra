@@ -34,11 +34,11 @@ using namespace OgreRenderer;
 
 EC_Camera::EC_Camera(Scene* scene) :
     IComponent(scene),
-    upVector(this, "Up vector", float3::unitY),
-    nearPlane(this, "Near plane", 0.1f),
-    farPlane(this, "Far plane", 2000.f),
-    verticalFov(this, "Vertical FOV", 45.f),
-    aspectRatio(this, "Aspect ratio", ""),
+    INIT_ATTRIBUTE_VALUE(upVector, "Up vector", float3::unitY),
+    INIT_ATTRIBUTE_VALUE(nearPlane, "Near plane", 0.1f),
+    INIT_ATTRIBUTE_VALUE(farPlane, "Far plane", 2000.f),
+    INIT_ATTRIBUTE_VALUE(verticalFov, "Vertical FOV", 45.f),
+    INIT_ATTRIBUTE_VALUE(aspectRatio, "Aspect ratio", ""),
     attached_(false),
     camera_(0),
     query_(0),
@@ -309,7 +309,7 @@ void EC_Camera::DestroyOgreCamera()
 Ray EC_Camera::ViewportPointToRay(float x, float y) const
 {
     // Do a bit of sanity checking that the user didn't go and input absolute window coordinates.
-    if (fabs(x) >= 10.f || fabs(y) >= 10.f || !isfinite(x) || !isfinite(y))
+    if (fabs(x) >= 10.f || fabs(y) >= 10.f || !IsFinite(x) || !IsFinite(y))
         LogError(QString("EC_Camera::ViewportPointToRay takes input (x,y) coordinates normalized in the range [0,1]! (You inputted x=%1, y=%2").arg(x).arg(y));
     return (camera_ ? Ray(camera_->getCameraToViewportRay(Clamp(x, 0.f, 1.f), Clamp(y, 0.f, 1.f))) : Ray());
 }

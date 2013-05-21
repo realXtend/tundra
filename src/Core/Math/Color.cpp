@@ -14,6 +14,8 @@
 #include <stdlib.h>
 //#include "MemoryLeakCheck.h"
 
+MATH_BEGIN_NAMESPACE
+
 const Color Color::Red = Color(1.f, 0.f, 0.f, 1.f);
 const Color Color::Green = Color(0.f, 1.f, 0.f, 1.f);
 const Color Color::Blue = Color(0.f, 0.f, 1.f, 1.f);
@@ -76,3 +78,5 @@ float4 Color::ToFloat4() const
 {
     return (float4)*this;
 }
+
+MATH_END_NAMESPACE

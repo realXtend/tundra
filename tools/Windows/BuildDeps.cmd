@@ -475,14 +475,8 @@ IF NOT %ERRORLEVEL%==0 (
 IF NOT EXIST kNet.sln. (
     cecho {0D}Running cmake for kNet.{# #}{\n}
 
-    REM TODO/NOTE: USE_BOOST not possible to configure from command-line with kNet's
-    REM default (stable) branch yet, so tweak the CMakeLists.txt manually for now.
-    sed s/"set(USE_BOOST TRUE)"/"option(USE_BOOST \"Specifies whether Boost is used.\" TRUE)"/g <CMakeLists.txt >CMakeLists.txt.sed
-    del CMakeLists.txt
-    rename CMakeLists.txt.sed CMakeLists.txt
-
     IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
-    cmake . -G %GENERATOR% -DBOOST_ROOT=%BOOST_ROOT% -DUSE_BOOST:BOOL=%USE_BOOST%
+    cmake . -G %GENERATOR% -DBOOST_ROOT=%BOOST_ROOT% -DUSE_BOOST:BOOL=%USE_BOOST% -DUSE_TINYXML:BOOL=FALSE
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     set BUILD_KNET=TRUE
 )
@@ -920,7 +914,6 @@ IF NOT EXIST "%DEPS%\speex\lib\%DEBUG_OR_RELEASE%\libspeexdsp.lib". (
     :: Also, the libspeexdsp.vcproj poorly outputs the resulted library to the same directory using the same filename
     :: regardless of the used configuration so we must work around that too.
     copy /Y "%TOOLS%\Mods\libspeexdsp.vcproj" libspeexdsp\libspeexdsp.vcproj
-
     MSBuild libspeex.sln /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (

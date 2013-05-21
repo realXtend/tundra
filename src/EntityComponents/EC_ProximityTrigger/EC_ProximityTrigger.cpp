@@ -16,9 +16,9 @@
 
 EC_ProximityTrigger::EC_ProximityTrigger(Scene *scene) :
     IComponent(scene),
-    active(this, "Is active", true),
-    thresholdDistance(this, "Threshold distance", 0.0f),
-    interval(this, "Trigger signal interval", 0.0f)
+    INIT_ATTRIBUTE_VALUE(active, "Is active", true),
+    INIT_ATTRIBUTE_VALUE(thresholdDistance, "Threshold distance", 0.0f),
+    INIT_ATTRIBUTE_VALUE(interval, "Trigger signal interval", 0.0f)
 {
     SetUpdateMode();
 }
