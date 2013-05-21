@@ -1125,7 +1125,7 @@ void SyncManager::ReplicateRigidBodyChanges(kNet::MessageConnection* destination
         destination->FreeMessage(msg);
 }
 
-void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* /*source*/, kNet::packet_id_t packetId, const char* data, size_t numBytes)
+void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, kNet::packet_id_t packetId, const char* data, size_t numBytes)
 {
     ScenePtr scene = scene_.lock();
     if (!scene)
@@ -1245,8 +1245,12 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* /*source*/, kN
             {
                 RigidBodyInterpolationState &interp = iter->second;
 
-                if (kNet::PacketIDIsNewerThan(interp.lastReceivedPacketCounter, packetId))
-                    continue; // This is an out-of-order received packet. Ignore it. (latest-data-guarantee)
+                if (source->GetSocket() && source->GetSocket()->TransportLayer() == kNet::SocketOverUDP)
+                {
+                    if (kNet::PacketIDIsNewerThan(interp.lastReceivedPacketCounter, packetId))
+                        continue; // This is an out-of-order received packet. Ignore it. (latest-data-guarantee)
+                }
+                
                 interp.lastReceivedPacketCounter = packetId;
 
                 const float interpPeriod = updatePeriod_; // Time in seconds how long interpolating the Hermite spline from [0,1] should take.
