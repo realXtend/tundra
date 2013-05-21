@@ -334,7 +334,7 @@ static QScriptValue LineSegment_ToLine_const(QScriptContext *context, QScriptEng
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue LineSegment_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue LineSegment_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function LineSegment_ProjectToAxis_float3_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     LineSegment This = qscriptvalue_cast<LineSegment>(context->thisObject());
