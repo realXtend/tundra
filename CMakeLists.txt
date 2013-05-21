@@ -406,6 +406,8 @@ endif ()
 add_definitions(-DMATH_QT_INTEROP)
 add_definitions(-DMATH_ENABLE_STL_SUPPORT)
 add_definitions(-DMATH_TUNDRA_INTEROP)
+# Both MathGeoLib and kNet has same macros for logging, so disable them from the beforementioned.
+add_definitions(-DLOGGING_SUPPORT_DISABLED)
 
 if (ANDROID)
     add_definitions(-DQT_STL)
