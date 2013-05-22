@@ -319,7 +319,7 @@ IF NOT EXIST %QT_INSTALL_WEBKIT_DLL_FILENAME%. (
     )
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-    cecho {0D}Qt already built. Skipping.{# #}{\n}
+    cecho {0D}%DEBUG_OR_RELEASE% Qt already built. Skipping.{# #}{\n}
 )
 
 :: Setup now built Qt to PATH (for qmake.exe), QTDIR and QMAKESPEC.
@@ -356,7 +356,7 @@ IF NOT EXIST "%DEPS%\bullet\lib\%BUILD_TYPE%\BulletCollision.lib". (
     cd "%DEPS%\bullet\"
     :: If the CMake generator has changed from the previous run, delete the cache file.
     :: TODO This logic is not probably necessary as the deps for different generators are already in different dirs.
-    findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
+    IF EXIST CMakeCache.txt. findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
     IF NOT %ERRORLEVEL%==0 (
         IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
         IF EXIST BULLET_PHYSICS.sln. del /Q BULLET_PHYSICS.sln
@@ -374,7 +374,7 @@ IF NOT EXIST "%DEPS%\bullet\lib\%BUILD_TYPE%\BulletCollision.lib". (
     MSBuild BULLET_PHYSICS.sln /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
-    cecho {0D}Bullet already built. Skipping.{# #}{\n}
+    cecho {0D}%BUILD_TYPE% Bullet already built. Skipping.{# #}{\n}
 )
 
 set BOOST_ROOT=%DEPS%\boost
@@ -428,7 +428,7 @@ IF NOT EXIST "%DEPS%\assimp\bin\%BUILD_TYPE%\assimp.dll". (
     )
 
     :: If the CMake generator has changed from the previous run, delete the cache file.
-    findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
+    IF EXIST CMakeCache.txt. findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
     IF NOT %ERRORLEVEL%==0 (
         IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
         IF EXIST Assimp.sln. del /Q Assimp.sln
@@ -442,7 +442,7 @@ IF NOT EXIST "%DEPS%\assimp\bin\%BUILD_TYPE%\assimp.dll". (
     cecho {0D}Building %BUILD_TYPE% OpenAssetImport. Please be patient, this will take a while.{# #}{\n}
     MSBuild Assimp.sln /p:configuration=%BUILD_TYPE% /nologo /m:%NUMBER_OF_PROCESSORS%
 ) ELSE (
-    cecho {0D}OpenAssetImport already built. Skipping.{# #}{\n}
+    cecho {0D}%BUILD_TYPE% OpenAssetImport already built. Skipping.{# #}{\n}
 )
 
 :: Copy the correct runtime to /bin for this run
@@ -468,7 +468,7 @@ IF NOT EXIST "%DEPS%\kNet\". (
 
 cd "%DEPS%\kNet"
 :: If the CMake generator has changed from the previous run, delete the cache file.
-findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
+IF EXIST CMakeCache.txt. findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
 IF NOT %ERRORLEVEL%==0 (
     IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
     IF EXIST kNet.sln. del /Q kNet.sln
@@ -637,7 +637,7 @@ IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\ogredeps\.hg". (
 )
 
 cd "%DEPS%\ogre-safe-nocrashes\ogredeps"
-findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
+IF EXIST CMakeCache.txt. findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
 IF NOT %ERRORLEVEL%==0 (
     IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
     IF EXIST OGREDEPS.sln. del /Q OGREDEPS.sln
@@ -705,7 +705,7 @@ copy /Y "%TBB_HOME%\bin\%INTEL_ARCH%\%VC_VER%\tbb%POSTFIX_UNDERSCORE_DEBUG%.dll"
 
 cd "%DEPS%\ogre-safe-nocrashes"
 :: If the CMake generator has changed from the previous run, delete the cache file.
-findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
+IF EXIST CMakeCache.txt. findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
 IF NOT %ERRORLEVEL%==0 (
     IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
     IF EXIST OGRE.sln. del /Q OGRE.sln
@@ -755,7 +755,7 @@ REM )
 :: SkyX
 cd "%DEPS%\realxtend-tundra-deps\skyx"
 :: If the CMake generator has changed from the previous run, delete the cache file.
-findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
+IF EXIST CMakeCache.txt. findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
 IF NOT %ERRORLEVEL%==0 (
     IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
     IF EXIST SKYX.sln. del /Q SKYX.sln
@@ -779,7 +779,7 @@ IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 :: Hydrax
 cd "%DEPS%\realxtend-tundra-deps\hydrax"
 :: If the CMake generator has changed from the previous run, delete the cache file.
-findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
+IF EXIST CMakeCache.txt. findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
 IF NOT %ERRORLEVEL%==0 (
     IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
     IF EXIST Hydrax.sln. del /Q Hydrax.sln
