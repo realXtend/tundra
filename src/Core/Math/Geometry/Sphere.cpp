@@ -1062,10 +1062,10 @@ Sphere Sphere::OptimalEnclosingSphere(const float3 &a, const float3 &b, const fl
 #ifdef MATH_ASSERT_CORRECTNESS
 	if (!sphere.Contains(a, epsilon) || !sphere.Contains(b, epsilon) || !sphere.Contains(c, epsilon))
 	{
-		LOGE("Pos: %s, r: %f", sphere.pos.ToString().c_str(), sphere.r);
-		LOGE("A: %s, dist: %f", a.ToString().c_str(), a.Distance(sphere.pos));
-		LOGE("B: %s, dist: %f", b.ToString().c_str(), b.Distance(sphere.pos));
-		LOGE("C: %s, dist: %f", c.ToString().c_str(), c.Distance(sphere.pos));
+		printf("Pos: %s, r: %f\n", sphere.pos.ToString().c_str(), sphere.r);
+		printf("A: %s, dist: %f\n", a.ToString().c_str(), a.Distance(sphere.pos));
+		printf("B: %s, dist: %f\n", b.ToString().c_str(), b.Distance(sphere.pos));
+		printf("C: %s, dist: %f\n", c.ToString().c_str(), c.Distance(sphere.pos));
 		mathassert(false);
 	}
 #endif
@@ -1130,11 +1130,11 @@ Sphere Sphere::OptimalEnclosingSphere(const float3 &a, const float3 &b, const fl
 #ifdef MATH_ASSERT_CORRECTNESS
 	if (!sphere.Contains(a, epsilon) || !sphere.Contains(b, epsilon) || !sphere.Contains(c, epsilon) || !sphere.Contains(d, epsilon))
 	{
-		LOGE("Pos: %s, r: %f", sphere.pos.ToString().c_str(), sphere.r);
-		LOGE("A: %s, dist: %f", a.ToString().c_str(), a.Distance(sphere.pos));
-		LOGE("B: %s, dist: %f", b.ToString().c_str(), b.Distance(sphere.pos));
-		LOGE("C: %s, dist: %f", c.ToString().c_str(), c.Distance(sphere.pos));
-		LOGE("D: %s, dist: %f", d.ToString().c_str(), d.Distance(sphere.pos));
+		printf("Pos: %s, r: %f\n", sphere.pos.ToString().c_str(), sphere.r);
+		printf("A: %s, dist: %f\n", a.ToString().c_str(), a.Distance(sphere.pos));
+		printf("B: %s, dist: %f\n", b.ToString().c_str(), b.Distance(sphere.pos));
+		printf("C: %s, dist: %f\n", c.ToString().c_str(), c.Distance(sphere.pos));
+		printf("D: %s, dist: %f\n", d.ToString().c_str(), d.Distance(sphere.pos));
 		mathassert(false);
 	}
 #endif
