@@ -418,7 +418,7 @@ IF NOT EXIST "%DEPS%\assimp\". (
     svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk assimp
 )
 
-IF NOT EXIST "%DEPS%\assimp\bin\%BUILD_TYPE%\assimp.dll". (
+IF NOT EXIST "%DEPS%\assimp\bin\%BUILD_TYPE%\assimp%POSTFIX_D%.dll". (
     cd "%DEPS%\assimp"
     IF %USE_BOOST%==FALSE (
         :: Tweaks CMakeLists.txt to set ASSIMP_ENABLE_BOOST_WORKAROUND on.
