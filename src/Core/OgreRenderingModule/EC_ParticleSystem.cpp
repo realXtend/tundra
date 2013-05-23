@@ -54,8 +54,8 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
     {
         if (particleAsset)
         {
-            for(int i = 0 ; i < particleAsset->GetNumTemplates(); ++i)
-                CreateParticleSystem(particleAsset->GetTemplateName(i));
+            for(size_t i=0 ; i<particleAsset->GetNumTemplates(); ++i)
+                CreateParticleSystem(particleAsset->GetTemplateName(static_cast<int>(i)));
         }
         else
             LogError("Particle asset is not loaded, can not create all particle systems");
