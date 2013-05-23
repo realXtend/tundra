@@ -434,7 +434,7 @@ void Framework::Exit()
 {
     exitSignal = true;
     if (application)
-        application->AboutToExit();
+        application->RequestExit();
 }
 
 void Framework::ForceExit()
