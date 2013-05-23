@@ -964,10 +964,10 @@ void OgreMaterialEditor::PopulateShaderAttributes(int techIndex, int passIndex)
             // The number of elements we really want to show
             size_t numElems = Ogre::GpuConstantDefinition::getElementSize(type, false);
             QStringList values = typeValuePair.begin().value().toString().split(" ");
-            for(int i = 0; i  < values.size(); ++i)
+            for(int i=0; i<values.size(); ++i)
             {
                 QTableWidgetItem *valueItem = new QTableWidgetItem;
-                if (i < numElems)
+                if (i < static_cast<int>(numElems))
                     valueItem->setData(Qt::DisplayRole, values[i]);
                 else
                     valueItem->setFlags(Qt::ItemIsEnabled); // Disable editing for surplus cells.
