@@ -565,13 +565,13 @@ else
         git apply --ignore-space-change --ignore-whitespace $patches/kNet.patch
     else
         $LC_CTYPE_OVERRIDE
-        sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" -e "s/USE_BOOST TRUE/USE_BOOST FALSE/" < CMakeLists.txt > x
+        sed -e "s/kNet STATIC/kNet SHARED/" -e "s/COMPONENTS thread system/COMPONENTS thread/" < CMakeLists.txt > x
         $LC_CTYPE_RESTORE
         mv x CMakeLists.txt
     fi
 
     echoInfo "Building $what:"
-    cmake . -DCMAKE_BUILD_TYPE=Debug
+    cmake . -DUSE_BOOST:BOOL=$USE_BOOST -DBOOST_ROOT=$prefix/boost -DUSE_TINYXML:BOOL=FALSE
     make VERBOSE=1
 
     mkdir -p $prefix/$what/{lib,include}
