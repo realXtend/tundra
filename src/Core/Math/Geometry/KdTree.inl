@@ -12,9 +12,9 @@
    See the License for the specific language governing permissions and
    limitations under the License. */
 
-/** @file KDTree.inl
+/** @file KdTree.inl
 	@author Jukka Jylänki
-	@brief Implementation for the KDTree object. */
+	@brief Implementation for the KdTree object. */
 #pragma once
 
 #include "OBB.h"
