@@ -89,8 +89,8 @@ RELWITHDEBINFO="0"
 RUN_CMAKE="1"
 RUN_MAKE="1"
 MAKE_XCODE="1"
-USE_BOOST="ON"
-NO_BOOST="OFF" # The variable used in Tundra is called TUNDRA_NO_BOOST, which is opposite of USE_BOOST. We will use this also to specify c++11 usage, since not using boost and using c++11 on Mac are mutually exclusive
+USE_BOOST="OFF"
+NO_BOOST="ON" # The variable used in Tundra is called TUNDRA_NO_BOOST, which is opposite of USE_BOOST. We will use this also to specify c++11 usage, since not using boost and using c++11 on Mac are mutually exclusive
 NPROCS=`sysctl -n hw.ncpu`
 viewer=
 
@@ -562,7 +562,10 @@ else
     cd kNet
 
     if [ $NO_BOOST == "ON" ]; then
-        git apply --ignore-space-change --ignore-whitespace $patches/kNet.patch
+        $LC_CTYPE_OVERRIDE
+        sed -e "s/kNet STATIC/kNet SHARED/" -e "s/# Always compile with maximum warning level/set(CMAKE_CXX_FLAGS -stdlib=libc++)/" < CMakeLists.txt > x
+        $LC_CTYPE_RESTORE
+        mv x CMakeLists.txt
     else
         $LC_CTYPE_OVERRIDE
         sed -e "s/kNet STATIC/kNet SHARED/" -e "s/COMPONENTS thread system/COMPONENTS thread/" < CMakeLists.txt > x
@@ -614,14 +617,6 @@ fi
 
 what=ogre-safe-nocrashes
 baseurl=https://bitbucket.org/clb
-if [ $NO_BOOST == "ON" ]; then
-    # Use prebuilt dependencies against c++11, system zlip, and later zziplib which will be built later in this script
-    ogredepszip=OgreDependenciesCPP11.zip
-    ogredepsurl=https://dl.dropboxusercontent.com/u/9644277/
-else
-    ogredepszip=OgreDependencies_OSX_20120525.zip
-    ogredepsurl=http://downloads.sourceforge.net/project/ogre/ogre-dependencies-mac/1.8/
-fi
 
 if test -d $prefix/$what/lib/Ogre.framework; then
     echoInfo "$what is done"
@@ -647,8 +642,23 @@ else
     fi
 
     if ! test -d Dependencies; then
-        curl -L -o $ogredepszip $ogredepsurl$ogredepszip
-        tar xzf $ogredepszip
+        if test -d DependenciesBuild; then
+            rm -rf DependenciesBuild
+        fi
+        hg clone https://bitbucket.org/cabalistic/ogredeps DependenciesBuild
+        cd DependenciesBuild
+        $LC_CTYPE_OVERRIDE
+        if [ $NO_BOOST == "ON" ]; then 
+            sed -e "s/set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)/set(CMAKE_CXX_FLAGS -stdlib=libc++)/" < CMakeLists.txt > x
+        else
+            sed -e "s/set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)/ /" < CMakeLists.txt > x
+        fi
+        $LC_CTYPE_RESTORE
+        mv x CMakeLists.txt
+        cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="../Dependencies" .
+        make
+        make install
+        cd $build/$what
     fi    
 
     export OGRE_HOME=$build/$what
