@@ -248,4 +248,4 @@ struct TriangleKdTreeRayQueryNearestHitVisitor
 
 MATH_END_NAMESPACE
 
-#include "KDTree.inl"
+#include "KdTree.inl"
