@@ -39,6 +39,13 @@
 #pragma comment(lib, "User32.lib")
 #pragma comment(lib, "IPHLPAPI.lib")
 
+#if defined(DIRECTX_ENABLED)
+#if WINVER >= 0x0600
+#include <dxgi.h>
+typedef HRESULT (WINAPI* DXGICREATEFACTORY)(REFIID, void**);
+#endif
+#endif
+
 #define BUFSIZE 256
 
 typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);
@@ -390,6 +397,42 @@ unsigned long CpuSpeedFromRegistry(unsigned long dwCPU)
     RegCloseKey(hKey);
     return dwSpeed;
 }
+
+unsigned long TotalVideoMemory()
+{
+    unsigned long availableMemory = 0;
+#if defined(DIRECTX_ENABLED)
+// Windows Vista and up implementation with dxgi.
+/// @todo Add <= Windows XP support.
+#if WINVER >= 0x0600
+    HINSTANCE dxgi = LoadLibrary(L"dxgi.dll");
+    if (dxgi)
+    {
+        DXGICREATEFACTORY CreateFactoryFunction = (DXGICREATEFACTORY)GetProcAddress(dxgi, "CreateDXGIFactory");
+        if (CreateFactoryFunction)
+        {
+            IDXGIFactory* factory = NULL;
+            CreateFactoryFunction(__uuidof(IDXGIFactory), (LPVOID*)&factory);
+            if (factory)
+            {
+                IDXGIAdapter* adapter = NULL;
+                HRESULT hr = factory->EnumAdapters(0, &adapter);
+                if (SUCCEEDED(hr) && adapter)
+                {
+                    DXGI_ADAPTER_DESC desc;
+                    ZeroMemory(&desc, sizeof(DXGI_ADAPTER_DESC));
+                    if (SUCCEEDED(adapter->GetDesc(&desc)))
+                        availableMemory = desc.DedicatedVideoMemory;
+                }
+            }
+        }
+        FreeLibrary(dxgi);
+    }
+#endif
+#endif
+    return availableMemory;
+}
+
 #else /// @todo Linux and OS X implementations
 QString OsDisplayString() { return ""; }
 unsigned long long TotalSystemPhysicalMemory() { return 0; }
@@ -397,4 +440,5 @@ QString ProcessorBrandName() { return ""; }
 QString ProcessorCpuIdString() { return ""; }
 QString ProcessorExtendedCpuIdInfo() { return ""; }
 unsigned long CpuSpeedFromRegistry(unsigned long dwCPU) { return 0; }
+unsigned long TotalVideoMemory() { return 0; }
 #endif
