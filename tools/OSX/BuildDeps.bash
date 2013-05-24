@@ -690,13 +690,14 @@ else
     svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk $what
     cd $what
 
+    # Patch assimp 
+    patch -p0 -i $patches/assimp.patch
     if [ "$USE_BOOST" == "ON" ]; then
-         # Patch assimp (non-c++11 variant)
-        patch -p0 -i $patches/assimp_boost.patch
-    else
-        # Patch assimp 
-        patch -p0 -i $patches/assimp.patch
-    fi
+        $LC_CTYPE_OVERRIDE
+        sed -e "s/-stdlib=libc++/ /" < CMakeLists.txt > x
+        $LC_CTYPE_RESTORE
+        mv x CMakeLists.txt
+    fi       
 
     cmake . -DCMAKE_INSTALL_PREFIX=$prefix/$what
     make -j$NPROCS
