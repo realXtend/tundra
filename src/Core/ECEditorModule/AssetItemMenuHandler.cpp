@@ -62,7 +62,7 @@ void AssetItemMenuHandler::AddAssetMenuItems(QMenu * menu, QList<QObject *> targ
 
     if (!targets_.assets.isEmpty())
     {
-        QMenu *deleteMenu = new QMenu(tr("Delete"), menu);
+        QMenu *deleteMenu = new QMenu(tr("Delete asset"), menu);
         QAction *deleteSourceAction = new QAction(tr("Delete from source"), deleteMenu);
         QAction *deleteCacheAction = new QAction(tr("Delete from cache"), deleteMenu);
         QAction *forgetAction = new QAction(tr("Forget asset"), deleteMenu);
@@ -275,8 +275,7 @@ void AssetItemMenuHandler::Clone()
     if (targets_.assets.isEmpty())
         return;
 
-    AssetPtr asset(targets_.assets.first());
-    CloneAssetDialog *dialog = new CloneAssetDialog(asset, framework_->Asset());
+    CloneAssetDialog *dialog = new CloneAssetDialog(targets_.assets.first()->shared_from_this(), framework_->Asset());
     connect(dialog, SIGNAL(finished(int)), SLOT(CloneAssetDialogClosed(int)));
     dialog->show();
 }
