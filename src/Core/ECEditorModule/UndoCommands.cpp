@@ -17,6 +17,21 @@
 #include "Transform.h"
 #include "EC_Placeable.h"
 
+EditIAttributeCommand::EditIAttributeCommand(IAttribute *attr, QUndoCommand *parent) :
+    IEditAttributeCommand(parent),
+    undoValue(attr->ToString())
+{
+    Initialize(attr, true);
+}
+
+EditIAttributeCommand::EditIAttributeCommand(IAttribute *attr, const std::string &valueToApply, QUndoCommand *parent) :
+    IEditAttributeCommand(parent),
+    undoValue(attr->ToString()),
+    redoValue(valueToApply)
+{
+    Initialize(attr, false);
+}
+
 /// Merges two EditAttributeCommand<Color> objects, since editing 'Color' triggers two changes
 template<> bool EditAttributeCommand<Color>::mergeWith(const QUndoCommand *other)
 {
