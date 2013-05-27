@@ -35,16 +35,16 @@ EC_PhysicsConstraint::EC_PhysicsConstraint(Scene* scene):
     IComponent(scene),
     constraint_(0),
     checkForRigidBodies(false),
-    enabled(this, "Enabled", false),
-    disableCollision(this, "Disable collision", false),
-    type(this, "Constraint type", 0),
-    otherEntity(this, "Other entity", EntityReference()),
-    position(this, "Position", float3::zero),
-    otherPosition(this, "Other position", float3::zero),
-    rotation(this, "Rotation", float3::zero),
-    otherRotation(this, "Other rotation", float3::zero), 
-    linearLimit(this, "Linear limit", float2::zero),
-    angularLimit(this, "Angular limit", float2::zero)
+    INIT_ATTRIBUTE_VALUE(enabled, "Enabled", false),
+    INIT_ATTRIBUTE_VALUE(disableCollision, "Disable collision", false),
+    INIT_ATTRIBUTE_VALUE(type, "Constraint type", 0),
+    INIT_ATTRIBUTE_VALUE(otherEntity, "Other entity", EntityReference()),
+    INIT_ATTRIBUTE_VALUE(position, "Position", float3::zero),
+    INIT_ATTRIBUTE_VALUE(otherPosition, "Other position", float3::zero),
+    INIT_ATTRIBUTE_VALUE(rotation, "Rotation", float3::zero),
+    INIT_ATTRIBUTE_VALUE(otherRotation, "Other rotation", float3::zero), 
+    INIT_ATTRIBUTE_VALUE(linearLimit, "Linear limit", float2::zero),
+    INIT_ATTRIBUTE_VALUE(angularLimit, "Angular limit", float2::zero)
 {
     static AttributeMetadata constraintTypeMetadata;
     static bool metadataInitialized = false;
