@@ -479,7 +479,29 @@ namespace QScriptBindings
             if (isClassCtor) // Is this function a ctor of this class.
             {
                 if (function.parameters.Count == 0)
+                {
                     tw.WriteLine(Indent(1) + Class.name + " ret;"); // Create a new instance of this class, no parameters.
+                    bool needZeroMemory = false;
+
+                    // Check if default constructor does not initialize the member variables
+                    foreach (string str in function.Comments())
+                        if (str.Contains("default constructor does not initialize") || str.Contains("default ctor does not initialize") || str.Contains("with uninitialized member values"))
+                        {
+                            needZeroMemory = true;
+                            break;
+                        }
+
+                    foreach (string str in function.notes)
+                        if (str.Contains("default constructor does not initialize") || str.Contains("default ctor does not initialize") || str.Contains("with uninitialized member values"))
+                        {
+                            needZeroMemory = true;
+                            break;
+                        }
+
+                    // In that case zero out the memory
+                    if (needZeroMemory)
+                        tw.WriteLine(Indent(1) + "memset(&ret, 0, sizeof ret);");
+                }
                 else
                     tw.Write(Indent(1) + Class.name + " ret("); // Create a new instance of this class, one or more parameters.
             }

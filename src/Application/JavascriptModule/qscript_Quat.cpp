@@ -11,7 +11,7 @@ void ToExistingScriptValue_Quat(QScriptEngine *engine, const Quat &value, QScrip
 static QScriptValue Quat_Quat(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Quat_Quat in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    Quat ret;
+    Quat ret(Quat::identity);
     return qScriptValueFromValue(engine, ret);
 }
 

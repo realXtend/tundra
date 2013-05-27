@@ -10,6 +10,7 @@ static QScriptValue AABB_AABB(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function AABB_AABB in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     AABB ret;
+    memset(&ret, 0, sizeof ret);
     return qScriptValueFromValue(engine, ret);
 }
 
