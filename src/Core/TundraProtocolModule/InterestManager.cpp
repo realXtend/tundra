@@ -82,20 +82,13 @@ bool InterestManager::CheckRelevance(UserConnectionPtr conn, Entity* changed_ent
         accepted = activeFilter_->Filter(params_);
 
     if(accepted)
-    {
         UpdateLastUpdatedEntity(params_.connection, params_.changed_entity->Id());
-        return true;
-    }
-    else
-        return false;
+    return accepted;
 }
 
 void InterestManager::UpdateRelevance(UserConnectionPtr conn, entity_id_t id, float relevance)
 {
-    std::map<entity_id_t, float>::iterator it;
-
-    it = conn->syncState->relevanceFactors.find(id);
-
+    std::map<entity_id_t, float>::iterator it = conn->syncState->relevanceFactors.find(id);
     if(it == conn->syncState->relevanceFactors.end()) //Theres no entry with this entity_id
         conn->syncState->relevanceFactors.insert(std::make_pair(id, relevance));
     else
@@ -104,10 +97,7 @@ void InterestManager::UpdateRelevance(UserConnectionPtr conn, entity_id_t id, fl
 
 void InterestManager::UpdateEntityVisibility(UserConnectionPtr conn, entity_id_t id, bool visible)
 {
-    std::map<entity_id_t, bool>::iterator it;
-
-    it = conn->syncState->visibleEntities.find(id);
-
+    std::map<entity_id_t, bool>::iterator it = conn->syncState->visibleEntities.find(id);
     if(it == conn->syncState->visibleEntities.end()) //Theres no entry with this entity_id
         conn->syncState->visibleEntities.insert(std::make_pair(id, visible));
     else
@@ -116,22 +106,16 @@ void InterestManager::UpdateEntityVisibility(UserConnectionPtr conn, entity_id_t
 
 void InterestManager::UpdateLastUpdatedEntity(UserConnectionPtr conn, entity_id_t id)
 {
-    std::map<entity_id_t, float>::iterator it;
-
-    it = conn->syncState->lastUpdatedEntitys_.find(id);
-
+    std::map<entity_id_t, float>::iterator it = conn->syncState->lastUpdatedEntitys_.find(id);
     if(it == conn->syncState->lastUpdatedEntitys_.end())
-        conn->syncState->lastUpdatedEntitys_.insert(std::make_pair(id, ElapsedTime()));
+        conn->syncState->lastUpdatedEntitys_.insert(std::make_pair(id, (float)ElapsedTime()));
     else
-        it->second = ElapsedTime();
+        it->second = (float)ElapsedTime();
 }
 
 float InterestManager::FindLastUpdatedEntity(UserConnectionPtr conn, entity_id_t id)
 {
-    std::map<entity_id_t, float>::iterator it;
-
-    it = conn->syncState->lastUpdatedEntitys_.find(id);
-
+    std::map<entity_id_t, float>::iterator it = conn->syncState->lastUpdatedEntitys_.find(id);
     if(it == conn->syncState->lastUpdatedEntitys_.end())
         return 0;
     else
@@ -140,22 +124,16 @@ float InterestManager::FindLastUpdatedEntity(UserConnectionPtr conn, entity_id_t
 
 void InterestManager::UpdateLastRaycastedEntity(UserConnectionPtr conn, entity_id_t id)
 {
-    std::map<entity_id_t, float>::iterator it;
-
-    it = conn->syncState->lastRaycastedEntitys_.find(id);
-
+    std::map<entity_id_t, float>::iterator it = conn->syncState->lastRaycastedEntitys_.find(id);
     if(it == conn->syncState->lastRaycastedEntitys_.end())
-        conn->syncState->lastRaycastedEntitys_.insert(std::make_pair(id, ElapsedTime()));
+        conn->syncState->lastRaycastedEntitys_.insert(std::make_pair(id, (float)ElapsedTime()));
     else
-        it->second = ElapsedTime();
+        it->second = (float)ElapsedTime();
 }
 
 float InterestManager::FindLastRaycastedEntity(UserConnectionPtr conn, entity_id_t id)
 {
-    std::map<entity_id_t, float>::iterator it;
-
-    it = conn->syncState->lastRaycastedEntitys_.find(id);
-
+    std::map<entity_id_t, float>::iterator it = conn->syncState->lastRaycastedEntitys_.find(id);
     if(it == conn->syncState->lastRaycastedEntitys_.end())
         return 0;
     else
