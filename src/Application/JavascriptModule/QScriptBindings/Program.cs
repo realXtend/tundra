@@ -480,27 +480,57 @@ namespace QScriptBindings
             {
                 if (function.parameters.Count == 0)
                 {
-                    tw.WriteLine(Indent(1) + Class.name + " ret;"); // Create a new instance of this class, no parameters.
-                    bool needZeroMemory = false;
+                    bool needInitMemory = false;
+                    string initSymbol = "";
 
                     // Check if default constructor does not initialize the member variables
                     foreach (string str in function.Comments())
                         if (str.Contains("default constructor does not initialize") || str.Contains("default ctor does not initialize") || str.Contains("with uninitialized member values"))
                         {
-                            needZeroMemory = true;
+                            needInitMemory = true;
                             break;
                         }
 
                     foreach (string str in function.notes)
                         if (str.Contains("default constructor does not initialize") || str.Contains("default ctor does not initialize") || str.Contains("with uninitialized member values"))
                         {
-                            needZeroMemory = true;
+                            needInitMemory = true;
                             break;
                         }
 
-                    // In that case zero out the memory
-                    if (needZeroMemory)
-                        tw.WriteLine(Indent(1) + "memset(&ret, 0, sizeof ret);");
+
+                    if (needInitMemory)
+                    {
+                        // Prefer "identity" initializer if exists (Quat & matrices), otherwise "zero"
+                        foreach (Symbol child in Class.children)
+                        {
+                            if (child.name == "identity" && child.isStatic)
+                            {
+                                initSymbol = child.name;
+                                break;
+                            }
+                        }
+                        if (initSymbol.Length == 0)
+                        {
+                            foreach (Symbol child in Class.children)
+                            {
+                                if (child.name == "zero" && child.isStatic)
+                                {
+                                    initSymbol = child.name;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (initSymbol.Length > 0)
+                        tw.WriteLine(Indent(1) + Class.name + " ret(" + Class.name + "::" + initSymbol + ");");
+                    else
+                    {
+                        tw.WriteLine(Indent(1) + Class.name + " ret;"); // Create a new instance of this class, no parameters.
+                        if (needInitMemory)
+                            tw.WriteLine(Indent(1) + "memset(&ret, 0, sizeof ret);");
+                    }
                 }
                 else
                     tw.Write(Indent(1) + Class.name + " ret("); // Create a new instance of this class, one or more parameters.
