@@ -18,6 +18,7 @@
 #include "Math/Quat.h"
 #include "Entity.h"
 
+#include <LinearMath/btIDebugDraw.h>
 // Disable unreferenced formal parameter coming from Bullet
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -70,43 +71,98 @@ void TickCallback(btDynamicsWorld *world, btScalar timeStep)
     static_cast<Physics::PhysicsWorld*>(world->getWorldUserInfo())->ProcessPostTick(timeStep);
 }
 
+struct PhysicsWorld::Impl : public btIDebugDraw
+{
+    explicit Impl(PhysicsWorld *owner) :
+        collisionConfiguration(0),
+        collisionDispatcher(0),
+        broadphase(0),
+        solver(0),
+        world(0),
+        debugDrawMode(0),
+        cachedOgreWorld(0)
+    {
+#include "DisableMemoryLeakCheck.h"
+        collisionConfiguration = new btDefaultCollisionConfiguration();
+        collisionDispatcher = new btCollisionDispatcher(collisionConfiguration);
+        broadphase = new btDbvtBroadphase();
+        solver = new btSequentialImpulseConstraintSolver();
+        world = new btDiscreteDynamicsWorld(collisionDispatcher, broadphase, solver, collisionConfiguration);
+        world->setDebugDrawer(this);
+        world->setInternalTickCallback(TickCallback, (void*)owner, false);
+#include "EnableMemoryLeakCheck.h"
+    }
+
+    ~Impl()
+    {
+        delete world;
+        delete solver;
+        delete broadphase;
+        delete collisionDispatcher;
+        delete collisionConfiguration;
+    }
+
+    /// btIDebugDraw override
+    virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
+    {
+        if (IsDebugGeometryEnabled() && cachedOgreWorld)
+            cachedOgreWorld->DebugDrawLine(from, to, color.x(), color.y(), color.z());
+    }
+
+    /// btIDebugDraw override
+    virtual void reportErrorWarning(const char* warningString)
+    {
+        LogWarning("Physics: " + std::string(warningString));
+    }
+
+    /// btIDebugDraw override, does nothing.
+    /// @todo Now that we have EC_PhysicsConstraint, implement this!
+    virtual void drawContactPoint(const btVector3& /*pointOnB*/, const btVector3& /*normalOnB*/, btScalar /*distance*/, int /*lifeTime*/, const btVector3& /*color*/) {}
+    
+    /// btIDebugDraw override, does nothing.
+    virtual void draw3dText(const btVector3& /*location*/, const char* /*textString*/) {}
+    
+    /// btIDebugDraw override
+    virtual void setDebugMode(int debugMode) { debugDrawMode = debugMode; }
+    
+    /// btIDebugDraw override
+    virtual int getDebugMode() const { return debugDrawMode; }
+
+    bool IsDebugGeometryEnabled() const { return getDebugMode() != btIDebugDraw::DBG_NoDebug; }
+
+    /// Bullet collision config
+    btCollisionConfiguration* collisionConfiguration;
+    /// Bullet collision dispatcher
+    btDispatcher* collisionDispatcher;
+    /// Bullet collision broadphase
+    btBroadphaseInterface* broadphase;
+    /// Bullet constraint equation solver
+    btConstraintSolver* solver;
+    /// Bullet physics world
+    btDiscreteDynamicsWorld* world;
+    /// Bullet debug draw / debug behaviour flags
+    int debugDrawMode;
+    /// Cached OgreWorld pointer for drawing debug geometry
+    OgreWorld* cachedOgreWorld;
+};
+
 PhysicsWorld::PhysicsWorld(const ScenePtr &scene, bool isClient) :
     scene_(scene),
-    collisionConfiguration_(0),
-    collisionDispatcher_(0),
-    broadphase_(0),
-    solver_(0),
-    world_(0),
     physicsUpdatePeriod_(1.0f / 60.0f),
     maxSubSteps_(6), // If fps is below 10, we start to slow down physics
     isClient_(isClient),
     runPhysics_(true),
     drawDebugManuallySet_(false),
     useVariableTimestep_(false),
-    debugDrawMode_(0),
-    cachedOgreWorld_(0)
+    impl(new Impl(this))
 {
-#include "DisableMemoryLeakCheck.h"
-    collisionConfiguration_ = new btDefaultCollisionConfiguration();
-    collisionDispatcher_ = new btCollisionDispatcher(collisionConfiguration_);
-    broadphase_ = new btDbvtBroadphase();
-    solver_ = new btSequentialImpulseConstraintSolver();
-    world_ = new btDiscreteDynamicsWorld(collisionDispatcher_, broadphase_, solver_, collisionConfiguration_);
-    world_->setDebugDrawer(this);
-    world_->setInternalTickCallback(TickCallback, (void*)this, false);
-#include "EnableMemoryLeakCheck.h"
-
     if (scene->GetFramework()->HasCommandLineParameter("--variablephysicsstep"))
         useVariableTimestep_ = true;
 }
 
 PhysicsWorld::~PhysicsWorld()
 {
-    SAFE_DELETE(world_);
-    SAFE_DELETE(solver_);
-    SAFE_DELETE(broadphase_);
-    SAFE_DELETE(collisionDispatcher_);
-    SAFE_DELETE(collisionConfiguration_);
+    delete impl;
 }
 
 void PhysicsWorld::SetPhysicsUpdatePeriod(float updatePeriod)
@@ -125,17 +181,17 @@ void PhysicsWorld::SetMaxSubSteps(int steps)
 
 void PhysicsWorld::SetGravity(const float3& gravity)
 {
-    world_->setGravity(gravity);
+    impl->world->setGravity(gravity);
 }
 
 float3 PhysicsWorld::Gravity() const
 {
-    return world_->getGravity();
+    return impl->world->getGravity();
 }
 
 btDiscreteDynamicsWorld* PhysicsWorld::BulletWorld() const
 {
-    return world_;
+    return impl->world;
 }
 
 void PhysicsWorld::Simulate(f64 frametime)
@@ -156,10 +212,10 @@ void PhysicsWorld::Simulate(f64 frametime)
             float clampedTimeStep = (float)frametime;
             if (clampedTimeStep > 0.1f)
                 clampedTimeStep = 0.1f; // Advance max. 1/10 sec. during one frame
-            world_->stepSimulation(clampedTimeStep, 0, clampedTimeStep);
+            impl->world->stepSimulation(clampedTimeStep, 0, clampedTimeStep);
         }
         else
-            world_->stepSimulation((float)frametime, maxSubSteps_, physicsUpdatePeriod_);
+            impl->world->stepSimulation((float)frametime, maxSubSteps_, physicsUpdatePeriod_);
     }
     
     // Automatically enable debug geometry if at least one debug-enabled rigidbody. Automatically disable if no debug-enabled rigidbodies
@@ -180,7 +236,7 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
 {
     PROFILE(PhysicsWorld_ProcessPostTick);
     // Check contacts and send collision signals for them
-    int numManifolds = collisionDispatcher_->getNumManifolds();
+    int numManifolds = impl->collisionDispatcher->getNumManifolds();
     
     std::set<std::pair<const btCollisionObject*, const btCollisionObject*> > currentCollisions;
     
@@ -196,7 +252,7 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
         
         for(int i = 0; i < numManifolds; ++i)
         {
-            btPersistentManifold* contactManifold = collisionDispatcher_->getManifoldByIndexInternal(i);
+            btPersistentManifold* contactManifold = impl->collisionDispatcher->getManifoldByIndexInternal(i);
             int numContacts = contactManifold->getNumContacts();
             if (numContacts == 0)
                 continue;
@@ -287,7 +343,7 @@ PhysicsRaycastResult* PhysicsWorld::Raycast(const float3& origin, const float3& 
     rayCallback.m_collisionFilterGroup = collisiongroup;
     rayCallback.m_collisionFilterMask = collisionmask;
     
-    world_->rayTest(rayCallback.m_rayFromWorld, rayCallback.m_rayToWorld, rayCallback);
+    impl->world->rayTest(rayCallback.m_rayFromWorld, rayCallback.m_rayToWorld, rayCallback);
     
     result.entity = 0;
     result.distance = 0;
@@ -322,11 +378,11 @@ EntityList PhysicsWorld::ObbCollisionQuery(const OBB &obb, int collisionGroup, i
     btRigidBody* tempRigidBody = new btRigidBody(1.0f, 0, &box);
 #include "EnableMemoryLeakCheck.h"
     tempRigidBody->setWorldTransform(t1);
-    world_->addRigidBody(tempRigidBody, collisionGroup, collisionMask);
+    impl->world->addRigidBody(tempRigidBody, collisionGroup, collisionMask);
     tempRigidBody->activate(); // To make sure we get collision results from static sleeping rigidbodies, activate the temp rigid body
     
     ObbCallback resultCallback(objects);
-    world_->contactTest(tempRigidBody, resultCallback);
+    impl->world->contactTest(tempRigidBody, resultCallback);
     
     for (std::set<btCollisionObjectWrapper*>::iterator i = objects.begin(); i != objects.end(); ++i)
     {
@@ -335,7 +391,7 @@ EntityList PhysicsWorld::ObbCollisionQuery(const OBB &obb, int collisionGroup, i
             entities.push_back(body->ParentEntity()->shared_from_this());
     }
     
-    world_->removeRigidBody(tempRigidBody);
+    impl->world->removeRigidBody(tempRigidBody);
     delete tempRigidBody;
     
     return entities;
@@ -347,12 +403,12 @@ void PhysicsWorld::SetDebugGeometryEnabled(bool enable)
         return;
 
     /// @todo Make possisble to set other debug modes too.
-    setDebugMode(enable ? btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraintLimits | btIDebugDraw::DBG_DrawConstraints : btIDebugDraw::DBG_NoDebug);
+    impl->setDebugMode(enable ? btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraintLimits | btIDebugDraw::DBG_DrawConstraints : btIDebugDraw::DBG_NoDebug);
 }
 
 bool PhysicsWorld::IsDebugGeometryEnabled() const
 {
-    return getDebugMode() != btIDebugDraw::DBG_NoDebug;
+    return impl->IsDebugGeometryEnabled();
 }
 
 void PhysicsWorld::DrawDebugGeometry()
@@ -364,25 +420,14 @@ void PhysicsWorld::DrawDebugGeometry()
     
     // Draw debug only for the active (visible) scene
     OgreWorldPtr ogreWorld = scene_.lock()->GetWorld<OgreWorld>();
-    cachedOgreWorld_ = ogreWorld.get();
+    impl->cachedOgreWorld = ogreWorld.get();
     if (!ogreWorld)
         return;
     if (!ogreWorld->IsActive())
         return;
     
     // Get all lines of the physics world
-    world_->debugDrawWorld();
-}
-
-void PhysicsWorld::reportErrorWarning(const char* warningString)
-{
-    LogWarning("Physics: " + std::string(warningString));
-}
-
-void PhysicsWorld::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
-{
-    if (IsDebugGeometryEnabled() && cachedOgreWorld_)
-        cachedOgreWorld_->DebugDrawLine(from, to, color.x(), color.y(), color.z());
+    impl->world->debugDrawWorld();
 }
 
 } // ~Physics
