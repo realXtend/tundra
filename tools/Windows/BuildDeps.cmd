@@ -910,11 +910,11 @@ IF NOT EXIST "%DEPS%\speex\lib\%DEBUG_OR_RELEASE%\libspeexdsp.lib". (
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
     cecho {0D}Building %DEBUG_OR_RELEASE% Speex. Please be patient, this will take a while.{# #}{\n}
-    :: The default libspeex.sln has the libspeexdsp project disabled, so we must use our own custom solution file.
-    copy /Y "%TOOLS%\Mods\libspeex.sln" libspeex.sln
-    :: Also, the libspeexdsp.vcproj poorly outputs the resulted library to the same directory using the same filename
-    :: regardless of the used configuration so we must work around that too.
-    copy /Y "%TOOLS%\Mods\libspeexdsp.vcproj" libspeexdsp\libspeexdsp.vcproj
+    :: Custom solutions that include libspeexdsp and change the output dirs.
+    copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-libspeex.sln" libspeex.sln
+    copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-libspeex.%VCPROJ_FILE_EXT%" libspeex\libspeex.%VCPROJ_FILE_EXT%
+    copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-libspeexdsp.%VCPROJ_FILE_EXT%" libspeexdsp\libspeexdsp.%VCPROJ_FILE_EXT%
+
     MSBuild libspeex.sln /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
