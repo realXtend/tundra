@@ -18,7 +18,7 @@ use_package_assimp()
 add_definitions(-DOPENASSETIMPORT_EXPORTS)
 
 build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
-link_modules(TundraCore)
+link_modules(TundraCore OgreRenderingModule)
 link_ogre()
 link_package_assimp()
 link_package(QT4)

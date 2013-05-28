@@ -17,10 +17,6 @@
 #include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
 
-#ifdef ASSIMP_ENABLED
-#include "OpenAssetImport.h"
-#endif
-
 OgreMeshAsset::~OgreMeshAsset()
 {
     Unload();
@@ -102,7 +98,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
     if (IsAssimpFileType())
     {
 #ifdef ASSIMP_ENABLED
-        ConvertAssimpDataToOgreMesh(data_, numBytes);
+        emit ExternalConversionRequested(this, data_, numBytes);
         return true;
 #else
         LogError(QString("OgreMeshAsset::DeserializeFromData: cannot convert " + Name() + " to Ogre mesh. OpenAssetImport is not enabled."));
@@ -509,16 +505,6 @@ bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializat
     return false;
 }
 
-void OgreMeshAsset::ConvertAssimpDataToOgreMesh(const u8 *data_, size_t numBytes)
-{
-
-#ifdef ASSIMP_ENABLED
-    importer = new OpenAssetImport(assetAPI);
-    connect(importer, SIGNAL(ConversionDone(bool)), this, SLOT(OnAssimpConversionDone(bool)), Qt::UniqueConnection);
-    importer->Convert(data_, numBytes, this->Name(), this->DiskSource(), ogreMesh);
-#endif
-}
-
 bool OgreMeshAsset::IsAssimpFileType()
 {
     const char *openAssImpFileTypes[] = { ".3d", ".b3d", ".blend", ".dae", ".bvh", ".3ds", ".ase", ".obj", ".ply", ".dxf",
@@ -550,8 +536,5 @@ void OgreMeshAsset::OnAssimpConversionDone(bool success)
         assetAPI->AssetLoadFailed(Name());
         LogError("OgreMeshAsset::DeserializeFromData: Failed to to covert " + Name() +" to Ogre mesh.");
     }
-
-    delete importer;
-	
 }
 #endif

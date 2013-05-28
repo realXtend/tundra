@@ -10,6 +10,7 @@ Licensed under the MIT license:
 
 #include "CoreDefines.h"
 #include "Framework.h"
+#include "OgreMeshAsset.h"
 #include "OgreMaterialAsset.h"
 #include "LoggingFunctions.h"
 #include "Math/MathFunc.h"
@@ -29,13 +30,36 @@ Licensed under the MIT license:
 
 int OpenAssetImport::msBoneCount = 0;
 
-OpenAssetImport::OpenAssetImport(AssetAPI *assetApi):
-assetAPI(assetApi), meshCreated(false), texCount(0)
+OpenAssetImport::OpenAssetImport() :
+    IModule("OpenAssetImport"),
+    meshCreated(false),
+    texCount(0)
 {
 }
 
 OpenAssetImport::~OpenAssetImport()
 {
+}
+
+void OpenAssetImport::Initialize()
+{
+    assetAPI = GetFramework()->Asset();
+    connect(assetAPI, SIGNAL(AssetCreated(AssetPtr)), SLOT(OnAssetCreated(AssetPtr)), Qt::UniqueConnection);
+}
+
+void OpenAssetImport::OnAssetCreated(AssetPtr asset)
+{
+    OgreMeshAsset *meshAsset = dynamic_cast<OgreMeshAsset*>(asset.get());
+    if (meshAsset)
+    {
+        connect(meshAsset, SIGNAL(ExternalConversionRequested(OgreMeshAsset*, const u8*, size_t)), SLOT(OnConversionRequest(OgreMeshAsset*, const u8*, size_t)), Qt::UniqueConnection);
+        connect(this, SIGNAL(ConversionDone(bool)), meshAsset, SLOT(OnAssimpConversionDone(bool)), Qt::UniqueConnection);
+    }
+}
+
+void OpenAssetImport::OnConversionRequest(OgreMeshAsset *asset, const u8 *data, size_t len)
+{
+    Convert(data, len, asset->Name(), asset->DiskSource(), asset->ogreMesh);
 }
 
 /**************************************************************************
@@ -1229,5 +1253,7 @@ extern "C"
 DLLEXPORT void TundraPluginMain(Framework *fw)
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
+    IModule *module = new OpenAssetImport();
+    fw->RegisterModule(module);
 }
 }
