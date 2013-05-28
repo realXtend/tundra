@@ -2,15 +2,20 @@
 
 #pragma once
 
-#include "CoreDefines.h"
-
 // If PCH is disabled, leave the contents of this whole file empty to avoid any compilation unit getting any unnecessary headers.
-///\todo Refactor the above #include inside this #ifdef as well.
 #ifdef PCH_ENABLED
-
+#define MATH_BULLET_INTEROP
 #include "CoreDefines.h"
 #include "Framework.h"
 
+// Disable unreferenced formal parameter coming from Bullet
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4100)
 #endif
-
-
+#include <btBulletDynamicsCommon.h>
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+#include <btBulletCollisionCommon.h>
+#endif

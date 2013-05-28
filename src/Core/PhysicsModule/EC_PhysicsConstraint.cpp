@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #define MATH_BULLET_INTEROP
+
 #include "DebugOperatorNew.h"
 
 #include "PhysicsWorld.h"
@@ -13,19 +14,20 @@
 #include "Entity.h"
 #include "Math/MathFunc.h"
 #include "EC_Placeable.h"
-
-#include "BulletDynamics/ConstraintSolver/btTypedConstraint.h"
-#include "BulletDynamics/ConstraintSolver/btHingeConstraint.h"
-#include "BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h"
-#include "BulletDynamics/ConstraintSolver/btSliderConstraint.h"
-#include "BulletDynamics/ConstraintSolver/btConeTwistConstraint.h"
-#include "BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h"
-
 #include "AttributeMetadata.h"
+
+#include <BulletDynamics/ConstraintSolver/btTypedConstraint.h>
+#include <BulletDynamics/ConstraintSolver/btHingeConstraint.h>
+#include <BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h>
+#include <BulletDynamics/ConstraintSolver/btSliderConstraint.h>
+#include <BulletDynamics/ConstraintSolver/btConeTwistConstraint.h>
+#include <BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
+
+#include "MemoryLeakCheck.h"
 
 using namespace Physics;
 
-Quat FromEulerDegToQuat(float3 degEuler)
+static Quat FromEulerDegToQuat(const float3 &degEuler)
 {
     float3 radEuler = DegToRad(degEuler);
     return Quat::FromEulerXYZ(radEuler.x, radEuler.y, radEuler.z);
