@@ -9,8 +9,6 @@
 #include "Math/float3.h"
 #include "Math/MathFwd.h"
 
-#include <LinearMath/btIDebugDraw.h>
-
 #include <set>
 #include <QObject>
 
@@ -43,7 +41,7 @@ public:
 namespace Physics
 {
 /// A physics world that encapsulates a Bullet physics world
-class PHYSICS_MODULE_API PhysicsWorld : public QObject, public btIDebugDraw /** @todo pimpl */, public enable_shared_from_this<PhysicsWorld>
+class PHYSICS_MODULE_API PhysicsWorld : public QObject, public enable_shared_from_this<PhysicsWorld>
 {
     Q_OBJECT
     Q_PROPERTY(float updatePeriod READ PhysicsUpdatePeriod WRITE SetPhysicsUpdatePeriod)
@@ -70,25 +68,7 @@ public:
     
     /// Dynamic scene property name
     static const char* PropertyName() { return "physics"; }
-    
-    /// IDebugDraw override
-    virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
-    
-    /// IDebugDraw override
-    virtual void reportErrorWarning(const char* warningString);
-    
-    /// IDebugDraw override, does nothing.
-    virtual void drawContactPoint(const btVector3& /*pointOnB*/, const btVector3& /*normalOnB*/, btScalar /*distance*/, int /*lifeTime*/, const btVector3& /*color*/) {}
-    
-    /// IDebugDraw override, does nothing.
-    virtual void draw3dText(const btVector3& /*location*/, const char* /*textString*/) {}
-    
-    /// IDebugDraw override
-    virtual void setDebugMode(int debugMode) { debugDrawMode_ = debugMode; }
-    
-    /// IDebugDraw override
-    virtual int getDebugMode() const { return debugDrawMode_; }
-    
+
     /// Returns the set of collisions that occurred during the previous frame.
     /// \important Use this function only for debugging, the availability of this set data structure is not guaranteed in the future.
     const std::set<std::pair<const btCollisionObject*, const btCollisionObject*> > &PreviousFrameCollisions() const { return previousCollisions_; }
@@ -170,51 +150,29 @@ signals:
     /// Emitted after each simulation step
     /** @param frametime Length of simulation step */
     void Updated(float frametime);
-    
+
 private:
-    /// Bullet collision config
-    btCollisionConfiguration* collisionConfiguration_;
-    /// Bullet collision dispatcher
-    btDispatcher* collisionDispatcher_;
-    /// Bullet collision broadphase
-    btBroadphaseInterface* broadphase_;
-    /// Bullet constraint equation solver
-    btConstraintSolver* solver_;
-    /// Bullet physics world
-    btDiscreteDynamicsWorld* world_;
-    
+    /// Draw physics debug geometry, if debug drawing enabled
+    void DrawDebugGeometry();
+
+    struct Impl;
+    Impl *impl;
     /// Length of one physics simulation step
     float physicsUpdatePeriod_;
     /// Maximum amount of physics simulation substeps to run on a frame
     int maxSubSteps_;
-    
     /// Client scene flag
     bool isClient_;
-    
     /// Parent scene
     SceneWeakPtr scene_;
-    
     /// Previous frame's collisions. We store these to know whether the collision was new or "ongoing"
     std::set<std::pair<const btCollisionObject*, const btCollisionObject*> > previousCollisions_;
-    
-    /// Draw physics debug geometry, if debug drawing enabled
-    void DrawDebugGeometry();
-
     /// Debug geometry manually enabled/disabled (with physicsdebug console command). If true, do not automatically enable/disable debug geometry anymore
     bool drawDebugManuallySet_;
-    
     /// Whether should run physics. Default true
     bool runPhysics_;
-    
     /// Variable timestep flag
     bool useVariableTimestep_;
-    
-    /// Bullet debug draw / debug behaviour flags
-    int debugDrawMode_;
-    
-    /// Cached OgreWorld pointer for drawing debug geometry
-    OgreWorld* cachedOgreWorld_;
-    
     /// Debug draw-enabled rigidbodies. Note: these pointers are never dereferenced, it is just used for counting
     std::set<EC_RigidBody*> debugRigidBodies_;
 };
