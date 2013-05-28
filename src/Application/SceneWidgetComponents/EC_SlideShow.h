@@ -29,6 +29,7 @@ class SCENEWIDGET_MODULE_API EC_SlideShow : public IComponent
 
 public:
     /// List of slide asset references (to texture assets).
+    /// @todo Use AssetReferenceList.
     Q_PROPERTY(QVariantList slides READ getslides WRITE setslides);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, slides);
 
@@ -41,8 +42,8 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(int, currentSlideIndex);
 
     /// Rendering target submesh index.
-    Q_PROPERTY(int renderSubmeshIndex READ getrenderSubmeshIndex WRITE setrenderSubmeshIndex);
-    DEFINE_QPROPERTY_ATTRIBUTE(int, renderSubmeshIndex);
+    Q_PROPERTY(uint renderSubmeshIndex READ getrenderSubmeshIndex WRITE setrenderSubmeshIndex);
+    DEFINE_QPROPERTY_ATTRIBUTE(uint, renderSubmeshIndex);
 
     /// If rendering to the target submesh index is enabled
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled);
@@ -57,10 +58,10 @@ public:
     Q_PROPERTY(bool illuminating READ getilluminating WRITE setilluminating);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, illuminating);
 
-    /// Constuctor.
-    explicit EC_SlideShow(Scene *scene);
-
-    /// Destructor.
+    /// @cond PRIVATE
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_SlideShow(Scene* scene);
+    /// @endcond
     ~EC_SlideShow();
 
 public slots:
