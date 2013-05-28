@@ -12,8 +12,7 @@ set GENERATOR_VS2010="Visual Studio 10"
 set GENERATOR_VS2010_WIN64="Visual Studio 10 Win64"
 set GENERATOR_VS2008="Visual Studio 9 2008"
 set GENERATOR_VS2008_WIN64="Visual Studio 9 2008 Win64"
-:: TODO VS2008 is ancient, change GENERATOR_DEFAULT to VS2010 at some point.
-set GENERATOR_DEFAULT=%GENERATOR_VS2008%
+set GENERATOR_DEFAULT=%GENERATOR_VS2010%
 
 IF "!GENERATOR!"=="" (
     set GENERATOR=%GENERATOR_DEFAULT%
@@ -83,8 +82,5 @@ set TUNDRA_BIN=%CD%\bin
 
 :: Fetch and build the dependencies to a dedicated directory depending on the used VS version and target architecture.
 set DEPS=%CD%\deps-%VS_VER%-%TARGET_ARCH%
-:: TODO For now, use the old deps dir (simply "deps") for 32-bit VS2008 build, but deps-%VS_VER%-%TARGET_ARCH% for all other combinations.
-:: In the future we'll migrate to using full deps identifier always.
-IF %VS_VER%==vs2008 IF %TARGET_ARCH%==x86 set DEPS=%CD%\deps
 
 cd %TOOLS%
