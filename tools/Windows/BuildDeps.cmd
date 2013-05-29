@@ -889,10 +889,16 @@ IF %BUILD_TYPE%==Debug (
     set THEORA_BUILD_TYPE=Release_SSE2
 )
 IF NOT EXIST "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%\libtheora_static.lib". (
-    cd "%DEPS%\theora\win32\VS2008"
     cecho {0D}Building %THEORA_BUILD_TYPE% Theora. Please be patient, this will take a while.{# #}{\n}
-    MSBuild libtheora_static.sln /p:configuration=%THEORA_BUILD_TYPE%  /p:platform="%VS_PLATFORM%" /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+
+    cd "%DEPS%\theora\win32\VS2008\libtheora"
+    copy /Y "%TOOLS%\Mods\vs2008-libtheora_static.vcproj" libtheora_static.vcproj
+    IF NOT %VS_VER%==vs2008 IF NOT EXIST libtheora_static.%VCPROJ_FILE_EXT%. VCUpgrade /nologo libtheora_static.vcproj
+
+    MSBuild libtheora_static.%VCPROJ_FILE_EXT% /p:configuration=%THEORA_BUILD_TYPE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%   
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    IF NOT EXIST "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%". mkdir "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%"
+    copy /Y "%VS_PLATFORM%\%THEORA_BUILD_TYPE%\libtheora_static.lib" "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%\libtheora_static.lib"
 ) ELSE (
    cecho {0D}%THEORA_BUILD_TYPE% Theora already built. Skipping.{# #}{\n}
 )
