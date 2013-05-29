@@ -202,7 +202,6 @@ public:
     template<typename T>
     Attribute<T> *AttributeById(const QString &id) const
     {
-        /// \todo Compare needs to be case-insensitive
         for(size_t i = 0; i < attributes.size(); ++i)
             if (attributes[i] && !attributes[i]->Id().compare(id, Qt::CaseInsensitive))
                 return dynamic_cast<Attribute<T> *>(&attributes[i]);
@@ -364,6 +363,7 @@ signals:
     void ComponentNameChanged(const QString &newName, const QString &oldName);
 
     /// This signal is emitted when this Component is attached to its owning Entity.
+    /** When this signal is emitted, the framework pointer is guaranteed to valid. */
     void ParentEntitySet();
 
     /// This signal is emitted when this Component is detached from its parent, i.e. the new parent is set to null.
