@@ -34,7 +34,7 @@ The Tundra dependencies are acquired and built using an automated build script:
 2. Navigate to `<Tundra>\tools\Windows\VS<VersionNumber>\`  
 3. Run `BuildDeps_<BuildType>`, or `BuildDepsX64_<BuildType>` (if wanting to do a 64-bit build). RelWithDebInfo is recommended for the common development work, but you probably want to have the Debug builds available too.  
    The build script will print information what you need in order to proceed, follow the instructions carefully. You can abort the script with Ctrl+C at this point and setup your environment.  
-4. Once you are done setting up your build environment, hit any key to continue the script as it instructs. The full depedency build might take up to 2 hours.
+4. Once you are done setting up your build environment, hit any key to continue the script as it instructs. The full depedency build might take up to 2 hours.  
 5. After the script has completed, the dependencies can be found `deps-vs<VersionNumber>-<TargetArchitecture>\`. The needed runtime libraries are automatically copied to `bin\`.  
 6. Now run CMake batch script corresponding to your desired build configration. This script will set up the needed build environment variables for CMake and invoke CMake to generate a tundra.sln solution.  
 7. Build Tundra using the solution file.
