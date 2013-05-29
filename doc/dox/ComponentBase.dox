@@ -1,9 +1,10 @@
 /*!
 
-\page component_base Tundra Entity Component Reference
+\page component_base Tundra Entity-Component Reference
 
 Tundra provides a set of built-in entity components, which are the building blocks that make up the world. This page is the reference documentation for all these components. 
 You can define your own components in C++ by writing your own Tundra module to host it. See the Module API and Scene API for more information on how to do this.
+See https://github.com/realXtend/naali/wiki/Reserved-EC-IDs for a list of reserved Entity-Component type names and type IDs.
 
 <b>Note:</b> Some of the components listed here are internal to the system and they have never been intended to be used directly from the EC editor.
 Basically this means any component that does not contain any attributes or publicly accessible slots or actions.
