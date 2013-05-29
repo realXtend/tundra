@@ -91,7 +91,7 @@ void EC_EnvironmentLight::AttributesChanged()
 {
     if (sunColor.ValueChanged() || brightness.ValueChanged() || sunDirection.ValueChanged() || sunCastShadows.ValueChanged())
         UpdateSunlight();
-    else if (ambientColor.ValueChanged())
+    if (ambientColor.ValueChanged())
         UpdateAmbientLight();
 }
 
