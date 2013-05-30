@@ -514,7 +514,7 @@ bool Application::eventFilter(QObject *obj, QEvent *event)
         {
             if (event->type() == QEvent::ApplicationActivate)
                 appActivated = true;
-            if (event->type() == QEvent::ApplicationDeactivate)
+            else if (event->type() == QEvent::ApplicationDeactivate)
                 appActivated = false;
         }
 
@@ -615,6 +615,11 @@ bool Application::notify(QObject *receiver, QEvent *event)
     }
 }
 
+bool Application::IsActive() const
+{
+    return appActivated;
+}
+
 void Application::UpdateFrame()
 {
     // Don't pump the QEvents to QApplication if we are exiting
@@ -669,9 +674,10 @@ void Application::UpdateFrame()
     }
 }
 
-void Application::AboutToExit()
+void Application::RequestExit()
 {
     emit ExitRequested();
+
     // If no-one canceled the exit as a response to the signal, exit
     if (framework->IsExiting())
         quit();

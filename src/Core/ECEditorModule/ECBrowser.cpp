@@ -13,6 +13,9 @@
 #include "Profiler.h"
 #include "SceneAPI.h"
 #include "UiAPI.h"
+#include "AssetAPI.h"
+#include "IAsset.h"
+#include "AssetReference.h"
 #include "UiMainWindow.h"
 #include "Entity.h"
 #include "IComponent.h"
@@ -436,8 +439,20 @@ void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
             {
                 IComponent* comp = (*iter)->components_[i].lock().get();
                 if (comp)
+                {
+                    IAttribute *attr = comp->GetAttribute(treeWidget_->currentItem()->text(0));
+                    if (attr && attr->TypeId() == cAttributeAssetReference)
+                    {
+                        Attribute<AssetReference> *attribute = static_cast<Attribute<AssetReference> *>(attr);
+                        AssetPtr asset = framework_->Asset()->GetAsset(attribute->Get().ref);
+                        if (asset)
+                            targets.append(asset.get());
+                    }
+
                     targets.push_back(comp);
+                }
             }
+
             framework_->Ui()->EmitContextMenuAboutToOpen(menu_, targets);
         }
     }

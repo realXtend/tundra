@@ -101,13 +101,13 @@ bool LoadOggVorbisFromFileInMemory(const u8 *fileData, size_t numBytes, std::vec
 {
     if (!fileData || numBytes == 0)
     {
-        LogError("Null input data passed in");
+        LogError("LoadOggVorbisFromFileInMemory: Null input data passed in");
         return false;
     }
 
     if (!isStereo || !is16Bit || !frequency)
     {
-        LogError("Outputs not set");
+        LogError("LoadOggVorbisFromFileInMemory: Outputs not set");
         return false;
     }
     
@@ -124,7 +124,7 @@ bool LoadOggVorbisFromFileInMemory(const u8 *fileData, size_t numBytes, std::vec
     int ret = ov_open_callbacks(&src, &vf, 0, 0, cb);
     if (ret < 0)
     {
-        LogError("Not ogg vorbis format");
+        LogError("LoadOggVorbisFromFileInMemory: Not ogg vorbis format");
         ov_clear(&vf);
         return false;
     }
@@ -132,20 +132,22 @@ bool LoadOggVorbisFromFileInMemory(const u8 *fileData, size_t numBytes, std::vec
     vorbis_info* vi = ov_info(&vf, -1);
     if (!vi)
     {
-        LogError("No ogg vorbis stream info");
+        LogError("LoadOggVorbisFromFileInMemory: No ogg vorbis stream info");
         ov_clear(&vf);
         return false;
     }
 
+#if 0
     std::ostringstream msg;
-    msg << "Decoding ogg vorbis stream with " << vi->channels << " channels, frequency " << vi->rate; 
-//    LogDebug(msg.str()); 
+    msg << "LoadOggVorbisFromFileInMemory: Decoding ogg vorbis stream with " << vi->channels << " channels, frequency " << vi->rate; 
+    LogDebug(msg.str());
+#endif
 
+    *is16Bit = true; // vorbis is always decoded at 16-bit
     *frequency = vi->rate;
     *isStereo = (vi->channels > 1);
-    *is16Bit = true;
     if (vi->channels != 1 && vi->channels != 2)
-        LogWarning("Warning: Loaded Ogg Vorbis data contains an unsupported number of channels: " + QString::number(vi->channels));
+        LogWarning("LoadOggVorbisFromFileInMemory: Loaded Ogg Vorbis data contains an unsupported number of channels: " + QString::number(vi->channels));
 
     uint decoded_bytes = 0;
     dst.clear();
@@ -159,15 +161,15 @@ bool LoadOggVorbisFromFileInMemory(const u8 *fileData, size_t numBytes, std::vec
             break;
         decoded_bytes += ret;
     }
-    
+
     dst.resize(decoded_bytes);
 
-    {
-        std::ostringstream msg;
-        msg << "Decoded " << decoded_bytes << " bytes of ogg vorbis sound data";
-//        LogDebug(msg.str());
-    }
-     
+#if 0
+    std::ostringstream msg;
+    msg << "LoadOggVorbisFromFileInMemory: Decoded " << decoded_bytes << " bytes of ogg vorbis sound data";
+    LogDebug(msg.str());
+#endif
+
     ov_clear(&vf);
     return true;
 #else

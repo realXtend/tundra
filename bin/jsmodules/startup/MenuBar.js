@@ -20,6 +20,9 @@ if (!framework.IsHeadless())
 
     // File menu
     var fileMenu = menu.addMenu("&File");
+    fileMenu.addAction("New scene").triggered.connect(NewScene);
+    fileMenu.addAction("Open scene").triggered.connect(OpenScene);
+    fileMenu.addSeparator();
 
     var screenshotAct = fileMenu.addAction("Take Screenshot");
     screenshotAct.triggered.connect(TakeScreenshot);
@@ -29,7 +32,7 @@ if (!framework.IsHeadless())
     fileMenu.addAction("Clear Asset Cache").triggered.connect(ClearAssetCache);
     fileMenu.addSeparator();
 
-    //fileMenu.addAction("New scene").triggered.connect(NewScene);
+
 
     // Reconnect menu items for client only
     if (!server.IsAboutToStart())
@@ -104,7 +107,42 @@ if (!framework.IsHeadless())
     helpMenu.addAction(browserIcon, "Mailing list").triggered.connect(OpenMailingListUrl);
 
     function NewScene() {
-        scene.RemoveAllEntities();
+        if (framework.Scene().MainCameraScene() != null)
+        {
+            var result = QMessageBox.warning(ui.MainWindow(), "New scene", "Making a new scene will discard any changes you made to the current scene. Do you want to continue?", QMessageBox.Yes, QMessageBox.No);
+            if (result == QMessageBox.No)
+                return;
+        }
+        var sceneNumber = Math.floor(Math.random() * 10000000 + 1);
+        var newScene = framework.Scene().CreateScene("Scene" + sceneNumber, true, true);
+        if (newScene == null)
+            return;
+
+        // Give some sort of feedback (f.ex. make a skybox)
+        var environment = newScene.CreateEntity(newScene.NextFreeId(), ["EC_Name", "EC_Sky"]);
+        environment.name = "Environment";
+        environment.sky.enabled = true;
+    }
+
+    function OpenScene() {
+        var fileName = QFileDialog.getOpenFileName(ui.MainWindow(), "Open scene", framework.application.currentWorkingDirectory, "Tundra TXML file (*.txml)");
+        if (fileName == "")
+            return;
+
+        if (framework.Scene().MainCameraScene() != null)
+        {
+            var result = QMessageBox.warning(ui.MainWindow(), "Open scene", "Opening a new scene will discard any changes you made to the current scene. Do you want to continue?", QMessageBox.Yes, QMessageBox.No);
+            if (result == QMessageBox.No)
+                return;
+        }
+
+        var sceneNumber = Math.floor(Math.random() * 10000000 + 1);
+        var openedScene = framework.Scene().CreateScene("Scene" + sceneNumber, true, true);
+        if (openedScene == null)
+            return;
+
+        openedScene.LoadSceneXML(fileName, true, false, 0);
+
     }
 
     function Reconnect() {
@@ -210,7 +248,7 @@ if (!framework.IsHeadless())
     }
 
     function OpenProfilerWindow() {
-        framework.GetModuleByName("DebugStats").ShowProfilingWindow();
+        framework.GetModuleByName("DebugStats").ShowProfilerWindow();
     }
 
     function OpenTerrainEditor() {

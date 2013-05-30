@@ -39,6 +39,13 @@
 #pragma comment(lib, "User32.lib")
 #pragma comment(lib, "IPHLPAPI.lib")
 
+#if defined(DIRECTX_ENABLED)
+#if WINVER >= 0x0600
+#include <dxgi.h>
+typedef HRESULT (WINAPI* DXGICREATEFACTORY)(REFIID, void**);
+#endif
+#endif
+
 #define BUFSIZE 256
 
 typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);
@@ -390,11 +397,165 @@ unsigned long CpuSpeedFromRegistry(unsigned long dwCPU)
     RegCloseKey(hKey);
     return dwSpeed;
 }
-#else /// @todo Linux and OS X implementations
+
+unsigned long TotalVideoMemory()
+{
+    unsigned long availableMemory = 0;
+#if defined(DIRECTX_ENABLED)
+// Windows Vista and up implementation with dxgi.
+/// @todo Add <= Windows XP support.
+#if WINVER >= 0x0600
+    HINSTANCE dxgi = LoadLibrary(L"dxgi.dll");
+    if (dxgi)
+    {
+        DXGICREATEFACTORY CreateFactoryFunction = (DXGICREATEFACTORY)GetProcAddress(dxgi, "CreateDXGIFactory");
+        if (CreateFactoryFunction)
+        {
+            IDXGIFactory* factory = NULL;
+            CreateFactoryFunction(__uuidof(IDXGIFactory), (LPVOID*)&factory);
+            if (factory)
+            {
+                IDXGIAdapter* adapter = NULL;
+                HRESULT hr = factory->EnumAdapters(0, &adapter);
+                if (SUCCEEDED(hr) && adapter)
+                {
+                    DXGI_ADAPTER_DESC desc;
+                    ZeroMemory(&desc, sizeof(DXGI_ADAPTER_DESC));
+                    if (SUCCEEDED(adapter->GetDesc(&desc)))
+                        availableMemory = desc.DedicatedVideoMemory;
+                }
+            }
+        }
+        FreeLibrary(dxgi);
+    }
+#endif
+#endif
+    return availableMemory;
+}
+
+#elif defined(__APPLE__)
+#include <CoreServices/CoreServices.h>
+#include <ApplicationServices/ApplicationServices.h>
+#include <sys/sysctl.h>
+
+QString OsDisplayString()
+{
+    s32 majorVersion, minorVersion, bugfixVersion;
+
+    Gestalt(gestaltSystemVersionMajor, &majorVersion);
+    Gestalt(gestaltSystemVersionMinor, &minorVersion);
+    Gestalt(gestaltSystemVersionBugFix, &bugfixVersion);
+
+    QString codename;
+    switch(minorVersion)
+    {
+        case 5:
+            codename = "Leopard";
+            break;
+        case 6:
+            codename = "Snow Leopard";
+            break;
+        case 7:
+            codename = "Lion";
+            break;
+        case 8:
+            codename = "Mountain Lion";
+            break;
+        default:
+            codename = "";
+            break;
+    }
+
+    return QString("Mac OS X %1.%2.%3 (%4)").arg(majorVersion).arg(minorVersion).arg(bugfixVersion).arg(codename);
+}
+
+u64 TotalSystemPhysicalMemory()
+{
+    u64 memory;
+    size_t len = sizeof(memory);
+    sysctlbyname("hw.memsize", &memory, &len, NULL, 0);
+    return memory;
+}
+
+QString ProcessorBrandName()
+{
+    char cpuBrandName[128];
+    size_t len = sizeof(cpuBrandName);
+    sysctlbyname("machdep.cpu.brand_string", cpuBrandName, &len, NULL, 0);
+    return cpuBrandName;
+}
+
+QString ProcessorCpuIdString()
+{
+    char cpuIdString[128];
+    size_t len = sizeof(cpuIdString);
+    sysctlbyname("machdep.cpu.vendor", cpuIdString, &len, NULL, 0);
+    return cpuIdString;
+}
+
+QString ProcessorExtendedCpuIdInfo()
+{
+    u32 stepping, extmodel, extfamily, model, family;
+    size_t len = sizeof(u32);
+    sysctlbyname("machdep.cpu.stepping", &stepping, &len, NULL, 0);
+    sysctlbyname("machdep.cpu.extmodel", &extmodel, &len, NULL, 0);
+    sysctlbyname("machdep.cpu.extfamily", &extfamily, &len, NULL, 0);
+    sysctlbyname("machdep.cpu.model", &model, &len, NULL, 0);
+    sysctlbyname("machdep.cpu.family", &family, &len, NULL, 0);
+
+    std::stringstream fullString;
+    fullString << ProcessorCpuIdString().toStdString() << ", Stepping: " << stepping << ", Model: " << model <<
+    ", Family: " << family << ", Ext.model: " << extmodel << ", Ext.family: " << extfamily << ". " << CpuSpeedFromRegistry(0);
+    return QString::fromStdString(fullString.str());
+}
+
+unsigned long CpuSpeedFromRegistry(unsigned long /*dwCPU*/)
+{
+    u64 speed;
+    size_t len = sizeof(speed);
+    sysctlbyname("hw.cpufrequency", &speed, &len, NULL, 0);
+    return speed;
+}
+
+unsigned long TotalVideoMemory()
+{
+    long *videoMemory;
+    CGError err = CGDisplayNoErr;
+    uint i = 0;
+    io_service_t *dspPorts = NULL;
+    CGDirectDisplayID *displays = NULL;
+    CGDisplayCount dspCount = 0;
+    CFTypeRef typeCode;
+
+    err = CGGetActiveDisplayList(0, NULL, &dspCount);
+    displays = static_cast<CGDirectDisplayID*>(calloc((size_t)dspCount, sizeof(CGDirectDisplayID)));
+    videoMemory = static_cast<long*>(calloc((size_t)dspCount, sizeof(long)));
+    dspPorts = static_cast<io_service_t*>(calloc((size_t)dspCount, sizeof(io_service_t)));
+
+    err = CGGetActiveDisplayList(dspCount, displays, &dspCount);
+
+    for(i = 0; i < dspCount; i++)
+    {
+        dspPorts[i] = CGDisplayIOServicePort(displays[i]);
+        typeCode = IORegistryEntryCreateCFProperty(dspPorts[i], CFSTR(kIOFBMemorySizeKey), kCFAllocatorDefault, kNilOptions);
+
+        if(typeCode && CFGetTypeID(typeCode) == CFNumberGetTypeID())
+        {
+            CFNumberGetValue(static_cast<CFNumberRef>(typeCode), kCFNumberSInt32Type, videoMemory);
+            if(typeCode)
+                CFRelease(typeCode);
+        }
+    }
+
+    return *videoMemory;
+}
+#else /// @todo Linux implementation
 QString OsDisplayString() { return ""; }
 unsigned long long TotalSystemPhysicalMemory() { return 0; }
-QString ProcessorBrandName() { return ""; } 
+QString ProcessorBrandName() { return ""; }
 QString ProcessorCpuIdString() { return ""; }
 QString ProcessorExtendedCpuIdInfo() { return ""; }
 unsigned long CpuSpeedFromRegistry(unsigned long dwCPU) { return 0; }
+unsigned long TotalVideoMemory() { return 0; }
 #endif
+

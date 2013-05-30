@@ -319,7 +319,7 @@ static QScriptValue Ray_ToLineSegment_float_const(QScriptContext *context, QScri
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Ray_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue Ray_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Ray_ProjectToAxis_float3_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Ray This = qscriptvalue_cast<Ray>(context->thisObject());

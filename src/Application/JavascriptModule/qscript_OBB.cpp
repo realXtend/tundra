@@ -270,7 +270,7 @@ static QScriptValue OBB_ExtremePoint_float3_const(QScriptContext *context, QScri
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue OBB_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue OBB_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function OBB_ProjectToAxis_float3_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     OBB This = qscriptvalue_cast<OBB>(context->thisObject());
@@ -320,7 +320,7 @@ static QScriptValue OBB_FacePlane_int_const(QScriptContext *context, QScriptEngi
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue OBB_GetFacePlanes_Plane_ptr_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue OBB_GetFacePlanes_Plane_ptr_const(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 1) { printf("Error! Invalid number of arguments passed to function OBB_GetFacePlanes_Plane_ptr_const in file %s, line %d!\nExpected 1, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     OBB This = qscriptvalue_cast<OBB>(context->thisObject());
