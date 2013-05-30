@@ -63,7 +63,7 @@
 /// @note Modify these values when you are making a custom Tundra build. Also the version needs to be changed here on releases.
 const char *Application::organizationName = "Meshmoon";
 const char *Application::applicationName = "Rocket";
-const char *Application::version = "2.5.0.2";
+const char *Application::version = "2.5.0.3";
 
 Application::Application(Framework *owner, int &argc, char **argv) :
     QApplication(argc, argv),
