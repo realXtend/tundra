@@ -16,7 +16,7 @@
 			<Tool Name="VCManagedResourceCompilerTool"/>
 			<Tool Name="VCResourceCompilerTool"/>
 			<Tool Name="VCPreLinkEventTool"/>
-			<Tool Name="VCLibrarianTool" OutputFile="$(OutDir)/libspeex.lib"/>
+			<Tool Name="VCLibrarianTool" OutputFile="../../../lib/$(ConfigurationName)/libspeex.lib"/>
 			<Tool Name="VCALinkTool"/>
 			<Tool Name="VCXDCMakeTool"/>
 			<Tool Name="VCBscMakeTool"/>
@@ -32,7 +32,7 @@
 			<Tool Name="VCManagedResourceCompilerTool"/>
 			<Tool Name="VCResourceCompilerTool"/>
 			<Tool Name="VCPreLinkEventTool"/>
-			<Tool Name="VCLibrarianTool" OutputFile="$(OutDir)/libspeex.lib"/>
+			<Tool Name="VCLibrarianTool" OutputFile="../../../lib/$(ConfigurationName)/libspeex.lib"/>
 			<Tool Name="VCALinkTool"/>
 			<Tool Name="VCXDCMakeTool"/>
 			<Tool Name="VCBscMakeTool"/>
@@ -48,7 +48,7 @@
 			<Tool Name="VCManagedResourceCompilerTool"/>
 			<Tool Name="VCResourceCompilerTool"/>
 			<Tool Name="VCPreLinkEventTool"/>
-			<Tool Name="VCLibrarianTool" OutputFile="$(OutDir)/libspeex.lib"/>
+			<Tool Name="VCLibrarianTool" OutputFile="../../../lib/$(ConfigurationName)/libspeex.lib"/>
 			<Tool Name="VCALinkTool"/>
 			<Tool Name="VCXDCMakeTool"/>
 			<Tool Name="VCBscMakeTool"/>
@@ -64,7 +64,7 @@
 			<Tool Name="VCManagedResourceCompilerTool"/>
 			<Tool Name="VCResourceCompilerTool"/>
 			<Tool Name="VCPreLinkEventTool"/>
-			<Tool Name="VCLibrarianTool" OutputFile="$(OutDir)/libspeex.lib"/>
+			<Tool Name="VCLibrarianTool" OutputFile="../../../lib/$(ConfigurationName)/libspeex.lib"/>
 			<Tool Name="VCALinkTool"/>
 			<Tool Name="VCXDCMakeTool"/>
 			<Tool Name="VCBscMakeTool"/>
