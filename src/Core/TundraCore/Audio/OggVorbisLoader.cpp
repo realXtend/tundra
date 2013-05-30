@@ -143,6 +143,7 @@ bool LoadOggVorbisFromFileInMemory(const u8 *fileData, size_t numBytes, std::vec
 
     *frequency = vi->rate;
     *isStereo = (vi->channels > 1);
+    *is16Bit = true;
     if (vi->channels != 1 && vi->channels != 2)
         LogWarning("Warning: Loaded Ogg Vorbis data contains an unsupported number of channels: " + QString::number(vi->channels));
 
