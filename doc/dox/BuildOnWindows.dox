@@ -17,11 +17,11 @@ This page describes the necessary steps for building Tundra from the sources on 
  \section Deps Building dependencies
 
 <ol>
-<li>Due to the large amount of possible build configurations, the offically supported way of satisfying Tundra's third-party library dependencies is building them all on the development machine. This process involves building eg. the Qt library, and will take several hours.
-<li>To build the Tundra dependencies, open a Visual Studio command prompt that matches the architecture you will be building for (Visual Studio Command Prompt for 32-bit builds, Visual Studio Win64 Command Prompt for 64-bit builds), navigate to <i>C:/TundraGitTrunk/tools/Windows</i>, then to a subdirectory matching your Visual Studio version (<i>VS2008</i> or <i>VS2010</i>), then execute either BuildDeps.cmd or BuildDepsX64.cmd depending on the target architecture.
+<li>Due to the large amount of possible build configurations, the offically supported way of satisfying Tundra's third-party library dependencies is building them all on the development machine. This process involves building eg. the Qt library, and may take several hours.
+<li>To build the Tundra dependencies, open a Visual Studio command prompt that matches the architecture you will be building for (Visual Studio Command Prompt for 32-bit builds, Visual Studio Win64 Command Prompt for 64-bit builds), navigate to <i>C:/TundraGitTrunk/tools/Windows</i>, then to a subdirectory matching your Visual Studio version (<i>VS2008</i> or <i>VS2010</i>), then execute either BuildDeps_<configuration>.cmd (32-bit) or BuildDepsX64_<configurationname>.cmd (64-bit). RelWithDebInfo configuration is recommended for getting started on development. The Debug dependencies then need to be built separately.
 <li>When the command file is run, it will prompt for additional software prerequisites needed for successful build of the dependencies, among them SVN with command line tools, Mercurial, and Perl. Make sure these are satisfied before proceeding.
 <li>The command file downloads dependency packages, then builds them, so make sure your Internet connection is functional. After a while you will be prompted for Qt's license agreement, press 'Y' when prompted.
-<li>If there are errors during the dependency build, try running BuildDeps.cmd or BuildDepsX64.cmd again.
+<li>If there are errors during the dependency build, try running BuildDeps_<configurationname>.cmd or BuildDepsX64_<configurationname>.cmd again.
 </ol>
 
  \section SettingUp Setting up the Build
@@ -33,7 +33,7 @@ This page describes the necessary steps for building Tundra from the sources on 
   
   \section BuildingTundra Building and Running Tundra   
 
-Open the generated .sln file and do a full build. After finishing, two executables <b>Tundra.exe</b> and <b>TundraConsole.exe</b> (or <b>Tundrad.exe</b> and <b>TundraConsoled.exe</b> for debug builds) will be generated to the folder <i>C:/TundraGitTrunk/bin/</i>. All the built modules will be placed to the folder <i>C:/TundraGitTrunk/bin/plugins</i>. The debug builds of modules will have the <b>...d.dll</b> suffix.
+Open the generated .sln file, choose the configuration that you built the dependencies for (for example RelWithDebInfo) and do a full build. After finishing, two executables <b>Tundra.exe</b> and <b>TundraConsole.exe</b> (or <b>Tundrad.exe</b> and <b>TundraConsoled.exe</b> for Debug configuration) will be generated to the folder <i>C:/TundraGitTrunk/bin/</i>. All the built modules will be placed to the folder <i>C:/TundraGitTrunk/bin/plugins</i>. The debug builds of modules will have the <b>...d.dll</b> suffix.
 
   \section RebuildingTundra How to Make a Rebuild
   
