@@ -6,6 +6,7 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "SceneFwd.h"
+#include "AssetFwd.h"
 #include "Math/MathFwd.h"
 #include "IRenderer.h"
 #include "Color.h"
@@ -48,6 +49,30 @@ public:
     /// Sets scene fog to default ineffective settings, which plays nice with the SuperShader.
     /** Use this if you have altered the Ogre SceneManager's fog and want to reset it. */
     void SetDefaultSceneFog();
+
+    /// Creates a instanced entity for mesh with materials.
+    /** @param Mesh asset reference. Must be loaded to the asset system.
+        @param Material asset references. Each material must be loaded to the asset system. Empty refs get a default error material.
+        @return Instanced entity. */
+    Ogre::InstancedEntity *CreateInstance(const QString &meshRef, const AssetReferenceList &materials);
+
+    /// @overload
+    /** @param Mesh asset. Must be in loaded state.
+        @param Material asset references. Each material must be loaded to the asset system. Empty refs get a default error material.
+        @return Instanced entity. */
+    Ogre::InstancedEntity *CreateInstance(const AssetPtr &meshAsset, const AssetReferenceList &materials);
+
+    /// Destroys instanced entities.
+    /** This function must be used in pair with OgreWorld::CreateInstance as it removes the instances from both internal state and from Ogre.
+        The pointers can not be used after this calling this function.
+        @param Instanced entity to destroy. */
+    void DestroyInstances(Ogre::InstancedEntity* instance);
+
+    /// @overload
+    /** This function must be used in pair with OgreWorld::CreateInstance as it removes the instances from both internal state and from Ogre.
+        The pointers can not be used after this calling this function.
+        @param Instanced entities to destroy. */
+    void DestroyInstances(const QList<Ogre::InstancedEntity*> instances);
 
     std::string GetUniqueObjectName(const std::string &prefix) { return GenerateUniqueObjectName(prefix); } /**< @deprecated Use GenerateUniqueObjectName @todo Add warning print */
 
@@ -204,6 +229,36 @@ private:
     
     /// Debug geometry object
     DebugLines* debugLines_;
+
     /// Debug geometry object, no depth testing
     DebugLines* debugLinesNoDepth_;
+
+    /// Instancing mesh target data
+    struct MeshInstanceTarget
+    {
+        int submesh;
+        Ogre::InstanceManager *manager;
+        QList<Ogre::InstancedEntity*> instances;
+
+        MeshInstanceTarget(int _submesh) : submesh(_submesh), manager(0) {}
+
+        /// Removes instance ptrs from the internal state. Does not destroy them.
+        void RemoveInstances(Ogre::InstancedEntity* instance);
+        void RemoveInstances(QList<Ogre::InstancedEntity*> _instances);
+    };
+
+    /// Instancing target data
+    struct InstancingTarget
+    {
+        QString ref;
+        QList<MeshInstanceTarget> targets;
+
+        InstancingTarget(const QString &meshRef) : ref(meshRef) {}
+    };
+
+    /// Ogre instancing data
+    QList<InstancingTarget> intancingTargets_;
+
+    /// Get or create a instance manager for mesh ref and submesh index.
+    OgreWorld::MeshInstanceTarget& GetOrCreateInstanceMeshTarget(const QString &meshRef, int submesh);
 };
