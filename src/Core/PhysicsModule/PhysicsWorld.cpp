@@ -347,7 +347,7 @@ void PhysicsWorld::SetDebugGeometryEnabled(bool enable)
         return;
 
     /// @todo Make possisble to set other debug modes too.
-    setDebugMode(enable ? btIDebugDraw::DBG_DrawWireframe : btIDebugDraw::DBG_NoDebug);
+    setDebugMode(enable ? btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraintLimits | btIDebugDraw::DBG_DrawConstraints : btIDebugDraw::DBG_NoDebug);
 }
 
 bool PhysicsWorld::IsDebugGeometryEnabled() const
