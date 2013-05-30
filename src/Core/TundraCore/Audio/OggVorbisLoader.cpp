@@ -140,7 +140,7 @@ bool LoadOggVorbisFromFileInMemory(const u8 *fileData, size_t numBytes, std::vec
     std::ostringstream msg;
     msg << "Decoding ogg vorbis stream with " << vi->channels << " channels, frequency " << vi->rate; 
 //    LogDebug(msg.str()); 
-
+    *is16Bit = true; // vorbis is always decoded at 16-bit
     *frequency = vi->rate;
     *isStereo = (vi->channels > 1);
     *is16Bit = true;
