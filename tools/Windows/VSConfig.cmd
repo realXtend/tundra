@@ -34,8 +34,8 @@ set VS_PLATFORM=Win32
 
 :: Split the string for closer inspection.
 :: VS_VER and VC_VER are convenience variables used f.ex. for filenames.
-set GENERATOR_SPLIT=%GENERATOR:"=%
-set GENERATOR_SPLIT=%GENERATOR_SPLIT: =,%
+set GENERATOR_NO_DOUBLEQUOTES=%GENERATOR:"=%
+set GENERATOR_SPLIT=%GENERATOR_NO_DOUBLEQUOTES: =,%
 FOR %%i IN (%GENERATOR_SPLIT%) DO (
     REM IF %%i==11 (
     REM set VS_VER=vs2012

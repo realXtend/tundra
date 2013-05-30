@@ -152,7 +152,6 @@ if (NOT ANDROID)
 endif()
 
 if (NOT ANDROID)
-    AddProject(Application CAVEStereoModule)        # Provides multi-windowed rendering views for CAVE setups and stereoscopy view modes.
     AddProject(Application OgreAssetEditorModule)   # Enables various asset editors. Depends on OgreRenderingModule.
 endif()
 

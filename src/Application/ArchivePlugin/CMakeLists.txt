@@ -10,7 +10,7 @@ macro (configure_zziplib)
     message("${ZZIPLIB_ROOT}")
     sagase_configure_package(ZZIPLIB
         NAMES zziplib zzip # zzip find headers. Important in NAMES so it will pick up /include instead of /include/zzip
-        COMPONENTS zziplib zzip
+        COMPONENTS zziplib zzip zziplibd zzipd
         PREFIXES ${ZZIPLIB_ROOT} ${ENV_TUNDRA_DEP_PATH})
     
     sagase_configure_report (ZZIPLIB)

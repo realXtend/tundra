@@ -14,11 +14,11 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # If TUNDRA_NO_BOOST is set to TRUE, kNet must also be built without Boost dependecy. In order to make the
 # Tundra build fully free of Boost, you must also build Ogre and AssImp, which depend on Boost by default,
 # with Boost disabled. See the dependencies scripts for instructions how to control this.
-# On Linux & OS X TUNDRA_NO_BOOST can not yet be used
-if (NOT WIN32)
-    option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." FALSE)
-else ()
+# On Linux TUNDRA_NO_BOOST can not yet be used
+if (WIN32 OR APPLE)
     option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." TRUE)
+else ()
+    option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." FALSE)
 endif ()
 
 option(TUNDRA_CPP11_ENABLED "Enables C++11 features on Tundra" FALSE)

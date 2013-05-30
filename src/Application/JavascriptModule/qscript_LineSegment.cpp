@@ -10,6 +10,7 @@ static QScriptValue LineSegment_LineSegment(QScriptContext *context, QScriptEngi
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function LineSegment_LineSegment in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     LineSegment ret;
+    memset(&ret, 0, sizeof ret);
     return qScriptValueFromValue(engine, ret);
 }
 
