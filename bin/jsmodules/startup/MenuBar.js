@@ -44,6 +44,8 @@ if (!framework.IsHeadless())
 
     // View menu
     var viewMenu = menu.addMenu("&View");
+    // Set unique object name so that other scripts can query this menu.
+    viewMenu.objectName = "ViewMenu";
 
     if (framework.GetModuleByName("SceneStructure"))
     {
@@ -77,11 +79,6 @@ if (!framework.IsHeadless())
 
         if (framework.GetModuleByName("MumbleVoip"))
             settingsMenu.addAction("Voice settings").triggered.connect(OpenVoiceSettings);
-        if (framework.GetModuleByName("CAVEStereo"))
-        {
-            settingsMenu.addAction("Cave").triggered.connect(OpenCaveWindow);
-            settingsMenu.addAction("Stereoscopy").triggered.connect(OpenStereoscopyWindow);
-        }
 
         if (ecEditor)
         {
@@ -254,14 +251,6 @@ if (!framework.IsHeadless())
         framework.GetModuleByName("ECEditor").highlightingEnabled = show;
     }
 
-    function OpenStereoscopyWindow() {
-        framework.GetModuleByName("CAVEStereo").ShowStereoscopyWindow();
-    }
-
-    function OpenCaveWindow() {
-        framework.GetModuleByName("CAVEStereo").ShowCaveWindow();
-    }
-    
     function OpenConfigFolder() {
         QDesktopServices.openUrl(new QUrl(config.GetConfigFolder()));
     }

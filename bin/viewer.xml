@@ -19,7 +19,6 @@
   <plugin path="DebugStatsModule" />            <!-- DebugStatsModule depends on OgreRenderingModule, EnvironmentModule, OgreAssetEditorModule and AssetModule -->
   <plugin path="SceneWidgetComponents" />       <!-- Depends on OgreRenderingModule and TundraProtocolModule (and optionally on BrowserUiPlugin) -->
   <plugin path="MumblePlugin" />                <!-- Depends on OgreRenderingModule, JavascriptModule and TundraLogicModule -->
-  <plugin path="CAVEStereoModule" />            <!-- Depends on OgreRenderingModule -->
   <plugin path="CanvasPlugin" />                <!-- Depends on OgreRenderingModule -->
 
   <!-- NOTE: The startup .js scripts are specified only by base name of the file. Don's specify a path here. Place the startup .js scripts to /bin/jsmodules/startup/. -->
