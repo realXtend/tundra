@@ -68,8 +68,6 @@ EC_RigidBody::EC_RigidBody(Scene* scene) :
     cachedSize_(float3::zero),
     clientExtrapolating(false)
 {
-    owner_ = framework->GetModule<PhysicsModule>();
-    
     static AttributeMetadata shapemetadata;
     static bool metadataInitialized = false;
     if(!metadataInitialized)
@@ -102,7 +100,7 @@ bool EC_RigidBody::SetShapeFromVisibleMesh()
     Entity* parent = ParentEntity();
     if (!parent)
         return false;
-    EC_Mesh* mesh = parent->GetComponent<EC_Mesh>().get();
+    EC_Mesh* mesh = parent->Component<EC_Mesh>().get();
     if (!mesh)
         return false;
     mass.Set(0.0f, AttributeChange::Default);
@@ -254,11 +252,12 @@ void EC_RigidBody::UpdateSignals()
     Entity* parent = ParentEntity();
     if (!parent)
         return;
-    
+
     connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForPlaceableAndTerrain()));
-    
+
+    owner_ = framework->Module<PhysicsModule>();
     Scene* scene = parent->ParentScene();
-    world_ = scene->GetWorld<PhysicsWorld>().get();
+    world_ = scene->Subsystem<PhysicsWorld>().get();
     if (world_)
         connect(world_, SIGNAL(AboutToUpdate(float)), this, SLOT(OnAboutToUpdate()));
 }
@@ -271,7 +270,7 @@ void EC_RigidBody::CheckForPlaceableAndTerrain()
     
     if (!placeable_.lock())
     {
-        shared_ptr<EC_Placeable> placeable = parent->GetComponent<EC_Placeable>();
+        shared_ptr<EC_Placeable> placeable = parent->Component<EC_Placeable>();
         if (placeable)
         {
             placeable_ = placeable;
@@ -280,7 +279,7 @@ void EC_RigidBody::CheckForPlaceableAndTerrain()
     }
     if (!terrain_.lock())
     {
-        shared_ptr<EC_Terrain> terrain = parent->GetComponent<EC_Terrain>();
+        shared_ptr<EC_Terrain> terrain = parent->Component<EC_Terrain>();
         if (terrain)
         {
             terrain_ = terrain;
@@ -366,7 +365,7 @@ void EC_RigidBody::RemoveCollisionShape()
 
 void EC_RigidBody::CreateBody()
 {
-    if ((!world_) || (!ParentEntity()) || (body_))
+    if (!world_ || !ParentEntity() || body_)
         return;
     
     CheckForPlaceableAndTerrain();
@@ -392,7 +391,7 @@ void EC_RigidBody::CreateBody()
 
 void EC_RigidBody::ReaddBody()
 {
-    if ((!world_) || (!ParentEntity()) || (!body_))
+    if (!world_ || !ParentEntity() || !body_)
         return;
 
     btVector3 localInertia;
@@ -419,7 +418,7 @@ void EC_RigidBody::ReaddBody()
 
 void EC_RigidBody::RemoveBody()
 {
-    if ((body_) && (world_))
+    if (body_ && world_)
     {
         world_->BulletWorld()->removeRigidBody(body_);
         delete body_;
@@ -478,8 +477,8 @@ void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
     {
         if (placeable->IsAttached())
         {
-            position = placeable->GetSceneNode()->convertWorldToLocalPosition(position);
-            orientation = placeable->GetSceneNode()->convertWorldToLocalOrientation(orientation);
+            position = placeable->OgreSceneNode()->convertWorldToLocalPosition(position);
+            orientation = placeable->OgreSceneNode()->convertWorldToLocalOrientation(orientation);
             
             Transform newTrans = placeable->transform.Get();
             newTrans.SetPos(position);
@@ -578,10 +577,10 @@ void EC_RigidBody::AttributesChanged()
     
     if (shapeType.ValueChanged() || size.ValueChanged())
     {
-        if ((shapeType.Get() != cachedShapeType_) || (size.Get() != cachedSize_))
+        if (shapeType.Get() != cachedShapeType_ || size.Get() != cachedSize_)
         {
             // If shape does not involve mesh, can create it directly. Otherwise request the mesh
-            if ((shapeType.Get() != Shape_TriMesh) && (shapeType.Get() != Shape_ConvexHull))
+            if (shapeType.Get() != Shape_TriMesh && shapeType.Get() != Shape_ConvexHull)
             {
                 CreateCollisionShape();
                 cachedShapeType_ = shapeType.Get();
@@ -645,7 +644,7 @@ void EC_RigidBody::AttributesChanged()
 void EC_RigidBody::PlaceableUpdated(IAttribute* attribute)
 {
     // Do not respond to our own change
-    if ((disconnected_) || (!body_))
+    if (disconnected_ || !body_)
         return;
     
     EC_Placeable* placeable = placeable_.lock().get();
@@ -759,7 +758,7 @@ void EC_RigidBody::GetAabbox(float3 &outAabbMin, float3 &outAabbMax)
 
 bool EC_RigidBody::HasAuthority() const
 {
-    if ((!world_) || ((world_->IsClient()) && (!ParentEntity()->IsLocal())))
+    if (!world_ || (world_->IsClient() && !ParentEntity()->IsLocal()))
         return false;
     
     return true;
@@ -791,7 +790,7 @@ void EC_RigidBody::TerrainUpdated(IAttribute* attribute)
     if (!terrain)
         return;
     /// \todo It is suboptimal to regenerate the whole heightfield when just the terrain's transform changes
-    if ((attribute == &terrain->nodeTransformation) && (shapeType.Get() == Shape_HeightField))
+    if (attribute == &terrain->nodeTransformation && shapeType.Get() == Shape_HeightField)
         CreateCollisionShape();
 }
 
@@ -802,7 +801,7 @@ void EC_RigidBody::RequestMesh()
     QString collisionMesh = collisionMeshRef.Get().ref.trimmed();
     if (collisionMesh.isEmpty() && parent) // We use the mesh ref in EC_Mesh as the collision mesh ref if no collision mesh is set in EC_RigidBody.
     {
-        shared_ptr<EC_Mesh> mesh = parent->GetComponent<EC_Mesh>();
+        shared_ptr<EC_Mesh> mesh = parent->Component<EC_Mesh>();
         if (!mesh)
             return;
         collisionMesh = mesh->meshRef.Get().ref.trimmed();
@@ -832,12 +831,12 @@ void EC_RigidBody::UpdateScale()
     
     // If placeable exists, set local scaling from its scale
     EC_Placeable* placeable = placeable_.lock().get();
-    if ((placeable) && (shape_))
+    if (placeable && shape_)
     {
         // Note: for now, world scale is purposefully NOT used, because it would be problematic to change the scale when a parenting change occurs
         const float3& scale = placeable->transform.Get().scale;
         // Trianglemesh or convexhull does not have scaling of its own in the shape, so multiply with the size
-        if ((shapeType.Get() != Shape_TriMesh) && (shapeType.Get() != Shape_ConvexHull))
+        if (shapeType.Get() != Shape_TriMesh && shapeType.Get() != Shape_ConvexHull)
             shape_->setLocalScaling(btVector3(scale.x, scale.y, scale.z));
         else
             shape_->setLocalScaling(btVector3(sizeVec.x * scale.x, sizeVec.y * scale.y, sizeVec.z * scale.z));
@@ -874,8 +873,7 @@ void EC_RigidBody::CreateHeightFieldFromTerrain()
     
     int width = terrain->PatchWidth() * EC_Terrain::cPatchSize;
     int height = terrain->PatchHeight() * EC_Terrain::cPatchSize;
-    
-    if ((!width) || (!height))
+    if (!width || !height)
         return;
     
     heightValues_.resize(width * height);
@@ -951,7 +949,7 @@ void EC_RigidBody::GetProperties(btVector3& localInertia, float& m, int& collisi
     //if (!HasAuthority())
     //   m = 0.0f;
     
-    if ((shape_) && (m > 0.0f))
+    if (shape_ && m > 0.0f)
         shape_->calculateLocalInertia(m, localInertia);
     
     bool isDynamic = m > 0.0f;
