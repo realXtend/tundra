@@ -581,9 +581,11 @@ void Framework::LoadStartupOptionsFromXML(QString configurationFile)
         return;
     }
     QString errorMsg;
-    if (!doc.setContent(&file, false, &errorMsg))
+    int errorLine, errorColumn;
+    if (!doc.setContent(&file, false, &errorMsg, &errorLine, &errorColumn))
     {
-        LogError("Framework::LoadStartupOptionsFromXML: Failed to parse XML file \"" + configurationFile + "\": " + errorMsg + "!");
+        LogError(QString("Framework::LoadStartupOptionsFromXML: Failed to parse XML file \"%1\": %2 at line %3, column %4.")
+            .arg(configurationFile).arg(errorMsg).arg(errorLine).arg(errorColumn));
         file.close();
         return;
     }
