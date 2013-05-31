@@ -1,38 +1,36 @@
 <?xml version="1.0"?>
 <Tundra>
   <!-- plugins.xml is hardcoded to be the default configuration file to load if another file is not specified on the command line with the "config filename.xml" parameter. -->
-  <option name="--plugin" value="OgreRenderingModule" />         <!-- Does not depend on any module -->
-  <option name="--plugin" value="OpenAssetImport" />             <!-- Depends on OgreRenderingModule -->
-  <option name="--plugin" value="SceneInteract" />               <!-- Depends on OgreRenderingModule -->
-  <option name="--plugin" value="EnvironmentModule" />           <!-- Depends on OgreRenderingModule -->
-  <option name="--plugin" value="PhysicsModule" />               <!-- Depends on OgreRenderingModule and EnvironmentModule -->
-  <option name="--plugin" value="TundraProtocolModule" />        <!-- Depends on OgreRenderingModule -->
-  <option name="--plugin" value="ECEditorModule" />              <!-- Depends on OgreRenderingModule and TundraProtocolModule-->
-  <!--  Note: All modules that implicitly depend on JavascriptModule, by performing QtScript object meta type registration in their registered
-        dynamic objects (Framework::RegisterDynamicObject) in OnScriptEngineCreated(QScriptEngine*), must be loaded before JavascriptModule. -->
-  <option name="--plugin" value="JavascriptModule" />            <!-- Depends on TundraProtocolModule --> 
-  <option name="--plugin" value="AssetModule" />                 <!-- Depends on TundraProtocolModule -->
-  <option name="--plugin" value="ArchivePlugin" />               <!-- Does not depend on any other module -->
-  <option name="--plugin" value="AvatarModule" />                <!-- Depends on AssetModule and OgreRenderingModule -->
-  <option name="--plugin" value="SkyXHydrax" />                  <!-- Depends on OgreRenderingModule -->
-  <option name="--plugin" value="OgreAssetEditorModule" />       <!-- Depends on OgreRenderingModule -->
-  <option name="--plugin" value="DebugStatsModule" />            <!-- Depends on OgreRenderingModule, EnvironmentModule, OgreAssetEditorModule and AssetModule -->
-  <option name="--plugin" value="SceneWidgetComponents" />       <!-- Depends on OgreRenderingModule and TundraProtocolModule (and optionally on BrowserUiPlugin) -->
-  <option name="--plugin" value="MumblePlugin" />                <!-- Depends on OgreRenderingModule, JavascriptModule and TundraLogicModule -->
-  <option name="--plugin" value="CAVEStereoModule" />            <!-- Depends on OgreRenderingModule -->
-  <option name="--plugin" value="CanvasPlugin" />                <!-- Depends on OgreRenderingModule -->
+  <option name="--plugin" value="OgreRenderingModule;
+                                OpenAssetImport;
+                                SceneInteract;
+                                EnvironmentModule;
+                                PhysicsModule;
+                                TundraProtocolModule;
+                                ECEditorModule;
+                                JavascriptModule;
+                                AssetModule;
+                                ArchivePlugin;
+                                AvatarModule;
+                                SkyXHydrax;
+                                OgreAssetEditorModule;
+                                DebugStatsModule;
+                                SceneWidgetComponents;
+                                MumblePlugin;
+                                CAVEStereoModule;
+                                CanvasPlugin;
   
-  <option name="--plugin" value="AdminotechComponents" />
+                                AdminotechComponents" />
   
   <!-- NOTE: The startup .js scripts are specified only by base name of the file. Don's specify a path here. Place the startup .js scripts to /bin/jsmodules/startup/. -->
   <!-- Important: The file names specified here are case sensitive even on Windows! -->
-  <option name="--jsplugin" value="cameraapplication.js" />
-  <option name="--jsplugin" value="FirstPersonMouseLook.js" />
-  <option name="--jsplugin" value="MenuBar.js" />
-  <option name="--jsplugin" value="RendererSettings.js" />
-  <option name="--jsplugin" value="SoundSettings.js" />
-  <option name="--jsplugin" value="InterestManagerSettings.js" />
-  <option name="--jsplugin" value="LoadingScreen.js" />
+  <option name="--jsplugin" value="cameraapplication.js;
+                                FirstPersonMouseLook.js;
+                                MenuBar.js;
+                                RendererSettings.js;
+                                SoundSettings.js;
+                                InterestManagerSettings.js;
+                                LoadingScreen.js" />
 
   <!-- Python plugins -->
   <!-- <pyplugin path="lib/apitests.py" /> -->          <!-- Runs framework api tests -->
