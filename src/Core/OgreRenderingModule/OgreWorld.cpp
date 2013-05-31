@@ -183,6 +183,8 @@ Ogre::InstancedEntity *OgreWorld::CreateInstance(const QString &meshRef, const A
 
 Ogre::InstancedEntity *OgreWorld::CreateInstance(const AssetPtr &meshAsset, const AssetReferenceList &materials)
 {
+    PROFILE(OgreWorld_CreateInstance);
+
     if (!sceneManager_ || !meshAsset.get())
         return 0;
 
@@ -229,17 +231,19 @@ Ogre::InstancedEntity *OgreWorld::CreateInstance(const AssetPtr &meshAsset, cons
         for (int i=0; i<submeshCount; ++i)
         {
             MeshInstanceTarget *target = GetOrCreateInstanceMeshTarget(mesh->OgreMeshName(), i);
-            Ogre::InstancedEntity *instance = target->manager->createInstancedEntity(instanceMaterials[i].toStdString());
-            /// DEBUG
-            target->manager->setSetting(Ogre::InstanceManager::SHOW_BOUNDINGBOX, true, instanceMaterials[i].toStdString());
-            /// DEBUG
+            Ogre::InstancedEntity *instance = target->CreateInstance(instanceMaterials[i], mainInstance);
+
+            // Main instance that is being returned.
             if (!mainInstance)
                 mainInstance = instance;
-            else
-                mainInstance->shareTransformWith(instance);
-            target->instances << instance;
-            qDebug() << "    Created instance with material" << instanceMaterials[i] << "instance count =" << target->instances.size();
+
+            // If exception happens we can destroy this rollback history.
             rollback << instance;
+
+            /// DEBUG
+            qDebug() << "    Created instance with material" << instanceMaterials[i] << "instance count =" << target->instances.size();
+            target->manager->setSetting(Ogre::InstanceManager::SHOW_BOUNDINGBOX, true, instanceMaterials[i].toStdString());
+            /// DEBUG
         }
     }
     catch (Ogre::Exception &e)
@@ -260,6 +264,8 @@ void OgreWorld::DestroyInstances(Ogre::InstancedEntity* instance)
 
 void OgreWorld::DestroyInstances(const QList<Ogre::InstancedEntity*> instances)
 {
+    PROFILE(OgreWorld_DestroyInstances);
+
     /// @todo Optimize this, its gonna be slow when huge amount of instances.
     /// but we cant expect EC_Mesh etc. to tell us the meshRef when he destroys its instances in dtor etc.
     for (int i=0; i<intancingTargets_.size(); ++i)
@@ -268,18 +274,23 @@ void OgreWorld::DestroyInstances(const QList<Ogre::InstancedEntity*> instances)
         for (int k=0; k<intancingTarget->targets.size(); ++k)
         {
             MeshInstanceTarget *meshTarget = intancingTarget->targets[k];
-            meshTarget->RemoveInstances(instances);
+            meshTarget->ForgetInstances(instances);
         }
     }
-    foreach(Ogre::InstancedEntity *i, instances)
+
+    // Internal state has now forgotten these raw ptrs. Destroy the instances.
+    foreach(Ogre::InstancedEntity *instance, instances)
     {
-        if (i) sceneManager_->destroyInstancedEntity(i);
-        i = 0;
+        if (instance)
+            sceneManager_->destroyInstancedEntity(instance); /// @todo Check if this can throw!
+        instance = 0;
     }
 }
 
-OgreWorld::MeshInstanceTarget *OgreWorld::GetOrCreateInstanceMeshTarget(const QString &meshRef, int submesh)
+MeshInstanceTarget *OgreWorld::GetOrCreateInstanceMeshTarget(const QString &meshRef, int submesh)
 {
+    PROFILE(OgreWorld_GetOrCreateInstanceMeshTarget);
+
     for (int i=0; i<intancingTargets_.size(); ++i)
     {
         InstancingTarget *intancingTarget = intancingTargets_[i];
@@ -298,46 +309,12 @@ OgreWorld::MeshInstanceTarget *OgreWorld::GetOrCreateInstanceMeshTarget(const QS
     MeshInstanceTarget *meshTarget = new MeshInstanceTarget(submesh);
     meshTarget->manager = sceneManager_->createInstanceManager(QString("InstanceManager_%1_%2").arg(meshRef).arg(submesh).toStdString(),
         meshRef.toStdString(), Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
-        Ogre::InstanceManager::HWInstancingBasic, 64, Ogre::IM_USEALL, submesh);
-
-    /// DEBUG
-    meshTarget->manager->setSetting(Ogre::InstanceManager::SHOW_BOUNDINGBOX, true);
-    /// DEBUG
+        Ogre::InstanceManager::HWInstancingBasic, 256, Ogre::IM_USEALL, submesh);
 
     instanceTarget->targets << meshTarget;
     intancingTargets_ << instanceTarget;
     qDebug() << "Created new instance manager for mesh" << meshRef << "submesh =" << submesh;
     return meshTarget;
-}
-
-OgreWorld::InstancingTarget::InstancingTarget(const QString &meshRef) :
-    ref(meshRef)
-{
-}
-
-OgreWorld::InstancingTarget::~InstancingTarget()
-{
-    foreach(MeshInstanceTarget *target, targets)
-        SAFE_DELETE(target);
-    targets.clear();
-}
-
-OgreWorld::MeshInstanceTarget::MeshInstanceTarget(int _submesh) :
-    submesh(_submesh),
-    manager(0)
-{
-}
-
-void OgreWorld::MeshInstanceTarget::RemoveInstances(Ogre::InstancedEntity* instance)
-{
-    RemoveInstances(QList<Ogre::InstancedEntity*>() << instance);
-}
-
-void OgreWorld::MeshInstanceTarget::RemoveInstances(QList<Ogre::InstancedEntity*> _instances)
-{
-    foreach(Ogre::InstancedEntity *i, _instances)
-        if (instances.contains(i))
-            instances.removeAll(i);
 }
 
 RaycastResult* OgreWorld::Raycast(int x, int y)
@@ -1057,4 +1034,97 @@ void OgreWorld::DebugDrawSoundSource(const float3 &soundPos, float soundInnerRad
 
     DebugDrawSphere(soundPos, soundInnerRadius, 24*3*3*3, 1, 0, 0, depthTest);
     DebugDrawSphere(soundPos, soundOuterRadius, 24*3*3*3, 0, 1, 0, depthTest);
+}
+
+/// MeshInstanceTarget
+
+MeshInstanceTarget::MeshInstanceTarget(int _submesh) :
+    submesh(_submesh),
+    manager(0),
+    optimizationTimer_(new QTimer())
+{
+    optimizationTimer_->setSingleShot(true);
+    connect(optimizationTimer_, SIGNAL(timeout()), SLOT(OnOptimize()));
+}
+
+MeshInstanceTarget::~MeshInstanceTarget()
+{
+    SAFE_DELETE(optimizationTimer_);
+    manager = 0;
+}
+
+Ogre::InstancedEntity *MeshInstanceTarget::CreateInstance(const QString &material, Ogre::InstancedEntity *parent)
+{
+    PROFILE(OgreWorld_MeshInstanceTarget_CreateInstance);
+
+    if (!manager)
+        return 0;
+
+    /// @todo Check if this can throw!
+    Ogre::InstancedEntity *instance = manager->createInstancedEntity(material.toStdString());
+    if (parent)
+        parent->shareTransformWith(instance);
+
+    instances << instance;
+    
+    InvokeOptimizations();
+    return instance;
+}
+
+void MeshInstanceTarget::ForgetInstances(Ogre::InstancedEntity* instance)
+{
+    ForgetInstances(QList<Ogre::InstancedEntity*>() << instance);
+}
+
+void MeshInstanceTarget::ForgetInstances(QList<Ogre::InstancedEntity*> _instances)
+{
+    PROFILE(OgreWorld_MeshInstanceTarget_ForgetInstances);
+
+    bool found = false;
+    foreach(Ogre::InstancedEntity *instance, _instances)
+    {
+        if (instances.contains(instance))
+        {
+            instances.removeAll(instance);
+            found = true;
+        }
+    }
+    if (found)
+        InvokeOptimizations();
+}
+
+void MeshInstanceTarget::InvokeOptimizations(int optimizeAfterMsec)
+{
+    /** This timer waits for 5 seconds of rest before running optimizations to the managers batches.
+        We don't want to be running these eg. after each instance creation as it would produce lots of resize/allocations
+        in the target batches. It's best to do them after a big number or creations/deletions. */
+    if (optimizationTimer_->isActive())
+        optimizationTimer_->stop();
+    optimizationTimer_->start(optimizeAfterMsec);
+}
+
+void MeshInstanceTarget::OnOptimize()
+{
+    PROFILE(OgreWorld_MeshInstanceTarget_Optimize);
+
+    if (!manager)
+        return;
+
+    qDebug() << "Running optimizations to submesh =" << submesh << "instances =" << instances.size();
+    manager->cleanupEmptyBatches();
+    manager->defragmentBatches(true);
+}
+
+/// InstancingTarget
+
+InstancingTarget::InstancingTarget(const QString &meshRef) :
+    ref(meshRef)
+{
+}
+
+InstancingTarget::~InstancingTarget()
+{
+    foreach(MeshInstanceTarget *target, targets)
+        SAFE_DELETE(target);
+    targets.clear();
 }

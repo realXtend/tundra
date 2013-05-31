@@ -111,7 +111,7 @@ void EC_Mesh::AutoSetPlaceable()
     Entity* entity = ParentEntity();
     if (entity)
     {
-        ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
+        ComponentPtr placeable = entity->Component(EC_Placeable::TypeIdStatic());
         if (placeable)
             SetPlaceable(placeable);
     }
@@ -250,18 +250,6 @@ bool EC_Mesh::SetMesh(const QString &meshResourceName, bool clone)
 
     RemoveMesh();
 
-    // If placeable is not set yet, set it manually by searching it from the parent entity
-    if (!placeable_)
-    {
-        Entity* entity = ParentEntity();
-        if (entity)
-        {
-            ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
-            if (placeable)
-                placeable_ = placeable;
-        }
-    }
-
     Ogre::Mesh* mesh = PrepareMesh(meshResourceName.toStdString(), clone);
     if (!mesh)
         return false;
@@ -308,6 +296,7 @@ bool EC_Mesh::SetMesh(const QString &meshResourceName, bool clone)
         return false;
     }
 
+    VerifyPlaceable();
     AttachEntity();
     emit MeshChanged();
 
@@ -316,9 +305,8 @@ bool EC_Mesh::SetMesh(const QString &meshResourceName, bool clone)
 
 bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, bool clone)
 {
-    if (!ViewEnabled())
+    if (world_.expired() || !ViewEnabled())
         return false;
-    OgreWorldPtr world = world_.lock();
 
     Ogre::SkeletonPtr skel = Ogre::SkeletonManager::getSingleton().getByName(AssetAPI::SanitateAssetRef(skeleton_name));
     if (skel.isNull())
@@ -328,8 +316,6 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
     }
     
     RemoveMesh();
-
-    Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
     
     Ogre::Mesh* mesh = PrepareMesh(mesh_name, clone);
     if (!mesh)
@@ -338,7 +324,6 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
     try
     {
         mesh->_notifySkeleton(skel);
-//        LogDebug("Set skeleton " + skeleton_name + " to mesh " + mesh_name);
     }
     catch(const Ogre::Exception& e)
     {
@@ -348,7 +333,8 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
     
     try
     {
-        entity_ = sceneMgr->createEntity(world->GetUniqueObjectName("EC_Mesh_entwithskel"), mesh->getName());
+        OgreWorldPtr world = world_.lock();
+        entity_ = world->OgreSceneManager()->createEntity(world->GetUniqueObjectName("EC_Mesh_entwithskel"), mesh->getName());
         if (!entity_)
         {
             LogError("EC_Mesh::SetMeshWithSkeleton: Could not set mesh " + mesh_name);
@@ -376,8 +362,8 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
         return false;
     }
     
+    VerifyPlaceable();
     AttachEntity();
-    
     emit MeshChanged();
     
     return true;
@@ -790,6 +776,8 @@ void EC_Mesh::CreateMesh(const AssetPtr &meshAsset)
     if (!meshAsset.get() && !this->meshAsset->Asset().get())
         return;
 
+    PROFILE(EC_Mesh_CreateMesh);
+
     OgreMeshAsset *ogreMesh = dynamic_cast<OgreMeshAsset*>(meshAsset.get() != 0 ? meshAsset.get() : this->meshAsset->Asset().get());
     if (!ogreMesh)
     {
@@ -837,6 +825,8 @@ void EC_Mesh::CreateInstance(const AssetPtr &meshAsset)
     if (!meshAsset.get() && !this->meshAsset->Asset().get())
         return;
 
+    PROFILE(EC_Mesh_CreateInstance);
+
     // Check that mesh is ready.
     OgreMeshAsset *ogreMesh = dynamic_cast<OgreMeshAsset*>(meshAsset.get() != 0 ? meshAsset.get() : this->meshAsset->Asset().get());
     if (!ogreMesh || !ogreMesh->IsLoaded())
@@ -883,6 +873,7 @@ void EC_Mesh::CreateInstance(const AssetPtr &meshAsset)
     adjustmentNode_->setOrientation(newTransform.Orientation());
     adjustmentNode_->setScale(Max(newTransform.scale, float3::FromScalar(0.0000001f)));
 
+    VerifyPlaceable();
     AttachEntity();
     emit MeshChanged();
 }
@@ -1618,4 +1609,18 @@ Ogre::InstancedEntity* EC_Mesh::OgreInstancedEntity() const
 Ogre::SceneNode* EC_Mesh::AdjustmentSceneNode() const
 {
     return adjustmentNode_;
+}
+
+void EC_Mesh::VerifyPlaceable()
+{
+    if (!placeable_)
+    {
+        Entity* parentEntity = ParentEntity();
+        if (parentEntity)
+        {
+            ComponentPtr placeable = parentEntity->Component(EC_Placeable::TypeIdStatic());
+            if (placeable)
+                placeable_ = placeable;
+        }
+    }
 }

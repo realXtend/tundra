@@ -19,8 +19,11 @@
 class Framework;
 class DebugLines;
 class Transform;
+class MeshInstanceTarget;
+struct InstancingTarget;
 
 class QRect;
+class QTimer;
 
 /// Contains the Ogre representation of a scene, ie. the Ogre Scene
 class OGRE_MODULE_API OgreWorld : public QObject, public enable_shared_from_this<OgreWorld>
@@ -233,33 +236,47 @@ private:
     /// Debug geometry object, no depth testing
     DebugLines* debugLinesNoDepth_;
 
-    /// Instancing mesh target data.
-    struct MeshInstanceTarget
-    {
-        int submesh;
-        Ogre::InstanceManager *manager;
-        QList<Ogre::InstancedEntity*> instances;
-
-        MeshInstanceTarget(int _submesh);
-
-        /// Removes instance ptrs from the internal state. Does not destroy them.
-        void RemoveInstances(Ogre::InstancedEntity* instance);
-        void RemoveInstances(QList<Ogre::InstancedEntity*> _instances);
-    };
-
-    /// Instancing target data.
-    struct InstancingTarget
-    {
-        QString ref;
-        QList<MeshInstanceTarget*> targets;
-
-        InstancingTarget(const QString &meshRef);
-        ~InstancingTarget();
-    };
-
     /// Ogre instancing data.
     QList<InstancingTarget*> intancingTargets_;
 
     /// Get or create a instance manager for mesh ref and submesh index.
-    OgreWorld::MeshInstanceTarget *GetOrCreateInstanceMeshTarget(const QString &meshRef, int submesh);
+    MeshInstanceTarget *GetOrCreateInstanceMeshTarget(const QString &meshRef, int submesh);
+};
+
+/// Instancing mesh target data.
+class MeshInstanceTarget : public QObject
+{
+Q_OBJECT
+
+public:
+    MeshInstanceTarget(int _submesh);
+    ~MeshInstanceTarget();
+
+    int submesh;
+    Ogre::InstanceManager *manager;
+    QList<Ogre::InstancedEntity*> instances;
+
+    /// Creates a instance with this manager.
+    Ogre::InstancedEntity *CreateInstance(const QString &material, Ogre::InstancedEntity *parent = 0);
+
+    /// Removes instance ptrs from the internal state. Does not destroy them.
+    void ForgetInstances(Ogre::InstancedEntity* instance);
+    void ForgetInstances(QList<Ogre::InstancedEntity*> _instances);
+
+private slots:
+    void InvokeOptimizations(int optimizeAfterMsec = 5000);
+    void OnOptimize();
+
+private:
+    QTimer *optimizationTimer_;
+};
+
+/// Instancing target data.
+struct InstancingTarget
+{
+    InstancingTarget(const QString &meshRef);
+    ~InstancingTarget();
+
+    QString ref;
+    QList<MeshInstanceTarget*> targets;
 };

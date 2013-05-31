@@ -449,6 +449,9 @@ private:
         @param Mesh asset, if null the current meshRef/meshAsset asset is used.*/
     void CreateInstance(const AssetPtr &meshAsset = AssetPtr());
 
+    /// Verifies that placeable is set. If not tries to set it from parent entity.
+    void VerifyPlaceable();
+
     /// Attaches entity to placeable
     void AttachEntity();
 
