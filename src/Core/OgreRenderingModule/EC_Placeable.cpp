@@ -306,7 +306,7 @@ void EC_Placeable::AttachNode()
                             
                             // Setup manual bone tracking, as Ogre does not allow to attach scene nodes to bones
                             parentMesh->ForceSkeletonUpdate();
-                            attachmentListener.AddAttachment(parentMesh->GetEntity(), bone, this);
+                            attachmentListener.AddAttachment(parentMesh->OgreEntity(), bone, this);
                             boneAttachmentNode_->addChild(sceneNode_);
                             
                             parentBone_ = bone;

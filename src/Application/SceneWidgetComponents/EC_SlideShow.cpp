@@ -345,7 +345,7 @@ void EC_SlideShow::PrepareComponent()
     else
     {
         // Inspect if this mesh is ready for rendering. EC_Mesh being present != being loaded into Ogre and ready for rendering.
-        if (!mesh->GetEntity())
+        if (!mesh->OgreEntity())
         {
             connect(mesh, SIGNAL(MeshChanged()), SLOT(TargetMeshReady()), Qt::UniqueConnection);
             return;
@@ -478,7 +478,7 @@ bool EC_SlideShow::IsPrepared()
     EC_Mesh *mesh = GetMeshComponent();
     if (!mesh)
         return false;
-    else if (!mesh->GetEntity())
+    else if (!mesh->OgreEntity())
         return false;
     EC_WidgetCanvas *canvas  = GetSceneCanvasComponent();
     if (!canvas)

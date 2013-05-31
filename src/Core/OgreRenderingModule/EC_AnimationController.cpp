@@ -333,7 +333,7 @@ Ogre::Entity* EC_AnimationController::GetEntity()
     if (!mesh)
         return 0;
     
-    Ogre::Entity* entity = mesh->GetEntity();
+    Ogre::Entity* entity = mesh->OgreEntity();
     if (!entity)
         return 0;
     
