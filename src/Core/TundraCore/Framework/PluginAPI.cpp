@@ -165,8 +165,13 @@ void PluginAPI::LoadPluginsFromCommandLine()
     if (owner->HasCommandLineParameter("--plugin"))
     {
         QStringList pluginPaths = owner->CommandLineParameters("--plugin");
+
         for (int i = 0; i < pluginPaths.size(); ++i)
-            LoadPlugin(pluginPaths.at(i));
+        {
+            QStringList pluginList = pluginPaths.at(i).simplified().replace(" ", "").split(";", QString::SkipEmptyParts);
+            for (int j = 0; j < pluginList.size(); ++j)
+                LoadPlugin(pluginList.at(j));
+        }
     }
     else
         LogError("PluginAPI::LoadPluginsFromCommandLine: No plugins were specified.");
