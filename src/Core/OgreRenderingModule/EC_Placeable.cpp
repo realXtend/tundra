@@ -294,7 +294,7 @@ void EC_Placeable::AttachNode()
                     EC_Mesh* parentMesh = parentEntity->GetComponent<EC_Mesh>().get();
                     if (parentMesh)
                     {
-                        Ogre::Bone* bone = parentMesh->GetBone(boneName);
+                        Ogre::Bone* bone = parentMesh->OgreBone(boneName);
                         if (bone)
                         {
                             // Create the node for bone attachment if it did not exist already

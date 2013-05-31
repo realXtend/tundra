@@ -1224,7 +1224,7 @@ void EC_Mesh::ForceSkeletonUpdate()
 
 float3 EC_Mesh::BonePosition(const QString& bone_name)
 {
-    Ogre::Bone* bone = GetBone(bone_name);
+    Ogre::Bone* bone = OgreBone(bone_name);
     if (bone)
         return bone->getPosition();
     else
@@ -1233,7 +1233,7 @@ float3 EC_Mesh::BonePosition(const QString& bone_name)
 
 float3 EC_Mesh::BoneDerivedPosition(const QString& bone_name)
 {
-    Ogre::Bone* bone = GetBone(bone_name);
+    Ogre::Bone* bone = OgreBone(bone_name);
     if (bone)
         return bone->_getDerivedPosition();
     else
@@ -1242,7 +1242,7 @@ float3 EC_Mesh::BoneDerivedPosition(const QString& bone_name)
 
 Quat EC_Mesh::BoneOrientation(const QString& bone_name)
 {
-    Ogre::Bone* bone = GetBone(bone_name);
+    Ogre::Bone* bone = OgreBone(bone_name);
     if (bone)
         return bone->getOrientation();
     else
@@ -1251,7 +1251,7 @@ Quat EC_Mesh::BoneOrientation(const QString& bone_name)
 
 Quat EC_Mesh::BoneDerivedOrientation(const QString& bone_name)
 {
-    Ogre::Bone* bone = GetBone(bone_name);
+    Ogre::Bone* bone = OgreBone(bone_name);
     if (bone)
         return bone->_getDerivedOrientation();
     else
@@ -1333,7 +1333,7 @@ float EC_Mesh::MorphWeight(const QString& morphName) const
 
 void EC_Mesh::SetAttachmentMorphWeight(unsigned index, const QString& morphName, float weight)
 {
-    Ogre::Entity* entity = GetAttachmentEntity(index);
+    Ogre::Entity* entity = AttachmentOgreEntity(index);
     Ogre::AnimationStateSet* anims = entity->getAllAnimationStates();
     if (!anims)
         return;
@@ -1356,7 +1356,7 @@ void EC_Mesh::SetAttachmentMorphWeight(unsigned index, const QString& morphName,
 
 float EC_Mesh::AttachmentMorphWeight(unsigned index, const QString& morphName) const
 {
-    Ogre::Entity* entity = GetAttachmentEntity(index);
+    Ogre::Entity* entity = AttachmentOgreEntity(index);
     if (!entity)
         return 0.0f;
     Ogre::AnimationStateSet* anims = entity->getAllAnimationStates();
