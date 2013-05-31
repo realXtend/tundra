@@ -111,6 +111,10 @@ if (!framework.IsHeadless())
         var targetFps = findChild(settingsWidget, "targetFpsSpinBox")
         targetFps.setValue(application.targetFpsLimit);
         targetFps["valueChanged(double)"].connect(SetTargetFpsLimit);
+
+        var targetFpsWhenInactive = findChild(settingsWidget, "targetFpsWhenInactiveBox");
+        targetFpsWhenInactive.setValue(application.targetFpsLimitWhenInactive);
+        targetFpsWhenInactive["valueChanged(double)"].connect(SetTargetFpsLimitWhenInactive);
     }
 
     // Loads window position from config.
@@ -182,5 +186,13 @@ if (!framework.IsHeadless())
             return;
         application.targetFpsLimit = value;
         config.Set(configFile, configRenderingSection, configFpsTargetName, application.targetFpsLimit);
+    }
+
+    function SetTargetFpsLimitWhenInactive(value)
+    {
+        if (value < 0)
+            return;
+
+        application.targetFpsLimitWhenInactive = value;
     }
 }
