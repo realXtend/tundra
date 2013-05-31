@@ -94,21 +94,24 @@ OgreWorld::~OgreWorld()
         {
             for (int i=0; i<intancingTargets_.size(); ++i)
             {
-                InstancingTarget &intancingTarget = intancingTargets_[i];
-                for (int k=0; k<intancingTarget.targets.size(); ++k)
+                InstancingTarget *intancingTarget = intancingTargets_[i];
+                for (int k=0; k<intancingTarget->targets.size(); ++k)
                 {
-                    MeshInstanceTarget &meshTarget = intancingTarget.targets[k];
-                    if (!meshTarget.instances.isEmpty())
+                    MeshInstanceTarget *meshTarget = intancingTarget->targets[k];
+                    if (!meshTarget->instances.isEmpty())
                     {
                         // These should all be gone if DestroyInstances() were called by the creators correctly!
-                        LogWarning(QString("OgreWorld: Instanced entities are still loaded to the system for %1, destroying them now!").arg(intancingTarget.ref));
-                        foreach(Ogre::InstancedEntity* instance, meshTarget.instances)
+                        LogWarning(QString("OgreWorld: Instanced entities are still loaded to the system for %1, destroying them now!").arg(intancingTarget->ref));
+                        foreach(Ogre::InstancedEntity* instance, meshTarget->instances)
                             sceneManager_->destroyInstancedEntity(instance);
-                        meshTarget.instances.clear();
+                        meshTarget->instances.clear();
                     }
-                    sceneManager_->destroyInstanceManager(meshTarget.manager);
-                    meshTarget.manager = 0;
+
+                    // Destroy instance manager
+                    sceneManager_->destroyInstanceManager(meshTarget->manager);
+                    meshTarget->manager = 0;
                 }
+                SAFE_DELETE(intancingTargets_[i]);
             }
         }
         catch (Ogre::Exception &e)
@@ -212,7 +215,7 @@ Ogre::InstancedEntity *OgreWorld::CreateInstance(const AssetPtr &meshAsset, cons
             materialRef = material->ogreAssetName;
         }
         else
-            materialRef = "AssetLoadError";
+            materialRef = "AssetLoadError"; /// @todo We need a instanced version of this.
 
         instanceMaterials << materialRef;
     }
@@ -225,13 +228,17 @@ Ogre::InstancedEntity *OgreWorld::CreateInstance(const AssetPtr &meshAsset, cons
     {
         for (int i=0; i<submeshCount; ++i)
         {
-            MeshInstanceTarget &target = GetOrCreateInstanceMeshTarget(QString::fromStdString(mesh->ogreMesh->getName()), i);
-            Ogre::InstancedEntity *instance = target.manager->createInstancedEntity(instanceMaterials[i].toStdString());
+            MeshInstanceTarget *target = GetOrCreateInstanceMeshTarget(mesh->OgreMeshName(), i);
+            Ogre::InstancedEntity *instance = target->manager->createInstancedEntity(instanceMaterials[i].toStdString());
+            /// DEBUG
+            target->manager->setSetting(Ogre::InstanceManager::SHOW_BOUNDINGBOX, true, instanceMaterials[i].toStdString());
+            /// DEBUG
             if (!mainInstance)
                 mainInstance = instance;
             else
                 mainInstance->shareTransformWith(instance);
-            target.instances << instance;
+            target->instances << instance;
+            qDebug() << "    Created instance with material" << instanceMaterials[i] << "instance count =" << target->instances.size();
             rollback << instance;
         }
     }
@@ -257,11 +264,11 @@ void OgreWorld::DestroyInstances(const QList<Ogre::InstancedEntity*> instances)
     /// but we cant expect EC_Mesh etc. to tell us the meshRef when he destroys its instances in dtor etc.
     for (int i=0; i<intancingTargets_.size(); ++i)
     {
-        InstancingTarget &intancingTarget = intancingTargets_[i];
-        for (int k=0; k<intancingTarget.targets.size(); ++k)
+        InstancingTarget *intancingTarget = intancingTargets_[i];
+        for (int k=0; k<intancingTarget->targets.size(); ++k)
         {
-            MeshInstanceTarget &meshTarget = intancingTarget.targets[k];
-            meshTarget.RemoveInstances(instances);
+            MeshInstanceTarget *meshTarget = intancingTarget->targets[k];
+            meshTarget->RemoveInstances(instances);
         }
     }
     foreach(Ogre::InstancedEntity *i, instances)
@@ -271,31 +278,54 @@ void OgreWorld::DestroyInstances(const QList<Ogre::InstancedEntity*> instances)
     }
 }
 
-OgreWorld::MeshInstanceTarget& OgreWorld::GetOrCreateInstanceMeshTarget(const QString &meshRef, int submesh)
+OgreWorld::MeshInstanceTarget *OgreWorld::GetOrCreateInstanceMeshTarget(const QString &meshRef, int submesh)
 {
     for (int i=0; i<intancingTargets_.size(); ++i)
     {
-        InstancingTarget &intancingTarget = intancingTargets_[i];
-        if (intancingTarget.ref.compare(meshRef, Qt::CaseSensitive) == 0)
+        InstancingTarget *intancingTarget = intancingTargets_[i];
+        if (intancingTarget->ref.compare(meshRef, Qt::CaseSensitive) == 0)
         {
-            for (int k=0; k<intancingTarget.targets.size(); ++k)
+            for (int k=0; k<intancingTarget->targets.size(); ++k)
             {
-                MeshInstanceTarget &meshTarget = intancingTarget.targets[k];
-                if (meshTarget.submesh == submesh && meshTarget.manager)
+                MeshInstanceTarget *meshTarget = intancingTarget->targets[k];
+                if (meshTarget->submesh == submesh)
                     return meshTarget;
             }
         }
     }
 
-    InstancingTarget instanceTarget(meshRef);
-    MeshInstanceTarget meshTarget(submesh);
-    meshTarget.manager = sceneManager_->createInstanceManager(QString("InstanceManager_%1_%2").arg(meshRef).arg(submesh).toStdString(),
+    InstancingTarget *instanceTarget = new InstancingTarget(meshRef);
+    MeshInstanceTarget *meshTarget = new MeshInstanceTarget(submesh);
+    meshTarget->manager = sceneManager_->createInstanceManager(QString("InstanceManager_%1_%2").arg(meshRef).arg(submesh).toStdString(),
         meshRef.toStdString(), Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
         Ogre::InstanceManager::HWInstancingBasic, 64, Ogre::IM_USEALL, submesh);
 
-    instanceTarget.targets << meshTarget;
+    /// DEBUG
+    meshTarget->manager->setSetting(Ogre::InstanceManager::SHOW_BOUNDINGBOX, true);
+    /// DEBUG
+
+    instanceTarget->targets << meshTarget;
     intancingTargets_ << instanceTarget;
-    return instanceTarget.targets.last();
+    qDebug() << "Created new instance manager for mesh" << meshRef << "submesh =" << submesh;
+    return meshTarget;
+}
+
+OgreWorld::InstancingTarget::InstancingTarget(const QString &meshRef) :
+    ref(meshRef)
+{
+}
+
+OgreWorld::InstancingTarget::~InstancingTarget()
+{
+    foreach(MeshInstanceTarget *target, targets)
+        SAFE_DELETE(target);
+    targets.clear();
+}
+
+OgreWorld::MeshInstanceTarget::MeshInstanceTarget(int _submesh) :
+    submesh(_submesh),
+    manager(0)
+{
 }
 
 void OgreWorld::MeshInstanceTarget::RemoveInstances(Ogre::InstancedEntity* instance)

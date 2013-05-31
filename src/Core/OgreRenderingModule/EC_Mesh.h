@@ -102,8 +102,8 @@ public:
     /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Mesh(Scene* scene);
-    /// @endcond
     virtual ~EC_Mesh();
+    /// @endcond
 
     /// Transformation attribute is used to do some position, rotation and scale adjustments.
     Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);
@@ -129,14 +129,23 @@ public:
     Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
 
-    /// Returns Ogre mesh entity
-    Ogre::Entity* OgreEntity() const { return entity_; }
+    /// Should the mesh entity be created with instancing.
+    Q_PROPERTY(bool useInstancing READ getuseInstancing WRITE setuseInstancing);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, useInstancing);
+
+    /// Returns Ogre mesh entity.
+    /** @return Ogre mesh entity, or null if 1) mesh not loaded 2) instancing is enabled @see OgreInstancedEntity. */ 
+    Ogre::Entity* OgreEntity() const;
+
+    /// Returns instanced Ogre mesh entity.
+    /** @return Instanced Ogre mesh entity, or null if 1) mesh not loaded 2) instancing is disabled @ OgreEntity. */
+    Ogre::InstancedEntity* OgreInstancedEntity() const;
 
     /// Returns an Ogre bone safely, or null if not found.
     Ogre::Bone* OgreBone(const QString& boneName) const;
 
     /// Returns adjustment scene node (used for scaling/offset/orientation modifications)
-    Ogre::SceneNode* AdjustmentSceneNode() const { return adjustment_node_; }
+    Ogre::SceneNode* AdjustmentSceneNode() const;
 
     /// Returns Ogre attachment mesh entity.
     /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
@@ -163,13 +172,13 @@ public slots:
     void SetPlaceable(const ComponentPtr &placeable);
     void SetPlaceable(EC_Placeable* placeable); /**< @overload */
 
-    /// Sets mesh
-    /** if mesh already sets, removes the old one
+    /// Sets mesh.
+    /** If mesh already set, removes the old one.
         @param meshResourceName The name of the mesh resource to use. This will not initiate an asset request, but assumes 
             the mesh already exists as a loaded Ogre resource.
         @param clone whether mesh should be cloned for modifying geometry uniquely.
         @return true if successful. */
-    bool SetMesh(QString meshResourceName, bool clone = false);
+    bool SetMesh(const QString &meshResourceName, bool clone = false);
 
     /// Sets mesh with custom skeleton
     /** if mesh already sets, removes the old one
@@ -263,17 +272,12 @@ public slots:
     /// Returns the affine transform that maps from the local space of this mesh to the world space of the scene.
     float3x4 LocalToWorld() const;
 
-    /// Returns the parent component of this component in the scene transform hierarchy.
-//    virtual IComponent *GetParentComponent();
-
-    /// 
-//    float3x4 IComponent::WorldTransform();
-
     /// Return names of all bones. If no entity or skeleton, returns empty list
     QStringList AvailableBones() const;
 
     /// Force a skeleton update. Call this before BonePosition()... to make sure bones have updated positions, even if the mesh is currently invisible
     void ForceSkeletonUpdate();
+
     /// Return bone's local position
     float3 BonePosition(const QString& boneName);
     /// Return bone's root-derived position. Note: these are not world coordinates, but relative to the mesh root
@@ -283,9 +287,9 @@ public slots:
     /// Return bone's root-derived orientation
     Quat BoneDerivedOrientation(const QString& boneName);
     /// Return bone's local orientation as Euler degrees
-//    float3 BoneOrientationEuler(const QString& boneName);
+    //float3 BoneOrientationEuler(const QString& boneName);
     /// Return bone's root-derived orientation as Euler degrees
-//    float3 BoneDerivedOrientationEuler(const QString& boneName);
+    //float3 BoneDerivedOrientationEuler(const QString& boneName);
     
     /// Set the weight (0.0 - 1.0) of a morph on the mesh
     void SetMorphWeight(const QString& morphName, float weight);
@@ -354,7 +358,7 @@ public slots:
     /// Returns number of attachments.
     /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
         @note returns just the size of attachment vector, so check individually that attachments actually exist */
-    size_t NumAttachments() const { return attachment_entities_.size(); }
+    size_t NumAttachments() const { return attachmentEntities_.size(); }
     /// Returns number of materials (submeshes) in attachment mesh entity.
     /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
     uint NumAttachmentMaterials(uint index) const;
@@ -436,13 +440,22 @@ private:
         @return pointer to mesh, or 0 if could not be safely prepared */
     Ogre::Mesh* PrepareMesh(const std::string& meshName, bool clone = false);
 
-    /// attaches entity to placeable
+    /// Create mesh entity with the input mesh asset.
+    /** @param Mesh asset, if null the current meshRef/meshAsset asset is used. */
+    void CreateMesh(const AssetPtr &meshAsset = AssetPtr());
+
+    /// Create instanced entity with the input mesh asset. 
+    /** Bails out if mesh or materials are not loaded yet. We cannot create instanced mesh without materials being loaded. 
+        @param Mesh asset, if null the current meshRef/meshAsset asset is used.*/
+    void CreateInstance(const AssetPtr &meshAsset = AssetPtr());
+
+    /// Attaches entity to placeable
     void AttachEntity();
 
-    /// detaches entity from placeable
+    /// Detaches entity from placeable
     void DetachEntity();
 
-    /// placeable component 
+    /// Placeable component 
     ComponentPtr placeable_;
 
     /// Ogre world ptr
@@ -451,22 +464,26 @@ private:
     /// Ogre mesh entity
     Ogre::Entity* entity_;
 
+    /// Ogre instanced mesh entity.
+    Ogre::InstancedEntity *instancedEntity_;
+
     /// Attachment entities
-    std::vector<Ogre::Entity*> attachment_entities_;
+    std::vector<Ogre::Entity*> attachmentEntities_;
+
     /// Attachment nodes
-    std::vector<Ogre::Node*> attachment_nodes_;
+    std::vector<Ogre::Node*> attachmentNodes_;
 
-    /// non-empty if a cloned mesh is being used; should be removed when mesh is removed
-    std::string cloned_mesh_name_;
+    /// Non-empty if a cloned mesh is being used; should be removed when mesh is removed
+    std::string clonedMeshName_;
 
-    /// adjustment scene node (scaling/offset/orientation modifications)
-    Ogre::SceneNode* adjustment_node_;
+    /// Adjustment scene node (scaling/offset/orientation modifications)
+    Ogre::SceneNode* adjustmentNode_;
 
-    /// mesh entity attached to placeable -flag
+    /// Mesh entity attached to placeable -flag
     bool attached_;
 
-    /// Manages material asset requests for EC_Mesh. This utility object is used so that EC_Mesh also gets notifications about
-    /// changes to material assets on disk.
+    /** Manages material asset requests for EC_Mesh. This utility object is used so that 
+        EC_Mesh also gets notifications about changes to material assets on disk. */
     std::vector<AssetRefListenerPtr> materialAssets;
 
     /// Manages mesh asset requests for EC_Mesh.

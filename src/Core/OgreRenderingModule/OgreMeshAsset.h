@@ -15,65 +15,51 @@
 
 class OpenAssetImport;
 
-/// Represents an Ogre .mesh loaded to the GPU.
+/// Represents an Ogre mesh loaded to the GPU.
 class OGRE_MODULE_API OgreMeshAsset : public IAsset, Ogre::ResourceBackgroundQueue::Listener
 {
     Q_OBJECT
 
 public:
-    OgreMeshAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
-        IAsset(owner, type_, name_), loadTicket_(0)
-    {
-    }
-
+    OgreMeshAsset(AssetAPI *owner, const QString &type_, const QString &name_);
     ~OgreMeshAsset();
 
+    /// Load mesh from file. IAsset override.
     virtual bool LoadFromFile(QString filename);
 
-    /// Load mesh from memory
+    /// Load mesh from memory. IAsset override.
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes, bool allowAsynchronous);
 
-    /// Load mesh into memory
+    /// Load mesh into memory. IAsset override.
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const;
 
-    /// Ogre threaded load listener. Ogre::ResourceBackgroundQueue::Listener override.
+    /// Ogre threaded load listener. Ogre::ResourceBackgroundQueue::Listener override. 
     virtual void operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result);
 
-    /// Returns an empty list - meshes do not refer to other assets.
-    virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }
-
-    void SetDefaultMaterial();
-
-    bool IsLoaded() const;
-
-    /// This points to the loaded mesh asset, if it is present.
+    /// Loaded Ogre mesh asset, null if not loaded.
     Ogre::MeshPtr ogreMesh;
 
-    /// Ticket for ogres threaded loading operation.
-    Ogre::BackgroundProcessTicket loadTicket_;
-
-    /// Specifies the unique mesh name Ogre uses in its asset pool for this mesh.
-    //QString ogreAssetName;
-
-    //std::vector<QString> originalMaterials;
-
 public slots:
+    /// IAsset override.
+    virtual bool IsLoaded() const;
+
+    /// Returns Ogres internal asset name.
+    QString OgreMeshName() const;
+
+    /// Executes raycast to the CPU-side cached geometry.
     RayQueryResult Raycast(const Ray &ray);
 
     /// Returns the given triangle of the mesh data.
     Triangle Tri(int submeshIndex, int triangleIndex);
 
+    /// Returns submesh count.
     size_t NumSubmeshes();
 
+    /// Returns triangle count for submesh.
     int NumTris(int submeshIndex);
 
-#ifdef ASSIMP_ENABLED
-private slots:
-    void OnAssimpConversionDone(bool);
-#endif
-
 private:
-    /// Unload mesh from ogre
+    /// Unload mesh from Ogre. IAsset override.
     virtual void DoUnload();
 
     /// Precomputes a kD-tree for the triangle data of this mesh.
@@ -82,19 +68,34 @@ private:
     /// Process mesh data after loading to create tangents and such.
     bool GenerateMeshData();
 
+    /// Convert Assimp mesh data to Ogre mesh.
     void ConvertAssimpDataToOgreMesh(const u8 *data_, size_t numBytes);
 
+    /// Is this mesh a Assimp supported file type.
     bool IsAssimpFileType();
+
+    /// Sets default material.
+    void SetDefaultMaterial();
+
+    /// Ticket for ogres threaded loading operation.
+    Ogre::BackgroundProcessTicket loadTicket_;
 
     /// Stores a CPU-side version of the mesh geometry data (positions), for raycasting purposes.
     KdTree<Triangle> meshData;
 
-    std::vector<float3> normals; ///< Triangle normals. One per triangle (not per-vertex normals).
+    /// Triangle normals. One per triangle (not per-vertex normals).
+    std::vector<float3> normals;
+
+    /// UVs.
     std::vector<float2> uvs; 
+
+    /// Triangle counts per submesh.
     std::vector<int> subMeshTriangleCounts;
 
 #ifdef ASSIMP_ENABLED
     OpenAssetImport *importer;
-#endif
 
+    private slots:
+        void OnAssimpConversionDone(bool);
+#endif
 };

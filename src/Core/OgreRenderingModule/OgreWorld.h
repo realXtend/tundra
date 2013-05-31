@@ -233,32 +233,33 @@ private:
     /// Debug geometry object, no depth testing
     DebugLines* debugLinesNoDepth_;
 
-    /// Instancing mesh target data
+    /// Instancing mesh target data.
     struct MeshInstanceTarget
     {
         int submesh;
         Ogre::InstanceManager *manager;
         QList<Ogre::InstancedEntity*> instances;
 
-        MeshInstanceTarget(int _submesh) : submesh(_submesh), manager(0) {}
+        MeshInstanceTarget(int _submesh);
 
         /// Removes instance ptrs from the internal state. Does not destroy them.
         void RemoveInstances(Ogre::InstancedEntity* instance);
         void RemoveInstances(QList<Ogre::InstancedEntity*> _instances);
     };
 
-    /// Instancing target data
+    /// Instancing target data.
     struct InstancingTarget
     {
         QString ref;
-        QList<MeshInstanceTarget> targets;
+        QList<MeshInstanceTarget*> targets;
 
-        InstancingTarget(const QString &meshRef) : ref(meshRef) {}
+        InstancingTarget(const QString &meshRef);
+        ~InstancingTarget();
     };
 
-    /// Ogre instancing data
-    QList<InstancingTarget> intancingTargets_;
+    /// Ogre instancing data.
+    QList<InstancingTarget*> intancingTargets_;
 
     /// Get or create a instance manager for mesh ref and submesh index.
-    OgreWorld::MeshInstanceTarget& GetOrCreateInstanceMeshTarget(const QString &meshRef, int submesh);
+    OgreWorld::MeshInstanceTarget *GetOrCreateInstanceMeshTarget(const QString &meshRef, int submesh);
 };
