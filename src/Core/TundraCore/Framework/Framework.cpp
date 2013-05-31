@@ -168,6 +168,7 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--port"] = "Specifies the Tundra server port."; // TundraLogicModule
     cmdLineDescs.commands["--protocol"] = "Specifies the Tundra server protocol. Options: '--protocol tcp' and '--protocol udp'. Defaults to udp if no protocol is specified."; // KristalliProtocolModule
     cmdLineDescs.commands["--fpsLimit"] = "Specifies the FPS cap to use in rendering. Default: 60. Pass in 0 to disable."; // Framework
+    cmdLineDescs.commands["--fpsLimitWhenInactive"] = "Specifies the FPS cap to use when the window is not active. Default: 30 (half of the FPS). Pass 0 to disable."; // Framework
     cmdLineDescs.commands["--run"] = "Runs script on startup"; // JavaScriptModule
     cmdLineDescs.commands["--plugin"] = "Specifies a shared library (a 'plugin') to be loaded, relative to 'TUNDRA_DIRECTORY/plugins' path. Multiple plugin parameters are supported, f.ex. '--plugin MyPlugin --plugin MyOtherPlugin'"; // Framework
     cmdLineDescs.commands["--jsplugin"] = "Specifies a javascript file to be loaded at startup, relative to 'TUNDRA_DIRECTORY/jsplugins' path. Multiple jsplugin parameters are supported, f.ex. '--jsplugin MyPlugin.js --jsplugin MyOtherPlugin.js'. If JavascriptModule is not loaded, this parameter has no effect."; // JavascriptModule
@@ -255,6 +256,19 @@ Framework::Framework(int argc_, char** argv_) :
             application->SetTargetFpsLimit(targetFpsLimit);
         else
             LogWarning("Erroneous FPS limit given with --fpslimit: " + fpsLimitParam.first() + ". Ignoring.");
+    }
+
+    QStringList fpsLimitWhenInactive = CommandLineParameters("--fpslimitwheninactive");
+    if (fpsLimitWhenInactive.size() > 1)
+        LogWarning("Multiple --fpslimitwheninactive parameters specified! Using " + fpsLimitWhenInactive.first() + " as the value.");
+    if (fpsLimitWhenInactive.size() > 0)
+    {
+        bool ok;
+        double targetFpsWhenInactive = fpsLimitWhenInactive.first().toDouble(&ok);
+        if (ok)
+            application->SetTargetFpsLimitWhenInactive(targetFpsWhenInactive);
+        else
+            LogWarning("Erroneous FPS limit given with --fpslimitwheninactive: " + fpsLimitWhenInactive.first() + ". Ignoring.");
     }
 
     // Create core APIs

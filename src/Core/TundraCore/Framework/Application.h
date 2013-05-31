@@ -38,6 +38,7 @@ class TUNDRACORE_API Application : public QApplication
     Q_PROPERTY(uint minorPatchVersion READ MinorPatchVersion)   /**< @copydoc MinorPatchVersion */
 
     Q_PROPERTY(double targetFpsLimit READ TargetFpsLimit WRITE SetTargetFpsLimit) /**< @copydoc TargetFpsLimit */
+    Q_PROPERTY(double targetFpsLimitWhenInactive READ TargetFpsLimitWhenInactive WRITE SetTargetFpsLimitWhenInactive); /**< @copydoc TargetFpsLimitWhenInactive */
 
 public:
     /// Constructs the application singleton.
@@ -140,6 +141,12 @@ public:
     /** 0 means the FPS limiting is disabled. */
     double TargetFpsLimit() const { return targetFpsLimit; }
 
+    /// Sets a FPS limit to be used when the window is inactive
+    void SetTargetFpsLimitWhenInactive(double fpsWhenInactive);
+
+    /// Returns the current FPS limit when inactive.
+    double TargetFpsLimitWhenInactive() const { return targetFpsLimitWhenInactive; }
+
     /// Reads and applies target FPS limit from config file.
     void ReadTargetFpsLimitFromConfig();
 
@@ -186,5 +193,7 @@ private:
     static const char *applicationName;
     static const char *version;
     double targetFpsLimit;
+    double targetFpsLimitWhenInactive;
+
     std::vector<uint> versionNumbers;
 };
