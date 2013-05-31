@@ -160,37 +160,15 @@ QStringList PluginAPI::ConfigurationFiles() const
     return configs;
 }
 
-void PluginAPI::LoadPluginsFromXML(QString pluginConfigurationFile)
+void PluginAPI::LoadPluginsFromCommandLine()
 {
-    pluginConfigurationFile = LookupRelativePath(pluginConfigurationFile);
-
-    QDomDocument doc("plugins");
-    QFile file(pluginConfigurationFile);
-    if (!file.open(QIODevice::ReadOnly))
+    if (owner->HasCommandLineParameter("--plugin"))
     {
-        LogError("PluginAPI::LoadPluginsFromXML: Failed to open file \"" + pluginConfigurationFile + "\"!");
-        return;
+        QStringList pluginPaths = owner->CommandLineParameters("--plugin");
+        for (int i = 0; i < pluginPaths.size(); ++i)
+            LoadPlugin(pluginPaths.at(i));
     }
-    QString errorMsg;
-    if (!doc.setContent(&file, false, &errorMsg))
-    {
-        LogError("PluginAPI::LoadPluginsFromXML: Failed to parse XML file \"" + pluginConfigurationFile + "\":" + errorMsg);
-        file.close();
-        return;
-    }
-    file.close();
-
-    QDomElement docElem = doc.documentElement();
-
-    QDomNode n = docElem.firstChild();
-    while(!n.isNull())
-    {
-        QDomElement e = n.toElement(); // try to convert the node to an element.
-        if (!e.isNull() && e.tagName() == "plugin" && e.hasAttribute("path"))
-        {
-            QString pluginPath = e.attribute("path");
-            LoadPlugin(pluginPath);
-        }
-        n = n.nextSibling();
-    }
+    else
+        LogError("PluginAPI::LoadPluginsFromCommandLine: No plugins were specified.");
 }
+
