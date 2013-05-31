@@ -538,10 +538,18 @@ void JavascriptModule::LoadStartupScripts()
 
     QStringList startupScriptsToLoad;
     QStringList startupScriptsLoaded;
+    QStringList requestedStartupScripts;
 
     // Get all scripts specified on the command line
-    startupScriptsToLoad.append(StartupScripts());
-
+    foreach (const QString &script, StartupScripts())
+    {
+        QStringList scriptList = script.simplified().replace(" ", "").split(";", QString::SkipEmptyParts);
+        for (int i = 0; i < scriptList.size(); ++i)
+        {
+            startupScriptsToLoad << scriptList.at(i);
+            requestedStartupScripts << scriptList.at(i);
+        }
+    }
     // Find all script files from /jsmodules/startup
     QStringList existingStartupScripts;
     QString path = QDir::fromNativeSeparators(Application::InstallationDirectory()) + "jsmodules/startup";
@@ -553,7 +561,7 @@ void JavascriptModule::LoadStartupScripts()
     if (!existingStartupScripts.isEmpty())
     {
         LogInfo(Name() + ": Loading startup scripts from /jsmodules/startup");
-        foreach (const QString &script, StartupScripts())
+        foreach (const QString &script, requestedStartupScripts)
         {
             QString fullPath = path + "/" + script;
             if (existingStartupScripts.contains(fullPath) || existingStartupScripts.contains(script))
