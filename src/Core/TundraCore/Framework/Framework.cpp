@@ -169,6 +169,7 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--protocol"] = "Specifies the Tundra server protocol. Options: '--protocol tcp' and '--protocol udp'. Defaults to udp if no protocol is specified."; // KristalliProtocolModule
     cmdLineDescs.commands["--fpsLimit"] = "Specifies the FPS cap to use in rendering. Default: 60. Pass in 0 to disable."; // Framework
     cmdLineDescs.commands["--run"] = "Runs script on startup"; // JavaScriptModule
+    cmdLineDescs.commands["--plugin"] = "Specifies a shared library (a 'plugin') to be loaded, relative to 'TUNDRA_DIRECTORY/plugins' path. Multiple plugin parameters are supported, f.ex. '--plugin MyPlugin --plugin MyOtherPlugin'"; // Framework
     cmdLineDescs.commands["--file"] = "Specifies a startup scene file. Multiple files supported. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI."; // TundraLogicModule & AssetModule
     cmdLineDescs.commands["--storage"] = "Adds the given directory as a local storage directory on startup."; // AssetModule
     cmdLineDescs.commands["--config"] = "Specifies a startup configuration file to use. Multiple config files are supported, f.ex. '--config plugins.xml --config MyCustomAddons.xml'."; // Framework & PluginAPI
@@ -380,11 +381,8 @@ void Framework::Go()
     StaticPluginRegistryInstance()->RunPluginMainFunctions(this);
 #endif
 
-    foreach(const QString &config, plugin->ConfigurationFiles())
-    {
-        LogDebug("Loading plugins from config XML " + config);
-        plugin->LoadPluginsFromXML(config);
-    }
+    LogDebug("Loading plugins specified on the command line...");
+    plugin->LoadPluginsFromCommandLine();
 
     for(size_t i = 0; i < modules.size(); ++i)
     {
@@ -667,6 +665,7 @@ QStringList Framework::CommandLineParameters(const QString &key) const
                 ret.append(startupOptions[++i]);
         }
     }
+
     return ret;
 }
 
