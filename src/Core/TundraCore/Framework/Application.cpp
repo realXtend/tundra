@@ -74,6 +74,7 @@ Application::Application(Framework *owner, int &argc, char **argv) :
     targetFpsLimit(60.0),
     splashScreen(0)
 {
+    targetFpsLimitWhenInactive = targetFpsLimit / 2.f;
     // Reflect our versioning information to Qt internals, if something tries to obtain it straight from there.
     QApplication::setOrganizationName(organizationName);
     QApplication::setApplicationName(applicationName);
@@ -620,6 +621,24 @@ bool Application::IsActive() const
     return appActivated;
 }
 
+void Application::SetTargetFpsLimitWhenInactive(double fpsWhenInactive)
+{
+    if (fpsWhenInactive <= 0.0)
+    {
+        targetFpsLimitWhenInactive = targetFpsLimit;
+        return;
+    }
+    else if (fpsWhenInactive > targetFpsLimit)
+    {
+        targetFpsLimitWhenInactive = targetFpsLimit / 2;
+    }
+    else
+        targetFpsLimitWhenInactive = fpsWhenInactive;
+
+    if (targetFpsLimitWhenInactive <= 1.0)
+        targetFpsLimitWhenInactive = 0.0;
+}
+
 void Application::UpdateFrame()
 {
     // Don't pump the QEvents to QApplication if we are exiting
@@ -643,11 +662,13 @@ void Application::UpdateFrame()
         double msecsSpentInFrame = (double)(timeNow - frameStartTime) * 1000.0 / timerFrequency;
 
         const double msecsPerFrame = 1000.0 / (targetFpsLimit <= 1.0 ? 1000.0 : targetFpsLimit);
+        double msecsPerFrameWhenInactive = 1000.0 / (targetFpsLimitWhenInactive <= 1.0 ? 1000.0 : targetFpsLimitWhenInactive);
 
         ///\note Ideally we should sleep 0 msecs when running at a high fps rate,
         /// but need to avoid QTimer::start() with 0 msecs, since that will cause the timer to immediately fire,
         /// which can cause the Win32 message loop inside Qt to starve. (Qt keeps spinning the timer.start(0) loop for Tundra mainloop and neglects Win32 API).
         double msecsToSleep = std::min(std::max(1.0, msecsPerFrame - msecsSpentInFrame), msecsPerFrame);
+        double msecsToSleepWhenInactive = std::min(std::max(1.0, msecsPerFrameWhenInactive - msecsSpentInFrame), msecsPerFrameWhenInactive);
 
         // Reduce frame rate when unfocused
         if (!frameUpdateTimer.isActive())
@@ -655,7 +676,7 @@ void Application::UpdateFrame()
             if (appActivated || framework->IsHeadless())
                 frameUpdateTimer.start((int)msecsToSleep);
             else
-                frameUpdateTimer.start((int)(msecsToSleep + msecsPerFrame)); // Proceed at half FPS speed when unfocused (but never at half FPS when running a headless server).
+                frameUpdateTimer.start((int)(msecsToSleepWhenInactive)); // Cap FPS when window is inactive
         }
     }
     catch(const std::exception &e)
