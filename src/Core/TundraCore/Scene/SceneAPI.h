@@ -53,6 +53,7 @@ public slots:
         @param name Name of the scene to return
         @return The scene, or empty pointer if the scene with the specified name could not be found. */
     ScenePtr SceneByName(const QString &name) const;
+    /// @todo ScenePtr SceneById(scene_id_t id) const;
 
     /// Returns the Scene the current active main camera is in.
     /** If there is no active main camera, this function returns the first found scene.
@@ -91,17 +92,17 @@ public slots:
     ComponentPtr CreateComponentById(Scene* scene, u32 componentTypeid, const QString &newComponentName = "") const;
 
     /// Looks up the given type id and returns the type name string for that id.
-    QString GetComponentTypeName(u32 componentTypeid) const;
+    QString ComponentTypeNameForTypeId(u32 componentTypeId) const;
 
     /// Looks up the given type name and returns the type id for that component type.
-    u32 GetComponentTypeId(const QString &componentTypename) const;
+    u32 ComponentTypeIdForTypeName(const QString &componentTypeName) const;
 
     /// Looks up the attribute type name for an attribute type id
-    static QString GetAttributeTypeName(u32 attributeTypeid);
+    static QString AttributeTypeNameForTypeId(u32 attributeTypeId);
 
     /// Looks up the type id for an attribute type name, or zero if not found
     /** @param attributeTypeName Attribute type name, handled as case-insensitive. */
-    static u32 GetAttributeTypeId(const QString &attributeTypeName);
+    static u32 AttributeTypeIdForTypeName(const QString &attributeTypeName);
 
     /// Creates a clone of the specified component. The new component will be detached, i.e. it has no parent entity.
     ///\todo Implement this.
@@ -121,17 +122,27 @@ public slots:
     QStringList ComponentTypes() const;
 
     // DEPRECATED
+    /// @cond PRIVATE
     bool HasScene(const QString &name) const { return scenes.find(name) != scenes.end(); } /**< @deprecated Use GetScene instead @todo Remove */
     ScenePtr GetScene(const QString &name) const { return SceneByName(name); } /**< @deprecated Use SceneByName instead @todo Remove */
+    QString GetComponentTypeName(u32 componentTypeId) const { return ComponentTypeNameForTypeId(componentTypeId); }
+    u32 GetComponentTypeId(const QString &componentTypeName) const { return ComponentTypeIdForTypeName(componentTypeName); }
+    static QString GetAttributeTypeName(u32 attributeTypeId) { return AttributeTypeNameForTypeId(attributeTypeId); }
+    static u32 GetAttributeTypeId(const QString &attributeTypeName) { return AttributeTypeIdForTypeName(attributeTypeName); }
+    /// @endcond
 
 signals:
     /// Emitted after new scene has been added to framework.
     /** @param name new scene name. */
     void SceneAdded(const QString &name);
-
     /// Emitted after scene has been removed from the framework.
     /** @param name removed scene name. */
     void SceneRemoved(const QString &name);
+
+    /// Emitted after new scene has been added to framework.
+    /// @todo void SceneCreated(Scene *scene, AttributeChange::Type change);
+    /// Emitted after scene has been removed from the framework.
+    /// @todo void SceneRemoved(Scene *scene, AttributeChange::Type change);
 
 private:
     friend class Framework;

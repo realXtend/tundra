@@ -69,6 +69,7 @@ ScenePtr SceneAPI::CreateScene(const QString &name, bool viewenabled, bool autho
     scenes[name] = newScene;
 
     // Emit signal of creation
+//    emit SceneCreated(newScene.get(), AttributeChange::Default);
     emit SceneAdded(newScene->Name());
     return newScene;
 }
@@ -82,6 +83,7 @@ bool SceneAPI::RemoveScene(const QString &name)
     sceneIter->second->RemoveAllEntities(false);
     
     // Emit signal about removed scene
+//    emit SceneRemoved(sceneIter->second.get(), AttributeChange::Default);
     emit SceneRemoved(name);
 
     scenes.erase(sceneIter);
@@ -151,7 +153,7 @@ ComponentPtr SceneAPI::CreateComponentById(Scene* scene, u32 componentTypeid, co
     return factory->Create(scene, newComponentName);
 }
 
-QString SceneAPI::GetComponentTypeName(u32 componentTypeid) const
+QString SceneAPI::ComponentTypeNameForTypeId(u32 componentTypeid) const
 {
     ComponentFactoryPtr factory = GetFactory(componentTypeid);
     if (factory)
@@ -160,7 +162,7 @@ QString SceneAPI::GetComponentTypeName(u32 componentTypeid) const
         return "";
 }
 
-u32 SceneAPI::GetComponentTypeId(const QString &componentTypename) const
+u32 SceneAPI::ComponentTypeIdForTypeName(const QString &componentTypename) const
 {
     ComponentFactoryPtr factory = GetFactory(componentTypename);
     if (factory)
@@ -169,7 +171,7 @@ u32 SceneAPI::GetComponentTypeId(const QString &componentTypename) const
         return 0;
 }
 
-QString SceneAPI::GetAttributeTypeName(u32 attributeTypeid)
+QString SceneAPI::AttributeTypeNameForTypeId(u32 attributeTypeid)
 {
     attributeTypeid--; // Skip 0 which is illegal
     if (attributeTypeid < (u32)attributeTypeNames.size())
@@ -178,7 +180,7 @@ QString SceneAPI::GetAttributeTypeName(u32 attributeTypeid)
         return "";
 }
 
-u32 SceneAPI::GetAttributeTypeId(const QString &attributeTypename)
+u32 SceneAPI::AttributeTypeIdForTypeName(const QString &attributeTypename)
 {
     for (int i = 0; i < attributeTypeNames.size(); ++i)
     {
