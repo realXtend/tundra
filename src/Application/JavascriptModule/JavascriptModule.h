@@ -53,9 +53,9 @@ signals:
     void ScriptEngineCreated(QScriptEngine* engine);
 
 private:
-    /// Parses the plugin startup configuration file to detect which startup scripts should be run.
-    /** @return Returns a QMap<absolute_configfile_path, list_of_scripts> */
-    QMap<QString, QStringList> ParseStartupScriptConfig();
+    /// Startup js scripts specified on the command line via --jsplugin
+    /** @return List of script paths relative to bin/jsplugins */
+    QStringList StartupScripts();
 
     /// Stops and deletes startup scripts
     void UnloadStartupScripts();

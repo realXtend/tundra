@@ -523,53 +523,24 @@ void JavascriptModule::RemoveScriptObjects(JavascriptInstance* jsInstance)
     globalObject.setProperty("scriptObjects", QScriptValue());
 }
 
-QMap<QString, QStringList> JavascriptModule::ParseStartupScriptConfig()
+QStringList JavascriptModule::StartupScripts()
 {
-    QMap<QString, QStringList> pluginsToLoad;
-    foreach(const QString &configFile, framework_->Plugins()->ConfigurationFiles())
-    {
-        QDomDocument doc("plugins");
-        QFile file(configFile);
-        if (!file.open(QIODevice::ReadOnly))
-        {
-            LogError("JavascriptModule::ParseStartupScriptConfig: Failed to open file \"" + configFile + "\"!");
-            continue;
-        }
-        QString errorMsg;
-        if (!doc.setContent(&file, &errorMsg))
-        {
-            LogError("JavascriptModule::ParseStartupScriptConfig: Failed to parse XML file \"" + configFile + "\": " + errorMsg);
-            file.close();
-            continue;
-        }
-        file.close();
+    QStringList scripts;
+    if (framework_->HasCommandLineParameter("--jsplugin"))
+        scripts << framework_->CommandLineParameters("--jsplugin");
 
-        QDomElement docElem = doc.documentElement();
-
-        QDomNode n = docElem.firstChild();
-        while(!n.isNull())
-        {
-            QDomElement e = n.toElement(); // try to convert the node to an element.
-            if (!e.isNull() && e.tagName() == "jsplugin" && e.hasAttribute("path"))
-                pluginsToLoad[QDir::fromNativeSeparators(configFile)].push_back(e.attribute("path"));
-            n = n.nextSibling();
-        }
-    }
-    return pluginsToLoad;
+    return scripts;
 }
 
 void JavascriptModule::LoadStartupScripts()
 {
     UnloadStartupScripts();
 
-    // Get all existingStartupScripts from all config files
-    QMap<QString, QStringList> startupConfigToScripts = ParseStartupScriptConfig();
     QStringList startupScriptsToLoad;
     QStringList startupScriptsLoaded;
 
-    // Load all script refs to a flat list
-    foreach(const QString &configFile, startupConfigToScripts.keys())
-        startupScriptsToLoad += startupConfigToScripts[configFile];
+    // Get all scripts specified on the command line
+    startupScriptsToLoad.append(StartupScripts());
 
     // Find all script files from /jsmodules/startup
     QStringList existingStartupScripts;
@@ -582,7 +553,7 @@ void JavascriptModule::LoadStartupScripts()
     if (!existingStartupScripts.isEmpty())
     {
         LogInfo(Name() + ": Loading startup scripts from /jsmodules/startup");
-        foreach (const QString &script, startupScriptsToLoad)
+        foreach (const QString &script, StartupScripts())
         {
             QString fullPath = path + "/" + script;
             if (existingStartupScripts.contains(fullPath) || existingStartupScripts.contains(script))
@@ -594,58 +565,45 @@ void JavascriptModule::LoadStartupScripts()
                 jsInstance->Run();
 
                 startupScriptsLoaded << fullPath << script;
+                startupScriptsToLoad.removeAll(fullPath);
+                startupScriptsToLoad.removeAll(script);
             }
         }
         if (startupScriptsLoaded.isEmpty())
             LogInfo(Name() + ": ** No scripts from /jsmodules/startup");
     }
-    startupScriptsToLoad.clear();
 
     // 2. Load the rest of the references from the config files
-    foreach(const QString &configFile, startupConfigToScripts.keys())
+    foreach(const QString &startupScript, startupScriptsToLoad)
     {
-        QDir startupConfigDir(configFile.mid(0, configFile.lastIndexOf("/")));
-        QStringList startupScripts = startupConfigToScripts[configFile];
+        LogInfo(Name() + ": Loading scripts specified on the command line: " + startupScript);
 
-        // Remove any refs that were already loaded in 1.
-        foreach(const QString &loadedRef, startupScriptsLoaded)
-            startupScripts.removeAll(loadedRef);
-        if (startupScripts.isEmpty())
+        // Allow relative paths from '/<install_dir>/jsmodules' to start also
+        QDir jsPluginsDir(QDir::fromNativeSeparators(Application::InstallationDirectory()) + "jsmodules");
+
+        // Only allow relative paths, maybe allow absolute paths as well, maybe even URLs at some point?
+        if (!QDir::isRelativePath(startupScript))
             continue;
 
-        LogInfo(Name() + ": Loading scripts from startup config " + configFile.split("/").last());
-
-        // Allow relative paths from '/<install_dir>' and '/<install_dir>/jsmodules'  to start also
-        QDir jsPluginsDir(QDir::fromNativeSeparators(Application::InstallationDirectory()) + "jsmodules");
-        foreach(QString startupScript, startupScripts)
+        QString pathToFile;
+        // Relative path from jsplugins
+        if (jsPluginsDir.exists(startupScript))
+            pathToFile = jsPluginsDir.filePath(startupScript);
+        // Absolute path (above already ignored?)
+        else if (QFile::exists(startupScript))
+            pathToFile = startupScript;
+        else
         {
-            // Only allow relative paths, maybe allow absolute paths as well, maybe even URLs at some point?
-            if (!QDir::isRelativePath(startupScript))
-                continue;
-
-            QString pathToFile;
-            // Relative path from jsplugins
-            if (jsPluginsDir.exists(startupScript))
-                pathToFile = jsPluginsDir.filePath(startupScript);
-            // Relative path from startup file path
-            else if (startupConfigDir.exists(startupScript))
-                pathToFile = startupConfigDir.absoluteFilePath(startupScript);
-            // Absolute path (above these are already ignored?)
-            else if (QFile::exists(startupScript))
-                pathToFile = startupScript;
-            else
-            {
-                // Try relative to the startup config.
-                LogWarning(Name() + "** Could not find startup file for: " + startupScript);
-                continue;
-            }
-
-            LogInfo(Name() + ": ** " + startupScript);
-            JavascriptInstance* jsInstance = new JavascriptInstance(pathToFile, this);
-            PrepareScriptInstance(jsInstance);
-            startupScripts_.push_back(jsInstance);
-            jsInstance->Run();
+            // Try relative to the startup config.
+            LogWarning(Name() + "** Could not find startup file for: " + startupScript);
+            continue;
         }
+
+        LogInfo(Name() + ": ** " + startupScript);
+        JavascriptInstance* jsInstance = new JavascriptInstance(pathToFile, this);
+        PrepareScriptInstance(jsInstance);
+        startupScripts_.push_back(jsInstance);
+        jsInstance->Run();
     }
 }
 
