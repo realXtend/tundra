@@ -773,6 +773,7 @@ void EC_Mesh::CreateMesh(const AssetPtr &meshAsset)
         return;
     }
 
+    // We either use 1) The input meshAsset or if that is null 2) Current internal asset ref listener asset.
     if (!meshAsset.get() && !this->meshAsset->Asset().get())
         return;
 
@@ -822,6 +823,7 @@ void EC_Mesh::CreateInstance(const AssetPtr &meshAsset)
         return;
     }
 
+    // We either use 1) The input meshAsset or if that is null 2) Current internal asset ref listener asset.
     if (!meshAsset.get() && !this->meshAsset->Asset().get())
         return;
 
@@ -830,12 +832,9 @@ void EC_Mesh::CreateInstance(const AssetPtr &meshAsset)
     // Check that mesh is ready.
     OgreMeshAsset *ogreMesh = dynamic_cast<OgreMeshAsset*>(meshAsset.get() != 0 ? meshAsset.get() : this->meshAsset->Asset().get());
     if (!ogreMesh || !ogreMesh->IsLoaded())
-    {
-        LogInfo("EC_Mesh::CreateInstance: Waiting for mesh to load");
         return;
-    }
 
-    // Check that materials are loaded.
+    // Check that materials are loaded. We cannot create instances before they are loaded to Ogre.
     for (size_t i=0; i<materialAssets.size(); ++i)
     {
         // Allow null listeners for empty material refs.
@@ -843,10 +842,7 @@ void EC_Mesh::CreateInstance(const AssetPtr &meshAsset)
             continue;
         OgreMaterialAsset *material = dynamic_cast<OgreMaterialAsset*>(materialAssets[i]->Asset().get());
         if (!material || !material->IsLoaded())
-        {
-            LogInfo("EC_Mesh::CreateInstance: Waiting for material to load at index " + QString::number(i));
             return;
-        }
     }
 
     RemoveMesh();

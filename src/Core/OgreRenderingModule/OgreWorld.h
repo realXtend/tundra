@@ -29,6 +29,7 @@ class QTimer;
 class OGRE_MODULE_API OgreWorld : public QObject, public enable_shared_from_this<OgreWorld>
 {
     Q_OBJECT
+    Q_PROPERTY(bool drawDebugInstancing READ IsDebugInstancingEnabled WRITE SetDebugInstancingEnabled)
 
 public:
     /// Called by the OgreRenderingModule upon the creation of a new scene
@@ -67,14 +68,12 @@ public:
 
     /// Destroys instanced entities.
     /** This function must be used in pair with OgreWorld::CreateInstance as it removes the instances from both internal state and from Ogre.
-        The pointers can not be used after this calling this function.
+        The pointer(s) given to this function can not be used after this function returns.
         @param Instanced entity to destroy. */
     void DestroyInstances(Ogre::InstancedEntity* instance);
 
     /// @overload
-    /** This function must be used in pair with OgreWorld::CreateInstance as it removes the instances from both internal state and from Ogre.
-        The pointers can not be used after this calling this function.
-        @param Instanced entities to destroy. */
+    /** @param Instanced entities to destroy. */
     void DestroyInstances(const QList<Ogre::InstancedEntity*> instances);
 
     std::string GetUniqueObjectName(const std::string &prefix) { return GenerateUniqueObjectName(prefix); } /**< @deprecated Use GenerateUniqueObjectName @todo Add warning print */
@@ -129,6 +128,21 @@ public slots:
 
     /// Returns the parent scene
     ScenePtr Scene() const { return scene_.lock(); }
+
+    /// Sets all @c meshRef instances to static.
+    /** Setting to static means all instances of this mesh ref will be immovable, even if their parent transform or placeable is moved
+        they wont be updated. Advantages for static instances is significant speedup in rendering. Use this function to set static
+        true for instancing enabled mesh refs that you know will not be moved by clients or scripts.
+        @param Mesh asset reference of the target.
+        @param If should be made static or revert previous static setting.
+        @return True if instance manager could be found for the mesh ref, if not false is returned and you need to recall this function once instances exist. */
+    bool SetInstancesStatic(const QString &meshRef, bool _static = true);
+
+    /// Is debug drawing for instancing enabled.
+    bool IsDebugInstancingEnabled() const;
+
+    /// Set debug drawing for instancing  enabled.
+    void SetDebugInstancingEnabled(bool enabled);
 
     /// Renders an axis-aligned bounding box.
     void DebugDrawAABB(const AABB &aabb, const Color &clr, bool depthTest = true);
@@ -239,8 +253,17 @@ private:
     /// Ogre instancing data.
     QList<InstancingTarget*> intancingTargets_;
 
+    /// Debug drawing for instancing.
+    bool drawDebugInstancing_;
+
     /// Get or create a instance manager for mesh ref and submesh index.
     MeshInstanceTarget *GetOrCreateInstanceMeshTarget(const QString &meshRef, int submesh);
+
+    /// Analyzes the current scene on how many instances potentially can be created with input mesh ref.
+    uint MeshInstanceCount(const QString &meshRef);
+
+    /// Prepares a material for instanced use. This function will clone the material if necessary.
+    QString PrepareInstancingMaterial(OgreMaterialAsset *material);
 };
 
 /// Instancing mesh target data.
@@ -259,13 +282,16 @@ public:
     /// Creates a instance with this manager.
     Ogre::InstancedEntity *CreateInstance(const QString &material, Ogre::InstancedEntity *parent = 0);
 
-    /// Removes instance ptrs from the internal state. Does not destroy them.
-    void ForgetInstances(Ogre::InstancedEntity* instance);
-    void ForgetInstances(QList<Ogre::InstancedEntity*> _instances);
+    /// Removes instance ptrs from the internal state. Does not destroy them. Returns if matches were found.
+    bool ForgetInstances(Ogre::InstancedEntity* instance);
+    bool ForgetInstances(QList<Ogre::InstancedEntity*> _instances);
+
+public slots:
+    void OptimizeBatches();
+    void SetBatchesStatic(bool isStatic);
 
 private slots:
-    void InvokeOptimizations(int optimizeAfterMsec = 5000);
-    void OnOptimize();
+    void InvokeOptimizations(int optimizeAfterMsec = 1000);
 
 private:
     QTimer *optimizationTimer_;
