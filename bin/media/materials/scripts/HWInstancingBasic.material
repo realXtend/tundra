@@ -1,0 +1,38 @@
+
+abstract material Tundra/Instancing/HWBasic
+{
+    technique
+    {
+        pass
+        {
+            diffuse  0.3 0.3 0.3
+            specular 0.1 0.1 0.1 0.1 12.5
+
+            vertex_program_ref Tundra/Instancing/HWBasicVS
+            {
+            }
+
+            fragment_program_ref Tundra/Instancing/HWBasicPS
+            {
+            }
+
+            texture_unit Diffuse
+            {
+                texture_alias DiffuseMap
+                tex_address_mode clamp
+            }
+
+            texture_unit shadow0
+            {
+                content_type shadow
+                tex_address_mode border
+                tex_border_colour 1 1 1 1
+            }
+        }
+    }
+}
+
+material Tundra/Instancing/HWBasic/Empty : Tundra/Instancing/HWBasic
+{
+    set_texture_alias DiffuseMap TextureMissing.png
+}
