@@ -206,13 +206,13 @@ float3 EC_Mesh::AttachmentScale(uint index) const
 
 float3x4 EC_Mesh::LocalToParent() const
 {
-    if (!entity_)
+    if (!entity_ && !instancedEntity_)
     {
         LogError(QString("EC_Mesh::LocalToParent failed! No entity exists in mesh \"%1\" (entity: \"%2\")!").arg(meshRef.Get().ref).arg(ParentEntity() ? ParentEntity()->Name() : "(EC_Mesh with no parent entity)"));
         return float3x4::identity;
     }
 
-    Ogre::SceneNode *node = entity_->getParentSceneNode();
+    Ogre::SceneNode *node = (entity_ != 0 ? entity_->getParentSceneNode() : instancedEntity_->getParentSceneNode());
     if (!node)
     {
         LogError(QString("EC_Mesh::LocalToParent failed! Ogre::Entity is not attached to a Ogre::SceneNode! Mesh \"%1\" (entity: \"%2\")!").arg(meshRef.Get().ref).arg(ParentEntity() ? ParentEntity()->Name() : "(EC_Mesh with no parent entity)"));
@@ -224,13 +224,13 @@ float3x4 EC_Mesh::LocalToParent() const
 
 float3x4 EC_Mesh::LocalToWorld() const
 {
-    if (!entity_)
+    if (!entity_ && !instancedEntity_)
     {
         LogError(QString("EC_Mesh::LocalToWorld failed! No entity exists in mesh \"%1\" (entity: \"%2\")!").arg(meshRef.Get().ref).arg(ParentEntity() ? ParentEntity()->Name() : "(EC_Mesh with no parent entity)"));
         return float3x4::identity;
     }
 
-    Ogre::SceneNode *node = entity_->getParentSceneNode();
+    Ogre::SceneNode *node = (entity_ != 0 ? entity_->getParentSceneNode() : instancedEntity_->getParentSceneNode());
     if (!node)
     {
         LogError(QString("EC_Mesh::LocalToWorld failed! Ogre::Entity is not attached to a Ogre::SceneNode! Mesh \"%1\" (entity: \"%2\")!").arg(meshRef.Get().ref).arg(ParentEntity() ? ParentEntity()->Name() : "(EC_Mesh with no parent entity)"));
@@ -568,6 +568,9 @@ void EC_Mesh::RemoveAllAttachments()
 
 bool EC_Mesh::SetMaterial(uint index, const QString& material_name, AttributeChange::Type change)
 {
+    /// @todo Support using this function when instancing is used? Manipulating the material attribute list
+    /// will already work, but swapping the material in a instance is not even possible, it needs to be
+    /// removed and re-created. Note that if this is done, change type cannot be Disconnected or the automatic recreation wont work!
     if (!entity_)
         return false;
     
@@ -1191,7 +1194,6 @@ void EC_Mesh::ApplyMaterial()
 QStringList EC_Mesh::AvailableBones() const
 {
     QStringList ret;
-    
     if (!entity_)
         return ret;
     Ogre::Skeleton* skel = entity_->getSkeleton();
