@@ -1,4 +1,7 @@
 
+// This file includes code copied from the Ogre 3D Samples media assets,
+// in particular the instancing examples. Original author Matias N. Goldberg ("dark_sylinc").
+
 abstract material Tundra/Instancing/HWBasic
 {
     technique
