@@ -82,11 +82,11 @@ function onDrawDebugToggled()
 function onToggleStatic()
 {
     var button = findChild(widget, "buttonStatic");
-    var static = button.checked;
-    if (scene.ogre.SetInstancesStatic("instancing-cube.mesh", static))
+    var isStatic = button.checked;
+    if (scene.ogre.SetInstancingStatic("instancing-cube.mesh", isStatic))
     {
-        log("Setting instancing to static for 'instancing-cube.mesh': " + static);
-        button.text = (static ? "Disable" : "Enable") + " Static Instancing";
+        log("Setting instancing to static for 'instancing-cube.mesh': " + isStatic);
+        button.text = (isStatic ? "Disable" : "Enable") + " Static Instancing";
     }
 }
 
