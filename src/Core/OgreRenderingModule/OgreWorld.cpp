@@ -97,9 +97,13 @@ OgreWorld::~OgreWorld()
             for (int i=0; i<intancingTargets_.size(); ++i)
             {
                 InstancingTarget *intancingTarget = intancingTargets_[i];
+                if (!intancingTarget)
+                    continue;
                 for (int k=0; k<intancingTarget->targets.size(); ++k)
                 {
                     MeshInstanceTarget *meshTarget = intancingTarget->targets[k];
+                    if (!meshTarget)
+                        continue;
                     if (meshTarget && !meshTarget->instances.isEmpty())
                     {
                         // These should all be gone if DestroyInstances() were called by the creators correctly!
@@ -111,7 +115,8 @@ OgreWorld::~OgreWorld()
                     }
 
                     // Destroy instance manager
-                    sceneManager_->destroyInstanceManager(meshTarget->manager);
+                    if (meshTarget->manager)
+                        sceneManager_->destroyInstanceManager(meshTarget->manager);
                     meshTarget->manager = 0;
                 }
                 SAFE_DELETE(intancingTargets_[i]);
@@ -310,15 +315,27 @@ void OgreWorld::DestroyInstances(const QList<Ogre::InstancedEntity*> instances)
     // Now destroy the manager owning the instances if its instance count is empty.
     if (iTarget > -1)
     {
-        MeshInstanceTarget *meshTarget = intancingTargets_[iTarget]->targets[kTarget];
-        if (meshTarget->instances.isEmpty())
+        InstancingTarget *target = intancingTargets_.at(iTarget);
+        if (target)
         {
-            if (meshTarget->manager)
-                sceneManager_->destroyInstanceManager(meshTarget->manager);
-            meshTarget->manager = 0;
+            // Remove mesh target if its now empty.
+            MeshInstanceTarget *meshTarget = target->targets.at(kTarget);
+            if (meshTarget && meshTarget->instances.isEmpty())
+            {
+                if (meshTarget->manager)
+                    sceneManager_->destroyInstanceManager(meshTarget->manager);
+                meshTarget->manager = 0;
 
-            SAFE_DELETE(intancingTargets_[iTarget]->targets[kTarget]);
-            intancingTargets_[iTarget]->targets.removeAt(kTarget);
+                target->targets.removeAt(kTarget);
+                SAFE_DELETE(meshTarget);
+
+                // Remove instancing target if its now empty.
+                if (target->targets.isEmpty())
+                {
+                    intancingTargets_.removeAt(iTarget);
+                    SAFE_DELETE(target);
+                }
+            }
         }
     }
 }

@@ -39,7 +39,7 @@ function init()
     spanBox.maximum = 10000;
     spanBox.value = 50;
 
-    var instancingBox = new QCheckBox("Use Istancing");
+    var instancingBox = new QCheckBox("Use Instancing");
     instancingBox.objectName = "useInstancingBox";
     instancingBox.checked = true;
 
