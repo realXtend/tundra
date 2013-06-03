@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include "CoreException.h"
 
 #define MATH_OGRE_INTEROP
 
@@ -250,13 +251,18 @@ Ogre::InstancedEntity *OgreWorld::CreateInstance(const AssetPtr &meshAsset, cons
             rollback << instance;
         }
     }
+    catch (Exception &e)
+    {
+        LogError(QString("OgreWorld::CreateInstance: Exception occurred while creating instances: %1 for %2").arg(e.what()).arg(mesh->Name()));
+        DestroyInstances(rollback);
+        mainInstance = 0;
+    }
     catch (Ogre::Exception &e)
     {
         LogError(QString("OgreWorld::CreateInstance: Exception occurred while creating instances: %1 for %2").arg(e.what()).arg(mesh->Name()));
         DestroyInstances(rollback);
         mainInstance = 0;
     }
-    rollback.clear();
 
     return mainInstance;
 }
@@ -320,30 +326,52 @@ MeshInstanceTarget *OgreWorld::GetOrCreateInstanceMeshTarget(const QString &mesh
 {
     PROFILE(OgreWorld_GetOrCreateInstanceMeshTarget);
 
+    InstancingTarget *intancingTarget = 0;
     for (int i=0; i<intancingTargets_.size(); ++i)
     {
-        InstancingTarget *intancingTarget = intancingTargets_[i];
-        if (intancingTarget->ref.compare(meshRef, Qt::CaseSensitive) == 0)
+        InstancingTarget *iTarget = intancingTargets_[i];
+        if (iTarget->ref.compare(meshRef, Qt::CaseSensitive) == 0)
         {
-            for (int k=0; k<intancingTarget->targets.size(); ++k)
+            // Target for this mesh found.
+            intancingTarget = iTarget;
+            for (int k=0; k<iTarget->targets.size(); ++k)
             {
-                MeshInstanceTarget *meshTarget = intancingTarget->targets[k];
-                if (meshTarget->submesh == submesh)
-                    return meshTarget;
+                MeshInstanceTarget *mTarget = iTarget->targets[k];
+                if (mTarget->submesh == submesh)
+                {
+                    // Target for this submesh found.
+                    return mTarget;
+                }
             }
+            break;
         }
+        if (intancingTarget)
+            break;
+    }
+
+    // No target for the mesh ref exists.
+    if (!intancingTarget)
+        intancingTarget = new InstancingTarget(meshRef);
+
+    // Check any existing mesh targets within this mesh ref if static instancing is enabled.
+    bool isStatic = false;
+    if (intancingTarget->targets.size() > 0)
+    {
+        MeshInstanceTarget *existingTarget = intancingTarget->targets.first();
+        if (existingTarget && existingTarget->isStatic)
+            isStatic = true;
     }
 
     uint batchSize = MeshInstanceCount(meshRef);
 
-    InstancingTarget *instanceTarget = new InstancingTarget(meshRef);
-    MeshInstanceTarget *meshTarget = new MeshInstanceTarget(submesh);
+    // Create target. @note createInstanceManager() will throw if manager with name already exists.
+    MeshInstanceTarget *meshTarget = new MeshInstanceTarget(submesh, isStatic);
     meshTarget->manager = sceneManager_->createInstanceManager(QString("InstanceManager_%1_%2").arg(meshRef).arg(submesh).toStdString(),
         meshRef.toStdString(), Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
         Ogre::InstanceManager::HWInstancingBasic, static_cast<size_t>(batchSize), Ogre::IM_USEALL, submesh);
 
-    instanceTarget->targets << meshTarget;
-    intancingTargets_ << instanceTarget;
+    intancingTarget->targets << meshTarget;
+    intancingTargets_ << intancingTarget;
     return meshTarget;
 }
 
@@ -982,7 +1010,28 @@ bool OgreWorld::IsDebugInstancingEnabled() const
     return drawDebugInstancing_;
 }
 
-bool OgreWorld::SetInstancesStatic(const QString &meshRef, bool _static)
+bool OgreWorld::IsInstancingStatic(const QString &meshRef)
+{
+    QString ref = AssetAPI::SanitateAssetRef(framework_->Asset()->ResolveAssetRef("", meshRef));
+    for (int i=0; i<intancingTargets_.size(); ++i)
+    {
+        InstancingTarget *intancingTarget = intancingTargets_[i];
+        if (intancingTarget->ref.compare(ref, Qt::CaseSensitive) == 0)
+        {
+            // Static instancing is set for all targets with mesh ref or none of them
+            // so we can just return the first ones static property.
+            for (int k=0; k<intancingTarget->targets.size(); ++k)
+            {
+                MeshInstanceTarget *meshTarget = intancingTarget->targets[k];
+                if (meshTarget)
+                    return meshTarget->isStatic;
+            }
+        }
+    }
+    return false;
+}
+
+bool OgreWorld::SetInstancingStatic(const QString &meshRef, bool _static)
 {
     QString ref = AssetAPI::SanitateAssetRef(framework_->Asset()->ResolveAssetRef("", meshRef));
     for (int i=0; i<intancingTargets_.size(); ++i)
@@ -993,7 +1042,8 @@ bool OgreWorld::SetInstancesStatic(const QString &meshRef, bool _static)
             for (int k=0; k<intancingTarget->targets.size(); ++k)
             {
                 MeshInstanceTarget *meshTarget = intancingTarget->targets[k];
-                meshTarget->SetBatchesStatic(_static);
+                if (meshTarget)
+                    meshTarget->SetBatchesStatic(_static);
             }
             return true;
         }
@@ -1196,9 +1246,10 @@ void OgreWorld::DebugDrawSoundSource(const float3 &soundPos, float soundInnerRad
 
 /// MeshInstanceTarget
 
-MeshInstanceTarget::MeshInstanceTarget(int _submesh) :
+MeshInstanceTarget::MeshInstanceTarget(int _submesh, bool _static) :
     submesh(_submesh),
     manager(0),
+    isStatic(_static),
     optimizationTimer_(new QTimer())
 {
     optimizationTimer_->setSingleShot(true);
@@ -1216,7 +1267,7 @@ Ogre::InstancedEntity *MeshInstanceTarget::CreateInstance(const QString &materia
     PROFILE(OgreWorld_MeshInstanceTarget_CreateInstance);
 
     if (!manager)
-        return 0;
+        throw ::Exception("Instance manager is null, cannot create a new instance.");
 
     /// @todo Check if this can throw!
     Ogre::InstancedEntity *instance = manager->createInstancedEntity(material.toStdString());
@@ -1224,7 +1275,7 @@ Ogre::InstancedEntity *MeshInstanceTarget::CreateInstance(const QString &materia
         parent->shareTransformWith(instance);
 
     instances << instance;
-    
+
     InvokeOptimizations();
     return instance;
 }
@@ -1268,20 +1319,23 @@ void MeshInstanceTarget::InvokeOptimizations(int optimizeAfterMsec)
 void MeshInstanceTarget::OptimizeBatches()
 {
     PROFILE(OgreWorld_MeshInstanceTarget_OptimizeBatches);
-    if (!manager)
-        return;
-
-    manager->cleanupEmptyBatches();
-    manager->defragmentBatches(true);
+    if (manager)
+    {
+        manager->cleanupEmptyBatches();
+        manager->defragmentBatches(true);
+        manager->setBatchesAsStaticAndUpdate(isStatic);
+    }
 }
 
 void MeshInstanceTarget::SetBatchesStatic(bool _static)
 {
     PROFILE(OgreWorld_MeshInstanceTarget_SetBatchesStatic);
-    if (!manager)
+    if (isStatic == _static)
         return;
 
-    manager->setBatchesAsStaticAndUpdate(_static);
+    isStatic = _static;
+    if (manager && !optimizationTimer_->isActive())
+        manager->setBatchesAsStaticAndUpdate(isStatic);
 }
 
 /// InstancingTarget

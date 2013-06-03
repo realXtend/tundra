@@ -129,14 +129,21 @@ public slots:
     /// Returns the parent scene
     ScenePtr Scene() const { return scene_.lock(); }
 
+    /// Returns if instances with @c meshRef are currently in static mode.
+    /** @param Mesh asset reference.
+        @return True if mesh found and instancing is static, false if instancing is not static or instancing target for mesh could not be found. */
+    bool IsInstancingStatic(const QString &meshRef);
+
     /// Sets all @c meshRef instances to static.
     /** Setting to static means all instances of this mesh ref will be immovable, even if their parent transform or placeable is moved
         they wont be updated. Advantages for static instances is significant speedup in rendering. Use this function to set static
         true for instancing enabled mesh refs that you know will not be moved by clients or scripts.
-        @param Mesh asset reference of the target.
+        @note Setting this will influence the current instances and any future instances with @c meshRef, but there must be at 
+              least one instance when its first called for it to be applied. Typically you would call this from a script for a particular mesh ref.
+        @param Mesh asset reference.
         @param If should be made static or revert previous static setting.
         @return True if instance manager could be found for the mesh ref, if not false is returned and you need to recall this function once instances exist. */
-    bool SetInstancesStatic(const QString &meshRef, bool _static = true);
+    bool SetInstancingStatic(const QString &meshRef, bool _static = true);
 
     /// Is debug drawing for instancing enabled.
     bool IsDebugInstancingEnabled() const;
@@ -257,9 +264,11 @@ private:
     bool drawDebugInstancing_;
 
     /// Get or create a instance manager for mesh ref and submesh index.
+    /** @note meshRef needs to be a Ogre mesh resource name, not Tundra AssetAPI reference. */
     MeshInstanceTarget *GetOrCreateInstanceMeshTarget(const QString &meshRef, int submesh);
 
     /// Analyzes the current scene on how many instances potentially can be created with input mesh ref.
+    /** @note meshRef needs to be a Ogre mesh resource name, not Tundra AssetAPI reference. */
     uint MeshInstanceCount(const QString &meshRef);
 
     /// Prepares a material for instanced use. This function will clone the material if necessary.
@@ -272,9 +281,10 @@ class MeshInstanceTarget : public QObject
 Q_OBJECT
 
 public:
-    MeshInstanceTarget(int _submesh);
+    MeshInstanceTarget(int _submesh, bool _static = false);
     ~MeshInstanceTarget();
 
+    bool isStatic;
     int submesh;
     Ogre::InstanceManager *manager;
     QList<Ogre::InstancedEntity*> instances;
