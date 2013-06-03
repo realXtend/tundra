@@ -100,10 +100,11 @@ OgreWorld::~OgreWorld()
                 for (int k=0; k<intancingTarget->targets.size(); ++k)
                 {
                     MeshInstanceTarget *meshTarget = intancingTarget->targets[k];
-                    if (!meshTarget->instances.isEmpty())
+                    if (meshTarget && !meshTarget->instances.isEmpty())
                     {
                         // These should all be gone if DestroyInstances() were called by the creators correctly!
-                        LogWarning(QString("OgreWorld: Instanced entities are still loaded to the system for %1, destroying them now!").arg(intancingTarget->ref));
+                        LogWarning(QString("OgreWorld: %1 instanced entities with submesh %2 are still loaded to the system for %3, destroying them now!")
+                            .arg(meshTarget->instances.size()).arg(meshTarget->submesh).arg(intancingTarget->ref));
                         foreach(Ogre::InstancedEntity* instance, meshTarget->instances)
                             sceneManager_->destroyInstancedEntity(instance);
                         meshTarget->instances.clear();
@@ -422,6 +423,7 @@ QString OgreWorld::PrepareInstancingMaterial(OgreMaterialAsset *material)
             OgreMaterialAsset *clonedMaterial = dynamic_cast<OgreMaterialAsset*>(clone.get());
             if (clonedMaterial)
             {
+                bool logVS = false; bool logPS = false;
                 if (VS != InstancingHWBasic_VS)
                 {
                     if (!clonedMaterial->SetVertexShader(0, 0, InstancingHWBasic_VS))
@@ -430,8 +432,7 @@ QString OgreWorld::PrepareInstancingMaterial(OgreMaterialAsset *material)
                         return "";
                     }
                     else if (!VS.isEmpty())
-                        LogWarning(QString("OgreWorld::CreateInstance: Replaced existing vertex program '%1' in instancing material clone of '%2'. ").arg(VS).arg(material->Name()) +
-                                   QString("Use '%1' in your material to get rid of this warning!").arg(InstancingHWBasic_VS));
+                        logVS = true;
                 }
                 if (PS != InstancingHWBasic_PS)
                 {
@@ -441,9 +442,20 @@ QString OgreWorld::PrepareInstancingMaterial(OgreMaterialAsset *material)
                         return "";
                     }
                     else if (!PS.isEmpty())
-                        LogWarning(QString("OgreWorld::CreateInstance: Replaced existing fragment program '%1' in instancing material clone of '%2'. ").arg(PS).arg(material->Name()) +
-                                   QString("Use '%1' in your material to get rid of this warning!").arg(InstancingHWBasic_PS));
+                        logPS = true;
                 }
+
+                // Unify warning prints to keep it clean as possible. Logging these warnings are either way useful 
+                // for content authors when we are replacing existing shaders for instancing to work.
+                if (logVS && logPS)
+                    LogWarning(QString("OgreWorld::CreateInstance: Replaced existing vertex '%1' and fragment program '%2' in instancing material clone of '%3'. ").arg(VS).arg(PS).arg(material->Name()) +
+                               QString("Use '%1' and '%2' in your material to get rid of this warning!").arg(InstancingHWBasic_VS).arg(InstancingHWBasic_PS));
+                if (logVS && !logPS)
+                    LogWarning(QString("OgreWorld::CreateInstance: Replaced existing vertex program '%1' in instancing material clone of '%2'. ").arg(VS).arg(material->Name()) +
+                               QString("Use '%1' in your material to get rid of this warning!").arg(InstancingHWBasic_VS));
+                if (!logVS && logPS)
+                    LogWarning(QString("OgreWorld::CreateInstance: Replaced existing fragment program '%1' in instancing material clone of '%2'. ").arg(PS).arg(material->Name()) +
+                               QString("Use '%1' in your material to get rid of this warning!").arg(InstancingHWBasic_PS));
 
                 return clonedMaterial->ogreAssetName;
             }

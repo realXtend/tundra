@@ -57,13 +57,13 @@ public:
     /// Creates a instanced entity for mesh with materials.
     /** @param Mesh asset reference. Must be loaded to the asset system.
         @param Material asset references. Each material must be loaded to the asset system. Empty refs get a default error material.
-        @return Instanced entity. */
+        @return Instanced entity or null ptr if instance could not be created with given input. */
     Ogre::InstancedEntity *CreateInstance(const QString &meshRef, const AssetReferenceList &materials);
 
     /// @overload
     /** @param Mesh asset. Must be in loaded state.
         @param Material asset references. Each material must be loaded to the asset system. Empty refs get a default error material.
-        @return Instanced entity. */
+        @return Instanced entity or null ptr if instance could not be created with given input. */
     Ogre::InstancedEntity *CreateInstance(const AssetPtr &meshAsset, const AssetReferenceList &materials);
 
     /// Destroys instanced entities.
