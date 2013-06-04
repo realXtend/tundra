@@ -4,9 +4,6 @@ project(tundra)
 # CMake version requirement, >= 2.5.5 to ensure that ProtoBuf is found ok.
 cmake_minimum_required(VERSION 2.5.5)
 
-# Enable solution folders
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
 # TUNDRA_NO_BOOST defines whether we want to replace usage of Boost with the C++ (TR1) standard equivalents.
 # Setting TUNDRA_NO_BOOST to TRUE, i.e. disabling usage of Boost in the Tundra codebase, requires compiler
 # with up-to-date C++ TR1 and preferably the C99 standard cstdint header. Also if the used compiler has C++11 
