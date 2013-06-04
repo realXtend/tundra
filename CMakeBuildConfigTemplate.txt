@@ -39,6 +39,12 @@ if (TUNDRA_CPP11_ENABLED)
     add_definitions(-DTUNDRA_CPP11_ENABLED)
 endif()
 
+# Enable solution folders
+if (NOT MSVC)
+    # Cannot enable solution folders by default when using Visual Studio as the Express versions don't support them.
+    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+endif()
+
 if (ENABLE_OPEN_ASSET_IMPORT)
     add_definitions(-DASSIMP_ENABLED)
 endif()
