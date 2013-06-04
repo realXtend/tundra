@@ -140,6 +140,9 @@ if (!framework.IsHeadless())
         var openedScene = framework.Scene().CreateScene("Scene" + sceneNumber, true, true);
         if (openedScene == null)
             return;
+        var openedStorage = asset.DeserializeAssetStorageFromString(fileName, false);
+        if (openedStorage != null)
+            asset.SetDefaultAssetStorage(openedStorage);
 
         openedScene.LoadSceneXML(fileName, true, false, 0);
 
