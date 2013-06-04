@@ -22,6 +22,8 @@
 #include "CoreStringUtils.h"
 
 #include <QString>
+#include <sstream>
+#include <iostream>
 
 #if defined(WIN32) && !defined(__MINGW32__) && !defined(WIN8RT)
 
@@ -32,9 +34,6 @@
 #include <tchar.h>
 #include <stdio.h>
 #include <strsafe.h>
-
-#include <sstream>
-#include <iostream>
 
 #pragma comment(lib, "User32.lib")
 #pragma comment(lib, "IPHLPAPI.lib")
