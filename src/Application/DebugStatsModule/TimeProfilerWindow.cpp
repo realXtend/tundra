@@ -27,6 +27,8 @@
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "IAsset.h"
+#include "IAssetTransfer.h"
+#include "IAssetProvider.h"
 #include "ConfigAPI.h"
 #include "TreeWidgetUtils.h"
 #ifdef EC_Script_ENABLED
@@ -1735,44 +1737,53 @@ void TimeProfilerWindow::RefreshAssetsPage()
     ui_.treeAssetCache->clear();
     ui_.treeAssetTransfers->clear();
 
-    /// @todo Regression. Reimplement using the Asset API. -jj.
-/*  
-    shared_ptr<Asset ServiceInterface> asset_service = 
-        framework_->GetServiceManager()->GetService<AssetServiceInterface>(Service::ST_Asset).lock();
-    if (!asset_service)
-        return;
-        
-    AssetCacheInfoMap cache_map = asset_service->GetAssetCacheInfo();
-    AssetCacheInfoMap::const_iterator i = cache_map.begin();
-    while(i != cache_map.end())
+    /// Count assets per asset type
+    typedef std::map<QString, std::pair<int, int> > AssetsPerTypeMap;
+    AssetsPerTypeMap assetsPerType;
+    AssetMap allAssets = framework_->Asset()->Assets();
+    AssetMap::iterator i = allAssets.begin();
+    while (i != allAssets.end())
     {
-        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList());
-        ui_.treeAssetCache->addTopLevelItem(item);
-        
-        item->setText(0, QString(i->first.c_str()));
-        item->setText(1, QString(QString("%1").arg(i->second.count_)));
-        item->setText(2, QString(kNet::FormatBytes((int)i->second.size_).c_str()));
-        
+        if (!i->second->IsLoaded())
+        {
+            ++i;
+            continue;
+        }
+
+        assetsPerType[i->second->Type()].first++;
+        assetsPerType[i->second->Type()].second += i->second->RawData().size();
+
         ++i;
     }
 
-    AssetTransferInfoVector transfer_vector = asset_service->GetAssetTransferInfo();
-    AssetTransferInfoVector::const_iterator j = transfer_vector.begin();
-    while(j != transfer_vector.end())
+    AssetsPerTypeMap::iterator j = assetsPerType.begin();
+    while (j != assetsPerType.end())
     {
-        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList());
-        ui_.treeAssetTransfers->addTopLevelItem(item);
-        
-        item->setText(0, QString((*j).id_.c_str()));
-        item->setText(1, QString((*j).type_.c_str()));
-        item->setText(2, QString((*j).provider_.c_str()));
-        item->setText(3, QString(kNet::FormatBytes((int)(*j).size_).c_str()));
-        item->setText(4, QString(kNet::FormatBytes((int)(*j).received_).c_str()));
+        QTreeWidgetItem *item = new QTreeWidgetItem(static_cast<QTreeWidget*>(0), QStringList());
+        ui_.treeAssetCache->addTopLevelItem(item);
+        QString number = QString("%1").arg(j->second.first);
+
+        item->setText(0, j->first);
+        item->setText(1, number);
+        item->setText(2, QString::fromStdString(kNet::FormatBytes(static_cast<u64>(j->second.second))));
+
         ++j;
     }
 
+    std::vector<AssetTransferPtr> pendingTransfers = framework_->Asset()->PendingTransfers();
+    std::vector<AssetTransferPtr>::iterator k = pendingTransfers.begin();
+    while (k != pendingTransfers.end())
+    {
+        QTreeWidgetItem *item = new QTreeWidgetItem(static_cast<QTreeWidget*>(0), QStringList());
+        ui_.treeAssetTransfers->addTopLevelItem(item);
+
+        item->setText(0, (*k)->AssetType());
+        IAssetProvider *provider = (*k)->provider.lock().get();
+        item->setText(1, provider ? provider->Name() : QString("N/A"));
+        item->setText(2, QString::fromStdString(kNet::FormatBytes(static_cast<u64>((*k)->RawData().size()))));
+    }
+    
     QTimer::singleShot(500, this, SLOT(RefreshAssetsPage()));
-*/
 }
 
 void TimeProfilerWindow::RefreshOgreSceneComplexityPage()
