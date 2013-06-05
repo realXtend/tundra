@@ -1044,7 +1044,6 @@ void ECBrowser::DeleteComponent(QTreeWidgetItem *item)
 
     // Perform the actual deletion.
     ComponentPtr comp = componentsToDelete.at(0).lock();
-    editorWindow_->GetUndoManager()->Push(new RemoveCommand(comp->ParentScene()->shared_from_this(), editorWindow_->GetUndoManager()->GetTracker(), 
-            QList<EntityWeakPtr>(),
-            QList<ComponentWeakPtr>::fromVector(QVector<ComponentWeakPtr>::fromStdVector(componentsToDelete))));
+    editorWindow_->GetUndoManager()->Push(new RemoveCommand(comp->ParentScene()->shared_from_this(), editorWindow_->GetUndoManager()->Tracker(),
+            QList<EntityWeakPtr>(), QList<ComponentWeakPtr>::fromVector(QVector<ComponentWeakPtr>::fromStdVector(componentsToDelete))));
 }

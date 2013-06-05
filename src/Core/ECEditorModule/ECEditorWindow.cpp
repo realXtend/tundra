@@ -94,7 +94,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
 
     Scene *scene = fw->Scene()->MainCameraScene();
     assert(scene);
-    undoManager_ = new UndoManager(scene->shared_from_this(), this);
+    undoManager_ = new UndoManager(scene->shared_from_this(), framework->Ui()->MainWindow());
     transformEditor = new TransformEditor(scene->shared_from_this(), undoManager_);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -1061,7 +1061,7 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
         targetEntities << id;
     }
 
-    undoManager_->Push(new AddComponentCommand(scene->shared_from_this(), undoManager_->GetTracker(),
+    undoManager_->Push(new AddComponentCommand(scene->shared_from_this(), undoManager_->Tracker(),
         targetEntities, dialog->TypeName(), dialog->Name(), dialog->IsReplicated(), dialog->IsTemporary()));
 }
 

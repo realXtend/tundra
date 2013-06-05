@@ -43,14 +43,9 @@ UndoManager::~UndoManager()
         disconnect(undoStack_, SIGNAL(canUndoChanged(bool)), this, SLOT(OnCanUndoChanged(bool)));
         disconnect(undoStack_, SIGNAL(canRedoChanged(bool)), this, SLOT(OnCanRedoChanged(bool)));
     }
-    SAFE_DELETE(undoStack_);
 
-    // Parented, don't delete
-    if (undoView_ && undoView_->parent())
-        undoView_ = 0;
-    else
-        SAFE_DELETE(undoView_);
-    
+    SAFE_DELETE(undoStack_);
+    SAFE_DELETE(undoView_);
     SAFE_DELETE(undoMenu_);
     SAFE_DELETE(redoMenu_);
     SAFE_DELETE(undoViewAction_);

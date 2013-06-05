@@ -27,24 +27,22 @@ class ECEDITOR_MODULE_API UndoManager : public QObject
 public:
     /// Constructor
     /* @param scene Scene of which entities we're tracking.
-       @param parent This object's parent (optional) */
-    UndoManager(const ScenePtr &scene, QWidget *parent = 0);
+       @param parentWidget Parent widget for the Undo Stack Editor, optional. Typically you want to pass in the UiMainWindow here. */
+    UndoManager(const ScenePtr &scene, QWidget *parentWidget = 0);
 
     ~UndoManager();
 
     /// Pushes new command to the undo stack
-    /* @param command The command to be pushed. */
     void Push(QUndoCommand * command);
 
-    /// Returns a pointer to the undo menu containing actions that can be undo-ed
-    QMenu * UndoMenu() const;
+    /// The menu containing actions that can be undo-ed
+    QMenu *UndoMenu() const;
 
-    /// Returns a pointer to the redo menu containing actions that can be redo-ed
-    QMenu * RedoMenu() const;
+    /// The menu containing actions that can be redo-ed
+    QMenu *RedoMenu() const;
 
     /// Returns a pointer to the entity ID change tracker
     EntityIdChangeTracker *Tracker() const;
-    EntityIdChangeTracker * GetTracker() const { return Tracker(); }
 
 public slots:
     /// Calls the undo stack's undo() method
