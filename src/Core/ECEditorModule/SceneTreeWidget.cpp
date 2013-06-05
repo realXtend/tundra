@@ -145,7 +145,7 @@ void SceneTreeWidget::SetScene(const ScenePtr &s)
     SAFE_DELETE(undoManager_);
     if (s)
     {
-        undoManager_ = new UndoManager(s, this);
+        undoManager_ = new UndoManager(s, framework->Ui()->MainWindow());
         connect(undoShortcut, SIGNAL(activated()), undoManager_, SLOT(Undo()), Qt::UniqueConnection);
         connect(redoShortcut, SIGNAL(activated()), undoManager_, SLOT(Redo()), Qt::UniqueConnection);
     }
@@ -756,7 +756,7 @@ void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item, int column)
             QString newName = eItem->text(0);
             disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *, int)));
             // We don't need to set item text here. It's done when SceneStructureWindow gets AttributeChanged() signal from Scene.
-            undoManager_->Push(new RenameCommand(entity, undoManager_->GetTracker(), entity->Name(), newName));
+            undoManager_->Push(new RenameCommand(entity, undoManager_->Tracker(), entity->Name(), newName));
 //            closePersistentEditor(item);
             setSortingEnabled(true);
             return;
@@ -804,7 +804,7 @@ void SceneTreeWidget::NewEntity()
     bool replicated = newEntDialog.IsReplicated();
     bool temporary = newEntDialog.IsTemporary();
     if (undoManager_)
-        undoManager_->Push(new AddEntityCommand(scene.lock(), undoManager_->GetTracker(), name, replicated, temporary));
+        undoManager_->Push(new AddEntityCommand(scene.lock(), undoManager_->Tracker(), name, replicated, temporary));
 }
 
 void SceneTreeWidget::NewComponent()
