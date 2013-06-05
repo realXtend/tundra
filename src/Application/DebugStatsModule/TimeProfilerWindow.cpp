@@ -28,7 +28,7 @@
 #include "PhysicsWorld.h"
 #include "IAsset.h"
 #include "ConfigAPI.h"
-
+#include "TreeWidgetUtils.h"
 #ifdef EC_Script_ENABLED
 #include "IScriptInstance.h"
 #include "EC_Script.h"
@@ -53,27 +53,27 @@
 #include <btBulletDynamicsCommon.h>
 #include <OgreFontManager.h>
 #include <kNet/Network.h>
-
-#include "TreeWidgetUtils.h"
+#ifdef KNET_USE_QT
+#include "KristalliProtocolModule.h"
+#include <kNet/qt/NetworkDialog.h>
+#endif
 
 #include "MemoryLeakCheck.h"
 
 using namespace std;
 
-const QString DEFAULT_LOG_DIR("logs");
-const QString OGRE_DUMP_FILENAME("profiler-ogre-stats.txt");
-const QString SCENECOMPLEXITY_DUMP_FILENAME("profiler-scene-stats.txt");
-const QString PERFLOGGER_DUMP_FILENAME("profiler-performance-logger.txt");
-
 namespace
 {
+    const QString cDefaultLogDir("logs");
+    const QString cOgreDumpFilename("profiler-ogre-stats.txt");
+    const QString cSceneComplexityDumpFilename("profiler-scene-stats.txt");
+    const QString cPerfLoggerDumpFilename("profiler-performance-logger.txt");
+
     void CopySelectedItemName(QTreeWidget *treeWidget)
     {
         QTreeWidgetItem *item = treeWidget != 0 ? treeWidget->currentItem() : 0;
-        if (!item)
-            return;
-        QClipboard *clipboard = QApplication::clipboard();
-        clipboard->setText(item->text(0));
+        if (item)
+            QApplication::clipboard()->setText(item->text(0));
     }
 }
 
@@ -84,7 +84,7 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     logThreshold_(100.0f),
     visibility_(false),
     contextMenu_(0)
-{       
+{
     ui_.setupUi(this);
     setWindowTitle(tr("Profiler"));
     
@@ -99,9 +99,9 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     
     // Set/init working directory for log files.
     logDirectory_ = Application::UserDataDirectory();
-    if (!logDirectory_.exists(DEFAULT_LOG_DIR))
-        logDirectory_.mkdir(DEFAULT_LOG_DIR);
-    logDirectory_.cd(DEFAULT_LOG_DIR);
+    if (!logDirectory_.exists(cDefaultLogDir))
+        logDirectory_.mkdir(cDefaultLogDir);
+    logDirectory_.cd(cDefaultLogDir);
     
     // Event filters
     ui_.treeProfilingData->installEventFilter(this);
@@ -112,6 +112,11 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     // Tab change
     connect(ui_.tabWidget, SIGNAL(currentChanged(int)), this, SLOT(RefreshProfilerTabWidget(int)));
     connect(ui_.ogreTabWidget, SIGNAL(currentChanged(int)), this, SLOT(RefreshOgreTabWidget(int)));
+
+    // Inject kNet's NetworkDialog to the UI as Network page if applicable.
+#ifdef KNET_USE_QT
+    ui_.tabWidget->insertTab(ui_.tabWidget->count(), new kNet::NetworkDialog(this, framework_->Module<KristalliProtocolModule>()->GetNetwork()), tr("Network"));
+#endif
 
     // Tree/table header resizing
     ui_.treeProfilingData->header()->resizeSection(0, 300);
@@ -167,8 +172,8 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     connect(ui_.pushButtonDumpOgreStats, SIGNAL(pressed()), this, SLOT(DumpOgreResourceStatsToFile()));
     connect(ui_.buttonDumpSceneComplexity, SIGNAL(pressed()), this, SLOT(DumpSceneComplexityToFile()));
     
-    ui_.pushButtonDumpOgreStats->setText("Dump stats to " + QDir::toNativeSeparators(logDirectory_.absoluteFilePath(OGRE_DUMP_FILENAME)));
-    ui_.buttonDumpSceneComplexity->setText("Dump stats to " + QDir::toNativeSeparators(logDirectory_.absoluteFilePath(SCENECOMPLEXITY_DUMP_FILENAME)));
+    ui_.pushButtonDumpOgreStats->setText("Dump stats to " + QDir::toNativeSeparators(logDirectory_.absoluteFilePath(cOgreDumpFilename)));
+    ui_.buttonDumpSceneComplexity->setText("Dump stats to " + QDir::toNativeSeparators(logDirectory_.absoluteFilePath(cSceneComplexityDumpFilename)));
 
     ui_.loggerSpinbox->setRange(0.0, 1000.0);
     ui_.loggerSpinbox->setValue(logThreshold_);
@@ -1002,7 +1007,7 @@ void TimeProfilerWindow::DoThresholdLogging()
      if (ui_.tabWidget->currentIndex() == 1 && !ui_.loggerApply->isChecked())
         return;
 
-    QFile file(logDirectory_.absoluteFilePath(PERFLOGGER_DUMP_FILENAME));
+    QFile file(logDirectory_.absoluteFilePath(cPerfLoggerDumpFilename));
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
          return;
 
@@ -1322,7 +1327,7 @@ static void DumpOgreResManagerStatsToFile(Ogre::ResourceManager &manager, std::o
 
 void TimeProfilerWindow::DumpOgreResourceStatsToFile()
 {
-    QString path = QDir::toNativeSeparators(logDirectory_.absoluteFilePath(OGRE_DUMP_FILENAME));
+    QString path = QDir::toNativeSeparators(logDirectory_.absoluteFilePath(cOgreDumpFilename));
 
     std::ofstream file(path.toStdString().c_str());
     
@@ -1369,7 +1374,7 @@ void TimeProfilerWindow::DumpOgreResourceStatsToFile()
 
 void TimeProfilerWindow::DumpSceneComplexityToFile()
 {       
-    QString path = QDir::toNativeSeparators(logDirectory_.absoluteFilePath(SCENECOMPLEXITY_DUMP_FILENAME));
+    QString path = QDir::toNativeSeparators(logDirectory_.absoluteFilePath(cSceneComplexityDumpFilename));
     
     std::ofstream file(path.toStdString().c_str());
     file << ui_.textSceneComplexity->toPlainText().toStdString();
