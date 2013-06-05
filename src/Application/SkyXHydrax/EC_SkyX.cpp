@@ -90,17 +90,6 @@ struct EC_SkyX::Impl
     {
         if (sunlight && moonlight)
         {
-            if (sunPosition.y < 0 && sunlight->isVisible() && !moonlight->isVisible())
-            {
-                sunlight->setVisible(false);
-                moonlight->setVisible(true);
-            }
-            else if (sunPosition.y > 0 && !sunlight->isVisible() && moonlight->isVisible())
-            {
-                sunlight->setVisible(true);
-                moonlight->setVisible(false);
-            }
-
             sunlight->setDirection(-controller->getSunDirection()); // -(Earth-to-Sun direction)
             moonlight->setDirection(-controller->getMoonDirection()); // -(Earth-to-Moon direction)
         }
@@ -291,7 +280,6 @@ void EC_SkyX::CreateLights()
         impl->moonlight->setSpecularColour(moonlightSpecularColor.Get());
         impl->moonlight->setDirection(impl->controller->getMoonDirection());
         impl->moonlight->setCastShadows(true);
-        impl->moonlight->setVisible(false); // Hide moonlight by default
     }
 }
 
@@ -628,7 +616,21 @@ void EC_SkyX::UpdateLightsAndPositions()
     PROFILE(EC_SkyX_Update);
     // Update our sunlight and moonlight
     impl->UpdateLightPositions(camera);
-    /// @todo Animate dim the light down and up
+
+    // Fade-in / fade-out moonlight and sunlight
+    if (impl->sunlight && impl->moonlight)
+    {
+        float magicOffset = 200.0;
+        float fadeInOutHeight = 450.0;
+        float sunColorClamp = Clamp<float>((impl->sunPosition.y + magicOffset) / fadeInOutHeight, 0.0, 1.0);
+        float moonColorClamp = Clamp<float>((impl->moonPosition.y - magicOffset) / fadeInOutHeight, 0.0, 1.0);
+
+        impl->sunlight->setDiffuseColour(getsunlightDiffuseColor() * sunColorClamp);
+        impl->moonlight->setDiffuseColour(getmoonlightDiffuseColor() * moonColorClamp);
+        impl->sunlight->setVisible(sunColorClamp > 0.0);
+        impl->moonlight->setVisible(moonColorClamp > 0.0);
+    }
+
     impl->UpdateLights();
 }
 
