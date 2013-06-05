@@ -70,7 +70,7 @@ QTabWidget {
          </size>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>5</number>
         </property>
         <property name="documentMode">
          <bool>true</bool>
@@ -2030,11 +2030,6 @@ QTabWidget {
            <widget class="QTreeWidget" name="treeAssetTransfers">
             <column>
              <property name="text">
-              <string>ID</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
               <string>Type</string>
              </property>
             </column>
@@ -2046,11 +2041,6 @@ QTabWidget {
             <column>
              <property name="text">
               <string>Size</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Received</string>
              </property>
             </column>
            </widget>
