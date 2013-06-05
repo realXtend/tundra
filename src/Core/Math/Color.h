@@ -54,6 +54,21 @@ public:
         return !(*this == rhs);
     }
 
+    Color operator * (float scalar) const
+    {
+        return Color(r*scalar, g*scalar, b*scalar, a*scalar);
+    }
+
+    Color& operator *= (float scalar)
+    {
+        r *= scalar;
+        g *= scalar;
+        b *= scalar;
+        a *= scalar;
+
+        return *this;
+    }
+
     /// Parses a string to a new Color.
     /** Accepted formats are: "r,g,b,a" or "(r,g,b,a)" or "(r;g;b;a)" or "r g b" or "r,g,b" or "(r,g,b)" or "(r;g;b)" or "r g b" .
         @sa SerializeToString */
