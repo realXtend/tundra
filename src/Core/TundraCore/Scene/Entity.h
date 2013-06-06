@@ -324,10 +324,13 @@ public slots:
     void Exec(EntityAction::ExecTypeField type, const QString &action, const QVariantList &params);
 
     /// Sets whether entity is temporary. Temporary entities won't be saved when the scene is saved.
-    /** By definition, all components of a temporary entity are temporary as well. */
+    /** By definition, all components of a temporary entity are temporary as well. Uses the Default changetype. */
     ///@todo Doesn't need to be slot, exposed as Q_PROPERTY
     void SetTemporary(bool enable);
 
+    /// Sets whether entity is temporary, with change type included
+    void SetTemporary(bool enable, AttributeChange::Type change);
+    
     /// Returns whether entity is temporary. Temporary entities won't be saved when the scene is saved.
     /** By definition, all components of a temporary entity are temporary as well. */
     ///@todo Doesn't need to be slot, exposed as Q_PROPERTY
@@ -389,7 +392,7 @@ signals:
     void EntityRemoved(Entity* entity, AttributeChange::Type change);
 
     /// Signal when this entity's temporary state has been toggled
-    void TemporaryStateToggled(Entity *);
+    void TemporaryStateToggled(Entity* entity, AttributeChange::Type change);
 
     /// The entity has entered a camera's view. Triggered by the rendering subsystem.
     void EnterView(IComponent* camera);

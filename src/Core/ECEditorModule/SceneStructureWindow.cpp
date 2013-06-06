@@ -140,7 +140,7 @@ void SceneStructureWindow::SetScene(const ScenePtr &newScene)
         Scene *scenePtr = scene.lock().get();
         connect(scenePtr, SIGNAL(EntityAcked(Entity *, entity_id_t)), SLOT(AckEntity(Entity *, entity_id_t)));
         connect(scenePtr, SIGNAL(EntityCreated(Entity *, AttributeChange::Type)), SLOT(AddEntity(Entity *)));
-        connect(scenePtr, SIGNAL(EntityTemporaryStateToggled(Entity *)), SLOT(UpdateEntityTemporaryState(Entity *)));
+        connect(scenePtr, SIGNAL(EntityTemporaryStateToggled(Entity *, AttributeChange::Type)), SLOT(UpdateEntityTemporaryState(Entity *)));
         connect(scenePtr, SIGNAL(EntityRemoved(Entity *, AttributeChange::Type)), SLOT(RemoveEntity(Entity *)));
         connect(scenePtr, SIGNAL(ComponentAdded(Entity *, IComponent *, AttributeChange::Type)),
             SLOT(AddComponent(Entity *, IComponent *)));
