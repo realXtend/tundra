@@ -142,13 +142,26 @@ void OgreWorld::SetDefaultSceneFog()
 
 RaycastResult* OgreWorld::Raycast(int x, int y)
 {
-    return Raycast(x, y, 0xffffffff);
+    return Raycast(x, y, 0xffffffff, FLOAT_INF);
+}
+
+RaycastResult* OgreWorld::Raycast(int x, int y, float maxDistance)
+{
+    return Raycast(x, y, 0xffffffff, maxDistance);
 }
 
 RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask)
 {
-    PROFILE(OgreWorld_Raycast);
-    
+    return Raycast(x, y, layerMask, FLOAT_INF);
+}
+
+RaycastResult* OgreWorld::Raycast(const Ray& ray, unsigned layerMask)
+{
+    return Raycast(ray, layerMask, FLOAT_INF);
+}
+
+RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask, float maxDistance)
+{
     result_.entity = 0;
     result_.component = 0;
     
@@ -166,10 +179,10 @@ RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask)
     Ogre::Ray ray = camera->getCameraToViewportRay(screenx, screeny);
     rayQuery_->setRay(ray);
     
-    return RaycastInternal(layerMask);
+    return RaycastInternal(layerMask, maxDistance);
 }
 
-RaycastResult* OgreWorld::Raycast(const Ray& ray, unsigned layerMask)
+RaycastResult* OgreWorld::Raycast(const Ray& ray, unsigned layerMask, float maxDistance)
 {
     result_.entity = 0;
     result_.component = 0;
@@ -177,11 +190,13 @@ RaycastResult* OgreWorld::Raycast(const Ray& ray, unsigned layerMask)
     if (!rayQuery_)
         return &result_;
     rayQuery_->setRay(Ogre::Ray(ray.pos, ray.dir));
-    return RaycastInternal(layerMask);
+    return RaycastInternal(layerMask, maxDistance);
 }
 
-RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
+RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask, float maxDistance)
 {
+    PROFILE(OgreWorld_Raycast);
+    
     result_.entity = 0;
     result_.component = 0;
     
@@ -193,11 +208,15 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
     for(size_t i = 0; i < results.size(); ++i)
     {
         Ogre::RaySceneQueryResultEntry &entry = results[i];
-    
+        
+        // If entry further away than max. distance, terminate
+        if (entry.distance > maxDistance)
+            break;
+        
         if (!entry.movable)
             continue;
 
-        /// \todo Do we want results for invisible entities?
+        // No result for invisible entity
         if (!entry.movable->isVisible())
             continue;
         
@@ -271,7 +290,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 }
             }
 
-            if (hit && (closestDistance < 0.0f || r.t < closestDistance))
+            if (hit && r.t < maxDistance && (closestDistance < 0.0f || r.t < closestDistance))
             {
                 closestDistance = r.t;
                 result_.entity = entity;
@@ -307,7 +326,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                     Plane billboardPlane(worldPos, billboardFrontDir); // The plane of this billboard in world space.
                     float d;
                     bool success = billboardPlane.Intersects(ray, &d);
-                    if (!success || (closestDistance > 0.0f && d >= closestDistance))
+                    if (!success || d > maxDistance || (closestDistance > 0.0f && d >= closestDistance))
                         continue;
 
                     float3 intersectionPoint = ray.GetPoint(d); // The point where the ray intersects the plane of the billboard.

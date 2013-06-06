@@ -67,8 +67,22 @@ public slots:
     /// @overload
     /** Does raycast into the world using a ray in world space coordinates. */
     RaycastResult* Raycast(const Ray& ray, unsigned layerMask);
-
-    /// @todo Add Raycast overloads which take max distance param.
+    /// @overload
+    /** Does a raycast into the world with specified layers and maximum distance */
+    RaycastResult* Raycast(int x, int y, unsigned layerMask, float maxDistance);
+    /// @overload
+    /** Does a raycast into the world with specified screen point, layers and maximum distance. */
+    RaycastResult* Raycast(const QPoint &point, unsigned layerMask, float maxDistance) { return Raycast(point.x(), point.y(), layerMask, maxDistance);}
+    /// @overload
+    /** Does a raycast into the world from screen coordinates, using all selection layers and a maximum distance */
+    RaycastResult* Raycast(int x, int y, float maxDistance);
+    /// @overload
+    /** Does a raycast into the world with specified screen point, using all selection layers and a maximum distance */
+    RaycastResult* Raycast(const QPoint &point, float maxDistance) { return Raycast(point.x(), point.y(), maxDistance);}
+    /// @overload
+    /** Does raycast into the world using a ray in world space coordinates and a maximum distance */
+    RaycastResult* Raycast(const Ray& ray, unsigned layerMask, float maxDistance);
+    
     /// @todo Add RaycastAll which returns list of all hits
 
     /// Does a frustum query to the world from viewport coordinates.
@@ -161,7 +175,7 @@ private slots:
 
 private:
     /// Do the actual raycast. rayQuery_ must have been set up beforehand
-    RaycastResult* RaycastInternal(unsigned layerMask);
+    RaycastResult* RaycastInternal(unsigned layerMask, float maxDistance);
 
     /// Setup shadows
     void SetupShadows();
