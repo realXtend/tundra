@@ -851,7 +851,7 @@ void TextureAsset::CompressTexture()
                 HRESULT hr = surface->LockRect(&lock, 0, 0);
                 if (SUCCEEDED(hr))
                 {
-                    if (lock.Pitch == sourceStride)
+                    if ((size_t)lock.Pitch == sourceStride)
                         memcpy(lock.pBits, src, sourceStride * numRows);
                     else
                         for(size_t y = 0; y < numRows; ++y)
@@ -946,7 +946,7 @@ void TextureAsset::ReduceTextureSize()
                     HRESULT hr = surface->LockRect(&lock, 0, 0);
                     if (SUCCEEDED(hr))
                     {
-                        if (lock.Pitch == destStride)
+                        if ((size_t)lock.Pitch == destStride)
                             memcpy(dest, lock.pBits, destStride * numRows);
                         else
                             for(size_t y = 0; y < numRows; ++y)
@@ -1032,7 +1032,7 @@ void TextureAsset::ReduceTextureSize()
                     HRESULT hr = surface->LockRect(&lock, 0, 0);
                     if (SUCCEEDED(hr))
                     {
-                        if (lock.Pitch == sourceStride)
+                        if ((size_t)lock.Pitch == sourceStride)
                             memcpy(lock.pBits, src, sourceStride * numRows);
                         else
                             for(size_t y = 0; y < numRows; ++y)

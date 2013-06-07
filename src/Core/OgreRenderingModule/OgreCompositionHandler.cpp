@@ -224,7 +224,7 @@ QStringList OgreCompositionHandler::CompositorParameters(const std::string &comp
                     size_t numElems = Ogre::GpuConstantDefinition::getElementSize(type, false);
                     QStringList values = typeValuePair.begin().value().toString().split(" ");
                     QString value;
-                    for(int i = 0; i < values.size() && i < numElems; ++i)
+                    for(int i = 0; i < values.size() && i < (int)numElems; ++i)
                         value += values[i] + " ";
                     ret << name + "=" + value;
                 }
