@@ -6,6 +6,7 @@
 #include "CoreTypes.h"
 #include "Math/float2.h"
 #include "Math/float3.h"
+#include "LoggingFunctions.h" // Note: This is a temporary inclusion for RaycastResult deprecation warning prints.
 
 #include <limits>
 #include <QObject>
@@ -22,23 +23,31 @@ class EC_Camera;
 class TUNDRACORE_API RaycastResult : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(Entity* entity READ getentity);
-    Q_PROPERTY(IComponent *component READ getcomponent);
-    Q_PROPERTY(float3 pos READ getpos);
-    Q_PROPERTY(float3 normal READ getnormal);
+    Q_PROPERTY(Entity* entity READ getentity); /**< @copydoc entity */
+    Q_PROPERTY(IComponent *component READ getcomponent); /**< @copydoc component */
+    Q_PROPERTY(float3 pos READ getpos); /**< @copydoc pos */
+    Q_PROPERTY(float3 normal READ getnormal); /**< @copydoc normal */
+    Q_PROPERTY(unsigned submeshIndex READ getsubmeshIndex); ///< Submesh index in entity, starting from 0
+    Q_PROPERTY(unsigned triangleIndex READ gettriangeIndex); ///< Triangle index in submesh
+    Q_PROPERTY(float2 uv READ getuv); ///< The UV coordinates of the first texture channel in the mesh. (0,0) if no texture mapping.
+
+    /// @cond PRIVATE
     Q_PROPERTY(unsigned submesh READ getsubmesh);
     Q_PROPERTY(unsigned index READ getindex);
     Q_PROPERTY(float u READ getu);
     Q_PROPERTY(float v READ getv);
-
     Entity* getentity() const { return entity; }
     IComponent *getcomponent() const { return component; }
     float3 getpos() const { return pos; }
     float3 getnormal() const { return normal; }
-    unsigned getsubmesh() const { return submesh; }
-    unsigned getindex() const { return index; }
-    float getu() const { return u; }
-    float getv() const { return v; }
+    unsigned getsubmesh() const { LogWarning("RaycastResult.submesh will be deprecated. Use RaycastResult.submeshIndex instead."); return submesh; }
+    unsigned getindex() const { LogWarning("RaycastResult.index will be deprecated. Use RaycastResult.triangleIndex nstead."); return index; }
+    float getu() const { LogWarning("RaycastResult.u will be deprecated. Use RaycastResult.uv.x instead."); return u; }
+    float getv() const { LogWarning("RaycastResult.v will be deprecated. Use RaycastResult.uv.y instead."); return v; }
+    unsigned getsubmeshIndex() const { return submesh; }
+    unsigned gettriangeIndex() const { return index; }
+    float2 getuv() const { return float2(u, v); }
+    /// @endcond
 
 public:
     /// Entity that was hit, null if none
@@ -50,12 +59,16 @@ public:
     /// World face normal of hit
     float3 normal;
     /// Submesh index in entity, starting from 0
+    /// @note 'submesh' will be deprecated, use 'submeshIndex' from QtScript instead.
     unsigned submesh;
     /// Triangle index in submesh
+    /// @note 'index' will be deprecated, use 'triangleIndex' from QtScript instead.
     unsigned index;
     /// U coord in entity. 0 if no texture mapping
+    /// @note 'u' will be deprecated, use 'uv' from QtScript instead.
     float u;
     /// V coord in entity. 0 if no texture mapping
+    /// @note 'v' will be deprecated, use 'uv' from QtScript instead.
     float v;
 };
 
