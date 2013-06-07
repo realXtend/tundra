@@ -440,7 +440,7 @@ void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
                 IComponent* comp = (*iter)->components_[i].lock().get();
                 if (comp)
                 {
-                    IAttribute *attr = comp->GetAttribute(treeWidget_->currentItem()->text(0));
+                    IAttribute *attr = comp->AttributeByName(treeWidget_->currentItem()->text(0));
                     if (attr && attr->TypeId() == cAttributeAssetReference)
                     {
                         Attribute<AssetReference> *attribute = static_cast<Attribute<AssetReference> *>(attr);
@@ -732,10 +732,7 @@ void ECBrowser::CreateAttribute()
     std::vector<ComponentWeakPtr> components = (*iter)->components_;
     for(uint i = 0; i < components.size(); i++)
     {
-        ComponentPtr component = components[i].lock();
-        if (!component)
-            continue;
-        dynComp = dynamic_cast<EC_DynamicComponent*>(component.get());
+        dynComp = dynamic_cast<EC_DynamicComponent*>(components[i].lock().get());
         if (dynComp)
             break;
     }
