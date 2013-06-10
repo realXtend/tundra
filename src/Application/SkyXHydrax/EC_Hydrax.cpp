@@ -85,14 +85,6 @@ EC_Hydrax::EC_Hydrax(Scene* scene) :
     noiseType.SetMetadata(&noiseTypeMetadata);
     normalMode.SetMetadata(&normalModeMetadata);
 */
-    OgreWorldPtr w = scene->GetWorld<OgreWorld>();
-    if (!w)
-    {
-        LogError("EC_Hydrax: no OgreWorld available. Cannot be created.");
-        return;
-    }
-
-    connect(w->Renderer(), SIGNAL(MainCameraChanged(Entity *)), SLOT(OnActiveCameraChanged(Entity *)));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
 
     connect(&configRefListener, SIGNAL(Loaded(AssetPtr)), this, SLOT(ConfigLoadSucceeded(AssetPtr)));
@@ -119,7 +111,7 @@ void EC_Hydrax::Create()
     PROFILE(EC_Hydrax_Create);
     SAFE_DELETE(impl);
 
-    if (framework->IsHeadless())
+    if (!framework || framework->IsHeadless())
         return;
 
     try
@@ -142,6 +134,8 @@ void EC_Hydrax::Create()
             LogDebug("Cannot create EC_Hydrax: No main camera set!");
             return; 
         }
+
+        connect(w->Renderer(), SIGNAL(MainCameraChanged(Entity *)), SLOT(OnActiveCameraChanged(Entity *)), Qt::UniqueConnection);
 
         Ogre::Camera *cam = mainCamera->GetComponent<EC_Camera>()->GetCamera();
         impl = new EC_HydraxImpl();

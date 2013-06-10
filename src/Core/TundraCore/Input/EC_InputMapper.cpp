@@ -46,11 +46,7 @@ EC_InputMapper::EC_InputMapper(Scene* scene):
     }
     executionType.SetMetadata(&executionAttrData);
 
-    inputContext = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
-    inputContext->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
-    inputContext->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
-    connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
-    connect(inputContext.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(Initialize()));
 }
 
 EC_InputMapper::~EC_InputMapper()
@@ -100,6 +96,15 @@ void EC_InputMapper::AttributesChanged()
         inputContext->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
     if(takeMouseEventsOverQt.ValueChanged())
         inputContext->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
+}
+
+void EC_InputMapper::Initialize()
+{
+    inputContext = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
+    inputContext->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
+    inputContext->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
+    connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+    connect(inputContext.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
 }
 
 void EC_InputMapper::HandleKeyEvent(KeyEvent *e)

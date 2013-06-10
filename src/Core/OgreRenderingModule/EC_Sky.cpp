@@ -34,16 +34,13 @@ const char * const cDefaultSkyBoxTextures[cSkyBoxTextureCount] =
 
 EC_Sky::EC_Sky(Scene* scene) :
     IComponent(scene),
-    INIT_ATTRIBUTE_VALUE(materialRef, "Material", AssetReference("local://RexSkyBox.material", "OgreMaterial")), /**< @todo Shouldn't we be able to use "Ogre Media:RexSkyBox.material"? Doens't seem to work. */
+    INIT_ATTRIBUTE_VALUE(materialRef, "Material", AssetReference("Ogre Media:RexSkyBox.material", "OgreMaterial")),
     INIT_ATTRIBUTE_VALUE(textureRefs, "Texture", AssetReferenceList("Texture")),
     INIT_ATTRIBUTE_VALUE(orientation, "Orientation", Quat::identity),
     INIT_ATTRIBUTE_VALUE(distance, "Distance", 999.0), /**< @todo 5000 is the Ogre's default value, but for some reason value geater than 999 makes the sky box black. */
     INIT_ATTRIBUTE_VALUE(drawFirst, "Draw first", true),
     INIT_ATTRIBUTE_VALUE(enabled, "Enabled", true)
 {
-    if (scene)
-        ogreWorld = scene->GetWorld<OgreWorld>();
-
     materialAsset = MAKE_SHARED(AssetRefListener);
     connect(materialAsset.get(), SIGNAL(Loaded(AssetPtr)), SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
 }
@@ -59,7 +56,7 @@ EC_Sky::~EC_Sky()
 
 void EC_Sky::AttributesChanged()
 {
-    if (!ViewEnabled())
+    if (!ViewEnabled() || !ParentScene())
         return;
 
     if (materialRef.ValueChanged())
@@ -74,7 +71,8 @@ void EC_Sky::AttributesChanged()
         }
         else
         {
-            materialAsset->HandleAssetRefChange(framework->Asset(), materialRef.Get().ref);
+            if (framework)
+                materialAsset->HandleAssetRefChange(framework->Asset(), materialRef.Get().ref);
         }
     }
 
@@ -104,13 +102,17 @@ void EC_Sky::AttributesChanged()
 
 void EC_Sky::Update()
 {
-    if (!ViewEnabled() || ogreWorld.expired())
+    if (!ViewEnabled() || !ParentScene())
+        return;
+
+    OgreWorldPtr world = ParentScene()->Subsystem<OgreWorld>();
+    if (!world)
         return;
 
     try
     {
         if (!enabled.Get() || (enabled.Get() && !currentMaterial.isEmpty())) // If enabled == true, do not allow passing empty material name (material not loaded yet).
-            ogreWorld.lock()->OgreSceneManager()->setSkyBox(enabled.Get(), currentMaterial.toStdString(), distance.Get(), drawFirst.Get(), orientation.Get());
+            world->OgreSceneManager()->setSkyBox(enabled.Get(), currentMaterial.toStdString(), distance.Get(), drawFirst.Get(), orientation.Get());
     }
     catch(const Ogre::Exception &e)
     {

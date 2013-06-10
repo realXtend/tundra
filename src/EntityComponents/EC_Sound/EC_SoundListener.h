@@ -49,8 +49,11 @@ class EC_SoundListener : public IComponent
     COMPONENT_NAME("EC_SoundListener", 7)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_SoundListener(Scene* scene);
+    /// @endcond
+
     /// Detaches placeable component from this entity.
     ~EC_SoundListener();
 
@@ -61,12 +64,13 @@ public:
 private:
     /// Parent entity's placeable component.
     weak_ptr<EC_Placeable> placeable_;
-    
+
 private slots:
+    void Initialize();
+
     /// Called when component changes.
     /** If this listener component is set active it iterates the scene and
-     disables all the other sound listeners.
-     */
+     disables all the other sound listeners. */
     void AttributesChanged();
 
     /// Retrieves placeable component when parent entity is set.
