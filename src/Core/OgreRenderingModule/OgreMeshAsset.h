@@ -33,7 +33,7 @@ public:
     /// Load mesh into memory. IAsset override.
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const;
 
-    /// Ogre threaded load listener. Ogre::ResourceBackgroundQueue::Listener override. 
+    /// Ogre threaded load listener. Ogre::ResourceBackgroundQueue::Listener override.
     virtual void operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result);
 
     /// Loaded Ogre mesh asset, null if not loaded.
@@ -95,7 +95,7 @@ private:
 #ifdef ASSIMP_ENABLED
     OpenAssetImport *importer;
 
-    private slots:
-        void OnAssimpConversionDone(bool);
+private slots:
+    void OnAssimpConversionDone(bool);
 #endif
 };

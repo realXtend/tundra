@@ -266,9 +266,6 @@ Ogre::InstancedEntity *OgreWorld::CreateInstance(IComponent *owner, const AssetP
             if (!mainInstance)
                 mainInstance = instance;
         }
-
-        if (submeshCount > 1)
-            mainInstance->updateTransforms();
     }
     catch (Exception &e)
     {
