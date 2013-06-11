@@ -324,6 +324,7 @@ void SyncManager::RegisterToScene(ScenePtr scene)
         SLOT( OnEntityRemoved(Entity*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecTypeField) ),
         SLOT( OnActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecTypeField)));
+    connect(sceneptr, SIGNAL( EntityTemporaryStateToggled(Entity *, AttributeChange::Type) ), SLOT( OnEntityPropertiesChanged(Entity *, AttributeChange::Type) ));
 }
 
 void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
@@ -364,6 +365,9 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
             break;
         case cRigidBodyUpdateMessage:
             HandleRigidBodyChanges(source, packetId, data, numBytes);
+            break;
+        case cEditEntityPropertiesMessage:
+            HandleEditEntityProperties(source, data, numBytes);
             break;
         case cEntityActionMessage:
             {
@@ -687,6 +691,29 @@ void SyncManager::OnUserActionTriggered(UserConnection* user, Entity *entity, co
         msg.parameters.push_back(p);
     }
     user->connection->Send(msg);
+}
+
+void SyncManager::OnEntityPropertiesChanged(Entity* entity, AttributeChange::Type change)
+{
+    assert(entity);
+    if (!entity)
+        return;
+    if ((change != AttributeChange::Replicate) || (entity->IsLocal()))
+        return;
+
+    if (owner_->IsServer())
+    {
+        UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
+        for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        {
+            if ((*i)->syncState)
+                (*i)->syncState->MarkEntityDirty(entity->Id(), true);
+        }
+    }
+    else
+    {
+        server_syncstate_.MarkEntityDirty(entity->Id(), true);
+    }
 }
 
 /// Interpolates from (pos0, vel0) to (pos1, vel1) with a C1 curve (continuous in position and velocity)
@@ -1306,6 +1333,50 @@ void SyncManager::HandleRigidBodyChanges(kNet::MessageConnection* source, kNet::
     }
 }
 
+void SyncManager::HandleEditEntityProperties(kNet::MessageConnection* source, const char* data, size_t numBytes)
+{
+    assert(source);
+    // Get matching syncstate for reflecting the changes
+    SceneSyncState* state = GetSceneSyncState(source);
+    ScenePtr scene = GetRegisteredScene();
+    if (!scene || !state)
+    {
+        LogWarning("Null scene or sync state, disregarding EditEntityProperties message");
+        return;
+    }
+    
+    bool isServer = owner_->IsServer();
+    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
+    
+    kNet::DataDeserializer ds(data, numBytes);
+    unsigned sceneID = ds.ReadVLE<kNet::VLE8_16_32>(); ///\todo Dummy ID. Lookup scene once multiscene is properly supported
+    UNREFERENCED_PARAM(sceneID)
+    entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
+    
+    if (!ValidateAction(source, cRemoveAttributesMessage, entityID))
+        return;
+        
+    EntityPtr entity = scene->GetEntity(entityID);
+    UserConnectionPtr user = owner_->GetKristalliModule()->GetUserConnection(source);
+
+    if (entity && !scene->AllowModifyEntity(user.get(), entity.get())) // check if allowed to modify this entity.
+        return;
+
+    if (!entity)
+    {
+        LogWarning("Entity " + QString::number(entityID) + " not found for EditAttributes message");
+        return;
+    }
+    
+    // For now the edit properties consist only of the temporary flag
+    bool newTemporary = ds.Read<u8>() ? true : false;
+    entity->SetTemporary(newTemporary, change);
+    
+    // Remove the properties dirty bit from sender's syncstate so that we do not echo the change bac
+    state->entities[entityID].hasPropertyChanges = false;
+}
+
 void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSyncState* state)
 {
     PROFILE(SyncManager_ProcessSyncState);
@@ -1403,215 +1474,229 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         }
         else if (entity)
         {
-            // Components or attributes have been added, changed, or removed. Prepare the dataserializers
-            kNet::DataSerializer removeCompsDs(removeCompsBuffer_, 1024);
-            kNet::DataSerializer removeAttrsDs(removeAttrsBuffer_, 1024);
-            kNet::DataSerializer createCompsDs(createCompsBuffer_, 64 * 1024);
-            kNet::DataSerializer createAttrsDs(createAttrsBuffer_, 16 * 1024);
-            kNet::DataSerializer editAttrsDs(editAttrsBuffer_, 64 * 1024);
-            
-            while (!entityState.dirtyQueue.empty())
+            if (!entityState.dirtyQueue.empty())
             {
-                ComponentSyncState& compState = *entityState.dirtyQueue.front();
-                entityState.dirtyQueue.pop_front();
-                compState.isInQueue = false;
+                // Components or attributes have been added, changed, or removed. Prepare the dataserializers
+                kNet::DataSerializer removeCompsDs(removeCompsBuffer_, 1024);
+                kNet::DataSerializer removeAttrsDs(removeAttrsBuffer_, 1024);
+                kNet::DataSerializer createCompsDs(createCompsBuffer_, 64 * 1024);
+                kNet::DataSerializer createAttrsDs(createAttrsBuffer_, 16 * 1024);
+                kNet::DataSerializer editAttrsDs(editAttrsBuffer_, 64 * 1024);
                 
-                ComponentPtr comp = entity->GetComponentById(compState.id);
-                bool removeCompState = false;
-                if (!comp)
+                while (!entityState.dirtyQueue.empty())
                 {
-                    if (!compState.removed)
-                        LogWarning("Component " + QString::number(compState.id) + " of " + entity->ToString() + " has gone missing from the scene without the remove properly signalled. Removing from client replication state->");
-                    compState.isNew = false;
-                    removeCompState = true;
-                }
-                else
-                {
-                    // Make sure we don't send data for local components, or unacked components after the create
-                    if (comp->IsLocal() || (!compState.isNew && comp->IsUnacked()))
-                        continue;
-                }
-                
-                // Remove component
-                if (compState.removed)
-                {
-                    removeCompState = true;
+                    ComponentSyncState& compState = *entityState.dirtyQueue.front();
+                    entityState.dirtyQueue.pop_front();
+                    compState.isInQueue = false;
                     
-                    // If first component, write the entity ID first
-                    if (!removeCompsDs.BytesFilled())
+                    ComponentPtr comp = entity->GetComponentById(compState.id);
+                    bool removeCompState = false;
+                    if (!comp)
                     {
-                        removeCompsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
-                        removeCompsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                        if (!compState.removed)
+                            LogWarning("Component " + QString::number(compState.id) + " of " + entity->ToString() + " has gone missing from the scene without the remove properly signalled. Removing from client replication state->");
+                        compState.isNew = false;
+                        removeCompState = true;
                     }
-                    // Then add component ID
-                    removeCompsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
-                }
-                // New component
-                else if (compState.isNew)
-                {
-                    // If first component, write the entity ID first
-                    if (!createCompsDs.BytesFilled())
+                    else
                     {
-                        createCompsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
-                        createCompsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                        // Make sure we don't send data for local components, or unacked components after the create
+                        if (comp->IsLocal() || (!compState.isNew && comp->IsUnacked()))
+                            continue;
                     }
-                    // Then add the component data
-                    WriteComponentFullUpdate(createCompsDs, comp);
-                    // Mark the component undirty in the receiver's syncstate
-                    state->MarkComponentProcessed(entity->Id(), comp->Id());
-                }
-                // Added/removed/edited attributes
-                else if (comp)
-                {
-                    const AttributeVector& attrs = comp->Attributes();
                     
-                    for (std::map<u8, bool>::iterator i = compState.newAndRemovedAttributes.begin(); i != compState.newAndRemovedAttributes.end(); ++i)
+                    // Remove component
+                    if (compState.removed)
                     {
-                        u8 attrIndex = i->first;
-                        // Clear the corresponding dirty flags, so that we don't redundantly send attribute edited data.
-                        compState.dirtyAttributes[attrIndex >> 3] &= ~(1 << (attrIndex & 7));
+                        removeCompState = true;
                         
-                        if (i->second)
+                        // If first component, write the entity ID first
+                        if (!removeCompsDs.BytesFilled())
                         {
-                            // Create attribute. Make sure it exists and is dynamic.
-                            if (attrIndex >= attrs.size() || !attrs[attrIndex])
-                                LogError("CreateAttribute for nonexisting attribute index " + QString::number(attrIndex) + " was queued for component " + comp->TypeName() + " in " + entity->ToString() + ". Discarding.");
-                            else if (!attrs[attrIndex]->IsDynamic())
-                                LogError("CreateAttribute for a static attribute index " + QString::number(attrIndex) + " was queued for component " + comp->TypeName() + " in " + entity->ToString() + ". Discarding.");
+                            removeCompsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
+                            removeCompsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                        }
+                        // Then add component ID
+                        removeCompsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                    }
+                    // New component
+                    else if (compState.isNew)
+                    {
+                        // If first component, write the entity ID first
+                        if (!createCompsDs.BytesFilled())
+                        {
+                            createCompsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
+                            createCompsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                        }
+                        // Then add the component data
+                        WriteComponentFullUpdate(createCompsDs, comp);
+                        // Mark the component undirty in the receiver's syncstate
+                        state->MarkComponentProcessed(entity->Id(), comp->Id());
+                    }
+                    // Added/removed/edited attributes
+                    else if (comp)
+                    {
+                        const AttributeVector& attrs = comp->Attributes();
+                        
+                        for (std::map<u8, bool>::iterator i = compState.newAndRemovedAttributes.begin(); i != compState.newAndRemovedAttributes.end(); ++i)
+                        {
+                            u8 attrIndex = i->first;
+                            // Clear the corresponding dirty flags, so that we don't redundantly send attribute edited data.
+                            compState.dirtyAttributes[attrIndex >> 3] &= ~(1 << (attrIndex & 7));
+                            
+                            if (i->second)
+                            {
+                                // Create attribute. Make sure it exists and is dynamic.
+                                if (attrIndex >= attrs.size() || !attrs[attrIndex])
+                                    LogError("CreateAttribute for nonexisting attribute index " + QString::number(attrIndex) + " was queued for component " + comp->TypeName() + " in " + entity->ToString() + ". Discarding.");
+                                else if (!attrs[attrIndex]->IsDynamic())
+                                    LogError("CreateAttribute for a static attribute index " + QString::number(attrIndex) + " was queued for component " + comp->TypeName() + " in " + entity->ToString() + ". Discarding.");
+                                else
+                                {
+                                    // If first attribute, write the entity ID first
+                                    if (!createAttrsDs.BytesFilled())
+                                    {
+                                        createAttrsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
+                                        createAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                                    }
+                                    
+                                    IAttribute* attr = attrs[attrIndex];
+                                    createAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                                    createAttrsDs.Add<u8>(attrIndex); // Index
+                                    createAttrsDs.Add<u8>(attr->TypeId());
+                                    createAttrsDs.AddString(attr->Name().toStdString());
+                                    attr->ToBinary(createAttrsDs);
+                                }
+                            }
                             else
                             {
+                                // Remove attribute
                                 // If first attribute, write the entity ID first
-                                if (!createAttrsDs.BytesFilled())
+                                if (!removeAttrsDs.BytesFilled())
                                 {
-                                    createAttrsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
-                                    createAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                                    removeAttrsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
+                                    removeAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                                 }
-                                
-                                IAttribute* attr = attrs[attrIndex];
-                                createAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
-                                createAttrsDs.Add<u8>(attrIndex); // Index
-                                createAttrsDs.Add<u8>(attr->TypeId());
-                                createAttrsDs.AddString(attr->Name().toStdString());
-                                attr->ToBinary(createAttrsDs);
+                                removeAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                                removeAttrsDs.Add<u8>(attrIndex);
                             }
                         }
-                        else
-                        {
-                            // Remove attribute
-                            // If first attribute, write the entity ID first
-                            if (!removeAttrsDs.BytesFilled())
-                            {
-                                removeAttrsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
-                                removeAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
-                            }
-                            removeAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
-                            removeAttrsDs.Add<u8>(attrIndex);
-                        }
-                    }
-                    compState.newAndRemovedAttributes.clear();
-                    
-                    // Now, if remaining dirty bits exist, they must be sent in the edit attributes message. These are the majority of our network data.
-                    changedAttributes_.clear();
-                    unsigned numBytes = ((unsigned)attrs.size() + 7) >> 3;
-                    for (unsigned i = 0; i < numBytes; ++i)
-                    {
-                        u8 byte = compState.dirtyAttributes[i];
-                        if (byte)
-                        {
-                            for (unsigned j = 0; j < 8; ++j)
-                            {
-                                if (byte & (1 << j))
-                                {
-                                    u8 attrIndex = i * 8 + j;
-                                    if (attrIndex < attrs.size() && attrs[attrIndex])
-                                        changedAttributes_.push_back(attrIndex);
-                                    else
-                                        LogError("Attribute change for a nonexisting attribute index " + QString::number(attrIndex) + " was queued for component " + comp->TypeName() + " in " + entity->ToString() + ". Discarding.");
-                                }
-                            }
-                        }
-                    }
-                    if (changedAttributes_.size())
-                    {
-                        // If first component for which attribute changes are sent, write the entity ID first
-                        if (!editAttrsDs.BytesFilled())
-                        {
-                            editAttrsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
-                            editAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
-                        }
-                        editAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                        compState.newAndRemovedAttributes.clear();
                         
-                        // Create a nested dataserializer for the actual attribute data, so we can skip components
-                        kNet::DataSerializer attrDataDs(attrDataBuffer_, 16 * 1024);
-                        
-                        // There are changed attributes. Check if it is more optimal to send attribute indices, or the whole bitmask
-                        unsigned bitsMethod1 = (unsigned)changedAttributes_.size() * 8 + 8;
-                        unsigned bitsMethod2 = (unsigned)attrs.size();
-                        // Method 1: indices
-                        if (bitsMethod1 <= bitsMethod2)
-                        {
-                            attrDataDs.Add<kNet::bit>(0);
-                            attrDataDs.Add<u8>((u8)changedAttributes_.size());
-                            for (unsigned i = 0; i < changedAttributes_.size(); ++i)
-                            {
-                                attrDataDs.Add<u8>(changedAttributes_[i]);
-                                attrs[changedAttributes_[i]]->ToBinary(attrDataDs);
-                            }
-                        }
-                        // Method 2: bitmask
-                        else
-                        {
-                            attrDataDs.Add<kNet::bit>(1);
-                            for (unsigned i = 0; i < attrs.size(); ++i)
-                            {
-                                if (compState.dirtyAttributes[i >> 3] & (1 << (i & 7)))
-                                {
-                                    attrDataDs.Add<kNet::bit>(1);
-                                    attrs[i]->ToBinary(attrDataDs);
-                                }
-                                else
-                                    attrDataDs.Add<kNet::bit>(0);
-                            }
-                        }
-                        
-                        // Add the attribute data array to the main serializer
-                        editAttrsDs.AddVLE<kNet::VLE8_16_32>((u32)attrDataDs.BytesFilled());
-                        editAttrsDs.AddArray<u8>((unsigned char*)attrDataBuffer_, (u32)attrDataDs.BytesFilled());
-                        
-                        // Now zero out all remaining dirty bits
+                        // Now, if remaining dirty bits exist, they must be sent in the edit attributes message. These are the majority of our network data.
+                        changedAttributes_.clear();
+                        unsigned numBytes = ((unsigned)attrs.size() + 7) >> 3;
                         for (unsigned i = 0; i < numBytes; ++i)
-                            compState.dirtyAttributes[i] = 0;
+                        {
+                            u8 byte = compState.dirtyAttributes[i];
+                            if (byte)
+                            {
+                                for (unsigned j = 0; j < 8; ++j)
+                                {
+                                    if (byte & (1 << j))
+                                    {
+                                        u8 attrIndex = i * 8 + j;
+                                        if (attrIndex < attrs.size() && attrs[attrIndex])
+                                            changedAttributes_.push_back(attrIndex);
+                                        else
+                                            LogError("Attribute change for a nonexisting attribute index " + QString::number(attrIndex) + " was queued for component " + comp->TypeName() + " in " + entity->ToString() + ". Discarding.");
+                                    }
+                                }
+                            }
+                        }
+                        if (changedAttributes_.size())
+                        {
+                            // If first component for which attribute changes are sent, write the entity ID first
+                            if (!editAttrsDs.BytesFilled())
+                            {
+                                editAttrsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
+                                editAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                            }
+                            editAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                            
+                            // Create a nested dataserializer for the actual attribute data, so we can skip components
+                            kNet::DataSerializer attrDataDs(attrDataBuffer_, 16 * 1024);
+                            
+                            // There are changed attributes. Check if it is more optimal to send attribute indices, or the whole bitmask
+                            unsigned bitsMethod1 = (unsigned)changedAttributes_.size() * 8 + 8;
+                            unsigned bitsMethod2 = (unsigned)attrs.size();
+                            // Method 1: indices
+                            if (bitsMethod1 <= bitsMethod2)
+                            {
+                                attrDataDs.Add<kNet::bit>(0);
+                                attrDataDs.Add<u8>((u8)changedAttributes_.size());
+                                for (unsigned i = 0; i < changedAttributes_.size(); ++i)
+                                {
+                                    attrDataDs.Add<u8>(changedAttributes_[i]);
+                                    attrs[changedAttributes_[i]]->ToBinary(attrDataDs);
+                                }
+                            }
+                            // Method 2: bitmask
+                            else
+                            {
+                                attrDataDs.Add<kNet::bit>(1);
+                                for (unsigned i = 0; i < attrs.size(); ++i)
+                                {
+                                    if (compState.dirtyAttributes[i >> 3] & (1 << (i & 7)))
+                                    {
+                                        attrDataDs.Add<kNet::bit>(1);
+                                        attrs[i]->ToBinary(attrDataDs);
+                                    }
+                                    else
+                                        attrDataDs.Add<kNet::bit>(0);
+                                }
+                            }
+                            
+                            // Add the attribute data array to the main serializer
+                            editAttrsDs.AddVLE<kNet::VLE8_16_32>((u32)attrDataDs.BytesFilled());
+                            editAttrsDs.AddArray<u8>((unsigned char*)attrDataBuffer_, (u32)attrDataDs.BytesFilled());
+                            
+                            // Now zero out all remaining dirty bits
+                            for (unsigned i = 0; i < numBytes; ++i)
+                                compState.dirtyAttributes[i] = 0;
+                        }
                     }
+                    
+                    if (removeCompState)
+                        entityState.components.erase(compState.id);
                 }
                 
-                if (removeCompState)
-                    entityState.components.erase(compState.id);
+                // Send the messages which have data
+                if (removeCompsDs.BytesFilled())
+                {
+                    QueueMessage(destination, cRemoveComponentsMessage, true, true, removeCompsDs);
+                    ++numMessagesSent;
+                }
+                if (removeAttrsDs.BytesFilled())
+                {
+                    QueueMessage(destination, cRemoveAttributesMessage, true, true, removeAttrsDs);
+                    ++numMessagesSent;
+                }
+                if (createCompsDs.BytesFilled())
+                {
+                    QueueMessage(destination, cCreateComponentsMessage, true, true, createCompsDs);
+                    ++numMessagesSent;
+                }
+                if (createAttrsDs.BytesFilled())
+                {
+                    QueueMessage(destination, cCreateAttributesMessage, true, true, createAttrsDs);
+                    ++numMessagesSent;
+                }
+                if (editAttrsDs.BytesFilled())
+                {
+                    QueueMessage(destination, cEditAttributesMessage, true, true, editAttrsDs);
+                    ++numMessagesSent;
+                }
             }
             
-            // Send the messages which have data
-            if (removeCompsDs.BytesFilled())
+            // Check if entity has other property changes (temporary flag)
+            if (entityState.hasPropertyChanges)
             {
-                QueueMessage(destination, cRemoveComponentsMessage, true, true, removeCompsDs);
-                ++numMessagesSent;
-            }
-            if (removeAttrsDs.BytesFilled())
-            {
-                QueueMessage(destination, cRemoveAttributesMessage, true, true, removeAttrsDs);
-                ++numMessagesSent;
-            }
-            if (createCompsDs.BytesFilled())
-            {
-                QueueMessage(destination, cCreateComponentsMessage, true, true, createCompsDs);
-                ++numMessagesSent;
-            }
-            if (createAttrsDs.BytesFilled())
-            {
-                QueueMessage(destination, cCreateAttributesMessage, true, true, createAttrsDs);
-                ++numMessagesSent;
-            }
-            if (editAttrsDs.BytesFilled())
-            {
-                QueueMessage(destination, cEditAttributesMessage, true, true, editAttrsDs);
+                kNet::DataSerializer editPropertiesDs(editAttrsBuffer_, 1024);
+                editPropertiesDs.AddVLE<kNet::VLE8_16_32>(sceneId);
+                editPropertiesDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                editPropertiesDs.Add<u8>(entity->IsTemporary() ? 1 : 0);
+                QueueMessage(destination, cEditEntityPropertiesMessage, true, true, editPropertiesDs);
                 ++numMessagesSent;
             }
             

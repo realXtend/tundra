@@ -240,9 +240,9 @@ static QScriptValue Circle_IntersectsFaces_manual(QScriptContext *context, QScri
     Circle This = qscriptvalue_cast<Circle>(context->thisObject());
     OBB obb = qscriptvalue_cast<OBB>(context->argument(0));
     std::vector<float3> ret = This.IntersectsFaces(obb);
-    QScriptValue retObj = engine->newArray(ret.size());
+    QScriptValue retObj = engine->newArray((uint)ret.size());
     for(size_t i = 0; i < ret.size(); ++i)
-        retObj.setProperty(i, qScriptValueFromValue(engine, ret[i]));
+        retObj.setProperty((quint32)i, qScriptValueFromValue(engine, ret[i]));
     return retObj;
 }
 

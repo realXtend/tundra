@@ -52,7 +52,7 @@ public slots:
 
         @param name Name of the scene to return
         @return The scene, or empty pointer if the scene with the specified name could not be found. */
-        ScenePtr SceneByName(const QString &name) const;
+    ScenePtr SceneByName(const QString &name) const;
 
     /// Returns the Scene the current active main camera is in.
     /** If there is no active main camera, this function returns the first found scene.

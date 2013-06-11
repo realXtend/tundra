@@ -105,10 +105,53 @@ public slots:
     /// @overload
     /** Does raycast into the world using a ray in world space coordinates. */
     RaycastResult* Raycast(const Ray& ray, unsigned layerMask);
-
-    /// @todo Add Raycast overloads which take max distance param.
-    /// @todo Add RaycastAll which returns list of all hits
-
+    /// @overload
+    /** Does a raycast into the world with specified layers and maximum distance */
+    RaycastResult* Raycast(int x, int y, unsigned layerMask, float maxDistance);
+    /// @overload
+    /** Does a raycast into the world with specified screen point, layers and maximum distance. */
+    RaycastResult* Raycast(const QPoint &point, unsigned layerMask, float maxDistance) { return Raycast(point.x(), point.y(), layerMask, maxDistance);}
+    /// @overload
+    /** Does a raycast into the world from screen coordinates, using all selection layers and a maximum distance */
+    RaycastResult* Raycast(int x, int y, float maxDistance);
+    /// @overload
+    /** Does a raycast into the world with specified screen point, using all selection layers and a maximum distance */
+    RaycastResult* Raycast(const QPoint &point, float maxDistance) { return Raycast(point.x(), point.y(), maxDistance);}
+    /// @overload
+    /** Does raycast into the world using a ray in world space coordinates and a maximum distance */
+    RaycastResult* Raycast(const Ray& ray, unsigned layerMask, float maxDistance);
+    
+    /// Does a raycast into the world from screen coordinates using specific selection layer(s), and returns all results
+    /** @note The coordinates are screen positions, not viewport positions [0,1].
+        @param x Horizontal screen position for the origin of the ray
+        @param y Vertical screen position for the origin of the ray
+        @param layerMask Which selection layer(s) to use (bitmask)
+        @return List of raycast result structure, empty if no hits. */
+    QList<RaycastResult*> RaycastAll(int x, int y, unsigned layerMask);
+    QList<RaycastResult*> RaycastAll(const QPoint &point, unsigned layerMask) { return RaycastAll(point.x(), point.y(), layerMask);} /**< @overload @param point Screen point. */
+    /// @overload
+    /** Does a raycast into the world from screen coordinates, using all selection layers, and returns all results */
+    QList<RaycastResult*> RaycastAll(int x, int y);
+    QList<RaycastResult*> RaycastAll(const QPoint &point) { return RaycastAll(point.x(), point.y());} /**< @overload @param point Screen point. */
+    /// @overload
+    /** Does raycast into the world using a ray in world space coordinates, and returns all results */
+    QList<RaycastResult*> RaycastAll(const Ray& ray, unsigned layerMask);
+    /// @overload
+    /** Does a raycast into the world with specified layers and maximum distance, and returns all results */
+    QList<RaycastResult*> RaycastAll(int x, int y, unsigned layerMask, float maxDistance);
+    /// @overload
+    /** Does a raycast into the world with specified screen point, layers and maximum distance and returns all results. */
+    QList<RaycastResult*> RaycastAll(const QPoint &point, unsigned layerMask, float maxDistance) { return RaycastAll(point.x(), point.y(), layerMask, maxDistance);}
+    /// @overload
+    /** Does a raycast into the world from screen coordinates, using all selection layers and a maximum distance, and returns all results */
+    QList<RaycastResult*> RaycastAll(int x, int y, float maxDistance);
+    /// @overload
+    /** Does a raycast into the world with specified screen point, using all selection layers and a maximum distance, and returns all results */
+    QList<RaycastResult*> RaycastAll(const QPoint &point, float maxDistance) { return RaycastAll(point.x(), point.y(), maxDistance);}
+    /// @overload
+    /** Does raycast into the world using a ray in world space coordinates and a maximum distance, and returns all results */
+    QList<RaycastResult*> RaycastAll(const Ray& ray, unsigned layerMask, float maxDistance);
+    
     /// Does a frustum query to the world from viewport coordinates.
     /** @param viewRect The query rectangle in 2d window coords.
         @return List of entities within the frustrum. */
@@ -221,7 +264,13 @@ private slots:
 
 private:
     /// Do the actual raycast. rayQuery_ must have been set up beforehand
-    RaycastResult* RaycastInternal(unsigned layerMask);
+    void RaycastInternal(unsigned layerMask, float maxDistance, bool getAllResults);
+
+    /// Clear the hit status from raycast results.
+    void ClearRaycastResults();
+    
+    /// Get or create a new raycast result object
+    RaycastResult* GetOrCreateRaycastResult(size_t index);
 
     /// Setup shadows
     void SetupShadows();
@@ -247,8 +296,11 @@ private:
     /// Ray for raycasting, reusable
     Ogre::RaySceneQuery *rayQuery_;
     
-    /// Ray query result
-    RaycastResult result_;
+    /// All ray query results
+    std::vector<RaycastResult*> rayResults_;
+    
+    /// Ray query results which contain a hit (RaycastAll only)
+    QList<RaycastResult*> rayHits_;
     
     /// Soft shadow gaussian listeners
     std::list<GaussianListener *> gaussianListeners_;

@@ -449,7 +449,7 @@ signals:
     void EntityAcked(Entity* entity, entity_id_t oldId);
 
     /// An entity's temporary state has been toggled
-    void EntityTemporaryStateToggled(Entity* entity);
+    void EntityTemporaryStateToggled(Entity* entity, AttributeChange::Type change);
 
     /// A component creation into an entity has been acked by the server and assigned a proper replicated ID
     void ComponentAcked(IComponent* comp, component_id_t oldId);

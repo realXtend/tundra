@@ -86,6 +86,9 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
     }
 
     connect(framework_->Frame(), SIGNAL(Updated(float)), this, SLOT(OnUpdated(float)));
+    
+    // Ensure there's always at least 1 raycast result object
+    GetOrCreateRaycastResult(0);
 }
 
 OgreWorld::~OgreWorld()
@@ -125,6 +128,13 @@ OgreWorld::~OgreWorld()
 
     if (rayQuery_)
         sceneManager_->destroyQuery(rayQuery_);
+    
+    for (std::vector<RaycastResult*>::iterator i = rayResults_.begin(); i != rayResults_.end(); ++i)
+    {
+        delete (*i);
+        *i = 0;
+    }
+    rayResults_.clear();
     
     if (debugLines_)
     {
@@ -443,62 +453,138 @@ QString OgreWorld::PrepareInstancingMaterial(OgreMaterialAsset *material)
 
 RaycastResult* OgreWorld::Raycast(int x, int y)
 {
-    return Raycast(x, y, 0xffffffff);
+    return Raycast(x, y, 0xffffffff, FLOAT_INF);
+}
+
+RaycastResult* OgreWorld::Raycast(int x, int y, float maxDistance)
+{
+    return Raycast(x, y, 0xffffffff, maxDistance);
 }
 
 RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask)
 {
-    PROFILE(OgreWorld_Raycast);
-    
-    result_.entity = 0;
-    result_.component = 0;
-    
-    int width = renderer_->WindowWidth();
-    int height = renderer_->WindowHeight();
-    if (!width || !height)
-        return &result_; // Headless
-    Ogre::Camera* camera = VerifyCurrentSceneCamera();
-    if (!camera)
-        return &result_;
-    
-    float screenx = x / (float)width;
-    float screeny = y / (float)height;
-
-    Ogre::Ray ray = camera->getCameraToViewportRay(screenx, screeny);
-    rayQuery_->setRay(ray);
-    
-    return RaycastInternal(layerMask);
+    return Raycast(x, y, layerMask, FLOAT_INF);
 }
 
 RaycastResult* OgreWorld::Raycast(const Ray& ray, unsigned layerMask)
 {
-    result_.entity = 0;
-    result_.component = 0;
-
-    if (!rayQuery_)
-        return &result_;
-    rayQuery_->setRay(Ogre::Ray(ray.pos, ray.dir));
-    return RaycastInternal(layerMask);
+    return Raycast(ray, layerMask, FLOAT_INF);
 }
 
-RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
+RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask, float maxDistance)
 {
-    result_.entity = 0;
-    result_.component = 0;
+    ClearRaycastResults();
+    
+    int width = renderer_->WindowWidth();
+    int height = renderer_->WindowHeight();
+    if (width && height && rayQuery_)
+    {
+        Ogre::Camera* camera = VerifyCurrentSceneCamera();
+        if (camera)
+        {
+            float screenx = x / (float)width;
+            float screeny = y / (float)height;
+
+            Ogre::Ray ray = camera->getCameraToViewportRay(screenx, screeny);
+            rayQuery_->setRay(ray);
+            RaycastInternal(layerMask, maxDistance, false);
+        }
+    }
+    
+    return rayResults_[0];
+}
+
+RaycastResult* OgreWorld::Raycast(const Ray& ray, unsigned layerMask, float maxDistance)
+{
+    ClearRaycastResults();
+    
+    if (rayQuery_)
+    {
+        rayQuery_->setRay(Ogre::Ray(ray.pos, ray.dir));
+        RaycastInternal(layerMask, maxDistance, false);
+    }
+    
+    return rayResults_[0];
+}
+
+QList<RaycastResult*> OgreWorld::RaycastAll(int x, int y)
+{
+    return RaycastAll(x, y, 0xffffffff, FLOAT_INF);
+}
+
+QList<RaycastResult*> OgreWorld::RaycastAll(int x, int y, float maxDistance)
+{
+    return RaycastAll(x, y, 0xffffffff, maxDistance);
+}
+
+QList<RaycastResult*> OgreWorld::RaycastAll(int x, int y, unsigned layerMask)
+{
+    return RaycastAll(x, y, layerMask, FLOAT_INF);
+}
+
+QList<RaycastResult*> OgreWorld::RaycastAll(const Ray& ray, unsigned layerMask)
+{
+    return RaycastAll(ray, layerMask, FLOAT_INF);
+}
+
+QList<RaycastResult*> OgreWorld::RaycastAll(int x, int y, unsigned layerMask, float maxDistance)
+{
+    ClearRaycastResults();
+    
+    int width = renderer_->WindowWidth();
+    int height = renderer_->WindowHeight();
+    if (width && height && rayQuery_)
+    {
+        Ogre::Camera* camera = VerifyCurrentSceneCamera();
+        if (camera)
+        {
+            float screenx = x / (float)width;
+            float screeny = y / (float)height;
+
+            Ogre::Ray ray = camera->getCameraToViewportRay(screenx, screeny);
+            rayQuery_->setRay(ray);
+            RaycastInternal(layerMask, maxDistance, true);
+        }
+    }
+    
+    return rayHits_;
+}
+
+QList<RaycastResult*> OgreWorld::RaycastAll(const Ray& ray, unsigned layerMask, float maxDistance)
+{
+    ClearRaycastResults();
+    
+    if (rayQuery_)
+    {
+        rayQuery_->setRay(Ogre::Ray(ray.pos, ray.dir));
+        RaycastInternal(layerMask, maxDistance, true);
+    }
+    
+    return rayHits_;
+}
+
+void OgreWorld::RaycastInternal(unsigned layerMask, float maxDistance, bool getAllResults)
+{
+    PROFILE(OgreWorld_Raycast);
     
     Ray ray = rayQuery_->getRay();
     
     Ogre::RaySceneQueryResult &results = rayQuery_->execute();
     float closestDistance = -1.0f;
+    size_t hitIndex = 0;
     
     for(size_t i = 0; i < results.size(); ++i)
     {
         Ogre::RaySceneQueryResultEntry &entry = results[i];
-    
+        
+        // If entry further away than max. distance, terminate
+        if (entry.distance > maxDistance)
+            break;
+        
         if (!entry.movable)
             continue;
 
-        /// \todo Do we want results for invisible entities?
+        // No result for invisible entity
         if (!entry.movable->isVisible())
             continue;
         
@@ -525,8 +611,9 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 continue;
         }
         
-        // If this MovableObject's bounding box is further away than our current best result, skip the detailed (e.g. triangle-level) test, as this object possibly can't be closer.
-        if (closestDistance >= 0.0f && entry.distance > closestDistance)
+        // If we are not getting all results, and this MovableObject's bounding box is further away than our current best result,
+        // skip the detailed (e.g. triangle-level) test, as this object possibly can't be closer.
+        if (!getAllResults && closestDistance >= 0.0f && entry.distance > closestDistance)
             continue;
 
         Ogre::Entity* meshEntity = dynamic_cast<Ogre::Entity*>(entry.movable);
@@ -541,10 +628,7 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
             {
                 Ogre::SceneNode *node = meshEntity->getParentSceneNode();
                 if (!node)
-                {
-                    LogError("EC_Mesh::Raycast called for a mesh entity that is not attached to a scene node. Returning no result.");
-                    return &result_;
-                }
+                    continue;
 
                 assume(!float3(node->_getDerivedScale()).IsZero());
                 float3x4 localToWorld = float3x4::FromTRS(node->_getDerivedPosition(), node->_getDerivedOrientation(), node->_getDerivedScale());
@@ -572,17 +656,20 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 }
             }
 
-            if (hit && (closestDistance < 0.0f || r.t < closestDistance))
+            if (hit && r.t < maxDistance && (getAllResults || (closestDistance < 0.0f || r.t < closestDistance)))
             {
                 closestDistance = r.t;
-                result_.entity = entity;
-                result_.component = component;
-                result_.pos = r.pos;
-                result_.normal = r.normal;
-                result_.submesh = r.submeshIndex;
-                result_.index = r.triangleIndex;
-                result_.u = r.uv.x;
-                result_.v = r.uv.y;
+                RaycastResult* result = GetOrCreateRaycastResult(hitIndex);
+                result->entity = entity;
+                result->component = component;
+                result->pos = r.pos;
+                result->normal = r.normal;
+                result->submesh = r.submeshIndex;
+                result->index = r.triangleIndex;
+                result->u = r.uv.x;
+                result->v = r.uv.y;
+                rayHits_.push_back(result);
+                ++hitIndex;
             }
         }
         else
@@ -599,7 +686,9 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                 Ogre::Matrix4 w_;
                 bbs->getWorldTransforms(&w_);
                 float3x4 world = float4x4(w_).Float3x4Part(); // The world transform of the whole billboard set.
-
+                bool hasHit = false;
+                float closestBillboardDistance = -1.0f; // Closest hit in this billboard set
+                
                 // Test a precise hit to each individual billboard in turn, and output the index of hit to the closest billboard in the set.
                 for(int i = 0; i < bbs->getNumBillboards(); ++i)
                 {
@@ -608,7 +697,11 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                     Plane billboardPlane(worldPos, billboardFrontDir); // The plane of this billboard in world space.
                     float d;
                     bool success = billboardPlane.Intersects(ray, &d);
-                    if (!success || (closestDistance > 0.0f && d >= closestDistance))
+                    if (!success || d > maxDistance)
+                        continue;
+                    if (!getAllResults && closestDistance > 0.0f && d >= closestDistance)
+                        continue;
+                    if (hasHit && d > closestBillboardDistance)
                         continue;
 
                     float3 intersectionPoint = ray.GetPoint(d); // The point where the ray intersects the plane of the billboard.
@@ -638,37 +731,62 @@ RaycastResult* OgreWorld::RaycastInternal(unsigned layerMask)
                     if (hit.x >= -1.f && hit.x <= 1.f && hit.y >= -1.f && hit.y <= 1.f)
                     {
                         closestDistance = d;
-                        result_.entity = entity;
-                        result_.component = component;
-                        result_.pos = intersectionPoint;
-                        result_.normal = billboardFrontDir;
-                        result_.submesh = i; // Store in the 'submesh' index the index of the individual billboard we hit.
-                        result_.index = (unsigned int)-1; // Not applicable for billboards.
-                        result_.u = (hit.x + 1.f) * 0.5f;
-                        result_.v = (hit.y + 1.f) * 0.5f;
+                        closestBillboardDistance = d;
+                        hasHit = true;
+                        RaycastResult* result = GetOrCreateRaycastResult(hitIndex);
+                        result->entity = entity;
+                        result->component = component;
+                        result->pos = intersectionPoint;
+                        result->normal = billboardFrontDir;
+                        result->submesh = i; // Store in the 'submesh' index the index of the individual billboard we hit.
+                        result->index = (unsigned int)-1; // Not applicable for billboards.
+                        result->u = (hit.x + 1.f) * 0.5f;
+                        result->v = (hit.y + 1.f) * 0.5f;
                     }
+                }
+                if (hasHit)
+                {
+                    rayHits_.push_back(GetOrCreateRaycastResult(hitIndex));
+                    ++hitIndex;
                 }
             }
             else
             {
                 // Not a mesh entity, fall back to just using the bounding box - ray intersection
-                if (closestDistance < 0.0f || entry.distance < closestDistance)
+                if (getAllResults || (closestDistance < 0.0f || entry.distance < closestDistance))
                 {
+                    RaycastResult* result = GetOrCreateRaycastResult(hitIndex);
                     closestDistance = entry.distance;
-                    result_.entity = entity;
-                    result_.component = component;
-                    result_.pos = ray.GetPoint(closestDistance);
-                    result_.normal = -ray.dir;
-                    result_.submesh = 0;
-                    result_.index = 0;
-                    result_.u = 0.0f;
-                    result_.v = 0.0f;
+                    result->entity = entity;
+                    result->component = component;
+                    result->pos = ray.GetPoint(closestDistance);
+                    result->normal = -ray.dir;
+                    result->submesh = 0;
+                    result->index = 0;
+                    result->u = 0.0f;
+                    result->v = 0.0f;
+                    
+                    rayHits_.push_back(result);
+                    ++hitIndex;
                 }
             }
         }
     }
+}
 
-    return &result_;
+RaycastResult* OgreWorld::GetOrCreateRaycastResult(size_t index)
+{
+    while (rayResults_.size() <= index)
+        rayResults_.push_back(new RaycastResult());
+    return rayResults_[index];
+}
+
+void OgreWorld::ClearRaycastResults()
+{
+    // In case of returning only a single result, make sure its entity & component are cleared in case of no hit
+    rayResults_[0]->entity = 0;
+    rayResults_[0]->component = 0;
+    rayHits_.clear();
 }
 
 QList<Entity*> OgreWorld::FrustumQuery(QRect &viewrect) const

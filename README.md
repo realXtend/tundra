@@ -23,34 +23,38 @@ Compiling from Sources
 
 Tundra source code is available at the [realXtend github repository]. This repository hosts various branches for current and deprecated development lines from the realXtend team, so be sure to checkout `tundra2` branch after cloning.
 
-Tundra uses [CMake] as its build system and depends on various other open source projects. See more from `doc/dependencies.txt`.
+Tundra uses [CMake] as its build system and depends on various other open source projects.
 
 ### Windows
 
 Visual Studio 2008 and 2010 build environments are currently supported. Make sure that you have the latest Visual Studio Service Packs installed.
 
 The Tundra dependencies are acquired and built using an automated build script:  
-1. `cd tools\Windows\VS<VersionNumber>\`  
-2. Run `BuildDeps_<BuildType>`, or `BuildDepsX64_<BuildType>` (if wanting to do a 64-bit build). RelWithDebInfo is recommended for the common development work.  
-   Note that the build script needs to be executed in the Visual Studio (x64 Win64) Command Prompt for having the required build tools and several other utilities in your PATH.  
+1. Open up the Visual Studio (x64 Win64) Command Prompt which is required in order to have the required build tools and several other utilities in your PATH.  
+2. Navigate to `<Tundra>\tools\Windows\VS<VersionNumber>\`  
+3. Run `BuildDeps_<BuildType>`, or `BuildDepsX64_<BuildType>` (if wanting to do a 64-bit build). RelWithDebInfo is recommended for the common development work, but you probably want to have the Debug builds available too.  
    The build script will print information what you need in order to proceed, follow the instructions carefully. You can abort the script with Ctrl+C at this point and setup your environment.  
-3. Once you are done setting up your build environment, hit any key to continue the script as it instructs. The full depedency build might take up to 2 hours.
-4. After the script has completed, the dependencies can be found from either `deps\` (for 32-bit VS2008 build), or `deps-vs<VersionNumber>-<TargetArchitecture>\` (for other build configuration variants). The needed runtime libraries are automatically copied to `bin\`.  
-5. Now run CMake batch script corresponding to your desired build configration. This script will set up the needed build environment variables for CMake and invoke CMake to generate a tundra.sln solution.  
-6. Build Tundra using the solution file.
+4. Once you are done setting up your build environment, hit any key to continue the script as it instructs. The full depedency build might take up to 2 hours.
+5. After the script has completed, the dependencies can be found `deps-vs<VersionNumber>-<TargetArchitecture>\`. The needed runtime libraries are automatically copied to `bin\`.  
+6. Now run CMake batch script corresponding to your desired build configration. This script will set up the needed build environment variables for CMake and invoke CMake to generate a tundra.sln solution.  
+7. Build Tundra using the solution file.
 
 ### Linux
 
-Currently only Ubuntu, Mint, Debian, and Kali are officially supported. See [tools/Linux/build-deps.bash] for the unified build script. 
+Currently Ubuntu, Mint, Debian, and Kali are officially supported. See [tools/Linux/build-deps.bash] for the unified build script. 
 
 ### OS X
 
 See [tools/OSX/BuildDeps.bash] for automated dependency and Tundra build script.
 
+### Android
+
+Experimental Android support exists, see [android/Build-instructions.txt] for the build instructions.
+
 Developer Documentation
 -----------------------
 
-Tundra uses [Doxygen] as its main documentation tool. In order to generate and view the developer documentation, follow these steps:
+Tundra uses [Doxygen] as its main documentation tool. In order to generate and view the developer documentation, follow these steps:  
 1. have Doxygen installed,  
 2. `cd doc`,  
 3. `doxygen tundra.Doxyfile`,  
@@ -75,13 +79,14 @@ Releases
 
 New releases are announced on the mailing lists and at the [realXtend blog]. The releases are available at the [realXtend Tundra Google Code] project site.
 
-[Qt]:          http://qt.nokia.com/                            "Qt homepage"
+[Qt]:          http://qt.digia.com/                            "Qt homepage"
 [Ogre3D]:      http://www.ogre3d.org/                          "Ogre3D homepage"
 [Apache 2.0]:  http://www.apache.org/licenses/LICENSE-2.0.txt  "Apache 2.0 license"
 [CMake]:       http://www.cmake.org/                           "CMake homepage"
 [realXtend blog]: http://www.realxtend.org                     "realXtend blog"
 [realXtend github repository]: https://github.com/realXtend/naali/tree/tundra2 "realXtend Tundra repository"
-[tools/build-mac-deps.bash]: https://github.com/realXtend/naali/blob/tundra2/tools/build-mac-deps.bash "tools/build-mac-deps.bash"
-[tools/Ubuntu/build-deps.bash]: https://github.com/realXtend/naali/tree/tundra2/tools/Ubuntu/build-deps.bash "tools/Ubuntu/build-deps.bash"
+[tools/OSX/BuildDeps.bash]: https://github.com/realXtend/naali/blob/tundra2/tools/OSX/BuildDeps.bash "tools/OSX/BuildDeps.bash"
+[tools/Linux/build-deps.bash]: https://github.com/realXtend/naali/tree/tundra2/tools/Linux/build-deps.bash "tools/Linux/build-deps.bash"
+[android/Build-instructions.txt]: https://github.com/realXtend/naali/tree/tundra2/android/Build-instructions.txt "android/Build-instructions.txt"
 [Doxygen]:  http://www.stack.nl/~dimitri/doxygen/ "doxygen homepage"
 [realXtend Tundra Google Code]: http://code.google.com/p/realxtend-naali/downloads/list

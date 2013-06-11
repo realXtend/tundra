@@ -45,10 +45,12 @@ public:
         caches them. Pass in received command-line parameters here.
         @param owner Pass in the root framework pointer here. */
     Application(Framework *owner, int &argc, char **argv);
-
     ~Application();
 
     virtual bool notify(QObject *receiver, QEvent *e);
+
+    /// Request exit. Emits ExitRequested signal which can be used to cancel exit from Framework.
+    void RequestExit();
 
     /// Starts the application execution.
     void Go();
@@ -141,10 +143,22 @@ public:
     /// Reads and applies target FPS limit from config file.
     void ReadTargetFpsLimitFromConfig();
 
+    /// Find .qm translation files from @c dir.
+    QStringList FindQmFiles(const QDir &dir);
+
 public slots:
+    /// Returns if application is active.
+    /** @note This is set to false when for example the main window is not focused. */
+    bool IsActive() const;
+
+    /// Update application.
     void UpdateFrame();
+
+    /// Change language to input translation .qm @c file
     void ChangeLanguage(const QString& file);
-    void AboutToExit();
+
+    /// Set splash message.
+    /** @note Only use this function during Tundra startup. */
     void SetSplashMessage(const QString &message);
 
 signals:
@@ -155,10 +169,11 @@ signals:
     void ExitRequested();
 
 protected:
+    /// QObject override.
     bool eventFilter(QObject *obj, QEvent *event);
 
 private:
-    QStringList FindQmFiles(const QDir &dir);
+    /// Initializes splash screen.
     void InitializeSplash();
 
     Framework *framework;

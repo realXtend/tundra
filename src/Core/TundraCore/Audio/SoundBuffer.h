@@ -1,14 +1,16 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
+
 #pragma once
 
-#include <vector>
-#include "CoreTypes.h"
 #include "TundraCoreApi.h"
+
+#include <vector>
 
 /// Stores a fixed-length sound clip in raw PCM wav data.
 class TUNDRACORE_API SoundBuffer
 {
 public:
+    SoundBuffer() : frequency(0), is16Bit(false), stereo(false) {}
 
     /// Stores the actual raw PCM wav data of the sound buffer.
     std::vector<u8> data;
@@ -19,4 +21,3 @@ public:
     /// If true, the data is stored in two-channel stereo mode (interleaved). If false, the data contains mono audio.
     bool stereo;
 };
-

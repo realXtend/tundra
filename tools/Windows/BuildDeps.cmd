@@ -695,7 +695,7 @@ IF %USE_BOOST%==FALSE (
         cd "%TBB_HOME%\include\tbb\internal"
         sed s@"#error TBB is unable to run on old Windows versions;"@"//#error TBB is unable to run on old Windows versions;"@g <_tbb_windef.h >_tbb_windef.h.sed
         del _tbb_windef.h
-        rename _tbb_windef.h.sed _tbb_windef.h  
+        rename _tbb_windef.h.sed _tbb_windef.h
     )
 )
 
@@ -854,6 +854,7 @@ IF NOT EXIST "%DEPS%\ogg". (
 
 IF NOT EXIST "%DEPS%\ogg\win32\%VS2008_OR_VS2010%\%VS_PLATFORM%\%DEBUG_OR_RELEASE%\libogg_static.lib". (
     cd "%DEPS%\ogg\win32\%VS2008_OR_VS2010%"
+
     cecho {0D}Building %DEBUG_OR_RELEASE% Ogg. Please be patient, this will take a while.{# #}{\n}
     MSBuild libogg_static.sln /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -870,7 +871,7 @@ IF NOT EXIST "%DEPS%\vorbis". (
 IF NOT EXIST "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%\%VS_PLATFORM%\%DEBUG_OR_RELEASE%\libvorbis_static.lib". (
     cd "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%"
     cecho {0D}Building %DEBUG_OR_RELEASE% Vorbis. Please be patient, this will take a while.{# #}{\n}
-    MSBuild vorbis_static.sln /p:configuration=%DEBUG_OR_RELEASE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild vorbis_static.sln /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
     cecho {0D}%DEBUG_OR_RELEASE% Vorbis already built. Skipping.{# #}{\n}
@@ -888,10 +889,16 @@ IF %BUILD_TYPE%==Debug (
     set THEORA_BUILD_TYPE=Release_SSE2
 )
 IF NOT EXIST "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%\libtheora_static.lib". (
-    cd "%DEPS%\theora\win32\VS2008"
     cecho {0D}Building %THEORA_BUILD_TYPE% Theora. Please be patient, this will take a while.{# #}{\n}
-    MSBuild libtheora_static.sln /p:configuration=%THEORA_BUILD_TYPE%  /p:platform="%VS_PLATFORM%" /t:libtheora_static /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+
+    cd "%DEPS%\theora\win32\VS2008\libtheora"
+    copy /Y "%TOOLS%\Mods\vs2008-libtheora_static.vcproj" libtheora_static.vcproj
+    IF NOT %VS_VER%==vs2008 IF NOT EXIST libtheora_static.%VCPROJ_FILE_EXT%. VCUpgrade /nologo libtheora_static.vcproj
+
+    MSBuild libtheora_static.%VCPROJ_FILE_EXT% /p:configuration=%THEORA_BUILD_TYPE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%   
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    IF NOT EXIST "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%". mkdir "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%"
+    copy /Y "%VS_PLATFORM%\%THEORA_BUILD_TYPE%\libtheora_static.lib" "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%\libtheora_static.lib"
 ) ELSE (
    cecho {0D}%THEORA_BUILD_TYPE% Theora already built. Skipping.{# #}{\n}
 )
@@ -909,11 +916,10 @@ IF NOT EXIST "%DEPS%\speex\lib\%DEBUG_OR_RELEASE%\libspeexdsp.lib". (
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
     cecho {0D}Building %DEBUG_OR_RELEASE% Speex. Please be patient, this will take a while.{# #}{\n}
-    :: The default libspeex.sln has the libspeexdsp project disabled, so we must use our own custom solution file.
-    copy /Y "%TOOLS%\Mods\libspeex.sln" libspeex.sln
-    :: Also, the libspeexdsp.vcproj poorly outputs the resulted library to the same directory using the same filename
-    :: regardless of the used configuration so we must work around that too.
-    copy /Y "%TOOLS%\Mods\libspeexdsp.vcproj" libspeexdsp\libspeexdsp.vcproj
+    :: Custom solutions that include libspeexdsp and change the output dirs.
+    copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-libspeex.sln" libspeex.sln
+    copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-libspeex.%VCPROJ_FILE_EXT%" libspeex\libspeex.%VCPROJ_FILE_EXT%
+    copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-libspeexdsp.%VCPROJ_FILE_EXT%" libspeexdsp\libspeexdsp.%VCPROJ_FILE_EXT%
 
     MSBuild libspeex.sln /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -953,6 +959,7 @@ IF NOT EXIST "%DEPS%\protobuf\vsprojects\%DEBUG_OR_RELEASE%\libprotobuf.lib". (
     copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-libprotoc.%VCPROJ_FILE_EXT%" libprotoc.%VCPROJ_FILE_EXT%
     copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-protoc.%VCPROJ_FILE_EXT%" protoc.%VCPROJ_FILE_EXT%
     echo.
+
     cecho {0D}Building %DEBUG_OR_RELEASE% Google Protobuf. Please be patient, this will take a while.{# #}{\n}
     MSBuild protobuf.sln /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR

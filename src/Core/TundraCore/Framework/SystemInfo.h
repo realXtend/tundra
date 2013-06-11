@@ -47,3 +47,8 @@ QString TUNDRACORE_API ProcessorExtendedCpuIdInfo();
     @param coreIndex Core index, [0, NumberOfCores[
     @note Currently only implemented on Windows. */
 unsigned long TUNDRACORE_API CpuSpeedFromRegistry(unsigned long coreIndex);
+
+/// Returns the total amount of available graphics card memory in bytes.
+/** @note Currently only implemented on Windows.
+ ** @note Windows implementation will return 0 if DIRECTX_ENABLED is not defined or if platform < Windows Vista. */
+unsigned long TUNDRACORE_API TotalVideoMemory();

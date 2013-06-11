@@ -64,38 +64,7 @@ EC_SlideShow::EC_SlideShow(Scene *scene) :
     slideChangeInterval.SetMetadata(&zeroIndexMetadata);
     currentSlideIndex.SetMetadata(&slideIndexMetadata);
 
-    // Connect signals both for headless and non-headless
-    connect(&changeTimer_, SIGNAL(timeout()), SLOT(NextSlide()));
-
-    // Server controls the slide change timer, so detect if we are on one.
-    TundraLogic::TundraLogicModule *tundraLogic = framework->GetModule<TundraLogic::TundraLogicModule>();
-    if (tundraLogic)
-        isServer_ = tundraLogic->IsServer();
-    else
-        LogError("EC_SlideShow: Could not detect if in server on client. Slide change timer will not work. (TundraLogicModule not found!)");
-
-    // Don't do anything beyond if rendering is not enabled
-    if (!ViewEnabled() || GetFramework()->IsHeadless())
-        return;
-
-    // Connect signals for non headless
     connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
-    
-    // Prepare scene interactions
-    SceneInteract *sceneInteract = GetFramework()->GetModule<SceneInteract>();
-    if (sceneInteract)
-        connect(sceneInteract, SIGNAL(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)), SLOT(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)));
-    
-    // Handle window resizing to update the rendering (otherwise will get black screen on manually blitted textures)
-    if (GetFramework()->Ui()->MainWindow())
-    {
-        resizeRenderTimer_.setSingleShot(true);
-        connect(&resizeRenderTimer_, SIGNAL(timeout()), SLOT(ResizeTimeout()), Qt::UniqueConnection);
-        connect(GetFramework()->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int,int)), SLOT(WindowResized()), Qt::UniqueConnection);
-    }
-
-    // Monitor unloaded assets from AssetAPI
-    connect(framework->Asset(), SIGNAL(AssetAboutToBeRemoved(AssetPtr)), SLOT(AssetRemoved(AssetPtr)));
 }
 
 EC_SlideShow::~EC_SlideShow()
@@ -106,7 +75,7 @@ void EC_SlideShow::ShowSlide(int index)
 {
     if (!IsPrepared())
         return;
-    if (!getenabled())
+    if (!enabled.Get())
         return;
 
     QVariantList slideRefs = getslides();
@@ -127,9 +96,9 @@ void EC_SlideShow::ShowSlide(int index)
     EC_WidgetCanvas *canvas = GetSceneCanvasComponent();
     if (!canvas)
         return;
-    canvas->SetSubmesh(getrenderSubmeshIndex());
+    canvas->SetSubmesh(renderSubmeshIndex.Get());
 
-    SceneWidgetComponents *sceneComponentsPlugin = GetFramework()->GetModule<SceneWidgetComponents>();
+    SceneWidgetComponents *sceneComponentsPlugin = GetFramework()->Module<SceneWidgetComponents>();
     
     // Don't do anything if the ref is not a proper texture, people can put anything into 'slides' list.
     // Lets still do some log warnings so users know to move to the next slide.
@@ -260,7 +229,7 @@ void EC_SlideShow::NextSlide()
     if (slideRefs.length() <= 1)
         return;
     // If we are on last slide, ShowSlide() will take care of reseting to 0 index.
-    setcurrentSlideIndex(getcurrentSlideIndex() + 1);
+    currentSlideIndex.Set(currentSlideIndex.Get() + 1, AttributeChange::Default);
 }
 
 void EC_SlideShow::PreviousSlide()
@@ -270,17 +239,17 @@ void EC_SlideShow::PreviousSlide()
     if (slideRefs.length() <= 1)
         return;
     // If we are on first slide, ShowSlide() will take care of reseting to len-1 index.
-    setcurrentSlideIndex(getcurrentSlideIndex() - 1);
+    currentSlideIndex.Set(currentSlideIndex.Get() - 1, AttributeChange::Default);
 }
 
 void EC_SlideShow::GoToStart()
 {
-    setcurrentSlideIndex(0);
+    currentSlideIndex.Set(0, AttributeChange::Default);
 }
 
 void EC_SlideShow::GoToEnd()
 {
-    setcurrentSlideIndex(getslides().length() - 1);
+    currentSlideIndex.Set(slides.Get().length() - 1, AttributeChange::Default);
 }
 
 QMenu *EC_SlideShow::GetContextMenu()
@@ -290,11 +259,11 @@ QMenu *EC_SlideShow::GetContextMenu()
     actionMenu->addAction(QIcon("./data/ui/images/browser/forward.png"), "Next Slide", this, SLOT(NextSlide()));
     actionMenu->addAction(QIcon("./data/ui/images/browser/back.png"), "Previous Slide", this, SLOT(PreviousSlide()));
     
-    QString currentRef = getslides().at(getcurrentSlideIndex()).toString();
+    QString currentRef = getslides().at(currentSlideIndex.Get()).toString();
     if (!currentRef.isEmpty())
     {
         actionMenu->addSeparator();
-        actionMenu->addAction("Current: [" + QString::number(getcurrentSlideIndex()) + "] " + currentRef.split("/").last());
+        actionMenu->addAction("Current: [" + QString::number(currentSlideIndex.Get()) + "] " + currentRef.split("/").last());
     }
     
     return actionMenu;
@@ -312,7 +281,7 @@ void EC_SlideShow::WindowResized()
 
 void EC_SlideShow::ResizeTimeout()
 {
-    ShowSlide(getcurrentSlideIndex());
+    ShowSlide(currentSlideIndex.Get());
 }
 
 void EC_SlideShow::PrepareComponent()
@@ -321,6 +290,36 @@ void EC_SlideShow::PrepareComponent()
         return;
     if (IsPrepared())
         return;
+
+    // Connect signals both for headless and non-headless
+    connect(&changeTimer_, SIGNAL(timeout()), SLOT(NextSlide()));
+
+    // Server controls the slide change timer, so detect if we are on one.
+    TundraLogic::TundraLogicModule *tundraLogic = framework->Module<TundraLogic::TundraLogicModule>();
+    if (tundraLogic)
+        isServer_ = tundraLogic->IsServer();
+    else
+        LogError("EC_SlideShow: Could not detect if in server on client. Slide change timer will not work. (TundraLogicModule not found!)");
+
+    // Don't do anything beyond if rendering is not enabled
+    if (!ViewEnabled() || GetFramework()->IsHeadless())
+        return;
+
+    // Prepare scene interactions
+    SceneInteract *sceneInteract = GetFramework()->Module<SceneInteract>();
+    if (sceneInteract)
+        connect(sceneInteract, SIGNAL(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)), SLOT(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)));
+    
+    // Handle window resizing to update the rendering (otherwise will get black screen on manually blitted textures)
+    if (GetFramework()->Ui()->MainWindow())
+    {
+        resizeRenderTimer_.setSingleShot(true);
+        connect(&resizeRenderTimer_, SIGNAL(timeout()), SLOT(ResizeTimeout()), Qt::UniqueConnection);
+        connect(GetFramework()->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int,int)), SLOT(WindowResized()), Qt::UniqueConnection);
+    }
+
+    // Monitor unloaded assets from AssetAPI
+    connect(framework->Asset(), SIGNAL(AssetAboutToBeRemoved(AssetPtr)), SLOT(AssetRemoved(AssetPtr)));
 
     // Get parent and connect to the component removed signal.
     Entity *parent = ParentEntity();
@@ -368,15 +367,15 @@ void EC_SlideShow::PrepareComponent()
     sceneCanvas->SetSelfIllumination(getilluminating());
 
     // Set submesh to EC_WidgetCanvas if different from current
-    if (!sceneCanvas->GetSubMeshes().contains(getrenderSubmeshIndex()))
-        sceneCanvas->SetSubmesh(getrenderSubmeshIndex());
+    if (!sceneCanvas->GetSubMeshes().contains(renderSubmeshIndex.Get()))
+        sceneCanvas->SetSubmesh(renderSubmeshIndex.Get());
 
     // We are now prepared, check enabled state and restore possible materials now.
     // If enabled try to show current slide.
-    if (!getenabled())
+    if (!enabled.Get())
         sceneCanvas->RestoreOriginalMeshMaterials();
     else
-        ShowSlide(getcurrentSlideIndex());
+        ShowSlide(currentSlideIndex.Get());
 }
 
 Ogre::TextureUnitState *EC_SlideShow::GetRenderTextureUnit()
@@ -406,7 +405,6 @@ void EC_SlideShow::TextureLoaded(AssetPtr asset)
     if (!IsPrepared())
         return;
 
-    int currentSlideIndex = getcurrentSlideIndex();
     QString loadedRef = asset->Name();
 
     foreach(AssetRefListener *listener, assetListeners_)
@@ -416,10 +414,10 @@ void EC_SlideShow::TextureLoaded(AssetPtr asset)
 
         QString textureRef = listener->property("textureRef").toString();
         int slideIndex = listener->property("slideIndex").toInt();
-        if (textureRef == loadedRef && slideIndex == currentSlideIndex)
+        if (textureRef == loadedRef && slideIndex == currentSlideIndex.Get())
         {
             // If loaded texture is the current slide index, update the rendering
-            ShowSlide(currentSlideIndex);
+            ShowSlide(currentSlideIndex.Get());
             break;
         }
     }
@@ -427,7 +425,6 @@ void EC_SlideShow::TextureLoaded(AssetPtr asset)
 
 void EC_SlideShow::TextureLoadFailed(IAssetTransfer *transfer, QString reason)
 {
-    int currentSlideIndex = getcurrentSlideIndex();
     QString failedRef = transfer->SourceUrl();
     foreach(AssetRefListener *listener, assetListeners_)
     {
@@ -441,8 +438,8 @@ void EC_SlideShow::TextureLoadFailed(IAssetTransfer *transfer, QString reason)
             listener->setProperty("transferFailed", true);
 
             // If failed texture is the current index, update the rendering
-            if (currentSlideIndex == slideIndex)
-                ShowSlide(currentSlideIndex);
+            if (currentSlideIndex.Get() == slideIndex)
+                ShowSlide(currentSlideIndex.Get());
         }
     }
 }
@@ -496,10 +493,10 @@ void EC_SlideShow::TargetMeshMaterialChanged(uint index, const QString &material
 {
     if (!IsPrepared())
         return;
-    if (!getenabled())
+    if (!enabled.Get())
         return;
 
-    if (index == (uint)getrenderSubmeshIndex())
+    if (index == (uint)renderSubmeshIndex.Get())
     {
         EC_WidgetCanvas *sceneCanvas = GetSceneCanvasComponent();
         if (sceneCanvas)
@@ -508,7 +505,7 @@ void EC_SlideShow::TargetMeshMaterialChanged(uint index, const QString &material
             {
                 // This will make 3DCanvas to update its internals, which means
                 // our material is re-applied to the submesh.
-                sceneCanvas->SetSubmesh(getrenderSubmeshIndex());
+                sceneCanvas->SetSubmesh(renderSubmeshIndex.Get());
             }
         }
     }
@@ -516,7 +513,7 @@ void EC_SlideShow::TargetMeshMaterialChanged(uint index, const QString &material
 
 void EC_SlideShow::ResetSubmeshIndex()
 {
-    setrenderSubmeshIndex(0);
+    renderSubmeshIndex.Set(0, AttributeChange::Default);
 }
 
 void EC_SlideShow::ComponentAdded(IComponent *component, AttributeChange::Type change)
@@ -608,7 +605,7 @@ void EC_SlideShow::AttributesChanged()
             connect(listener, SIGNAL(TransferFailed(IAssetTransfer*, QString)), SLOT(TextureLoadFailed(IAssetTransfer*, QString)));
 
             // Request the asset only for the current index
-            if (i == getcurrentSlideIndex())
+            if (i == currentSlideIndex.Get())
             {
                 listener->setProperty("isRequested", true);
                 listener->HandleAssetRefChange(framework->Asset(), slideRef, "Texture");
@@ -622,14 +619,14 @@ void EC_SlideShow::AttributesChanged()
 
     if (currentSlideIndex.ValueChanged())
     {
-        if (getenabled())
-            ShowSlide(getcurrentSlideIndex());
+        if (enabled.Get())
+            ShowSlide(currentSlideIndex.Get());
     }
     if (renderSubmeshIndex.ValueChanged())
     {
         EC_Mesh *mesh = GetMeshComponent();
         // Validate submesh index from EC_Mesh
-        uint submeshIndex = (uint)getrenderSubmeshIndex();
+        uint submeshIndex = (uint)renderSubmeshIndex.Get();
         if (submeshIndex >= mesh->GetNumSubMeshes())
         {
             /// \note ResetSubmeshIndex() is called with a small delay here, or the ec editor UI wont react to it. Resetting the index back to 0 will call Render() again.
@@ -646,12 +643,12 @@ void EC_SlideShow::AttributesChanged()
     if (enabled.ValueChanged())
     {
         EC_WidgetCanvas *sceneCanvas = GetSceneCanvasComponent();
-        if (!getenabled())
+        if (!enabled.Get())
             sceneCanvas->RestoreOriginalMeshMaterials();
         else
         {
-            sceneCanvas->SetSubmesh(getrenderSubmeshIndex());
-            ShowSlide(getcurrentSlideIndex());
+            sceneCanvas->SetSubmesh(renderSubmeshIndex.Get());
+            ShowSlide(currentSlideIndex.Get());
         }
     }
     if (illuminating.ValueChanged())
@@ -683,7 +680,7 @@ EC_WidgetCanvas *EC_SlideShow::GetSceneCanvasComponent()
 
 void EC_SlideShow::EntityClicked(Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult)
 {
-    if (!getinteractive())
+    if (!interactive.Get())
         return;
     if (!IsPrepared())
         return;
@@ -697,7 +694,7 @@ void EC_SlideShow::EntityClicked(Entity *entity, Qt::MouseButton button, Raycast
     if (entity == ParentEntity())
     {
         // We are only interested in clicks to our target submesh index.
-        if (raycastResult->submesh != (unsigned)getrenderSubmeshIndex())
+        if (raycastResult->submesh != (unsigned)renderSubmeshIndex.Get())
             return;
 
         // Entities have EC_Highlight if it is being manipulated.

@@ -24,8 +24,8 @@ typedef QList<TransformAttributeWeakPtr> TransformAttributeWeakPtrList;
 
 class EntityIdChangeTracker;
 
-/// EditAttributeCommandBase exposes basi
-class IEditAttributeCommand : public QUndoCommand
+/// Base/interface class for attribute editing command implementations.
+class ECEDITOR_MODULE_API IEditAttributeCommand : public QUndoCommand
 {
 public:
     /// Internal QUndoCommand unique ID
@@ -39,7 +39,85 @@ public:
     entity_id_t parentId;
 };
 
-/// EditAttributeCommand representing an "Edit" operation to the attributes
+/// Represents an "Edit" operation to an abstract Attribute type.
+/** The Attribute's value is passed around through the string serialization functions. */
+class ECEDITOR_MODULE_API EditIAttributeCommand : public IEditAttributeCommand
+{
+public:
+    /** Current value of the attribute will be read as the undo() applied value.
+        When redo() is triggered this command does nothing and it will read the redo value once undo() is applied.
+        @param attr The attribute that is being edited.
+        @param parent The parent command of this command (optional). */
+    EditIAttributeCommand(IAttribute *attr, QUndoCommand *parent = 0);
+
+    /** Current value of the attribute will be read as the undo() applied value.
+        Given valueToApply will be applied immediately when redo() is triggered (eg. added to a QUndoStack).
+        @param attr The attribute that is being edited.
+        @param valueToApply The new attribute value. Gets applied immediately when this actions redo() it triggered.
+        @param parent The parent command of this command (optional). */
+    EditIAttributeCommand(IAttribute *attr, const std::string &valueToApply, QUndoCommand *parent = 0);
+
+    /// Returns this command's ID
+    int id() const { return Id; }
+
+    /// QUndoCommand override
+    void undo()
+    {
+        if (!attribute.Expired())
+        {
+            redoValue = attribute.Get()->ToString();
+            attribute.Get()->FromString(undoValue, AttributeChange::Default);
+        }
+    }
+
+    /// QUndoCommand override
+    void redo()
+    {
+        if (noAutoRedo)
+            noAutoRedo = false;
+        else if (!attribute.Expired())
+            attribute.Get()->FromString(redoValue, AttributeChange::Default);
+    }
+
+    /// QUndoCommand override
+    /** @todo Should we make a specialization for certain types of attributes that their 'Edit attribute' commands are merged,
+            or should we keep each atomic change to the attributes in the stack?
+            (e.g. if 'Transform' attribute for each of the components of each pos, rot, and scale float3s are edited, it 
+            will push 9 commands into the undo stack) */
+    bool mergeWith(const QUndoCommand * UNUSED_PARAM(other))
+    {
+        // Don't merge commands yet. This is only for the 'Color' attribute specialization
+        return false;
+
+        /*
+        if (id() != other->id())
+            return false;
+
+        const EditAttributeCommand<T> *otherCommand = dynamic_cast<const EditAttributeCommand<T> *>(other);
+        if (!otherCommand)
+            return false;
+
+        return true;
+        */
+    }
+
+private:
+    void Initialize(IAttribute *attr, bool _noAutoRedo)
+    {
+        attribute = AttributeWeakPtr(attr->Owner()->shared_from_this(), attr);
+        attributeName = attr->Name();
+        attributeTypeName = attr->TypeName(),
+        parentId = attr->Owner()->ParentEntity()->Id();
+        noAutoRedo = _noAutoRedo;
+        setText("* Edited " + attr->Name() + " Attribute");
+    }
+
+    std::string redoValue;
+    std::string undoValue;
+    bool noAutoRedo;
+};
+
+/// Represents an "Edit" operation to a concrete Attribute type.
 template <typename T>
 class EditAttributeCommand : public IEditAttributeCommand
 {

@@ -85,7 +85,11 @@ void IComponent::SetParentEntity(Entity* entity)
 {
     parentEntity = entity;
     if (parentEntity)
+    {
+         // Make sure that framework pointer will be valid, in case this component was originally created unparented.
+        framework = parentEntity->GetFramework();
         emit ParentEntitySet();
+    }
     else
         emit ParentEntityDetached();
 }

@@ -100,7 +100,7 @@ static QScriptValue Capsule_ExtremePoint_float3_const(QScriptContext *context, Q
     return qScriptValueFromValue(engine, ret);
 }
 
-static QScriptValue Capsule_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine *engine)
+static QScriptValue Capsule_ProjectToAxis_float3_float_float_const(QScriptContext *context, QScriptEngine * /*engine*/)
 {
     if (context->argumentCount() != 3) { printf("Error! Invalid number of arguments passed to function Capsule_ProjectToAxis_float3_float_float_const in file %s, line %d!\nExpected 3, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Capsule This = qscriptvalue_cast<Capsule>(context->thisObject());

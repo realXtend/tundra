@@ -82,7 +82,7 @@ void EC_PhysicsMotor::OnPhysicsUpdate()
         float3 damping = dampingForce.Get();
         if (!damping.Equals(float3::zero))
         {
-            damping = -body->GetLinearVelocity() * damping;
+            damping = -body->GetLinearVelocity().Mul(damping);
             body->ApplyImpulse(damping);
         }
     }

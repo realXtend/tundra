@@ -4,6 +4,7 @@
 #include "DebugOperatorNew.h"
 #include "Color.h"
 #include "IAttribute.h"
+#include "IRenderer.h"
 #include "AssetReference.h"
 #include "EntityReference.h"
 #include "Entity.h"
@@ -24,6 +25,7 @@ Q_DECLARE_METATYPE(ComponentPtr)
 Q_DECLARE_METATYPE(Entity::ComponentVector)
 Q_DECLARE_METATYPE(QList<Entity*>)
 Q_DECLARE_METATYPE(QList<QObject*>)
+Q_DECLARE_METATYPE(QList<RaycastResult*>)
 Q_DECLARE_METATYPE(Entity*)
 Q_DECLARE_METATYPE(std::string)
 Q_DECLARE_METATYPE(EntityList)
@@ -209,6 +211,31 @@ QScriptValue toScriptValueQObjectList(QScriptEngine *engine, const QList<QObject
         QObject* qobj = objs.at(i);
         if (qobj)
             obj.setProperty(i, engine->newQObject(qobj));
+    }
+    return obj;
+}
+
+void fromScriptValueRaycastResultList(const QScriptValue &obj, QList<RaycastResult*> &objs)
+{
+    objs.clear();
+    QScriptValueIterator it(obj);
+    while(it.hasNext())
+    {
+        it.next();
+        RaycastResult *rr = qobject_cast<RaycastResult*>(it.value().toQObject());
+        if (rr)
+            objs.append(rr);
+    }
+}
+
+QScriptValue toScriptValueRaycastResultList(QScriptEngine *engine, const QList<RaycastResult*> &objs)
+{
+    QScriptValue obj = engine->newArray(objs.size());
+    for(int i=0; i<objs.size(); ++i)
+    {
+        QObject* rr = objs.at(i);
+        if (rr)
+            obj.setProperty(i, engine->newQObject(rr));
     }
     return obj;
 }
@@ -428,6 +455,7 @@ void RegisterCoreMetaTypes()
     qRegisterMetaType<IAttribute*>("IAttribute*");
     qRegisterMetaType<QList<Entity*> >("QList<Entity*>");
     qRegisterMetaType<QList<QObject*> >("QList<QObject*>");
+    qRegisterMetaType<QList<RaycastResult*> >("QList<RaycastResult*>");
     qRegisterMetaType<EntityList>("EntityList");
     qRegisterMetaType<Scene::EntityMap>("EntityMap");
     qRegisterMetaType<Entity::ComponentMap>("ComponentMap");
@@ -452,6 +480,7 @@ void ExposeCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType<ComponentPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
     qScriptRegisterMetaType<QList<Entity*> >(engine, toScriptValueEntityList, fromScriptValueEntityList);
     qScriptRegisterMetaType<QList<QObject*> >(engine, toScriptValueQObjectList, fromScriptValueQObjectList);
+    qScriptRegisterMetaType<QList<RaycastResult*> >(engine, toScriptValueRaycastResultList, fromScriptValueRaycastResultList);
     qScriptRegisterMetaType<EntityList>(engine, toScriptValueEntityStdList, fromScriptValueEntityStdList);
     qScriptRegisterMetaType<Scene::EntityMap>(engine, toScriptValueEntityMap, fromScriptValueEntityMap);
     qScriptRegisterMetaType<Entity::ComponentMap>(engine, toScriptValueComponentMap, fromScriptValueComponentMap);
