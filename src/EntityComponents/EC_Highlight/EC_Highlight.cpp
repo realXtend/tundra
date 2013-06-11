@@ -96,9 +96,9 @@ void EC_Highlight::Show()
 
                     try
                     {
-                        if ((mesh) && (mesh->GetEntity()) && (mesh->GetEntity()->getSubEntity(i)))
+                        if (mesh && mesh->OgreEntity() && mesh->OgreEntity()->getSubEntity(i))
                         {
-                            mesh->GetEntity()->getSubEntity(i)->setMaterial(matAsset->ogreMaterial);
+                            mesh->OgreEntity()->getSubEntity(i)->setMaterial(matAsset->ogreMaterial);
 
                             inApply = false;
 
@@ -149,8 +149,8 @@ void EC_Highlight::Hide()
                 OgreMaterialAsset *matAsset = dynamic_cast<OgreMaterialAsset*> (asset.get());
                 try
                 {
-                    if ((mesh) && (mesh->GetEntity()) && (mesh->GetEntity()->getSubEntity(index)))
-                        mesh->GetEntity()->getSubEntity(index)->setMaterial(matAsset->ogreMaterial);
+                    if (mesh && mesh->OgreEntity() && mesh->OgreEntity()->getSubEntity(index))
+                        mesh->OgreEntity()->getSubEntity(index)->setMaterial(matAsset->ogreMaterial);
                 }
                 catch(Ogre::Exception& e)
                 {

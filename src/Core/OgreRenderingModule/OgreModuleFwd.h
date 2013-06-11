@@ -31,6 +31,8 @@ namespace Ogre
     class BillboardSet;
     class Billboard;
     class Bone;
+    class InstancedEntity;
+    class InstanceManager;
 }
 
 typedef shared_ptr<Ogre::Root> OgreRootPtr;

@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include "CoreException.h"
 
 #define MATH_OGRE_INTEROP
 
@@ -13,6 +14,8 @@
 #include "OgreCompositionHandler.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "OgreBulletCollisionsDebugLines.h"
+#include "OgreMaterialAsset.h"
+#include "OgreMeshAsset.h"
 
 #include "OgreMeshAsset.h"
 #include "Entity.h"
@@ -20,6 +23,7 @@
 #include "Profiler.h"
 #include "ConfigAPI.h"
 #include "FrameAPI.h"
+#include "AssetAPI.h"
 #include "Transform.h"
 #include "Math/float2.h"
 #include "Math/float3x4.h"
@@ -47,7 +51,8 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
     sceneManager_(0),
     rayQuery_(0),
     debugLines_(0),
-    debugLinesNoDepth_(0)
+    debugLinesNoDepth_(0),
+    drawDebugInstancing_(false)
 {
     assert(renderer_->IsInitialized());
     sceneManager_ = Ogre::Root::getSingleton().createSceneManager(Ogre::ST_GENERIC, scene->Name().toStdString());
@@ -88,6 +93,45 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
 
 OgreWorld::~OgreWorld()
 {
+    if (!intancingTargets_.isEmpty())
+    {
+        try
+        {
+            for (int i=0; i<intancingTargets_.size(); ++i)
+            {
+                InstancingTarget *intancingTarget = intancingTargets_[i];
+                if (!intancingTarget)
+                    continue;
+                for (int k=0; k<intancingTarget->targets.size(); ++k)
+                {
+                    MeshInstanceTarget *meshTarget = intancingTarget->targets[k];
+                    if (!meshTarget)
+                        continue;
+                    if (meshTarget && !meshTarget->instances.isEmpty())
+                    {
+                        // These should all be gone if DestroyInstances() were called by the creators correctly!
+                        LogWarning(QString("OgreWorld: %1 instanced entities with submesh %2 are still loaded to the system for %3, destroying them now!")
+                            .arg(meshTarget->instances.size()).arg(meshTarget->submesh).arg(intancingTarget->ref));
+                        foreach(Ogre::InstancedEntity* instance, meshTarget->instances)
+                            sceneManager_->destroyInstancedEntity(instance);
+                        meshTarget->instances.clear();
+                    }
+
+                    // Destroy instance manager
+                    if (meshTarget->manager)
+                        sceneManager_->destroyInstanceManager(meshTarget->manager);
+                    meshTarget->manager = 0;
+                }
+                SAFE_DELETE(intancingTargets_[i]);
+            }
+        }
+        catch (Ogre::Exception &e)
+        {
+            LogError(QString("OgreWorld: Exception occurred while destroying instance managers: ") + e.what());
+        }
+        intancingTargets_.clear();
+    }
+
     if (rayQuery_)
         sceneManager_->destroyQuery(rayQuery_);
     
@@ -148,6 +192,314 @@ void OgreWorld::SetDefaultSceneFog()
         sceneManager_->setFog(Ogre::FOG_LINEAR, Ogre::ColourValue::White, 0.001f, 2000.0f, 4000.0f);
         Renderer()->MainViewport()->setBackgroundColour(Color()); // Color default ctor == black
     }
+}
+
+Ogre::InstancedEntity *OgreWorld::CreateInstance(const QString &meshRef, const AssetReferenceList &materials)
+{
+    return CreateInstance(framework_->Asset()->GetAsset(meshRef), materials);
+}
+
+Ogre::InstancedEntity *OgreWorld::CreateInstance(const AssetPtr &meshAsset, const AssetReferenceList &materials)
+{
+    PROFILE(OgreWorld_CreateInstance);
+
+    if (!sceneManager_ || !meshAsset.get())
+        return 0;
+
+    OgreMeshAsset *mesh = dynamic_cast<OgreMeshAsset*>(meshAsset.get());
+    if (!mesh || !mesh->IsLoaded())
+        return 0;
+
+    int submeshCount = static_cast<int>(mesh->ogreMesh->getNumSubMeshes());
+
+    // Verify materials have been loaded. Use 'AssetLoadError' from Tundras core
+    // materials for empty refs (or instancing will crash later to null mat ptr).
+    QStringList instanceMaterials;
+    for (int i=0; i<submeshCount; ++i)
+    {
+        QString materialRef = i < materials.Size() ? materials[i].ref.trimmed() : "";
+        if (!materialRef.isEmpty())
+        {
+            AssetPtr materialAsset = framework_->Asset()->GetAsset(materialRef);
+            if (!materialAsset.get() || !materialAsset->IsLoaded())
+            {
+                LogError(QString("OgreWorld::CreateInstance: Cannot create instance for %1, material in index %2 is not loaded!").arg(mesh->Name()).arg(i));
+                return 0;
+            }
+            OgreMaterialAsset *material = dynamic_cast<OgreMaterialAsset*>(materialAsset.get());
+            if (!material)
+            {
+                LogError(QString("OgreWorld::CreateInstance: Cannot create instance for %1, material in index %2 is not type of OgreMaterial type!").arg(mesh->Name()).arg(i));
+                return 0;
+            }
+
+            // This function will clone the current material if needed for instancing use.
+            // If it returns empty string it means something went wrong so bail out.
+            materialRef = PrepareInstancingMaterial(material);
+            if (materialRef.isEmpty())
+                return 0;
+        }
+        else
+            materialRef = "Tundra/Instancing/HWBasic/Empty";
+
+        instanceMaterials << materialRef;
+    }
+
+    // Get instance manager and create the new instances, parenting submesh instances to the main instance.
+    Ogre::InstancedEntity *mainInstance = 0;
+    QList<Ogre::InstancedEntity*> rollback;
+
+    try
+    {
+        for (int i=0; i<submeshCount; ++i)
+        {
+            MeshInstanceTarget *target = GetOrCreateInstanceMeshTarget(mesh->OgreMeshName(), i);
+            Ogre::InstancedEntity *instance = target->CreateInstance(instanceMaterials[i], mainInstance);
+
+            if (drawDebugInstancing_)
+                target->manager->setSetting(Ogre::InstanceManager::SHOW_BOUNDINGBOX, drawDebugInstancing_, instanceMaterials[i].toStdString());
+
+            // Main instance that is being returned.
+            if (!mainInstance)
+                mainInstance = instance;
+
+            // If exception happens we can destroy this rollback history.
+            rollback << instance;
+        }
+    }
+    catch (Exception &e)
+    {
+        LogError(QString("OgreWorld::CreateInstance: Exception occurred while creating instances: %1 for %2").arg(e.what()).arg(mesh->Name()));
+        DestroyInstances(rollback);
+        mainInstance = 0;
+    }
+    catch (Ogre::Exception &e)
+    {
+        LogError(QString("OgreWorld::CreateInstance: Exception occurred while creating instances: %1 for %2").arg(e.what()).arg(mesh->Name()));
+        DestroyInstances(rollback);
+        mainInstance = 0;
+    }
+
+    return mainInstance;
+}
+
+void OgreWorld::DestroyInstances(Ogre::InstancedEntity* instance)
+{
+    return DestroyInstances(QList<Ogre::InstancedEntity*>() << instance);
+}
+
+void OgreWorld::DestroyInstances(const QList<Ogre::InstancedEntity*> instances)
+{
+    PROFILE(OgreWorld_DestroyInstances);
+
+    /** @todo Optimize this, its gonna be slow when huge amount of instances.
+        Though we cant expect EC_Mesh etc. to tell us the meshRef (to slim down these iterations)
+        so now we have to brute force it. iTarget and kTarget is my best attempt to reduce extra loops. */
+
+    int iTarget = -1; int kTarget = -1;
+    for (int i=0; i<intancingTargets_.size(); ++i)
+    {
+        InstancingTarget *intancingTarget = intancingTargets_[i];
+        for (int k=0; k<intancingTarget->targets.size(); ++k)
+        {
+            MeshInstanceTarget *meshTarget = intancingTarget->targets[k];
+            if (meshTarget->ForgetInstances(instances))
+            {
+                iTarget = i;
+                kTarget = k;
+                break;
+            }
+        }
+        if (iTarget > -1)
+            break;
+    }
+
+    // Internal state has now forgotten these raw ptrs. Destroy the instances.
+    foreach(Ogre::InstancedEntity *instance, instances)
+    {
+        if (instance)
+            sceneManager_->destroyInstancedEntity(instance); /// @todo Check if this can throw!
+        instance = 0;
+    }
+
+    // Now destroy the manager owning the instances if its instance count is empty.
+    if (iTarget > -1)
+    {
+        InstancingTarget *target = intancingTargets_.at(iTarget);
+        if (target)
+        {
+            // Remove mesh target if its now empty.
+            MeshInstanceTarget *meshTarget = target->targets.at(kTarget);
+            if (meshTarget && meshTarget->instances.isEmpty())
+            {
+                if (meshTarget->manager)
+                    sceneManager_->destroyInstanceManager(meshTarget->manager);
+                meshTarget->manager = 0;
+
+                target->targets.removeAt(kTarget);
+                SAFE_DELETE(meshTarget);
+
+                // Remove instancing target if its now empty.
+                if (target->targets.isEmpty())
+                {
+                    intancingTargets_.removeAt(iTarget);
+                    SAFE_DELETE(target);
+                }
+            }
+        }
+    }
+}
+
+MeshInstanceTarget *OgreWorld::GetOrCreateInstanceMeshTarget(const QString &meshRef, int submesh)
+{
+    PROFILE(OgreWorld_GetOrCreateInstanceMeshTarget);
+
+    InstancingTarget *intancingTarget = 0;
+    for (int i=0; i<intancingTargets_.size(); ++i)
+    {
+        InstancingTarget *iTarget = intancingTargets_[i];
+        if (iTarget->ref.compare(meshRef, Qt::CaseSensitive) == 0)
+        {
+            // Target for this mesh found.
+            intancingTarget = iTarget;
+            for (int k=0; k<iTarget->targets.size(); ++k)
+            {
+                MeshInstanceTarget *mTarget = iTarget->targets[k];
+                if (mTarget->submesh == submesh)
+                {
+                    // Target for this submesh found.
+                    return mTarget;
+                }
+            }
+            break;
+        }
+        if (intancingTarget)
+            break;
+    }
+
+    // No target for the mesh ref exists.
+    if (!intancingTarget)
+        intancingTarget = new InstancingTarget(meshRef);
+
+    // Check any existing mesh targets within this mesh ref if static instancing is enabled.
+    bool isStatic = false;
+    if (intancingTarget->targets.size() > 0)
+    {
+        MeshInstanceTarget *existingTarget = intancingTarget->targets.first();
+        if (existingTarget && existingTarget->isStatic)
+            isStatic = true;
+    }
+
+    uint batchSize = MeshInstanceCount(meshRef);
+
+    // Create target. @note createInstanceManager() will throw if manager with name already exists.
+    MeshInstanceTarget *meshTarget = new MeshInstanceTarget(submesh, isStatic);
+    meshTarget->manager = sceneManager_->createInstanceManager(QString("InstanceManager_%1_%2").arg(meshRef).arg(submesh).toStdString(),
+        meshRef.toStdString(), Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
+        Ogre::InstanceManager::HWInstancingBasic, static_cast<size_t>(batchSize), Ogre::IM_USEALL, submesh);
+
+    intancingTarget->targets << meshTarget;
+    intancingTargets_ << intancingTarget;
+    return meshTarget;
+}
+
+uint OgreWorld::MeshInstanceCount(const QString &meshRef)
+{
+    if (scene_.expired())
+        return 64;
+
+    uint count = 0;
+    Entity::ComponentVector components = scene_.lock()->Components(EC_Mesh::TypeIdStatic());
+    for (Entity::ComponentVector::const_iterator iter = components.begin(); iter != components.end(); ++iter)
+    {
+        EC_Mesh *mesh = dynamic_cast<EC_Mesh*>((*iter).get());
+        if (!mesh)
+            continue;
+        // Check self resolved/sanitated mesh ref. If we were to use mesh->OgreEntity()->getMesh()->getName()
+        // we would not get true count as OgreEntity might be null for most things when this is first called!
+        QString ref = mesh->meshRef.Get().ref.trimmed();
+        if (ref.isEmpty())
+            continue;
+        ref = AssetAPI::SanitateAssetRef(framework_->Asset()->ResolveAssetRef("", ref));
+        if (meshRef.compare(ref, Qt::CaseInsensitive) == 0)
+            count++;
+    }
+    /// @todo Someone who understands ~optimal values of batch instance count better revisit this logic.
+    /// This is just an naive implementation that makes sure we don't jam all our instances into a single batch.
+    uint batchSize = (count >= 16384 ? 4096 : (count >= 8192 ? 2048 : (count >= 2048 ? 1024 : (count >= 1024 ? 512 : (count >= 512 ? 256 : (count > 0 ? count : 64))))));
+    LogDebug(QString("OgreWorld::MeshInstanceCount: Found %1 instances of %2 in the active scene. Returning batch size of %3.").arg(count).arg(meshRef).arg(batchSize));
+    return batchSize;
+}
+
+QString OgreWorld::PrepareInstancingMaterial(OgreMaterialAsset *material)
+{
+    static QString InstancingHWBasic_VS = "Tundra/Instancing/HWBasicVS";
+    static QString InstancingHWBasic_PS = "Tundra/Instancing/HWBasicPS";
+
+    QString VS = material->VertexShader(0, 0).trimmed();
+    QString PS = material->PixelShader(0, 0).trimmed();
+    if (VS.isEmpty() || VS != InstancingHWBasic_VS || PS.isEmpty() || PS != InstancingHWBasic_PS)
+    {
+        // We cannot modify the original material as it might be used in non-instanced meshes too.
+        QString cloneRef = material->Name().replace(".material", "_Cloned_InstancingHWBasic.material", Qt::CaseInsensitive);
+        AssetPtr clone = framework_->Asset()->GetAsset(cloneRef);
+        if (!clone.get())
+        {
+            // Clone needs to be created
+            clone = material->Clone(cloneRef);
+            OgreMaterialAsset *clonedMaterial = dynamic_cast<OgreMaterialAsset*>(clone.get());
+            if (clonedMaterial)
+            {
+                bool logVS = false; bool logPS = false;
+                if (VS != InstancingHWBasic_VS)
+                {
+                    if (!clonedMaterial->SetVertexShader(0, 0, InstancingHWBasic_VS))
+                    {
+                        LogError(QString("OgreWorld::CreateInstance: Failed to clone material '%1' in submesh %2 with instancing shaders!").arg(material->Name()));
+                        return "";
+                    }
+                    else if (!VS.isEmpty())
+                        logVS = true;
+                }
+                if (PS != InstancingHWBasic_PS)
+                {
+                    if (!clonedMaterial->SetPixelShader(0, 0, InstancingHWBasic_PS))
+                    {
+                        LogError(QString("OgreWorld::CreateInstance: Failed to clone material '%1' in submesh %2 with instancing shaders!").arg(material->Name()));
+                        return "";
+                    }
+                    else if (!PS.isEmpty())
+                        logPS = true;
+                }
+
+                // Unify warning prints to keep it clean as possible. Logging these warnings are either way useful 
+                // for content authors when we are replacing existing shaders for instancing to work.
+                if (logVS && logPS)
+                    LogWarning(QString("OgreWorld::CreateInstance: Replaced existing vertex '%1' and fragment program '%2' in instancing material clone of '%3'. ").arg(VS).arg(PS).arg(material->Name()) +
+                               QString("Use '%1' and '%2' in your material to get rid of this warning!").arg(InstancingHWBasic_VS).arg(InstancingHWBasic_PS));
+                if (logVS && !logPS)
+                    LogWarning(QString("OgreWorld::CreateInstance: Replaced existing vertex program '%1' in instancing material clone of '%2'. ").arg(VS).arg(material->Name()) +
+                               QString("Use '%1' in your material to get rid of this warning!").arg(InstancingHWBasic_VS));
+                if (!logVS && logPS)
+                    LogWarning(QString("OgreWorld::CreateInstance: Replaced existing fragment program '%1' in instancing material clone of '%2'. ").arg(PS).arg(material->Name()) +
+                               QString("Use '%1' in your material to get rid of this warning!").arg(InstancingHWBasic_PS));
+
+                return clonedMaterial->ogreAssetName;
+            }
+            else
+            {
+                LogError(QString("OgreWorld::CreateInstance: Failed to clone material '%1' with instancing shaders!").arg(material->Name()));
+                return "";
+            }
+        }
+        else
+        {
+            OgreMaterialAsset *clonedMaterial = dynamic_cast<OgreMaterialAsset*>(clone.get());
+            return (clonedMaterial != 0 ? clonedMaterial->ogreAssetName : "");
+        }
+    }
+
+    return material->ogreAssetName;
 }
 
 RaycastResult* OgreWorld::Raycast(int x, int y)
@@ -800,6 +1152,68 @@ bool OgreWorld::IsActive() const
     return VerifyCurrentSceneCamera() != 0;
 }
 
+bool OgreWorld::IsDebugInstancingEnabled() const
+{
+    return drawDebugInstancing_;
+}
+
+bool OgreWorld::IsInstancingStatic(const QString &meshRef)
+{
+    QString ref = AssetAPI::SanitateAssetRef(framework_->Asset()->ResolveAssetRef("", meshRef));
+    for (int i=0; i<intancingTargets_.size(); ++i)
+    {
+        InstancingTarget *intancingTarget = intancingTargets_[i];
+        if (intancingTarget->ref.compare(ref, Qt::CaseSensitive) == 0)
+        {
+            // Static instancing is set for all targets with mesh ref or none of them
+            // so we can just return the first ones static property.
+            for (int k=0; k<intancingTarget->targets.size(); ++k)
+            {
+                MeshInstanceTarget *meshTarget = intancingTarget->targets[k];
+                if (meshTarget)
+                    return meshTarget->isStatic;
+            }
+        }
+    }
+    return false;
+}
+
+bool OgreWorld::SetInstancingStatic(const QString &meshRef, bool _static)
+{
+    QString ref = AssetAPI::SanitateAssetRef(framework_->Asset()->ResolveAssetRef("", meshRef));
+    for (int i=0; i<intancingTargets_.size(); ++i)
+    {
+        InstancingTarget *intancingTarget = intancingTargets_[i];
+        if (intancingTarget->ref.compare(ref, Qt::CaseSensitive) == 0)
+        {
+            for (int k=0; k<intancingTarget->targets.size(); ++k)
+            {
+                MeshInstanceTarget *meshTarget = intancingTarget->targets[k];
+                if (meshTarget)
+                    meshTarget->SetBatchesStatic(_static);
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+void OgreWorld::SetDebugInstancingEnabled(bool enabled)
+{
+    drawDebugInstancing_ = enabled;
+    
+    for (int i=0; i<intancingTargets_.size(); ++i)
+    {
+        InstancingTarget *intancingTarget = intancingTargets_[i];
+        for (int k=0; k<intancingTarget->targets.size(); ++k)
+        {
+            MeshInstanceTarget *meshTarget = intancingTarget->targets[k];
+            if (meshTarget->manager)
+                meshTarget->manager->setSetting(Ogre::InstanceManager::SHOW_BOUNDINGBOX, drawDebugInstancing_);
+        }
+    }
+}
+
 void OgreWorld::DebugDrawAABB(const AABB &aabb, const Color &clr, bool depthTest)
 {
     for(int i = 0; i < 12; ++i)
@@ -975,4 +1389,112 @@ void OgreWorld::DebugDrawSoundSource(const float3 &soundPos, float soundInnerRad
 
     DebugDrawSphere(soundPos, soundInnerRadius, 24*3*3*3, 1, 0, 0, depthTest);
     DebugDrawSphere(soundPos, soundOuterRadius, 24*3*3*3, 0, 1, 0, depthTest);
+}
+
+/// MeshInstanceTarget
+
+MeshInstanceTarget::MeshInstanceTarget(int _submesh, bool _static) :
+    submesh(_submesh),
+    manager(0),
+    isStatic(_static),
+    optimizationTimer_(new QTimer())
+{
+    optimizationTimer_->setSingleShot(true);
+    connect(optimizationTimer_, SIGNAL(timeout()), SLOT(OptimizeBatches()));
+}
+
+MeshInstanceTarget::~MeshInstanceTarget()
+{
+    SAFE_DELETE(optimizationTimer_);
+    manager = 0;
+}
+
+Ogre::InstancedEntity *MeshInstanceTarget::CreateInstance(const QString &material, Ogre::InstancedEntity *parent)
+{
+    PROFILE(OgreWorld_MeshInstanceTarget_CreateInstance);
+
+    if (!manager)
+        throw ::Exception("Instance manager is null, cannot create a new instance.");
+
+    /// @todo Check if this can throw!
+    Ogre::InstancedEntity *instance = manager->createInstancedEntity(material.toStdString());
+    if (parent)
+        parent->shareTransformWith(instance);
+
+    instances << instance;
+
+    InvokeOptimizations();
+    return instance;
+}
+
+bool MeshInstanceTarget::ForgetInstances(Ogre::InstancedEntity* instance)
+{
+    return ForgetInstances(QList<Ogre::InstancedEntity*>() << instance);
+}
+
+bool MeshInstanceTarget::ForgetInstances(QList<Ogre::InstancedEntity*> _instances)
+{
+    PROFILE(OgreWorld_MeshInstanceTarget_ForgetInstances);
+
+    bool found = false;
+    foreach(Ogre::InstancedEntity *instance, _instances)
+    {
+        if (instances.contains(instance))
+        {
+            instances.removeAll(instance);
+            found = true;
+        }
+    }
+    if (found)
+        InvokeOptimizations();
+    return found;
+}
+
+void MeshInstanceTarget::InvokeOptimizations(int optimizeAfterMsec)
+{
+    if (!manager || instances.size() == 0)
+        return;
+
+    /** This timer waits for 5 seconds of rest before running optimizations to the managers batches.
+        We don't want to be running these eg. after each instance creation as it would produce lots of resize/allocations
+        in the target batches. It's best to do them after a big number or creations/deletions. */
+    if (optimizationTimer_->isActive())
+        optimizationTimer_->stop();
+    optimizationTimer_->start(optimizeAfterMsec);
+}
+
+void MeshInstanceTarget::OptimizeBatches()
+{
+    PROFILE(OgreWorld_MeshInstanceTarget_OptimizeBatches);
+    if (manager)
+    {
+        manager->cleanupEmptyBatches();
+        manager->defragmentBatches(true);
+        manager->setBatchesAsStaticAndUpdate(isStatic);
+    }
+}
+
+void MeshInstanceTarget::SetBatchesStatic(bool _static)
+{
+    PROFILE(OgreWorld_MeshInstanceTarget_SetBatchesStatic);
+    if (isStatic == _static)
+        return;
+
+    isStatic = _static;
+    if (manager && !optimizationTimer_->isActive())
+        manager->setBatchesAsStaticAndUpdate(isStatic);
+}
+
+/// InstancingTarget
+
+InstancingTarget::InstancingTarget(const QString &meshRef) :
+    ref(meshRef)
+{
+}
+
+InstancingTarget::~InstancingTarget()
+{
+    foreach(MeshInstanceTarget *target, targets)
+        if (target) SAFE_DELETE(target);
+    targets.clear();
 }

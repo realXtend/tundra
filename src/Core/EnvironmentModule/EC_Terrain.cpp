@@ -955,7 +955,7 @@ void EC_Terrain::GenerateFromSceneEntity(QString entityName)
     if (!mesh)
         return;
 
-    Ogre::Entity *ogreEntity = mesh->GetEntity();
+    Ogre::Entity *ogreEntity = mesh->OgreEntity();
     if (!ogreEntity)
         return;
 

@@ -1027,7 +1027,8 @@ namespace OgreRenderer
         else
         {
             activeMainCamera.reset();
-            LogWarning("Cannot activate camera \"" + (mainCameraEntity ? mainCameraEntity->Name() : "(null)") + "\": It does not have a EC_Camera component!");
+            if (mainCameraEntity)
+                LogWarning("Cannot activate camera '" + mainCameraEntity->Name() + "': It does not have a EC_Camera component!");
         }
         if (mainCameraEntity && !mainCameraEntity->ParentScene()) // If the new to-be camera is not in a scene, don't add it as active.
         {
