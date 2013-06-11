@@ -6,25 +6,32 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "SceneFwd.h"
+#include "AssetFwd.h"
 #include "Math/MathFwd.h"
 #include "IRenderer.h"
 #include "Color.h"
 
 #include <QObject>
 #include <QList>
+#include <QPair>
+#include <QHash>
 
 #include <set>
 
 class Framework;
 class DebugLines;
 class Transform;
+class MeshInstanceTarget;
+struct InstancingTarget;
 
 class QRect;
+class QTimer;
 
 /// Contains the Ogre representation of a scene, ie. the Ogre Scene
 class OGRE_MODULE_API OgreWorld : public QObject, public enable_shared_from_this<OgreWorld>
 {
     Q_OBJECT
+    Q_PROPERTY(bool drawDebugInstancing READ IsDebugInstancingEnabled WRITE SetDebugInstancingEnabled)
 
 public:
     /// Called by the OgreRenderingModule upon the creation of a new scene
@@ -48,6 +55,37 @@ public:
     /// Sets scene fog to default ineffective settings, which plays nice with the SuperShader.
     /** Use this if you have altered the Ogre SceneManager's fog and want to reset it. */
     void SetDefaultSceneFog();
+
+    /// Creates a instanced entity for mesh with materials.
+    /** @param Component that will own the instanced entity/entities. Will be set as Ogre::MovalbleObject::setUserAny().
+        @param Mesh asset reference. Must be loaded to the asset system.
+        @param Material asset references. Each material must be loaded to the asset system. Empty refs get a default error material.
+        @param Draw distance for the created instanced entities.
+        @param Does the created instanced entities cast shadows.
+        @return Instanced entity or null ptr if instance could not be created with given input. */
+    Ogre::InstancedEntity *CreateInstance(IComponent *owner, const QString &meshRef, const AssetReferenceList &materials, float drawDistance = 0.0f, bool castShadows = false);
+
+    /// @overload
+    /** @param Component that will own the instanced entity/entities. Will be set as Ogre::MovalbleObject::setUserAny().
+        @param Mesh asset. Must be in loaded state.
+        @param Material asset references. Each material must be loaded to the asset system. Empty refs get a default error material.
+        @param Draw distance for the created instanced entities.
+        @param Does the created instanced entities cast shadows.
+        @return Instanced entity or null ptr if instance could not be created with given input. */
+    Ogre::InstancedEntity *CreateInstance(IComponent *owner, const AssetPtr &meshAsset, const AssetReferenceList &materials, float drawDistance = 0.0f, bool castShadows = false);
+
+    /// Returns children for a instanced entity.
+    /** In practice if you have a mesh with >1 submeshes the CreateInstance() function returned the
+        parent (submesh index 0) and this function can be used to retrieve >0 submesh index instances.
+        @note Do not use destroy the returned instances, use DestroyInstance() with the main instance
+        returned from CreateInstance(), it will handle also child destruction. */
+    QList<Ogre::InstancedEntity*> ChildInstances(Ogre::InstancedEntity *parent);
+
+    /// Destroys instanced entities.
+    /** This function must be used in pair with OgreWorld::CreateInstance as it removes the instance and its children from both internal state and from Ogre.
+        The pointer given to this function can not be used after this function returns.
+        @param Instanced entity to destroy. */
+    void DestroyInstance(Ogre::InstancedEntity* instance);
 
     std::string GetUniqueObjectName(const std::string &prefix) { return GenerateUniqueObjectName(prefix); } /**< @deprecated Use GenerateUniqueObjectName @todo Add warning print */
 
@@ -144,6 +182,28 @@ public slots:
 
     /// Returns the parent scene
     ScenePtr Scene() const { return scene_.lock(); }
+
+    /// Returns if instances with @c meshRef are currently in static mode.
+    /** @param Mesh asset reference.
+        @return True if mesh found and instancing is static, false if instancing is not static or instancing target for mesh could not be found. */
+    bool IsInstancingStatic(const QString &meshRef);
+
+    /// Sets all @c meshRef instances to static.
+    /** Setting to static means all instances of this mesh ref will be immovable, even if their parent transform or placeable is moved
+        they wont be updated. Advantages for static instances is significant speedup in rendering. Use this function to set static
+        true for instancing enabled mesh refs that you know will not be moved by clients or scripts.
+        @note Setting this will influence the current instances and any future instances with @c meshRef, but there must be at 
+              least one instance when its first called for it to be applied. Typically you would call this from a script for a particular mesh ref.
+        @param Mesh asset reference.
+        @param If should be made static or revert previous static setting.
+        @return True if instance manager could be found for the mesh ref, if not false is returned and you need to recall this function once instances exist. */
+    bool SetInstancingStatic(const QString &meshRef, bool _static = true);
+
+    /// Is debug drawing for instancing enabled.
+    bool IsDebugInstancingEnabled() const;
+
+    /// Set debug drawing for instancing  enabled.
+    void SetDebugInstancingEnabled(bool enabled);
 
     /// Renders an axis-aligned bounding box.
     void DebugDrawAABB(const AABB &aabb, const Color &clr, bool depthTest = true);
@@ -256,6 +316,80 @@ private:
     
     /// Debug geometry object
     DebugLines* debugLines_;
+
     /// Debug geometry object, no depth testing
     DebugLines* debugLinesNoDepth_;
+
+    /// Ogre instancing data.
+    QList<MeshInstanceTarget*> intancingTargets_;
+
+    /// Debug drawing for instancing.
+    bool drawDebugInstancing_;
+
+    /// Get or create a instance manager for mesh ref and submesh index.
+    /** @note meshRef needs to be a Ogre mesh resource name, not Tundra AssetAPI reference. */
+    MeshInstanceTarget *GetOrCreateInstanceMeshTarget(const QString &meshRef, int submesh);
+
+    /// Analyzes the current scene on how many instances potentially can be created with input mesh ref.
+    /** @note meshRef needs to be a Ogre mesh resource name, not Tundra AssetAPI reference. */
+    uint MeshInstanceCount(const QString &meshRef);
+
+    /// Prepares a material for instanced use. This function will clone the material if necessary.
+    QString PrepareInstancingMaterial(OgreMaterialAsset *material);
+};
+
+/// Instancing mesh target data.
+class MeshInstanceTarget : public QObject
+{
+Q_OBJECT
+
+public:
+    MeshInstanceTarget(const QString &_ref, uint _batchSize, bool _static = false);
+    ~MeshInstanceTarget();
+
+    QString ref;
+    uint batchSize;
+    bool isStatic;
+
+    struct ManagerTarget
+    {
+        ManagerTarget(int _submesh) : submesh(_submesh), changed(false), manager(0) {}
+        bool changed; ///< Changed flag for optimizations.
+        int submesh; ///< Submesh index.
+        Ogre::InstanceManager *manager; ///< Manager for this submesh.
+        QList<QPair<Ogre::InstancedEntity*, Ogre::InstancedEntity*> > instances; ///< Pair of child to parent. Parent can be null ptr for main entities.
+    };
+
+    QList<ManagerTarget*> managers;
+
+    /// Creates a instance with this manager.
+    Ogre::InstancedEntity *CreateInstance(Ogre::SceneManager *sceneManager, int submesh, const QString &material, Ogre::InstancedEntity *parent = 0);
+
+    /// Destroys the instance from internal state and from Ogre.
+    /** @note Also destroys all children of this instance. */
+    bool DestroyInstance(Ogre::SceneManager *sceneManager, Ogre::InstancedEntity *instance);
+
+    /// Returns if this target contains an instance.
+    bool Contains(const Ogre::InstancedEntity *instance);
+
+    /// Returns all instances created with this Ogre::InstanceManager, parented or not.
+    QList<Ogre::InstancedEntity*> Instances() const;
+
+    /// Returns all parent intances created with this Ogre::InstanceManager.
+    QList<Ogre::InstancedEntity*> Parents() const;
+
+    /// Returns all children for a instanced entity.
+    /** Basically these are >0 submesh index instances for a 0 submesh index parent. */
+    QList<Ogre::InstancedEntity*> Children(const Ogre::InstancedEntity *parent) const;
+
+public slots:
+    void OptimizeBatches();
+    void SetBatchesStatic(bool isStatic);
+    void SetDebuggingEnabled(bool enabled, const QString &material = "");
+
+private slots:
+    void InvokeOptimizations(int optimizeAfterMsec = 1000);
+
+private:
+    QTimer *optimizationTimer_;
 };

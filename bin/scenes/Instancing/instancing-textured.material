@@ -1,0 +1,19 @@
+material instancing-solid-color
+{
+    technique
+    {
+        pass
+        {
+            ambient  1 0 0 1
+            diffuse  1 0 0 1
+            specular 1 0 0 1
+            emissive 1 0 0 1
+
+            texture_unit Diffuse
+            {
+                texture rex_sky_front.dds
+                tex_address_mode clamp
+            }
+        }
+    }
+}
