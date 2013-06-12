@@ -138,7 +138,7 @@ public:
     Ogre::Entity* OgreEntity() const;
 
     /// Returns instanced Ogre mesh entity.
-    /** @return Instanced Ogre mesh entity, or null if 1) mesh not loaded 2) instancing is disabled @ OgreEntity. */
+    /** @return Instanced Ogre mesh entity, or null if 1) mesh not loaded 2) instancing is disabled @see OgreEntity. */
     Ogre::InstancedEntity* OgreInstancedEntity() const;
 
     /// Returns an Ogre bone safely, or null if not found.

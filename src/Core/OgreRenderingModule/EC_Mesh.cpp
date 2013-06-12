@@ -386,7 +386,7 @@ void EC_Mesh::RemoveMesh()
         }
         if (world.get() && instancedEntity_)
         {
-            world->DestroyInstances(instancedEntity_);
+            world->DestroyInstance(instancedEntity_);
             instancedEntity_ = 0;
         }
     }
@@ -740,8 +740,13 @@ void EC_Mesh::DetachEntity()
     Ogre::SceneNode* node = placeable->GetSceneNode();
     if (entity_)
         adjustmentNode_->detachObject(entity_);
-    else if (instancedEntity_)
+    else if (instancedEntity_ && world_.lock())
+    {
         adjustmentNode_->detachObject(instancedEntity_);
+        QList<Ogre::InstancedEntity*> children = world_.lock()->ChildInstances(instancedEntity_);
+        foreach(Ogre::InstancedEntity *child, children)
+            if (child) adjustmentNode_->detachObject(child);
+    }
     node->removeChild(adjustmentNode_);
 
     attached_ = false;
@@ -757,8 +762,13 @@ void EC_Mesh::AttachEntity()
     node->addChild(adjustmentNode_);
     if (entity_)
         adjustmentNode_->attachObject(entity_);
-    else if (instancedEntity_)
+    else if (instancedEntity_ && world_.lock())
+    {
         adjustmentNode_->attachObject(instancedEntity_);
+        QList<Ogre::InstancedEntity*> children = world_.lock()->ChildInstances(instancedEntity_);
+        foreach(Ogre::InstancedEntity *child, children)
+            if (child) adjustmentNode_->attachObject(child);
+    }
 
     // Honor the EC_Placeable's isVisible attribute by enforcing its values on this mesh.
     adjustmentNode_->setVisible(placeable->visible.Get());
@@ -853,18 +863,9 @@ void EC_Mesh::CreateInstance(const AssetPtr &meshAsset)
     if (world_.expired())
         return;
 
-    instancedEntity_ = world_.lock()->CreateInstance(meshAsset.get() != 0 ? meshAsset : this->meshAsset->Asset(), meshMaterial.Get());
+    instancedEntity_ = world_.lock()->CreateInstance(this, meshAsset.get() != 0 ? meshAsset : this->meshAsset->Asset(), meshMaterial.Get(), drawDistance.Get(), castShadows.Get());
     if (!instancedEntity_)
         return;
-
-    instancedEntity_->setRenderingDistance(drawDistance.Get());
-    instancedEntity_->setCastShadows(castShadows.Get());
-    instancedEntity_->setUserAny(Ogre::Any(static_cast<IComponent *>(this)));
-
-    // Set UserAny also on sub instances
-    /// @todo Implement!
-    //for(uint i = 0; i < entity_->getNumSubEntities(); ++i)
-    //    instancedEntity_->getSubEntity(i)->setUserAny(entity_->getUserAny());
 
     // Make sure adjustment node is up to date
     Transform newTransform = nodeTransformation.Get();
@@ -966,6 +967,13 @@ void EC_Mesh::AttributesChanged()
     {
         if (entity_)
             entity_->setRenderingDistance(drawDistance.Get());
+        else if (instancedEntity_ && world_.lock().get())
+        {
+            instancedEntity_->setRenderingDistance(drawDistance.Get());
+            QList<Ogre::InstancedEntity*> children = world_.lock()->ChildInstances(instancedEntity_);
+            foreach(Ogre::InstancedEntity *child, children)
+                if (child) child->setRenderingDistance(drawDistance.Get());
+        }
     }
     if (castShadows.ValueChanged())
     {
@@ -979,6 +987,13 @@ void EC_Mesh::AttributesChanged()
                 if (attachmentEntities_[i])
                     attachmentEntities_[i]->setCastShadows(castShadows.Get());
             }
+        }
+        else if (instancedEntity_ && world_.lock().get())
+        {
+            instancedEntity_->setCastShadows(castShadows.Get());
+            QList<Ogre::InstancedEntity*> children = world_.lock()->ChildInstances(instancedEntity_);
+            foreach(Ogre::InstancedEntity *child, children)
+                if (child) child->setCastShadows(castShadows.Get());
         }
     }
     if (nodeTransformation.ValueChanged())
