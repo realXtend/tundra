@@ -146,14 +146,23 @@ void mainVS
 
 	// Output fog color and strength.
 	oFog = ComputeFog(oPos.z);
-	
+
 #ifdef SHADOW_MAPPING
 	oTex.z = oPos.z;
+#ifndef INSTANCING
 	// Calculate shadow map coord
 	oShadowTex0 = mul(lightViewProj0, pos);
 #ifdef PSSM_SHADOWS
 	oShadowTex1 = mul(lightViewProj1, pos);
 	oShadowTex2 = mul(lightViewProj2, pos);
+#endif
+#else
+	// Calculate shadow map coord
+	oShadowTex0 = mul(lightViewProj0, worldPos);
+#ifdef PSSM_SHADOWS
+	oShadowTex1 = mul(lightViewProj1, worldPos);
+	oShadowTex2 = mul(lightViewProj2, worldPos);
+#endif
 #endif
 #endif
 

@@ -1,11 +1,31 @@
-uniform float4x4 worldViewProj; // VS
 uniform float4 texelOffsets; // VS
 
+#ifdef INSTANCING
+uniform float4x4 viewProjMatrix; // VS
+#else
+uniform float4x4 worldViewProj; // VS
+#endif
+
 void mainVS(in float4 pos : POSITION,
+#ifdef INSTANCING
+ 	in float4 mat14	: TEXCOORD1,
+	in float4 mat24	: TEXCOORD2,
+	in float4 mat34	: TEXCOORD3,
+#endif
             out float4 oPos : POSITION,
             out float2 oDepth)
 {
+#ifndef INSTANCING
 	oPos = mul(worldViewProj, pos);
+#else
+	float4x4 worldMatrix;
+	worldMatrix[0] = mat14;
+	worldMatrix[1] = mat24;
+    worldMatrix[2] = mat34;
+	worldMatrix[3] = float4(0.0f, 0.0f, 0.0f, 1.0f);
+	float4 worldPos = mul(worldMatrix, pos);
+    oPos = mul(viewProjMatrix, worldPos);
+#endif
 	oPos.xy += texelOffsets.zw * oPos.w;
 	oDepth = oPos.zw;
 }
@@ -19,11 +39,26 @@ void mainPS(in float2 depth,
 
 void mainVSAlpha(in float4 pos : POSITION,
             in float2 tex : TEXCOORD0,
+#ifdef INSTANCING
+ 	in float4 mat14	: TEXCOORD1,
+	in float4 mat24	: TEXCOORD2,
+	in float4 mat34	: TEXCOORD3,
+#endif
             out float4 oPos : POSITION,
             out float2 oTex,
             out float2 oDepth)
 {
+#ifndef INSTANCING
 	oPos = mul(worldViewProj, pos);
+#else
+	float4x4 worldMatrix;
+	worldMatrix[0] = mat14;
+	worldMatrix[1] = mat24;
+    worldMatrix[2] = mat34;
+	worldMatrix[3] = float4(0.0f, 0.0f, 0.0f, 1.0f);
+	float4 worldPos = mul(worldMatrix, pos);
+    oPos = mul(viewProjMatrix, worldPos);
+#endif
 	oPos.xy += texelOffsets.zw * oPos.w;
 	oTex = tex;
 	oDepth = oPos.zw;

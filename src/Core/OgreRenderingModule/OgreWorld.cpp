@@ -410,7 +410,7 @@ QString OgreWorld::PrepareInstancingMaterial(OgreMaterialAsset *material)
         }
         
         // We cannot modify the original material as it might be used in non-instanced meshes too.
-        QString cloneRef = material->Name().replace(".material", "_Cloned_InstancingHWBasic.material", Qt::CaseInsensitive);
+        QString cloneRef = material->Name().replace(".material", "_Cloned_Instancing.material", Qt::CaseInsensitive);
         AssetPtr clone = framework_->Asset()->GetAsset(cloneRef);
         if (!clone.get())
         {
@@ -435,6 +435,11 @@ QString OgreWorld::PrepareInstancingMaterial(OgreMaterialAsset *material)
                         return "";
                     }
                 }
+
+                // Setup instancing shadowcaster material
+                Ogre::Material* ogreMat = clonedMaterial->ogreMaterial.get();
+                for (size_t i = 0; i < ogreMat->getNumTechniques(); ++i)
+                    ogreMat->getTechnique(i)->setShadowCasterMaterial("rex/ShadowCaster/Instanced");
 
                 return clonedMaterial->ogreAssetName;
             }

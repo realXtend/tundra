@@ -676,7 +676,6 @@ namespace OgreRenderer
                                 + "/Instanced", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, "cg", Ogre::GPT_VERTEX_PROGRAM).get();
                             if (cloneProgram)
                             {
-                                //LogWarning("Created clone program " + cloneProgram->getName());
                                 cloneProgram->setSourceFile(program->getSourceFile());
                                 cloneProgram->setParameter("profiles", program->getParameter("profiles"));
                                 cloneProgram->setParameter("entry_point", program->getParameter("entry_point"));
@@ -687,6 +686,13 @@ namespace OgreRenderer
                                 destParams->copyMatchingNamedConstantsFrom(*srcParams);
                                 if (destParams->_findNamedConstantDefinition("viewProjMatrix"))
                                     destParams->setNamedAutoConstant("viewProjMatrix", Ogre::GpuProgramParameters::ACT_VIEWPROJ_MATRIX); // Add viewproj matrix parameter for SuperShader
+                                // If doing shadow mapping, map the lightViewProj matrices to not include world transform
+                                if (destParams->_findNamedConstantDefinition("lightViewProj0"))
+                                    destParams->setNamedAutoConstant("lightViewProj0", Ogre::GpuProgramParameters::ACT_TEXTURE_VIEWPROJ_MATRIX, 0);
+                                if (destParams->_findNamedConstantDefinition("lightViewProj1"))
+                                    destParams->setNamedAutoConstant("lightViewProj1", Ogre::GpuProgramParameters::ACT_TEXTURE_VIEWPROJ_MATRIX, 1);
+                                if (destParams->_findNamedConstantDefinition("lightViewProj2"))
+                                    destParams->setNamedAutoConstant("lightViewProj2", Ogre::GpuProgramParameters::ACT_TEXTURE_VIEWPROJ_MATRIX, 2);
                             }
                             else
                                 LogError("Could not clone vertex program " + program->getName() + " for instancing");

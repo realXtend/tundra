@@ -33,3 +33,40 @@ material rex/ShadowCasterAlpha
         }
     }
 }
+
+// Shadow caster material for writing to a standard depth-based shadow map, instanced
+material rex/ShadowCaster/Instanced
+{
+    technique
+    {
+        pass
+        {
+            vertex_program_ref rex/ShadowCasterVP/Instanced
+            {
+            }
+            fragment_program_ref rex/ShadowCasterFP
+            {
+            }
+        }
+    }
+}
+
+// Shadow caster material for writing to a standard depth-based shadow map, alpha test enabled, instanced
+material rex/ShadowCasterAlpha/Instanced
+{
+    technique
+    {
+        pass
+        {
+             alpha_rejection greater_equal 128
+
+            vertex_program_ref rex/ShadowCasterAlphaVP/Instanced
+            {
+            }
+            fragment_program_ref rex/ShadowCasterAlphaFP
+            {
+            }
+        }
+    }
+}
+

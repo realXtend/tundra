@@ -22,6 +22,7 @@ fragment_program rex/ShadowCasterFP cg
     }
 }
 
+
 vertex_program rex/ShadowCasterAlphaVP cg
 {
     source ShadowCaster.cg
@@ -43,5 +44,33 @@ fragment_program rex/ShadowCasterAlphaFP cg
 
     default_params
     {
+    }
+}
+
+vertex_program rex/ShadowCasterVP/Instanced cg
+{
+    source ShadowCaster.cg
+    entry_point mainVS
+    profiles vs_1_1 arbvp1
+    compile_arguments -DINSTANCING
+
+    default_params
+    {
+        param_named_auto viewProjMatrix viewproj_matrix
+		param_named_auto texelOffsets texel_offsets
+    }
+}
+
+vertex_program rex/ShadowCasterAlphaVP/Instanced cg
+{
+    source ShadowCaster.cg
+    entry_point mainVSAlpha
+    profiles vs_1_1 arbvp1
+    compile_arguments -DINSTANCING
+
+    default_params
+    {
+        param_named_auto viewProjMatrix viewproj_matrix
+		param_named_auto texelOffsets texel_offsets
     }
 }
