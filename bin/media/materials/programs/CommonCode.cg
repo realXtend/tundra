@@ -62,7 +62,13 @@ uniform float4 fogColor;  // VS
 
 // Common transforms
 uniform float4x4 worldViewProjMatrix; // VS
+#ifndef INSTANCING
 uniform float4x4 worldMatrix; // VS
+#endif
+
+#ifdef INSTANCING
+uniform float4x4 viewProjMatrix; // VS
+#endif
 
 // When using normal mapping:
 uniform float4x4 inverseWorldMatrix; // VS

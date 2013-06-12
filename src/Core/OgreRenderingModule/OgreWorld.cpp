@@ -237,7 +237,10 @@ Ogre::InstancedEntity *OgreWorld::CreateInstance(const AssetPtr &meshAsset, cons
             // If it returns empty string it means something went wrong so bail out.
             materialRef = PrepareInstancingMaterial(material);
             if (materialRef.isEmpty())
+            {
+                LogError(QString("OgreWorld::CreateInstance: Cannot create instance for %1, material in index %2 could not be prepared").arg(mesh->Name()).arg(i));
                 return 0;
+            }
         }
         else
             materialRef = "Tundra/Instancing/HWBasic/Empty";
@@ -438,8 +441,28 @@ QString OgreWorld::PrepareInstancingMaterial(OgreMaterialAsset *material)
 
     QString VS = material->VertexShader(0, 0).trimmed();
     QString PS = material->PixelShader(0, 0).trimmed();
-    if (VS.isEmpty() || VS != InstancingHWBasic_VS || PS.isEmpty() || PS != InstancingHWBasic_PS)
+    QString newVS;
+    QString newPS;
+    
+    if (VS.isEmpty() || (!VS.contains("instanced", Qt::CaseInsensitive) && !VS.contains("instancing", Qt::CaseInsensitive)))
     {
+        if (VS.isEmpty())
+        {
+            newVS = InstancingHWBasic_VS; // No shader. Use basic instancing shader
+            newPS = InstancingHWBasic_PS;
+        }
+        else
+        {
+            newVS = VS + "/Instanced"; // Automatically generated instancing shader for eg. SuperShader materials
+            // Verify that the instancing shader exists
+            if (Ogre::HighLevelGpuProgramManager::getSingletonPtr()->getByName(newVS.toStdString()).isNull())
+            {
+                LogWarning(QString("OgreWorld::CreateInstance: Could not find matching instancing vertex shader for '%1' in material '%2', falling back to default instancing shader").arg(VS).arg(material->Name()));
+                newVS = InstancingHWBasic_VS;
+                newPS = InstancingHWBasic_PS;
+            }
+        }
+        
         // We cannot modify the original material as it might be used in non-instanced meshes too.
         QString cloneRef = material->Name().replace(".material", "_Cloned_InstancingHWBasic.material", Qt::CaseInsensitive);
         AssetPtr clone = framework_->Asset()->GetAsset(cloneRef);
@@ -450,39 +473,22 @@ QString OgreWorld::PrepareInstancingMaterial(OgreMaterialAsset *material)
             OgreMaterialAsset *clonedMaterial = dynamic_cast<OgreMaterialAsset*>(clone.get());
             if (clonedMaterial)
             {
-                bool logVS = false; bool logPS = false;
-                if (VS != InstancingHWBasic_VS)
+                if (!newVS.isEmpty())
                 {
-                    if (!clonedMaterial->SetVertexShader(0, 0, InstancingHWBasic_VS))
+                    if (!clonedMaterial->SetVertexShader(0, 0, newVS))
                     {
                         LogError(QString("OgreWorld::CreateInstance: Failed to clone material '%1' in submesh %2 with instancing shaders!").arg(material->Name()));
                         return "";
                     }
-                    else if (!VS.isEmpty())
-                        logVS = true;
                 }
-                if (PS != InstancingHWBasic_PS)
+                if (!newPS.isEmpty())
                 {
-                    if (!clonedMaterial->SetPixelShader(0, 0, InstancingHWBasic_PS))
+                    if (!clonedMaterial->SetPixelShader(0, 0, newPS))
                     {
                         LogError(QString("OgreWorld::CreateInstance: Failed to clone material '%1' in submesh %2 with instancing shaders!").arg(material->Name()));
                         return "";
                     }
-                    else if (!PS.isEmpty())
-                        logPS = true;
                 }
-
-                // Unify warning prints to keep it clean as possible. Logging these warnings are either way useful 
-                // for content authors when we are replacing existing shaders for instancing to work.
-                if (logVS && logPS)
-                    LogWarning(QString("OgreWorld::CreateInstance: Replaced existing vertex '%1' and fragment program '%2' in instancing material clone of '%3'. ").arg(VS).arg(PS).arg(material->Name()) +
-                               QString("Use '%1' and '%2' in your material to get rid of this warning!").arg(InstancingHWBasic_VS).arg(InstancingHWBasic_PS));
-                if (logVS && !logPS)
-                    LogWarning(QString("OgreWorld::CreateInstance: Replaced existing vertex program '%1' in instancing material clone of '%2'. ").arg(VS).arg(material->Name()) +
-                               QString("Use '%1' in your material to get rid of this warning!").arg(InstancingHWBasic_VS));
-                if (!logVS && logPS)
-                    LogWarning(QString("OgreWorld::CreateInstance: Replaced existing fragment program '%1' in instancing material clone of '%2'. ").arg(PS).arg(material->Name()) +
-                               QString("Use '%1' in your material to get rid of this warning!").arg(InstancingHWBasic_PS));
 
                 return clonedMaterial->ogreAssetName;
             }
