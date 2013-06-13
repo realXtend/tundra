@@ -4,7 +4,7 @@
 
 var uiWidget = null;
 
-if (me.graphicsviewcanvas)
+if (me.graphicsViewCanvas)
 {
     engine.ImportExtension("qt.core");
     engine.ImportExtension("qt.gui");
@@ -12,8 +12,8 @@ if (me.graphicsviewcanvas)
 
     var webView = new QGraphicsWebView();
     webView.url = new QUrl("http://realxtend.wordpress.com/");
-    webView.size = new QSize(me.graphicsviewcanvas.width, me.graphicsviewcanvas.height);
-    me.graphicsviewcanvas.GraphicsScene().addItem(webView); // Note: for graphics items we use addItem instead of addWidget.
+    webView.size = new QSize(me.graphicsViewCanvas.width, me.graphicsViewCanvas.height);
+    me.graphicsViewCanvas.GraphicsScene().addItem(webView); // Note: for graphics items we use addItem instead of addWidget.
 }
 else
 {

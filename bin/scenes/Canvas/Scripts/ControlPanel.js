@@ -7,13 +7,13 @@
 
 var uiWidget = null;
 
-if (me.graphicsviewcanvas)
+if (me.graphicsViewCanvas)
 {
     engine.ImportExtension("qt.core");
     engine.ImportExtension("qt.gui");
 
     uiWidget = asset.GetAsset("controlpanel.ui").Instantiate(false, 0);
-    var proxy = me.graphicsviewcanvas.GraphicsScene().addWidget(uiWidget);
+    var proxy = me.graphicsViewCanvas.GraphicsScene().addWidget(uiWidget);
     uiWidget.show();
 
     findChild(uiWidget, "pushButton").pressed.connect(function()
