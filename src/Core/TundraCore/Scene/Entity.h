@@ -19,27 +19,31 @@ class QDomDocument;
 class QDomElement;
 
 /// Represents a single object in a Scene.
-/** An entity is just a collection of components, the components define what
-    the entity is and what it does.
+/** An entity is a collection of components that define the data and the functionality of the entity.
+    Entity can have multiple components of the same type as long as the component names are unique.
+
     Entities should not be directly created, instead use Scene::CreateEntity().
 
-    Each component type that is added to this entity is registered as
-    Q_PROPERTY as in following syntax EC_Light -> light, where EC_ is cut off
-    and name is converted to low case format. This allow scripter to get access to
-    component using a following code "entity.mesh.SetMesh("mesh id");"
-    
-    @note If there are several components that have a same typename only first component
-    is accessible through Q_PROPERTY and if you want to edit other same type of components
-    you should use GetComponent method instead.
+    Each different component type that is added to an entity will be available as a dynamic property
+    (Q_PROPERTY) of the entity. The property is named in the following following fashion: the (possible)
+    "EC_" prefix of the  component type name cut off and the type name is converted to lower camel case
+    format, f.ex. "EC_EnvironmentLight" -> "environmentLight". This allows the scripter to access the
+    component using the following convenient syntax:
+    @code
+    entity.environmentLight.ambientColor = new Color(0.33, 0.33, 0.33, 1);
+    @endcode
 
-    When component is removed from the entity a Q_PROPERTY connection is destroyed from
-    the component. In case that there are several components with the same typename, there is 
-    a name check that ensures that both components names are same before Q_PROPERTY destroyed.
+    @note If there are several components of the same type, only the firstly component is available as a
+    dynamic property. If you want to access other components of the same type in the entity, you should use
+    the Component(typeName, name) method instead, f.ex.:
+    @code
+    entity.Component("EC_EnvironmentLight", "MySpecialLight").ambientColor = new Color(0.33, 0.33, 0.33, 1);
+    @endcode
 
-    @note   Entity can have multiple components with same component type name as long as
-            the component names are unique.
+    When a component is removed from an entity, the dynamic property association is invalidated, i.e. the
+    value of the dynamic property will be null/undefined.
 
-    \ingroup Scene_group */
+    @ingroup Scene_group */
 class TUNDRACORE_API Entity : public QObject, public enable_shared_from_this<Entity>
 {
     Q_OBJECT
@@ -124,6 +128,12 @@ public:
     /// Returns actions map for introspection/reflection.
     const ActionMap &Actions() const { return actions_; }
 
+    /// Connects action with a specific name to a receiver object with member slot.
+    /** @param name Name of the action.
+        @param receiver Receiver object.
+        @param member Member slot. */
+    void ConnectAction(const QString &name, const QObject *receiver, const char *member);
+
     /// @cond PRIVATE
     /// Do not directly allocate new entities using operator new, but use the factory-based Scene::CreateEntity functions instead.
     /** @param framework Framework
@@ -138,9 +148,11 @@ public:
     /// @endcond
 
     // DEPRECATED
+    /// @cond PRIVATE
     template <class T> std::vector<shared_ptr<T> > GetComponents() const { return ComponentsOfType<T>(); } /**< @deprecated Use ComponentsOfType<T> instead. @todo Add deprecation warning print. @todo Remove. */
     template <class T> shared_ptr<T> GetComponent() const { return Component<T>(); } /**< @deprecated Use Component<T> instead. @todo Add deprecation warning print. @todo Remove. */
     template <class T> shared_ptr<T> GetComponent(const QString& name) const { return Component<T>(name); }/**< @deprecated Use Component<T>(name) instead. @todo Add deprecation warning print. @todo Remove. */
+    /// @endcond
 
 public slots:
     /// Returns a component by ID. This is the fastest way to query, as the components are stored in a map by id.
@@ -291,21 +303,15 @@ public slots:
 
     /// Creates and registers new action for this entity, or returns an existing action.
     /** Use this function from scripting languages.
-        @param name Name of the action.
+        @param name Name of the action, case-insensitive.
         @note Never returns null pointer
         @note Never store the returned pointer. */
     EntityAction *Action(const QString &name);
 
-    /// Find & Delete EntityAction object from EntityActions map.
+    /// Removes an existing action.
     /** Use this function from scripting languages.
-        @param name Name of the action. */
+        @param name Name of the action, case-insensitive. */
     void RemoveAction(const QString &name);
-
-    /// Connects action with a specific name to a receiver object with member slot.
-    /** @param name Name of the action.
-        @param receiver Receiver object.
-        @param member Member slot. */
-    void ConnectAction(const QString &name, const QObject *receiver, const char *member);
 
     /// Executes an arbitrary action for all components of this entity.
     /** The components may or may not handle the action.
@@ -365,6 +371,7 @@ public slots:
     Scene* ParentScene() const { return scene_; }
 
     // DEPRECATED:
+    /// @cond PRIVATE
     ComponentPtr GetComponentById(component_id_t id) const { return ComponentById(id); } /**< @deprecated Use ComponentById instead. @todo Add deprecation warning print. @todo Remove. */
     ComponentPtr GetComponent(const QString &typeName) const { return Component(typeName); } /**< @deprecated Use Component instead. @todo Add deprecation warning print. @todo Remove. */
     ComponentPtr GetComponent(u32 typeId) const { return Component(typeId); } /**< @deprecated Use Component instead. @todo Add deprecation warning print. @todo Remove. */
@@ -375,6 +382,7 @@ public slots:
     void RemoveComponentRaw(QObject* comp); /**< @deprecated Use RemoveComponent or RemoveComponentById. */
     ComponentMap Components() /*non-const intentionally*/ { return components_; } /**< @deprecated use const version Components or 'components' instead. @todo Add deprecation print. @todo Remove. */
     ComponentVector GetComponents(const QString &typeName) const { return ComponentsOfType(typeName); } /**< @deprecated use ComponentsOfType instead. @todo Add deprecation print. @todo Remove. */
+    /// @endcond
 
 signals:
     /// A component has been added to the entity

@@ -45,10 +45,8 @@ template<> bool EditAttributeCommand<Color>::mergeWith(const QUndoCommand *other
     return (undoValue == otherCommand->undoValue);
 }
 
-AddAttributeCommand::AddAttributeCommand(IComponent * comp, const QString &typeName, const QString &name, QUndoCommand * parent) :
-    entity_(comp->ParentEntity()->shared_from_this()),
-    componentName_(comp->Name()),
-    componentType_(comp->TypeName()),
+AddAttributeCommand::AddAttributeCommand(EC_DynamicComponent *comp, const QString &typeName, const QString &name, QUndoCommand * parent) :
+    owner(static_pointer_cast<EC_DynamicComponent>(comp->shared_from_this())),
     attributeTypeName_(typeName),
     attributeName_(name),
     QUndoCommand(parent)
@@ -63,53 +61,31 @@ int AddAttributeCommand::id() const
 
 void AddAttributeCommand::undo()
 {
-    EntityPtr ent = entity_.lock();
-    if (!ent.get())
-        return;
-
-    ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
-    if (comp.get())
+    shared_ptr<EC_DynamicComponent> dynComp = owner.lock();
+    if (dynComp && dynComp->ContainsAttribute(attributeName_))
     {
-        EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
-        if (dynComp)
-        {
-            if (dynComp->ContainsAttribute(attributeName_))
-            {
-                dynComp->RemoveAttribute(attributeName_);
-                dynComp->ComponentChanged(AttributeChange::Default);
-            }
-        }
+        dynComp->RemoveAttribute(attributeName_);
+        dynComp->ComponentChanged(AttributeChange::Default);
     }
 }
 
 void AddAttributeCommand::redo()
 {
-    EntityPtr ent = entity_.lock();
-    if (!ent.get())
-        return;
-
-    ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
-    if (comp.get())
+    shared_ptr<EC_DynamicComponent> dynComp = owner.lock();
+    if (dynComp && !dynComp->ContainsAttribute(attributeName_))
     {
-        EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
-        if (dynComp)
-            if (!dynComp->ContainsAttribute(attributeName_))
-            {
-                IAttribute * attr = dynComp->CreateAttribute(attributeTypeName_, attributeName_);
-                if (attr)
-                    dynComp->ComponentChanged(AttributeChange::Default);
-                else
-                    QMessageBox::information(dynComp->GetFramework()->Ui()->MainWindow(), QMessageBox::tr("Failed to create attribute"),
-                    QMessageBox::tr("Failed to create %1 attribute \"%2\", please try again.").arg(attributeTypeName_).arg(attributeName_));
-            }
+        IAttribute * attr = dynComp->CreateAttribute(attributeTypeName_, attributeName_);
+        if (attr)
+            dynComp->ComponentChanged(AttributeChange::Default);
+        else
+            QMessageBox::information(dynComp->GetFramework()->Ui()->MainWindow(), QApplication::translate("AddAttributeCommand", "Failed to create attribute"),
+                QApplication::translate("AddAttributeCommand", "Failed to create %1 attribute \"%2\", please try again.").arg(attributeTypeName_).arg(attributeName_));
     }
 }
 
 
 RemoveAttributeCommand::RemoveAttributeCommand(IAttribute *attr, QUndoCommand *parent) : 
-    entity_(attr->Owner()->ParentEntity()->shared_from_this()),
-    componentName_(attr->Owner()->Name()),
-    componentType_(attr->Owner()->TypeName()),
+    owner(static_pointer_cast<EC_DynamicComponent>(attr->Owner()->shared_from_this())),
     attributeTypeName_(attr->TypeName()),
     attributeName_(attr->Name()),
     value_(QString::fromStdString(attr->ToString())),
@@ -125,37 +101,21 @@ int RemoveAttributeCommand::id() const
 
 void RemoveAttributeCommand::undo()
 {
-    EntityPtr ent = entity_.lock();
-    if (!ent.get())
-        return;
-
-    ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
-    if (comp.get())
+    shared_ptr<EC_DynamicComponent> dynComp = owner.lock();
+    if (dynComp)
     {
-        EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
-        if (dynComp)
-        {
-            IAttribute * attr = dynComp->CreateAttribute(attributeTypeName_, attributeName_);
-            attr->FromString(value_.toStdString(), AttributeChange::Default);
-        }
+        IAttribute * attr = dynComp->CreateAttribute(attributeTypeName_, attributeName_);
+        attr->FromString(value_.toStdString(), AttributeChange::Default);
     }
 }
 
 void RemoveAttributeCommand::redo()
 {
-    EntityPtr ent = entity_.lock();
-    if (!ent.get())
-        return;
-
-    ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
-    if (comp.get())
+    shared_ptr<EC_DynamicComponent> dynComp = owner.lock();
+    if (dynComp)
     {
-        EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
-        if (dynComp)
-        {
-            dynComp->RemoveAttribute(attributeName_);
-            dynComp->ComponentChanged(AttributeChange::Default);
-        }
+        dynComp->RemoveAttribute(attributeName_);
+        dynComp->ComponentChanged(AttributeChange::Default);
     }
 }
 
@@ -170,7 +130,7 @@ AddComponentCommand::AddComponentCommand(const ScenePtr &scene, EntityIdChangeTr
     sync_(sync),
     QUndoCommand(parent)
 {
-    setText("+ Added " + QString(componentType_).replace("EC_", "") + " Component" + (entities.size() == 1 ? "" : QString(" (to %1 entities)").arg(entities.size())));
+    setText("+ Added " + IComponent::EnsureTypeNameWithoutPrefix(componentType_) + " Component" + (entities.size() == 1 ? "" : QString(" (to %1 entities)").arg(entities.size())));
 }
 
 int AddComponentCommand::id() const
@@ -179,7 +139,7 @@ int AddComponentCommand::id() const
 }
 
 void AddComponentCommand::undo()
-{    
+{
     // Call base impl that executes potential attribute edit commands
     QUndoCommand::undo();
 
