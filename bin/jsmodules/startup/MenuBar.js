@@ -1,9 +1,12 @@
 /**
     For conditions of distribution and use, see copyright notice in LICENSE
 
-    Implements basic menu bar for accessing common Tundra functionality and UIs.
+    MenuBar.js - Implements basic menu bar for accessing common Tundra functionality and UIs.
     NOTE: Clears any existing menus in the menu bar so make sure that this script
     is loaded first, or replace with another implementation*/
+
+// Widget for showing instructions if user starts Tundra without any scene.
+var sceneInstructions = null;
 
 // Applicable only in headful mode.
 if (!framework.IsHeadless())
@@ -32,8 +35,6 @@ if (!framework.IsHeadless())
     fileMenu.addAction("Clear Asset Cache").triggered.connect(ClearAssetCache);
     fileMenu.addSeparator();
 
-
-
     // Reconnect menu items for client only
     if (!server.IsAboutToStart())
     {
@@ -48,32 +49,32 @@ if (!framework.IsHeadless())
     // Tools menu
     var toolsMenu = menu.addMenu("&Tools");
 
-    if (framework.GetModuleByName("SceneStructure"))
+    if (framework.ModuleByName("SceneStructure"))
     {
         toolsMenu.addAction("Assets").triggered.connect(OpenAssetsWindow);
         toolsMenu.addAction("Scene").triggered.connect(OpenSceneWindow);
         toolsMenu.addAction("Key Bindings").triggered.connect(OpenKeyBindingsWindow);
     }
 
-    var ecEditor = framework.GetModuleByName("ECEditor");
+    var ecEditor = framework.ModuleByName("ECEditor");
     if (ecEditor)
         toolsMenu.addAction("EC Editor").triggered.connect(OpenEcEditorWindow);
 
     // TODO: Avatar Editor menu action disabled for now, as it's not fully ready for end-users
-//    if (framework.GetModuleByName("Avatar"))
+//    if (framework.ModuleByName("Avatar"))
 //        toolsMenu.addAction("Avatar Editor").triggered.connect(OpenAvatarEditorWindow);
 
-    if (framework.GetModuleByName("DebugStats"))
+    if (framework.ModuleByName("DebugStats"))
         toolsMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
 
-    if (framework.GetModuleByName("PythonScript"))
+    if (framework.ModuleByName("PythonScript"))
         toolsMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
 
     if (console)
         toolsMenu.addAction("Show Console").triggered.connect(OpenConsoleWindow);
 
     // Settings menu
-    if (framework.GetModuleByName("MumbleVoip") || framework.GetModuleByName("CAVEStereo") || ecEditor)
+    if (framework.ModuleByName("MumbleVoip") || framework.ModuleByName("CAVEStereo") || ecEditor)
     {
         var settingsMenu = menu.addMenu("&Settings");
         // Set unique object name so that other scripts can query this menu.
@@ -81,9 +82,9 @@ if (!framework.IsHeadless())
 
         settingsMenu.addAction("Open config folder").triggered.connect(OpenConfigFolder);
 
-        if (framework.GetModuleByName("MumbleVoip"))
+        if (framework.ModuleByName("MumbleVoip"))
             settingsMenu.addAction("Voice settings").triggered.connect(OpenVoiceSettings);
-        if (framework.GetModuleByName("CAVEStereo"))
+        if (framework.ModuleByName("CAVEStereo"))
         {
             settingsMenu.addAction("Cave").triggered.connect(OpenCaveWindow);
             settingsMenu.addAction("Stereoscopy").triggered.connect(OpenStereoscopyWindow);
@@ -113,6 +114,41 @@ if (!framework.IsHeadless())
     helpMenu.addAction(browserIcon, "Wiki").triggered.connect(OpenWikiUrl);
     helpMenu.addAction(browserIcon, "Doxygen").triggered.connect(OpenDoxygenUrl);
     helpMenu.addAction(browserIcon, "Mailing list").triggered.connect(OpenMailingListUrl);
+
+    // If we started without scene, show instructions for the user.
+    if (!framework.Scene().MainCameraScene())
+    {
+        framework.Scene().SceneAdded.connect(HideSceneInstructions);
+        ShowSceneInstructions();
+    }
+
+    function ShowSceneInstructions()
+    {
+        var label = new QLabel();
+        label.indent = 10;
+        label.text = "Tundra has started succesfully. You have no active scene currently.\n" +
+            "Startup scenes can be specified by using the --file command line parameter. Run Tundra --help for instructions. \n" +
+            "Use File -> Open scene to load an existing scene or New Scene to create an empty scene.";
+        label.resize(800, 200);
+        label.setStyleSheet("QLabel {color: white; background-color: transparent; font-size: 16px; }");
+
+        sceneInstructions = new UiProxyWidget(label);
+        ui.AddProxyWidgetToScene(sceneInstructions);
+        sceneInstructions.x = 50
+        sceneInstructions.y = 50;
+        sceneInstructions.windowFlags = 0;
+        sceneInstructions.visible = true;
+        sceneInstructions.focusPolicy = Qt.NoFocus;
+    }
+
+    function HideSceneInstructions()
+    {
+        if (sceneInstructions)
+        {
+            sceneInstructions.deleteLater();
+            sceneInstructions = null;
+        }
+    }
 
     function NewScene() {
         if (framework.Scene().MainCameraScene() != null)
@@ -183,7 +219,7 @@ if (!framework.IsHeadless())
 
     function ClearAssetCache() {
         // Show some additional info: count and size of removed files
-        var cachePath = asset.GetAssetCache().CacheDirectory();
+        var cachePath = asset.Cache().CacheDirectory();
         if (cachePath != "" && cachePath != null)
         {
             var count = 0;
@@ -211,7 +247,7 @@ if (!framework.IsHeadless())
             }
 
             // Clear the cache. If we happen to throw here we wont show false log/ui information.
-            asset.GetAssetCache().ClearAssetCache();
+            asset.Cache().ClearAssetCache();
 
             // Log to console
             var msg = "";
@@ -244,35 +280,27 @@ if (!framework.IsHeadless())
     }
 
     function OpenSceneWindow() {
-        framework.GetModuleByName("SceneStructure").ToggleSceneStructureWindow();
+        framework.ModuleByName("SceneStructure").ToggleSceneStructureWindow();
     }
 
     function OpenAssetsWindow() {
-        framework.GetModuleByName("SceneStructure").ToggleAssetsWindow();
+        framework.ModuleByName("SceneStructure").ToggleAssetsWindow();
     }
 
     function OpenKeyBindingsWindow() {
-        framework.GetModuleByName("SceneStructure").ToggleKeyBindingsWindow();
+        framework.ModuleByName("SceneStructure").ToggleKeyBindingsWindow();
     }
 
     function OpenProfilerWindow() {
-        framework.GetModuleByName("DebugStats").ShowProfilerWindow();
-    }
-
-    function OpenTerrainEditor() {
-        framework.GetModuleByName("Environment").ShowTerrainWeightEditor();
-    }
-
-    function OpenPostProcessWindow() {
-        framework.GetModuleByName("Environment").ShowPostProcessWindow();
+        framework.ModuleByName("DebugStats").ShowProfilerWindow();
     }
 
     function OpenPythonConsole() {
-        framework.GetModuleByName("PythonScript").ShowConsole();
+        framework.ModuleByName("PythonScript").ShowConsole();
     }
 
     function OpenVoiceSettings() {
-        framework.GetModuleByName("MumbleVoip").ToggleSettingsWidget();
+        framework.ModuleByName("MumbleVoip").ToggleSettingsWidget();
     }
 
     function OpenConsoleWindow() {
@@ -280,32 +308,32 @@ if (!framework.IsHeadless())
     }
 
     function OpenEcEditorWindow() {
-        framework.GetModuleByName("ECEditor").ShowEditorWindow();
+        framework.ModuleByName("ECEditor").ShowEditorWindow();
     }
 
     function OpenAvatarEditorWindow() {
-        framework.GetModuleByName("Avatar").ToggleAvatarEditorWindow();
+        framework.ModuleByName("Avatar").ToggleAvatarEditorWindow();
         if (client.IsConnected())
-           framework.GetModuleByName("Avatar").EditAvatar("Avatar" + client.GetConnectionID())
+           framework.ModuleByName("Avatar").EditAvatar("Avatar" + client.connectionId)
    }
 
     function ShowEditingGizmo(show) {
-        framework.GetModuleByName("ECEditor").gizmoEnabled = show;
+        framework.ModuleByName("ECEditor").gizmoEnabled = show;
     }
 
     function HighlightSelectedEntities(show) {
-        framework.GetModuleByName("ECEditor").highlightingEnabled = show;
+        framework.ModuleByName("ECEditor").highlightingEnabled = show;
     }
 
     function OpenStereoscopyWindow() {
-        framework.GetModuleByName("CAVEStereo").ShowStereoscopyWindow();
+        framework.ModuleByName("CAVEStereo").ShowStereoscopyWindow();
     }
 
     function OpenCaveWindow() {
-        framework.GetModuleByName("CAVEStereo").ShowCaveWindow();
+        framework.ModuleByName("CAVEStereo").ShowCaveWindow();
     }
     
     function OpenConfigFolder() {
-        QDesktopServices.openUrl(new QUrl(config.GetConfigFolder()));
+        QDesktopServices.openUrl(new QUrl(config.ConfigFolder()));
     }
 }
