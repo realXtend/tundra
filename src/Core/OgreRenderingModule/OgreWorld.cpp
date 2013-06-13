@@ -93,14 +93,14 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
 
 OgreWorld::~OgreWorld()
 {
-    if (!intancingTargets_.isEmpty())
+    if (!instancingTargets_.isEmpty())
     {
         try
         {
             QList<Ogre::InstancedEntity *> parents;
-            for (int i=0; i<intancingTargets_.size(); ++i)
+            for (int i=0; i<instancingTargets_.size(); ++i)
             {
-                MeshInstanceTarget *meshTarget = intancingTargets_[i];
+                MeshInstanceTarget *meshTarget = instancingTargets_[i];
                 if (!meshTarget)
                     continue;
                 bool needsCleanup = false;
@@ -291,11 +291,11 @@ Ogre::InstancedEntity *OgreWorld::CreateInstance(IComponent *owner, const AssetP
 QList<Ogre::InstancedEntity*> OgreWorld::ChildInstances(Ogre::InstancedEntity *parent)
 {
     QList<Ogre::InstancedEntity*> children;
-    for (int i=0; i<intancingTargets_.size(); ++i)
+    for (int i=0; i<instancingTargets_.size(); ++i)
     {
-        MeshInstanceTarget *intancingTarget = intancingTargets_[i];
-        if (intancingTarget->Contains(parent))
-            return intancingTarget->Children(parent);
+        MeshInstanceTarget *instancingTarget = instancingTargets_[i];
+        if (instancingTarget->Contains(parent))
+            return instancingTarget->Children(parent);
     }
     return QList<Ogre::InstancedEntity*>();
 }
@@ -313,17 +313,17 @@ void OgreWorld::DestroyInstance(Ogre::InstancedEntity* instance)
 
     try
     {
-        for (int i=0; i<intancingTargets_.size(); ++i)
+        for (int i=0; i<instancingTargets_.size(); ++i)
         {
-            MeshInstanceTarget *intancingTarget = intancingTargets_.at(i);
-            if (intancingTarget->Contains(instance))
+            MeshInstanceTarget *instancingTarget = instancingTargets_.at(i);
+            if (instancingTarget->Contains(instance))
             {
                 // This destroys the parent, its children and the manager if no instances are left.
-                intancingTarget->DestroyInstance(sceneManager_, instance);
-                if (intancingTarget->managers.isEmpty())
+                instancingTarget->DestroyInstance(sceneManager_, instance);
+                if (instancingTarget->managers.isEmpty())
                 {
-                    intancingTargets_.removeAt(i);
-                    SAFE_DELETE(intancingTarget);
+                    instancingTargets_.removeAt(i);
+                    SAFE_DELETE(instancingTarget);
                 }
                 return;
             }
@@ -339,16 +339,16 @@ MeshInstanceTarget *OgreWorld::GetOrCreateInstanceMeshTarget(const QString &mesh
 {
     PROFILE(OgreWorld_GetOrCreateInstanceMeshTarget);
 
-    for (int i=0; i<intancingTargets_.size(); ++i)
+    for (int i=0; i<instancingTargets_.size(); ++i)
     {
-        MeshInstanceTarget *target = intancingTargets_[i];
+        MeshInstanceTarget *target = instancingTargets_[i];
         if (target->ref.compare(meshRef, Qt::CaseSensitive) == 0)
             return target;
     }
 
     // No target for the mesh ref exists.
     MeshInstanceTarget *target = new MeshInstanceTarget(meshRef, MeshInstanceCount(meshRef));
-    intancingTargets_ << target;
+    instancingTargets_ << target;
     return target;
 }
 
@@ -1117,11 +1117,11 @@ bool OgreWorld::IsDebugInstancingEnabled() const
 bool OgreWorld::IsInstancingStatic(const QString &meshRef)
 {
     QString ref = AssetAPI::SanitateAssetRef(framework_->Asset()->ResolveAssetRef("", meshRef));
-    for (int i=0; i<intancingTargets_.size(); ++i)
+    for (int i=0; i<instancingTargets_.size(); ++i)
     {
-        MeshInstanceTarget *intancingTarget = intancingTargets_[i];
-        if (intancingTarget->ref.compare(ref, Qt::CaseSensitive) == 0)
-            return intancingTarget->isStatic;
+        MeshInstanceTarget *instancingTarget = instancingTargets_[i];
+        if (instancingTarget->ref.compare(ref, Qt::CaseSensitive) == 0)
+            return instancingTarget->isStatic;
     }
     return false;
 }
@@ -1129,12 +1129,12 @@ bool OgreWorld::IsInstancingStatic(const QString &meshRef)
 bool OgreWorld::SetInstancingStatic(const QString &meshRef, bool _static)
 {
     QString ref = AssetAPI::SanitateAssetRef(framework_->Asset()->ResolveAssetRef("", meshRef));
-    for (int i=0; i<intancingTargets_.size(); ++i)
+    for (int i=0; i<instancingTargets_.size(); ++i)
     {
-        MeshInstanceTarget *intancingTarget = intancingTargets_[i];
-        if (intancingTarget->ref.compare(ref, Qt::CaseSensitive) == 0)
+        MeshInstanceTarget *instancingTarget = instancingTargets_[i];
+        if (instancingTarget->ref.compare(ref, Qt::CaseSensitive) == 0)
         {
-            intancingTarget->SetBatchesStatic(_static);
+            instancingTarget->SetBatchesStatic(_static);
             return true;
         }
     }
@@ -1145,10 +1145,10 @@ void OgreWorld::SetDebugInstancingEnabled(bool enabled)
 {
     drawDebugInstancing_ = enabled;
     
-    for (int i=0; i<intancingTargets_.size(); ++i)
+    for (int i=0; i<instancingTargets_.size(); ++i)
     {
-        MeshInstanceTarget *intancingTarget = intancingTargets_[i];
-        intancingTarget->SetDebuggingEnabled(enabled);
+        MeshInstanceTarget *instancingTarget = instancingTargets_[i];
+        instancingTarget->SetDebuggingEnabled(enabled);
     }
 }
 

@@ -321,7 +321,7 @@ private:
     DebugLines* debugLinesNoDepth_;
 
     /// Ogre instancing data.
-    QList<MeshInstanceTarget*> intancingTargets_;
+    QList<MeshInstanceTarget*> instancingTargets_;
 
     /// Debug drawing for instancing.
     bool drawDebugInstancing_;
