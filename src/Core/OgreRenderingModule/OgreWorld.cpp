@@ -259,6 +259,7 @@ Ogre::InstancedEntity *OgreWorld::CreateInstance(IComponent *owner, const AssetP
             Ogre::InstancedEntity *instance = target->CreateInstance(sceneManager_, i, instanceMaterials[i], mainInstance);
 
             instance->setRenderingDistance(drawDistance);
+            /// \todo This does not actually work. Shadow casting needs to be configured per instance batch.
             instance->setCastShadows(castShadows);
             instance->setUserAny(Ogre::Any(owner));
 

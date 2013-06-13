@@ -990,6 +990,7 @@ void EC_Mesh::AttributesChanged()
         }
         else if (instancedEntity_ && world_.lock().get())
         {
+            /// \todo This does not actually work. Shadow casting needs to be configured per instance batch.
             instancedEntity_->setCastShadows(castShadows.Get());
             QList<Ogre::InstancedEntity*> children = world_.lock()->ChildInstances(instancedEntity_);
             foreach(Ogre::InstancedEntity *child, children)
