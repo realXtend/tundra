@@ -220,7 +220,7 @@ public slots:
         To create an empty entity, omit the components parameter.
 
         @param id Id of the new entity. Specify 0 to use the next free ID
-        @param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
+        @param components Optional list of component names ("EC_" prefix can be omitted) the entity will use. If omitted or the list is empty, creates an empty entity.
         @param change Notification/network replication mode
         @param replicated Whether entity is replicated. Default true.
         @param componentsReplicated Whether components will be replicated, true by default.
@@ -235,7 +235,7 @@ public slots:
 
         To create an empty entity omit components parameter.
 
-        @param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
+        @param components Optional list of component names ("EC_" prefix can be omitted) the entity will use. If omitted or the list is empty, creates an empty entity.
         @param change Notification/network replication mode
         @param componentsReplicated Whether components will be replicated, true by default.
         @param temporary Will the entity be temporary i.e. it is no serialized to disk by default.

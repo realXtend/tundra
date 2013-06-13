@@ -270,7 +270,7 @@ QStringList SceneAPI::ComponentTypes() const
 
 ComponentFactoryPtr SceneAPI::GetFactory(const QString &typeName) const
 {
-    ComponentFactoryMap::const_iterator factory = componentFactories.find(typeName);
+    ComponentFactoryMap::const_iterator factory = componentFactories.find(IComponent::EnsureTypeNameWithPrefix(typeName));
     if (factory == componentFactories.end())
         return ComponentFactoryPtr();
     else
