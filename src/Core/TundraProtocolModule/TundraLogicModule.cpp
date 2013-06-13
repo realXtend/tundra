@@ -130,10 +130,10 @@ void TundraLogicModule::Initialize()
     if (server_->IsAboutToStart())
         framework_->RegisterDynamicObject("syncmanager", syncManager_.get());
 
-    framework_->Console()->RegisterCommand("startserver", "Starts a server. Usage: startserver(port,protocol)",
+    framework_->Console()->RegisterCommand("startServer", "Starts a server. Usage: startServer(port,protocol)",
         server_.get(), SLOT(Start(unsigned short,QString)));
 
-    framework_->Console()->RegisterCommand("stopserver", "Stops the server", server_.get(), SLOT(Stop()));
+    framework_->Console()->RegisterCommand("stopServer", "Stops the server", server_.get(), SLOT(Stop()));
 
     framework_->Console()->RegisterCommand("connect",
         "Connects to a server. Usage: connect(address,port,username,password,protocol)",
@@ -141,22 +141,22 @@ void TundraLogicModule::Initialize()
 
     framework_->Console()->RegisterCommand("disconnect", "Disconnects from a server.", client_.get(), SLOT(Logout()));
 
-    framework_->Console()->RegisterCommand("savescene",
-        "Saves scene into XML or binary. Usage: savescene(filename,asBinary=false,saveTemporaryEntities=false,saveLocalEntities=true)",
+    framework_->Console()->RegisterCommand("saveScene",
+        "Saves scene into XML or binary. Usage: saveScene(filename,asBinary=false,saveTemporaryEntities=false,saveLocalEntities=true)",
         this, SLOT(SaveScene(QString, bool, bool, bool)), SLOT(SaveScene(QString)));
 
-    framework_->Console()->RegisterCommand("loadscene",
-        "Loads scene from XML or binary. Usage: loadscene(filename,clearScene=true,useEntityIDsFromFile=true)",
+    framework_->Console()->RegisterCommand("loadScene",
+        "Loads scene from XML or binary. Usage: loadScene(filename,clearScene=true,useEntityIDsFromFile=true)",
         this, SLOT(LoadScene(QString, bool, bool)));
 
-    framework_->Console()->RegisterCommand("importscene",
+    framework_->Console()->RegisterCommand("importScene",
         "Loads scene from a dotscene file. Optionally clears the existing scene."
-        "Replace-mode can be optionally disabled. Usage: importscene(filename,clearScene=false,replace=true)",
+        "Replace-mode can be optionally disabled. Usage: importScene(filename,clearScene=false,replace=true)",
         this, SLOT(ImportScene(QString, bool, bool)), SLOT(ImportScene(QString)));
 
-    framework_->Console()->RegisterCommand("importmesh",
+    framework_->Console()->RegisterCommand("importMesh",
         "Imports a single mesh as a new entity. Position, rotation, and scale can be specified optionally."
-        "Usage: importmesh(filename, pos = 0 0 0, rot = 0 0 0, scale = 1 1 1, inspectForMaterialsAndSkeleton=true)",
+        "Usage: importMesh(filename, pos = 0 0 0, rot = 0 0 0, scale = 1 1 1, inspectForMaterialsAndSkeleton=true)",
         this, SLOT(ImportMesh(QString, const float3 &, const float3 &, const float3 &, bool)), SLOT(ImportMesh(QString)));
 
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time

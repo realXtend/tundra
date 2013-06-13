@@ -87,7 +87,7 @@ void MumblePlugin::Initialize()
 
     framework_->RegisterDynamicObject("mumble", this);
     
-    framework_->Console()->RegisterCommand("mumblepackets", "Set MumbleVoip amount of frames per network packet, eg. mumblepackets(6).", 
+    framework_->Console()->RegisterCommand("mumblePackets", "Set MumbleVoip amount of frames per network packet, eg. mumblepackets(6).", 
         this, SLOT(OnFramesPerPacketChanged(const QStringList&)));
 
     // Audio processing with ~60 fps. This is not tied to FrameAPI::Updated or IModule::Update

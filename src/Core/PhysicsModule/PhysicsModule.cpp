@@ -78,16 +78,16 @@ void PhysicsModule::Initialize()
     connect(framework_->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(OnSceneAdded(const QString&)));
     connect(framework_->Scene(), SIGNAL(SceneRemoved(const QString&)), this, SLOT(OnSceneRemoved(const QString&)));
 
-    framework_->Console()->RegisterCommand("physicsdebug",
+    framework_->Console()->RegisterCommand("physicsDebug",
         "Toggles drawing of physics debug geometry.",
         this, SLOT(ToggleDebugGeometry()));
-    framework_->Console()->RegisterCommand("stopphysics",
+    framework_->Console()->RegisterCommand("stopPhysics",
         "Stops physics simulation.",
         this, SLOT(StopPhysics()));
-    framework_->Console()->RegisterCommand("startphysics",
+    framework_->Console()->RegisterCommand("startPhysics",
         "(Re)starts physics simulation.",
         this, SLOT(StartPhysics()));
-    framework_->Console()->RegisterCommand("autocollisionmesh",
+    framework_->Console()->RegisterCommand("autoCollisionMesh",
         "Auto-assigns static rigid bodies with collision mesh to all visible meshes.",
         this, SLOT(AutoCollisionMesh()));
     

@@ -46,7 +46,7 @@ ECEditorModule::~ECEditorModule()
 
 void ECEditorModule::Initialize()
 {
-    expandMemory = ExpandMemoryPtr(new TreeWidgetItemExpandMemory(Name().toStdString().c_str(), framework_));
+    expandMemory = MAKE_SHARED(TreeWidgetItemExpandMemory, Name().toStdString().c_str(), framework_);
 
     ConfigAPI &cfg = *framework_->Config();
     ConfigData gizmoConfig(ConfigAPI::FILE_FRAMEWORK, Name(), cGizmoEnabled, gizmoEnabled, true);

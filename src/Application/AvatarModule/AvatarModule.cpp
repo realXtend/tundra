@@ -49,8 +49,8 @@ void AvatarModule::Load()
 
 void AvatarModule::Initialize()
 {
-    framework_->Console()->RegisterCommand("editavatar",
-        "Edits the avatar in a specific entity. Usage: editavatar(entityname)",
+    framework_->Console()->RegisterCommand("editAvatar",
+        "Edits the avatar in a specific entity. Usage: editAvatar(entityname)",
         this, SLOT(EditAvatarConsole(const QString &)));
 
     JavascriptModule *javascriptModule = framework_->GetModule<JavascriptModule>();
