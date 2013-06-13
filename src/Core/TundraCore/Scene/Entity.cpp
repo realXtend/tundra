@@ -106,15 +106,16 @@ void Entity::AddComponent(component_id_t id, const ComponentPtr &component, Attr
             if (id < UniqueIdGenerator::FIRST_LOCAL_ID)
                 idGenerator_.ResetReplicatedId(std::max(id, idGenerator_.id));
         }
-        
-        QString componentTypeName = component->TypeName();
-        componentTypeName.replace(0, 3, "");
-        componentTypeName = componentTypeName.toLower();
+
+        // Register the dynamic property conveniency accessor for the component
+        QString componentTypeName = IComponent::EnsureTypeNameWithoutPrefix(component->TypeName());
+        componentTypeName.replace(0, 1, componentTypeName[0].toLower());
         // We already have 'name' property in Entity, so ignore "EC_Name" ("name") here.
         if (componentTypeName != "name" && !property(componentTypeName.toStdString().c_str()).isValid())
         {
             QVariant var = QVariant::fromValue<QObject*>(component.get());
-            setProperty(componentTypeName.toStdString().c_str(), var);
+            setProperty(componentTypeName.toStdString().c_str(), var); // 'lowerCamelCaseVersion'
+            setProperty(componentTypeName.toLower().toStdString().c_str(), var); // old and ugly 'alllowercaseversion'
         }
         
         component->SetNewId(id);
@@ -146,7 +147,7 @@ void Entity::RemoveComponent(const ComponentPtr &component, AttributeChange::Typ
 
 void Entity::RemoveAllComponents(AttributeChange::Type change)
 {
-    while (components_.size())
+    while(!components_.empty())
     {
         if (components_.begin()->first != components_.begin()->second->Id())
             LogWarning("Component ID mismatch on RemoveAllComponents: map key " + QString::number(components_.begin()->first) + " component ID " + QString::number(components_.begin()->second->Id()));
@@ -157,23 +158,28 @@ void Entity::RemoveAllComponents(AttributeChange::Type change)
 void Entity::RemoveComponent(ComponentMap::iterator iter, AttributeChange::Type change)
 {
     const ComponentPtr& component = iter->second;
-    
-    QString componentTypeName = component->TypeName();
-    componentTypeName.replace(0, 3, "");
-    componentTypeName = componentTypeName.toLower();
-    
-    if(property(componentTypeName.toStdString().c_str()).isValid())
+
+    // Unregister/invalidate dynamic property accessor
+    QString componentTypeName = IComponent::EnsureTypeNameWithoutPrefix(component->TypeName());
+    componentTypeName.replace(0, 1, componentTypeName[0].toLower());
+    const char *propertyName = componentTypeName.toStdString().c_str();
+   // 'lowerCamelCaseVersion'
+    if (property(propertyName).isValid())
     {
-        QObject *obj = property(componentTypeName.toStdString().c_str()).value<QObject*>();
-        //Make sure that QObject is inherited by the IComponent.
-        if (obj && dynamic_cast<IComponent*>(obj))
-        {
-            //Make sure that name is matching incase there are many of same type of components in entity.
-            if (dynamic_cast<IComponent*>(obj)->Name() == component->Name())
-                setProperty(componentTypeName.toStdString().c_str(), QVariant());
-        }
+        //Make sure that QObject is inherited by the IComponent and that the name is matching in case there are many of same type of components in entity.
+        QObject *obj = property(propertyName).value<QObject*>();
+        if (qobject_cast<IComponent*>(obj) && static_cast<IComponent*>(obj)->Name() == component->Name())
+            setProperty(propertyName, QVariant());
     }
-    
+    // old and ugly 'alllowercaseversion'
+    propertyName = componentTypeName.toLower().toStdString().c_str();
+    if (property(propertyName).isValid())
+    {
+        QObject *obj = property(propertyName).value<QObject*>();
+        if (qobject_cast<IComponent*>(obj) && static_cast<IComponent*>(obj)->Name() == component->Name())
+            setProperty(propertyName, QVariant());
+    }
+
     if (change != AttributeChange::Disconnected)
         emit ComponentRemoved(iter->second.get(), change == AttributeChange::Default ? component->UpdateMode() : change);
     if (scene_)

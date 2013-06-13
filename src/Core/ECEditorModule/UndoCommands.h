@@ -22,6 +22,7 @@
 typedef QList<entity_id_t> EntityIdList;
 typedef QList<TransformAttributeWeakPtr> TransformAttributeWeakPtrList;
 
+class EC_DynamicComponent;
 class EntityIdChangeTracker;
 
 /// Base/interface class for attribute editing command implementations.
@@ -209,7 +210,7 @@ public:
        @param typeName The type of the attribute being added
        @param name The name of the attribute being added
        @param parent The parent command of this command (optional) */
-    AddAttributeCommand(IComponent * comp, const QString &typeName, const QString &name, QUndoCommand * parent = 0);
+    AddAttributeCommand(EC_DynamicComponent *comp, const QString &typeName, const QString &name, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
     int id() const;
@@ -218,10 +219,8 @@ public:
     /// QUndoCommand override
     void redo();
 
-    EntityWeakPtr entity_; ///< A weak pointer to this attribute's parent entity
-    const QString componentName_; ///< Name of this attribute's parent component
-    const QString componentType_; ///< Typename of this attribute's parent component
-    const QString attributeTypeName_; ///< Typename of this attribute
+    weak_ptr<EC_DynamicComponent> owner; ///< A weak pointer to the owner component.
+    const QString attributeTypeName_; ///< Type name of this attribute
     const QString attributeName_; ///< Name of this attribute
 };
 
@@ -244,10 +243,8 @@ public:
     /// QUndoCommand override
     void redo();
 
-    EntityWeakPtr entity_; ///< A weak pointer to this attribute's parent entity
-    const QString componentName_; ///< Name of this attribute's parent component
-    const QString componentType_; ///< Typename of this attribute's parent component
-    const QString attributeTypeName_; ///< Typename of this attribute
+    weak_ptr<EC_DynamicComponent> owner; ///< A weak pointer to the owner component.
+    const QString attributeTypeName_; ///< Type name of this attribute
     const QString attributeName_; ///< Name of this attribute
     QString value_; ///< Value of this attribute represented as string
 };
