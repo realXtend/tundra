@@ -1353,34 +1353,34 @@ Ogre::InstancedEntity *MeshInstanceTarget::CreateInstance(Ogre::SceneManager *sc
     if (!sceneManager)
         throw ::Exception("Cannot create instances with null Ogre::SceneManager!");
 
-    ManagerTarget *mangerTarget = 0;
+    ManagerTarget *managerTarget = 0;
     foreach(ManagerTarget *target, managers)
     {
         if (target->submesh == submesh)
         {
-            mangerTarget = target;
+            managerTarget = target;
             break;
         }
     }
 
-    if (!mangerTarget)
+    if (!managerTarget)
     {
-        mangerTarget = new ManagerTarget(submesh);
-        mangerTarget->manager = sceneManager->createInstanceManager(QString("InstanceManager_%1_%2").arg(ref).arg(submesh).toStdString(),
+        managerTarget = new ManagerTarget(submesh);
+        managerTarget->manager = sceneManager->createInstanceManager(QString("InstanceManager_%1_%2").arg(ref).arg(submesh).toStdString(),
             ref.toStdString(), Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
             Ogre::InstanceManager::HWInstancingBasic, static_cast<size_t>(batchSize), Ogre::IM_USEALL, submesh);
-        managers << mangerTarget;
+        managers << managerTarget;
     }
 
-    Ogre::InstancedEntity *instance = mangerTarget->manager->createInstancedEntity(material.toStdString());
+    Ogre::InstancedEntity *instance = managerTarget->manager->createInstancedEntity(material.toStdString());
     if (!instance)
         throw ::Exception("Failed to create instance for an unknown reason.");
 
     if (parent)
         parent->shareTransformWith(instance);
 
-    mangerTarget->changed = true;
-    mangerTarget->instances << QPair<Ogre::InstancedEntity*, Ogre::InstancedEntity*>(instance, parent);
+    managerTarget->changed = true;
+    managerTarget->instances << QPair<Ogre::InstancedEntity*, Ogre::InstancedEntity*>(instance, parent);
 
     InvokeOptimizations();
     return instance;
