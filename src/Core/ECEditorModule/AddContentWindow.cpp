@@ -227,13 +227,13 @@ AddContentWindow::AddContentWindow(const ScenePtr &dest, QWidget *parent) :
     QFont titleFont("Arial", 11);
     titleFont.setBold(true);
 
-    QVBoxLayout *layout = new QVBoxLayout(this);
+    QVBoxLayout *layout = new QVBoxLayout();
     layout->setContentsMargins(5, 5, 5, 5);
     setLayout(layout);
 
     // Entities ui
     entityView = new QWidget(this);
-    QVBoxLayout *entitiesLayout = new QVBoxLayout(this);
+    QVBoxLayout *entitiesLayout = new QVBoxLayout();
     entitiesLayout->setContentsMargins(0, 0, 0, 0);
     entityView->setLayout(entitiesLayout);
 
@@ -253,7 +253,7 @@ AddContentWindow::AddContentWindow(const ScenePtr &dest, QWidget *parent) :
     QSpacerItem *entityButtonSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
     QSpacerItem *middleSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-    QVBoxLayout *entitiesProgressLayout = new QVBoxLayout(this);
+    QVBoxLayout *entitiesProgressLayout = new QVBoxLayout();
     entityStatusLabel = new QLabel(this);
     entityProgressBar = new QProgressBar(this);
     entityProgressBar->setFixedHeight(20);
@@ -273,7 +273,7 @@ AddContentWindow::AddContentWindow(const ScenePtr &dest, QWidget *parent) :
 
     // Assets ui
     assetView = new QWidget(this);
-    QVBoxLayout *assetsLayout = new QVBoxLayout(this);
+    QVBoxLayout *assetsLayout = new QVBoxLayout();
     assetsLayout->setContentsMargins(0, 0, 0, 0);
     assetView->setLayout(assetsLayout);
 
@@ -294,7 +294,7 @@ AddContentWindow::AddContentWindow(const ScenePtr &dest, QWidget *parent) :
     QLabel *storageLabel = new QLabel(tr("Asset storage:"), this);
     storageComboBox = new QComboBox(this);
 
-    QVBoxLayout *uploadLayout = new QVBoxLayout(this);
+    QVBoxLayout *uploadLayout = new QVBoxLayout();
     uploadStatusLabel = new QLabel(this);
     uploadProgressBar = new QProgressBar(this);
     uploadProgressBar->setFixedHeight(20);
@@ -325,7 +325,7 @@ AddContentWindow::AddContentWindow(const ScenePtr &dest, QWidget *parent) :
     addContentButton = new QPushButton(tr("Add content"), this);
     cancelButton = new QPushButton(tr("Cancel"), this);
 
-    QHBoxLayout *buttonsLayout = new QHBoxLayout(this);
+    QHBoxLayout *buttonsLayout = new QHBoxLayout();
     QSpacerItem *buttonSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
     buttonsLayout->addSpacerItem(buttonSpacer);
     buttonsLayout->addWidget(addContentButton);
