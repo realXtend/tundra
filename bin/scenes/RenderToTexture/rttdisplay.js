@@ -39,10 +39,10 @@ function createRttTarget(camname) {
 
     //apparently EC_Camera does not persist, so we have to create them here XXX \todo
     //.. adding with the GUI editing was fun and worked otherwise
-    var cam = scene.GetEntityByName(camname);
-    var cam_ec = cam.GetOrCreateComponent("EC_Camera");
+    var cam = scene.EntityByName(camname);
+    var cam_ec = cam.GetOrCreateComponent("Camera");
 
-    cam.GetOrCreateComponent("EC_RttTarget");
+    cam.GetOrCreateComponent("RttTarget");
     rtt = cam.rtttarget;
     rtt.textureName = camname + "_tex";
     rtt.size_x = 800;

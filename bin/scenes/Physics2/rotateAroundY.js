@@ -12,7 +12,7 @@ frame.DelayedExecute(0.5).Triggered.connect(this, this.rotateAroundY);
 
 // And then initialize inputmapper to grab left mouse
 // The boulder gets mass when clicked
-var inputmapper = this.me.GetOrCreateComponent("EC_InputMapper", 2, false);
+var inputmapper = this.me.GetOrCreateComponent("InputMapper", 2, false);
 inputmapper.contextPriority = 100;
 inputmapper.takeMouseEventsOverQt = true;
 inputmapper.modifiersEnabled = false;

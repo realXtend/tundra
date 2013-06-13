@@ -14,7 +14,7 @@ function ConvertScene()
     var rotateMatrix = float3x4.FromEulerZYX(0, 0, -Math.PI/2);
     var meshRotateMatrix = float3x4.FromEulerZYX(Math.PI, 0, -Math.PI/2);
 
-    var entities = framework.Scene().MainCameraScene().EntitiesWithComponent("EC_Placeable");
+    var entities = framework.Scene().MainCameraScene().EntitiesWithComponent("Placeable");
     print("Scene has " + entities.length + " positional entities");
     for (var i = 0; i < entities.length; ++i)
     {
@@ -27,7 +27,7 @@ function ConvertScene()
         print("Processing entity " + entity.name);
 
         // Get correct world rotation & position
-        var placeable = entity.GetComponent("EC_Placeable");
+        var placeable = entity.Component("Placeable");
         var transform = placeable.transform;
         var matrix = transform.ToFloat3x4();
         var resultMatrix = rotateMatrix.Mul(matrix);
@@ -35,7 +35,7 @@ function ConvertScene()
         placeable.transform = transform;
         
         // Fix the mesh node transform if exists
-        var mesh = entity.GetComponent("EC_Mesh");
+        var mesh = entity.Component("Mesh");
         if (mesh != null)
         {
             var nodeTransform = mesh.nodeTransformation;

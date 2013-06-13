@@ -40,7 +40,7 @@ function PerformOperation()
         if (entities.length >= 50)
             return;
         // Create entity
-        var newEnt = scene.CreateEntity(0, ["EC_Placeable", "EC_RigidBody", "EC_Mesh"]);
+        var newEnt = scene.CreateEntity(0, ["Placeable", "RigidBody", "Mesh"]);
         var transform = newEnt.placeable.transform;
         transform.pos = new float3(Math.random() * 80 - 40, 10, Math.random() * 80 - 40);
         transform.rot = new float3(Math.random() * 360, Math.random() * 360, Math.random() * 360);
@@ -78,7 +78,7 @@ function PerformOperation()
         if (delEnt && delEnt.name == "Test")
         {
             print("Removing rigidbody from entity " + delEnt.id);
-            delEnt.RemoveComponent("EC_RigidBody");
+            delEnt.RemoveComponent("RigidBody");
         }
     }
 }

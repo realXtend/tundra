@@ -90,7 +90,7 @@ function ClientControl(userName)
         var name = "Avatar" + client.connectionId;
         var entity = scene.GetEntityByName(name);
         if (entity != null) {
-            this.hoveringText = entity.CreateComponent("EC_HoveringText");
+            this.hoveringText = entity.CreateComponent("HoveringText");
             this.hoveringText.text = " ";
             
             // Move it over a avatar.

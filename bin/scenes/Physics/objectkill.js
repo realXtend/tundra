@@ -6,7 +6,7 @@ function Update(dt)
     var entities = scene.Entities();
     for(i in entities)
     {
-        var pos = entities[i].GetComponent("EC_Placeable");
+        var pos = entities[i].placeable;
         if (pos != null && pos.transform.pos.y < -200)
             scene.RemoveEntity(entities[i].id);
     }

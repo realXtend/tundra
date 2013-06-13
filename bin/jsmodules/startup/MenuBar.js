@@ -155,7 +155,7 @@ if (!framework.IsHeadless())
             return;
 
         // Give some sort of feedback (f.ex. make a skybox)
-        var environment = newScene.CreateEntity(newScene.NextFreeId(), ["EC_Name", "EC_Sky"]);
+        var environment = newScene.CreateEntity(newScene.NextFreeId(), ["Name", "Sky"]);
         environment.name = "Environment";
         environment.sky.enabled = true;
     }

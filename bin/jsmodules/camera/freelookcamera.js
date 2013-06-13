@@ -42,9 +42,9 @@ if (!framework.IsHeadless())
     renderer.MainCameraChanged.connect(ActiveCameraChanged);
 
     // Create components & setup default position/lookat for the camera
-    var camera = me.GetOrCreateComponent("EC_Camera");
-    var placeable = me.GetOrCreateComponent("EC_Placeable");
-    var soundListener = me.GetOrCreateComponent("EC_SoundListener");
+    var camera = me.GetOrCreateComponent("Camera");
+    var placeable = me.GetOrCreateComponent("Placeable");
+    var soundListener = me.GetOrCreateComponent("SoundListener");
 
     // Co-operate with the AvatarApplication: if AvatarCamera already exists, do not activate the FreeLookCamera right now
     var avatarCameraEntity = scene.EntityByName("AvatarCamera");
