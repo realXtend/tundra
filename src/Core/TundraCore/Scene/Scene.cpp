@@ -1057,14 +1057,14 @@ SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) 
                 // A bit of a hack to get the name from EC_Name.
                 if (entityDesc.name.isEmpty() && type_name == EC_Name::TypeNameStatic())
                 {
-                    ComponentPtr comp = framework_->Scene()->CreateComponentByName(const_cast<Scene*>(this), type_name, name);
+                    ComponentPtr comp = framework_->Scene()->CreateComponentByName(0, type_name, name);
                     EC_Name *ecName = checked_static_cast<EC_Name*>(comp.get());
                     ecName->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
                     entityDesc.name = ecName->name.Get();
                 }
 
                 // Find asset references.
-                ComponentPtr comp = framework_->Scene()->CreateComponentByName(const_cast<Scene*>(this), type_name, name);
+                ComponentPtr comp = framework_->Scene()->CreateComponentByName(0, type_name, name);
                 if (!comp.get()) // Move to next element if component creation fails.
                 {
                     comp_elem = comp_elem.nextSiblingElement("component");
@@ -1251,7 +1251,7 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
 
                 try
                 {
-                    ComponentPtr comp = sceneAPI->CreateComponentById(const_cast<Scene*>(this), typeId, compDesc.name);
+                    ComponentPtr comp = sceneAPI->CreateComponentById(0, typeId, compDesc.name);
                     if (comp)
                     {
                         if (data_size)
