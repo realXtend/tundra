@@ -159,7 +159,7 @@ public slots:
     ComponentPtr ComponentById(component_id_t id) const;
     /// Returns a component with type 'typeName' or empty pointer if component was not found
     /** If there are several components with the specified type, returns the first component found (arbitrary).
-        @param typeName type of the component */
+        @param typeName type of the component, the "EC_" prefix is not required. */
     ComponentPtr Component(const QString &typeName) const;
     /// @overload
     /** @param typeId Component type ID. */
@@ -173,7 +173,7 @@ public slots:
     ComponentPtr Component(u32 typeId, const QString &name) const;
 
     /// Returns a component with type 'typeName' or creates & adds it if not found. If could not create, returns empty pointer
-    /** @param typeName The type string of the component to create, obtained from IComponent::TypeName().
+    /** @param typeName The type name of the component to create, the "EC_" prefix is not required.
         @param change Change signaling mode, in case component has to be created
         @param replicated Whether new component will be replicated through network
         @return Pointer to the component, or an empty pointer if the component could be retrieved or created. */
@@ -195,7 +195,7 @@ public slots:
     ComponentPtr GetOrCreateLocalComponent(const QString &typeName, const QString &name);
 
     /// Creates a new component and attaches it to this entity. 
-    /** @param typeName type of the component
+    /** @param typeName type of the component, the "EC_" prefix is not required.
         @param change Change signaling mode, in case component has to be created
         @param replicated Whether new component will be replicated through network
         @return Returns a pointer to the newly created component, or null if creation failed. Common causes for failing to create an component
@@ -212,9 +212,9 @@ public slots:
         @param name name of the component */
     ComponentPtr CreateComponent(u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
     
-    /// Creates a local component with type 'typeName' and adds it to the entity. If could not create, return empty pointer
+    /// Creates a local component with type 'typeName' (the "EC_" prefix not required) and adds it to the entity. If could not create, return empty pointer
     ComponentPtr CreateLocalComponent(const QString &typeName);
-    /// Creates a local component with type 'typeName' and name 'name' and adds it to the entity. If could not create, return empty pointer
+    /// @overload @param name The arbitrary name identifier for the component.
     ComponentPtr CreateLocalComponent(const QString &typeName, const QString &name);
     
     /// Attaches an existing parentless component to this entity.
@@ -245,7 +245,7 @@ public slots:
         @param change Specifies how other parts of the system are notified of this removal.
         @sa RemoveComponentById */
     void RemoveComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default); /**< @overload */
-    void RemoveComponent(const QString &typeName, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(typeName), change); }  /**< @overload */
+    void RemoveComponent(const QString &typeName, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(Component(typeName), change); } /**< @overload @param typeName The component type name, the "EC_" prefix is not required. */
     void RemoveComponent(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(typeName, name), change); }  /**< @overload */
     /// Removes component by ID.
     /** @sa RemoveComponent */
@@ -258,7 +258,7 @@ public slots:
     /** @param typeId Component type ID. */
     ComponentVector ComponentsOfType(u32 typeId) const;
     /// @overload
-    /** @param typeName Type name of the component
+    /** @param typeName Type name of the component, the "EC_" prefix is not required.
         @note The overload taking component type ID is more efficient than this overload. */
     ComponentVector ComponentsOfType(const QString &typeName) const;
 

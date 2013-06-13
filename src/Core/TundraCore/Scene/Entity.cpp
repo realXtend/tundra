@@ -355,10 +355,11 @@ ComponentPtr Entity::ComponentById(component_id_t id) const
     return (i != components_.end() ? i->second : ComponentPtr());
 }
 
-ComponentPtr Entity::Component(const QString &type_name) const
+ComponentPtr Entity::Component(const QString &typeName) const
 {
+    const QString ecTypeName = IComponent::EnsureTypeNameWithPrefix(typeName);
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
-        if (i->second->TypeName() == type_name)
+        if (i->second->TypeName() == ecTypeName)
             return i->second;
 
     return ComponentPtr();

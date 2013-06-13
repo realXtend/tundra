@@ -82,11 +82,12 @@ public slots:
     /// Return if a component factory has been registered for a type name.
     bool IsComponentFactoryRegistered(const QString &typeName) const;
 
-    /// Registers a new factory to create new components of type 'componentTypename' and id 'componentTypeid'.
+    /// Registers a new factory to create new components of type name IComponentFactory::TypeName and ID IComponentFactory::TypeId.
     void RegisterComponentFactory(const ComponentFactoryPtr &factory);
 
     /// Creates a new component instance by specifying the typename of the new component to create, and the scene where to create.
-    ComponentPtr CreateComponentByName(Scene* scene, const QString &componentTypename, const QString &newComponentName = "") const;
+    /** @note the @c componentTypeName doesn't need to have the "EC_" prefix. */
+    ComponentPtr CreateComponentByName(Scene* scene, const QString &componentTypeName, const QString &newComponentName = "") const;
 
     /// Creates a new component instance by specifying the typeid of the new component to create, and the scene where to create.
     ComponentPtr CreateComponentById(Scene* scene, u32 componentTypeid, const QString &newComponentName = "") const;
