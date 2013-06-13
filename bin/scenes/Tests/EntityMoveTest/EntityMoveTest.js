@@ -89,7 +89,7 @@ function CreateBoxes()
     for(var i = 0; i < numRows; ++i)
         for(var j = 0; j < numColums; ++j)
         {
-            var box = scene.CreateEntity(scene.NextFreeId(), ["EC_Name", "EC_Mesh", "EC_Placeable"]);
+            var box = scene.CreateEntity(scene.NextFreeId(), ["Name", "Mesh", "Placeable"]);
             box.name = "Box" + i.toString() + j.toString();
 
             var meshRef = box.mesh.meshRef;

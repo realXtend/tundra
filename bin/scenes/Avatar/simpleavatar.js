@@ -89,7 +89,7 @@ SimpleAvatar.prototype.OnScriptObjectDestroyed = function() {
 
 SimpleAvatar.prototype.ServerInitialize = function() {
     // Create the avatar component & set the avatar appearance. The avatar component will create the mesh & animationcontroller, once the avatar asset has loaded
-    var avatar = this.me.GetOrCreateComponent("EC_Avatar");
+    var avatar = this.me.GetOrCreateComponent("Avatar");
     
     // Try to dig login param avatar. This seemed like the easiest way to do it.
     // Parse the connection id from the entity name and get a connection for him,
@@ -118,7 +118,7 @@ SimpleAvatar.prototype.ServerInitialize = function() {
     avatar.appearanceRef = r;
 
     // Create rigid body component and set physics properties
-    var rigidbody = this.me.GetOrCreateComponent("EC_RigidBody");
+    var rigidbody = this.me.GetOrCreateComponent("RigidBody");
     var sizeVec = new float3(0.5, 2.4, 0.5);
     rigidbody.mass = this.avatarMass;
     rigidbody.shapeType = 3; // Capsule
@@ -143,7 +143,7 @@ SimpleAvatar.prototype.ServerInitialize = function() {
     attrs.SetAttribute("cameraDistance", 7.0);
 
     // Create an inactive proximitytrigger, so that other proximitytriggers can detect the avatar
-    // var proxtrigger = me.GetOrCreateComponent("EC_ProximityTrigger");
+    // var proxtrigger = me.GetOrCreateComponent("ProximityTrigger");
     // proxtrigger.active = false;
 
     // Hook to physics update
@@ -371,7 +371,7 @@ SimpleAvatar.prototype.ClientInitialize = function() {
         this.ClientCreateAvatarCamera();
         if (!isAndroid)
             this.crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ true);
-        var soundlistener = this.me.GetOrCreateComponent("EC_SoundListener", 2, false);
+        var soundlistener = this.me.GetOrCreateComponent("SoundListener", 2, false);
         soundlistener.active = true;
 
         this.me.Action("MouseScroll").Triggered.connect(this, this.ClientHandleMouseScroll);
@@ -385,11 +385,11 @@ SimpleAvatar.prototype.ClientInitialize = function() {
     else
     {
         // Make hovering name tag for other clients
-        var clientName = this.me.GetComponent("EC_Name");
+        var clientName = this.me.Component("Name");
         if (clientName != null) {
             // Description holds the actual login name
             if (clientName.description != "") {
-                var nameTag = this.me.GetOrCreateComponent("EC_HoveringText", 2, false);
+                var nameTag = this.me.GetOrCreateComponent("HoveringText", 2, false);
                 if (nameTag != null) {
                     var texWidth = clientName.description.length * 50;
                     if (texWidth < 256)
@@ -463,7 +463,7 @@ SimpleAvatar.prototype.ClientUpdate = function(frametime) {
 
 SimpleAvatar.prototype.ClientCreateInputMapper = function() {
     // Create a nonsynced inputmapper
-    var inputmapper = this.me.GetOrCreateComponent("EC_InputMapper", 2, false);
+    var inputmapper = this.me.GetOrCreateComponent("InputMapper", 2, false);
     inputmapper.contextPriority = 101;
     inputmapper.takeMouseEventsOverQt = false;
     inputmapper.takeKeyboardEventsOverQt = false;
@@ -502,7 +502,7 @@ SimpleAvatar.prototype.ClientCreateInputMapper = function() {
     }
 
     // Local mapper for mouse scroll and rotate
-    var inputmapper = this.me.GetOrCreateComponent("EC_InputMapper", "CameraMapper", 2, false);
+    var inputmapper = this.me.GetOrCreateComponent("InputMapper", "CameraMapper", 2, false);
     inputmapper.contextPriority = 100;
     inputmapper.takeMouseEventsOverQt = true;
     inputmapper.modifiersEnabled = false;
@@ -524,8 +524,8 @@ SimpleAvatar.prototype.ClientCreateAvatarCamera = function() {
         cameraentity.SetTemporary(true);
     }
 
-    var camera = cameraentity.GetOrCreateComponent("EC_Camera");
-    var placeable = cameraentity.GetOrCreateComponent("EC_Placeable");
+    var camera = cameraentity.GetOrCreateComponent("Camera");
+    var placeable = cameraentity.GetOrCreateComponent("Placeable");
 
     camera.SetActive();
     
@@ -714,8 +714,8 @@ SimpleAvatar.prototype.ClientCheckState = function() {
     var attrs = this.me.dynamiccomponent;
     var firstPerson = attrs.GetAttribute("cameraDistance") < 0;
 
-    var cameraentity = scene.GetEntityByName("AvatarCamera");
-    var avatarPlaceable = this.me.GetComponent("EC_Placeable");
+    var cameraentity = scene.EntityByName("AvatarCamera");
+    var avatarPlaceable = this.me.Component("Placeable");
 
     if (this.crosshair == null)
         return;

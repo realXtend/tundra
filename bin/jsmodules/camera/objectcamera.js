@@ -10,12 +10,12 @@ var last_clicked;
 var zooming = false;
 var global_transform;
 
-if (!me.GetComponent("EC_Camera"))
+if (!me.Component("Camera"))
 {
-    var camera = me.GetOrCreateComponent("EC_Camera");
-    var inputmapper = me.GetOrCreateComponent("EC_InputMapper");
-    var placeable = me.GetOrCreateComponent("EC_Placeable");
-    var soundlistener = me.GetOrCreateComponent("EC_SoundListener");
+    var camera = me.GetOrCreateComponent("Camera");
+    var inputmapper = me.GetOrCreateComponent("InputMapper");
+    var placeable = me.GetOrCreateComponent("Placeable");
+    var soundlistener = me.GetOrCreateComponent("SoundListener");
     soundlistener.active = true;    
 
     var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
@@ -42,14 +42,14 @@ if (!me.GetComponent("EC_Camera"))
 function Update(frametime)
 {
 	profiler.BeginBlock("objectcamera_Update");
-    var camera = me.GetComponent("EC_Camera");
+    var camera = me.Component("Camera");
     if (camera.IsActive() == false || last_clicked == null)
 	{
 		profiler.EndBlock();
         return;
 	}
 
-    var placeable = me.GetComponent("EC_Placeable");
+    var placeable = me.Component("EC_Placeable");
 
     if (zooming)
     {
@@ -66,7 +66,7 @@ function Update(frametime)
 
 function HandleMouseLookX(param)
 {
-    var camera = me.GetComponent("EC_Camera");
+    var camera = me.Component("Camera");
     if (camera.IsActive() == false || last_clicked == null)
         return;
 
@@ -74,7 +74,7 @@ function HandleMouseLookX(param)
 	return;
 
     var move = parseInt(param);
-    var placeable = me.GetComponent("EC_Placeable");
+    var placeable = me.Component("Placeable");
 
     var newtransform = placeable.transform;
     newtransform.rot.z -= rotate_sensitivity * move;
@@ -89,12 +89,12 @@ function HandleMouseLookX(param)
 
 function HandleMouseLookY(param)
 {
-    var camera = me.GetComponent("EC_Camera");
+    var camera = me.Component("Camera");
     if (camera.IsActive() == false || last_clicked == null)
         return;
 
     var move = parseInt(param);
-    var placeable = me.GetComponent("EC_Placeable");
+    var placeable = me.Component("Placeable");
 
     var newtransform = placeable.transform;
     newtransform.rot.x -= rotate_sensitivity * move;
@@ -145,11 +145,11 @@ function mouseLeftPress(event)
 
 function mouseScroll(event)
 {
-    var camera = me.GetComponent("EC_Camera");
+    var camera = me.Component("Camera");
     if (camera.IsActive() == false)
         return;
 
-    var placeable = me.GetComponent("EC_Placeable");
+    var placeable = me.Component("Placeable");
 
     var delta;
 
@@ -246,11 +246,11 @@ function keyRelease(event)
 
 function cameraZoom()
 {
-    var entityplaceable = last_clicked.GetComponent("EC_Placeable");
-    var cameraentity = scene.GetEntityByName("ObjectCamera");
+    var entityplaceable = last_clicked.Component("Placeable");
+    var cameraentity = scene.EntityByName("ObjectCamera");
     if (cameraentity == null)
         return;
-    var cameraplaceable = cameraentity.GetComponent("EC_Placeable");
+    var cameraplaceable = cameraentity.Component("Placeable");
     var cameratransform = cameraplaceable.transform;
 
     var dir = new float3();

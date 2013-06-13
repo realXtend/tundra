@@ -263,7 +263,7 @@ var ScriptImporter = Class.extend
         var entity = this.scene().EntityByName(this.ui.entityListWidget.currentItem().text());
         if (entity != null)
         {
-            var component = entity.GetComponent("EC_Script", compName);
+            var component = entity.Component("Script", compName);
             if (component != null)
             {
                 this.showTooltip(this.ui.componentNameEdit, "A component with this name already exists in the target entity");
@@ -289,9 +289,9 @@ var ScriptImporter = Class.extend
     {
         var entity = null;
         if (this.ui.localCheckBox.checked)
-            entity = this.scene().CreateLocalEntity(["EC_Name", "EC_Script"]);
+            entity = this.scene().CreateLocalEntity(["Name", "Script"]);
         else
-            entity = this.scene().CreateEntity(this.scene().NextFreeId(), ["EC_Name", "EC_Script"]);
+            entity = this.scene().CreateEntity(this.scene().NextFreeId(), ["Name", "Script"]);
             
         entity.SetName(entityName);
         entity.temporary = this.ui.tempCheckBox.checked;
@@ -310,7 +310,7 @@ var ScriptImporter = Class.extend
             return;
         }
 
-        var scriptComp = entity.GetOrCreateComponent("EC_Script", compName, isLocal ? 2 : 0, !isLocal);
+        var scriptComp = entity.GetOrCreateComponent("Script", compName, isLocal ? 2 : 0, !isLocal);
         scriptComp.temporary = isTemp;
         scriptComp.runMode = this.ui.runModeBox.currentIndex;
         scriptComp.runOnLoad = true;
