@@ -68,15 +68,10 @@ if (!framework.IsHeadless())
     if (framework.ModuleByName("DebugStats"))
         viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
 
-
-    if (framework.ModuleByName("PythonScript"))
-        viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
-
-    if (console)
-        toolsMenu.addAction("Show Console").triggered.connect(OpenConsoleWindow);
+    toolsMenu.addAction("Show Console").triggered.connect(OpenConsoleWindow);
 
     // Settings menu
-    if (framework.ModuleByName("MumbleVoip") || framework.ModuleByName("CAVEStereo") || ecEditor)
+    if (framework.ModuleByName("MumbleVoip") || ecEditor)
     {
         var settingsMenu = menu.addMenu("&Settings");
         // Set unique object name so that other scripts can query this menu.
