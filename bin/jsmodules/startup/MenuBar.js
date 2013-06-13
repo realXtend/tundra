@@ -68,9 +68,6 @@ if (!framework.IsHeadless())
     if (framework.GetModuleByName("DebugStats"))
         viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
 
-    if (framework.GetModuleByName("PythonScript"))
-        viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
-
     // Settings menu
     if (framework.GetModuleByName("MumbleVoip") || framework.GetModuleByName("CAVEStereo") || ecEditor)
     {
@@ -260,10 +257,6 @@ if (!framework.IsHeadless())
 
     function OpenPostProcessWindow() {
         framework.GetModuleByName("Environment").ShowPostProcessWindow();
-    }
-
-    function OpenPythonConsole() {
-        framework.GetModuleByName("PythonScript").ShowConsole();
     }
 
     function OpenVoiceSettings() {

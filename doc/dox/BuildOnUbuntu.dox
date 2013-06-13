@@ -8,6 +8,7 @@ This page lists the necessary steps to build Tundra on Ubuntu.
 
 <ol>
 <li>Install git if you do not have it yet by running <pre>sudo apt-get install git</pre> in the terminal.
+<li>Configure source repositories into /etc/apt/sources.list: duplicate the lines that already exist in the file, and replace 'deb' with 'deb-src'. Then run apt-get update. You need to be root for this.
 <li>Clone the Tundra repository by running <pre>git clone https://github.com/realXtend/naali</pre>
 </ol>
 
