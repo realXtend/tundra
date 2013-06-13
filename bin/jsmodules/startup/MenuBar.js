@@ -67,14 +67,11 @@ if (!framework.IsHeadless())
     if (framework.ModuleByName("DebugStats"))
         toolsMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
 
-    if (framework.ModuleByName("PythonScript"))
-        toolsMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
-
     if (console)
         toolsMenu.addAction("Show Console").triggered.connect(OpenConsoleWindow);
 
     // Settings menu
-    if (framework.ModuleByName("MumbleVoip") || framework.ModuleByName("CAVEStereo") || ecEditor)
+    if (framework.ModuleByName("MumbleVoip") || ecEditor)
     {
         var settingsMenu = menu.addMenu("&Settings");
         // Set unique object name so that other scripts can query this menu.
@@ -84,11 +81,6 @@ if (!framework.IsHeadless())
 
         if (framework.ModuleByName("MumbleVoip"))
             settingsMenu.addAction("Voice settings").triggered.connect(OpenVoiceSettings);
-        if (framework.ModuleByName("CAVEStereo"))
-        {
-            settingsMenu.addAction("Cave").triggered.connect(OpenCaveWindow);
-            settingsMenu.addAction("Stereoscopy").triggered.connect(OpenStereoscopyWindow);
-        }
 
         if (ecEditor)
         {
@@ -295,10 +287,6 @@ if (!framework.IsHeadless())
         framework.ModuleByName("DebugStats").ShowProfilerWindow();
     }
 
-    function OpenPythonConsole() {
-        framework.ModuleByName("PythonScript").ShowConsole();
-    }
-
     function OpenVoiceSettings() {
         framework.ModuleByName("MumbleVoip").ToggleSettingsWidget();
     }
@@ -325,14 +313,6 @@ if (!framework.IsHeadless())
         framework.ModuleByName("ECEditor").highlightingEnabled = show;
     }
 
-    function OpenStereoscopyWindow() {
-        framework.ModuleByName("CAVEStereo").ShowStereoscopyWindow();
-    }
-
-    function OpenCaveWindow() {
-        framework.ModuleByName("CAVEStereo").ShowCaveWindow();
-    }
-    
     function OpenConfigFolder() {
         QDesktopServices.openUrl(new QUrl(config.ConfigFolder()));
     }
