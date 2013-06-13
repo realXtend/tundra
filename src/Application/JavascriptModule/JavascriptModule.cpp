@@ -73,19 +73,19 @@ void JavascriptModule::Initialize()
     RegisterCoreMetaTypes();
 
     framework_->Console()->RegisterCommand(
-        "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)",
+        "jsExec", "Execute given code in the embedded Javascript interpreter. Usage: jsExec(mycodestring)",
         this, SLOT(RunString(const QString &)));
 
     framework_->Console()->RegisterCommand(
-        "JsLoad", "Execute a javascript file. JsLoad(myJsFile.js)",
+        "jsLoad", "Execute a javascript file. jsLoad(myJsFile.js)",
         this, SLOT(RunScript(const QString &)));
 
     framework_->Console()->RegisterCommand(
-        "JsReloadScripts", "Reloads and re-executes startup scripts.",
+        "jsReloadScripts", "Reloads and re-executes startup scripts.",
         this, SLOT(LoadStartupScripts()));
         
     framework_->Console()->RegisterCommand(
-        "JsDumpInfo", "Dumps all EC_Script information to console",
+        "jsDumpInfo", "Dumps all EC_Script information to console",
         this, SLOT(DumpScriptInfo()));
 
     // Initialize startup scripts

@@ -46,7 +46,7 @@ ConsoleAPI::ConsoleAPI(Framework *fw) :
 
     RegisterCommand("help", "Lists all registered commands.", this, SLOT(ListCommands()));
     RegisterCommand("clear", "Clears the console log.", this, SLOT(ClearLog()));
-    RegisterCommand("loglevel", "Sets the current log level. Call with one of the parameters \"error\", \"warning\", \"info\", or \"debug\".",
+    RegisterCommand("setLogLevel", "Sets the current log level. Call with one of the parameters \"error\", \"warning\", \"info\", or \"debug\".",
         this, SLOT(SetLogLevel(const QString &)));
 
     /// \todo Visual Leak Detector shows a memory leak originating from this allocation although the shellInputThread is released in the destructor. Perhaps a shared pointer is held elsewhere.
