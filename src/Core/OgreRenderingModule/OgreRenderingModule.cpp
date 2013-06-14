@@ -106,20 +106,20 @@ OgreRenderingModule::~OgreRenderingModule()
 
 void OgreRenderingModule::Load()
 {
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Placeable>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Mesh>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Light>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_OgreCustomObject>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_AnimationController>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Camera>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_OgreCompositor>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_RttTarget>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Material>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Billboard>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_ParticleSystem>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Fog>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Sky>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_EnvironmentLight>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_Placeable>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_Mesh>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_Light>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_OgreCustomObject>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_AnimationController>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_Camera>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_OgreCompositor>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_RttTarget>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_Material>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_Billboard>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_ParticleSystem>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_Fog>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_Sky>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_EnvironmentLight>));
 
     // Main ogre .mesh extension
     QStringList meshExtensions;
@@ -148,22 +148,22 @@ void OgreRenderingModule::Load()
     textureExtensions << ".crn";
 
     // Create asset type factories for each asset OgreRenderingModule provides to the system.
-    framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMeshAsset>("OgreMesh", meshExtensions)));
+    framework_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(GenericAssetFactory<OgreMeshAsset>, "OgreMesh", meshExtensions));
 
     // Loading materials crashes Ogre in headless mode because we don't have Ogre Renderer running, so only register the Ogre material asset type if not in headless mode.
     if (!framework_->IsHeadless())
     {
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMaterialAsset>("OgreMaterial", ".material")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<TextureAsset>("Texture", textureExtensions)));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreParticleAsset>("OgreParticle", ".particle")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreSkeletonAsset>("OgreSkeleton", ".skeleton")));
+        framework_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(GenericAssetFactory<OgreMaterialAsset>, "OgreMaterial", ".material"));
+        framework_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(GenericAssetFactory<TextureAsset>, "Texture", textureExtensions));
+        framework_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(GenericAssetFactory<OgreParticleAsset>, "OgreParticle", ".particle"));
+        framework_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(GenericAssetFactory<OgreSkeletonAsset>, "OgreSkeleton", ".skeleton"));
     }
     else
     {
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("OgreMaterial", ".material")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Texture", textureExtensions)));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("OgreParticle", ".particle")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("OgreSkeleton", ".skeleton")));
+        framework_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(NullAssetFactory, "OgreMaterial", ".material"));
+        framework_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(NullAssetFactory, "Texture", textureExtensions));
+        framework_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(NullAssetFactory, "OgreParticle", ".particle"));
+        framework_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(NullAssetFactory, "OgreSkeleton", ".skeleton"));
     }
 }
 
@@ -208,9 +208,9 @@ void OgreRenderingModule::Initialize()
     connect(framework_->Scene(), SIGNAL(SceneRemoved(const QString&)), this, SLOT(OnSceneRemoved(const QString&)));
 
     // Add asset cache directory as its own resource group to ogre to support threaded loading.
-    if (GetFramework()->Asset()->GetAssetCache())
+    if (GetFramework()->Asset()->Cache())
     {
-        std::string cacheResourceDir = GetFramework()->Asset()->GetAssetCache()->CacheDirectory().toStdString();
+        std::string cacheResourceDir = GetFramework()->Asset()->Cache()->CacheDirectory().toStdString();
         if (!Ogre::ResourceGroupManager::getSingleton().resourceLocationExists(cacheResourceDir, CACHE_RESOURCE_GROUP))
             Ogre::ResourceGroupManager::getSingleton().addResourceLocation(cacheResourceDir, "FileSystem", CACHE_RESOURCE_GROUP);
     }
@@ -269,7 +269,7 @@ void OgreRenderingModule::ToggleOgreProfilerOverlay()
 
 void OgreRenderingModule::OnSceneAdded(const QString& name)
 {
-    ScenePtr scene = GetFramework()->Scene()->GetScene(name);
+    ScenePtr scene = GetFramework()->Scene()->SceneByName(name);
     if (!scene)
     {
         LogError("OgreRenderingModule::OnSceneAdded: Could not find created scene");
@@ -285,14 +285,14 @@ void OgreRenderingModule::OnSceneAdded(const QString& name)
 void OgreRenderingModule::OnSceneRemoved(const QString& name)
 {
     // Remove the OgreWorld from the scene
-    ScenePtr scene = GetFramework()->Scene()->GetScene(name);
+    ScenePtr scene = GetFramework()->Scene()->SceneByName(name);
     if (!scene)
     {
         LogError("OgreRenderingModule::OnSceneRemoved: Could not find scene about to be removed");
         return;
     }
     
-    OgreWorld* worldPtr = scene->GetWorld<OgreWorld>().get();
+    OgreWorld* worldPtr = scene->Subsystem<OgreWorld>().get();
     if (worldPtr)
     {
         scene->setProperty(OgreWorld::PropertyName(), QVariant());
@@ -313,7 +313,7 @@ void OgreRenderingModule::SetMaterialAttribute(const QStringList &params)
         LogError("OgreRenderingModule::SetMaterialAttribute: No asset found or not loaded");
         return;
     }
-    OgreMaterialAsset* matAsset = dynamic_cast<OgreMaterialAsset*>(assetPtr.get());
+    OgreMaterialAssetPtr matAsset = dynamic_pointer_cast<OgreMaterialAsset>(assetPtr);
     if (!matAsset)
     {
         LogError("OgreRenderingModule::SetMaterialAttribute: Not a material asset");

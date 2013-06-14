@@ -65,10 +65,10 @@ PhysicsModule::~PhysicsModule()
 
 void PhysicsModule::Load()
 {
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_RigidBody>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_VolumeTrigger>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_PhysicsMotor>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_PhysicsConstraint>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_RigidBody>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_VolumeTrigger>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_PhysicsMotor>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_PhysicsConstraint>));
 }
 
 void PhysicsModule::Initialize()

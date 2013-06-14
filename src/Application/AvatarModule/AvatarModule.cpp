@@ -34,16 +34,16 @@ AvatarModule::~AvatarModule()
 
 void AvatarModule::Load()
 {
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Avatar>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_Avatar>));
     if (!framework_->IsHeadless())
     {
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AvatarDescAsset>("Avatar", ".avatar")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("AvatarAttachment", ".attachment")));
+        framework_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(GenericAssetFactory<AvatarDescAsset>, "Avatar", ".avatar"));
+        framework_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(BinaryAssetFactory, "AvatarAttachment", ".attachment"));
     }
     else
     {
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("Avatar", ".avatar")));
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("AvatarAttachment", ".attachment")));
+        framework_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(NullAssetFactory, "Avatar", ".avatar"));
+        framework_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(NullAssetFactory, "AvatarAttachment", ".attachment"));
     }
 }
 

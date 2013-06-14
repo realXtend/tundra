@@ -2364,6 +2364,7 @@ QString AssetAPI::ResourceTypeForAssetRef(QString assetRef) const
         Seems the resource types have leaked here without the providers being in the code base.
         Where ever the code might be, remove these once the providers have been updated to return
         the type extensions correctly. */
+    /// @todo We don't support QML, remove the following
     if (filename.endsWith(".qml", Qt::CaseInsensitive) || filename.endsWith(".qmlzip", Qt::CaseInsensitive))
         return "QML";
     if (filename.endsWith(".pdf", Qt::CaseInsensitive))
