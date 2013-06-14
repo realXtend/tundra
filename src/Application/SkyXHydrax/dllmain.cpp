@@ -17,10 +17,10 @@ DLLEXPORT void TundraPluginMain(Framework *fw)
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
 #if SKYX_ENABLED
-    fw->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_SkyX>));
+    fw->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_SkyX>));
 #endif
 #if HYDRAX_ENABLED
-    fw->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Hydrax>));
+    fw->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_Hydrax>));
 #endif
 }
 

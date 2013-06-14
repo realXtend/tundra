@@ -32,9 +32,9 @@ DEFINE_STATIC_PLUGIN_MAIN(EnvironmentModule)
 #endif
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
-    fw->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Terrain>));
-    fw->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_WaterPlane>));
+    fw->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_Terrain>));
+    fw->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_WaterPlane>));
     // Create an asset type factory for Terrain assets. The terrain assets are handled as binary blobs - the EC_Terrain parses it when showing the asset.
-    fw->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Terrain", ".ntf")));
+    fw->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(BinaryAssetFactory, "Terrain", ".ntf"));
 }
 }

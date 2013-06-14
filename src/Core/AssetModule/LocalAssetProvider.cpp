@@ -242,7 +242,7 @@ LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(QString directory, 
         }
 
     //LogInfo("LocalAssetProvider::AddStorageDirectory " + directory);
-    LocalAssetStoragePtr storage = LocalAssetStoragePtr(new LocalAssetStorage(writable, liveUpdate, autoDiscoverable));
+    LocalAssetStoragePtr storage = MAKE_SHARED(LocalAssetStorage, writable, liveUpdate, autoDiscoverable);
     storage->directory = QDir::toNativeSeparators(GuaranteeTrailingSlash(directory));
     storage->name = storageName;
     storage->recursive = recursive;

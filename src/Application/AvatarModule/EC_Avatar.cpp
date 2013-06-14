@@ -31,7 +31,7 @@ EC_Avatar::EC_Avatar(Scene* scene) :
     IComponent(scene),
     INIT_ATTRIBUTE_VALUE(appearanceRef, "Appearance ref", AssetReference("", "Avatar"))
 {
-    avatarAssetListener_ = AssetRefListenerPtr(new AssetRefListener());
+    avatarAssetListener_ = MAKE_SHARED(AssetRefListener);
     connect(avatarAssetListener_.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAvatarAppearanceLoaded(AssetPtr)), Qt::UniqueConnection);
     connect(avatarAssetListener_.get(), SIGNAL(TransferFailed(IAssetTransfer *, QString)), this, SLOT(OnAvatarAppearanceFailed(IAssetTransfer*, QString)));
 }

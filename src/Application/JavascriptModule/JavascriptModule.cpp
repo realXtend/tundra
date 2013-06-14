@@ -53,7 +53,7 @@ JavascriptModule::~JavascriptModule()
 void JavascriptModule::Load()
 {
     if (!framework_->Scene()->IsComponentFactoryRegistered(EC_Script::TypeNameStatic()))
-        framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Script>));
+        framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_Script>));
 
     // This check is done as both js and py modules can register this factory. 
     // They both need to register .js and .py extensions to play nice.
@@ -62,7 +62,7 @@ void JavascriptModule::Load()
     {
         QStringList scriptExtensions;
         scriptExtensions << ".js" << ".py";
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<ScriptAsset>("Script", scriptExtensions)));
+        framework_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(GenericAssetFactory<ScriptAsset>, "Script", scriptExtensions));
     }
 }
 

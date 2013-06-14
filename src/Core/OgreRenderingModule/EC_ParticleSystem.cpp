@@ -33,7 +33,7 @@ EC_ParticleSystem::EC_ParticleSystem(Scene* scene):
 
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(EntitySet()));
 
-    particleAsset_ = AssetRefListenerPtr(new AssetRefListener());
+    particleAsset_ = MAKE_SHARED(AssetRefListener);
     connect(particleAsset_.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnParticleAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     connect(particleAsset_.get(), SIGNAL(TransferFailed(IAssetTransfer*, QString)), this, SLOT(OnParticleAssetFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
 }

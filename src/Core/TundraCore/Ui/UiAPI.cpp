@@ -64,19 +64,20 @@ UiAPI::UiAPI(Framework *owner_) :
     graphicsView(0),
     graphicsScene(0)
 {
-    QStringList qmlExtensions; 
+    /// @todo We don't support QML, remove the following
+    QStringList qmlExtensions;
     qmlExtensions << ".qml" << ".qmlzip";
     
     if (owner_->IsHeadless())
     {
-        owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("QtUiFile", ".ui")));
-        owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new NullAssetFactory("QtQmFile", qmlExtensions)));
+        owner_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(NullAssetFactory, "QtUiFile", ".ui"));
+        owner_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(NullAssetFactory, "QtQmFile", qmlExtensions));
         return;
     }
 
-    owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile", ".ui")));
-    owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtQmFile", qmlExtensions)));
-    
+    owner_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(GenericAssetFactory<QtUiAsset>, "QtUiFile", ".ui"));
+    owner_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(GenericAssetFactory<QtUiAsset>, "QtQmFile", qmlExtensions));
+
     mainWindow = new UiMainWindow(owner);
 
     /* Unless the option --nomenubar was specified, assume that the startup UI for the Tundra main window will 

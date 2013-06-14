@@ -84,35 +84,35 @@ TundraLogicModule::~TundraLogicModule()
 void TundraLogicModule::Load()
 {
     // Name, DynamicComponent and InputMapper from TundraCore are present always.
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Name>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_DynamicComponent>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_InputMapper>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_Name>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_DynamicComponent>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_InputMapper>));
 
     // External EC's
 #ifdef EC_Highlight_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Highlight>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_Highlight>));
 #endif
 #ifdef EC_HoveringText_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_HoveringText>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_HoveringText>));
 #endif
 #ifdef EC_Sound_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_Sound>));
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_SoundListener>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_Sound>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_SoundListener>));
 #endif
 #ifdef EC_PlanarMirror_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_PlanarMirror>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_PlanarMirror>));
 #endif
 #ifdef EC_ProximityTrigger_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_ProximityTrigger>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_ProximityTrigger>));
 #endif
 #ifdef EC_TransformGizmo_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_TransformGizmo>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_TransformGizmo>));
 #endif
 #ifdef EC_LaserPointer_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_LaserPointer>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_LaserPointer>));
 #endif
 #ifdef EC_StencilGlow_ENABLED
-    framework_->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_StencilGlow>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_StencilGlow>));
 #endif
 }
 

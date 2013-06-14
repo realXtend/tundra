@@ -247,7 +247,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
         return AssetTransferPtr();
     }
 
-    HttpAssetTransferPtr transfer = HttpAssetTransferPtr(new HttpAssetTransfer);
+    HttpAssetTransferPtr transfer = MAKE_SHARED(HttpAssetTransfer);
     transfer->source.ref = originalAssetRef;
     transfer->assetType = assetType;
     transfer->provider = shared_from_this();
@@ -604,7 +604,7 @@ HttpAssetStoragePtr HttpAssetProvider::AddStorageAddress(const QString &address,
         }
 
     // Add new if not found
-    HttpAssetStoragePtr storage = HttpAssetStoragePtr(new HttpAssetStorage());
+    HttpAssetStoragePtr storage = MAKE_SHARED(HttpAssetStorage);
     storage->baseAddress = locationCleaned;
     storage->storageName = storageName;
     storage->liveUpdate = liveUpdate;

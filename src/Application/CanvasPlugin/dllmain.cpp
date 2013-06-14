@@ -12,7 +12,7 @@ extern "C"
 DLLEXPORT void TundraPluginMain(Framework *fw)
 {
     Framework::SetInstance(fw);
-    fw->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_GraphicsViewCanvas>));
+    fw->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_GraphicsViewCanvas>));
 }
 
 }

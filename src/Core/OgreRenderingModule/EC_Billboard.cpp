@@ -46,7 +46,7 @@ EC_Billboard::EC_Billboard(Scene* scene) :
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
 
-    materialAsset_ = AssetRefListenerPtr(new AssetRefListener());
+    materialAsset_ = MAKE_SHARED(AssetRefListener);
     connect(materialAsset_.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     connect(materialAsset_.get(), SIGNAL(TransferFailed(IAssetTransfer*, QString)), this, SLOT(OnMaterialAssetFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
     
