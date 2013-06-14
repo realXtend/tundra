@@ -9,6 +9,15 @@
 // Widget for showing instructions if user starts Tundra without any scene.
 var sceneInstructions = null;
 
+function SizeOf(obj)
+{
+    var size = 0, key;
+    for(key in obj)
+        if (obj.hasOwnProperty(key))
+            ++size;
+    return size;
+};
+
 // Applicable only in headful mode.
 if (!framework.IsHeadless())
 {
@@ -116,23 +125,34 @@ if (!framework.IsHeadless())
     // as MenuBar.js is typically loaded before any of the login UI scripts.
     frame.DelayedExecute(3.0).Triggered.connect(function()
     {
-        if (!input.ItemAtCoords(ui.GraphicsScene().sceneRect.toRect().center()) &&
-            !framework.HasCommandLineParameter("--file") && !framework.Scene().MainCameraScene())
+        var startupScenes = framework.CommandLineParameters("--file");
+        var mainCameraScene = framework.Scene().MainCameraScene();
+        var sceneLoadFailed = (startupScenes.length >= 1 && mainCameraScene && SizeOf(mainCameraScene.entities) <= 1);
+        if (!input.ItemAtCoords(ui.GraphicsScene().sceneRect.toRect().center()) || sceneLoadFailed)
         {
-            ShowSceneInstructions();
+            ShowSceneInstructions(sceneLoadFailed, startupScenes);
             framework.Scene().SceneAdded.connect(HideSceneInstructions);
         }
     });
 
-    function ShowSceneInstructions()
+    function ShowSceneInstructions(sceneLoadFailed, startupScenes)
     {
         if (!sceneInstructions)
         {
             var label = new QLabel();
             label.indent = 10;
-            label.text = "Tundra has started succesfully, but you have no active scene currently.\n" +
-                "Startup scenes can be specified by using the --file command line parameter. Run Tundra --help for instructions. \n" +
-                "Or alternatively, use File -> Open Scene to load an existing scene or New Scene to create an empty scene.";
+            if (sceneLoadFailed)
+            {
+                label.text = "Tundra has started succesfully, but the startup scene '" + startupScenes[0] + "' failed to load.\n" +
+                    "Please check the filename.";
+            }
+            else
+            {
+                label.text = "Tundra has started succesfully, but the you have no active scene currently.\n" +
+                    "Startup scenes can be specified by using the --file command line parameter. Run Tundra --help for instructions. \n" +
+                    "Or alternatively, use File -> Open Scene to load an existing scene or New Scene to create an empty scene.";
+            }
+
             label.resize(800, 200);
             label.setStyleSheet("QLabel {color: white; background-color: transparent; font-size: 16px; }");
 
