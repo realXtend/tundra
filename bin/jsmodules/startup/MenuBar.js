@@ -148,7 +148,7 @@ if (!framework.IsHeadless())
             }
             else
             {
-                label.text = "Tundra has started succesfully, but the you have no active scene currently.\n" +
+                label.text = "Tundra has started succesfully, but you have no active scene currently.\n" +
                     "Startup scenes can be specified by using the --file command line parameter. Run Tundra --help for instructions. \n" +
                     "Or alternatively, use File -> Open Scene to load an existing scene or New Scene to create an empty scene.";
             }
@@ -178,7 +178,7 @@ if (!framework.IsHeadless())
     function NewScene() {
         if (framework.Scene().MainCameraScene() != null)
         {
-            var result = QMessageBox.warning(ui.MainWindow(), "New scene", "Making a new scene will discard any changes you made to the current scene. Do you want to continue?", QMessageBox.Yes, QMessageBox.No);
+            var result = QMessageBox.warning(ui.MainWindow(), "New Scene", "Making a new scene will discard any changes you made to the current scene. Do you want to continue?", QMessageBox.Yes, QMessageBox.No);
             if (result == QMessageBox.No)
                 return;
         }
@@ -194,13 +194,13 @@ if (!framework.IsHeadless())
     }
 
     function OpenScene() {
-        var fileName = QFileDialog.getOpenFileName(ui.MainWindow(), "Open scene", framework.application.currentWorkingDirectory, "Tundra TXML file (*.txml)");
+        var fileName = QFileDialog.getOpenFileName(ui.MainWindow(), "Open Scene", application.currentWorkingDirectory, "Tundra TXML file (*.txml)");
         if (fileName == "")
             return;
 
         if (framework.Scene().MainCameraScene() != null)
         {
-            var result = QMessageBox.warning(ui.MainWindow(), "Open scene", "Opening a new scene will discard any changes you made to the current scene. Do you want to continue?", QMessageBox.Yes, QMessageBox.No);
+            var result = QMessageBox.warning(ui.MainWindow(), "Open Scene", "Opening a new scene will discard any changes you made to the current scene. Do you want to continue?", QMessageBox.Yes, QMessageBox.No);
             if (result == QMessageBox.No)
                 return;
         }
