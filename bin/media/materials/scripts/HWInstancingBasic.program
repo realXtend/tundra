@@ -6,7 +6,7 @@ vertex_program Tundra/Instancing/HWBasicVS cg
 {
 	source HWInstancingBasic.cg
 	entry_point main_vs
-	profiles vs_3_0 vp40
+	profiles vs_3_0 arbvp1
 	
 	compile_arguments -DDEPTH_SHADOWRECEIVER
 
@@ -22,7 +22,7 @@ fragment_program Tundra/Instancing/HWBasicPS cg
 {
 	source HWInstancingBasic.cg
 	entry_point main_ps
-	profiles ps_3_0 ps_2_x fp40
+	profiles ps_3_0 ps_2_x arbfp1
 
 	compile_arguments -DDEPTH_SHADOWRECEIVER
 
