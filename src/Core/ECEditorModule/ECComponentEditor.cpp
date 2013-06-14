@@ -75,14 +75,13 @@ void ECComponentEditor::CreateAttributeEditors(ComponentPtr component)
             if (!attr->Metadata()->designable)
                 continue;
 
-        ECAttributeEditorBase *attributeEditor = ECComponentEditor::CreateAttributeEditor(propertyBrowser_, this,
-            component, attr->Name(), attr->TypeName());
+        ECAttributeEditorBase *attributeEditor = ECComponentEditor::CreateAttributeEditor(propertyBrowser_, this, attr);
         if (!attributeEditor)
             continue;
 
         attributeEditors_[attr->Name()] = attributeEditor;
         groupProperty_->setToolTip("Component type is " + component->TypeName());
-        groupProperty_->addSubProperty(attributeEditor->GetProperty());
+        groupProperty_->addSubProperty(attributeEditor->Property());
         connect(attributeEditor, SIGNAL(AttributeAboutToBeEdited(IAttribute*)), this, SIGNAL(AttributeAboutToBeEdited(IAttribute *)));
 
         connect(attributeEditor, SIGNAL(EditorChanged(const QString &)), this, SLOT(OnEditorChanged(const QString &)));
@@ -173,7 +172,7 @@ void ECComponentEditor::AddNewComponent(ComponentPtr component)
     AttributeEditorMap::iterator iter = attributeEditors_.begin();
     while(iter != attributeEditors_.end())
     {
-        IAttribute *attribute = component->AttributeByName(iter.value()->GetAttributeName());
+        IAttribute *attribute = component->AttributeByName(iter.value()->AttributeName());
         if(attribute)
             iter.value()->AddComponent(component);
         iter++;
@@ -198,7 +197,7 @@ void ECComponentEditor::RemoveComponent(ComponentPtr component)
             AttributeEditorMap::iterator attributeIter = attributeEditors_.begin();
             while(attributeIter != attributeEditors_.end())
             {
-                IAttribute *attribute = comp_ptr->AttributeByName(attributeIter.value()->GetAttributeName());
+                IAttribute *attribute = comp_ptr->AttributeByName(attributeIter.value()->AttributeName());
                 if(attribute)
                     attributeIter.value()->RemoveComponent(component);
                 attributeIter++;
@@ -227,7 +226,7 @@ void ECComponentEditor::RemoveAttribute(ComponentPtr comp, IAttribute *attr)
             AttributeEditorMap::iterator attributeIter = attributeEditors_.begin();
             while(attributeIter != attributeEditors_.end())
             {
-                IAttribute *attribute = component->AttributeByName(attributeIter.value()->GetAttributeName());
+                IAttribute *attribute = component->AttributeByName(attributeIter.value()->AttributeName());
                 if (attribute == attr)
                 {
                     SAFE_DELETE(attributeIter.value())
@@ -252,7 +251,7 @@ QString ECComponentEditor::GetAttributeType(const QString &name) const
 {
     AttributeEditorMap::const_iterator iter = attributeEditors_.find(name);
     if (iter != attributeEditors_.end())
-        return (*iter)->GetAttributeType();
+        return (*iter)->AttributeTypeName();
     return QString();
 }
 
@@ -265,37 +264,35 @@ void ECComponentEditor::OnEditorChanged(const QString &name)
         LogWarning("Fail to convert signal sender to ECAttributeEditorBase.");
         return;
     }
-    groupProperty_->addSubProperty(editor->GetProperty());
+    groupProperty_->addSubProperty(editor->Property());
 }
 
 ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
     QtAbstractPropertyBrowser *browser,
     ECComponentEditor *editor,
-    ComponentPtr component,
-    const QString &name,
-    const QString &type)
+    IAttribute *attribute)
 {
-    switch(SceneAPI::GetAttributeTypeId(type))
+    switch(attribute->TypeId())
     {
-    case cAttributeString: return new ECAttributeEditor<QString>(browser, component, name, type, editor);
-    case cAttributeInt: return new ECAttributeEditor<int>(browser, component, name, type, editor);
-    case cAttributeReal: return new ECAttributeEditor<float>(browser, component, name, type, editor);
-    case cAttributeColor: return new ECAttributeEditor<Color>(browser, component, name, type, editor);
-    case cAttributeFloat2: return new ECAttributeEditor<float2>(browser, component, name, type, editor);
-    case cAttributeFloat3: return new ECAttributeEditor<float3>(browser, component, name, type, editor);
-    case cAttributeFloat4: return new ECAttributeEditor<float4>(browser, component, name, type, editor);
-    case cAttributeBool: return new ECAttributeEditor<bool>(browser, component, name, type, editor);
-    case cAttributeUInt: return new ECAttributeEditor<uint>(browser, component, name, type, editor);
-    case cAttributeQuat: return new ECAttributeEditor<Quat>(browser, component, name, type, editor);
-    case cAttributeAssetReference: return  new AssetReferenceAttributeEditor(browser, component, name, type, editor); // Note: AssetReference uses own special case editor.
-    case cAttributeAssetReferenceList: return new AssetReferenceListAttributeEditor(browser, component, name, type, editor); // Note: AssetReferenceList uses own special case editor.
-    case cAttributeEntityReference: return new ECAttributeEditor<EntityReference>(browser, component, name, type, editor);
-    case cAttributeQVariant: return new ECAttributeEditor<QVariant>(browser, component, name, type, editor);
-    case cAttributeQVariantList: return new ECAttributeEditor<QVariantList>(browser, component, name, type, editor);
-    case cAttributeTransform: return new ECAttributeEditor<Transform>(browser, component, name, type, editor);
-    case cAttributeQPoint: return new ECAttributeEditor<QPoint>(browser, component, name, type, editor);
+    case cAttributeString: return new ECAttributeEditor<QString>(browser, attribute, editor);
+    case cAttributeInt: return new ECAttributeEditor<int>(browser, attribute, editor);
+    case cAttributeReal: return new ECAttributeEditor<float>(browser, attribute, editor);
+    case cAttributeColor: return new ECAttributeEditor<Color>(browser, attribute, editor);
+    case cAttributeFloat2: return new ECAttributeEditor<float2>(browser, attribute, editor);
+    case cAttributeFloat3: return new ECAttributeEditor<float3>(browser, attribute, editor);
+    case cAttributeFloat4: return new ECAttributeEditor<float4>(browser, attribute, editor);
+    case cAttributeBool: return new ECAttributeEditor<bool>(browser, attribute, editor);
+    case cAttributeUInt: return new ECAttributeEditor<uint>(browser, attribute, editor);
+    case cAttributeQuat: return new ECAttributeEditor<Quat>(browser, attribute, editor);
+    case cAttributeAssetReference: return  new AssetReferenceAttributeEditor(browser, attribute, editor); // Note: AssetReference uses own special case editor.
+    case cAttributeAssetReferenceList: return new AssetReferenceListAttributeEditor(browser, attribute, editor); // Note: AssetReferenceList uses own special case editor.
+    case cAttributeEntityReference: return new ECAttributeEditor<EntityReference>(browser, attribute, editor);
+    case cAttributeQVariant: return new ECAttributeEditor<QVariant>(browser, attribute, editor);
+    case cAttributeQVariantList: return new ECAttributeEditor<QVariantList>(browser, attribute, editor);
+    case cAttributeTransform: return new ECAttributeEditor<Transform>(browser, attribute, editor);
+    case cAttributeQPoint: return new ECAttributeEditor<QPoint>(browser, attribute, editor);
     default:
-        LogWarning("Unknown attribute type " + type + " for ECAttributeEditorBase creation.");
+        LogWarning("ECComponentEditor::CreateAttributeEditor: Unknown attribute type '" + attribute->TypeName() + "'.");
         return 0;
     }
 }

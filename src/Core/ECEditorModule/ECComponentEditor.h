@@ -59,8 +59,7 @@ signals:
 
 private:
     /// Factory method for creating attribute editors.
-    static ECAttributeEditorBase *CreateAttributeEditor(QtAbstractPropertyBrowser *browser, ECComponentEditor *editor,
-        ComponentPtr component, const QString &name, const QString &type);
+    static ECAttributeEditorBase *CreateAttributeEditor(QtAbstractPropertyBrowser *browser, ECComponentEditor *editor, IAttribute *attribute);
 
     /// Initialize component editor and create attribute editors.
     /// @param component component is used to figure out what attributes it contain and what

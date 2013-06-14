@@ -34,15 +34,11 @@
 
 #include "MemoryLeakCheck.h"
 
-ECAttributeEditorBase::ECAttributeEditorBase(QtAbstractPropertyBrowser *owner,
-                                             ComponentPtr component,
-                                             const QString &name,
-                                             const QString &type,
-                                             QObject *parent):
+ECAttributeEditorBase::ECAttributeEditorBase(QtAbstractPropertyBrowser *owner, IAttribute *attribute, QObject *parent) :
     QObject(parent),
     owner_(owner),
-    name_(name),
-    typeName_(type),
+    name_(attribute->Name()),
+    typeName_(attribute->TypeName()),
     rootProperty_(0),
     factory_(0),
     propertyMgr_(0),
@@ -50,7 +46,7 @@ ECAttributeEditorBase::ECAttributeEditorBase(QtAbstractPropertyBrowser *owner,
     useMultiEditor_(false),
     metaDataFlag_(0)
 {
-    AddComponent(component);
+    AddComponent(attribute->Owner()->shared_from_this());
 }
 
 ECAttributeEditorBase::~ECAttributeEditorBase()
@@ -111,7 +107,7 @@ void ECAttributeEditorBase::UpdateEditorUI(IAttribute *attr)
     }
 }
 
-void ECAttributeEditorBase::AddComponent(ComponentPtr component)
+void ECAttributeEditorBase::AddComponent(const ComponentPtr &component)
 {
     PROFILE(ECAttributeEditor_AddComponent);
     // Before we add new component we make sure that it's not already added
@@ -126,7 +122,7 @@ void ECAttributeEditorBase::AddComponent(ComponentPtr component)
     }
 }
 
-void ECAttributeEditorBase::RemoveComponent(ComponentPtr component)
+void ECAttributeEditorBase::RemoveComponent(const ComponentPtr &component)
 {
     ComponentWeakPtrList::iterator iter = FindComponent(component);
     if(iter != components_.end())
@@ -141,7 +137,7 @@ void ECAttributeEditorBase::RemoveComponent(ComponentPtr component)
         deleteLater();
 }
 
-bool ECAttributeEditorBase::HasComponent(ComponentPtr component)
+bool ECAttributeEditorBase::HasComponent(const ComponentPtr &component)
 {
     PROFILE(ECAttributeEditor_HasComponent);
     ComponentWeakPtrList::iterator iter = FindComponent(component);

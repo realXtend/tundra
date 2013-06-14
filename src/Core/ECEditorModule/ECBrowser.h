@@ -44,18 +44,18 @@ public:
     /// Insert new entity to browser.
     /** @note In order to get changes visible, you need to call UpdateBrowser method afterwards.
         @param enity a new entity that we want to edit on the ECEditor. */
-    void AddEntity(EntityPtr entity);
+    void AddEntity(const EntityPtr &entity);
 
     /// Remove edited entity from the browser widget.
     /** @param entity Entity that we want to remove on the ECEditor. */
-    void RemoveEntity(EntityPtr entity);
+    void RemoveEntity(const EntityPtr &entity);
 
     /// Return list of entities that has added to browser widget. Return empty list if no entities have been added.
-    QList<EntityPtr> GetEntities() const;
+    QList<EntityPtr> Entities() const;
 
     /// Sets used item expand memory. Expand memory is used to load and save the expanded items in the tree widget.
     /** @param expandMem Tree widget item expand memory. */
-    void SetItemExpandMemory(shared_ptr<TreeWidgetItemExpandMemory> expandMem) { expandMemory_ = expandMem; }
+    void SetItemExpandMemory(const shared_ptr<TreeWidgetItemExpandMemory> &expandMem) { expandMemory_ = expandMem; }
 
     /// Reads selected components from ComponentGroup and return them as QObjectList.
     QObjectList SelectedComponents() const;
@@ -159,12 +159,12 @@ private:
     /** If right type of component group is found return it's pointer.
         If any suitable componentGroup wasn't found return null pointer.
         @param comp component that we want to find a suitable group. */
-    ComponentGroup *FindSuitableGroup(ComponentPtr comp);
+    ComponentGroup *FindSuitableGroup(const ComponentPtr &comp);
 
     /// Add new component to existing component group if same type of component have been already added to editor,
     /** if component type is not included, create new component group and add it to editor.
         @param comp a new component that we want to add into the enity. */
-    void AddNewComponentToGroup(ComponentPtr comp);
+    void AddNewComponentToGroup(const ComponentPtr &comp);
 
     /// Remove component from registered componentgroup. Do nothing if component was not found of any component groups.
     /** @param comp that we want to remove from  the component group. */
@@ -175,7 +175,7 @@ private:
     void RemoveComponentGroup(ComponentGroup *componentGroup);
 
     /// Checks if entity is already added to this editor.
-    bool HasEntity(EntityPtr entity) const;
+    bool HasEntity(const EntityPtr &entity) const;
 
     /// Remove selected attribute item from the dynamic component.
     /** @note This method works only for dynamic components. */
@@ -187,7 +187,8 @@ private:
     typedef QMap<QTreeWidgetItem*, ComponentGroup*> TreeItemToComponentGroup;
     TreeItemToComponentGroup itemToComponentGroups_;
     typedef QList<EntityWeakPtr> EntityWeakPtrList;
-    EntityWeakPtrList entities_;
+    typedef std::map<entity_id_t, EntityWeakPtr> EntityMap;
+    EntityMap entities_;
     QMenu *menu_;
     QTreeWidget *treeWidget_;
     Framework *framework_;

@@ -34,7 +34,7 @@ typedef unsigned char MetaDataFlag;
 enum MetaDataFlags
 {
     None             = 0,
-    UsingEnums       = 1 << 0,
+    UsingEnums       = 1,
     UsingMaxValue    = 1 << 1,
     UsingMinValue    = 1 << 2,
     UsingStepValue   = 1 << 3,
@@ -51,27 +51,23 @@ class ECAttributeEditorBase: public QObject
     Q_OBJECT
 
 public:
-    ECAttributeEditorBase(QtAbstractPropertyBrowser *owner,
-                          ComponentPtr component,
-                          const QString &name,
-                          const QString &type,
-                          QObject *parent = 0);
+    ECAttributeEditorBase(QtAbstractPropertyBrowser *owner, IAttribute *attribute, QObject *parent = 0);
 
     virtual ~ECAttributeEditorBase();
 
     /// Get attribute name.
     /// @return attribute type name.
-    QString GetAttributeName() const { return name_; }
+    const QString &AttributeName() const { return name_; }
 
     /// Get attribute type. If any attributes were not found, return empty string.
-    QString GetAttributeType() const { return typeName_; };
+    const QString &AttributeTypeName() const { return typeName_; };
 
     /// Get editor's root property.
     /// @return editor's root property pointer.
-    QtProperty *GetProperty() const { return rootProperty_; }
+    QtProperty *Property() const { return rootProperty_; }
 
     /// Check if this editor's manager contains this spesific property.
-    /// @param property Property that we are looking for.
+    /** @param property Property that we are looking for. */
     bool ContainsProperty(QtProperty *property) const; 
 
     /// Updates editor's ui elements to fit new attribute values
@@ -80,9 +76,9 @@ public:
     void UpdateEditorUI(IAttribute *attr = 0);
 
 public slots:
-    void AddComponent(ComponentPtr component);
-    void RemoveComponent(ComponentPtr component);
-    bool HasComponent(ComponentPtr component);
+    void AddComponent(const ComponentPtr &component);
+    void RemoveComponent(const ComponentPtr &component);
+    bool HasComponent(const ComponentPtr &component);
     void AttributeChanged(IAttribute* attribute);
 
 signals:
@@ -166,12 +162,8 @@ template<typename T>
 class ECAttributeEditor : public ECAttributeEditorBase
 {
 public:
-    ECAttributeEditor(QtAbstractPropertyBrowser *owner,
-                      ComponentPtr component,
-                      const QString &name,
-                      const QString &type,
-                      QObject *parent = 0) :
-        ECAttributeEditorBase(owner, component, name, type, parent)
+    ECAttributeEditor(QtAbstractPropertyBrowser *owner, IAttribute *attribute, QObject *parent = 0) :
+        ECAttributeEditorBase(owner, attribute, parent)
     {
         listenEditorChangedSignal_ = true;
     }
@@ -289,10 +281,9 @@ class AssetReferenceAttributeEditor : public ECAttributeEditor<AssetReference>
     Q_OBJECT
 
 public:
-    AssetReferenceAttributeEditor(QtAbstractPropertyBrowser *owner, ComponentPtr component,
-        const QString &name, const QString &type, QObject *parent = 0) :
-        ECAttributeEditor<AssetReference>(owner, component, name, type, parent),
-        fw(component->GetFramework())
+    AssetReferenceAttributeEditor(QtAbstractPropertyBrowser *owner, IAttribute *attribute, QObject *parent = 0) :
+        ECAttributeEditor<AssetReference>(owner, attribute, parent),
+        fw(attribute->Owner()->GetFramework())
     {
     }
 
@@ -323,10 +314,9 @@ class AssetReferenceListAttributeEditor : public ECAttributeEditor<AssetReferenc
     Q_OBJECT
 
 public:
-    AssetReferenceListAttributeEditor(QtAbstractPropertyBrowser *owner, ComponentPtr component,
-        const QString &name, const QString &type, QObject *parent = 0) :
-        ECAttributeEditor<AssetReferenceList>(owner, component, name, type, parent),
-        fw(component->GetFramework())
+    AssetReferenceListAttributeEditor(QtAbstractPropertyBrowser *owner, IAttribute *attribute, QObject *parent = 0) :
+        ECAttributeEditor<AssetReferenceList>(owner, attribute, parent),
+        fw(attribute->Owner()->GetFramework())
     {
     }
 
