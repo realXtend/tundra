@@ -1,6 +1,12 @@
 <?xml version="1.0"?>
 <Tundra>
-  <!-- plugins.xml is hardcoded to be the default configuration file to load if another file is not specified on the command line with the "config filename.xml" parameter. -->
+  <!-- plugins.xml is hardcoded to be the default configuration file to load if another file
+       is not specified on the command line with the "-config filename.xml" parameter. -->
+
+  <!-- Note: All modules that implicitly depend on JavascriptModule, by performing QtScript
+       object meta type registration in their registered dynamic objects (Framework::RegisterDynamicObject)
+       in OnScriptEngineCreated(QScriptEngine*), must be loaded before JavascriptModule. -->
+
   <option name="--plugin" value="OgreRenderingModule;
                                 OpenAssetImport;
                                 SceneInteract;
@@ -22,8 +28,9 @@
   
                                 AdminotechComponents" />
   
-  <!-- NOTE: The startup .js scripts are specified only by base name of the file. Don's specify a path here. Place the startup .js scripts to /bin/jsmodules/startup/. -->
-  <!-- Important: The file names specified here are case sensitive even on Windows! -->
+  <!-- NOTE: The startup .js scripts are specified only by the base name of the file.
+       Don't specify a path here. Place the startup .js scripts to /bin/jsplugins/startup/. -->
+  <!-- Important: The file names specified here are case-sensitive even on Windows! -->
   <option name="--jsplugin" value="cameraapplication.js;
                                 FirstPersonMouseLook.js;
                                 MenuBar.js;
@@ -31,10 +38,6 @@
                                 SoundSettings.js;
                                 InterestManagerSettings.js;
                                 LoadingScreen.js" />
-
-  <!-- Python plugins -->
-  <!-- <pyplugin path="lib/apitests.py" /> -->          <!-- Runs framework api tests -->
-  <!-- pyplugin path="pythonqt_console.py" /-->         <!-- shows qt py console. could enable by default when add to menu etc. for controls, now just shows directly when is enabled here -->
 
   <option name="--trustserverstorages" />
   <option name="--accept_unknown_http_sources" />
