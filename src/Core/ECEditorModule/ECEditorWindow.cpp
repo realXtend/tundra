@@ -676,7 +676,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
         return;
     }
 
-    QList<EntityPtr> old_entities = ecBrowser->GetEntities();
+    QList<EntityPtr> old_entities = ecBrowser->Entities();
     qStableSort(entities.begin(), entities.end());
     qStableSort(old_entities.begin(), old_entities.end());
 
