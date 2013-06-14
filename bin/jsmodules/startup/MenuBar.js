@@ -2,6 +2,7 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     MenuBar.js - Implements basic menu bar for accessing common Tundra functionality and UIs.
+
     NOTE: Clears any existing menus in the menu bar so make sure that this script
     is loaded first, or replace with another implementation*/
 
@@ -23,8 +24,8 @@ if (!framework.IsHeadless())
 
     // File menu
     var fileMenu = menu.addMenu("&File");
-    fileMenu.addAction("New scene").triggered.connect(NewScene);
-    fileMenu.addAction("Open scene").triggered.connect(OpenScene);
+    fileMenu.addAction("New Scene").triggered.connect(NewScene);
+    fileMenu.addAction("Open Scene...").triggered.connect(OpenScene);
     fileMenu.addSeparator();
 
     var screenshotAct = fileMenu.addAction("Take Screenshot");
@@ -77,21 +78,21 @@ if (!framework.IsHeadless())
         // Set unique object name so that other scripts can query this menu.
         settingsMenu.objectName = "SettingsMenu";
 
-        settingsMenu.addAction("Open config folder").triggered.connect(OpenConfigFolder);
+        settingsMenu.addAction("Open Config Folder").triggered.connect(OpenConfigFolder);
 
         if (framework.ModuleByName("MumbleVoip"))
-            settingsMenu.addAction("Voice settings").triggered.connect(OpenVoiceSettings);
+            settingsMenu.addAction("Voice Settings").triggered.connect(OpenVoiceSettings);
 
         if (ecEditor)
         {
             // Gizmo
-            var showGizmoAction = settingsMenu.addAction("Show editing gizmo");
+            var showGizmoAction = settingsMenu.addAction("Show Editing Gizmo");
             showGizmoAction.checkable = true;
             showGizmoAction.checked = ecEditor.gizmoEnabled;
             showGizmoAction.triggered.connect(ShowEditingGizmo);
 
             // Highlighting of selected entities
-            var showHighlightAction = settingsMenu.addAction("Highlight selected entities");
+            var showHighlightAction = settingsMenu.addAction("Highlight Selected Entities");
             showHighlightAction.checkable = true;
             showHighlightAction.checked = ecEditor.highlightingEnabled;
             showHighlightAction.triggered.connect(HighlightSelectedEntities);
@@ -103,34 +104,46 @@ if (!framework.IsHeadless())
     // Help menu
     var helpMenu = menu.addMenu("&Help");
     var browserIcon = new QIcon(installDir + "data/ui/images/icon/browser.ico");
-    helpMenu.addAction(browserIcon, "Wiki").triggered.connect(OpenWikiUrl);
-    helpMenu.addAction(browserIcon, "Doxygen").triggered.connect(OpenDoxygenUrl);
-    helpMenu.addAction(browserIcon, "Mailing list").triggered.connect(OpenMailingListUrl);
+    helpMenu.addAction(browserIcon, "realXtend Home Page").triggered.connect(OpenHomePageUrl);
+    helpMenu.addAction(browserIcon, "Developer Mailing List").triggered.connect(OpenDevMailingListUrl);
+    helpMenu.addAction(browserIcon, "User Mailing List").triggered.connect(OpenMailingListUrl);
+    helpMenu.addAction(browserIcon, "GitHub").triggered.connect(OpenGitHubUrl);
+    // TODO Doxygen documentation not hosted anywhere currently!
+//    helpMenu.addAction(browserIcon, "Developer Documentation").triggered.connect(OpenDoxygenUrl);
 
-    // If we started without scene, show instructions for the user.
-    if (!framework.Scene().MainCameraScene())
+    // If we started without scene, show scene loading instructions for the user.
+    // Delay the check for couple of seconds so that we can also check for existence of a potential login UI
+    // as MenuBar.js is typically loaded before any of the login UI scripts.
+    frame.DelayedExecute(3.0).Triggered.connect(function()
     {
-        framework.Scene().SceneAdded.connect(HideSceneInstructions);
-        ShowSceneInstructions();
-    }
+        if (!input.ItemAtCoords(ui.GraphicsScene().sceneRect.toRect().center()) &&
+            !framework.HasCommandLineParameter("--file") && !framework.Scene().MainCameraScene())
+        {
+            ShowSceneInstructions();
+            framework.Scene().SceneAdded.connect(HideSceneInstructions);
+        }
+    });
 
     function ShowSceneInstructions()
     {
-        var label = new QLabel();
-        label.indent = 10;
-        label.text = "Tundra has started succesfully. You have no active scene currently.\n" +
-            "Startup scenes can be specified by using the --file command line parameter. Run Tundra --help for instructions. \n" +
-            "Use File -> Open scene to load an existing scene or New Scene to create an empty scene.";
-        label.resize(800, 200);
-        label.setStyleSheet("QLabel {color: white; background-color: transparent; font-size: 16px; }");
+        if (!sceneInstructions)
+        {
+            var label = new QLabel();
+            label.indent = 10;
+            label.text = "Tundra has started succesfully, but you have no active scene currently.\n" +
+                "Startup scenes can be specified by using the --file command line parameter. Run Tundra --help for instructions. \n" +
+                "Or alternatively, use File -> Open Scene to load an existing scene or New Scene to create an empty scene.";
+            label.resize(800, 200);
+            label.setStyleSheet("QLabel {color: white; background-color: transparent; font-size: 16px; }");
 
-        sceneInstructions = new UiProxyWidget(label);
-        ui.AddProxyWidgetToScene(sceneInstructions);
-        sceneInstructions.x = 50
-        sceneInstructions.y = 50;
-        sceneInstructions.windowFlags = 0;
+            sceneInstructions = new UiProxyWidget(label);
+            ui.AddProxyWidgetToScene(sceneInstructions);
+            sceneInstructions.x = 50
+            sceneInstructions.y = 50;
+            sceneInstructions.windowFlags = 0;
+            sceneInstructions.focusPolicy = Qt.NoFocus;
+        }
         sceneInstructions.visible = true;
-        sceneInstructions.focusPolicy = Qt.NoFocus;
     }
 
     function HideSceneInstructions()
@@ -259,15 +272,27 @@ if (!framework.IsHeadless())
         }
     }
 
-    function OpenMailingListUrl() {
+    function OpenDevMailingListUrl()
+    {
+        QDesktopServices.openUrl(new QUrl("http://groups.google.com/group/realxtend-dev/"));
+    }
+
+    function OpenMailingListUrl()
+    {
         QDesktopServices.openUrl(new QUrl("http://groups.google.com/group/realxtend/"));
     }
     
-    function OpenWikiUrl() {
-        QDesktopServices.openUrl(new QUrl("http://wiki.realxtend.org/"));
+    function OpenHomePageUrl() {
+        QDesktopServices.openUrl(new QUrl("http://realxtend.org/"));
     }
 
-    function OpenDoxygenUrl() {
+    function OpenGitHubUrl() {
+        QDesktopServices.openUrl(new QUrl("https://github.com/realxtend/naali/"));
+    }
+
+    function OpenDoxygenUrl()
+    {
+        // TODO host doxygen-generated documentation somewhere!
         QDesktopServices.openUrl(new QUrl("http://www.realxtend.org/doxygen/"));
     }
 
