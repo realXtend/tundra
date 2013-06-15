@@ -1,42 +1,10 @@
 <?xml version="1.0"?>
 <Tundra>
-  <!-- TODO For most parts this file is unnecessary duplicate of plugins.xml and only adds one new line (LoginScreen.js)! -->
-  <option name="--plugin" value="OgreRenderingModule;
-                                OpenAssetImport;
-                                SceneInteract;
-                                EnvironmentModule;
-                                PhysicsModule;
-                                TundraProtocolModule;
-                                ECEditorModule;
-                                JavascriptModule;
-                                AssetModule;
-                                ArchivePlugin;
-                                AvatarModule;
-                                SkyXHydrax;
-                                OgreAssetEditorModule;
-                                DebugStatsModule;
-                                SceneWidgetComponents;
-                                MumblePlugin;
-                                CAVEStereoModule;
-                                CanvasPlugin" />
+  <option name="--config" value="plugins.xml" />
 
   <!-- NOTE: The startup .js scripts are specified only by base name of the file. Don's specify a path here. Place the startup .js scripts to /bin/jsmodules/startup/. -->
   <!-- Important: The file names specified here are case sensitive even on Windows! -->
-  <option name="--jsplugin" value="cameraapplication.js;
-                                FirstPersonMouseLook.js;
-                                MenuBar.js;
-                                RendererSettings.js;
-                                SoundSettings.js;
-                                LoginScreen.js;
-                                LoadingScreen.js" />
+  <option name="--jsplugin" value="LoginScreen.js" />
 
-  <!-- Python plugins -->
-  <!-- <pyplugin path="lib/apitests.py" /> -->          <!-- Runs framework api tests -->
-
-  <option name="--trustserverstorages" />
-  <option name="--accept_unknown_http_sources" />
-  <option name="--accept_unknown_local_sources" />
-  <option name="--fpslimit" value="60" />
-  <option name="--hide_benign_ogre_messages" />
   <option name="--splash" />
 </Tundra>
