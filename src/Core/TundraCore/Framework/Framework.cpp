@@ -612,6 +612,10 @@ void Framework::LoadStartupOptionsFromXML(QString configurationFile)
 
             if (e.hasAttribute("value"))
                 startupOptions << e.attribute("value");
+
+            /// If we have another config XML specified with --config inside this config XML, load those settings also
+            if (!e.attribute("name").compare("--config"))
+                LoadStartupOptionsFromXML(e.attribute("value"));
         }
         n = n.nextSibling();
     }
