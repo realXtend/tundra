@@ -33,7 +33,7 @@ if (!framework.IsHeadless())
 
     // File menu
     var fileMenu = menu.addMenu("&File");
-    fileMenu.addAction("New Scene").triggered.connect(NewScene);
+    fileMenu.addAction("New Scene...").triggered.connect(NewScene);
     fileMenu.addAction("Open Scene...").triggered.connect(OpenScene);
     fileMenu.addSeparator();
 
@@ -175,17 +175,32 @@ if (!framework.IsHeadless())
         }
     }
 
-    function NewScene() {
+    function NewScene()
+    {
         if (framework.Scene().MainCameraScene() != null)
         {
             var result = QMessageBox.warning(ui.MainWindow(), "New Scene", "Making a new scene will discard any changes you made to the current scene. Do you want to continue?", QMessageBox.Yes, QMessageBox.No);
             if (result == QMessageBox.No)
                 return;
         }
+
+        var fileName = QFileDialog.getSaveFileName(ui.MainWindow(), "Save New Scene As", application.currentWorkingDirectory, "Tundra TXML file (*.txml)");
+        if (fileName == "")
+            return;
+
         var sceneNumber = Math.floor(Math.random() * 10000000 + 1);
         var newScene = framework.Scene().CreateScene("Scene" + sceneNumber, true, true);
         if (newScene == null)
             return;
+
+        var storage = asset.DeserializeAssetStorageFromString(fileName, false); 
+        if (!storage)
+        {
+            console.LogError("Failed to create asset storage for file " + fileName);
+            return;
+        }
+
+        asset.SetDefaultAssetStorage(storage);
 
         // Give some sort of feedback (f.ex. make a skybox)
         var environment = newScene.CreateEntity(newScene.NextFreeId(), ["Name", "Sky"]);
