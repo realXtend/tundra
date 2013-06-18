@@ -400,6 +400,12 @@ QVariantList Scene::GetEntityIdsWithComponent(const QString &typeName) const
     return ret;
 }
 
+QByteArray Scene::GetSceneXML(bool serializeTemporary, bool serializeLocal) const
+{
+    LogWarning("Scene::GetSceneXML is deprecated and will be removed. Migrate to using SerializeToXmlString instead.");
+    return SerializeToXmlString(serializeTemporary, serializeLocal);
+}
+
 QList<Entity *> Scene::LoadSceneXML(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
     QList<Entity *> ret;
@@ -430,46 +436,26 @@ QList<Entity *> Scene::LoadSceneXML(const QString& filename, bool clearScene, bo
     return CreateContentFromXml(scene_doc, useEntityIDsFromFile, change);
 }
 
-QByteArray Scene::GetSceneXML(bool gettemporary, bool getlocal) const
+QByteArray Scene::SerializeToXmlString(bool serializeTemporary, bool serializeLocal) const
 {
-    QDomDocument scene_doc("Scene");
-    QDomElement scene_elem = scene_doc.createElement("scene");
+    QDomDocument sceneDoc("Scene");
+    QDomElement sceneElem = sceneDoc.createElement("scene");
 
     for(const_iterator iter = begin(); iter != end(); ++iter)
     {
-        bool serialize = true;
-        if (iter->second->IsLocal() && !getlocal)
-            serialize = false;
-        if (iter->second->IsTemporary() && !gettemporary)
-            serialize = false;
-        if (serialize) 
-        {
-            /* copied from GetEntityXML so that we can get local and temporary components also.
-            ugly hack! */
-            EntityPtr entity = iter->second;
-            QDomElement entity_elem = scene_doc.createElement("entity");
-
-            entity_elem.setAttribute("id", QString::number(entity->Id()));
-            entity_elem.setAttribute("sync", BoolToString(entity->IsReplicated()));
-
-            const Entity::ComponentMap &components = entity->Components();
-            for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
-            {
-                if ((!i->second->IsTemporary()) || (gettemporary))
-                    i->second->SerializeTo(scene_doc, entity_elem);
-            }
-            
-            scene_elem.appendChild(entity_elem);
-        }
+        if ((iter->second->IsLocal() && !serializeLocal) || (iter->second->IsTemporary() && !serializeTemporary))
+            continue;
+        iter->second->SerializeToXML(sceneDoc, sceneElem, serializeTemporary);
     }
-    scene_doc.appendChild(scene_elem);
 
-    return scene_doc.toByteArray();
+    sceneDoc.appendChild(sceneElem);
+
+    return sceneDoc.toByteArray();
 }
 
 bool Scene::SaveSceneXML(const QString& filename, bool saveTemporary, bool saveLocal)
 {
-    QByteArray bytes = GetSceneXML(saveTemporary, saveLocal);
+    QByteArray bytes = SerializeToXmlString(saveTemporary, saveLocal);
     QFile scenefile(filename);
     if (scenefile.open(QFile::WriteOnly))
     {
@@ -479,7 +465,7 @@ bool Scene::SaveSceneXML(const QString& filename, bool saveTemporary, bool saveL
     }
     else
     {
-        LogError("Failed to open file " + filename + "for writing when saving scene xml.");
+        LogError("Failed to open file " + filename + " for writing when saving scene xml.");
         return false;
     }
 }
@@ -891,8 +877,7 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
 
     foreach(const EntityDesc &e, desc.entities)
     {
-        entity_id_t id;
-        id =  static_cast<entity_id_t>(e.id.toInt());
+        entity_id_t id = static_cast<entity_id_t>(e.id.toInt());
 
         if (e.id.isEmpty() || !useEntityIDsFromFile)
         {
