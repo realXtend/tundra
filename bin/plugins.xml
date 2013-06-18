@@ -37,7 +37,8 @@
                                 RendererSettings.js;
                                 SoundSettings.js;
                                 InterestManagerSettings.js;
-                                LoadingScreen.js" />
+                                LoadingScreen.js;
+                                SceneInstructions.js"/>
 
   <option name="--trustserverstorages" />
   <option name="--accept_unknown_http_sources" />
