@@ -151,7 +151,7 @@ bool AssetCache::SetLastModified(const QString &assetRef, const QDateTime &dateT
 {
     if (!dateTime.isValid())
     {
-        LogError("SetLastModified() DateTime is invalid: " + assetRef);
+        LogError("AssetCache::SetLastModified() DateTime is invalid: " + assetRef);
         return false;
     }
 
