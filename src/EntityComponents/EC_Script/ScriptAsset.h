@@ -42,7 +42,6 @@ private:
 private slots:
     /// Parse internal references from script
     void ParseReferences();
-
 };
 
 typedef shared_ptr<ScriptAsset> ScriptAssetPtr;
