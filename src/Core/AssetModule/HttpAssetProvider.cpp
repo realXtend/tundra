@@ -452,7 +452,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
     {
         if (reply->error() == QNetworkReply::NoError)
         {
-            LogInfo(QString("Http DELETE to address \"%1\" returned successfully.").arg(replyUrl));
+            LogDebug(QString("Http DELETE to address \"%1\" returned successfully.").arg(replyUrl));
             DeleteAssetRefFromStorages(replyUrl);
             framework->Asset()->EmitAssetDeletedFromStorage(replyUrl);
         }
