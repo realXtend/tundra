@@ -296,6 +296,9 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
     // QNetworkAccessManager requires us to delete the QNetworkReply, or it will leak.
     reply->deleteLater();
 
+    int httpStatusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    const QString replyUrl = reply->url().toString();
+
     switch(reply->operation())
     {
     case QNetworkAccessManager::GetOperation:
@@ -311,15 +314,17 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         {
             framework->Asset()->AssetTransferAborted(transfer.get());
         }
-        // Handle 307 Temporary Redirect
-        else if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 307)
+        // Handle '307 Temporary Redirect', '302 Found' and '303 See Other' redirects. All of these should return the Location header.
+        else if (httpStatusCode == 307 || httpStatusCode == 302 || httpStatusCode == 303)
         {           
             // Handle "Location" header that will have the URL where the resource can be found.
             // Note that the original reply to asset transfer mapping will be removed after this block exists.
             QByteArray redirectUrl = reply->rawHeader("Location");
             if (!redirectUrl.isEmpty())
             {
-                LogDebug("HttpAssetProvider: Handling \"307 Temporary Redirect\" from " + reply->url().toString() + " to " + redirectUrl);
+                LogDebug(QString("HttpAssetProvider: Handling \"%1 %2\" from %3 to %4")
+                    .arg(httpStatusCode).arg(httpStatusCode == 307 ? "Temporary Redirect" : httpStatusCode == 302 ? "Found" : "See Other")
+                    .arg(replyUrl).arg(QString(redirectUrl)));
 
                 // Add new mapping to the asset transfer for the new redirect URL.
                 QNetworkRequest redirectRequest;
@@ -330,10 +335,8 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
                 transfers[QPointer<QNetworkReply>(redirectReply)] = transfer;
             }
             else
-            {
-                QString error = "Http GET for address \"" + reply->url().toString() + "\" returned 307 Temporary Redirect but the \"Location\" header is empty, cannot request asset from temporary redirect URL.";
-                framework->Asset()->AssetTransferFailed(transfer.get(), error);
-            }
+                framework->Asset()->AssetTransferFailed(transfer.get(), QString("Http GET for address \"%1\" returned %2 status code but the \"Location\" header is empty, cannot request asset from redirected URL.")
+                    .arg(replyUrl).arg(httpStatusCode));
         }
         // No error, proceed
         else if (reply->error() == QNetworkReply::NoError)
@@ -342,19 +345,17 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             QString sourceRef = transfer->source.ref;
             QString error;
 
-            int replyCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-
             // 304 Not Modified
-            if (replyCode == 304)
+            if (httpStatusCode == 304)
             {
                 // Read cache file to transfer asset data
                 if (!cache->FindInCache(sourceRef).isEmpty())
                     transfer->diskSourceType = IAsset::Cached;
                 else
-                    error = "Http GET for address \"" + reply->url().toString() + "\" returned '304 Not Modified' but existing cache file could not be opened: \"" + cache->GetDiskSourceByRef(sourceRef) + "\"";
+                    error = QString("Http GET for address \"%1\" returned '304 Not Modified' but existing cache file could not be opened: \"%2\"").arg(replyUrl).arg(cache->GetDiskSourceByRef(sourceRef));
             }
             // 200 OK
-            else if (replyCode == 200)
+            else if (httpStatusCode == 200)
             {
                 // Read body to transfer asset data
                 QByteArray bodyData = reply->readAll();
@@ -389,7 +390,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
                 }
             }
             else
-                error = "Http GET for address \"" + reply->url().toString() + "\" returned code " + QString::number(replyCode) + " that could not be processed.";
+                error = QString("Http GET for address \"%1\" returned status code %2 that could not be processed.").arg(replyUrl).arg(httpStatusCode);
 
             // Send AssetTransferCompleted or AssetTransferFailed to AssetAPI.
             if (error.isEmpty())
@@ -401,11 +402,9 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
                 framework->Asset()->AssetTransferFailed(transfer.get(), error);
         }
         else
-        {
-            QString error = "Http GET for address \"" + reply->url().toString() + "\" returned an error: \"" + reply->errorString() + "\"";
-            framework->Asset()->AssetTransferFailed(transfer.get(), error);
-        }
+            framework->Asset()->AssetTransferFailed(transfer.get(), QString("Http GET for address \"%1\" returned an error: %2").arg(replyUrl).arg(reply->errorString()));
 
+        // Erase the transfer from internal state.
         transfers.erase(iter);
         break;
     }
@@ -415,46 +414,52 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         UploadTransferMap::iterator iter = uploadTransfers.find(reply);
         if (iter == uploadTransfers.end())
         {
-            LogError("PostOperation: Received a finish signal of an unknown Http upload transfer!");
+            LogError("PostOperation: Received a finish signal of an unknown Http upload transfer: " + replyUrl);
             return;
         }
         AssetUploadTransferPtr transfer = iter->second;
 
         if (reply->error() == QNetworkReply::NoError)
         {
+            LogDebug(QString("Http upload to address \"%1\" returned successfully.").arg(replyUrl));
+
+            // Set reply data.
             transfer->replyData = reply->readAll();
-            QString ref = reply->url().toString();
-            LogDebug("Http upload to address \"" + ref + "\" returned successfully.");
+
+            // Set reply headers.
+            foreach(const QNetworkReply::RawHeaderPair &header, reply->rawHeaderPairs())
+                transfer->replyHeaders[QString(header.first)] = QString(header.second);
+
+            // Report completion.
             framework->Asset()->AssetUploadTransferCompleted(transfer.get());
-            // Add the assetref to matching storage(s)
-            AddAssetRefToStorages(ref);
+
+            // Add the completed asset ref to matching storage(s)
+            AddAssetRefToStorages(replyUrl);
         }
         else
         {
-            LogError("Http upload to address \"" + reply->url().toString() + "\" failed with an error: \"" + reply->errorString() + "\"");
-            ///\todo Call the following when implemented:
-//            framework->Asset()->AssetUploadTransferFailed(transfer);
+            LogError(QString("Http upload to address \"%1\" failed with an error: %2").arg(replyUrl).arg(reply->errorString()));
+            /// @todo Call the AssetAPI::AssetUploadTransferFailed when implemented.
+            //framework->Asset()->AssetUploadTransferFailed(transfer);
             transfer->EmitTransferFailed();
         }
+
+        // Erase the transfer from internal state.
         uploadTransfers.erase(iter);
         break;
     }
     case QNetworkAccessManager::DeleteOperation:
+    {
         if (reply->error() == QNetworkReply::NoError)
         {
-            QString ref = reply->url().toString();
-            LogInfo("Http DELETE to address \"" + ref + "\" returned successfully.");
-            DeleteAssetRefFromStorages(ref);
-            framework->Asset()->EmitAssetDeletedFromStorage(ref);
+            LogInfo(QString("Http DELETE to address \"%1\" returned successfully.").arg(replyUrl));
+            DeleteAssetRefFromStorages(replyUrl);
+            framework->Asset()->EmitAssetDeletedFromStorage(replyUrl);
         }
         else
-            LogError("Http DELETE to address \"" + reply->url().toString() + "\" failed with an error: \"" + reply->errorString() + "\"");
+            LogError(QString("Http DELETE to address \"%1\" failed with an error: %2").arg(replyUrl).arg(reply->errorString()));
         break;
-        /*
-    default:
-        LogInfo("Unknown operation for address \"" + reply->url().toString() + "\" finished with result: \"" + reply->errorString() + "\"");
-        break;
-        */
+    }
     }
 }
 
