@@ -30,6 +30,11 @@
 
 using namespace OgreRenderer;
 
+/// \todo The instancing shaders do not properly run on Mac, possibly due to driver bug. Instacing is disabled on Mac for now
+#ifdef Q_WS_MAC
+#define NO_INSTANCING
+#endif
+
 EC_Mesh::EC_Mesh(Scene* scene) :
     IComponent(scene),
     INIT_ATTRIBUTE_VALUE(nodeTransformation, "Transform", Transform(float3(0,0,0),float3(0,0,0),float3(1,1,1))),
@@ -779,12 +784,14 @@ void EC_Mesh::AttachEntity()
 void EC_Mesh::CreateMesh(const AssetPtr &meshAsset)
 {
     // Redirect call if instancing is enabled.
+#ifndef NO_INSTANCING
     if (useInstancing.Get())
     {
         LogWarning("EC_Mesh::CreateMesh: Called with instancing enabled, redirecting to CreateInstance().");
         CreateInstance(meshAsset);
         return;
     }
+#endif
 
     // We either use 1) The input meshAsset or if that is null 2) Current internal asset ref listener asset.
     if (!meshAsset.get() && !this->meshAsset->Asset().get())
@@ -828,6 +835,10 @@ void EC_Mesh::CreateMesh(const AssetPtr &meshAsset)
 
 void EC_Mesh::CreateInstance(const AssetPtr &meshAsset)
 {
+#ifdef NO_INSTANCING
+    CreateMesh(meshAsset);
+    return;
+#else
     // Redirect call if instancing is not enabled.
     if (!useInstancing.Get())
     {
@@ -835,6 +846,7 @@ void EC_Mesh::CreateInstance(const AssetPtr &meshAsset)
         CreateMesh(meshAsset);
         return;
     }
+#endif
 
     // We either use 1) The input meshAsset or if that is null 2) Current internal asset ref listener asset.
     if (!meshAsset.get() && !this->meshAsset->Asset().get())
@@ -949,6 +961,7 @@ void EC_Mesh::UpdateSignals()
 
 void EC_Mesh::AttributesChanged()
 {
+#ifndef NO_INSTANCING
     if (useInstancing.ValueChanged())
     {
         // Validate if we can use instancing.
@@ -963,6 +976,7 @@ void EC_Mesh::AttributesChanged()
         else if (!useInstancing.Get() && instancedEntity_)
             CreateMesh();
     }
+#endif
     if (drawDistance.ValueChanged())
     {
         if (entity_)
