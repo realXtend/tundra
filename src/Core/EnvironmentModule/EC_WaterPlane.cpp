@@ -1,6 +1,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include "StableHeaders.h"
+#include "Math/MathFwd.h"
 #define MATH_OGRE_INTEROP
 #include "DebugOperatorNew.h"
 
