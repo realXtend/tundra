@@ -1062,7 +1062,7 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
     }
 
     undoManager_->Push(new AddComponentCommand(scene->shared_from_this(), undoManager_->Tracker(),
-        targetEntities, dialog->TypeName(), dialog->Name(), dialog->IsReplicated(), dialog->IsTemporary()));
+        targetEntities, dialog->TypeId(), dialog->Name(), dialog->IsReplicated(), dialog->IsTemporary()));
 }
 
 void ECEditorWindow::OnAboutToEditAttribute(IAttribute *attr)

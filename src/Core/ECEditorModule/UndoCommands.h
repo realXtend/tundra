@@ -256,20 +256,25 @@ public:
     /// Internal QUndoCommand unique ID
     enum { Id = 103 };
 
-    /// Constructor
+    /// Constructor taking a component type ID.
     /* @param scene Scene of which entities we're tracking.
        @param tracker Pointer to the EntityIdChangeTracker object
        @param entities A list of IDs of entities that a component is being added to
-       @param compType Type name of the component being added
+       @param componentTypeId Type ID of the component being added
        @param compName Name of the component being added
        @param sync Sync state of the component being added
        @param temp Temporary state of the component being added
        @param parent The parent command of this command (optional) */
     AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const EntityIdList &entities,
-        const QString &compType, const QString &compName, bool sync, bool temp, QUndoCommand * parent = 0);
+        u32 componentTypeId, const QString &compName, bool sync, bool temp, QUndoCommand * parent = 0);
+
+    /// Constructor taking a component type name.
+    /** @param componentTypeName Type name of the component being added */
+    AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const EntityIdList &entities,
+        const QString &componentTypeName, const QString &compName, bool sync, bool temp, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
-    int id () const;
+    int id() const;
     /// QUndoCommand override
     void undo();
     /// QUndoCommand override
@@ -279,7 +284,8 @@ public:
     EntityIdChangeTracker * tracker_; ///< Pointer to the tracker object, taken from an undo manager
     EntityIdList entityIds_; ///< List of IDs of entities that this component is being added to
     QString componentName_; ///< Name of the component being added
-    QString componentType_; ///< Typename of the component being added
+    QString componentTypeName; ///< Type name of the component being added
+    u32 componentTypeId; ///< Type ID of the component being added
     bool sync_; ///< Sync state of the component
     bool temp_; ///< Temporary state of the component
 };

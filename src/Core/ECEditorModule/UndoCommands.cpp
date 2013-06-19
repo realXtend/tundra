@@ -120,17 +120,35 @@ void RemoveAttributeCommand::redo()
 }
 
 AddComponentCommand::AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const EntityIdList &entities,
-    const QString &compType, const QString &compName, bool sync, bool temp, QUndoCommand * parent) :
+    u32 compType, const QString &compName, bool sync, bool temp, QUndoCommand * parent) :
     scene_(scene),
     tracker_(tracker),
     entityIds_(entities),
     componentName_(compName),
-    componentType_(compType),
+    componentTypeId(compType),
+    componentTypeName(scene->GetFramework()->Scene()->ComponentTypeNameForTypeId(compType)),
     temp_(temp),
     sync_(sync),
     QUndoCommand(parent)
 {
-    setText("+ Added " + IComponent::EnsureTypeNameWithoutPrefix(componentType_) + " Component" + (entities.size() == 1 ? "" : QString(" (to %1 entities)").arg(entities.size())));
+    setText("+ Added " + IComponent::EnsureTypeNameWithoutPrefix(componentTypeName) +
+        " Component" + (entities.size() == 1 ? "" : QString(" (to %1 entities)").arg(entities.size())));
+}
+
+AddComponentCommand::AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const EntityIdList &entities,
+    const QString &compTypeName, const QString &compName, bool sync, bool temp, QUndoCommand * parent) :
+    scene_(scene),
+    tracker_(tracker),
+    entityIds_(entities),
+    componentName_(compName),
+    componentTypeId(scene->GetFramework()->Scene()->ComponentTypeIdForTypeName(compTypeName)),
+    componentTypeName(compTypeName),
+    temp_(temp),
+    sync_(sync),
+    QUndoCommand(parent)
+{
+    setText("+ Added " + IComponent::EnsureTypeNameWithoutPrefix(componentTypeName) +
+        " Component" + (entities.size() == 1 ? "" : QString(" (to %1 entities)").arg(entities.size())));
 }
 
 int AddComponentCommand::id() const
@@ -144,16 +162,16 @@ void AddComponentCommand::undo()
     QUndoCommand::undo();
 
     ScenePtr scene = scene_.lock();
-    if (!scene.get())
+    if (!scene)
         return;
 
     foreach (entity_id_t id, entityIds_)
     {
         EntityPtr ent = scene->EntityById(tracker_->RetrieveId(id));
-        if (ent.get())
+        if (ent)
         {
-            ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
-            if (comp.get())
+            ComponentPtr comp = ent->Component(componentTypeId, componentName_);
+            if (comp)
             {
                 sync_ = comp->IsReplicated();
                 temp_ = comp->IsTemporary();
@@ -167,7 +185,7 @@ void AddComponentCommand::undo()
 void AddComponentCommand::redo()
 {
     ScenePtr scene = scene_.lock();
-    if (!scene.get())
+    if (!scene)
         return;
 
     foreach (entity_id_t id, entityIds_)
@@ -175,8 +193,7 @@ void AddComponentCommand::redo()
         EntityPtr ent = scene->EntityById(tracker_->RetrieveId(id));
         if (ent.get())
         {
-            Framework *fw = scene->GetFramework();
-            ComponentPtr comp = fw->Scene()->CreateComponentByName(scene.get(), componentType_, componentName_);
+            ComponentPtr comp = scene->GetFramework()->Scene()->CreateComponentById(scene.get(), componentTypeId, componentName_);
             if (comp)
             {
                 comp->SetReplicated(sync_);
@@ -414,9 +431,7 @@ void RemoveCommand::undo()
             entity_id_t newId = sync ? scene->NextFreeId() : scene->NextFreeIdLocal();
             tracker_->TrackId(id, newId);
 
-            QString newIdStr;
-            newIdStr.setNum((int)newId);
-            entityElement.setAttribute("id", newIdStr);
+            entityElement.setAttribute("id", QString::number((int)newId));
 
             entityElement = entityElement.nextSiblingElement();
         }

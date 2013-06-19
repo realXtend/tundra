@@ -859,7 +859,7 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
     }
 
     if (undoManager_ && !targetEntities.isEmpty())
-        undoManager_->Push(new AddComponentCommand(scene.lock(), undoManager_->Tracker(), targetEntities, dialog->TypeName(), dialog->Name(), dialog->IsReplicated(), dialog->IsTemporary()));
+        undoManager_->Push(new AddComponentCommand(scene.lock(), undoManager_->Tracker(), targetEntities, dialog->TypeId(), dialog->Name(), dialog->IsReplicated(), dialog->IsTemporary()));
 }
 
 void SceneTreeWidget::Delete()
