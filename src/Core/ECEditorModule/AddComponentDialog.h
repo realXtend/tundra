@@ -40,10 +40,13 @@ public:
     void SetComponentName(const QString &name);
 
 public:
-    /// Returns component typename, guaranteed to begin with the "EC_" prefix.
+    /// Returns the chosen component's type name, guaranteed to begin with the "EC_" prefix.
     QString TypeName() const;
 
-    /// Returns component name
+    /// Returns the chosen component's type ID.
+    u32 TypeId() const;
+
+    /// Returns the chosen component name.
     QString Name() const;
 
     /// Returns if synchronization check box is checked or not.

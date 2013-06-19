@@ -132,6 +132,11 @@ QString AddComponentDialog::TypeName() const
     return IComponent::EnsureTypeNameWithPrefix(type_combo_box_->currentText());
 }
 
+u32 AddComponentDialog::TypeId() const
+{
+    return framework_->Scene()->ComponentTypeIdForTypeName(type_combo_box_->currentText());
+}
+
 QString AddComponentDialog::Name() const
 {
     return name_line_edit_->text();
