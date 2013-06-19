@@ -52,7 +52,7 @@
 #ifdef _DEBUG
 // If MATH_ASSERT_CORRECTNESS is defined, special (and possibly rather costly) mathassert()
 // tests are enabled, which test the internal correctness of the library.
-#define MATH_ASSERT_CORRECTNESS
+//#define MATH_ASSERT_CORRECTNESS
 #endif
 
 // If FAIL_USING_EXCEPTIONS is defined, all mathassert(), assert() and assume() macros turn into
