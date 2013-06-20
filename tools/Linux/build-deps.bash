@@ -48,7 +48,7 @@ else
     boostpackage=libboost-all-dev
 fi
 
-if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|katya|julia|isadora|quantal|nadia" && tty >/dev/null; then
+if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|maya|lisa|katya|julia|isadora|quantal|nadia|raring|olivia" && tty >/dev/null; then
         which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
     sudo aptitude -y install git-core python-dev libogg-dev libvorbis-dev \
      build-essential g++ $boostpackage libois-dev \
@@ -225,7 +225,7 @@ else
         hg clone https://bitbucket.org/clb/ogre-safe-nocrashes
     fi
 
-    if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|quantal" && tty >/dev/null; then
+    if lsb_release -c | egrep -q "lucid|maverick|natty|oneiric|precise|quantal|raring" && tty >/dev/null; then
         sudo apt-get build-dep libogre-dev
     elif lsb_release -d | egrep -q -e "Debian GNU/Linux" && tty >/dev/null; then
         sudo apt-get build-dep libogre-1.8-dev
