@@ -82,15 +82,26 @@ macro (configure_celt)
         SET(CELT_ROOT ${ENV_TUNDRA_DEP_PATH}/celt)
     endif()
 
-    sagase_configure_package(CELT
-        NAMES celt
-        COMPONENTS libcelt  # for libcelt
-                   celt0    # for old celt0 name (linux?)
-                   celt     # for celt.h
-        PREFIXES ${CELT_ROOT}
-                 ${ENV_TUNDRA_DEP_PATH}
-                 ${CELT_ROOT}/lib/Debug
-                 ${CELT_ROOT}/lib/Release)
+    if (NOT MSVC)
+        sagase_configure_package(CELT
+            NAMES celt
+            COMPONENTS libcelt  # for libcelt
+                       celt0    # for old celt0 name (linux?)
+                       celt     # for celt.h
+            PREFIXES ${CELT_ROOT}
+                     ${ENV_TUNDRA_DEP_PATH}
+                     ${CELT_ROOT}/lib/Debug
+                     ${CELT_ROOT}/lib/Release)
+    else()
+        find_path(CELT_INCLUDE_DIR celt.h HINTS ${CELT_ROOT}/include PATH_SUFFIXES celt)
+        RemoveLastElementFromPath(${CELT_INCLUDE_DIR} CELT_INCLUDE_DIRS)
+
+        find_path(CELT_LIBRARY_DIR NAMES libcelt.lib libceltd.lib HINTS ${CELT_ROOT}/lib PATH_SUFFIXES Release RelWithDebInfo Debug)
+        RemoveLastElementFromPath(${CELT_LIBRARY_DIR} CELT_LIBRARY_DIRS)
+
+        set(CELT_LIBRARIES optimized libcelt.lib debug libceltd.lib)
+    endif()
+
     sagase_configure_report (CELT)
 endmacro (configure_celt)
 

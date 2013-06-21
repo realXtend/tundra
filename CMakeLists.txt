@@ -103,6 +103,17 @@ macro(GetLastElementFromPath dirPath outputParam)
     endif ()
 endmacro ()
 
+macro(RemoveLastElementFromPath dirPath outputParam)
+    string (FIND ${dirPath} "/" lastPathSepIndex REVERSE)
+    # This path does not have any subdirs in it
+    if (${lastPathSepIndex} STREQUAL "-1")
+        set (${outputParam} ${dirPath})
+    # Path has subdirs, pick the path in front of it
+    else ()
+        string(SUBSTRING ${dirPath} 0 ${lastPathSepIndex} ${outputParam})
+    endif ()
+endmacro ()
+
 # The AddEntityComponent macro adds the static EC lib from the given sourceFolder directory to the build.
 # The componentName == A subfolder in src/EntityComponents/ or a relative path to the EC directory where the CMakeLists.txt is located.
 # Use this macro when adding ECs to the build, since this macro tracks the set of ECs that are added, so that the individual
