@@ -8,17 +8,10 @@ This page lists the necessary steps to build Tundra on Mac OS X 10.6.8 or newer.
 
 <ol>
 <li>Install cmake from <a href="http://www.cmake.org/cmake/resources/software.html">http://www.cmake.org/cmake/resources/software.html</a>.
-<li>Install Qt from <a href="http://qt.nokia.com/downloads">http://qt.nokia.com/downloads</a>.
-<li>Add the Qt qmake tool to your system PATH by editing the file .profile in your home directory, and specifying the directory where your qmake resides, e.g. <pre>export PATH=$PATH:/Users/<myusername>/QtSDK/Desktop/Qt/4.8.0/gcc/bin</pre>For more information on specifying the PATH, see <a href="http://keito.me/tutorials/macosx_path">http://keito.me/tutorials/macosx_path</a>.
 <li>Install XCode from Apple App Store (requires an Apple ID).
 <li>Install git from <a href="http://git-scm.com/download">http://git-scm.com/download</a>.
+<li>Install mercurial from <a href="http://mercurial.selenic.com/downloads">http://mercurial.selenic.com/downloads</a>.
 <li>Clone the Tundra repository by running in your home folder <pre>git clone https://github.com/realXtend/naali</pre>
-<li>Download a prebuilt Ogre 1.7.4 SDK or newer from <a href="http://www.ogre3d.org/download/sdk/">http://www.ogre3d.org/download/sdk/</a>.
-<ul>
-   <li>After the download has finished, open the downloaded .dmg file, and open the OgreSDK folder in the folder that pops up.
-   <li>Browse into the directory OgreSDK/lib/release, and copy the Ogre.framework directory into ~/Library/Frameworks, so that you will have a directory ~/Library/Frameworks/Ogre.framework/. Create the needed subdirectories if they do not exist.
-   <li>Browse into the directory OgreSDK/lib/, and copy all the .dylib files there into (naali git trunk)/bin/Contents/Plugins. Create the needed subdirectories if they do not exist.
-</ul>
 </ol>
 
 These instructions assume that the git clone command was run at the user's home directory, i.e. that Tundra git trunk resides in the folder ~/naali.
@@ -27,8 +20,10 @@ These instructions assume that the git clone command was run at the user's home 
 
 Open up a new terminal window, and
 <ol>
-<li>Create a new directory that will contain the library dependencies required by Tundra by typing <pre>mkdir ~/naali-deps</pre>
-<li>Change into the directory ~/naali/tools, and run <pre>./build-mac-deps.bash -d ~/naali-deps</pre>
+<li>Change into the directory ~/naali/tools/OSX, and run <pre>./BuildDeps.bash -c ~/naali</pre>
+<li>The build should proceed into building SkyX & Hydrax, which fail due to missing Ogre framework. Copy Ogre framework manually from ~/naali/deps/build/ogre-safe-nocrashes/lib/relwithdebinfo into a system framework directory such as /Library/Frameworks (requires admin privileges).
+<li>Rerun <pre>./BuildDeps.bash -c ~/naali</pre>
+<li>If installing vlc fails due to a "disk busy" error, rerun <pre>./BuildDeps.bash -c ~/naali</pre> once more. 
 </ol>
 
 When you build Tundra for the first time, the build script will locate and build all the necessary dependencies that are required for Tundra. This will take some time. Note that when the script is building boost, there is a long pause during which nothing is printed on the screen, that is normal.
@@ -38,7 +33,7 @@ When you build Tundra for the first time, the build script will locate and build
 <li>.. fix it by adding Qt includes to qtscript generators path e.g. by setting this environment variable: export INCLUDE=/Users/<myusername>/QtSDK/Desktop/Qt/4.8.0/gcc/include</li>
 </ul>
 
-<p>When the script has finished, the directory ~/naali-deps/ will have been populated with several different 3rd party libraries and the finished build of Tundra is placed at ~/naali/bin/.
+<p>When the script has finished, the directory ~/naali/deps/ will have been populated with several different 3rd party libraries and the finished build of Tundra is placed at ~/naali/bin/.
 
 \section MacIncrementalBuild Incremental Build and Full Rebuild
 
@@ -60,10 +55,10 @@ If you want to generate an installer package (.dmg) which deploys Tundra as an O
 
 <ol>
 <li>Make sure you have built Tundra according to the full instructions above.
-<li>Open a terminal and browse to ~/naali.
-<li>Type <b>./max-bundle-app.bash</b>. This will deploy Tundra into an application bundle in ~/naali/build/Tundra.app.
-<li>Type <b>./max-app-fix.bash</b>. This will fix up broken OSX .dylib lookup chains by repeatedly calling <a href="http://developer.apple.com/library/mac/#documentation/Darwin/Reference/ManPages/man1/install_name_tool.1.html">install_name_tool</a> on all .dylibs inside the bundle. Additionally, it will deploy any missing non-system .dylibs into the bundle. This step utilizes an external tool from <a href="https://github.com/juj/MacAppFix">juj/MacAppFix</a>.
-<li>Type <b>./mac-create-dmg.bash</b>. This will create a .dmg disk image of the app bundle in ~/naali/build/Tundra.app.
+<li>Open a terminal and browse to ~/naali/Tools/OSX.
+<li>Type <b>./CreateBundleApp.bash</b>. This will deploy Tundra into an application bundle in ~/naali/build/Tundra.app.
+<li>Type <b>./AppPathFix.bash</b>. This will fix up broken OSX .dylib lookup chains by repeatedly calling <a href="http://developer.apple.com/library/mac/#documentation/Darwin/Reference/ManPages/man1/install_name_tool.1.html">install_name_tool</a> on all .dylibs inside the bundle. Additionally, it will deploy any missing non-system .dylibs into the bundle. This step utilizes an external tool from <a href="https://github.com/juj/MacAppFix">juj/MacAppFix</a>.
+<li>Type <b>./CreateDMG.bash</b>. This will create a .dmg disk image of the app bundle in ~/naali/build/Tundra.app.
 </ol>
 
 After the last step, a disk image will be generated to ~/naali/tundra.dmg.

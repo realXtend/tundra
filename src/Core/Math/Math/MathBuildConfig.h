@@ -40,7 +40,7 @@
 #ifndef _DEBUG
 // If MATH_SILENT_ASSUME is defined, all assume() tests are stripped from the build. This
 // overrides MATH_ASSERT_ON_ASSUME.
-#define MATH_SILENT_ASSUME
+//#define MATH_SILENT_ASSUME
 
 // If MATH_ENABLE_INSECURE_OPTIMIZATIONS, several security checks (unsafe index out of bounds accesses etc.) are disabled.
 // Use this for absolutely fastest performance on MathGeoLib, but only if you know your code is 100% well-formed and uses
@@ -52,7 +52,7 @@
 #ifdef _DEBUG
 // If MATH_ASSERT_CORRECTNESS is defined, special (and possibly rather costly) mathassert()
 // tests are enabled, which test the internal correctness of the library.
-#define MATH_ASSERT_CORRECTNESS
+//#define MATH_ASSERT_CORRECTNESS
 #endif
 
 // If FAIL_USING_EXCEPTIONS is defined, all mathassert(), assert() and assume() macros turn into

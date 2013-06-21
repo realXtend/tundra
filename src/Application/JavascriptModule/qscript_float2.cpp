@@ -9,7 +9,7 @@ void ToExistingScriptValue_float2(QScriptEngine *engine, const float2 &value, QS
 static QScriptValue float2_float2(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function float2_float2 in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
-    float2 ret;
+    float2 ret(float2::zero);
     return qScriptValueFromValue(engine, ret);
 }
 

@@ -1,0 +1,16 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="1" sync="true">
+  <component type="EC_Name" sync="true">
+   <attribute value="Generator" type="string" id="name" name="Name"/>
+   <attribute value="" type="string" id="description" name="Description"/>
+  </component>
+  <component type="EC_Script" sync="true">
+   <attribute value="generator.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+   <attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+   <attribute value="0" type="int" id="runMode" name="Run mode"/>
+   <attribute value="" type="string" id="applicationName" name="Script application name"/>
+   <attribute value="" type="string" id="className" name="Script class name"/>
+  </component>
+ </entity>
+</scene>

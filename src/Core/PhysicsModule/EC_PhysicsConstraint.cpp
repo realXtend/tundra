@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 #define MATH_BULLET_INTEROP
-
 #include "DebugOperatorNew.h"
 
 #include "PhysicsWorld.h"
@@ -14,20 +13,19 @@
 #include "Entity.h"
 #include "Math/MathFunc.h"
 #include "EC_Placeable.h"
+
+#include "BulletDynamics/ConstraintSolver/btTypedConstraint.h"
+#include "BulletDynamics/ConstraintSolver/btHingeConstraint.h"
+#include "BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h"
+#include "BulletDynamics/ConstraintSolver/btSliderConstraint.h"
+#include "BulletDynamics/ConstraintSolver/btConeTwistConstraint.h"
+#include "BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h"
+
 #include "AttributeMetadata.h"
-
-#include <BulletDynamics/ConstraintSolver/btTypedConstraint.h>
-#include <BulletDynamics/ConstraintSolver/btHingeConstraint.h>
-#include <BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h>
-#include <BulletDynamics/ConstraintSolver/btSliderConstraint.h>
-#include <BulletDynamics/ConstraintSolver/btConeTwistConstraint.h>
-#include <BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
-
-#include "MemoryLeakCheck.h"
 
 using namespace Physics;
 
-static Quat FromEulerDegToQuat(const float3 &degEuler)
+Quat FromEulerDegToQuat(float3 degEuler)
 {
     float3 radEuler = DegToRad(degEuler);
     return Quat::FromEulerXYZ(radEuler.x, radEuler.y, radEuler.z);
@@ -162,6 +160,8 @@ void EC_PhysicsConstraint::Create()
 
     rigidBody_ = ParentEntity()->GetComponent<EC_RigidBody>();
 
+    /// \todo If the other entity is not yet loaded, the constraint will be mistakenly created as a static one
+    /// \todo Add warning logging if the other entity is not found, or for other error situations
     Entity *otherEntity = 0;
     if (!getotherEntity().IsEmpty())
     {
@@ -169,6 +169,7 @@ void EC_PhysicsConstraint::Create()
         if (otherEntity)
         {
             otherRigidBody_ = otherEntity->GetComponent<EC_RigidBody>();
+            /// \todo Disconnect these signals at constraint removal time, in case the other entity ID is changed at runtime
             connect(otherEntity, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), SLOT(Remove()), Qt::UniqueConnection);
             connect(otherEntity, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), SLOT(OnComponentAdded(IComponent*)), Qt::UniqueConnection);
             connect(otherEntity, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), SLOT(OnComponentRemoved(IComponent*)), Qt::UniqueConnection);

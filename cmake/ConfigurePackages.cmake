@@ -327,8 +327,13 @@ macro(link_package_theora)
 endmacro()
 
 macro(use_package_qtpropertybrowser)
-    include_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/src) # For full-built deps.
-    link_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/lib) # For full-built deps.
+    if (NOT APPLE)
+        include_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/src) # For full-built deps.
+        link_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/lib) # For full-built deps.
+    else ()
+        include_directories(${ENV_TUNDRA_DEP_PATH}/qtpropertybrowser/include) # For full-built deps.
+        link_directories(${ENV_TUNDRA_DEP_PATH}/qtpropertybrowser/lib) # For full-built deps.
+    endif ()
 endmacro()
 
 macro(link_package_qtpropertybrowser)

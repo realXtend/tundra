@@ -106,6 +106,9 @@ private slots:
     /// Trigger sync of entity action to specific user
     void OnUserActionTriggered(UserConnection* user, Entity *entity, const QString &action, const QStringList &params);
 
+    /// Trigger sync of entity properties (temporary status) change
+    void OnEntityPropertiesChanged(Entity* entity, AttributeChange::Type change);
+    
     /// Handle a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);
 
@@ -136,9 +139,11 @@ private:
     void HandleCreateEntityReply(kNet::MessageConnection* source, const char* data, size_t numBytes);
     /// Handle create components reply message.
     void HandleCreateComponentsReply(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    /// Handle entity properties change message.
+    void HandleEditEntityProperties(kNet::MessageConnection* source, const char* data, size_t numBytes);
     
     void HandleRigidBodyChanges(kNet::MessageConnection* source, kNet::packet_id_t packetId, const char* data, size_t numBytes);
-
+    
     void ReplicateRigidBodyChanges(kNet::MessageConnection* destination, SceneSyncState* state);
 
     void InterpolateRigidBodies(f64 frametime, SceneSyncState* state);

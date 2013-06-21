@@ -58,7 +58,7 @@ EC_TransformGizmo::EC_TransformGizmo(Scene *scene) :
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Initialize()));
 
     QString uniqueName("EC_TransformGizmo_" + framework->Asset()->GenerateUniqueAssetName("",""));
-    input = framework->Input()->RegisterInputContext(uniqueName, 10000);
+    input = framework->Input()->RegisterInputContext(uniqueName, 100);
     connect(input.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
 
     ogreWorld = scene->GetWorld<OgreWorld>();
@@ -129,9 +129,10 @@ void EC_TransformGizmo::Initialize()
         LogError("EC_TransformGizmo::Initialize: Could not create EC_Placeable for EC_TransformGizmo.");
         return;
     }
+    
 
     placeable->SetTemporary(true);
-//    placeable->selectionLayer.Set(0, AttributeChange::Default); // ignore raycast
+    placeable->selectionLayer.Set(0x80000000, AttributeChange::Default); // ignore raycast to other entities
     placeable->visible.Set(false, AttributeChange::Default);
 
     mesh = dynamic_pointer_cast<EC_Mesh>(ParentEntity()->CreateLocalComponent(
@@ -187,7 +188,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
 //    if ((e->eventType == MouseEvent::MousePressed && e->button == MouseEvent::LeftButton) ||
 //        (e->eventType == MouseEvent::MouseMove && e->otherButtons == 0))
 
-    // To avoid confusion while editing, do not update the axes during a drag, although the visualization is updated
+    // To avoid confusion while editing, do not update the axes from the placeable during a drag, although the visualization is updated
     if (state != Active)
     {
         worldTM = placeable->LocalToWorld();
@@ -209,7 +210,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
     float distanceZ = mouseRay.Distance(zRay);
 
     bool hit = false;
-    RaycastResult *result = world->Raycast(e->x, e->y);
+    RaycastResult *result = world->Raycast(e->x, e->y, 0x80000000);
     if (result->entity && result->entity->GetComponent<EC_TransformGizmo>().get() == this)
         hit = true;
 
@@ -217,8 +218,6 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
     float offsetX, offsetY, offsetZ;
 
     // We always keep the transform gizmo constant-sized in the view.
-    float3 gizmoPos = mesh->LocalToWorld().TranslatePart();
-    float3 cameraPos = placeable->LocalToWorld().TranslatePart();
     const float gizmoScale = DesiredGizmoScale();
     const float cClickOffsetThreshold = gizmoScale; // Specifies how far along the gizmo X,Y and Z axes we can click.
     const float cClickDistanceThreshold = 0.125f * gizmoScale;
@@ -358,6 +357,9 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                     //ss << curPoint-prevPoint;
                     //LogInfo("Emitting Translated(" + ss.str() + ")");
                     emit Translated(curPoint-prevPoint);
+                    // To allow unlimited drag, translate also the active axes' rays now
+                    for (size_t i = 0; i < activeAxes.size(); ++i)
+                        activeAxes[i].ray.pos += curPoint - prevPoint;
                     break;
                 case EC_TransformGizmo::Rotate:
                     if (activeAxes.size() == 1)

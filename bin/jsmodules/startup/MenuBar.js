@@ -58,6 +58,8 @@ if (!framework.IsHeadless())
 
     // Tools menu
     var toolsMenu = menu.addMenu("&Tools");
+    // Set unique object name so that other scripts can query this menu.
+    viewMenu.objectName = "ViewMenu";
 
     if (framework.ModuleByName("SceneStructure"))
     {
@@ -79,7 +81,6 @@ if (!framework.IsHeadless())
 
     if (console)
         toolsMenu.addAction("Show Console").triggered.connect(OpenConsoleWindow);
-
     // Settings menu
     if (framework.ModuleByName("MumbleVoip") || ecEditor)
     {

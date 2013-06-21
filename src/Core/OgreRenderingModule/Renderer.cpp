@@ -505,6 +505,7 @@ namespace OgreRenderer
 
             LogInfo("Renderer: Loading Ogre resources");
             SetupResources();
+            CreateInstancingShaders();
 
 #ifdef ANDROID
             // Android: initialize RT shader system
@@ -653,6 +654,57 @@ namespace OgreRenderer
         Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/RTShaderLib/materials", "FileSystem", "General");
 #endif
         Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+    }
+
+    void Renderer::CreateInstancingShaders()
+    {
+        Ogre::ResourceManager::ResourceMapIterator shader_iter = ((Ogre::ResourceManager*)Ogre::HighLevelGpuProgramManager::getSingletonPtr())->getResourceIterator();
+        while(shader_iter.hasMoreElements())
+        {
+            Ogre::ResourcePtr resource = shader_iter.getNext();
+            Ogre::HighLevelGpuProgram* program = dynamic_cast<Ogre::HighLevelGpuProgram*>(resource.get());
+            if (program)
+            {
+                if (program->getType() == Ogre::GPT_VERTEX_PROGRAM && program->getLanguage() == "cg")
+                {
+                    QString name(program->getName().c_str());
+                    if (!name.contains("instanced", Qt::CaseInsensitive) && !name.contains("instancing", Qt::CaseInsensitive))
+                    {
+                        try
+                        {
+                            Ogre::HighLevelGpuProgram* cloneProgram = Ogre::HighLevelGpuProgramManager::getSingletonPtr()->createProgram(program->getName()
+                                + "/Instanced", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, "cg", Ogre::GPT_VERTEX_PROGRAM).get();
+                            if (cloneProgram)
+                            {
+                                cloneProgram->setSourceFile(program->getSourceFile());
+                                cloneProgram->setParameter("profiles", program->getParameter("profiles"));
+                                cloneProgram->setParameter("entry_point", program->getParameter("entry_point"));
+                                cloneProgram->setParameter("compile_arguments", program->getParameter("compile_arguments") + " -DINSTANCING");
+                                cloneProgram->load();
+                                Ogre::GpuProgramParametersSharedPtr srcParams = program->getDefaultParameters();
+                                Ogre::GpuProgramParametersSharedPtr destParams = cloneProgram->getDefaultParameters();
+                                destParams->copyMatchingNamedConstantsFrom(*srcParams);
+                                if (destParams->_findNamedConstantDefinition("viewProjMatrix"))
+                                    destParams->setNamedAutoConstant("viewProjMatrix", Ogre::GpuProgramParameters::ACT_VIEWPROJ_MATRIX); // Add viewproj matrix parameter for SuperShader
+                                // If doing shadow mapping, map the lightViewProj matrices to not include world transform
+                                if (destParams->_findNamedConstantDefinition("lightViewProj0"))
+                                    destParams->setNamedAutoConstant("lightViewProj0", Ogre::GpuProgramParameters::ACT_TEXTURE_VIEWPROJ_MATRIX, 0);
+                                if (destParams->_findNamedConstantDefinition("lightViewProj1"))
+                                    destParams->setNamedAutoConstant("lightViewProj1", Ogre::GpuProgramParameters::ACT_TEXTURE_VIEWPROJ_MATRIX, 1);
+                                if (destParams->_findNamedConstantDefinition("lightViewProj2"))
+                                    destParams->setNamedAutoConstant("lightViewProj2", Ogre::GpuProgramParameters::ACT_TEXTURE_VIEWPROJ_MATRIX, 2);
+                            }
+                            else
+                                LogError("Could not clone vertex program " + program->getName() + " for instancing");
+                        }
+                        catch (Ogre::Exception& e)
+                        {
+                            LogError("Could not clone vertex program " + program->getName() + " for instancing");
+                        }
+                    }
+                }
+            }
+        }
     }
 
     int Renderer::WindowWidth() const
@@ -1027,7 +1079,8 @@ namespace OgreRenderer
         else
         {
             activeMainCamera.reset();
-            LogWarning("Cannot activate camera \"" + (mainCameraEntity ? mainCameraEntity->Name() : "(null)") + "\": It does not have a EC_Camera component!");
+            if (mainCameraEntity)
+                LogWarning("Cannot activate camera '" + mainCameraEntity->Name() + "': It does not have a EC_Camera component!");
         }
         if (mainCameraEntity && !mainCameraEntity->ParentScene()) // If the new to-be camera is not in a scene, don't add it as active.
         {

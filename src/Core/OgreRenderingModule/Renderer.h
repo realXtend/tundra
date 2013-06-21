@@ -209,6 +209,9 @@ namespace OgreRenderer
 
         /// Sets up Ogre resources based on resources.cfg
         void SetupResources();
+        
+        /// Create instancing variants of all vertex shaders
+        void CreateInstancingShaders();
 
         /// Prepare the config with needed default values if they are not there.
         void PrepareConfig();

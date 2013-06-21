@@ -70,6 +70,9 @@ endif ()
 if (ENABLE_JS_PROFILING)
     add_definitions (-DENABLE_JS_PROFILING)
 endif()
+if (ENABLE_BUILD_OPTIMIZATIONS)
+    add_definitions (-DOPTIMIZED_RELEASE) # Disable MathGeoLib assume() prints in an optimized build
+endif ()
 if (MSVC AND ENABLE_MEMORY_LEAK_CHECKS)
     add_definitions(-DMEMORY_LEAK_CHECK)
 endif()
@@ -158,7 +161,6 @@ if (NOT ANDROID)
 endif()
 
 if (NOT ANDROID)
-    #AddProject(Application CAVEStereoModule)        # Provides multi-windowed rendering views for CAVE setups and stereoscopy view modes.
     AddProject(Application OgreAssetEditorModule)   # Enables various asset editors. Depends on OgreRenderingModule.
 endif()
 

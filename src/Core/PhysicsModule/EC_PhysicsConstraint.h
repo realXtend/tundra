@@ -14,51 +14,52 @@ class EC_RigidBody;
 
 /// Physics constraint entity-component
 /** <table class="header">
-     <tr>
-     <td>
-     <h2>PhysicsConstraint</h2>
-     Physics constraint entity-component
+ <tr>
+ <td>
+ <h2>PhysicsConstraint</h2>
+ Physics constraint entity-component
  
-     Registered by Physics::PhysicsModule.
+ Registered by Physics::PhysicsModule.
  
-     <b>Attributes</b>:
-     <ul>
-     <li>bool: enabled
-     <div>@copydoc enabled</div>
-     <li>EntityReference: otherEntity
-     <div>@copydoc otherEntity</div>
-     <li>enum: type
-     <div>@copydoc type</div>
-     <li>float3: position
-     <div>@copydoc position</div>
-     <li>float3: otherPosition
-     <div>@copydoc otherPosition</div>
-     <li>float3: rotation
-     <div>@copydoc rotation</div>
-     <li>float3: otherRotation
-     <div>@copydoc otherRotation</div>
-     <li>float2: lowerLimit
-     <div>@copydoc lowerLimit</div>
-     <li>float2: upperLimit
-     <div>@copydoc upperLimit</div>
-     </ul>
+ <b>Attributes</b>:
+ <ul>
+ <li>bool: enabled
+ <div>@copydoc enabled</div>
+ <li>EntityReference: otherEntity
+ <div>@copydoc @copydoc otherEntity</div>
+ <li>enum: type
+ <div>@copydoc type</div>
+ <li>float3: position
+ <div>@copydoc position</div>
+ <li>float3: otherPosition
+ <div>@copydoc otherPosition</div>
+ <li>float3: rotation
+ <div>@copydoc rotation</div>
+ <li>float3: otherRotation
+ <div>@copydoc otherRotation</div>
+ <li>float2: lowerLimit
+ <div>@copydoc lowerLimit</div>
+ <li>float2: upperLimit
+ <div>@copydoc upperLimit</div>
+ </ul>
  
-     <b>Exposes the following scriptable functions:</b>
-     <ul>
-     <li>None.
-     </ul>
+ <b>Exposes the following scriptable functions:</b>
+ <ul>
+ <li>None.
+ </ul>
  
-     <b>Reacts on the following actions:</b>
-     <ul>
-     <li>None.
-     </ul>
-     </td>
-     </tr>
+ <b>Reacts on the following actions:</b>
+ <ul>
+ <li>None.
+ </ul>
+ </td>
+ </tr>
  
-     Does not emit any actions.
+ Does not emit any actions.
  
-     <b>Depends on the component @ref EC_RigidBody "RigidBody", and @ref EC_Placeable "Placeable"</b>.
-     </table> */
+ <b>Depends on the component @ref EC_RigidBody "RigidBody", and @ref EC_Placeable "Placeable"</b>.
+ </table> */
+
 class EC_PhysicsConstraint : public IComponent
 {
     Q_OBJECT

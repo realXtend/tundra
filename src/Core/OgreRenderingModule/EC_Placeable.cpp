@@ -294,7 +294,7 @@ void EC_Placeable::AttachNode()
                     EC_Mesh* parentMesh = parentEntity->GetComponent<EC_Mesh>().get();
                     if (parentMesh)
                     {
-                        Ogre::Bone* bone = parentMesh->GetBone(boneName);
+                        Ogre::Bone* bone = parentMesh->OgreBone(boneName);
                         if (bone)
                         {
                             // Create the node for bone attachment if it did not exist already
@@ -306,7 +306,7 @@ void EC_Placeable::AttachNode()
                             
                             // Setup manual bone tracking, as Ogre does not allow to attach scene nodes to bones
                             parentMesh->ForceSkeletonUpdate();
-                            attachmentListener.AddAttachment(parentMesh->GetEntity(), bone, this);
+                            attachmentListener.AddAttachment(parentMesh->OgreEntity(), bone, this);
                             boneAttachmentNode_->addChild(sceneNode_);
                             
                             parentBone_ = bone;

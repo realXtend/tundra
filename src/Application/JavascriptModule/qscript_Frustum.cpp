@@ -18,6 +18,7 @@ static QScriptValue Frustum_ctor(QScriptContext *context, QScriptEngine *engine)
 {
     if (context->argumentCount() != 0) { printf("Error! Invalid number of arguments passed to function Frustum_ctor in file %s, line %d!\nExpected 0, but got %d!\n", __FILE__, __LINE__, context->argumentCount()); PrintCallStack(context->backtrace()); return QScriptValue(); }
     Frustum ret;
+    memset(&ret, 0, sizeof ret);
     return qScriptValueFromValue(engine, ret);
 }
 

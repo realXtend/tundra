@@ -1,33 +1,32 @@
 /**
 
-\page BuildOnUbuntu Building and Running Tundra on Ubuntu 11.10
+\page BuildOnUbuntu Building and Running Tundra on Ubuntu.
 
-This page lists the necessary steps to build Tundra on Ubuntu 11.10. The steps have been tested on a VirtualBox image found from here http://virtualboxes.org/images/ubuntu/ .
+This page lists the necessary steps to build Tundra on Ubuntu.
 
 \section Prereqs Prerequisites
 
 <ol>
 <li>Install git if you do not have it yet by running <pre>sudo apt-get install git</pre> in the terminal.
+<li>Configure source repositories into /etc/apt/sources.list: duplicate the lines that already exist in the file, and replace 'deb' with 'deb-src'. Then run apt-get update. You need to be root for this.
 <li>Clone the Tundra repository by running <pre>git clone https://github.com/realXtend/naali</pre>
 </ol>
 
 \section UbuntuFirstTimeBuild First-Time Build
 
 <ol>
-<li>Change into the directory naali/tools, and run <pre>./build-ubuntu-deps.bash</pre>
+<li>Change into the directory naali/tools/Linux, and run <pre>./build-deps.bash</pre>
 </ol>
 
 When you build Tundra for the first time, the build script will locate and build all the necessary dependencies that are required for Tundra. This involves running apt-get, and will require root privileges.
 
 <p>When the script has finished, there will be a sibling directory naali-deps/ created next to the directory naali/ you cloned the Tundra repository into.
 
-<p><b>Note:</b>At the time of writing, there are some build issues related to the Linux build. For example, see <a href="https://github.com/realXtend/naali/issues/320">github issue #320</a>.
-
 <p>After the build script has finished, the directory naali/bin/ will contain the Tundra executable, ready to run.
 
 \section UbuntuIncrementalBuild Incremental Build
 
-<p>While you can always run the build-ubuntu-deps.bash file to rebuild Tundra after you have modified a source file, it is not very feasible since the script often takes quite a long time to finish (also see <a href="https://github.com/realXtend/naali/issues/311">github issue #311</a>).
+<p>While you can always run the build--deps.bash file to rebuild Tundra after you have modified a source file, it is not very feasible since the script often takes quite a long time to finish (also see <a href="https://github.com/realXtend/naali/issues/311">github issue #311</a>).
 
 <p>If you only modified some C++ file, you can simply re-run make in the naali/ root directory.
 <p>To clean up all intermediate C++ symbol files in the build, issue the command 'make clean'.
@@ -40,19 +39,6 @@ When you build Tundra for the first time, the build script will locate and build
 If you modified some cmake variables, you may need to clean up any build variables cmake has cached by deleting the file naali/CMakeCache.txt before running cmake.
 
 <p>If you want to restore the whole repository into a clean state as it was when you originally cloned it, issue the command 'git clean -x -d -f' in the repository root directory. Be warned though, this will delete ALL untracked files inside the repository directory, even those you added yourself.
-
-\section AdditionalNotes Notes
-
-<ul>
-<li>Currently, Tundra does not automatically build on the Ubuntu 10.04 LTS version.
-<li>The build script build-ubuntu-deps.bash does not include the Ogre Cg Plugin in the build. (the Cg plugin is required for Tundra to compile Cg shaders)
-<ul>
-<li>To get Cg you need a version of Ogre built with it. One that is known to work with 11.04 at least is from the personal repository of Andrew Fenn. You can get that by doing this before running the build script: sudo add-apt-repository ppa:andrewfenn/ogredev</li>
-</ul>
-<li>For Qt, the version 4.7.0 is required. Tundra does not build with Qt 4.6.x or older.
-<li>For Ogre, the version 1.7.3 is preferred. Tundra does not build with Ogre 1.6.x or older. It might build with an older 1.7.x.
-<li>For Boost, the version 1.40.0 or newer is required.
-</ul>
 
 <p>To view or report outstanding issues related to building on Ubuntu, please visit the <a href="https://github.com/realXtend/naali/issues">Tundra github issue tracker</a>.
 */

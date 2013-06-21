@@ -237,7 +237,7 @@ void EC_Avatar::SetupMeshAndMaterials()
         mesh->SetMesh(meshName, need_mesh_clone);
     
     if (need_mesh_clone)
-        HideVertices(mesh->GetEntity(), vertices_to_hide);
+        HideVertices(mesh->OgreEntity(), vertices_to_hide);
     
     for (uint i = 0; i < desc->materials_.size(); ++i)
         mesh->SetMaterial(i, LookupAsset(desc->materials_[i]), AttributeChange::Default);
@@ -326,13 +326,13 @@ void ResetBones(Entity* entity)
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
     if (!mesh)
         return;
-    
-    Ogre::Entity* ogre_entity = mesh->GetEntity();
-    if (!ogre_entity)
+    Ogre::Entity* ogreEntity = mesh->OgreEntity();
+    if (!ogreEntity)
         return;
+
     // See that we actually have a skeleton
-    Ogre::SkeletonInstance* skeleton = ogre_entity->getSkeleton();
-    Ogre::Skeleton* orig_skeleton = ogre_entity->getMesh()->getSkeleton().get();
+    Ogre::SkeletonInstance* skeleton = ogreEntity->getSkeleton();
+    Ogre::Skeleton* orig_skeleton = ogreEntity->getMesh()->getSkeleton().get();
     if ((!skeleton) || (!orig_skeleton))
         return;
     
@@ -356,12 +356,13 @@ void ApplyBoneModifier(Entity* entity, const BoneModifier& modifier, float value
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
     if (!mesh)
         return;
-    Ogre::Entity* ogre_entity = mesh->GetEntity();
-    if (!ogre_entity)
+    Ogre::Entity* ogreEntity = mesh->OgreEntity();
+    if (!ogreEntity)
         return;
+
     // See that we actually have a skeleton
-    Ogre::SkeletonInstance* skeleton = ogre_entity->getSkeleton();
-    Ogre::Skeleton* orig_skeleton = ogre_entity->getMesh()->getSkeleton().get();
+    Ogre::SkeletonInstance* skeleton = ogreEntity->getSkeleton();
+    Ogre::Skeleton* orig_skeleton = ogreEntity->getMesh()->getSkeleton().get();
     if ((!skeleton) || (!orig_skeleton))
         return;
     
@@ -506,11 +507,10 @@ Ogre::Bone* GetAvatarBone(Entity* entity, const std::string& bone_name)
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
     if (!mesh)
         return 0;
-    
-    Ogre::Entity* ogre_entity = mesh->GetEntity();
-    if (!ogre_entity)
+    Ogre::Entity* ogreEntity = mesh->OgreEntity();
+    if (!ogreEntity)
         return 0;
-    Ogre::SkeletonInstance* skeleton = ogre_entity->getSkeleton();
+    Ogre::SkeletonInstance* skeleton = ogreEntity->getSkeleton();
     if (!skeleton)
         return 0;
     if (!skeleton->hasBone(bone_name))

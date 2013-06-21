@@ -27,6 +27,7 @@
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "IAsset.h"
+#include "ConfigAPI.h"
 #include "IAssetTransfer.h"
 #include "IAssetProvider.h"
 #include "ConfigAPI.h"
@@ -60,6 +61,8 @@
 #include <kNet/qt/NetworkDialog.h>
 #endif
 
+#include "TreeWidgetUtils.h"
+
 #include "MemoryLeakCheck.h"
 
 using namespace std;
@@ -86,13 +89,12 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     logThreshold_(100.0f),
     visibility_(false),
     contextMenu_(0)
-{
+{       
     ui_.setupUi(this);
     setWindowTitle(tr("Profiler"));
     
     // Load settings before connecting any UI signals.
     LoadSettings();
-    
     /** Hide unused UI elements so users wont be confused. Left in the ui file if we are to reimplement/enable these features.
         @todo Should we enable threshold again logging? Currently not used by DebugStatsModule. */
     ui_.loggerThresholdTitle->hide();
@@ -110,7 +112,7 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     ui_.textureDataTree->installEventFilter(this);
     ui_.meshDataTree->installEventFilter(this);
     ui_.materialDataTree->installEventFilter(this);
-
+    
     // Tab change
     connect(ui_.tabWidget, SIGNAL(currentChanged(int)), this, SLOT(RefreshProfilerTabWidget(int)));
     connect(ui_.ogreTabWidget, SIGNAL(currentChanged(int)), this, SLOT(RefreshOgreTabWidget(int)));
@@ -993,10 +995,9 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
         profiler.Lock();
         DumpProfilerSpikes(profiler.GetRoot(), static_cast<float>(ui_.loggerSpinbox->value()), framework_->Frame()->FrameNumber());
         profiler.Release();
+#endif
     }
 #endif
-}
-
 void TimeProfilerWindow::DoThresholdLogging()
 {
 #ifdef PROFILING
@@ -1873,35 +1874,35 @@ void TimeProfilerWindow::RefreshOgreSceneComplexityPage()
         EC_Terrain* terrain = entity.GetComponent<EC_Terrain>().get();
         EC_Mesh* mesh = entity.GetComponent<EC_Mesh>().get();
         EC_OgreCustomObject* custom = entity.GetComponent<EC_OgreCustomObject>().get();
-        Ogre::Entity* ogre_entity = 0;
+        Ogre::Entity* ogreEntity = 0;
         
         // Get Ogre mesh from mesh EC
         if (mesh)
         {
-            ogre_entity = mesh->GetEntity();
-            if (ogre_entity)
+            ogreEntity = mesh->OgreEntity();
+            if (ogreEntity && ogreEntity->getMesh().get())
             {
-                Ogre::Mesh* ogre_mesh = ogre_entity->getMesh().get();
-                scene_meshes.insert(ogre_mesh);
-                GetVerticesAndTrianglesFromMesh(ogre_mesh, mesh_instance_vertices, mesh_instance_triangles);
+                Ogre::Mesh* ogreMesh = ogreEntity->getMesh().get();
+                scene_meshes.insert(ogreMesh);
+                GetVerticesAndTrianglesFromMesh(ogreMesh, mesh_instance_vertices, mesh_instance_triangles);
                 mesh_instances++;
                 std::set<Ogre::Material*> temp_mat;
-                GetMaterialsFromEntity(ogre_entity, temp_mat);
+                GetMaterialsFromEntity(ogreEntity, temp_mat);
                 GetTexturesFromMaterials(temp_mat, scene_textures);
             }
         }
         // Get Ogre mesh from customobject EC
         else if (custom)
         {
-            ogre_entity = custom->GetEntity();
-            if (ogre_entity)
+            ogreEntity = custom->GetEntity();
+            if (ogreEntity && ogreEntity->getMesh().get())
             {
-                Ogre::Mesh* ogre_mesh = ogre_entity->getMesh().get();
-                scene_meshes.insert(ogre_mesh);
-                GetVerticesAndTrianglesFromMesh(ogre_mesh, mesh_instance_vertices, mesh_instance_triangles);
+                Ogre::Mesh* ogreMesh = ogreEntity->getMesh().get();
+                scene_meshes.insert(ogreMesh);
+                GetVerticesAndTrianglesFromMesh(ogreMesh, mesh_instance_vertices, mesh_instance_triangles);
                 mesh_instances++;
                 std::set<Ogre::Material*> temp_mat;
-                GetMaterialsFromEntity(ogre_entity, temp_mat);
+                GetMaterialsFromEntity(ogreEntity, temp_mat);
                 GetTexturesFromMaterials(temp_mat, scene_textures);
             }
         }
@@ -1917,15 +1918,15 @@ void TimeProfilerWindow::RefreshOgreSceneComplexityPage()
                         continue;
                     if (!node->numAttachedObjects())
                         continue;
-                    ogre_entity = dynamic_cast<Ogre::Entity*>(node->getAttachedObject(0));
-                    if (ogre_entity)
+                    ogreEntity = dynamic_cast<Ogre::Entity*>(node->getAttachedObject(0));
+                    if (ogreEntity && ogreEntity->getMesh().get())
                     {
-                        Ogre::Mesh* ogre_mesh = ogre_entity->getMesh().get();
-                        scene_meshes.insert(ogre_mesh);
-                        GetVerticesAndTrianglesFromMesh(ogre_mesh, mesh_instance_vertices, mesh_instance_triangles);
+                        Ogre::Mesh* ogreMesh = ogreEntity->getMesh().get();
+                        scene_meshes.insert(ogreMesh);
+                        GetVerticesAndTrianglesFromMesh(ogreMesh, mesh_instance_vertices, mesh_instance_triangles);
                         mesh_instances++;
                         std::set<Ogre::Material*> temp_mat;
-                        GetMaterialsFromEntity(ogre_entity, temp_mat);
+                        GetMaterialsFromEntity(ogreEntity, temp_mat);
                         GetTexturesFromMaterials(temp_mat, scene_textures);
                     }
                 }
@@ -1933,7 +1934,7 @@ void TimeProfilerWindow::RefreshOgreSceneComplexityPage()
         }
         
         {
-            if (ogre_entity)
+            if (ogreEntity)
                 meshentities++;
         }
         if (entity.GetComponent("EC_AnimationController").get())

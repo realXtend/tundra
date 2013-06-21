@@ -1,0 +1,183 @@
+
+// This file includes code copied from the Ogre 3D Samples media assets,
+// in particular the instancing examples. Original author Matias N. Goldberg ("dark_sylinc").
+
+// This file includes code copied from shadows.cg in the Ogre 3D Samples media assets. 
+// Copyright notice for this particular file included below:
+
+/* 	Copyright Torus Knot Software Ltd 2000-2013
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in
+	all copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+	THE SOFTWARE. 
+*/
+
+#define NUM_SHADOW_SAMPLES_1D 2.0
+#define SHADOW_FILTER_SCALE 1
+#define SHADOW_SAMPLES NUM_SHADOW_SAMPLES_1D*NUM_SHADOW_SAMPLES_1D
+#define SHADOW_BIAS 0
+
+float4 offsetSample(float4 uv, float2 offset, float invMapSize)
+{
+	return float4(uv.xy + offset * invMapSize * uv.w, uv.z, uv.w);
+}
+
+float calcDepthShadow(sampler2D shadowMap, float4 uv, float invShadowMapSize)
+{
+	// 4-sample PCF
+	
+	float shadow = 0.0;
+	float offset = (NUM_SHADOW_SAMPLES_1D/2 - 0.5) * SHADOW_FILTER_SCALE;
+	for (float y = -offset; y <= offset; y += SHADOW_FILTER_SCALE)
+		for (float x = -offset; x <= offset; x += SHADOW_FILTER_SCALE)
+		{
+			float depth = tex2Dproj(shadowMap, offsetSample(uv, float2(x, y), invShadowMapSize)).x;
+			if (depth >= 1 || depth >= uv.z)
+				shadow += 1.0;
+		}
+
+	shadow /= SHADOW_SAMPLES;
+
+	return shadow;
+}
+
+// Below structs, VS and PS copied from Ogre3D Samples media assets.
+
+struct PS_INPUT
+{
+#ifdef DEPTH_SHADOWCASTER
+	float3 unused	:	TEXCOORD0;
+	float depth		:	TEXCOORD1;
+#else
+	float2 uv0		:	TEXCOORD0;
+	float3 Normal	:	TEXCOORD1;
+	float3 vPos		:	TEXCOORD2;
+	
+	#ifdef DEPTH_SHADOWRECEIVER
+		float4 lightSpacePos	:	TEXCOORD3;
+	#endif
+#endif
+};
+
+struct VS_OUTPUT
+{
+	float4 Position	:	POSITION;
+	PS_INPUT	ps;
+};
+
+struct VS_INPUT
+{
+	float4 Position	:	POSITION;
+	float3 Normal	:	NORMAL;
+	float3 Tangent	:	TANGENT;
+	float2 uv0		:	TEXCOORD0;
+
+	float4 mat14	:	TEXCOORD1;
+	float4 mat24	:	TEXCOORD2;
+	float4 mat34	:	TEXCOORD3;
+};
+
+VS_OUTPUT main_vs( in VS_INPUT input,
+				   uniform float4x4 viewProjMatrix
+
+#if defined( DEPTH_SHADOWCASTER ) || defined( DEPTH_SHADOWRECEIVER )
+				,  uniform float4 depthRange
+#endif
+#ifdef DEPTH_SHADOWRECEIVER
+				,  uniform float4x4 texViewProjMatrix
+#endif
+				)
+{
+	VS_OUTPUT output;
+
+	float3x4 worldMatrix;
+	worldMatrix[0] = input.mat14;
+	worldMatrix[1] = input.mat24;
+	worldMatrix[2] = input.mat34;
+
+	float4 worldPos = float4( mul( worldMatrix, input.Position ).xyz, 1.0f );
+	float3 worldNorm = mul( (float3x3)(worldMatrix), input.Normal );
+
+	//Transform the position
+	output.Position		= mul( viewProjMatrix, worldPos );
+
+#ifdef DEPTH_SHADOWCASTER
+	output.ps.unused	= float3( 0 );
+	output.ps.depth		= (output.Position.z - depthRange.x + SHADOW_BIAS) * depthRange.w;
+#else
+	output.ps.uv0		= input.uv0;
+
+	//Pass Normal and position for Blinn Phong lighting
+	output.ps.Normal	= normalize(worldNorm);
+	output.ps.vPos		= worldPos.xyz;
+	
+	#ifdef DEPTH_SHADOWRECEIVER
+		// Calculate the position of vertex in light space to do shadows
+		output.ps.lightSpacePos = mul( texViewProjMatrix, worldPos );
+		// make linear
+		output.ps.lightSpacePos.z = (output.ps.lightSpacePos.z - depthRange.x) * depthRange.w;
+	#endif
+#endif
+
+	return output;
+}
+
+half4 main_ps( PS_INPUT input ,
+				uniform float4	lightPosition,
+				uniform float3	cameraPosition,
+				uniform half3 	lightAmbient,
+				uniform half3	lightDiffuse,
+				uniform half3	lightSpecular,
+				uniform half4	lightAttenuation,
+				uniform half	lightGloss,
+
+				//Textures
+				uniform sampler2D diffuseMap : register(s0)
+
+#ifdef DEPTH_SHADOWRECEIVER
+			,	uniform float invShadowMapSize,
+				uniform sampler2D shadowMap : register(s1)
+#endif
+			) : COLOR0
+{
+	float fShadow = 1.0f;
+#ifdef DEPTH_SHADOWRECEIVER
+	fShadow = calcDepthShadow( shadowMap, input.lightSpacePos, invShadowMapSize );
+#endif
+
+	const half4 baseColour = tex2D( diffuseMap, input.uv0 );
+	
+	//Blinn-Phong lighting
+	const half3 normal		= normalize( input.Normal );
+	half3 lightDir			= lightPosition.xyz - input.vPos * lightPosition.w;
+	half3 eyeDir			= normalize( cameraPosition - input.vPos  );
+
+	const half fLength		= length( lightDir );
+	lightDir				= normalize( lightDir );
+
+	const half NdotL = max( 0.0f, dot( normal, lightDir ) );
+	half3 halfVector = normalize(lightDir + eyeDir);
+	const half HdotN = max( 0.0f, dot( halfVector, normal ) );
+	
+	const half3 ambient  = lightAmbient * baseColour.xyz;
+	const half3 diffuse  = lightDiffuse * NdotL * baseColour.xyz;
+	const half3 specular = lightSpecular * pow( HdotN, lightGloss );
+	
+	const half3 directLighting = (diffuse + specular) * fShadow;
+	
+	return half4( directLighting + ambient, baseColour.a );
+}

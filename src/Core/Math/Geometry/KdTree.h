@@ -79,7 +79,7 @@ public:
 	{}
 
 	~KdTree();
-
+	
 	/// Adds a given number of objects to this kD-tree.
 	/// Call this function repeatedly as many times as necessary to prepare the data. Then
 	/// call Build() to create the tree data structure.
@@ -88,6 +88,11 @@ public:
 	/// Creates the kD-tree data structure based on all the objects added to the tree.
 	/// After Build() has been called, do *not* call AddObjects() again.
 	void Build();
+
+	/// Empties the whole kD-tree of all objects.
+	/// Call this function if you want to reuse this structure for rebuilding another kD-tree, after first
+	/// having called AddObjects/Build to build a previous tree.
+	void Clear();
 
 	/// Returns an object bucket by the given bucket index.
 	/// An object bucket is a contiguous C array of object indices, terminated with a sentinel value BUCKET_SENTINEL.
@@ -208,7 +213,7 @@ struct TriangleKdTreeRayQueryNearestHitVisitor
 {
 	float rayT;
 	float3 pos;
-	int triangleIndex;
+	u32 triangleIndex;
 	float2 barycentricUV;
 
 	TriangleKdTreeRayQueryNearestHitVisitor()
@@ -243,4 +248,4 @@ struct TriangleKdTreeRayQueryNearestHitVisitor
 
 MATH_END_NAMESPACE
 
-#include "KDTree.inl"
+#include "KdTree.inl"

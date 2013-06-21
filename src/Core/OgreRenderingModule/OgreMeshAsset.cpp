@@ -17,6 +17,12 @@
 #include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
 
+OgreMeshAsset::OgreMeshAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
+    IAsset(owner, type_, name_),
+    loadTicket_(0)
+{
+}
+
 OgreMeshAsset::~OgreMeshAsset()
 {
     Unload();
@@ -242,6 +248,7 @@ int OgreMeshAsset::NumTris(int submeshIndex)
 
 void OgreMeshAsset::CreateKdTree()
 {
+    meshData.Clear();
     normals.clear();
     uvs.clear();
     subMeshTriangleCounts.clear();
@@ -460,24 +467,25 @@ void OgreMeshAsset::DoUnload()
 
 void OgreMeshAsset::SetDefaultMaterial()
 {
-    if (ogreMesh.isNull())
+    if (!ogreMesh.get())
         return;
 
-//    originalMaterials.clear();
     for(unsigned short i = 0; i < ogreMesh->getNumSubMeshes(); ++i)
     {
         Ogre::SubMesh *submesh = ogreMesh->getSubMesh(i);
         if (submesh)
-        {
-//            originalMaterials.push_back(submesh->getMaterialName().c_str());
             submesh->setMaterialName("LitTextured");
-        }
     }
 }
 
 bool OgreMeshAsset::IsLoaded() const
 {
-    return ogreMesh.get() != 0;
+    return (ogreMesh.get() != 0);
+}
+
+QString OgreMeshAsset::OgreMeshName() const
+{
+    return (ogreMesh.get() != 0 ? QString::fromStdString(ogreMesh->getName()) : "");
 }
 
 bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const

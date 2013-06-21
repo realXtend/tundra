@@ -34,7 +34,7 @@ Entity::Entity(Framework* framework, entity_id_t id, Scene* scene) :
     scene_(scene),
     temporary_(false)
 {
-    connect(this, SIGNAL(TemporaryStateToggled(Entity *)), scene_, SIGNAL(EntityTemporaryStateToggled(Entity *)));
+    connect(this, SIGNAL(TemporaryStateToggled(Entity *, AttributeChange::Type)), scene_, SIGNAL(EntityTemporaryStateToggled(Entity *, AttributeChange::Type)));
 }
 
 Entity::~Entity()
@@ -634,10 +634,18 @@ void Entity::EmitLeaveView(IComponent* camera)
 
 void Entity::SetTemporary(bool enable)
 {
+    SetTemporary(enable, AttributeChange::Default);
+}
+
+void Entity::SetTemporary(bool enable, AttributeChange::Type change)
+{
     if (enable != temporary_)
     {
         temporary_ = enable;
-        emit TemporaryStateToggled(this);
+        if (change == AttributeChange::Default)
+            change = AttributeChange::Replicate;
+        if (change != AttributeChange::Disconnected)
+            emit TemporaryStateToggled(this, change);
     }
 }
 
