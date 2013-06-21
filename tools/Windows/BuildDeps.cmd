@@ -997,16 +997,12 @@ IF NOT EXIST "%DEPS%\celt\lib\%DEBUG_OR_RELEASE%\libcelt.lib" (
     cecho {0D}Building %DEBUG_OR_RELEASE% Celt 0.11.1.{# #}{\n}
     MSBuild libcelt.%VCPROJ_FILE_EXT% /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
 
-    :: Copy libs
-    IF NOT EXIST "%DEPS%\celt\lib". (
-        mkdir "%DEPS%\celt\lib\Debug\"
-        mkdir "%DEPS%\celt\lib\Release\"
-    )
-    IF %TARGET_ARCH%==x64 (
-        copy /Y X64\%DEBUG_OR_RELEASE%\libcelt.lib "%DEPS%\celt\lib\%DEBUG_OR_RELEASE%\"
-    ) ELSE (
-        copy /Y %DEBUG_OR_RELEASE%\libcelt.lib "%DEPS%\celt\lib\%DEBUG_OR_RELEASE%\"
-        REM copy /Y lib\%DEBUG_OR_RELEASE%\libcelt.lib "%DEPS%\celt\lib\%DEBUG_OR_RELEASE%\"
+    :: Celt only build release or debug, to make things easier in cmake copy Release as RelWithDebInfo
+    IF "!BUILD_TYPE!"=="%BUILD_TYPE_RELWITHDEBINFO%" (
+        IF NOT EXIST "%DEPS%\celt\lib\%BUILD_TYPE_RELWITHDEBINFO%". (
+            mkdir "%DEPS%\celt\lib\%BUILD_TYPE_RELWITHDEBINFO%\"
+        )
+        copy /Y "%DEPS%\celt\lib\Release\libcelt.lib" "%DEPS%\celt\lib\%BUILD_TYPE_RELWITHDEBINFO%\"
     )
 
     :: Copy headers
