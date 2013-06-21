@@ -89,7 +89,7 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     logThreshold_(100.0f),
     visibility_(false),
     contextMenu_(0)
-{       
+{
     ui_.setupUi(this);
     setWindowTitle(tr("Profiler"));
     
@@ -995,9 +995,10 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
         profiler.Lock();
         DumpProfilerSpikes(profiler.GetRoot(), static_cast<float>(ui_.loggerSpinbox->value()), framework_->Frame()->FrameNumber());
         profiler.Release();
-#endif
     }
 #endif
+}
+
 void TimeProfilerWindow::DoThresholdLogging()
 {
 #ifdef PROFILING

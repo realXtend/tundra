@@ -58,6 +58,7 @@ public slots:
 
 signals:
     void ExternalConversionRequested(OgreMeshAsset*, const u8*, size_t);
+
 private:
     /// Unload mesh from Ogre. IAsset override.
     virtual void DoUnload();
@@ -90,8 +91,6 @@ private:
     std::vector<int> subMeshTriangleCounts;
 
 #ifdef ASSIMP_ENABLED
-    OpenAssetImport *importer;
-
 private slots:
     void OnAssimpConversionDone(bool);
 #endif

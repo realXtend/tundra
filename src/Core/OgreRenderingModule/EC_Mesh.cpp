@@ -1008,7 +1008,7 @@ void EC_Mesh::AttributesChanged()
                 if (child) child->setCastShadows(castShadows.Get());
         }
     }
-    if (nodeTransformation.ValueChanged() && adjustment_node_)
+    if (nodeTransformation.ValueChanged() && adjustmentNode_)
     {
         Transform newTransform = nodeTransformation.Get();
         adjustmentNode_->setPosition(newTransform.pos);
