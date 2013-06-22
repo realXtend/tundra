@@ -692,22 +692,32 @@ QStringList Framework::CommandLineParameters(const QString &key) const
 
 void Framework::PrintStartupOptions()
 {
-    int i = 0;
     LogInfo("Startup options:");
+    
+    QString lastOption;
+    int i = 0;
     while(i < startupOptions.size())
     {
-        if (!startupOptions[i].startsWith("--"))
-            LogWarning("Warning: Orphaned startup option parameter value \"" + startupOptions[i] + "\" specified!");
+        QString option = startupOptions[i];
+        if (!option.startsWith("--"))
+            LogWarning("Orphaned startup option parameter value \"" + option + "\" specified!");
+
+        QString line;
         if (i+1 < startupOptions.size() && !startupOptions[i+1].startsWith("--"))
         {
-            LogInfo("   '" + startupOptions[i] + "' '" + startupOptions[i+1].simplified().replace(" ", "") + "'");
+            QString value = startupOptions[i+1].simplified().replace(" ", "");
+            line = QString("  %1 '%2'").arg(option != lastOption ? option : "", -10).arg(value);
             i += 2;
         }
         else
         {
-            LogInfo("   '" + startupOptions[i] + "'");
+            line = QString("  %1").arg(option, -10);
             ++i;
         }
+        LogInfo(line);
+
+        if (lastOption.compare(option, Qt::CaseSensitive) != 0)
+            lastOption = option;
     }
 }
 

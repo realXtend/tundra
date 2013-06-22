@@ -7,6 +7,8 @@
 #include "Application.h"
 
 #include <QtXml>
+#include <QDir>
+#include <QFile>
 
 #include <vector>
 #include <sstream>
@@ -75,25 +77,30 @@ void PluginAPI::LoadPlugin(const QString &filename)
     const QString pluginSuffix = ".dylib";
 #endif
 
-    LogInfo("Loading plugin '" + filename + "'.");
+    // Check if the plugin source file even exists.
+    QString path = QDir::toNativeSeparators(Application::InstallationDirectory() + "plugins/" + filename.trimmed() + pluginSuffix);
+    if (!QFile::exists(path))
+    {
+        LogWarning(QString("Cannot load plugin \"%1\" as file does not exist").arg(path));
+        return;
+    }
+    LogInfo("Loading plugin " + filename);
     owner->App()->SetSplashMessage("Loading plugin " + filename);
-    QString path = Application::InstallationDirectory() + "plugins/" + filename.trimmed() + pluginSuffix;
 
     ///\todo Unicode support!
 #ifdef WIN32
-    path = path.replace("/", "\\");
     HMODULE module = LoadLibraryA(path.toStdString().c_str());
     if (module == NULL)
     {
         DWORD errorCode = GetLastError();
-        LogError("Failed to load plugin from file \"" + path + "\": Error " + GetErrorString(errorCode).c_str() + "!");
+        LogError(QString("Failed to load plugin from \"%1\": %2 (Missing dependencies?)").arg(path).arg(GetErrorString(errorCode).c_str()));
         return;
     }
     TundraPluginMainSignature mainEntryPoint = (TundraPluginMainSignature)GetProcAddress(module, "TundraPluginMain");
     if (mainEntryPoint == NULL)
     {
         DWORD errorCode = GetLastError();
-        LogError("Failed to find plugin startup function 'TundraPluginMain' from plugin file \"" + path + "\": Error " + GetErrorString(errorCode).c_str() + "!");
+        LogError(QString("Failed to find plugin startup function 'TundraPluginMain' from plugin file \"%1\": %2").arg(path).arg(GetErrorString(errorCode).c_str()));
         return;
     }
 #else
