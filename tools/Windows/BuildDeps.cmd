@@ -925,6 +925,14 @@ IF NOT EXIST "%DEPS%\speex\lib\%DEBUG_OR_RELEASE%\libspeexdsp.lib". (
 
     MSBuild libspeex.sln /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
+    :: Speex only builds Release or Debug, to make things easier in cmake dublicate Release as RelWithDebInfo.
+    IF "!BUILD_TYPE!"=="%BUILD_TYPE_RELWITHDEBINFO%" (
+        IF NOT EXIST "%DEPS%\speex\lib\%BUILD_TYPE_RELWITHDEBINFO%". (
+            mkdir "%DEPS%\speex\lib\%BUILD_TYPE_RELWITHDEBINFO%\"
+        )
+        copy /Y "%DEPS%\speex\lib\Release\*.lib" "%DEPS%\speex\lib\%BUILD_TYPE_RELWITHDEBINFO%\"
+    )
 ) ELSE (
    cecho {0D}%DEBUG_OR_RELEASE% Speex already built. Skipping.{# #}{\n}
 )

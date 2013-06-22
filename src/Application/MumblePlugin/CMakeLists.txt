@@ -6,15 +6,29 @@ macro (configure_speex)
         SET(SPEEX_ROOT ${ENV_TUNDRA_DEP_PATH}/speex)
     endif()
 
-    sagase_configure_package(SPEEX
-        NAMES speex
-        COMPONENTS libspeex         # speex lib
-                   libspeexdsp      # speex audio processing lib
-                   speex            # speex.h to find include dir
-        PREFIXES ${SPEEX_ROOT}      # full prebuilt deps
-                 ${ENV_TUNDRA_DEP_PATH}
-                 ${SPEEX_ROOT}/lib/Release) # packaged prebuilt deps
-        
+    # todo: Remove sagase from mac/linux.
+    if (NOT MSVC)
+        sagase_configure_package(SPEEX
+            NAMES speex
+            COMPONENTS libspeex         # speex lib
+                       libspeexdsp      # speex audio processing lib
+                       speex            # speex.h to find include dir
+            PREFIXES ${SPEEX_ROOT}      # full prebuilt deps
+                     ${ENV_TUNDRA_DEP_PATH})
+    else()
+        # Find speex.h and backup one folder for <speex/speex.h> style includes.
+        find_path(SPEEX_INCLUDE_DIR speex.h HINTS ${SPEEX_ROOT}/include PATH_SUFFIXES speex)
+        RemoveLastElementFromPath(${SPEEX_INCLUDE_DIR} SPEEX_INCLUDE_DIRS)
+
+        # Find a library from configuration spesific subfolder and back up one
+        # folder for "SPEEX_LIBRARY_DIR/${Configuration}" windows style linking.
+        find_path(SPEEX_LIBRARY_DIR NAMES libspeex.lib libspeexdsp.lib HINTS ${SPEEX_ROOT}/lib PATH_SUFFIXES Release RelWithDebInfo Debug)
+        RemoveLastElementFromPath(${SPEEX_LIBRARY_DIR} SPEEX_LIBRARY_DIRS)
+
+        # Speex does not have d postfix for debug.
+        set(SPEEX_LIBRARIES libspeex.lib libspeexdsp.lib)
+    endif()
+
     sagase_configure_report (SPEEX)
 endmacro (configure_speex)
 
@@ -82,6 +96,7 @@ macro (configure_celt)
         SET(CELT_ROOT ${ENV_TUNDRA_DEP_PATH}/celt)
     endif()
 
+    # todo: Remove sagase from mac/linux.
     if (NOT MSVC)
         sagase_configure_package(CELT
             NAMES celt
@@ -93,9 +108,12 @@ macro (configure_celt)
                      ${CELT_ROOT}/lib/Debug
                      ${CELT_ROOT}/lib/Release)
     else()
+        # Find celt.h and backup one folder for <celt/celt.h> style includes.
         find_path(CELT_INCLUDE_DIR celt.h HINTS ${CELT_ROOT}/include PATH_SUFFIXES celt)
         RemoveLastElementFromPath(${CELT_INCLUDE_DIR} CELT_INCLUDE_DIRS)
 
+        # Find a library from configuration spesific subfolder and back up one
+        # folder for "SPEEX_LIBRARY_DIR/${Configuration}" windows style linking.
         find_path(CELT_LIBRARY_DIR NAMES libcelt.lib libceltd.lib HINTS ${CELT_ROOT}/lib PATH_SUFFIXES Release RelWithDebInfo Debug)
         RemoveLastElementFromPath(${CELT_LIBRARY_DIR} CELT_LIBRARY_DIRS)
 
