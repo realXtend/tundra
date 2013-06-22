@@ -59,7 +59,7 @@ if (!framework.IsHeadless())
     // View menu
     var viewMenu = menu.addMenu("&View");
     // Set unique object name so that other scripts can query this menu.
-    viewMenu.objectName = "ViewMenu";
+    toolsMenu.objectName = "ViewMenu";
 
     if (framework.ModuleByName("SceneStructure"))
     {
