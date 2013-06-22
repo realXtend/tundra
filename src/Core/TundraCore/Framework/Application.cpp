@@ -498,10 +498,7 @@ void Application::ReadTargetFpsLimitFromConfig()
         bool ok;
         double targetFps = framework->Config()->Get(targetFpsConfigData, "fps target limit").toDouble(&ok);
         if (ok && targetFps >= 0.0)
-        {
-            LogDebug("Application: read target FPS limit " + QString::number(targetFpsLimit) + " from config.");
             SetTargetFpsLimit(targetFps);
-        }
         else
             LogWarning("Application: Invalid target FPS value " + QString::number(targetFps) + " read from config. Ignoring.");
     }
