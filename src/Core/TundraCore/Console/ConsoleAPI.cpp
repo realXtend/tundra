@@ -263,7 +263,9 @@ void ConsoleAPI::ClearLog()
     if (consoleWidget)
         consoleWidget->ClearLog();
 #ifdef _WINDOWS
-    (void)system("cls");
+    // Check that native console exists. If not and we call cls, we see a console flashing briefly on the screen which is undesirable.
+    if (GetConsoleWindow())
+        (void)system("cls");
 #else
     (void)system("clear");
 #endif
