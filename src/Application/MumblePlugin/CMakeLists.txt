@@ -117,7 +117,7 @@ macro (configure_celt)
         find_path(CELT_LIBRARY_DIR NAMES libcelt.lib libceltd.lib HINTS ${CELT_ROOT}/lib PATH_SUFFIXES Release RelWithDebInfo Debug)
         RemoveLastElementFromPath(${CELT_LIBRARY_DIR} CELT_LIBRARY_DIRS)
 
-        set(CELT_LIBRARIES optimized libcelt.lib debug libceltd.lib)
+        set(CELT_LIBRARIES optimized libcelt.lib debug libcelt.lib)
     endif()
 
     sagase_configure_report (CELT)
