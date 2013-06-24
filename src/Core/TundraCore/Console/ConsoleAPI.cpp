@@ -48,6 +48,10 @@ ConsoleAPI::ConsoleAPI(Framework *fw) :
     RegisterCommand("clear", "Clears the console log.", this, SLOT(ClearLog()));
     RegisterCommand("setLogLevel", "Sets the current log level. Call with one of the parameters \"error\", \"warning\", \"info\", or \"debug\".",
         this, SLOT(SetLogLevel(const QString &)));
+#ifdef WIN32
+    RegisterCommand("createConsole", "Creates the native Windows console if Tundra was started without such.", this, SLOT(CreateNativeConsole()));
+    RegisterCommand("removeConsole", "Removes the native Windows console if applicable.", this, SLOT(RemoveNativeConsole()));
+#endif
 
     /// \todo Visual Leak Detector shows a memory leak originating from this allocation although the shellInputThread is released in the destructor. Perhaps a shared pointer is held elsewhere.
     shellInputThread = MAKE_SHARED(ShellInputThread);
@@ -323,6 +327,21 @@ void ConsoleAPI::HandleKeyEvent(KeyEvent *e)
 {
     if (e->sequence == framework->Input()->KeyBinding("ToggleConsole", QKeySequence(Qt::Key_F1)))
         ToggleConsole();
+}
+
+void ConsoleAPI::CreateNativeConsole()
+{
+#ifdef WIN32
+    if (Application::ShowConsoleWindow(false))
+        shellInputThread = MAKE_SHARED(ShellInputThread); // Recreate ShellInputThread so that we will have working input.
+#endif
+}
+
+void ConsoleAPI::RemoveNativeConsole()
+{
+#ifdef WIN32
+    FreeConsole();
+#endif
 }
 
 void ConsoleAPI::LogInfo(const QString &message)
