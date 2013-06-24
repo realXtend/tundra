@@ -58,14 +58,14 @@ public:
 
     /// Displays a message to the user. Should be used when there is no usable window for displaying messages to the user.
     static void Message(const char *title, const char *text);
-    static void Message(const std::string &title, const std::string &text);
-    static void Message(const wchar_t *title, const wchar_t *text);
-    static void Message(const std::wstring &title, const std::wstring &text);
+    static void Message(const std::string &title, const std::string &text); /**< @overload */
+    static void Message(const wchar_t *title, const wchar_t *text); /**< @overload */
+    static void Message(const std::wstring &title, const std::wstring &text); /**< @overload */
 
     /// Opens up a text console window for Tundra.
-    /// @param attachToParent If true, the console is taken from the parent process. Use this to show Tundra console on
-    ///        the same console than the command line.
-    /// @return True on success.
+    /** @param attachToParent If true, the console is taken from the parent process. Use this to show Tundra console on
+               the same console than the command line.
+        @return True on success, false on failure or if the console already exists. */
     static bool ShowConsoleWindow(bool attachToParent);
 
     /// Sets the current working directory. Use with caution.
@@ -124,11 +124,12 @@ public:
 
     /// Returns the minor patch version.
     uint MinorPatchVersion() const { return versionNumbers[3]; }
-    
-    /// Returns the operating system/platform. Possible return values 'win' for windows, 'mac' for Mac OSX or 'x11' for linux, empty string for unresolved.
-    /// This is intended for scripting languages, as sometimes you need to do OS specific UI changes with Qt etc.
+
+    /// Returns the operating system/platform identifier.
+    /** Returns 'win' for Windows, 'mac' for Mac OS X, 'x11' for Linux, 'android' for Android, and empty string otherwise.
+        This is intended for scripting languages, as sometimes you need to do OS-specific UI changes with Qt etc. */
     static QString Platform();
-    
+
     /// Returns "OrganizationName ApplicationName Version".
     /** @note Unlike OrganizationName, ApplicationName and Version, this function performs memory allocation. */
     static QString FullIdentifier();
