@@ -395,6 +395,13 @@ MeshInstanceTarget *OgreWorld::GetOrCreateInstanceMeshTarget(const QString &mesh
             return target;
     }
 
+    // The current instancing implementation will crash on meshes that use shared vertices. Filter them out here.
+    Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().getByName(meshRef.toStdString());
+    if (!mesh.get())
+        throw ::Exception("Cannot create instances with null Ogre::Mesh!");
+    if (mesh->sharedVertexData != 0)
+        throw ::Exception("Cannot create instances with Ogre::Mesh that uses shared vertexes!");
+
     // No target for the mesh ref exists.
     MeshInstanceTarget *target = new MeshInstanceTarget(meshRef, MeshInstanceCount(meshRef));
     instancingTargets_ << target;

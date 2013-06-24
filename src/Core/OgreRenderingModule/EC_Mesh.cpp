@@ -968,9 +968,9 @@ void EC_Mesh::AttributesChanged()
             useInstancing.Set(false, AttributeChange::Disconnected);
         }
 
-        if (useInstancing.Get() && entity_)
+        if (useInstancing.Get())
             CreateInstance();
-        else if (!useInstancing.Get() && instancedEntity_)
+        else if (!useInstancing.Get())
             CreateMesh();
     }
 #endif
