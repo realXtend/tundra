@@ -695,11 +695,11 @@ namespace OgreRenderer
                                     destParams->setNamedAutoConstant("lightViewProj2", Ogre::GpuProgramParameters::ACT_TEXTURE_VIEWPROJ_MATRIX, 2);
                             }
                             else
-                                LogError("Could not clone vertex program " + program->getName() + " for instancing");
+                                LogError("Could not clone vertex program " + program->getName() + " for instancing.");
                         }
-                        catch (Ogre::Exception& e)
+                        catch(const Ogre::Exception &)
                         {
-                            LogError("Could not clone vertex program " + program->getName() + " for instancing");
+                            LogError("Could not clone vertex program " + program->getName() + " for instancing.");
                         }
                     }
                 }
