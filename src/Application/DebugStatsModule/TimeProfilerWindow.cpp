@@ -21,15 +21,17 @@
 #include "Entity.h"
 #include "Renderer.h"
 #include "OgreWorld.h"
-#include "AssetAPI.h"
+
 #include "LoggingFunctions.h"
 #include "EC_RigidBody.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
-#include "IAsset.h"
 #include "ConfigAPI.h"
+#include "IAsset.h"
+#include "AssetAPI.h"
 #include "IAssetTransfer.h"
 #include "IAssetProvider.h"
+#include "IAssetBundle.h"
 #include "ConfigAPI.h"
 #include "TreeWidgetUtils.h"
 #ifdef EC_Script_ENABLED
@@ -43,6 +45,7 @@
 #include <QTreeWidget>
 #include <QUiLoader>
 #include <QFile>
+#include <QFileInfo>
 #include <QHeaderView>
 #include <QPainter>
 #include <QTreeWidgetItemIterator>
@@ -129,9 +132,9 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     ui_.treeProfilingData->header()->resizeSection(3, 50);
     ui_.treeProfilingData->header()->resizeSection(4, 50);
 
-    ui_.treeAssetCache->header()->resizeSection(1, 60);
+    ui_.treeAssetCache->header()->resizeSection(1, 90);
 
-    ui_.treeAssetTransfers->header()->resizeSection(0, 240);
+    ui_.treeAssetTransfers->header()->resizeSection(0, 500);
     ui_.treeAssetTransfers->header()->resizeSection(1, 90);
     ui_.treeAssetTransfers->header()->resizeSection(2, 90);
 
@@ -1731,6 +1734,17 @@ void RedrawHistoryGraph(const std::vector<double> &data, QLabel *label)
     label->setPixmap(QPixmap::fromImage(image));
 }
 
+struct ProfilerAssetTypeInfo
+{
+    uint countTotal;
+    uint countLoaded;
+    uint countUnloaded;
+    uint countProgrammatic;
+    u64 bytes;
+
+    ProfilerAssetTypeInfo() : countTotal(0), countLoaded(0), countUnloaded(0), countProgrammatic(0), bytes(0) {}
+};
+
 void TimeProfilerWindow::RefreshAssetsPage()
 {
     if (!visibility_ || ui_.tabWidget->currentIndex() != 5)
@@ -1739,50 +1753,100 @@ void TimeProfilerWindow::RefreshAssetsPage()
     ui_.treeAssetCache->clear();
     ui_.treeAssetTransfers->clear();
 
-    /// Count assets per asset type
-    typedef std::map<QString, std::pair<int, int> > AssetsPerTypeMap;
-    AssetsPerTypeMap assetsPerType;
-    AssetMap allAssets = framework_->Asset()->Assets();
-    AssetMap::iterator i = allAssets.begin();
-    while (i != allAssets.end())
+    // Track count per asset type
+    QHash<QString, ProfilerAssetTypeInfo> assetsPerType;
+
+    // Iterate all loaded assets.
+    AssetMap assets = framework_->Asset()->Assets();
+    for (AssetMap::const_iterator iter = assets.begin(); iter != assets.end(); ++iter)
     {
-        if (!i->second->IsLoaded())
+        AssetPtr asset = iter->second;
+        if (!asset)
+            continue;
+
+        QString type = asset->Type();       
+        if (asset->DiskSourceType() == IAsset::Programmatic)
+            assetsPerType[type].countProgrammatic++;
+
+        assetsPerType[type].countTotal++;
+        if (!asset->IsLoaded())
         {
-            ++i;
+            assetsPerType[type].countUnloaded++;
             continue;
         }
+        assetsPerType[type].countLoaded++;
 
-        assetsPerType[i->second->Type()].first++;
-        assetsPerType[i->second->Type()].second += i->second->RawData().size();
-
-        ++i;
+        /** RawData() is going to call SerializeTo() that can produce lots of
+            errors for certain types of assets (eg. materials). Prefer checking
+            size from the disk source instead. We are not getting GPU side
+            memory consumption anyways, just the raw data which is the same on disk. */
+        QString diskSource = asset->DiskSource();
+        if (!diskSource.isEmpty() && QFile::exists(diskSource))
+            assetsPerType[type].bytes += static_cast<u64>(QFileInfo(diskSource).size());
+        else
+        {
+            // Tundra usually generates materials as Programmatic via EC_Material.
+            // Programmatic assets will usually produce lots of serialization errors so leave them out.
+            if (asset->DiskSourceType() != IAsset::Programmatic)
+            {
+                // Some assets do not implement SerializeTo which will only give us errors.
+                if (type != "Audio")
+                    assetsPerType[type].bytes += static_cast<u64>(asset->RawData().size());
+            }
+        }
     }
 
-    AssetsPerTypeMap::iterator j = assetsPerType.begin();
-    while (j != assetsPerType.end())
+    // Iterate loaded bundles
+    AssetBundleMap bundles = framework_->Asset()->AssetBundles();
+    for (AssetBundleMap::const_iterator iter = bundles.begin(); iter != bundles.end(); ++iter)
     {
-        QTreeWidgetItem *item = new QTreeWidgetItem(static_cast<QTreeWidget*>(0), QStringList());
+        AssetBundlePtr bundle = iter->second;
+        if (!bundle)
+            continue;
+
+        QString type = bundle->Type();
+        assetsPerType[type].countTotal++;
+        if (!bundle->IsLoaded())
+        {
+            assetsPerType[type].countUnloaded++;
+            continue;
+        }
+        assetsPerType[type].countLoaded++;
+    }
+
+    // Fill the table with results.
+    foreach(const QString &assetType, assetsPerType.keys())
+    {
+        QTreeWidgetItem *item = new QTreeWidgetItem();
         ui_.treeAssetCache->addTopLevelItem(item);
-        QString number = QString("%1").arg(j->second.first);
 
-        item->setText(0, j->first);
-        item->setText(1, number);
-        item->setText(2, QString::fromStdString(kNet::FormatBytes(static_cast<u64>(j->second.second))));
-
-        ++j;
+        const ProfilerAssetTypeInfo &typeInfo = assetsPerType[assetType];
+        item->setText(0, assetType);
+        item->setText(1, QString::number(typeInfo.countTotal));
+        item->setText(2, QString::fromStdString(kNet::FormatBytes(typeInfo.bytes)));
+        item->setText(3, QString::number(typeInfo.countLoaded));
+        item->setText(4, QString::number(typeInfo.countUnloaded));
+        item->setText(5, QString::number(typeInfo.countProgrammatic));
     }
 
+    // Fill ongoing transfers
     std::vector<AssetTransferPtr> pendingTransfers = framework_->Asset()->PendingTransfers();
-    std::vector<AssetTransferPtr>::iterator k = pendingTransfers.begin();
-    while (k != pendingTransfers.end())
+    for (std::vector<AssetTransferPtr>::const_iterator iter = pendingTransfers.begin(); iter != pendingTransfers.end(); ++iter)
     {
-        QTreeWidgetItem *item = new QTreeWidgetItem(static_cast<QTreeWidget*>(0), QStringList());
+        AssetTransferPtr pendingTransfer = (*iter);
+        if (!pendingTransfer)
+            continue;
+
+        AssetProviderPtr provider = pendingTransfer->provider.lock();
+        AssetStoragePtr storage = pendingTransfer->storage.lock();
+
+        QTreeWidgetItem *item = new QTreeWidgetItem();
         ui_.treeAssetTransfers->addTopLevelItem(item);
 
-        item->setText(0, (*k)->AssetType());
-        IAssetProvider *provider = (*k)->provider.lock().get();
-        item->setText(1, provider ? provider->Name() : QString("N/A"));
-        item->setText(2, QString::fromStdString(kNet::FormatBytes(static_cast<u64>((*k)->RawData().size()))));
+        item->setText(0, pendingTransfer->SourceUrl());
+        item->setText(1, pendingTransfer->AssetType());
+        item->setText(2, provider.get() ? provider->Name() : "");
+        item->setText(3, storage.get() ? storage->Name() : "");
     }
     
     QTimer::singleShot(500, this, SLOT(RefreshAssetsPage()));
@@ -1792,7 +1856,7 @@ void TimeProfilerWindow::RefreshOgreSceneComplexityPage()
 {
     if (!visibility_ || ui_.ogreTabWidget->currentIndex() != 1)
         return;
-    
+
     Scene *scene = framework_->Scene()->MainCameraScene();
     if (!scene)
     {

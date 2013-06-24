@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1120</width>
-    <height>520</height>
+    <height>559</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1996,6 +1996,21 @@ QTabWidget {
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="alternatingRowColors">
+             <bool>true</bool>
+            </property>
+            <property name="rootIsDecorated">
+             <bool>false</bool>
+            </property>
+            <property name="uniformRowHeights">
+             <bool>true</bool>
+            </property>
+            <property name="sortingEnabled">
+             <bool>true</bool>
+            </property>
+            <attribute name="headerStretchLastSection">
+             <bool>true</bool>
+            </attribute>
             <column>
              <property name="text">
               <string>Type</string>
@@ -2009,6 +2024,21 @@ QTabWidget {
             <column>
              <property name="text">
               <string>Total size</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Loaded</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Unloaded</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Programmatic</string>
              </property>
             </column>
            </widget>
@@ -2028,6 +2058,23 @@ QTabWidget {
           </item>
           <item>
            <widget class="QTreeWidget" name="treeAssetTransfers">
+            <property name="alternatingRowColors">
+             <bool>true</bool>
+            </property>
+            <property name="rootIsDecorated">
+             <bool>false</bool>
+            </property>
+            <property name="uniformRowHeights">
+             <bool>true</bool>
+            </property>
+            <property name="sortingEnabled">
+             <bool>true</bool>
+            </property>
+            <column>
+             <property name="text">
+              <string>Name</string>
+             </property>
+            </column>
             <column>
              <property name="text">
               <string>Type</string>
@@ -2040,7 +2087,7 @@ QTabWidget {
             </column>
             <column>
              <property name="text">
-              <string>Size</string>
+              <string>Storage</string>
              </property>
             </column>
            </widget>
