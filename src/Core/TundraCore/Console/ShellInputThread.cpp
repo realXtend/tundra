@@ -3,12 +3,14 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "ShellInputThread.h"
+#include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
 
 #include <iostream>
 
 ShellInputThread::ShellInputThread()
 {
+    std::cin.clear(); // clear std::cin error state in case it has failed previously
     start();
 }
 
@@ -24,7 +26,8 @@ void ShellInputThread::run()
         std::getline(std::cin, commandLine);
         if (std::cin.fail())
         {
-            std::cout << "ShellInputThread cin failed! Killing thread!" << std::endl;
+            /// @todo Ideally we'd like to use LogError for this, but currently we end up here also when doing regular ShellInputThread teardown.
+            LogDebug("ShellInputThread::run: cin failed! Aborting input reading.");
             return;
         }
 
