@@ -894,8 +894,8 @@ IF NOT EXIST "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%\libth
     cecho {0D}Building %THEORA_BUILD_TYPE% Theora. Please be patient, this will take a while.{# #}{\n}
 
     cd "%DEPS%\theora\win32\VS2008\libtheora"
-    copy /Y "%TOOLS%\Mods\vs2008-libtheora_static.vcproj" libtheora_static.vcproj
-    IF NOT %VS_VER%==vs2008 IF NOT EXIST libtheora_static.%VCPROJ_FILE_EXT%. VCUpgrade /nologo libtheora_static.vcproj
+    copy /Y "%TOOLS%\Mods\vs2008-%VS_PLATFORM%-libtheora_static.vcproj" libtheora_static.vcproj
+    IF NOT %VS_VER%==vs2008 VCUpgrade /nologo /overwrite libtheora_static.vcproj
 
     MSBuild libtheora_static.%VCPROJ_FILE_EXT% /p:configuration=%THEORA_BUILD_TYPE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%   
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -1183,9 +1183,9 @@ IF NOT EXIST "%DEPS%\zziplib\lib\zziplib%POSTFIX_D%.lib". (
     :: Use a custom project file as zziblib does not ship with vs2008 project files.
     :: Additionally its include/lib paths are not proper for it to find our zlib build and it has weird lib name postfixes.
     :: It's nicer to use a tailored file rathern than copy duplicates under the zziblib source tree.
-    cecho {0D}Building %DEBUG_OR_RELEASE% zziplib from premade project %TOOLS%\Mods\vs2008-zziplib.vcproj{# #}{\n}
-    copy /Y "%TOOLS%\Mods\vs2008-zziplib.vcproj" zziplib.vcproj
-    IF NOT %VS_VER%==vs2008 IF NOT EXIST zziplib.%VCPROJ_FILE_EXT%. VCUpgrade /nologo zziplib.vcproj
+    cecho {0D}Building %DEBUG_OR_RELEASE% zziplib from premade project %TOOLS%\Mods\vs2008-%VS_PLATFORM%-zziplib.vcproj{# #}{\n}
+    copy /Y "%TOOLS%\Mods\vs2008-%VS_PLATFORM%-zziplib.vcproj" zziplib.vcproj
+    IF NOT %VS_VER%==vs2008 VCUpgrade /nologo /overwrite zziplib.vcproj
     MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
 
     :: Copy results to lib/include
