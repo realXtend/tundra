@@ -293,6 +293,7 @@ Framework::Framework(int argc_, char** argv_) :
     console->RegisterCommand("exit", "Shuts down gracefully.", this, SLOT(Exit()));
     console->RegisterCommand("inputContexts", "Prints all currently registered input contexts in InputAPI.", input, SLOT(DumpInputContexts()));
     console->RegisterCommand("dynamicObjects", "Prints all currently registered dynamic objets in Framework.", this, SLOT(PrintDynamicObjects()));
+    console->RegisterCommand("plugins", "Prints all currently loaded plugins.", plugin, SLOT(ListPlugins()));
 
     RegisterDynamicObject("ui", ui);
     RegisterDynamicObject("frame", frame);
