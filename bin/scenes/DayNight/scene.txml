@@ -1,11 +1,11 @@
 <!DOCTYPE Scene>
 <scene>
- <entity id="1" sync="1">
-  <component type="EC_Name" sync="1">
-   <attribute value="Instructions" name="name"/>
-   <attribute value="" name="description"/>
+ <entity id="1" sync="true">
+  <component type="EC_Name" sync="true">
+   <attribute value="Instructions" name="Name"/>
+   <attribute value="" name="Description"/>
   </component>
-  <component type="EC_Script" sync="1">
+  <component type="EC_Script" sync="true">
    <attribute value="local://instructions.js" name="Script ref"/>
    <attribute value="true" name="Run on load"/>
    <attribute value="0" name="Run mode"/>
@@ -13,75 +13,109 @@
    <attribute value="" name="Script class name"/>
   </component>
  </entity>
- <entity id="2" sync="1">
-  <component type="EC_Name" sync="1">
-   <attribute value="Environment" name="name"/>
-   <attribute value="" name="description"/>
+ <entity id="2" sync="true">
+  <component type="EC_Name" sync="true">
+   <attribute value="Environment" name="Name"/>
+   <attribute value="" name="Description"/>
   </component>
-  <component type="EC_SkyX" sync="1">
+  <component type="EC_SkyX" sync="true">
    <attribute value="1" name="Cloud type"/>
-   <attribute value="0.25" name="Time multiplier"/>
-   <attribute value="16.9780979" name="Time [0-24]"/>
-   <attribute value="7.5" name="Time sunrise [0-24]"/>
-   <attribute value="20.5" name="Time sunset [0-24]"/>
-   <attribute value="50" name="Cloud coverage [0-100]"/>
-   <attribute value="50" name="Cloud average size [0-100]"/>
-   <attribute value="100" name="Cloud height"/>
-   <attribute value="70.7420731" name="Moon phase [0-100]"/>
-   <attribute value="9.75" name="Sun inner radius"/>
-   <attribute value="10.25" name="Sun outer radius"/>
-   <attribute value="0" name="Wind direction"/>
-   <attribute value="5" name="Wind speed"/>
+   <attribute value="0.250000" name="Time multiplier"/>
+   <attribute value="6.331341" name="Time [0-24]"/>
+   <attribute value="7.500000" name="Time sunrise [0-24]"/>
+   <attribute value="20.500000" name="Time sunset [0-24]"/>
+   <attribute value="50.000000" name="Cloud coverage [0-100]"/>
+   <attribute value="50.000000" name="Cloud average size [0-100]"/>
+   <attribute value="100.000000" name="Cloud height"/>
+   <attribute value="26.380589" name="Moon phase [0-100]"/>
+   <attribute value="9.750000" name="Sun inner radius"/>
+   <attribute value="10.250000" name="Sun outer radius"/>
+   <attribute value="0.000000" name="Wind direction"/>
+   <attribute value="5.000000" name="Wind speed"/>
+   <attribute value="0.639000 0.639000 0.639000 1.000000" name="Sunlight diffuse color"/>
+   <attribute value="0.000000 0.000000 0.000000 1.000000" name="Sunlight specular color"/>
+   <attribute value="0.639000 0.639000 0.639000 0.250000" name="Moonlight color"/>
+   <attribute value="0.000000 0.000000 0.000000 1.000000" name="Moonlight specular color"/>
+   <attribute value="0.364000 0.364000 0.364000 1.000000" name="Ambient light color"/>
   </component>
-  <component type="EC_Hydrax" sync="1">
+  <component type="EC_Hydrax" sync="true">
    <attribute value="HydraxDefault.hdx" name="Config ref"/>
    <attribute value="true" name="Visible"/>
-   <attribute value="0.000000 7.000000 0.000000" name="Position"/>
+   <attribute value="0.000000 8.000000 0.000000" name="Position"/>
   </component>
  </entity>
- <entity id="3" sync="1">
-  <component type="EC_Terrain" sync="1">
-   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
+ <entity id="3" sync="true">
+  <component type="EC_Terrain" sync="true">
+   <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" name="Transform"/>
    <attribute value="16" name="Grid Width"/>
    <attribute value="16" name="Grid Height"/>
-   <attribute value="0.129999995" name="Tex. U scale"/>
-   <attribute value="0.129999995" name="Tex. V scale"/>
+   <attribute value="0.130000" name="Tex. U scale"/>
+   <attribute value="0.130000" name="Tex. V scale"/>
    <attribute value="local://RexTerrainPCF.material" name="Material"/>
    <attribute value="local://terrain_map.ntf" name="Heightmap"/>
   </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="Terrain" name="name"/>
-   <attribute value="" name="description"/>
+  <component type="EC_Name" sync="true">
+   <attribute value="Terrain" name="Name"/>
+   <attribute value="" name="Description"/>
   </component>
  </entity>
- <entity id="-2147483647" sync="0">
-  <component type="EC_Script" sync="1">
-   <attribute value="local://freelookcamera.js" name="Script ref"/>
-   <attribute value="true" name="Run on load"/>
-   <attribute value="0" name="Run mode"/>
-   <attribute value="" name="Script application name"/>
-   <attribute value="" name="Script class name"/>
+ <entity id="4" sync="true">
+  <component type="EC_Name" sync="true">
+   <attribute value="FloatingBox" name="Name"/>
+   <attribute value="" name="Description"/>
   </component>
-  <component type="EC_Camera" sync="1">
-   <attribute value="0.000000 1.000000 0.000000" name="Up vector"/>
-   <attribute value="0.100000001" name="Near plane"/>
-   <attribute value="2000" name="Far plane"/>
-   <attribute value="45" name="Vertical FOV"/>
-   <attribute value="" name="Aspect ratio"/>
-  </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="20.6405,43.8111,3.41923,-6.3,-137.1,0,1,1,1" name="Transform"/>
+  <component type="EC_Placeable" sync="true">
+   <attribute value="0.000000,20.000000,0.000000,0.000000,0.000000,0.000000,4.000000,4.000000,4.000000" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
    <attribute value="1" name="Selection layer"/>
    <attribute value="" name="Parent entity ref"/>
    <attribute value="" name="Parent bone name"/>
   </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="FreeLookCamera" name="name"/>
-   <attribute value="" name="description"/>
+  <component type="EC_Mesh" sync="true">
+   <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" name="Transform"/>
+   <attribute value="Box.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="local://Box.material" name="Mesh materials"/>
+   <attribute value="0.000000" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
   </component>
-  <component type="EC_InputMapper" sync="1">
+  <component type="EC_Script" sync="true">
+   <attribute value="FloatingBox.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+ </entity>
+ <entity id="2147483650" sync="false">
+  <component type="EC_Script" sync="true">
+   <attribute value="local://freelookcamera.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+  <component type="EC_Camera" sync="true">
+   <attribute value="0.000000 1.000000 0.000000" name="Up vector"/>
+   <attribute value="0.100000" name="Near plane"/>
+   <attribute value="2000.000000" name="Far plane"/>
+   <attribute value="45.000000" name="Vertical FOV"/>
+   <attribute value="" name="Aspect ratio"/>
+  </component>
+  <component type="EC_Placeable" sync="true">
+   <attribute value="-11.937540,26.287947,-19.711241,-18.600004,-148.800018,0.000000,1.000000,1.000000,1.000000" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+  <component type="EC_Name" sync="true">
+   <attribute value="FreeLookCamera" name="Name"/>
+   <attribute value="" name="Description"/>
+  </component>
+  <component type="EC_InputMapper" sync="true">
    <attribute value="EC_InputMapper" name="Input context name"/>
    <attribute value="101" name="Input context priority"/>
    <attribute value="false" name="Take keyboard events over Qt"/>
@@ -93,8 +127,8 @@
    <attribute value="false" name="Suppress used keyboard events"/>
    <attribute value="false" name="Suppress used mouse events"/>
   </component>
-  <component type="EC_SoundListener" sync="0">
-   <attribute value="true" name="active"/>
+  <component type="EC_SoundListener" sync="false">
+   <attribute value="true" name="Active"/>
   </component>
  </entity>
 </scene>
