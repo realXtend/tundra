@@ -5,7 +5,6 @@
 #include "LoggingFunctions.h"
 #include "Framework.h"
 #include "Application.h"
-#include "ConsoleAPI.h"
 
 #include <QtXml>
 #include <QDir>
@@ -149,9 +148,9 @@ void PluginAPI::UnloadPlugins()
 
 void PluginAPI::ListPlugins() const
 {
-    owner->Console()->Print("Loaded plugins:");
+    LogInfo("Loaded plugins:");
     foreach(const Plugin &plugin, plugins)
-        owner->Console()->Print(plugin.name);
+        LogInfo(plugin.name);
 }
 
 QString LookupRelativePath(QString path)
