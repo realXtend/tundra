@@ -732,6 +732,7 @@ void OgreWorld::RaycastInternal(unsigned layerMask, float maxDistance, bool getA
                 result->index = r.triangleIndex;
                 result->u = r.uv.x;
                 result->v = r.uv.y;
+                result->t = r.t;
                 rayHits_.push_back(result);
                 ++hitIndex;
             }
@@ -806,6 +807,7 @@ void OgreWorld::RaycastInternal(unsigned layerMask, float maxDistance, bool getA
                         result->index = (unsigned int)-1; // Not applicable for billboards.
                         result->u = (hit.x + 1.f) * 0.5f;
                         result->v = (hit.y + 1.f) * 0.5f;
+                        result->t = d;
                     }
                 }
                 if (hasHit)
@@ -829,6 +831,7 @@ void OgreWorld::RaycastInternal(unsigned layerMask, float maxDistance, bool getA
                     result->index = 0;
                     result->u = 0.0f;
                     result->v = 0.0f;
+                    result->t = entry.distance;
                     
                     rayHits_.push_back(result);
                     ++hitIndex;
@@ -850,6 +853,7 @@ void OgreWorld::ClearRaycastResults()
     // In case of returning only a single result, make sure its entity & component are cleared in case of no hit
     rayResults_[0]->entity = 0;
     rayResults_[0]->component = 0;
+    rayResults_[0]->t = FLOAT_INF;
     rayHits_.clear();
 }
 

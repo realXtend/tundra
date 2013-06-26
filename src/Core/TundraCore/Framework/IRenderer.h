@@ -30,6 +30,7 @@ class TUNDRACORE_API RaycastResult : public QObject
     Q_PROPERTY(unsigned submeshIndex READ getsubmeshIndex); ///< Submesh index in entity, starting from 0
     Q_PROPERTY(unsigned triangleIndex READ gettriangeIndex); ///< Triangle index in submesh
     Q_PROPERTY(float2 uv READ getuv); ///< The UV coordinates of the first texture channel in the mesh. (0,0) if no texture mapping.
+    Q_PROPERTY(float t READ gett);  /**< @copydoc t */
 
     /// @cond PRIVATE
     Q_PROPERTY(unsigned submesh READ getsubmesh);
@@ -47,6 +48,7 @@ class TUNDRACORE_API RaycastResult : public QObject
     unsigned getsubmeshIndex() const { return submesh; }
     unsigned gettriangeIndex() const { return index; }
     float2 getuv() const { return float2(u, v); }
+    float gett() const { return t; }
     /// @endcond
 
 public:
@@ -70,6 +72,8 @@ public:
     /// V coord in entity. 0 if no texture mapping
     /// @note 'v' will be deprecated, use 'uv' from QtScript instead.
     float v;
+    /// Distance along the ray to the point of intersection. If this is FLOAT_INF, then no intersection has occurred.
+    float t;
 };
 
 ///\todo This structure replaces and obsoletes the above. Delete the above one.
