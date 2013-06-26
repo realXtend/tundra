@@ -63,6 +63,11 @@ Q_DECLARE_METATYPE(OgreParticleAssetPtr)
 // Clamp elapsed frame time to avoid Ogre controllers going crazy
 static const float MAX_FRAME_TIME = 0.1f;
 
+// Default texture budget (megabytes)
+static const int DEFAULT_TEXTURE_BUDGET = 256;
+// Minimum texture budget
+static const int MINIMUM_TEXTURE_BUDGET = 1;
+
 #if defined(DIRECTX_ENABLED) && !defined(WIN32)
 #undef DIRECTX_ENABLED
 #endif
@@ -261,7 +266,8 @@ namespace OgreRenderer
         resizedDirty(0),
         viewDistance(500.0f),
         shadowQuality(Shadows_High),
-        textureQuality(Texture_Normal)
+        textureQuality(Texture_Normal),
+        textureBudget(DEFAULT_TEXTURE_BUDGET)
     {
         compositionHandler = new OgreCompositionHandler();
         logListener = new OgreLogListener(framework->HasCommandLineParameter("--hide_benign_ogre_messages"));
@@ -390,6 +396,13 @@ namespace OgreRenderer
             rendersystem_name = "NULL Rendering Subsystem";
 
         textureQuality = (Renderer::TextureQualitySetting)framework->Config()->Get(configData, "texture quality").toInt();
+        
+        if (framework->HasCommandLineParameter("--texturebudget"))
+        {
+            QStringList sizeParam = framework->CommandLineParameters("--texturebudget");
+            if (sizeParam.size() > 0)
+                SetTextureBudget(sizeParam.first().toInt());
+        }
 
         // Ask Ogre if rendering system is available
         rendersystem = ogreRoot->getRenderSystemByName(rendersystem_name);
@@ -562,6 +575,16 @@ namespace OgreRenderer
     {
         // We cannot effect the new setting immediately, so save only to config
         framework->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "texture quality", (int)quality);
+    }
+    
+    void Renderer::SetTextureBudget(int budget)
+    {
+        textureBudget = Max(budget, MINIMUM_TEXTURE_BUDGET);
+    }
+
+    float Renderer::TextureBudgetUse() const
+    {
+        return (float)Ogre::TextureManager::getSingletonPtr()->getMemoryUsage() / (1024.f*1024.f) / (float)textureBudget;
     }
 
     QStringList Renderer::LoadPlugins(const std::string& plugin_filename)

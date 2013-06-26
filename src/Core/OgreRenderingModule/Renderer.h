@@ -42,7 +42,8 @@ namespace OgreRenderer
         Q_PROPERTY(bool fullScreen READ IsFullScreen WRITE SetFullScreen)
         Q_PROPERTY(ShadowQualitySetting shadowQuality READ ShadowQuality WRITE SetShadowQuality)
         Q_PROPERTY(TextureQualitySetting textureQuality READ TextureQuality WRITE SetTextureQuality)
-
+        Q_PROPERTY(int textureBudget READ TextureBudget WRITE SetTextureBudget)
+        
     public:
         /// Constructor
         /** @param framework Framework pointer.
@@ -130,13 +131,20 @@ namespace OgreRenderer
         ShadowQualitySetting ShadowQuality() const { return shadowQuality; }
 
         /// Sets texture quality.
-        /** @note The texture quality setting is currently unused and has no effect whatsoever.
-            @note Changes need application restart to take effect.
-            @todo The texture quality setting is currently unused and has no effect whatsoever. */
+        /** @note Changes need application restart to take effect. */
         void SetTextureQuality(TextureQualitySetting newquality);
+
+        /// Sets texture budget in megabytes
+        void SetTextureBudget(int budget);
 
         /// Returns texture quality.
         TextureQualitySetting TextureQuality() const { return textureQuality; }
+
+        /// Returns texture budget in megabytes.
+        int TextureBudget() const { return textureBudget; }
+
+        /// Calculate current texture usage ratio (1 = budget completely in use)
+        float TextureBudgetUse() const;
 
 #ifdef ANDROID
         /// Returns the shader generator for converting fixed-function materials (Android only)
@@ -285,6 +293,7 @@ namespace OgreRenderer
         int resizedDirty; ///< Resized dirty count
         ShadowQualitySetting shadowQuality; ///< Shadow quality setting.
         TextureQualitySetting textureQuality; ///< Texture quality setting.
+        int textureBudget; ///< Texture budget in megabytes.
 
         /// Stores the wall clock time that specifies when the last frame was displayed.
         tick_t lastPresentTime;
