@@ -65,7 +65,7 @@ public:
     /// Opens up a text console window for Tundra.
     /** @param attachToParent If true, the console is taken from the parent process. Use this to show Tundra console on
                the same console than the command line.
-        @return True on success, false on failure or if the console already exists. */
+        @return True on success or if console already visible, false on failure. */
     static bool ShowConsoleWindow(bool attachToParent);
 
     /// Sets the current working directory. Use with caution.

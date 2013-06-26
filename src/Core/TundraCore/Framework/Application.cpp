@@ -274,9 +274,8 @@ bool Application::ShowConsoleWindow(bool attachToParent)
 {
 #ifdef WIN32
     BOOL success = 0;
-    HWND wnd = GetConsoleWindow();
-    if (wnd)
-        return false; // Console already exists.
+    if (GetConsoleWindow())
+        return true; // Console already exists.
     if (attachToParent)
         success = AttachConsole(ATTACH_PARENT_PROCESS);
     // Code below adapted from http://dslweb.nwnexus.com/~ast/dload/guicon.htm
