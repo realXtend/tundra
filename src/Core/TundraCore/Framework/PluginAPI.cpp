@@ -5,6 +5,7 @@
 #include "LoggingFunctions.h"
 #include "Framework.h"
 #include "Application.h"
+#include "ConsoleAPI.h"
 
 #include <QtXml>
 #include <QDir>
@@ -13,14 +14,22 @@
 #include <vector>
 #include <sstream>
 
-std::string WStringToString(const std::wstring &str)
+#ifdef WIN32
+#include "Win.h"
+#elif defined(_POSIX_C_SOURCE) || defined(Q_WS_MAC) || defined(ANDROID)
+#include <dlfcn.h>
+#endif
+
+/// @todo Move to CoreStringUtils?
+static std::string WStringToString(const std::wstring &str)
 {
     std::vector<char> c((str.length()+1)*4);
     wcstombs(&c[0], str.c_str(), c.size()-1);
     return &c[0];
 }
 
-std::string GetErrorString(int error)
+/// @todo Move to SystemInfo?
+static std::string GetErrorString(int error)
 {
 #ifdef WIN32
     void *lpMsgBuf = 0;
@@ -81,7 +90,7 @@ void PluginAPI::LoadPlugin(const QString &filename)
     QString path = QDir::toNativeSeparators(Application::InstallationDirectory() + "plugins/" + filename.trimmed() + pluginSuffix);
     if (!QFile::exists(path))
     {
-        LogWarning(QString("Cannot load plugin \"%1\" as file does not exist").arg(path));
+        LogWarning(QString("Cannot load plugin \"%1\" as the file does not exist.").arg(path));
         return;
     }
     LogInfo("Loading plugin " + filename);
@@ -106,7 +115,7 @@ void PluginAPI::LoadPlugin(const QString &filename)
 #else
     const char *dlerrstr;
     dlerror();
-    PluginHandle module = dlopen(path.toStdString().c_str(), RTLD_GLOBAL|RTLD_LAZY);
+    void *module = dlopen(path.toStdString().c_str(), RTLD_GLOBAL|RTLD_LAZY);
     if ((dlerrstr=dlerror()) != 0)
     {
         LogError("Failed to load plugin from file \"" + path + "\": Error " + dlerrstr + "!");
@@ -121,7 +130,7 @@ void PluginAPI::LoadPlugin(const QString &filename)
         return;
     }
 #endif
-    Plugin p = { module };
+    Plugin p = { module, filename, path };
     plugins.push_back(p);
     mainEntryPoint(owner);
 }
@@ -130,12 +139,19 @@ void PluginAPI::UnloadPlugins()
 {
     for(std::list<Plugin>::reverse_iterator iter = plugins.rbegin(); iter != plugins.rend(); ++iter)
 #ifdef WIN32
-        FreeLibrary(iter->libraryHandle);
+        FreeLibrary((HMODULE)iter->handle);
 #else
     /// \bug caused memory errors in destructors in the dlclose call chain
-    //        dlclose(iter->libraryHandle);
+    //        dlclose(iter->handle);
 #endif
     plugins.clear();
+}
+
+void PluginAPI::ListPlugins() const
+{
+    owner->Console()->Print("Loaded plugins:");
+    foreach(const Plugin &plugin, plugins)
+        owner->Console()->Print(plugin.name);
 }
 
 QString LookupRelativePath(QString path)
@@ -183,4 +199,3 @@ void PluginAPI::LoadPluginsFromCommandLine()
     else
         LogError("PluginAPI::LoadPluginsFromCommandLine: No plugins were specified.");
 }
-

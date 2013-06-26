@@ -7,14 +7,6 @@
 #include <QString>
 #include <QObject>
 
-#ifdef WIN32
-#include "Win.h"
-typedef HMODULE PluginHandle;
-#elif defined(_POSIX_C_SOURCE) || defined(Q_WS_MAC) || defined(ANDROID)
-#include <dlfcn.h>
-typedef void * PluginHandle;
-#endif
-
 class Framework;
 
 /// Implements plugin loading functionality.
@@ -36,10 +28,16 @@ public:
 
     void UnloadPlugins();
 
+public slots:
+    /// Prints the list of loaded plugins to the console.
+    void ListPlugins() const;
+
 private:
     struct Plugin
     {
-        PluginHandle libraryHandle;
+        void *handle;
+        QString name;
+        QString filename;
     };
     std::list<Plugin> plugins;
 
