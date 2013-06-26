@@ -55,7 +55,7 @@ Section ""
   WriteRegStr HKCR "tundra\shell\open\command" "" "$INSTDIR\tundra.exe --login $\"%1$\""
 
   ExecWait '"$INSTDIR\oalinst.exe" /S'
-  ExecWait '"$INSTDIR\vcredist_x86.exe" /q'
+  ExecWait '"$INSTDIR\vcredist_2008_x86.exe" /q'
   ExecWait '"$INSTDIR\dxwebsetup.exe"'
 
   WriteUninstaller "$INSTDIR\uninstaller.exe"
