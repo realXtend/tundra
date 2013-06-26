@@ -700,7 +700,7 @@ void Framework::PrintStartupOptions()
     while(i < startupOptions.size())
     {
         QString option = startupOptions[i];
-        if (!option.startsWith("--"))
+        if (!option.startsWith("--") || option.startsWith("---"))
             LogWarning("Orphaned startup option parameter value \"" + option + "\" specified!");
 
         QString line;
