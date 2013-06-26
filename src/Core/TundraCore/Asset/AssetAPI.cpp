@@ -475,12 +475,20 @@ bool AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
     // some object left a dangling strong ref to an asset).
     asset->Unload();
 
+    // Remove any pending transfers for this asset.
+    AssetTransferMap::iterator transferIter = FindTransferIterator(asset->Name());
+    if (transferIter != currentTransfers.end())
+        currentTransfers.erase(transferIter);
+
+    // Remove the asset from internal state.
     AssetMap::iterator iter = assets.find(asset->Name());
     if (iter == assets.end())
     {
         LogError("AssetAPI::ForgetAsset called on asset \"" + asset->Name() + "\", which does not exist in AssetAPI!");
         return false;
     }
+
+    // Remove file from disk watcher.
     if (diskSourceChangeWatcher && !asset->DiskSource().isEmpty())
         diskSourceChangeWatcher->removePath(asset->DiskSource());
     assets.erase(iter);
