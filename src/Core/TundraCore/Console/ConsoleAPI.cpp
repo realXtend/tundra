@@ -334,7 +334,7 @@ void ConsoleAPI::HandleKeyEvent(KeyEvent *e)
 void ConsoleAPI::CreateNativeConsole()
 {
 #ifdef WIN32
-    if (Application::ShowConsoleWindow(false))
+    if (!GetConsoleWindow() && Application::ShowConsoleWindow(false))
         shellInputThread = MAKE_SHARED(ShellInputThread); // Recreate ShellInputThread so that we will have working input.
 #endif
 }
