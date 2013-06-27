@@ -21,20 +21,28 @@ EC_OgreCompositor::EC_OgreCompositor(Scene* scene) :
     INIT_ATTRIBUTE(parameters, "Parameters"),
     previousPriority(-1),
     compositionHandler(0)
-{
-    OgreRenderer::OgreRenderingModule *owner = framework->GetModule<OgreRenderer::OgreRenderingModule>();
-    assert(owner && "No OgrerenderingModule.");
-    compositionHandler = owner->GetRenderer()->CompositionHandler();
-    assert(compositionHandler && "No CompositionHandler.");
-
-    // Ogre sucks. Enable a timed one-time refresh to overcome issue with black screen.
-    framework->Frame()->DelayedExecute(0.01f, this, SLOT(OneTimeRefresh()));
+{   
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(OnParentEntitySet()));
 }
 
 EC_OgreCompositor::~EC_OgreCompositor()
 {
     if (compositionHandler && !previousRef.isEmpty())
         compositionHandler->RemoveCompositorFromViewport(previousRef.toStdString());
+}
+
+void EC_OgreCompositor::OnParentEntitySet()
+{
+    if (!framework)
+        return;
+
+    OgreRenderer::OgreRenderingModule *owner = framework->GetModule<OgreRenderer::OgreRenderingModule>();
+    compositionHandler = owner != 0 ?owner->GetRenderer()->CompositionHandler() : 0;
+    if (!compositionHandler)
+        return;
+
+    // Ogre sucks. Enable a timed one-time refresh to overcome issue with black screen.
+    framework->Frame()->DelayedExecute(0.01f, this, SLOT(OneTimeRefresh()));
 }
 
 QStringList EC_OgreCompositor::AvailableCompositors() const

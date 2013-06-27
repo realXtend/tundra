@@ -73,6 +73,7 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float, expDensity);
 
 private slots:
+    void OnParentEntitySet();
     void Update();
 
 private:
