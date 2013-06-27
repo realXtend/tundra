@@ -23,6 +23,9 @@ public:
     /// Loads and executes the given shared library plugin.
     void LoadPlugin(const QString &filename);
 
+    /// Parses the specified .xml file and loads and executes all plugins specified in that file.
+    void LoadPluginsFromXML(QString pluginListFilename);
+
     /// Loads plugins specified on command line with --plugin
     void LoadPluginsFromCommandLine();
 

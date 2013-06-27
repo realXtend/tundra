@@ -397,6 +397,12 @@ void Framework::Go()
     StaticPluginRegistryInstance()->RunPluginMainFunctions(this);
 #endif
 
+    foreach(const QString &config, plugin->ConfigurationFiles())
+    {
+        LogDebug("Loading plugins from config XML " + config);
+        plugin->LoadPluginsFromXML(config);
+    }
+
     LogDebug("Loading plugins specified on the command line...");
     plugin->LoadPluginsFromCommandLine();
 

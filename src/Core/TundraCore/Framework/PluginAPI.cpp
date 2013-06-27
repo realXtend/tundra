@@ -182,6 +182,47 @@ QStringList PluginAPI::ConfigurationFiles() const
     return configs;
 }
 
+void PluginAPI::LoadPluginsFromXML(QString pluginConfigurationFile)
+{
+    bool showDeprecationWarning = true;
+    pluginConfigurationFile = LookupRelativePath(pluginConfigurationFile);
+
+    QDomDocument doc("plugins");
+    QFile file(pluginConfigurationFile);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        LogError("PluginAPI::LoadPluginsFromXML: Failed to open file \"" + pluginConfigurationFile + "\"!");
+        return;
+    }
+    QString errorMsg;
+    if (!doc.setContent(&file, false, &errorMsg))
+    {
+        LogError("PluginAPI::LoadPluginsFromXML: Failed to parse XML file \"" + pluginConfigurationFile + "\":" + errorMsg);
+        file.close();
+        return;
+    }
+    file.close();
+
+    QDomElement docElem = doc.documentElement();
+
+    QDomNode n = docElem.firstChild();
+    while(!n.isNull())
+    {
+        QDomElement e = n.toElement(); // try to convert the node to an element.
+        if (!e.isNull() && e.tagName() == "plugin" && e.hasAttribute("path"))
+        {
+            QString pluginPath = e.attribute("path");
+            LoadPlugin(pluginPath);
+            if (showDeprecationWarning)
+            {
+                LogWarning("PluginAPI::LoadPluginsFromXML: In file " + pluginConfigurationFile + ", using XML tag <plugin path=\"PluginNameHere\"/> will be deprecated. Consider replacing it with --plugin command line argument instead");
+                showDeprecationWarning = false;
+            }
+        }
+        n = n.nextSibling();
+    }
+}
+
 void PluginAPI::LoadPluginsFromCommandLine()
 {
     if (owner->HasCommandLineParameter("--plugin"))
@@ -195,6 +236,4 @@ void PluginAPI::LoadPluginsFromCommandLine()
                 LoadPlugin(pluginList.at(j));
         }
     }
-    else
-        LogError("PluginAPI::LoadPluginsFromCommandLine: No plugins were specified.");
 }
