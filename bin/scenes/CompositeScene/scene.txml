@@ -1,0 +1,68 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="1" sync="true">
+  <component type="EC_Name" sync="true">
+   <attribute value="ScenePartManager" type="string" id="name" name="Name"/>
+   <attribute value="" type="string" id="description" name="Description"/>
+  </component>
+  <component type="EC_Script" sync="true">
+   <attribute value="local://scenepartmanager.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+   <attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+   <attribute value="0" type="int" id="runMode" name="Run mode"/>
+   <attribute value="" type="string" id="applicationName" name="Script application name"/>
+   <attribute value="" type="string" id="className" name="Script class name"/>
+  </component>
+ </entity>
+ <entity id="2" sync="true">
+  <component type="EC_Mesh" sync="true">
+   <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="nodeTransformation" name="Transform"/>
+   <attribute value="local://plane.mesh" type="AssetReference" id="meshRef" name="Mesh ref"/>
+   <attribute value="" type="AssetReference" id="skeletonRef" name="Skeleton ref"/>
+   <attribute value="local://green.material" type="AssetReferenceList" id="meshMaterial" name="Mesh materials"/>
+   <attribute value="0.000000" type="real" id="drawDistance" name="Draw distance"/>
+   <attribute value="false" type="bool" id="castShadows" name="Cast shadows"/>
+   <attribute value="false" type="bool" id="useInstancing" name="Use instancing"/>
+  </component>
+  <component type="EC_Placeable" sync="true">
+   <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="transform" name="Transform"/>
+   <attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
+   <attribute value="true" type="bool" id="visible" name="Visible"/>
+   <attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
+   <attribute value="" type="EntityReference" id="parentRef" name="Parent entity ref"/>
+   <attribute value="" type="string" id="parentBone" name="Parent bone name"/>
+  </component>
+  <component type="EC_Name" sync="true">
+   <attribute value="PartA" type="string" id="name" name="Name"/>
+   <attribute value="" type="string" id="description" name="Description"/>
+  </component>
+  <component type="EC_DynamicComponent" sync="true" name="ScenePart">
+   <attribute value="part_a.txml" type="string" id="sceneref" name="sceneref"/>
+  </component>
+ </entity>
+ <entity id="4" sync="true">
+  <component type="EC_Mesh" sync="true">
+   <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="nodeTransformation" name="Transform"/>
+   <attribute value="local://plane.mesh" type="AssetReference" id="meshRef" name="Mesh ref"/>
+   <attribute value="" type="AssetReference" id="skeletonRef" name="Skeleton ref"/>
+   <attribute value="local://red.material" type="AssetReferenceList" id="meshMaterial" name="Mesh materials"/>
+   <attribute value="0.000000" type="real" id="drawDistance" name="Draw distance"/>
+   <attribute value="false" type="bool" id="castShadows" name="Cast shadows"/>
+   <attribute value="false" type="bool" id="useInstancing" name="Use instancing"/>
+  </component>
+  <component type="EC_Placeable" sync="true">
+   <attribute value="0.000000,0.000000,-1.310797,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="transform" name="Transform"/>
+   <attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
+   <attribute value="true" type="bool" id="visible" name="Visible"/>
+   <attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
+   <attribute value="" type="EntityReference" id="parentRef" name="Parent entity ref"/>
+   <attribute value="" type="string" id="parentBone" name="Parent bone name"/>
+  </component>
+  <component type="EC_Name" sync="true">
+   <attribute value="PartB" type="string" id="name" name="Name"/>
+   <attribute value="" type="string" id="description" name="Description"/>
+  </component>
+  <component type="EC_DynamicComponent" sync="true" name="ScenePart">
+   <attribute value="part_b.txml" type="string" id="sceneref" name="sceneref"/>
+  </component>
+ </entity>
+</scene>
