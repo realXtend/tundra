@@ -28,7 +28,8 @@ HttpAssetProvider::HttpAssetProvider(Framework *framework_) :
     CreateAccessManager();
     connect(framework->App(), SIGNAL(ExitRequested()), SLOT(AboutToExit()));
 
-    enableRequestsOutsideStorages = framework_->HasCommandLineParameter("--accept_unknown_http_sources");
+    enableRequestsOutsideStorages = (framework_->HasCommandLineParameter("--acceptUnknownHttpSources") ||
+        framework_->HasCommandLineParameter("--accept_unknown_http_sources"));  /**< @todo Remove support for the deprecated underscore version at some point. */
 }
 
 HttpAssetProvider::~HttpAssetProvider()

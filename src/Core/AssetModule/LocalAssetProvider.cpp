@@ -31,7 +31,8 @@
 LocalAssetProvider::LocalAssetProvider(Framework* framework_) :
     framework(framework_)
 {
-    enableRequestsOutsideStorages = framework_->HasCommandLineParameter("--accept_unknown_local_sources");
+    enableRequestsOutsideStorages = (framework_->HasCommandLineParameter("--acceptUnknownLocalSources") ||
+        framework_->HasCommandLineParameter("--accept_unknown_local_sources"));  /**< @todo Remove support for the deprecated underscore version at some point. */
 }
 
 LocalAssetProvider::~LocalAssetProvider()

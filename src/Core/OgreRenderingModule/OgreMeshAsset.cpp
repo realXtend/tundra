@@ -367,7 +367,8 @@ bool OgreMeshAsset::GenerateMeshData()
     {
         QString what(e.what());
         // "Cannot locate an appropriate 2D texture coordinate set" is benign, see OgreLogListener::messageLogged
-        bool hideBenignOgreMessages = assetAPI->GetFramework()->HasCommandLineParameter("--hide_benign_ogre_messages");
+        const bool hideBenignOgreMessages = ( assetAPI->GetFramework()->HasCommandLineParameter("--hideBenignOgreMessages") ||
+            assetAPI->GetFramework()->HasCommandLineParameter("--hide_benign_ogre_messages")); /**< @todo Remove support for the deprecated underscore version at some point. */
         if (!hideBenignOgreMessages || (hideBenignOgreMessages && !what.contains("Cannot locate an appropriate 2D texture coordinate set")))
             LogError("OgreMeshAsset::GenerateMeshData: Failed to build tangents for mesh " + this->Name() + ": " + what);
     }

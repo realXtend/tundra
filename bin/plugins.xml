@@ -39,9 +39,9 @@
                                 LoadingScreen.js;
                                 SceneInstructions.js"/>
 
-  <option name="--trustserverstorages" />
-  <option name="--accept_unknown_http_sources" />
-  <option name="--accept_unknown_local_sources" />
-  <option name="--fpslimit" value="60" />
-  <option name="--hide_benign_ogre_messages" />
+  <option name="--trustServerStorages" />
+  <option name="--acceptUnknownHttpSources" />
+  <option name="--acceptUnknownLocalSources" />
+  <option name="--fpsLimit" value="60" />
+  <option name="--hideBenignOgreMessages" />
 </Tundra>
