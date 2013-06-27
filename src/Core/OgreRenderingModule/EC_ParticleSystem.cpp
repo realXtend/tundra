@@ -28,14 +28,11 @@ EC_ParticleSystem::EC_ParticleSystem(Scene* scene):
     INIT_ATTRIBUTE_VALUE(enabled, "Enabled", true),
     INIT_ATTRIBUTE_VALUE(renderingDistance, "Rendering distance", 0.0f)
 {
-    if (scene)
-        world_ = scene->GetWorld<OgreWorld>();
-
-    connect(this, SIGNAL(ParentEntitySet()), this, SLOT(EntitySet()));
-
     particleAsset_ = MAKE_SHARED(AssetRefListener);
     connect(particleAsset_.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnParticleAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     connect(particleAsset_.get(), SIGNAL(TransferFailed(IAssetTransfer*, QString)), this, SLOT(OnParticleAssetFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
+
+    connect(this, SIGNAL(ParentEntitySet()), this, SLOT(EntitySet()));
 }
 
 EC_ParticleSystem::~EC_ParticleSystem()
@@ -282,6 +279,8 @@ void EC_ParticleSystem::EntitySet()
         LogError("Failed to connect entity signals, component's parent entity is null");
         return;
     }
+    
+    world_ = ParentScene()->GetWorld<OgreWorld>();
     
     entity->ConnectAction("StartParticleSystem", this, SLOT(CreateParticleSystem(const QString &)));
     entity->ConnectAction("HardStopParticleSystem", this, SLOT(DeleteParticleSystem(const QString &)));
