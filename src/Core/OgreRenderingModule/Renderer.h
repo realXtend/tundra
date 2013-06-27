@@ -13,18 +13,19 @@
 class QScriptEngine;
 class Framework;
 
-#ifdef ANDROID
 namespace Ogre
 {
-    class StaticPluginLoader;
     class OverlaySystem;
 
+#ifdef ANDROID
+    class StaticPluginLoader;
     namespace RTShader
     {
         class ShaderGenerator;
     }
-}
 #endif
+}
+
 
 namespace OgreRenderer
 {
@@ -257,11 +258,11 @@ namespace OgreRenderer
         Ogre::SceneManager* defaultScene;
 
         RenderWindow *renderWindow;
+        Ogre::OverlaySystem* overlaySystem;
 
         #ifdef ANDROID
         Ogre::StaticPluginLoader* staticPluginLoader;
-	Ogre::RTShader::ShaderGenerator* shaderGenerator;
-	Ogre::OverlaySystem* overlaySystem;
+        Ogre::RTShader::ShaderGenerator* shaderGenerator;
         #endif
         
         /// Framework we belong to

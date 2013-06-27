@@ -34,6 +34,7 @@
 
 #include <Ogre.h>
 #include <OgreDefaultHardwareBufferManager.h>
+#include <OgreOverlaySystem.h>
 
 #ifdef ANDROID
 #define OGRE_STATIC_GLES2
@@ -42,7 +43,6 @@
 #include "OgreStaticPluginLoader.h"
 #include <OgreRTShaderSystem.h>
 #include <OgreShaderGenerator.h>
-#include <OgreOverlaySystem.h>
 #endif
 
 Q_DECLARE_METATYPE(EC_Placeable*)
@@ -253,8 +253,8 @@ namespace OgreRenderer
         mainViewport(0),
 #ifdef ANDROID
         shaderGenerator(0),
-        overlaySystem(0),
 #endif
+        overlaySystem(0),
         uniqueObjectId(0),
         uniqueGroupId(0),
         configFilename(config),
@@ -301,8 +301,8 @@ namespace OgreRenderer
             defaultScene = 0;
         }
 
-#ifdef ANDROID
         SAFE_DELETE(overlaySystem);
+#ifdef ANDROID
         Ogre::RTShader::ShaderGenerator::finalize();
 #endif
 
@@ -453,10 +453,8 @@ namespace OgreRenderer
             // Set the found rendering system
             ogreRoot->setRenderSystem(rendersystem);
 
-#ifdef ANDROID
-            // On Android (static Ogre linking) create overlaysystem now
+            // Instantiate overlay system
             overlaySystem = new Ogre::OverlaySystem();
-#endif
 
             // Initialise but don't create rendering window yet
             ogreRoot->initialise(false);
