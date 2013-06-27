@@ -40,16 +40,7 @@ EC_Highlight::EC_Highlight(Scene* scene) :
     INIT_ATTRIBUTE_VALUE(outlineColor, "Outline color", Color(1.0f, 1.0f, 1.0f, 0.5f)),
     reapplyPending_(false)
 {
-    if (scene)
-        world_ = scene->GetWorld<OgreWorld>();
-    
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-
-    if(!framework->IsHeadless())
-    {
-        highlightTimer = new QTimer(this);
-        connect(highlightTimer, SIGNAL(timeout()), this, SLOT(Show()));
-    }
 }
 
 EC_Highlight::~EC_Highlight()
@@ -59,7 +50,7 @@ EC_Highlight::~EC_Highlight()
 
 void EC_Highlight::Show()
 {
-    if ((mesh_.expired()) || (world_.expired()))
+    if (mesh_.expired() || world_.expired())
         return;
     
     inApply = true;
@@ -75,7 +66,7 @@ void EC_Highlight::Show()
     // Clone all valid material assets that we can find from the mesh
     /// \todo Currently will clone the same material several times if used on several submeshes
     /// \todo What if the material is yet pending, or is not an asset (LitTextured)
-    AssetReferenceList materialList = mesh->meshMaterial.Get();
+    const AssetReferenceList &materialList = mesh->meshMaterial.Get();
     for(int i = 0; i < materialList.Size(); ++i)
     {
         if (!materialList[i].ref.isEmpty())
@@ -134,36 +125,34 @@ void EC_Highlight::Show()
 
 void EC_Highlight::Hide()
 {
-    if (!mesh_.expired())
+    if (!mesh_.expired() ||  world_.expired())
+        return;
+
+    // Restore mesh component's original materials to hide highlight effect.
+    // Use AttributeChange::LocalOnly to ensure all editors will show the real refs.
+    AssetAPI * assetAPI = framework->Asset();
+    EC_Mesh* mesh = mesh_.lock().get();
+    foreach(uint index, originalMaterials_.keys())
     {
-        // Restore mesh component's original materials to hide highlight effect.
-        // Use AttributeChange::LocalOnly to ensure all editors will show the real refs.
-        AssetAPI * assetAPI = framework->Asset();
-        EC_Mesh* mesh = mesh_.lock().get();
-        foreach(uint index, originalMaterials_.keys())
+        QString fullName = assetAPI->ResolveAssetRef("", originalMaterials_[index]);
+        OgreMaterialAssetPtr matAsset = static_pointer_cast<OgreMaterialAsset>(assetAPI->GetAsset(fullName));
+        if (matAsset && matAsset->IsLoaded())
         {
-            QString fullName = assetAPI->ResolveAssetRef("", originalMaterials_[index]);
-            AssetPtr asset = assetAPI->GetAsset(fullName);
-            if ((asset) && (asset->IsLoaded()) && (dynamic_cast<OgreMaterialAsset*>(asset.get())))
+            try
             {
-                OgreMaterialAsset *matAsset = dynamic_cast<OgreMaterialAsset*> (asset.get());
-                try
-                {
-                    if (mesh && mesh->OgreEntity() && mesh->OgreEntity()->getSubEntity(index))
-                        mesh->OgreEntity()->getSubEntity(index)->setMaterial(matAsset->ogreMaterial);
-                }
-                catch(Ogre::Exception& e)
-                {
-                    LogError("EC_Highlight::Hide: Could not set material " + matAsset->Name() + " to subentity " + index + ":" + e.what());
-                    continue;
-                }
+                if (mesh && mesh->OgreEntity() && mesh->OgreEntity()->getSubEntity(index))
+                    mesh->OgreEntity()->getSubEntity(index)->setMaterial(matAsset->ogreMaterial);
+            }
+            catch(Ogre::Exception& e)
+            {
+                LogError("EC_Highlight::Hide: Could not set material " + matAsset->Name() + " to subentity " + index + ":" + e.what());
+                continue;
             }
         }
-        originalMaterials_.clear();
     }
-    
+    originalMaterials_.clear();
+
     // Destroy all the highlight materials
-    AssetAPI* assetAPI = framework->Asset();
     for (unsigned i = 0; i < materials_.size(); ++i)
         assetAPI->ForgetAsset(materials_[i], false);
     materials_.clear();
@@ -176,9 +165,17 @@ bool EC_Highlight::IsVisible() const
 
 void EC_Highlight::UpdateSignals()
 {
+    if (!framework->IsHeadless() || !highlightTimer)
+    {
+        highlightTimer = new QTimer(this);
+        connect(highlightTimer, SIGNAL(timeout()), this, SLOT(Show()));
+    }
+
     Entity* parent = ParentEntity();
     if (parent)
     {
+        world_ = ParentScene()->Subsystem<OgreWorld>();
+
         // Connect to ComponentAdded/Removed signals of the parent entity, so we can check when the mesh component gets added or removed
         connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), SLOT(AcquireMesh()));
         connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));

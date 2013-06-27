@@ -20,17 +20,14 @@ EC_RttTarget::EC_RttTarget(Scene* scene) :
     INIT_ATTRIBUTE_VALUE(width, "Texture width", 400),
     INIT_ATTRIBUTE_VALUE(height, "Texture height", 300)
 {
-    //can't do immediately here, 'cause getcomponent crashes
-    //.. is not allowed to get other components in the creation of a component. ok?
-    //framework->Frame()->DelayedExecute(0.1f, this, SLOT(PrepareRtt()));
-    //.. resorting to manual call to PrepareRtt now
+    connect(this, SIGNAL(ParentEntitySet()), this, SLOT(PrepareRtt()));
 }
 
 EC_RttTarget::~EC_RttTarget()
 {
     // Cannot use ViewEnabled() here, the parent entity is already null,
     // which means it will return true. After that we will crash below calling Ogre.
-    if (framework->IsHeadless())
+    if (!framework || framework->IsHeadless())
         return;
 
   //XXX didn't have a ref to renderer here yet. is this really required?
