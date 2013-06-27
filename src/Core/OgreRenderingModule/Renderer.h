@@ -88,6 +88,9 @@ namespace OgreRenderer
         /// returns the composition handler responsible of the post-processing effects
         OgreCompositionHandler *CompositionHandler() const { return compositionHandler; }
 
+        /// Returns the globally used Ogre overlay system
+        Ogre::OverlaySystem* GetOverlaySystem() const { return overlaySystem; }
+        
         /// Returns RenderWindow used to display the 3D scene in.
         RenderWindow *GetRenderWindow() const { return renderWindow; }
 

@@ -527,6 +527,7 @@ namespace OgreRenderer
 
             /// Create the default scene manager, which is used for nothing but rendering emptiness in case we have no framework scenes
             defaultScene = ogreRoot->createSceneManager(Ogre::ST_GENERIC, "DefaultEmptyScene");
+            defaultScene->addRenderQueueListener(overlaySystem);
 #ifdef ANDROID
             if (shaderGenerator)
                 shaderGenerator->addSceneManager(defaultScene);

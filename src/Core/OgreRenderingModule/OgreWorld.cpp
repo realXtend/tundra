@@ -36,6 +36,7 @@
 #include "Geometry/Sphere.h"
 
 #include <Ogre.h>
+#include <OgreOverlaySystem.h>
 
 #ifdef ANDROID
 #include <OgreRTShaderSystem.h>
@@ -56,6 +57,7 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
 {
     assert(renderer_->IsInitialized());
     sceneManager_ = Ogre::Root::getSingleton().createSceneManager(Ogre::ST_GENERIC, scene->Name().toStdString());
+    sceneManager_->addRenderQueueListener(renderer_->GetOverlaySystem());
 #ifdef ANDROID
     Ogre::RTShader::ShaderGenerator* shaderGenerator = renderer_->GetShaderGenerator();
     if (shaderGenerator)
