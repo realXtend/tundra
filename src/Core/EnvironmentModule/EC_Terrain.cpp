@@ -43,9 +43,6 @@ EC_Terrain::EC_Terrain(Scene* scene) :
     patchHeight(1),
     rootNode(0)
 {
-    if (scene)
-        world_ = scene->GetWorld<OgreWorld>();
-
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 
     patches.resize(1);
@@ -68,6 +65,8 @@ void EC_Terrain::UpdateSignals()
     {
         connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(AttachTerrainRootNode()), Qt::UniqueConnection);
         connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(AttachTerrainRootNode()), Qt::UniqueConnection); // The Attach function also handles detaches.
+
+        world_ = ParentScene()->Subsystem<OgreWorld>();
     }
 }
 
@@ -240,11 +239,7 @@ void EC_Terrain::DestroyPatch(uint x, uint y)
     if (x >= patchWidth || y >= patchHeight)
         return;
 
-    assert(GetFramework());
-    if (!GetFramework())
-        return;
-
-    if (world_.expired()) // Oops! Already destroyed
+    if (!GetFramework() || world_.expired()) // Already destroyed or not initialized at all.
         return;
 
     Ogre::SceneManager *sceneMgr = world_.lock()->OgreSceneManager();
@@ -282,16 +277,12 @@ void EC_Terrain::Destroy()
         for(uint x = 0; x < patchWidth; ++x)
             DestroyPatch(x, y);
 
-    if (!GetFramework())
+    if (!GetFramework() || world_.expired()) // Already destroyed or not initialized at all.
         return;
-
-    if (world_.expired()) // Oops! Already destroyed
-        return;
-    Ogre::SceneManager *sceneMgr = world_.lock()->OgreSceneManager();
 
     if (rootNode)
     {
-        sceneMgr->destroySceneNode(rootNode);
+        world_.lock()->OgreSceneManager()->destroySceneNode(rootNode);
         rootNode = 0;
     }
 }

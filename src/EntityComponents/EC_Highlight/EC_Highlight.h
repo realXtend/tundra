@@ -55,8 +55,10 @@ class EC_Highlight : public IComponent
     COMPONENT_NAME("EC_Highlight", 28)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Highlight(Scene* scene);
+    /// @cond PRIVATE
     ~EC_Highlight();
 
     /// Visible flag. If true,the mesh component in the same entity will be highlighted

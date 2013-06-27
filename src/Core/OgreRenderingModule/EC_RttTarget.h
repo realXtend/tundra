@@ -47,8 +47,10 @@ class OGRE_MODULE_API EC_RttTarget : public IComponent
     COMPONENT_NAME("EC_RttTarget", 21)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_RttTarget(Scene* scene);
+    /// @endcond
     virtual ~EC_RttTarget();
 
     /// Name of the target texture where to render the image.
@@ -71,7 +73,6 @@ public slots:
     //void UpdateRtt();
 
 private:
-
     void AttributesChanged();
 
     std::string material_name_;

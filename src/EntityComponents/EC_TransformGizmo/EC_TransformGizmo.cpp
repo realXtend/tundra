@@ -56,14 +56,6 @@ EC_TransformGizmo::EC_TransformGizmo(Scene *scene) :
     worldPos(float3::zero)
 {
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Initialize()));
-
-    QString uniqueName("EC_TransformGizmo_" + framework->Asset()->GenerateUniqueAssetName("",""));
-    input = framework->Input()->RegisterInputContext(uniqueName, 100);
-    connect(input.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
-
-    ogreWorld = scene->GetWorld<OgreWorld>();
-
-    connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(OnFrameUpdate(float)));
 }
 
 EC_TransformGizmo::~EC_TransformGizmo()
@@ -120,6 +112,16 @@ void EC_TransformGizmo::Initialize()
     if (!ParentEntity())
         return;
 
+    if (!input)
+    {
+        const QString uniqueName("EC_TransformGizmo_" + framework->Asset()->GenerateUniqueAssetName("",""));
+        input = framework->Input()->RegisterInputContext(uniqueName, 100);
+        connect(input.get(), SIGNAL(MouseEventReceived(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
+        connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(OnFrameUpdate(float)));
+    }
+
+    ogreWorld = ParentScene()->Subsystem<OgreWorld>();
+
     ParentEntity()->SetName("TransformGizmo");
 
     placeable = dynamic_pointer_cast<EC_Placeable>(ParentEntity()->CreateLocalComponent(
@@ -172,7 +174,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
     OgreWorldPtr world = ogreWorld.lock();
     if (!world->Renderer()->MainCamera())
         return;
-    EC_Camera *cam = world->Renderer()->MainCamera()->GetComponent<EC_Camera>().get();
+    EC_Camera *cam = world->Renderer()->MainCamera()->Component<EC_Camera>().get();
     if (!cam)
         return;
 
@@ -211,7 +213,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
 
     bool hit = false;
     RaycastResult *result = world->Raycast(e->x, e->y, 0x80000000);
-    if (result->entity && result->entity->GetComponent<EC_TransformGizmo>().get() == this)
+    if (result->entity && result->entity->Component<EC_TransformGizmo>().get() == this)
         hit = true;
 
 
@@ -358,7 +360,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                     //LogInfo("Emitting Translated(" + ss.str() + ")");
                     emit Translated(curPoint-prevPoint);
                     // To allow unlimited drag, translate also the active axes' rays now
-                    for (size_t i = 0; i < activeAxes.size(); ++i)
+                    for (int i = 0; i < activeAxes.size(); ++i)
                         activeAxes[i].ray.pos += curPoint - prevPoint;
                     break;
                 case EC_TransformGizmo::Rotate:
@@ -433,7 +435,7 @@ float EC_TransformGizmo::DesiredGizmoScale()
     Entity *cam = world->Renderer()->MainCamera();
     if (!cam)
         return 1.f;
-    shared_ptr<EC_Placeable> placeable = cam->GetComponent<EC_Placeable>();
+    shared_ptr<EC_Placeable> placeable = cam->Component<EC_Placeable>();
     if (!placeable)
         return 1.f;
     if (!mesh->HasMesh())
