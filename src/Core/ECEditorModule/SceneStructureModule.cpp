@@ -635,7 +635,11 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e, QGraphicsItem *widget)
 
         Scene *scene = GetFramework()->Scene()->MainCameraScene();
         if (!scene)
+        {
+            QMessageBox::information(GetFramework()->Ui()->MainWindow(), tr("No Active Scene"),
+                tr("Tundra has currently no active scene in which to import content. Create a new scene first in order to import content."));
             return;
+        }
         OgreWorldPtr world = scene->GetWorld<OgreWorld>();
         if (!world)
             return;
