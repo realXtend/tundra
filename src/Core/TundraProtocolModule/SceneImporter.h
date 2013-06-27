@@ -73,6 +73,8 @@ public:
     SceneDesc CreateSceneDescFromScene(const QString &filename);
 
 private:
+    Q_DISABLE_COPY(SceneImporter)
+
     /// Process the asset references of a node, and its child nodes
     /** @param nodeElem Node element. */
     void ProcessNodeForAssets(QDomElement nodeElem, const QString& inAssetDir);

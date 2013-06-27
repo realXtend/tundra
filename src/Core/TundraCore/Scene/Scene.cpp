@@ -909,14 +909,14 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
                     LogError(QString("Scene::CreateContentFromSceneDesc: failed to create component %1 %2 .").arg(c.typeName).arg(c.name));
                     continue;
                 }
-                if (comp->TypeName() == "EC_DynamicComponent")
+                if (comp->TypeId() == 25 /*EC_DynamicComponent*/)
                 {
                     QDomDocument temp_doc;
                     QDomElement root_elem = temp_doc.createElement("component");
                     root_elem.setAttribute("type", c.typeName);
                     root_elem.setAttribute("name", c.name);
                     root_elem.setAttribute("sync", c.sync);
-                    foreach(AttributeDesc a, c.attributes)
+                    foreach(const AttributeDesc &a, c.attributes)
                     {
                         QDomElement child_elem = temp_doc.createElement("attribute");
                         child_elem.setAttribute("value", a.value);
@@ -1063,7 +1063,7 @@ SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) 
                         continue;
                     
                     QString typeName = a->TypeName();
-                    AttributeDesc attrDesc = { typeName, a->Name(), a->ToString().c_str() };
+                    AttributeDesc attrDesc = { typeName, a->Name(), a->ToString().c_str(), a->Id() };
                     compDesc.attributes.append(attrDesc);
 
                     QString attrValue = QString(a->ToString().c_str()).trimmed();
@@ -1250,7 +1250,7 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
                                     continue;
                                 
                                 QString typeName = a->TypeName();
-                                AttributeDesc attrDesc = { typeName, a->Name(), a->ToString().c_str() };
+                                AttributeDesc attrDesc = { typeName, a->Name(), a->ToString().c_str(), a->Id() };
                                 compDesc.attributes.append(attrDesc);
 
                                 QString attrValue = QString(a->ToString().c_str()).trimmed();
