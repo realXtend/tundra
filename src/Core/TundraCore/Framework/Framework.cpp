@@ -180,7 +180,7 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--netRate"] = "Specifies the number of network updates per second. Default: 30."; // TundraLogicModule
     cmdLineDescs.commands["--noAssetCache"] = "Disable asset cache."; // Framework
     cmdLineDescs.commands["--assetCacheDir"] = "Specify asset cache directory to use."; // Framework
-    cmdLineDescs.commands["--clear-asset-cache"] = "At the start of Tundra, remove all data and metadata files from asset cache."; // AssetCache
+    cmdLineDescs.commands["--clearAssetCache"] = "At the start of Tundra, remove all data and metadata files from asset cache."; // AssetCache
     cmdLineDescs.commands["--logLevel"] = "Sets the current log level: 'error', 'warning', 'info', 'debug'."; // ConsoleAPI
     cmdLineDescs.commands["--logFile"] = "Sets logging file. Usage example: '--logfile TundraLogFile.txt'."; // ConsoleAPI
     cmdLineDescs.commands["--physicsRate"] = "Specifies the number of physics simulation steps per second. Default: 60."; // PhysicsModule
@@ -190,7 +190,7 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--vsync"] = "Synchronizes buffer swaps to monitor vsync, eliminating tearing at the expense of a fixed frame rate."; // OgreRenderingModule
     cmdLineDescs.commands["--vsyncFrequency"] = "Sets display frequency rate for vsync, applicable only if fullscreen is set. Usage: '--vsyncFrequency <number>'."; // OgreRenderingModule
     cmdLineDescs.commands["--antialias"] = "Sets full screen antialiasing factor. Usage '--antialias <number>'."; // OgreRenderingModule
-    cmdLineDescs.commands["--hide_benign_ogre_messages"] = "Sets some uninformative Ogre log messages to be ignored from the log output."; // OgreRenderingModule
+    cmdLineDescs.commands["--hideBenignOgreMessages"] = "Sets some uninformative Ogre log messages to be ignored from the log output."; // OgreRenderingModule
     cmdLineDescs.commands["--no_async_asset_load"] = "Disables threaded loading of Ogre assets."; // OgreRenderingModule
     cmdLineDescs.commands["--autoDxtCompress"] = "Compress uncompressed texture assets to DXT1/DXT5 format on load to save memory."; // OgreRenderingModule
     cmdLineDescs.commands["--maxTextureSize"] = "Resize texture assets that are larger than this. Default: no resizing."; // OgreRenderingModule
@@ -206,6 +206,9 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--clientExtrapolationTime"] = "Rigid body extrapolation time on client in milliseconds. Default 66."; // TundraProtocolModule
     cmdLineDescs.commands["--noClientPhysics"] = "Disables rigid body handoff to client simulation after no movement packets received from server."; // TundraProtocolModule
     cmdLineDescs.commands["--dumpProfiler"] = "Dump profiling blocks to console every 5 seconds."; // DebugStatsModule
+    cmdLineDescs.commands["--acceptUnknownLocalSources"] = "If specified, assets outside any known local storages are allowed. Otherwise, requests to them will fail."; // AssetModule
+    cmdLineDescs.commands["--acceptUnknownHttpSources"] = "If specified, asset requests outside any registered HTTP storages are also accepted, and will appear as assets with no storage. "
+        "Otherwise, all requests to assets outside any registered storage will fail."; // AssetModule
 
     if (HasCommandLineParameter("--help"))
     {

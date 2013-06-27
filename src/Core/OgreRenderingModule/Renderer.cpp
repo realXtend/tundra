@@ -264,7 +264,8 @@ namespace OgreRenderer
         textureQuality(Texture_Normal)
     {
         compositionHandler = new OgreCompositionHandler();
-        logListener = new OgreLogListener(framework->HasCommandLineParameter("--hide_benign_ogre_messages"));
+        logListener = new OgreLogListener(fw->HasCommandLineParameter("--hideBenignOgreMessages") ||
+            fw->HasCommandLineParameter("--hide_benign_ogre_messages")); /**< @todo Remove support for the deprecated underscore version at some point. */
 
         timerFrequency = GetCurrentClockFreq();
         PrepareConfig();
