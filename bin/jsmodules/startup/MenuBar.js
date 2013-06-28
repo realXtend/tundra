@@ -154,7 +154,8 @@ if (!framework.IsHeadless())
         environment.sky.enabled = true;
     }
 
-    function OpenScene() {
+    function OpenScene()
+    {
         var fileName = QFileDialog.getOpenFileName(ui.MainWindow(), "Open Scene", application.currentWorkingDirectory, "Tundra TXML file (*.txml)");
         if (fileName == "")
             return;
@@ -170,6 +171,15 @@ if (!framework.IsHeadless())
         var openedScene = framework.Scene().CreateScene("Scene" + sceneNumber, true, true);
         if (openedScene == null)
             return;
+
+        var storage = asset.DeserializeAssetStorageFromString(fileName, false); 
+        if (!storage)
+        {
+            console.LogError("Failed to create asset storage for file " + fileName);
+            return;
+        }
+
+        asset.SetDefaultAssetStorage(storage);
 
         openedScene.LoadSceneXML(fileName, true, false, 0);
 
