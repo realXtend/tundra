@@ -15,17 +15,12 @@
 
 EC_StencilGlow::EC_StencilGlow(Scene *scene) :
     IComponent(scene),
-    outlineEntity_(0),
-    outlineSceneNode_(0),
-    enabled(this, "enabled", false),
+    INIT_ATTRIBUTE_VALUE(enabled, "Enabled", false),
+    INIT_ATTRIBUTE_VALUE(color, "Color", Color(1.f, 1.f, 1.f, 0.4f)),
     isEnabled(false),
-    color(this, "color", Color(1.f, 1.f, 1.f, 0.4f))
+    outlineEntity_(0),
+    outlineSceneNode_(0)
 {
-    if (!ViewEnabled() || GetFramework()->IsHeadless())
-        return;
-
-    world_ = scene->GetWorld<OgreWorld>();
-
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(Initialize()));
 }
 
@@ -36,6 +31,11 @@ EC_StencilGlow::~EC_StencilGlow()
 
 void EC_StencilGlow::Initialize()
 {
+    if (!ViewEnabled() || GetFramework()->IsHeadless())
+        return;
+
+    world_ = ParentScene()->Subsystem<OgreWorld>();
+
     EC_Mesh* mesh = GetMesh();
     if (!mesh)
     {
@@ -93,19 +93,18 @@ void EC_StencilGlow::CreateStencilGlow()
 
 void EC_StencilGlow::DestroyStencilGlow()
 {
+    if (world_.expired())
+        return;
+
     if (outlineEntity_)
     {
-        Ogre::SceneManager* sceneMgr = world_.lock()->OgreSceneManager();
-        sceneMgr->destroyEntity(outlineEntity_);
-
+        world_.lock()->OgreSceneManager()->destroyEntity(outlineEntity_);
         outlineEntity_ = 0;
     }
 
     if (outlineSceneNode_)
     {
-        Ogre::SceneManager* sceneMgr = world_.lock()->OgreSceneManager();
-        sceneMgr->destroySceneNode(outlineSceneNode_);
-
+        world_.lock()->OgreSceneManager()->destroySceneNode(outlineSceneNode_);
         outlineSceneNode_ = 0;
     }
 }
