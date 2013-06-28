@@ -396,6 +396,7 @@ namespace OgreRenderer
             rendersystem_name = "NULL Rendering Subsystem";
 
         textureQuality = (Renderer::TextureQualitySetting)framework->Config()->Get(configData, "texture quality").toInt();
+        textureBudget = framework->Config()->Get(configData, "texture budget").toInt();
         
         if (framework->HasCommandLineParameter("--texturebudget"))
         {
@@ -579,6 +580,7 @@ namespace OgreRenderer
     void Renderer::SetTextureBudget(int budget)
     {
         textureBudget = Max(budget, MINIMUM_TEXTURE_BUDGET);
+        framework->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "texture budget", textureBudget);
     }
 
     float Renderer::TextureBudgetUse() const
