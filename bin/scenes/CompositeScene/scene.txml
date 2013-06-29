@@ -65,6 +65,19 @@
    <attribute value="part_b.txml" type="string" id="sceneref" name="sceneref"/>
   </component>
  </entity>
+ <entity id="4" sync="1">
+  <component type="EC_Name" sync="1">
+   <attribute value="Instructions" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="local://instructions.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+ </entity>
  <entity id="2147483650" sync="false">
   <component type="EC_Placeable" sync="true">
    <attribute value="11.722369,6.630801,12.000610,-16.200039,22.500132,0.000000,1.000000,1.000000,1.000000" type="Transform" id="transform" name="Transform"/>
