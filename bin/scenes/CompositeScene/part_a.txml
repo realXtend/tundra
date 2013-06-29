@@ -2,7 +2,7 @@
 <scene>
  <entity id="1" sync="true">
   <component type="EC_Placeable" sync="true">
-   <attribute value="0.000000,-5.021500,-22.561199,0.000000,0.000000,0.000000,5.000000,2.000000,5.000000" type="Transform" id="transform" name="Transform"/>
+   <attribute value="2.786820,0.334353,0.095968,0.000000,0.000000,0.000000,1.000000,0.300000,1.000000" type="Transform" id="transform" name="Transform"/>
    <attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
    <attribute value="true" type="bool" id="visible" name="Visible"/>
    <attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
@@ -10,19 +10,12 @@
    <attribute value="" type="string" id="parentBone" name="Parent bone name"/>
   </component>
   <component type="EC_Name" sync="true">
-   <attribute value="plane_red" type="string" id="name" name="Name"/>
+   <attribute value="flat_red" type="string" id="name" name="Name"/>
    <attribute value="" type="string" id="description" name="Description"/>
   </component>
-  <component type="EC_Script" sync="true">
-   <attribute value="local://scenepartmanager.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
-   <attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
-   <attribute value="0" type="int" id="runMode" name="Run mode"/>
-   <attribute value="" type="string" id="applicationName" name="Script application name"/>
-   <attribute value="" type="string" id="className" name="Script class name"/>
-  </component>
   <component type="EC_Mesh" sync="true">
-   <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,0.500000,1.000000" type="Transform" id="nodeTransformation" name="Transform"/>
-   <attribute value="local://plane.mesh" type="AssetReference" id="meshRef" name="Mesh ref"/>
+   <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="nodeTransformation" name="Transform"/>
+   <attribute value="local://cube.mesh" type="AssetReference" id="meshRef" name="Mesh ref"/>
    <attribute value="" type="AssetReference" id="skeletonRef" name="Skeleton ref"/>
    <attribute value="local://red.material" type="AssetReferenceList" id="meshMaterial" name="Mesh materials"/>
    <attribute value="0.000000" type="real" id="drawDistance" name="Draw distance"/>
@@ -41,7 +34,7 @@
    <attribute value="false" type="bool" id="useInstancing" name="Use instancing"/>
   </component>
   <component type="EC_Placeable" sync="true">
-   <attribute value="6.286380,-2.633740,-17.975901,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="transform" name="Transform"/>
+   <attribute value="0.000000,1.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="transform" name="Transform"/>
    <attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
    <attribute value="true" type="bool" id="visible" name="Visible"/>
    <attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
@@ -51,6 +44,52 @@
   <component type="EC_Name" sync="true">
    <attribute value="cube_green" type="string" id="name" name="Name"/>
    <attribute value="" type="string" id="description" name="Description"/>
+  </component>
+ </entity>
+ <entity id="3" sync="true">
+  <component type="EC_Mesh" sync="true">
+   <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="nodeTransformation" name="Transform"/>
+   <attribute value="local://cube.mesh" type="AssetReference" id="meshRef" name="Mesh ref"/>
+   <attribute value="" type="AssetReference" id="skeletonRef" name="Skeleton ref"/>
+   <attribute value="local://red.material" type="AssetReferenceList" id="meshMaterial" name="Mesh materials"/>
+   <attribute value="0.000000" type="real" id="drawDistance" name="Draw distance"/>
+   <attribute value="false" type="bool" id="castShadows" name="Cast shadows"/>
+   <attribute value="false" type="bool" id="useInstancing" name="Use instancing"/>
+  </component>
+  <component type="EC_Placeable" sync="true">
+   <attribute value="-0.326779,2.034426,-3.621133,0.000000,0.000000,0.000000,0.500000,2.000000,1.500000" type="Transform" id="transform" name="Transform"/>
+   <attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
+   <attribute value="true" type="bool" id="visible" name="Visible"/>
+   <attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
+   <attribute value="" type="EntityReference" id="parentRef" name="Parent entity ref"/>
+   <attribute value="" type="string" id="parentBone" name="Parent bone name"/>
+  </component>
+  <component type="EC_Name" sync="true">
+   <attribute value="slim_red" type="string" id="name" name="Name"/>
+   <attribute value="" type="string" id="description" name="Description"/>
+  </component>
+ </entity>
+ <entity id="4" sync="true">
+  <component type="EC_Placeable" sync="true">
+   <attribute value="3.140903,1.067883,-4.386407,0.000000,0.000000,0.000000,0.500000,1.000000,0.500000" type="Transform" id="transform" name="Transform"/>
+   <attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
+   <attribute value="true" type="bool" id="visible" name="Visible"/>
+   <attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
+   <attribute value="" type="EntityReference" id="parentRef" name="Parent entity ref"/>
+   <attribute value="" type="string" id="parentBone" name="Parent bone name"/>
+  </component>
+  <component type="EC_Name" sync="true">
+   <attribute value="smalltall_green" type="string" id="name" name="Name"/>
+   <attribute value="" type="string" id="description" name="Description"/>
+  </component>
+  <component type="EC_Mesh" sync="true">
+   <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="nodeTransformation" name="Transform"/>
+   <attribute value="local://cube.mesh" type="AssetReference" id="meshRef" name="Mesh ref"/>
+   <attribute value="" type="AssetReference" id="skeletonRef" name="Skeleton ref"/>
+   <attribute value="local://green.material" type="AssetReferenceList" id="meshMaterial" name="Mesh materials"/>
+   <attribute value="0.000000" type="real" id="drawDistance" name="Draw distance"/>
+   <attribute value="false" type="bool" id="castShadows" name="Cast shadows"/>
+   <attribute value="false" type="bool" id="useInstancing" name="Use instancing"/>
   </component>
  </entity>
 </scene>

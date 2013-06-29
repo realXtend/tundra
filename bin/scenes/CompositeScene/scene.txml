@@ -15,7 +15,7 @@
  </entity>
  <entity id="2" sync="true">
   <component type="EC_Mesh" sync="true">
-   <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="nodeTransformation" name="Transform"/>
+   <attribute value="1.000000,0.000000,-1.750000,0.000000,0.000000,0.000000,6.500000,1.000000,6.500000" type="Transform" id="nodeTransformation" name="Transform"/>
    <attribute value="local://plane.mesh" type="AssetReference" id="meshRef" name="Mesh ref"/>
    <attribute value="" type="AssetReference" id="skeletonRef" name="Skeleton ref"/>
    <attribute value="local://green.material" type="AssetReferenceList" id="meshMaterial" name="Mesh materials"/>
@@ -39,9 +39,9 @@
    <attribute value="part_a.txml" type="string" id="sceneref" name="sceneref"/>
   </component>
  </entity>
- <entity id="4" sync="true">
+ <entity id="3" sync="true">
   <component type="EC_Mesh" sync="true">
-   <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="nodeTransformation" name="Transform"/>
+   <attribute value="1.000000,0.000000,-1.750000,0.000000,0.000000,0.000000,6.500000,1.000000,6.500000" type="Transform" id="nodeTransformation" name="Transform"/>
    <attribute value="local://plane.mesh" type="AssetReference" id="meshRef" name="Mesh ref"/>
    <attribute value="" type="AssetReference" id="skeletonRef" name="Skeleton ref"/>
    <attribute value="local://red.material" type="AssetReferenceList" id="meshMaterial" name="Mesh materials"/>
@@ -50,7 +50,7 @@
    <attribute value="false" type="bool" id="useInstancing" name="Use instancing"/>
   </component>
   <component type="EC_Placeable" sync="true">
-   <attribute value="0.000000,0.000000,-1.310797,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="transform" name="Transform"/>
+   <attribute value="8.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="transform" name="Transform"/>
    <attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
    <attribute value="true" type="bool" id="visible" name="Visible"/>
    <attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
@@ -63,6 +63,37 @@
   </component>
   <component type="EC_DynamicComponent" sync="true" name="ScenePart">
    <attribute value="part_b.txml" type="string" id="sceneref" name="sceneref"/>
+  </component>
+ </entity>
+ <entity id="2147483650" sync="false">
+  <component type="EC_Placeable" sync="true">
+   <attribute value="11.722369,6.630801,12.000610,-16.200039,22.500132,0.000000,1.000000,1.000000,1.000000" type="Transform" id="transform" name="Transform"/>
+   <attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
+   <attribute value="true" type="bool" id="visible" name="Visible"/>
+   <attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
+   <attribute value="" type="EntityReference" id="parentRef" name="Parent entity ref"/>
+   <attribute value="" type="string" id="parentBone" name="Parent bone name"/>
+  </component>
+  <component type="EC_Script" sync="true">
+   <attribute value="local://freelookcamera.js;" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+   <attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+   <attribute value="0" type="int" id="runMode" name="Run mode"/>
+   <attribute value="" type="string" id="applicationName" name="Script application name"/>
+   <attribute value="" type="string" id="className" name="Script class name"/>
+  </component>
+  <component type="EC_Camera" sync="true">
+   <attribute value="0.000000 1.000000 0.000000" type="float3" id="upVector" name="Up vector"/>
+   <attribute value="0.100000" type="real" id="nearPlane" name="Near plane"/>
+   <attribute value="2000.000000" type="real" id="farPlane" name="Far plane"/>
+   <attribute value="45.000000" type="real" id="verticalFov" name="Vertical FOV"/>
+   <attribute value="" type="string" id="aspectRatio" name="Aspect ratio"/>
+  </component>
+  <component type="EC_Name" sync="true">
+   <attribute value="FreeLookCamera" type="string" id="name" name="Name"/>
+   <attribute value="" type="string" id="description" name="Description"/>
+  </component>
+  <component type="EC_SoundListener" sync="false">
+   <attribute value="true" type="bool" id="active" name="Active"/>
   </component>
  </entity>
 </scene>
