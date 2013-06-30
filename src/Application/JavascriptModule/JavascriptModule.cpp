@@ -523,6 +523,50 @@ void JavascriptModule::RemoveScriptObjects(JavascriptInstance* jsInstance)
     globalObject.setProperty("scriptObjects", QScriptValue());
 }
 
+QStringList JavascriptModule::ParseStartupScriptConfig()
+{
+    QStringList pluginsToLoad;
+    bool deprecationWarning = true;
+    foreach(const QString &configFile, framework_->Plugins()->ConfigurationFiles())
+    {
+        QDomDocument doc("plugins");
+        QFile file(configFile);
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            LogError("JavascriptModule::ParseStartupScriptConfig: Failed to open file \"" + configFile + "\"!");
+            continue;
+        }
+        QString errorMsg;
+        if (!doc.setContent(&file, &errorMsg))
+        {
+            LogError("JavascriptModule::ParseStartupScriptConfig: Failed to parse XML file \"" + configFile + "\": " + errorMsg);
+            file.close();
+            continue;
+        }
+        file.close();
+        QDomElement docElem = doc.documentElement();
+        
+        QDomNode n = docElem.firstChild();
+        while(!n.isNull())
+        {
+            QDomElement e = n.toElement(); // try to convert the node to an element.
+            if (!e.isNull() && e.tagName() == "jsplugin" && e.hasAttribute("path"))
+            {
+                if (deprecationWarning)
+                {
+                    LogWarning("JavascriptModule::ParseStartupScriptConfig: Using XML tag <jsplugin path=\"PluginNameHere.js\"/> will be deprecated. Consider replacing it with --jsplugin command line argument instead");
+                    deprecationWarning = false;
+                }
+                pluginsToLoad << e.attribute("path");
+            }
+
+            n = n.nextSibling();
+        }
+    }
+
+    return pluginsToLoad;
+}
+
 QStringList JavascriptModule::StartupScripts()
 {
     QStringList scripts;
@@ -541,7 +585,11 @@ void JavascriptModule::LoadStartupScripts()
     QStringList requestedStartupScripts;
 
     // Get all scripts specified on the command line
-    foreach (const QString &script, StartupScripts())
+    QStringList allScripts;
+    allScripts.append(StartupScripts());
+    allScripts.append(ParseStartupScriptConfig());
+
+    foreach (const QString &script, allScripts)
     {
         QStringList scriptList = script.simplified().replace(" ", "").split(";", QString::SkipEmptyParts);
         for (int i = 0; i < scriptList.size(); ++i)
@@ -584,7 +632,7 @@ void JavascriptModule::LoadStartupScripts()
     // 2. Load the rest of the references from the config files
     foreach(const QString &startupScript, startupScriptsToLoad)
     {
-        LogInfo(Name() + ": Loading scripts specified on the command line: " + startupScript);
+        LogInfo(Name() + ": Loading scripts specified in XML config(s), or on the command line: " + startupScript);
 
         // Allow relative paths from '/<install_dir>/jsmodules' to start also
         QDir jsPluginsDir(QDir::fromNativeSeparators(Application::InstallationDirectory()) + "jsmodules");
