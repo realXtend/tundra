@@ -555,7 +555,8 @@ RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask, float maxDis
         }
     }
     
-    return rayResults_[0];
+    // Return the closest hit, or a cleared raycastresult if no hits
+    return rayHits_.size() ? rayHits_[0] : rayResults_[0];
 }
 
 RaycastResult* OgreWorld::Raycast(const Ray& ray, unsigned layerMask, float maxDistance)
@@ -568,7 +569,8 @@ RaycastResult* OgreWorld::Raycast(const Ray& ray, unsigned layerMask, float maxD
         RaycastInternal(layerMask, maxDistance, false);
     }
     
-    return rayResults_[0];
+    // Return the closest hit, or a cleared raycastresult if no hits
+    return rayHits_.size() ? rayHits_[0] : rayResults_[0];
 }
 
 QList<RaycastResult*> OgreWorld::RaycastAll(int x, int y)
@@ -838,6 +840,23 @@ void OgreWorld::RaycastInternal(unsigned layerMask, float maxDistance, bool getA
                 }
             }
         }
+    }
+    
+    // If several hits, re-sort them in case triangle-level test changed the order
+    if (rayHits_.size() > 1)
+    {
+        struct RaycastResultLessThan
+        {
+            bool operator()(const RaycastResult *left, const RaycastResult *right ) const
+            {
+                return left->t < right->t;
+            }
+        };
+        
+        qSort(rayHits_.begin(), rayHits_.end(), RaycastResultLessThan());
+        
+        if (!getAllResults)
+            rayHits_.erase(rayHits_.begin() + 1, rayHits_.end());
     }
 }
 

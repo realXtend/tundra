@@ -37,6 +37,8 @@ class TUNDRACORE_API RaycastResult : public QObject
     Q_PROPERTY(unsigned index READ getindex);
     Q_PROPERTY(float u READ getu);
     Q_PROPERTY(float v READ getv);
+    Q_PROPERTY(float t READ gett);
+    
     Entity* getentity() const { return entity; }
     IComponent *getcomponent() const { return component; }
     float3 getpos() const { return pos; }
@@ -72,7 +74,7 @@ public:
     /// V coord in entity. 0 if no texture mapping
     /// @note 'v' will be deprecated, use 'uv' from QtScript instead.
     float v;
-    /// Distance along the ray to the point of intersection. If this is FLOAT_INF, then no intersection has occurred.
+    /// Distance along the ray.
     float t;
 };
 
