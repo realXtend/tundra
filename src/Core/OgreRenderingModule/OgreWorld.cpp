@@ -502,7 +502,8 @@ RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask, float maxDis
         }
     }
     
-    return rayResults_[0];
+    // Return the closest hit, or a cleared raycastresult if no hits
+    return rayHits_.size() ? rayHits_[0] : rayResults_[0];
 }
 
 RaycastResult* OgreWorld::Raycast(const Ray& ray, unsigned layerMask, float maxDistance)
@@ -515,7 +516,8 @@ RaycastResult* OgreWorld::Raycast(const Ray& ray, unsigned layerMask, float maxD
         RaycastInternal(layerMask, maxDistance, false);
     }
     
-    return rayResults_[0];
+    // Return the closest hit, or a cleared raycastresult if no hits
+    return rayHits_.size() ? rayHits_[0] : rayResults_[0];
 }
 
 QList<RaycastResult*> OgreWorld::RaycastAll(int x, int y)
@@ -679,6 +681,7 @@ void OgreWorld::RaycastInternal(unsigned layerMask, float maxDistance, bool getA
                 result->index = r.triangleIndex;
                 result->u = r.uv.x;
                 result->v = r.uv.y;
+                result->t = r.t;
                 rayHits_.push_back(result);
                 ++hitIndex;
             }
@@ -753,6 +756,7 @@ void OgreWorld::RaycastInternal(unsigned layerMask, float maxDistance, bool getA
                         result->index = (unsigned int)-1; // Not applicable for billboards.
                         result->u = (hit.x + 1.f) * 0.5f;
                         result->v = (hit.y + 1.f) * 0.5f;
+                        result->t = d;
                     }
                 }
                 if (hasHit)
@@ -776,12 +780,30 @@ void OgreWorld::RaycastInternal(unsigned layerMask, float maxDistance, bool getA
                     result->index = 0;
                     result->u = 0.0f;
                     result->v = 0.0f;
+                    result->t = entry.distance;
                     
                     rayHits_.push_back(result);
                     ++hitIndex;
                 }
             }
         }
+    }
+    
+    // If several hits, re-sort them in case triangle-level test changed the order
+    if (rayHits_.size() > 1)
+    {
+        struct RaycastResultLessThan
+        {
+            bool operator()(const RaycastResult *left, const RaycastResult *right ) const
+            {
+                return left->t < right->t;
+            }
+        };
+        
+        qSort(rayHits_.begin(), rayHits_.end(), RaycastResultLessThan());
+        
+        if (!getAllResults)
+            rayHits_.erase(rayHits_.begin() + 1, rayHits_.end());
     }
 }
 
@@ -797,6 +819,7 @@ void OgreWorld::ClearRaycastResults()
     // In case of returning only a single result, make sure its entity & component are cleared in case of no hit
     rayResults_[0]->entity = 0;
     rayResults_[0]->component = 0;
+    rayResults_[0]->t = FLOAT_INF;
     rayHits_.clear();
 }
 

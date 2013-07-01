@@ -30,7 +30,8 @@ class TUNDRACORE_API RaycastResult : public QObject
     Q_PROPERTY(unsigned index READ getindex);
     Q_PROPERTY(float u READ getu);
     Q_PROPERTY(float v READ getv);
-
+    Q_PROPERTY(float t READ gett);
+    
     Entity* getentity() const { return entity; }
     IComponent *getcomponent() const { return component; }
     float3 getpos() const { return pos; }
@@ -39,7 +40,8 @@ class TUNDRACORE_API RaycastResult : public QObject
     unsigned getindex() const { return index; }
     float getu() const { return u; }
     float getv() const { return v; }
-
+    float gett() const { return t; }
+    
 public:
     /// Entity that was hit, null if none
     Entity* entity;
@@ -57,6 +59,8 @@ public:
     float u;
     /// V coord in entity. 0 if no texture mapping
     float v;
+    /// Distance along the ray.
+    float t;
 };
 
 ///\todo This structure replaces and obsoletes the above. Delete the above one.
