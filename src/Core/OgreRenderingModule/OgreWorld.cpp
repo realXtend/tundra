@@ -45,6 +45,14 @@
 
 #include "MemoryLeakCheck.h"
 
+struct RaycastResultLessThan
+{
+    bool operator()(const RaycastResult *left, const RaycastResult *right ) const
+    {
+        return left->t < right->t;
+    }
+};
+
 OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
     framework_(scene->GetFramework()),
     renderer_(renderer),
@@ -791,15 +799,7 @@ void OgreWorld::RaycastInternal(unsigned layerMask, float maxDistance, bool getA
     
     // If several hits, re-sort them in case triangle-level test changed the order
     if (rayHits_.size() > 1)
-    {
-        struct RaycastResultLessThan
-        {
-            bool operator()(const RaycastResult *left, const RaycastResult *right ) const
-            {
-                return left->t < right->t;
-            }
-        };
-        
+    {        
         qSort(rayHits_.begin(), rayHits_.end(), RaycastResultLessThan());
         
         if (!getAllResults)
