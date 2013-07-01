@@ -17,8 +17,11 @@ macro(configure_ogre)
         HINTS ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
       find_library(OGRE_LIBRARY OgreMain
         HINTS ${ENV_OGRE_HOME}/lib ${ENV_NAALI_DEP_PATH}/lib)
+      find_library(OGRE_OVERLAY_LIBRARY OgreOverlay
+        HINTS ${ENV_OGRE_HOME}/lib ${ENV_NAALI_DEP_PATH}/lib)
+      set (OGRE_LIBRARY ${OGRE_LIBRARY} ${OGRE_OVERLAY_LIBRARY})
 
-      include_directories(${OGRE_INCLUDE_DIR})
+      include_directories(${OGRE_INCLUDE_DIR} ${OGRE_INCLUDE_DIR}/Overlay)
       link_directories(${OGRE_LIBRARY_DIR})
   else()
       set (OGRE_LIBRARY_DIR ${ENV_OGRE_HOME}/lib ${ENV_OGRE_HOME}/AndroidDependencies/lib)

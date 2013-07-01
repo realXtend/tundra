@@ -125,5 +125,5 @@ private:
     bool AllowAsyncLoading() const;
     
     /// Strip the top level mips from a DDS image if it is too large. Overwrite memory stream with modified one as necessary. Needs a temp vector for the modified data.
-    void TextureAsset::ProcessDDSImage(Ogre::DataStreamPtr& stream, std::vector<u8>& modifiedDDSData);
+    void ProcessDDSImage(Ogre::DataStreamPtr& stream, std::vector<u8>& modifiedDDSData);
 };
