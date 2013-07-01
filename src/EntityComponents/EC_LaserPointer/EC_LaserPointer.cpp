@@ -8,8 +8,6 @@
 #define MATH_OGRE_INTEROP
 //#include "DebugOperatorNew.h"
 
-#define __InputContext_H__ // Do not allow Ogre SDK's InputContext to be included
-
 #include "EC_LaserPointer.h"
 
 #include "Framework.h"

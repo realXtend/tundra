@@ -1,7 +1,5 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#define __InputContext_H__ // Do not allow Ogre SDK's InputContext to be included
-
 #include "EC_WidgetBillboard.h"
 
 #include "Framework.h"

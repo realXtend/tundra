@@ -27,6 +27,9 @@ macro(configure_ogre)
         ${ENV_OGRE_HOME}/RenderSystems/GLES2/include ${ENV_OGRE_HOME}/PlugIns/OctreeSceneManager/include ${ENV_OGRE_HOME}/PlugIns/ParticleFX/include)
       link_directories(${OGRE_LIBRARY_DIR})
   endif()
+  
+  # Ogre SDK also has an include file InputContext.h. Do not allow it to be included.
+  add_definitions(-D__InputContext_H__)
 endmacro()
 
 else() # Windows and OSX Ogre lookup.
@@ -139,6 +142,9 @@ macro(configure_ogre)
         message(FATAL_ERROR "When looking for Ogre, the path ${OGRE_DIR} does not point to a valid Ogre directory!")
     endif()
     message("")
+  
+    # Ogre SDK also has an include file InputContext.h. Do not allow it to be included.
+    add_definitions(-D__InputContext_H__)
 endmacro()
 
 endif()
