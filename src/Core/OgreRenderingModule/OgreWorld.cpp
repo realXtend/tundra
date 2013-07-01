@@ -555,7 +555,7 @@ RaycastResult* OgreWorld::Raycast(int x, int y, unsigned layerMask, float maxDis
         }
     }
     
-    return rayResults_[rayResults_.size() >= 1 ? rayResults_.size() - 1 : 0];
+    return rayResults_[0];
 }
 
 RaycastResult* OgreWorld::Raycast(const Ray& ray, unsigned layerMask, float maxDistance)
@@ -568,7 +568,7 @@ RaycastResult* OgreWorld::Raycast(const Ray& ray, unsigned layerMask, float maxD
         RaycastInternal(layerMask, maxDistance, false);
     }
     
-    return rayResults_[rayResults_.size() >= 1 ? rayResults_.size() - 1 : 0];
+    return rayResults_[0];
 }
 
 QList<RaycastResult*> OgreWorld::RaycastAll(int x, int y)
@@ -851,10 +851,9 @@ RaycastResult* OgreWorld::GetOrCreateRaycastResult(size_t index)
 void OgreWorld::ClearRaycastResults()
 {
     // In case of returning only a single result, make sure its entity & component are cleared in case of no hit
-//    rayResults_[0]->entity = 0;
-//    rayResults_[0]->component = 0;
-//    rayResults_[0]->t = FLOAT_INF;
-    rayResults_.clear();
+    rayResults_[0]->entity = 0;
+    rayResults_[0]->component = 0;
+    rayResults_[0]->t = FLOAT_INF;
     rayHits_.clear();
 }
 
