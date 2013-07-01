@@ -1,0 +1,11 @@
+material green
+{
+    technique
+    {
+		pass
+		{
+			diffuse 0 1 0 1
+			ambient 0 1 0 1
+		}
+	}
+}
