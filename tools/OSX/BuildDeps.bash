@@ -662,12 +662,12 @@ else
         rm CMakeCache.txt
     fi
  
-    cmake -G Xcode -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DOGRE_USE_BOOST:BOOL=$USE_BOOST -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=0 -DOGRE_CONFIG_THREAD_PROVIDER=none -DOGRE_CONFIG_ENABLE_LIBCPP_SUPPORT:BOOL=$NO_BOOST
+    cmake -G Xcode -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DOGRE_USE_BOOST:BOOL=$USE_BOOST -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=0 -DOGRE_CONFIG_THREAD_PROVIDER=none -DOGRE_CONFIG_ENABLE_LIBCPP_SUPPORT:BOOL=$NO_BOOST -DCMAKE_OSX_ARCHITECTURES=x86_64 -DOGRE_LIBRARY_OUTPUT=$OGRE_HOME/lib -DOGRE_ARCHIVE_OUTPUT=$OGRE_HOME/lib
     xcodebuild -configuration RelWithDebInfo
 
     mkdir -p $prefix/$what/{lib,include}
     cp -R $OGRE_HOME/lib/relwithdebinfo/* $prefix/$what/lib
-    cp $prefix/$what/lib/*.dylib $viewer/bin
+    # cp $prefix/$what/lib/*.dylib $viewer/bin
 
     # Replace the install name with more suitable one to avoid link problems
     if [ -f $viewer/bin/RenderSystem_GL.dylib ]; then
