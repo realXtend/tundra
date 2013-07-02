@@ -125,7 +125,7 @@ void EC_Highlight::Show()
 
 void EC_Highlight::Hide()
 {
-    if (!mesh_.expired() ||  world_.expired())
+    if (mesh_.expired() ||  world_.expired())
         return;
 
     // Restore mesh component's original materials to hide highlight effect.
