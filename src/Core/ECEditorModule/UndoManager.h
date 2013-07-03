@@ -28,7 +28,7 @@ public:
     /// Constructor
     /* @param scene Scene of which entities we're tracking.
        @param parentWidget Parent widget for the Undo Stack Editor, optional. Typically you want to pass in the UiMainWindow here. */
-    UndoManager(const ScenePtr &scene, QWidget *parentWidget = 0);
+    UndoManager(const ScenePtr &scene, QWidget *parentWidget = 0, QWidget *undoMenuParent = 0, QWidget *redoMenuParent = 0);
 
     ~UndoManager();
 
