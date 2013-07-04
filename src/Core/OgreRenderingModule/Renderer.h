@@ -147,8 +147,8 @@ namespace OgreRenderer
         /// Returns texture budget in megabytes.
         int TextureBudget() const { return textureBudget; }
 
-        /// Calculate current texture usage ratio (1 = budget completely in use)
-        float TextureBudgetUse() const;
+        /// Calculate current texture usage ratio (1 = budget completely in use). Optionally specify a data size in bytes which is going to be loaded, and will be added to the calculation
+        float TextureBudgetUse(size_t loadDataSize = 0) const;
 
 #ifdef ANDROID
         /// Returns the shader generator for converting fixed-function materials (Android only)

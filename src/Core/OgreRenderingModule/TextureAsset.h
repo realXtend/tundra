@@ -90,8 +90,8 @@ public:
     /// Same as NameInternal but static and takes the textureRef as a parameter.
     static QString NameInternal(const QString &textureRef);
 
-    /// Calculat the size for a texture based on texture budget
-    void CalculateTextureSize(size_t width, size_t height, size_t& outWidth, size_t& outHeight);
+    /// Calculate the size for a texture based on texture budget
+    void CalculateTextureSize(size_t width, size_t height, size_t& outWidth, size_t& outHeight, size_t bitsPerPixel);
     
     /// Decompresses any CRN input data to DDS.
     /** @param crnData Ptr to compressed crn data.

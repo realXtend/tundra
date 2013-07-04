@@ -64,7 +64,7 @@ Q_DECLARE_METATYPE(OgreParticleAssetPtr)
 static const float MAX_FRAME_TIME = 0.1f;
 
 // Default texture budget (megabytes)
-static const int DEFAULT_TEXTURE_BUDGET = 256;
+static const int DEFAULT_TEXTURE_BUDGET = 512;
 // Minimum texture budget
 static const int MINIMUM_TEXTURE_BUDGET = 1;
 
@@ -583,9 +583,9 @@ namespace OgreRenderer
         framework->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "texture budget", textureBudget);
     }
 
-    float Renderer::TextureBudgetUse() const
+    float Renderer::TextureBudgetUse(size_t loadDataSize) const
     {
-        return (float)Ogre::TextureManager::getSingletonPtr()->getMemoryUsage() / (1024.f*1024.f) / (float)textureBudget;
+        return (float)(Ogre::TextureManager::getSingletonPtr()->getMemoryUsage() + loadDataSize) / (1024.f*1024.f) / (float)textureBudget;
     }
 
     QStringList Renderer::LoadPlugins(const std::string& plugin_filename)

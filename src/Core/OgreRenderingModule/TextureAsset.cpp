@@ -40,8 +40,8 @@
 
 #include "MemoryLeakCheck.h"
 
-const float BUDGET_THRESHOLD = 0.75f; // The point at which we start reducing texture size
-const float BUDGET_STEP = 0.1f; // The step at which texture maximum size limit is halved
+const float BUDGET_THRESHOLD = 0.80f; // The point at which we start reducing texture size
+const float BUDGET_STEP = 0.05f; // The step at which texture maximum size limit is halved
 
 TextureAsset::TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
     IAsset(owner, type_, name_), loadTicket_(0)
@@ -334,7 +334,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
         if (!isCompressed)
         {
             size_t outWidth, outHeight;
-            CalculateTextureSize(image.getWidth(), image.getHeight(), outWidth, outHeight);
+            CalculateTextureSize(image.getWidth(), image.getHeight(), outWidth, outHeight, 4*8); // Assume RGBA
             if (outWidth != image.getWidth() || outHeight != image.getHeight())
             {
                 try
@@ -904,6 +904,9 @@ void TextureAsset::CompressTexture()
 
 bool TextureAsset::AllowAsyncLoading() const
 {
+    /// \todo NeedSizeModification() does not take into account the current texture's data size, in which case we may go on the threaded loading path
+    /// without a possibility to resize the texture smaller. This means that potentially one texture may go in unresized and increase the texture load
+    /// significantly over the budget.
     if (NeedSizeModification() || assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
         return false;
     else
@@ -916,7 +919,7 @@ bool TextureAsset::NeedSizeModification() const
     return assetAPI->GetFramework()->HasCommandLineParameter("--maxtexturesize") || renderer->TextureBudgetUse() > BUDGET_THRESHOLD || renderer->TextureQuality() == OgreRenderer::Renderer::Texture_Low;
 }
 
-void TextureAsset::CalculateTextureSize(size_t width, size_t height, size_t& outWidth, size_t& outHeight)
+void TextureAsset::CalculateTextureSize(size_t width, size_t height, size_t& outWidth, size_t& outHeight, size_t bitsPerPixel)
 {
     OgreRenderer::RendererPtr renderer = assetAPI->GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
 
@@ -929,19 +932,27 @@ void TextureAsset::CalculateTextureSize(size_t width, size_t height, size_t& out
         outHeight >>= 1;
     }
     
-    float t = renderer->TextureBudgetUse();
+    float t = renderer->TextureBudgetUse(outWidth * outHeight * bitsPerPixel / 8);
     if (t > BUDGET_THRESHOLD)
     {
-        size_t maxTextureSize = 2048;
-        size_t factor = (size_t)((t - BUDGET_THRESHOLD) / BUDGET_STEP);
-        maxTextureSize >>= factor;
-        if (!maxTextureSize)
-            maxTextureSize = 1;
-        
-        while (outWidth > maxTextureSize || outHeight > maxTextureSize)
+        for (;;)
         {
+            size_t maxTextureSize = 4096;
+            int factor = (int)((t - BUDGET_THRESHOLD) / BUDGET_STEP);
+            if (factor < 0)
+                factor = 0;
+            maxTextureSize >>= factor;
+            if (!maxTextureSize)
+                maxTextureSize = 1;
+
+            if (outWidth <= maxTextureSize && outHeight <= maxTextureSize)
+                break;
+            
             outWidth >>= 1;
             outHeight >>= 1;
+            
+            // Update the tentative budget and check whether further reduction is needed
+            t = renderer->TextureBudgetUse(outWidth * outHeight * bitsPerPixel / 8);
         }
     }
     
@@ -1015,14 +1026,15 @@ void TextureAsset::ProcessDDSImage(Ogre::DataStreamPtr& stream, std::vector<u8>&
 
     // check if the pixel type is DXT (do the check only if the magic is valid...)
     bool isDXT = isMagicValid && memcmp(header.cFourCharIdOfPixelFormat, "DXT", 3) == 0;
-
+    bool isDXT1 = memcmp(header.cFourCharIdOfPixelFormat, "DXT1", 4) == 0;
+    
     // check if this is a valid dds file by the image type id
     bool isValidDdsFile = isMagicValid && isDXT;
 
     size_t totalSizeOfTheSkipTopLevels = 0;
 
     size_t outWidth, outHeight;
-    CalculateTextureSize(header.dwWidth, header.dwHeight, outWidth, outHeight);
+    CalculateTextureSize(header.dwWidth, header.dwHeight, outWidth, outHeight, isDXT1 ? 4 : 8);
 
     if (outWidth == header.dwWidth && outHeight == header.dwHeight)
     {
@@ -1064,7 +1076,6 @@ void TextureAsset::ProcessDDSImage(Ogre::DataStreamPtr& stream, std::vector<u8>&
         unsigned long width = header.dwWidth;
         unsigned long height = header.dwHeight;
         unsigned long mipMapCount = header.dwMipMapCount;
-        bool isDXT1 = memcmp(header.cFourCharIdOfPixelFormat, "DXT1", 4) == 0;
 
         // skip the levels (if has MipMap and a valid file)
         for (size_t i = 0 ; i < numberOfTopMipMapToSkip && mipMapCount > 1 && isValidDdsFile ; i++)
