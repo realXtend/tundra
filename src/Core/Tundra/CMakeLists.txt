@@ -18,10 +18,7 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCO
 
 if (MSVC)
     # Windows resource files for icon.
-    if (BUILDING_INSTALLER)
-        set(RESOURCE_FILES ${RESOURCE_FILES} resource.h Tundra.rc)
-    endif()
-
+    set(RESOURCE_FILES ${RESOURCE_FILES} resource.h Tundra.rc)
     # Preprocessor defines on MSVC
     set_property(DIRECTORY PROPERTY COMPILE_DEFINITIONS_RELEASE _DMEMDUMP)
     set_property(DIRECTORY PROPERTY COMPILE_DEFINITIONS_RELWITHDEBINFO _DMEMDUMP)
