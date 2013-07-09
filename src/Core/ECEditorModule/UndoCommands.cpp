@@ -824,6 +824,55 @@ bool TransformCommand::mergeWith(const QUndoCommand *other)
     return true;
 }
 
+GroupEntitiesCommand::GroupEntitiesCommand(const QList<EntityWeakPtr> &entities, EntityIdChangeTracker * tracker, const QString oldGroupName, const QString newGroupName, QUndoCommand *parent) :
+    tracker_(tracker),
+    oldGroupName_(oldGroupName),
+    newGroupName_(newGroupName),
+    QUndoCommand(parent)
+{
+    QString text;
+    text += oldGroupName.isEmpty() ? "* Group " : "* Ungroup ";
+    text += QString("%1").arg(entities.size());
+    text += entities.size() > 1 ? " entities " : " entity ";
+    text += !oldGroupName.isEmpty() ? QString("from %1").arg(oldGroupName) : "";
+    text += !newGroupName.isEmpty() ? QString("to %1").arg(newGroupName) : "";
+    setText(text);
+
+    scene_ = entities.first().lock()->ParentScene()->shared_from_this();
+    for(QList<EntityWeakPtr>::const_iterator i = entities.begin(); i != entities.end(); ++i)
+        entityIds_ << (*i).lock()->Id();
+}
+
+int GroupEntitiesCommand::id() const
+{
+    return Id;
+}
+
+void GroupEntitiesCommand::undo()
+{
+    DoGroupUngroup(oldGroupName_);
+}
+
+void GroupEntitiesCommand::redo()
+{
+    DoGroupUngroup(newGroupName_);
+}
+
+void GroupEntitiesCommand::DoGroupUngroup(QString groupName)
+{
+    ScenePtr scene = scene_.lock();
+    if (!scene.get())
+        return;
+    
+    foreach(entity_id_t i, entityIds_)
+    {
+        entity_id_t id = tracker_->RetrieveId(i);
+        Entity *entity = scene->EntityById(id).get();
+        if (entity)
+            entity->SetGroup(groupName);
+    }
+}
+
 
 /*
 PasteCommand::PasteCommand(QUndoCommand *parent) :

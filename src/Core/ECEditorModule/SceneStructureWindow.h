@@ -10,9 +10,11 @@
 #include "CoreTypes.h"
 
 #include <QWidget>
+#include <QTreeWidgetItem>
 
 class SceneTreeWidget;
 class Framework;
+class EntityItem;
 
 class QLineEdit;
 class QPushButton;
@@ -72,7 +74,10 @@ private:
     /// Clears tree widget.
     void Clear();
 
-    /// Creates asset reference items.
+    /// Creates asset references to a single entity item
+    void CreateAssetReference(QTreeWidgetItem *targetItem);
+
+    /// Creates asset reference items to all entities
     void CreateAssetReferences();
 
     /// Clears i.e. deletes all asset reference items.
@@ -83,9 +88,12 @@ private:
         @param attr AssetReference attribute. */
     void CreateAssetItem(QTreeWidgetItem *parentItem, IAttribute *attr);
 
+    EntityItem* EntityItemOfEntity(Entity* ent);
+
     Framework *framework; ///< Framework.
     SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
     SceneTreeWidget *treeWidget; ///< Scene tree widget.
+    QHash<QString, QTreeWidgetItem*> entityGroupItems_; /// < Entity groups
     bool showComponents; ///< Do we show components also in the tree view.
     bool showAssets; ///< Do we show asset references also in the tree view.
     QLineEdit *searchField; ///< Search field line edit.
