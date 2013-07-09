@@ -214,12 +214,9 @@ IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 :: Qt
 :: NOTE For VS2012 support Qt 4.8.3>= needed: http://stackoverflow.com/questions/12113400/compiling-qt-4-8-x-for-visual-studio-2012
-:: In theory, 4.8.4 should support VS2012 out-of-the-box, but in practice doesn't...
-:: NOTE ftp://ftp.qt-project.org/qt/source/ Can be used for Qt < 4.8.2, for Qt >= 4.8.2 use http://releases.qt-project.org/qt4/source/
-::set QT_VER=4.7.4
-::set QT_URL=ftp://ftp.qt-project.org/qt/source/qt-everywhere-opensource-src-%QT_VER%.zip
-set QT_VER=4.8.4
-set QT_URL=http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-%QT_VER%.zip
+:: In theory, Qt >= 4.8.4 should support VS2012 out-of-the-box, but in practice it doesn't...
+set QT_VER=4.8.5
+set QT_URL=http://download.qt-project.org/official_releases/qt/4.8/%QT_VER%/qt-everywhere-opensource-src-%QT_VER%.zip
 IF NOT EXIST "%DEPS%\qt". (
    cd "%DEPS%"
    IF NOT EXIST qt-everywhere-opensource-src-%QT_VER%.zip. (
