@@ -497,6 +497,30 @@ public:
     int nItems_;
 };
 
+class ECEDITOR_MODULE_API GroupEntitiesCommand : public QUndoCommand
+{
+public:
+    GroupEntitiesCommand(const QList<EntityWeakPtr> &entities, EntityIdChangeTracker * tracker, const QString oldGroupName, const QString newGroupName, QUndoCommand *parent = 0);
+
+    /// Internal QUndoCommand unique ID
+    enum { Id = 110 };
+
+    /// Returns this command's ID
+    int id () const;
+    /// QUndoCommand override
+    void undo();
+    /// QUndoCommand override
+    void redo();
+
+    void DoGroupUngroup(QString groupName);
+
+    QString oldGroupName_; ///< Old group name
+    QString newGroupName_; ///< New group name
+    SceneWeakPtr scene_; ///< A weak pointer to the main camera scene
+    EntityIdChangeTracker *tracker_; ///< Pointer to the tracker object, taken from an undo manager
+    EntityIdList entityIds_; ///< List of target entity IDs
+};
+
 /*
 class ECEDITOR_MODULE_API PasteCommand : public QUndoCommand
 {
