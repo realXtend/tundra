@@ -50,6 +50,7 @@ class TUNDRACORE_API Entity : public QObject, public enable_shared_from_this<Ent
     Q_PROPERTY(entity_id_t id READ Id) /**< @copydoc Id */
     Q_PROPERTY(QString name READ Name WRITE SetName) /**< @copydoc Name */
     Q_PROPERTY(QString description READ Description WRITE SetDescription) /**< @copydoc Description */
+    Q_PROPERTY(QString group READ Group WRITE SetGroup)
     Q_PROPERTY(bool replicated READ IsReplicated) /**< @copydoc IsReplicated */
     Q_PROPERTY(bool local READ IsLocal) /**< @copydoc IsLocal */
     Q_PROPERTY(bool unacked READ IsUnacked) /**< @copydoc IsUnacked */
@@ -87,6 +88,13 @@ public:
         @return List of components with certain class type, or empty list if no components was found. */
     template <class T>
     std::vector<shared_ptr<T> > ComponentsOfType() const;
+
+    /// Sets group to this entity in EC_Name component. If the component doesn't exist, it will be created.
+    /** @param groupName Name of the group. */
+    void SetGroup(const QString &groupName);
+
+    /// Returns group name this entity belongs to if EC_Name is available, empty string otherwise.
+    QString Group() const;
 
     /// In the following, deserialization functions are now disabled since deserialization can't safely
     /// process the exact same data that was serialized, or it risks receiving entity ID conflicts in the scene.

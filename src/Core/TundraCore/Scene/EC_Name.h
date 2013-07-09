@@ -41,7 +41,8 @@ public:
     explicit EC_Name(Scene* scene) :
         IComponent(scene),
         INIT_ATTRIBUTE_VALUE(name, "Name", ""),
-        INIT_ATTRIBUTE_VALUE(description, "Description", "")
+        INIT_ATTRIBUTE_VALUE(description, "Description", ""),
+        INIT_ATTRIBUTE_VALUE(group, "Group", "")
     {}
     /// @endcond
 
@@ -54,4 +55,8 @@ public:
     /// Description.
     Q_PROPERTY(QString description READ getdescription WRITE setdescription); 
     DEFINE_QPROPERTY_ATTRIBUTE(QString, description);
+
+    /// Entity group
+    Q_PROPERTY(QString group READ getgroup WRITE setgroup);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, group);
 };

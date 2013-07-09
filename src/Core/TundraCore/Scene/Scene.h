@@ -316,6 +316,10 @@ public slots:
         @note The overload taking type ID is more efficient than this overload. */
     EntityList EntitiesWithComponent(const QString &typeName, const QString &name = "") const;
 
+    /// Returns list of entities that belong to the group 'groupName'
+    /** @param groupName The name of the group to be queried */
+    EntityList EntitiesOfGroup(const QString &groupName) const;
+
     /// Returns all components of specific type (and additionally with specific name) in the scene.
     /*  @param typeId Component type ID.
         @param name Arbitrary name of the component (optional). */
