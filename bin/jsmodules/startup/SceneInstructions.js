@@ -34,7 +34,7 @@ if (!framework.IsHeadless())
         var startupScenes = framework.CommandLineParameters("--file");
         var mainCameraScene = framework.Scene().MainCameraScene();
         var sceneLoadFailed = (startupScenes.length >= 1 && mainCameraScene && SizeOf(mainCameraScene.entities) <= 1);
-        if (!input.ItemAtCoords(ui.GraphicsScene().sceneRect.toRect().center()) || sceneLoadFailed)
+        if ((!mainCameraScene && !input.ItemAtCoords(ui.GraphicsScene().sceneRect.toRect().center())) || sceneLoadFailed )
         {
             ShowSceneInstructions(sceneLoadFailed, startupScenes);
             framework.Scene().SceneAdded.connect(HideSceneInstructions);
