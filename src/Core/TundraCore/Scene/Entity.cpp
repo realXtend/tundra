@@ -551,6 +551,18 @@ QString Entity::Description() const
     return name ? name->description.Get() : "";
 }
 
+void Entity::SetGroup(const QString &groupName)
+{
+    shared_ptr<EC_Name> comp = GetOrCreateComponent<EC_Name>();
+    comp->group.Set(groupName, AttributeChange::Default);
+}
+
+QString Entity::Group() const
+{
+    shared_ptr<EC_Name> comp = Component<EC_Name>();
+    return comp ? comp->group.Get() : "";
+}
+
 EntityAction *Entity::Action(const QString &name)
 {
     foreach(EntityAction *action, actions_)

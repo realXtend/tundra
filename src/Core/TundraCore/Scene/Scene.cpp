@@ -248,6 +248,19 @@ EntityList Scene::EntitiesWithComponent(u32 typeId, const QString &name) const
     return entities;
 }
 
+EntityList Scene::EntitiesOfGroup(const QString &groupName) const
+{
+    EntityList entities;
+    if (groupName.isEmpty())
+        return entities;
+
+    for (const_iterator it = begin(); it != end(); ++it)
+        if (it->second->Group() == groupName)
+            entities.push_back(it->second);
+
+    return entities;
+}
+
 Entity::ComponentVector Scene::Components(const QString &typeName, const QString &name) const
 {
     return Components(framework_->Scene()->GetComponentTypeId(typeName), name);
