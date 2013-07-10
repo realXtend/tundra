@@ -283,9 +283,18 @@ IF NOT EXIST %QT_INSTALL_WEBKIT_DLL_FILENAME%. (
     )
 
     cd %QTDIR%
-    :: WebKit seems to fail if we've build release first and then trying to build debug, but deleting the solution file seems to help.
-    IF EXIST src\3rdparty\webkit\Source\WebKit.sln. del /Q src\3rdparty\webkit\Source\WebKit.sln
+
+    :: WebKit seems to fail if we've build release first and then trying to build debug, but deleting the generated build files seems to help.
+    IF EXIST src\3rdparty\webkit\Source\Webkit\qt\QtWebKit.%VCPROJ_FILE_EXT%. (
+        del /Q src\3rdparty\webkit\Source\Webkit\qt\QtWebKit.%VCPROJ_FILE_EXT%*
+        del /Q src\3rdparty\webkit\Source\Webkit\qt\Makefile*
+        del /Q src\3rdparty\webkit\Source\Webkit\qt\*.rc
+    )
+
+    :: Clear possible build configuration cache
     IF EXIST configure.cache. del /Q configure.cache
+    IF EXIST projects.sln. del /Q projects.sln
+
     cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}
     configure -platform %QT_PLATFORM% -%DEBUG_OR_RELEASE_LOWERCASE% -opensource -prefix "%DEPS%\qt" -shared -ltcg ^
         -no-qt3support -no-opengl -no-openvg -no-dbus -no-phonon -no-phonon-backend -no-multimedia -no-audio-backend ^
