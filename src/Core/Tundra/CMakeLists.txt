@@ -9,7 +9,7 @@ endif ()
 
 # Define source files
 file (GLOB CPP_FILES main.cpp)
-file (GLOB H_FILES "") # Dont do *.h it will pickup windows spesific resource.h
+file (GLOB H_FILES "") # Don't do *.h it will pickup Windows-spesific resource.h
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 set (RESOURCE_FILES "")
@@ -61,14 +61,15 @@ setup_install_files (${TUNDRA_BIN}/plugins.xml)       # Default startup config
 setup_install_files (${TUNDRA_BIN}/viewer.xml)        # Viewer startup config
 setup_install_files_find (${TUNDRA_BIN}/dox "*.txt" Release|Debug|RelWithDebInfo "dox") # Doc files used in installer
 
-# Install certain things only in non BUILD_SDK_ONLY mode
-if (NOT BUILD_SDK_ONLY)
-    setup_install_directory (${TUNDRA_BIN}/data)        # Data: ui, assets, etc
-    setup_install_directory (${TUNDRA_BIN}/scenes)      # Example application scenes
-    setup_remove_file ("data/assets/dummy.txt")         # Remove git dummy file from data/assets
-endif ()
+# Install example application scenes only if INSTALL_BINARIES_ONLY is false.
+if (NOT INSTALL_BINARIES_ONLY)
+    setup_install_directory (${TUNDRA_BIN}/scenes)
+endif()
 
-# Install deps for windows
+setup_install_directory(${TUNDRA_BIN}/data)        # Data: ui, assets, etc
+setup_remove_file("data/assets/dummy.txt")         # Remove git dummy file from data/assets
+
+# Install deps for Windows
 setup_install_windows_deps_regexp ("" qt/bin/ "[/][Q][t][A-Z].*[^d][4][.]dll$" Release|RelWithDebInfo qt/bin/ "[/][Q][t][A-Z].*[d][4][.]dll$" Debug)
 setup_install_windows_deps_regexp (qtplugins qt/plugins/ "[/]plugins[/].*[/][q].*[^d][4][.]dll$" Release|RelWithDebInfo qt/plugins/ "[/]plugins[/].*[/][q].*[d][4][.]dll$" Debug)
 setup_install_windows_deps ("libeay32.dll;ssleay32.dll" Release|RelWithDebInfo|Debug) # OpenSSL DLLs for SSL support in QNetwork

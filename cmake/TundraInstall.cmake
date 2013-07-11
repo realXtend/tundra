@@ -169,35 +169,42 @@ endfunction ()
 # - shared libraries    <prefix>/bin/plugins
 # - executables         <prefix>/bin
 # - static libraries    <prefix>/lib
-#
 macro (setup_install_target)
-    # install libraries and executables
+    # Shared libraries
     if (${TARGET_LIB_TYPE} STREQUAL "SHARED")
         # assume /plugins for shared libs, if not plugins assume root.
-        set (INTALL_SHARED_TARGET "plugins")
+        set (INSTALL_SHARED_TARGET "plugins")
         if (NOT "${TARGET_OUTPUT}" STREQUAL "plugins")
-            set (INTALL_SHARED_TARGET "")
+            set (INSTALL_SHARED_TARGET "")
         endif ()
         install (TARGETS ${TARGET_NAME} 
-                 LIBRARY DESTINATION "bin/${INTALL_SHARED_TARGET}" # non DLL platforms shared libs are LIBRARY
-                 RUNTIME DESTINATION "bin/${INTALL_SHARED_TARGET}" # DLL platforms shared libs are RUNTIME
-                 ARCHIVE DESTINATION "lib" # DLL platforms static link part of the shared lib are ARCHIVE
+                 LIBRARY DESTINATION "bin/${INSTALL_SHARED_TARGET}" # non DLL platforms shared libs are LIBRARY
+                 RUNTIME DESTINATION "bin/${INSTALL_SHARED_TARGET}" # DLL platforms shared libs are RUNTIME
                  CONFIGURATIONS ${CMAKE_CONFIGURATION_TYPES})
-    endif ()
-    if (${TARGET_LIB_TYPE} STREQUAL "STATIC")
-        install (TARGETS ${TARGET_NAME} 
-                 ARCHIVE DESTINATION "lib" 
-                 CONFIGURATIONS ${CMAKE_CONFIGURATION_TYPES})
-    endif ()
+
+        if (NOT INSTALL_BINARIES_ONLY)
+            install(TARGETS ${TARGET_NAME} ARCHIVE DESTINATION "lib" CONFIGURATIONS ${CMAKE_CONFIGURATION_TYPES}) # DLL platforms static link part of the shared lib are ARCHIVE
+        endif()
+    endif()
+
+    # Static libraries
+    if (NOT INSTALL_BINARIES_ONLY)
+        if (${TARGET_LIB_TYPE} STREQUAL "STATIC")
+            install (TARGETS ${TARGET_NAME} ARCHIVE DESTINATION "lib" CONFIGURATIONS ${CMAKE_CONFIGURATION_TYPES})
+        endif()
+    endif()
+
+    # Executables
     if (${TARGET_LIB_TYPE} STREQUAL "EXECUTABLE")
-        install (TARGETS ${TARGET_NAME} 
-                 RUNTIME DESTINATION "bin" 
-                 CONFIGURATIONS ${CMAKE_CONFIGURATION_TYPES})
-    endif ()
-    
-    # install headers, directly from current source dir and look for subfolders with headers
-    file (GLOB_RECURSE TARGET_INSTALL_HEADERS "*.h")
-    file (GLOB_RECURSE TARGET_INSTALL_INLINE "*.inl")
-    install (FILES ${TARGET_INSTALL_HEADERS} DESTINATION "include/${TARGET_NAME}")
-    install (FILES ${TARGET_INSTALL_INLINE} DESTINATION "include/${TARGET_NAME}")
-endmacro ()
+        install (TARGETS ${TARGET_NAME} RUNTIME DESTINATION "bin" CONFIGURATIONS ${CMAKE_CONFIGURATION_TYPES})
+    endif()
+
+    # Headers
+    if (NOT INSTALL_BINARIES_ONLY)
+        # install headers, directly from current source dir and look for subfolders with headers
+        file (GLOB_RECURSE TARGET_INSTALL_HEADERS "*.h")
+        file (GLOB_RECURSE TARGET_INSTALL_INLINE "*.inl")
+        install (FILES ${TARGET_INSTALL_HEADERS} DESTINATION "include/${TARGET_NAME}")
+        install (FILES ${TARGET_INSTALL_INLINE} DESTINATION "include/${TARGET_NAME}")
+    endif()
+endmacro()
