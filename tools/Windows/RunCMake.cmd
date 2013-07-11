@@ -39,7 +39,7 @@ set TBB_HOME=%DEPS%\ogre-safe-nocrashes\Dependencies\tbb
 IF NOT EXIST Tundra.sln. (
    IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
    cecho {0D}Running CMake for Tundra.{# #}{\n}
-   cmake.exe -G %GENERATOR%
+   cmake.exe -G %GENERATOR% %2 %3 %4 %5 %6 %7 %8 %9
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0A}Tundra.sln exists. Skipping CMake call for Tundra.{# #}{\n}
