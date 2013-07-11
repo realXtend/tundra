@@ -15,9 +15,18 @@
 
 ## Various flags/defines that configure your build
 
-set(TUNDRACORE_SHARED 1)            # Do we want to build TundraCore as a shared or static library.
-set(BUILD_SDK_ONLY 0)               # Configure if you want to build only the SDK, meaning projects from src/Application will be omitted
-set(ENABLE_BUILD_OPTIMIZATIONS 0)   # Only for Windows: Enables optimizations for compiler and linker. Do not enable this if you are planning to distribute your .lib files! Warning: Increases build time significantly.
+# Do we want to build TundraCore as a shared or static library.
+set(TUNDRACORE_SHARED 1)
+# Configure if you want to build only the SDK, meaning projects from src/Application will be omitted
+# TODO BUILD_SDK_ONLY seems not be very useful as many core Tundra functionalities reside in the Application folder,
+# JavascriptModule f.ex.; consider removing this option for good.
+set(BUILD_SDK_ONLY 0)
+# Do we want to copy only the binaries when running the INSTALL project, i.e. omit headers and libs.
+option(INSTALL_BINARIES_ONLY "Do we want to copy only the binaries when running the INSTALL project, i.e. omit headers and libs." FALSE)
+# Only for Windows: Enables optimizations for compiler and linker. Do not enable this if you are planning to distribute your .lib files!
+# Warning: Increases build time significantly.
+set(ENABLE_BUILD_OPTIMIZATIONS 0)
+# 3rd party dependencies:
 if (NOT ANDROID)
     set(ENABLE_HYDRAX 1)            # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
     set(ENABLE_SKYX 1)              # Configure the use of SkyX, http://www.ogre3d.org/tikiwiki/SkyX
