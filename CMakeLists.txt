@@ -254,15 +254,17 @@ if (APPLE)
     endif()
 endif()
 
-# Detect what compiler we are using on Windows
-# TODO Remove these as redundant.
-set(VC90 FALSE)
-set(VC100 FALSE)
+# Detect that a supported Visual Version is used and set up helper variables VC_VER and VS_PLATFORM
 if (MSVC)
+    if (CMAKE_CL_64)
+        set(VS_PLATFORM "x64")
+    else()
+        SET(VS_PLATFORM "Win32")
+    endif()
     if (MSVC90)
-        set(VC90 TRUE)
+        set(VC_VER "vc9")
     elseif(MSVC10)
-        set(VC100 TRUE)
+        set(VC_VER "vc10")
     else()
         message(STATUS "-- Warning: Unsupported Visual Studio version detected. Currently Visual Studio 2008 and 2010 are supported".)
     endif()
@@ -272,6 +274,7 @@ endif()
 # On MSVC, use warning level 4 but disable the following warnings:
 # C4127 conditional expression is constant
 # C4512 'class' : assignment operator could not be generated 
+# TODO Ideally we wouldn't like to disable these, but if we don't, we get warning spam from Qt files.
 if (MSVC)
     add_definitions (/W4 /wd4127 /wd4512)
 else ()
