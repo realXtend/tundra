@@ -88,6 +88,8 @@ endif ()
 if (MSVC)
     if (ENABLE_MEMORY_LEAK_CHECKS)
         add_definitions(-DMEMORY_LEAK_CHECK)
+    endif()
+
     # Common flags for all configurations.
     set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MP /Zm1000")
     set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MP /Zm1000")
