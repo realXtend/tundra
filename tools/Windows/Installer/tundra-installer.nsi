@@ -56,7 +56,10 @@ Section ""
 
   ExecWait '"$INSTDIR\oalinst.exe" /S'
   ExecWait '"$INSTDIR\vcredist.exe" /q'
-  ExecWait '"$INSTDIR\dxwebsetup.exe"'
+  # Execute DX SDK web installer only if needed.
+  ReadRegStr $0 HKLM "Software\Microsoft\DirectX" "SDKVersion"
+  StrCmp $0 "9.29.1962.0" +2
+    ExecWait '"$INSTDIR\dxwebsetup.exe"'
 
   WriteUninstaller "$INSTDIR\uninstaller.exe"
 
