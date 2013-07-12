@@ -22,7 +22,8 @@ set(TUNDRACORE_SHARED 1)
 # JavascriptModule f.ex.; consider removing this option for good.
 set(BUILD_SDK_ONLY 0)
 # Do we want to deploy only the binaries (contents of bin) when running the INSTALL project."
-option(INSTALL_BINARIES_ONLY "Do we want to deploy only the binaries (contents of bin) when running the INSTALL project." FALSE)
+# If FALSE, all binaries (bin), static libraries (lib) and headers (include) are deployed.
+option(INSTALL_BINARIES_ONLY "Do we want to deploy only the binaries (contents of bin) when running the INSTALL project." TRUE)
 # Do we want to deploy the example scenes (bin/scenes) when running the INSTALL project.
 option(INSTALL_EXAMPLE_SCENES "Do we want to deploy the example scenes (bin/scenes) when running the INSTALL project." TRUE)
 # Enables certain build optimizations on the release builds, f.ex. disables math correctness checks and error prints.
