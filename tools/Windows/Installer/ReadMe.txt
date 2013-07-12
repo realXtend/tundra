@@ -28,7 +28,9 @@ MakeClean.bat               - Cleans up the build folder created by MakeBuild*.b
 MakeInstall.cmd             - Master script for deploying RelWithDebInfo Tundra build to build folder using the INSTALL project.
                               Note: Must be run from the VS Command Prompt and invokek from the slave scripts in VS2008\ or VS2010\.
 oalinst.exe                 - Installer for OpenAL.
-RunReinstall.bat            - Reinstalls Tundra, performs silent uninstall. Note
-TundraExtHandler.reg        - Creates Windows context menu items for opening up Tundra scene files in Tundra release build.
-TundraExtHandlerDebug.reg   - Creates Windows context menu items for opening up Tundra scene files in Tundra debug build.
+RunReinstall.bat            - Reinstalls Tundra, by performing silent uninstallation of possible previous installation.
+                              Note: the script needs to be manually configured in order to work!
+TundraExtHandler(Debug).reg - Creates Windows context menu items for opening up Tundra scene files in your release (debug) Tundra
+                              development build. Note: Before merging the file, you need to replace the file paths in the file
+                              manually in order to make it work!
 tundra-installer.nsi        - NSIS script for making a Tundra installer. Make sure you have run the right MakeBuild script before running this.
