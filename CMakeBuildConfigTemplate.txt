@@ -21,10 +21,13 @@ set(TUNDRACORE_SHARED 1)
 # TODO BUILD_SDK_ONLY seems not be very useful as many core Tundra functionalities reside in the Application folder,
 # JavascriptModule f.ex.; consider removing this option for good.
 set(BUILD_SDK_ONLY 0)
-# Do we want to copy only the binaries when running the INSTALL project, i.e. omit headers and libs.
-option(INSTALL_BINARIES_ONLY "Do we want to copy only the binaries when running the INSTALL project, i.e. omit headers and libs." FALSE)
-# Only for Windows: Enables optimizations for compiler and linker. Do not enable this if you are planning to distribute your .lib files!
-# Warning: Increases build time significantly.
+# Do we want to deploy only the binaries (contents of bin) when running the INSTALL project."
+option(INSTALL_BINARIES_ONLY "Do we want to deploy only the binaries (contents of bin) when running the INSTALL project." FALSE)
+# Do we want to deploy the example scenes (bin/scenes) when running the INSTALL project.
+option(INSTALL_EXAMPLE_SCENES "Do we want to deploy the example scenes (bin/scenes) when running the INSTALL project." TRUE)
+# Enables certain build optimizations on the release builds, f.ex. disables math correctness checks and error prints.
+# On Windows also enables some of the more aggressive compiler and linker optimizations, so do not enable this if you are
+# planning to retain usable debug information. Warning: increasing the build time significantly.
 set(ENABLE_BUILD_OPTIMIZATIONS 0)
 # 3rd party dependencies:
 if (NOT ANDROID)
@@ -81,14 +84,14 @@ endif()
 if (ENABLE_BUILD_OPTIMIZATIONS)
     add_definitions (-DOPTIMIZED_RELEASE) # Disable MathGeoLib assume() prints in an optimized build
 endif ()
-if (MSVC AND ENABLE_MEMORY_LEAK_CHECKS)
-    add_definitions(-DMEMORY_LEAK_CHECK)
-endif()
+
 if (MSVC)
-	# Common flags for all configurations.
-	set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MP /Zm1000")
-	set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MP /Zm1000")
-	set (CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MP /Zm1000")
+    if (ENABLE_MEMORY_LEAK_CHECKS)
+        add_definitions(-DMEMORY_LEAK_CHECK)
+    # Common flags for all configurations.
+    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MP /Zm1000")
+    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MP /Zm1000")
+    set (CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MP /Zm1000")
 
     if (ENABLE_BUILD_OPTIMIZATIONS)
         set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL /Gy /GF /Ox /Ob2 /Ot")
@@ -97,7 +100,7 @@ if (MSVC)
         set (CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO ${CMAKE_SHARED_LINKER_FLAGS_RELEASE})
         set (CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF /OPT:ICF")
         set (CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO ${CMAKE_EXE_LINKER_FLAGS_RELEASE})
-	endif ()
+    endif ()
 endif ()
 
 ###### ENTITY-COMPONENTS ######
