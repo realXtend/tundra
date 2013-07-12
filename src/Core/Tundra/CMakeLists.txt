@@ -61,8 +61,8 @@ setup_install_files (${TUNDRA_BIN}/plugins.xml)       # Default startup config
 setup_install_files (${TUNDRA_BIN}/viewer.xml)        # Viewer startup config
 setup_install_files_find (${TUNDRA_BIN}/dox "*.txt" Release|Debug|RelWithDebInfo "dox") # Doc files used in installer
 
-# Install example application scenes only if INSTALL_BINARIES_ONLY is false.
-if (NOT INSTALL_BINARIES_ONLY)
+# Example application scenes if wanted.
+if (INSTALL_EXAMPLE_SCENES)
     setup_install_directory (${TUNDRA_BIN}/scenes)
 endif()
 
