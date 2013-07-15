@@ -78,7 +78,7 @@ if (!framework.IsHeadless())
     if (framework.ModuleByName("DebugStats"))
         viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
 
-    viewMenu.addAction("Show Console").triggered.connect(OpenConsoleWindow);
+    viewMenu.addAction("Console").triggered.connect(OpenConsoleWindow);
 
     // Settings menu
     if (framework.ModuleByName("MumbleVoip") || ecEditor)
