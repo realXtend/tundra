@@ -25,26 +25,29 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bo
 {
     if (!data_)
     {
-        LogError("Null source asset data pointer");
+        LogError("OgreSkeletonAsset::DeserializeFromData: Null source asset data pointer");
         return false;
     }
     if (numBytes == 0)
     {
-        LogError("Zero sized skeleton asset");
+        LogError("OgreSkeletonAsset::DeserializeFromData: Zero sized skeleton asset");
         return false;
     }
     
     /// Force an unload of this data first.
     Unload();
 
-    if (assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load"))
+    if (assetAPI->GetFramework()->HasCommandLineParameter("--noAsyncAssetLoad") ||
+        assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load")) /**< @todo Remove support for the deprecated underscore version at some point. */
+    {
         allowAsynchronous = false;
+    }
 
     // Asynchronous loading
     // 1. AssetAPI allows a asynch load. This is false when called from LoadFromFile(), LoadFromCache() etc.
     // 2. We have a rendering window for Ogre as Ogre::ResourceBackgroundQueue does not work otherwise. Its not properly initialized without a rendering window.
     // 3. The Ogre we are building against has thread support.
-    if (allowAsynchronous && assetAPI->GetAssetCache() && !assetAPI->IsHeadless() && (OGRE_THREAD_SUPPORT != 0))
+    if (allowAsynchronous && assetAPI->Cache() && !assetAPI->IsHeadless() && (OGRE_THREAD_SUPPORT != 0))
     {
         // We can only do threaded loading from disk, and not any disk location but only from asset cache.
         // local:// refs will return empty string here and those will fall back to the non-threaded loading.
@@ -70,7 +73,7 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bo
 
             if (ogreSkeleton.isNull())
             {
-                LogError("Failed to create skeleton " + this->Name());
+                LogError("OgreSkeletonAsset::DeserializeFromData: Failed to create skeleton " + this->Name());
                 return false; 
             }
         }
@@ -84,7 +87,7 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bo
     }
     catch(Ogre::Exception &e)
     {
-        LogError("Failed to create skeleton " + this->Name() + ": " + QString(e.what()));
+        LogError("OgreSkeletonAsset::DeserializeFromData: Failed to create skeleton " + this->Name() + ": " + QString(e.what()));
         Unload();
         return false;
     }
