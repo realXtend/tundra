@@ -5,7 +5,9 @@
 !define VERSION "2.5"
 !endif
 
-Name "Tundra ${VERSION}"
+!define PROGRAM_NAME "Tundra"
+
+Name "${PROGRAM_NAME} ${VERSION}"
 
 Page directory
 Page instfiles
@@ -18,6 +20,33 @@ OutFile "realXtend-Tundra-${VERSION}.exe"
 XPStyle on
 
 RequestExecutionLevel admin
+
+; http://nsis.sourceforge.net/Auto-uninstall_old_before_installing_new
+Function .onInit
+    ReadRegStr $R0 HKLM \
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}" \
+    "UninstallString"
+    StrCmp $R0 "" done
+ 
+    MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
+    "${PROGRAM_NAME} is already installed. $\n$\nClick `OK` to remove the \
+    previous version or `Cancel` to cancel this upgrade." \
+    IDOK uninst
+    Abort
+
+uninst:
+    ;Run the uninstaller
+    ClearErrors
+    ExecWait '$R0 _?=$INSTDIR' ;Do not copy the uninstaller to a temp file
+ 
+    IfErrors no_remove_uninstaller done
+    ;You can either use Delete /REBOOTOK in the uninstaller or add some code
+    ;here to remove the uninstaller. Use a registry key to check
+    ;whether the user has chosen to uninstall. If you are using an uninstaller
+    ;components page, make sure all sections are uninstalled.
+no_remove_uninstaller:
+done:
+FunctionEnd
 
 Section ""
   SetOutPath $INSTDIR
