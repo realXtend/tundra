@@ -70,7 +70,7 @@ private:
     bool GenerateMeshData();
 
     /// Is this mesh a Assimp supported file type.
-    bool IsAssimpFileType();
+    bool IsAssimpFileType() const;
 
     /// Sets default material.
     void SetDefaultMaterial();

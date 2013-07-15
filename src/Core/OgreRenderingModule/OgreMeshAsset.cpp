@@ -100,7 +100,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
         ogreMesh->setAutoBuildEdgeLists(false);
     }
 
-	// Convert file to Ogre mesh using assimp
+    // Convert file to Ogre mesh using assimp
     if (IsAssimpFileType())
     {
 #ifdef ASSIMP_ENABLED
@@ -350,6 +350,8 @@ void OgreMeshAsset::CreateKdTree()
 
 bool OgreMeshAsset::GenerateMeshData()
 {
+    if (ogreMesh.isNull())
+        return false;
     /* NOTE: only the last error handler here returns false - first are ignored.
        This is to keep the behaviour identical to the original version which had these checks inside 
        DeserializeFromData - see https://github.com/realXtend/naali/blob/1806ea04057d447263dbd7cf66d5731c36f4d4a3/src/Core/OgreRenderingModule/OgreMeshAsset.cpp#L89
@@ -391,8 +393,8 @@ bool OgreMeshAsset::GenerateMeshData()
     try
     {
         // Assign default materials that won't complain
-		if (!IsAssimpFileType())
-        	SetDefaultMaterial();
+        if (!IsAssimpFileType())
+            SetDefaultMaterial();
         // Set asset references the mesh has
         //ResetReferences();
     }
@@ -514,20 +516,16 @@ bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializat
     return false;
 }
 
-bool OgreMeshAsset::IsAssimpFileType()
+bool OgreMeshAsset::IsAssimpFileType() const
 {
     const char *openAssImpFileTypes[] = { ".3d", ".b3d", ".blend", ".dae", ".bvh", ".3ds", ".ase", ".obj", ".ply", ".dxf",
         ".nff", ".smd", ".vta", ".mdl", ".md2", ".md3", ".mdc", ".md5mesh", ".x", ".q3o", ".q3s", ".raw", ".ac",
         ".stl", ".irrmesh", ".irr", ".off", ".ter", ".mdl", ".hmp", ".ms3d", ".lwo", ".lws", ".lxo", ".csm",
         ".ply", ".cob", ".scn" };
 
-    int numSuffixes = NUMELEMS(openAssImpFileTypes);
-
-    for(int i = 0;i < numSuffixes; ++i)
-    {
-        if (this->Name().endsWith(openAssImpFileTypes[i]))
+    for(int i = 0; i < NUMELEMS(openAssImpFileTypes); ++i)
+        if (this->Name().endsWith(openAssImpFileTypes[i], Qt::CaseInsensitive))
             return true;
-    }
 
     return false;
 }
@@ -535,11 +533,12 @@ bool OgreMeshAsset::IsAssimpFileType()
 #ifdef ASSIMP_ENABLED
 void OgreMeshAsset::OnAssimpConversionDone(bool success)
 {
+    /// @todo This function gets called many tens of times per assimp mesh - is that normal?
     if(success)
     {
         if (GenerateMeshData())
             assetAPI->AssetLoadCompleted(Name());
-	}
+    }
     else
     {
         assetAPI->AssetLoadFailed(Name());
