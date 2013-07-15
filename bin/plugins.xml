@@ -7,34 +7,35 @@
        object meta type registration in their registered dynamic objects (Framework::RegisterDynamicObject)
        in OnScriptEngineCreated(QScriptEngine*), must be loaded before JavascriptModule. -->
 
-  <option name="--plugin" value="OgreRenderingModule;
-                                OpenAssetImport;
-                                SceneInteract;
-                                EnvironmentModule;
-                                PhysicsModule;
-                                TundraProtocolModule;
-                                ECEditorModule;
-                                JavascriptModule;
-                                AssetModule;
-                                ArchivePlugin;
-                                AvatarModule;
-                                SkyXHydrax;
-                                OgreAssetEditorModule;
-                                DebugStatsModule;
-                                SceneWidgetComponents;
-                                MumblePlugin;
-                                CanvasPlugin"/>
+  <option name="--plugin" value="OgreRenderingModule"/>
+  <option name="--plugin" value="OpenAssetImport"/>
+  <option name="--plugin" value="SceneInteract"/>
+  <option name="--plugin" value="EnvironmentModule"/>
+  <option name="--plugin" value="PhysicsModule"/>
+  <option name="--plugin" value="TundraProtocolModule"/>
+  <option name="--plugin" value="ECEditorModule"/>
+  <option name="--plugin" value="JavascriptModule"/>
+  <option name="--plugin" value="AssetModule"/>
+  <option name="--plugin" value="ArchivePlugin"/>
+  <option name="--plugin" value="AvatarModule"/>
+  <option name="--plugin" value="SkyXHydrax"/>
+  <option name="--plugin" value="OgreAssetEditorModule"/>
+  <option name="--plugin" value="DebugStatsModule"/>
+  <option name="--plugin" value="SceneWidgetComponents"/>
+  <option name="--plugin" value="MumblePlugin"/>
+  <option name="--plugin" value="CanvasPlugin"/>
+
   <!-- NOTE: The startup .js scripts are specified only by the base name of the file.
        Don't specify a path here. Place the startup .js scripts to /bin/jsplugins/startup/. -->
   <!-- Important: The file names specified here are case-sensitive even on Windows! -->
-  <option name="--jsplugin" value="cameraapplication.js;
-                                FirstPersonMouseLook.js;
-                                MenuBar.js;
-                                RendererSettings.js;
-                                SoundSettings.js;
-                                InterestManagerSettings.js;
-                                LoadingScreen.js;
-                                SceneInstructions.js"/>
+  <option name="--jsplugin" value="cameraapplication.js"/>
+  <option name="--jsplugin" value="FirstPersonMouseLook.js"/>
+  <option name="--jsplugin" value="MenuBar.js"/>
+  <option name="--jsplugin" value="RendererSettings.js"/>
+  <option name="--jsplugin" value="SoundSettings.js"/>
+  <option name="--jsplugin" value="InterestManagerSettings.js"/>
+  <option name="--jsplugin" value="LoadingScreen.js"/>
+  <option name="--jsplugin" value="SceneInstructions.js"/>
 
   <option name="--trustServerStorages" />
   <option name="--acceptUnknownHttpSources" />
