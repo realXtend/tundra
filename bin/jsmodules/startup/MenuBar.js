@@ -59,7 +59,7 @@ if (!framework.IsHeadless())
     // View menu
     var viewMenu = menu.addMenu("&View");
     // Set unique object name so that other scripts can query this menu.
-    toolsMenu.objectName = "ViewMenu";
+    viewMenu.objectName = "ViewMenu";
 
     if (framework.ModuleByName("SceneStructure"))
     {
@@ -78,7 +78,7 @@ if (!framework.IsHeadless())
     if (framework.ModuleByName("DebugStats"))
         viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
 
-    toolsMenu.addAction("Show Console").triggered.connect(OpenConsoleWindow);
+    viewMenu.addAction("Show Console").triggered.connect(OpenConsoleWindow);
 
     // Settings menu
     if (framework.ModuleByName("MumbleVoip") || ecEditor)
@@ -308,7 +308,7 @@ if (!framework.IsHeadless())
     }
 
     function OpenConsoleWindow() {
-        framework.GetModuleByName("Console").ToggleConsole();
+        console.ToggleConsole();
     }
 
     function OpenEcEditorWindow() {

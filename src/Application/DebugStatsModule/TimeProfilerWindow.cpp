@@ -26,6 +26,7 @@
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "ConfigAPI.h"
+#include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
 #include "IAssetProvider.h"

@@ -50,8 +50,6 @@ class TUNDRACORE_API RaycastResult : public QObject
     float2 getuv() const { return float2(u, v); }
     float gett() const { return t; }
     /// @endcond
-    float gett() const { return t; }
-    
 public:
     /// Entity that was hit, null if none
     Entity* entity;
