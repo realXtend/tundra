@@ -3,7 +3,7 @@ init_target (TundraConsole OUTPUT ./)
 
 # Define source files
 file (GLOB CPP_FILES main.cpp)
-file (GLOB H_FILES "") # Dont do *.h it will pickup Windows-spesific resource.h
+file (GLOB H_FILES "") # This project has not headers.
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 set (RESOURCE_FILES "")
 
@@ -11,7 +11,7 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCO
 
 if (MSVC)
     # Windows resource files for icon.
-    set(RESOURCE_FILES ${RESOURCE_FILES} resource.h Tundra.rc)
+    set(RESOURCE_FILES ${RESOURCE_FILES} ../Tundra/resource.h ../Tundra/Tundra.rc)
 
     # Preprocessor defines on MSVC
     set_property(DIRECTORY PROPERTY COMPILE_DEFINITIONS_RELEASE _DMEMDUMP)
