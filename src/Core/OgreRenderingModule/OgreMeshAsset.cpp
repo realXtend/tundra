@@ -30,13 +30,19 @@ OgreMeshAsset::~OgreMeshAsset()
 
 bool OgreMeshAsset::LoadFromFile(QString filename)
 {
+    /// @todo Duplicate allowAsynchronous code in OgreMeshAsset and TextureAsset.
     bool allowAsynchronous = true;
-    if (assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
+    if ((OGRE_THREAD_SUPPORT == 0) || !assetAPI->Cache() || assetAPI->IsHeadless() ||
+        assetAPI->GetFramework()->HasCommandLineParameter("--noAsyncAssetLoad") ||
+        assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load")) /**< @todo Remove support for the deprecated underscore version at some point. */
+    {
         allowAsynchronous = false;
+    }
+
     QString cacheDiskSource;
     if (allowAsynchronous)
     {
-        cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(Name());
+        cacheDiskSource = assetAPI->Cache()->FindInCache(Name());
         if (cacheDiskSource.isEmpty())
             allowAsynchronous = false;
     }
@@ -50,16 +56,22 @@ bool OgreMeshAsset::LoadFromFile(QString filename)
 bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool allowAsynchronous)
 {
     PROFILE(OgreMeshAsset_LoadFromFileInMemory);
-    
+
     /// Force an unload of this data first.
     Unload();
 
-    if (assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0) || IsAssimpFileType())
+    /// @todo Duplicate allowAsynchronous code in OgreMeshAsset and TextureAsset.
+    if ((OGRE_THREAD_SUPPORT == 0) || !assetAPI->Cache() || assetAPI->IsHeadless() || IsAssimpFileType() ||
+        assetAPI->GetFramework()->HasCommandLineParameter("--noAsyncAssetLoad") ||
+        assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load")) /**< @todo Remove support for the deprecated underscore version at some point. */
+    {
         allowAsynchronous = false;
+    }
+
     QString cacheDiskSource;
     if (allowAsynchronous)
     {
-        cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(Name());
+        cacheDiskSource = assetAPI->Cache()->FindInCache(Name());
         if (cacheDiskSource.isEmpty())
             allowAsynchronous = false;
     }
@@ -518,12 +530,12 @@ bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializat
 
 bool OgreMeshAsset::IsAssimpFileType() const
 {
-    const char *openAssImpFileTypes[] = { ".3d", ".b3d", ".blend", ".dae", ".bvh", ".3ds", ".ase", ".obj", ".ply", ".dxf",
+    const char * const openAssImpFileTypes[] = { ".3d", ".b3d", ".blend", ".dae", ".bvh", ".3ds", ".ase", ".obj", ".ply", ".dxf",
         ".nff", ".smd", ".vta", ".mdl", ".md2", ".md3", ".mdc", ".md5mesh", ".x", ".q3o", ".q3s", ".raw", ".ac",
         ".stl", ".irrmesh", ".irr", ".off", ".ter", ".mdl", ".hmp", ".ms3d", ".lwo", ".lws", ".lxo", ".csm",
         ".ply", ".cob", ".scn" };
 
-    for(int i = 0; i < NUMELEMS(openAssImpFileTypes); ++i)
+    for(size_t i = 0; i < NUMELEMS(openAssImpFileTypes); ++i)
         if (this->Name().endsWith(openAssImpFileTypes[i], Qt::CaseInsensitive))
             return true;
 
@@ -542,7 +554,7 @@ void OgreMeshAsset::OnAssimpConversionDone(bool success)
     else
     {
         assetAPI->AssetLoadFailed(Name());
-        LogError("OgreMeshAsset::DeserializeFromData: Failed to to covert " + Name() +" to Ogre mesh.");
+        LogError("OgreMeshAsset::DeserializeFromData: Failed to to covert " + Name() + " to Ogre mesh.");
     }
 }
 #endif
