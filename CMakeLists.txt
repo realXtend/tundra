@@ -4,6 +4,18 @@ project(tundra)
 # CMake version requirement, >= 2.5.5 to ensure that ProtoBuf is found ok.
 cmake_minimum_required(VERSION 2.5.5)
 
+# If the following are undefined, the default values in TundraVersionInfo.h are used.
+# Note: TUNDRA_MAJOR_VERSION, TUNDRA_MINOR_VERSION, TUNDRA_MAJOR_PATCH_VERSION, TUNDRA_MINOR_PATCH_VERSION
+# should not be defined here typically as they define the "core Tundra SDK" version, not the actual application
+# version which is defined by TUNDRA_VERSION_STRING.
+#add_definitions(-DTUNDRA_MAJOR_VERSION=1)
+#add_definitions(-DTUNDRA_MINOR_VERSION=2)
+#add_definitions(-DTUNDRA_MAJOR_PATCH_VERSION=3)
+#add_definitions(-DTUNDRA_MINOR_PATCH_VERSION=4)
+#add_definitions(-DTUNDRA_ORGANIZATION_NAME="\\"MyOrganization\\"")
+#add_definitions(-DTUNDRA_APPLICATION_NAME="\\"MyApplication\\"")
+#add_definitions(-DTUNDRA_VERSION_STRING="\\"1.2.3.4\\"")
+
 # TUNDRA_NO_BOOST defines whether we want to replace usage of Boost with the C++ (TR1) standard equivalents.
 # Setting TUNDRA_NO_BOOST to TRUE, i.e. disabling usage of Boost in the Tundra codebase, requires compiler
 # with up-to-date C++ TR1 and preferably the C99 standard cstdint header. Also if the used compiler has C++11 
