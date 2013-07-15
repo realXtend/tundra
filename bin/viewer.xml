@@ -1,10 +1,6 @@
 <?xml version="1.0"?>
 <Tundra>
   <option name="--config" value="plugins.xml" />
-
-  <!-- NOTE: The startup .js scripts are specified only by base name of the file. Don's specify a path here. Place the startup .js scripts to /bin/jsmodules/startup/. -->
-  <!-- Important: The file names specified here are case sensitive even on Windows! -->
   <option name="--jsplugin" value="LoginScreen.js" />
-
   <option name="--splash" />
 </Tundra>
