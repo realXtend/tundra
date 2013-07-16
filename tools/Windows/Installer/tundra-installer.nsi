@@ -1,8 +1,13 @@
-!include "fileassoc.nsh"
+!include fileassoc.nsh
+!include x64.nsh
 
 # Note: You can define custom version from outside this script by using /DVERSION=YourCustomVersion
 !ifndef VERSION
 !define VERSION "2.5"
+!endif
+
+!ifndef ARCH
+!define ARCH "x86"
 !endif
 
 !define PROGRAM_NAME "Tundra"
@@ -13,16 +18,30 @@ Page directory
 Page instfiles
 
 InstallDir "$PROGRAMFILES\Tundra ${VERSION}"
+
 VIProductVersion "${VERSION}"
 
-OutFile "realXtend-Tundra-${VERSION}.exe"
+OutFile "realXtend-Tundra-${VERSION}-${ARCH}.exe"
 
 XPStyle on
 
 RequestExecutionLevel admin
 
-; http://nsis.sourceforge.net/Auto-uninstall_old_before_installing_new
 Function .onInit
+        ; Are we installing 64-bit software on a 64-bit host? If so, make some adjustments.
+    ; http://bojan-komazec.blogspot.fi/2011/10/nsis-installer-for-64-bit-windows.html
+    StrCmp ${ARCH} "x64" 0 CheckForPreviousInstall
+    ${If} ${RunningX64}
+        DetailPrint "Installer running on 64-bit host"
+        ; disable registry redirection (enable access to 64-bit portion of registry)
+        SetRegView 64
+        ; change install dir 
+        StrCpy $INSTDIR "$PROGRAMFILES64\Tundra ${VERSION}"
+    ${EndIf}
+
+CheckForPreviousInstall:
+    ; Uninstall possible previous installation:
+    ; http://nsis.sourceforge.net/Auto-uninstall_old_before_installing_new
     ReadRegStr $R0 HKLM \
     "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}" \
     "UninstallString"
