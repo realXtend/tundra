@@ -534,7 +534,11 @@ void RemoveCommand::Initialize(const QList<EntityWeakPtr> &entityList, const QLi
     bool componentMultiParented = false;
     
     for (QList<EntityWeakPtr>::const_iterator i = entityList.begin(); i != entityList.end(); ++i)
-        entityList_ << (*i).lock()->Id();
+    {
+        EntityPtr ent = (*i).lock();
+        if (ent.get())
+            entityList_ << ent->Id();
+    }
 
     for (QList<ComponentWeakPtr>::const_iterator i = componentList.begin(); i != componentList.end(); ++i)
     {
