@@ -1926,17 +1926,17 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
 void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
 {    
     PROFILE(AssetAPI_AssetDependenciesCompleted);
+
     // Emit success for this transfer
     transfer->EmitTransferSucceeded();
-    
-    // This asset transfer has finished - remove it from the internal list of ongoing transfers.
-    AssetTransferMap::iterator iter = FindTransferIterator(transfer.get());
-    if (iter != currentTransfers.end())
-        currentTransfers.erase(iter);
-    else // Even if we didn't know about this transfer, just print a warning and continue execution here nevertheless.
-        LogError("AssetAPI: Asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" transfer finished, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
 
-    pendingDownloadRequests.erase(transfer->source.ref);
+    // This asset transfer has finished, remove it from the internal state.
+    AssetTransferMap::iterator transferIter = FindTransferIterator(transfer.get());
+    if (transferIter != currentTransfers.end())
+        currentTransfers.erase(transferIter);
+    PendingDownloadRequestMap::iterator downloadIter = pendingDownloadRequests.find(transfer->source.ref);
+    if (downloadIter != pendingDownloadRequests.end())
+        pendingDownloadRequests.erase(downloadIter);
 }
 
 void AssetAPI::NotifyAssetDependenciesChanged(AssetPtr asset)
