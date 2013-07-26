@@ -4,14 +4,16 @@ project(tundra)
 # CMake version requirement, >= 2.5.5 to ensure that ProtoBuf is found ok.
 cmake_minimum_required(VERSION 2.5.5)
 
+# Policy CMP0005 - Preprocessor definition values are now escaped automatically.
+# TODO We can move to the new policy when the required CMake version is >= 2.6.
+if (COMMAND cmake_policy)
+    cmake_policy(SET CMP0005 OLD)
+endif()
 # If the following are undefined, the default values in TundraVersionInfo.h are used.
-# Note: TUNDRA_MAJOR_VERSION, TUNDRA_MINOR_VERSION, TUNDRA_MAJOR_PATCH_VERSION, TUNDRA_MINOR_PATCH_VERSION
-# should not be defined here typically as they define the "core Tundra SDK" version, not the actual application
-# version which is defined by TUNDRA_VERSION_STRING.
-#add_definitions(-DTUNDRA_MAJOR_VERSION=1)
-#add_definitions(-DTUNDRA_MINOR_VERSION=2)
-#add_definitions(-DTUNDRA_MAJOR_PATCH_VERSION=3)
-#add_definitions(-DTUNDRA_MINOR_PATCH_VERSION=4)
+#add_definitions(-DTUNDRA_VERSION_MAJOR=1)
+#add_definitions(-DTUNDRA_VERSION_MINOR=2)
+#add_definitions(-DTUNDRA_VERSION_MAJOR_PATCH=3)
+#add_definitions(-DTUNDRA_VERSION_MINOR_PATCH=4)
 #add_definitions(-DTUNDRA_ORGANIZATION_NAME="\\"MyOrganization\\"")
 #add_definitions(-DTUNDRA_APPLICATION_NAME="\\"MyApplication\\"")
 #add_definitions(-DTUNDRA_VERSION_STRING="\\"1.2.3.4\\"")
