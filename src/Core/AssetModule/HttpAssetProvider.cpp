@@ -18,6 +18,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QLocale>
+#include <QThreadPool>
 
 /// @todo Remove the boost::local_time stuff for good when the TUNDRA_NO_BOOST code path is tested thoroughly.
 #ifndef TUNDRA_NO_BOOST
@@ -485,41 +486,33 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             // 200 OK
             else if (replyCode == 200)
             {
+                // Setting original source type on the request here will allow later code
+                // to detect if this is a first or update download of this asset.
+                transfer->diskSourceType = IAsset::Original;
+
                 // Read body to transfer asset data
                 QByteArray bodyData = reply->readAll();
-                transfer->rawAssetData.insert(transfer->rawAssetData.end(), bodyData.data(), bodyData.data() + bodyData.size());
-
                 if (transfer->CachingAllowed())
                 {
-                    // Store to cache
-                    if (!cache->StoreAsset((u8*)bodyData.data(), bodyData.size(), sourceRef).isEmpty())
-                    {
-                        // Setting original source type on the request here will allow later code
-                        // to detect if this is a first or update download of this asset.
-                        transfer->diskSourceType = IAsset::Original;
+                    // Store last modified header to be set after the write operation is done.
+                    transfer->setProperty("LastModifiedHeader", reply->header(QNetworkRequest::LastModifiedHeader));
 
-                        // If 'Last-Modified' is not present we maybe should set it to a really old date via AssetCache::SetLastModified().
-                        // As the metadata is not in a separate file it would mean for replies that did not have 'Last-Modified' header
-                        // we would send the next request 'If-Modified-Since' header as the write time of the cache file.
-                        // This might result in wonky situations when the server file is updated, though we can/could assume if a
-                        // server does not return the 'Last-Modified' header it wont process the 'If-Modified-Since' either.
-                        QByteArray header = reply->rawHeader("Last-Modified");
-                        if (!header.isEmpty())
-                        {
-                            QDateTime sourceLastModified = ParseHttpDate(header);
-                            if (sourceLastModified.isValid())
-                                cache->SetLastModified(sourceRef, sourceLastModified);
-                        }
-                    }
-                    else
-                        LogWarning("HttpAssetProvider: Failed to store asset to cache after completed reply: " + sourceRef);
+                    // Spawn a new cache write operation for this transfer with the global Qt thread pool.
+                    TransferCacheWriteOperation *cacheWriteOperation = new TransferCacheWriteOperation(transfer, cache->GetDiskSourceByRef(sourceRef), bodyData);
+                    connect(cacheWriteOperation, SIGNAL(Completed(AssetTransferPtr, bool)), SLOT(OnCacheWriteCompleted(AssetTransferPtr, bool)), Qt::QueuedConnection);
+                    QThreadPool::globalInstance()->start(cacheWriteOperation);
+
+                    // Erase transfer from internal state and return.
+                    transfers.erase(iter);
+                    return;
                 }
-                else
-                {
-                    // Remove possible cache file if caching is disabled for the transfer.
-                    if (!cache->FindInCache(sourceRef).isEmpty())
-                        cache->DeleteAsset(sourceRef);
-                }
+
+                // Caching is not allowed. Remove possible cache file from disk.
+                if (!cache->FindInCache(sourceRef).isEmpty())
+                    cache->DeleteAsset(sourceRef);
+
+                // Write original source data to the transfer.
+                transfer->rawAssetData.insert(transfer->rawAssetData.end(), bodyData.data(), bodyData.data() + bodyData.size());
             }
             else
                 error = "Http GET for address \"" + reply->url().toString() + "\" returned code " + QString::number(replyCode) + " that could not be processed.";
@@ -527,6 +520,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             // Send AssetTransferCompleted or AssetTransferFailed to AssetAPI.
             if (error.isEmpty())
             {
+                // This tells AssetAPI going forward that storing to cache has been done, otherwise it will rewrite the file.
                 transfer->SetCachingBehavior(false, cache->GetDiskSourceByRef(sourceRef));
                 framework->Asset()->AssetTransferCompleted(transfer.get());
             }
@@ -589,6 +583,29 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         break;
         */
     }
+}
+
+void HttpAssetProvider::OnCacheWriteCompleted(AssetTransferPtr transfer, bool cacheFileWritten)
+{
+    if (!transfer.get())
+        return;
+
+    const QString sourceRef = transfer->source.ref;
+    if (cacheFileWritten)
+    {
+        // Update the last modified for the cached file if available.
+        QVariant lastModifiedVariant = transfer->property("LastModifiedHeader");
+        if (lastModifiedVariant.isValid())
+            framework->Asset()->Cache()->SetLastModified(sourceRef, lastModifiedVariant.toDateTime());
+    }
+    else
+        LogWarning("HttpAssetProvider: Failed to store asset to cache after completed reply: " + sourceRef);
+
+    // This tells AssetAPI going forward that storing to cache has been done, otherwise it will rewrite the file.
+    transfer->SetCachingBehavior(false, cacheFileWritten ? framework->Asset()->Cache()->GetDiskSourceByRef(sourceRef) : "");
+
+    // The asset transfer is now completed from our perspective.
+    framework->Asset()->AssetTransferCompleted(transfer.get());
 }
 
 HttpAssetStoragePtr HttpAssetProvider::AddStorageAddress(const QString &address, const QString &storageName, bool liveUpdate, bool autoDiscoverable, bool liveUpload)
@@ -667,4 +684,35 @@ void HttpAssetProvider::DeleteAssetRefFromStorages(const QString& ref)
 {
     for (size_t i = 0; i < storages.size(); ++i)
         storages[i]->DeleteAssetRef(ref);
+}
+
+// ThreadedCacheWriteOperation
+
+TransferCacheWriteOperation::TransferCacheWriteOperation(AssetTransferPtr transfer, const QString &path, const QByteArray &data) :
+    transfer_(transfer),
+    path_(path),
+    data_(data)
+{
+    // Make sure this worker object is deleted by QThreadPool once run() completes.
+    setAutoDelete(true);
+}
+
+void TransferCacheWriteOperation::run()
+{
+    bool succeeded = false;
+
+    // Write data to the transfer.
+    if (transfer_->rawAssetData.empty())
+        transfer_->rawAssetData.insert(transfer_->rawAssetData.end(), data_.data(), data_.data() + data_.size());
+
+    // File data to disk.
+    QFile file(path_);
+    if (file.open(QFile::WriteOnly))
+    {
+        file.write(data_);
+        file.close();
+        succeeded = true;
+    }
+
+    emit Completed(transfer_, succeeded);
 }

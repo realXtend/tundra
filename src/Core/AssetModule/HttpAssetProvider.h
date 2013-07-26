@@ -11,6 +11,7 @@
 #include <QDateTime>
 #include <QByteArray>
 #include <QPointer>
+#include <QRunnable>
 
 class QNetworkAccessManager;
 class QNetworkRequest;
@@ -93,6 +94,7 @@ public:
 private slots:
     void AboutToExit();
     void OnHttpTransferFinished(QNetworkReply *reply);
+    void OnCacheWriteCompleted(AssetTransferPtr transfer, bool cacheFileWritten);
     
 private:
     Framework *framework;
@@ -126,3 +128,22 @@ private:
     bool enableRequestsOutsideStorages;
 };
 
+/// Threaded file write operation. Used internally to store assets to cache asynchronously after a trasnfer has completed.
+class ASSET_MODULE_API TransferCacheWriteOperation : public QObject, public QRunnable
+{
+    Q_OBJECT
+
+public:
+    TransferCacheWriteOperation(AssetTransferPtr transfer, const QString &path, const QByteArray &data);
+
+    /// QThread override.
+    virtual void run();
+
+signals:
+    void Completed(AssetTransferPtr transfer, bool cacheFileWritten);
+
+private:
+    AssetTransferPtr transfer_;
+    QString path_;
+    QByteArray data_;
+};
