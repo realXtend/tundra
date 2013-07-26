@@ -1,7 +1,7 @@
 
 function log(msg)
 {
-    console.LogInfo("[Tests::VercionCheck]: " + msg);
+    console.LogInfo("[Tests::VersionCheck]: " + msg);
 }
 
 print("");
