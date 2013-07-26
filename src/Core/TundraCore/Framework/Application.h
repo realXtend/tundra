@@ -7,8 +7,6 @@
 #include <QApplication>
 #include <QStringList>
 
-#include <vector>
-
 class QDir;
 class QGraphicsView;
 class QTranslator;
@@ -196,5 +194,5 @@ private:
     double targetFpsLimit;
     double targetFpsLimitWhenInactive;
 
-    std::vector<uint> versionNumbers;
+    uint versionNumbers[4];
 };

@@ -10,6 +10,7 @@
 #include "CoreStringUtils.h"
 #include "CoreException.h"
 #include "LoggingFunctions.h"
+#include "TundraVersionInfo.h"
 
 #include <iostream>
 #include <utility>
@@ -59,11 +60,10 @@
 
 #include "MemoryLeakCheck.h"
 
-
-/// @note Modify these values when you are making a custom Tundra build. Also the version needs to be changed here on releases.
-const char *Application::organizationName = "realXtend";
-const char *Application::applicationName = "Tundra";
-const char *Application::version = "2.5";
+/// @note Modify these values from the root CMakeLists.txt if you are making a custom Tundra build.
+const char *Application::organizationName = TUNDRA_ORGANIZATION_NAME;
+const char *Application::applicationName = TUNDRA_APPLICATION_NAME;
+const char *Application::version = TUNDRA_VERSION_STRING;
 
 Application::Application(Framework *owner, int &argc, char **argv) :
     QApplication(argc, argv),
@@ -84,16 +84,31 @@ Application::Application(Framework *owner, int &argc, char **argv) :
     QStringList numberList = QString(version).split('.');
     if (numberList.size() > 4)
         LogWarning("[Application]: More than 4 numbers given for application version. Ignoring extra numbers.");
-    for(int i=0; i<numberList.size() && i<4; ++i)
+
+    int i = 0;
+    for(; i < numberList.size() && i < 4; ++i)
     {
         bool ok = false;
         uint versionNumber = numberList[i].trimmed().toUInt(&ok);
-        if (!ok) versionNumber = 0;
-        versionNumbers.push_back(versionNumber);
+        if (!ok)
+        {
+            // Conversion failed. Is this the last number in the string? Maybe some kind of
+            // postfix is used, "-RC1" or " RC1" or similar f.ex., so handle that.
+            if (i == numberList.size() - 1)
+            {
+                QStringList lastNumber = numberList[i].split(QRegExp("[^0-9]"));
+                if (!lastNumber.isEmpty())
+                    versionNumber = lastNumber.first().trimmed().toUInt(&ok);
+            }
+        }
+
+        // If conversion still not ok, default to 0.
+        versionNumbers[i] = (ok ? versionNumber : 0);
     }
+
     // Guarantee trailing zeros.
-    while(versionNumbers.size() < 4)
-        versionNumbers.push_back(0);
+    while(i < 4)
+        versionNumbers[i++] = 0;
 
 #ifdef Q_WS_MAC
     QDir::setCurrent(QCoreApplication::applicationDirPath());
