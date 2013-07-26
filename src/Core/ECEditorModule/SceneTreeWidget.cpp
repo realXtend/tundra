@@ -145,7 +145,7 @@ void SceneTreeWidget::SetScene(const ScenePtr &s)
     SAFE_DELETE(undoManager_);
     if (s)
     {
-        undoManager_ = new UndoManager(s, this);
+        undoManager_ = new UndoManager(s, framework->Ui()->MainWindow());
         connect(undoShortcut, SIGNAL(activated()), undoManager_, SLOT(Undo()), Qt::UniqueConnection);
         connect(redoShortcut, SIGNAL(activated()), undoManager_, SLOT(Redo()), Qt::UniqueConnection);
     }
@@ -232,7 +232,7 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
 
     SceneTreeWidgetSelection sel = SelectedItems();
 
-    if (sel.HasAssets() && !sel.HasComponents() && !sel.HasEntities())
+    if (sel.HasAssetsOnly())
         AddAvailableAssetActions(menu);
     else
         AddAvailableEntityActions(menu);
@@ -314,7 +314,7 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
     // "Convert to local", "Convert to replicated", and "Temporary" actions are available only if we have selection.
     QAction *editAction = 0, *editInNewAction = 0, *newComponentAction = 0, *deleteAction = 0,
         *renameAction = 0, *copyAction = 0, *saveAsAction = 0, *actionsAction = 0, *functionsAction = 0,
-        *toLocalAction = 0, *toReplicatedAction = 0, *temporaryAction = 0;
+        *toLocalAction = 0, *toReplicatedAction = 0, *temporaryAction = 0, *groupEntitiesAction = 0, *ungroupEntitiesAction = 0;
 
     bool hasSelection = !selectionModel()->selection().isEmpty();
     if (hasSelection)
@@ -332,6 +332,8 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         saveAsAction = new QAction(tr("Save as..."), menu);
         actionsAction = new QAction(tr("Actions..."), menu);
         functionsAction = new QAction(tr("Functions..."), menu);
+        groupEntitiesAction = new QAction(tr("Group selected entities"), menu);
+        ungroupEntitiesAction = new QAction(tr("Ungroup"), menu);
 
         connect(editAction, SIGNAL(triggered()), SLOT(Edit()));
         connect(editInNewAction, SIGNAL(triggered()), SLOT(EditInNew()));
@@ -343,52 +345,61 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         connect(functionsAction, SIGNAL(triggered()), SLOT(OpenFunctionDialog()));
         connect(toLocalAction, SIGNAL(triggered()), SLOT(ConvertEntityToLocal()));
         connect(toReplicatedAction, SIGNAL(triggered()), SLOT(ConvertEntityToReplicated()));
+        connect(groupEntitiesAction, SIGNAL(triggered()), SLOT(GroupEntities()));
+        connect(ungroupEntitiesAction, SIGNAL(triggered()), SLOT(UngroupEntities()));
     }
 
+    SceneTreeWidgetSelection sel = SelectedItems();
+
     // "Rename" action is possible only if have one entity selected.
-    bool renamePossible = (selectionModel()->selectedIndexes().size() == 1);
+    bool renamePossible = (selectionModel()->selectedIndexes().size() == 1) && !sel.HasGroupsOnly();
+    bool multipleEntitiesSelected = (selectionModel()->selectedIndexes().size() > 1) && sel.HasEntitiesOnly();
     if (renamePossible)
     {
         renameAction = new QAction(tr("Rename"), menu);
         connect(renameAction, SIGNAL(triggered()), SLOT(Rename()));
-    }
-
-    if (renamePossible)
         menu->addAction(renameAction);
-
-    if (hasSelection)
-    {
-        menu->addAction(editAction);
-        menu->setDefaultAction(editAction);
-        menu->addAction(editInNewAction);
     }
 
     menu->addAction(newEntityAction);
 
-    SceneTreeWidgetSelection sel = SelectedItems();
-
     if (hasSelection)
     {
-        menu->addAction(newComponentAction);
-        menu->addAction(deleteAction);
-        menu->addAction(copyAction);
-        menu->addAction(toLocalAction);
-        menu->addAction(toReplicatedAction);
-        menu->addAction(temporaryAction);
+        if (!sel.HasGroups())
+        {
+            menu->addAction(editAction);
+            menu->setDefaultAction(editAction);
+            menu->addAction(editInNewAction);
+            menu->addAction(newComponentAction);
+            menu->addAction(deleteAction);
+            menu->addAction(copyAction);
+            menu->addAction(groupEntitiesAction);
+            menu->addAction(toLocalAction);
+            menu->addAction(toReplicatedAction);
+            menu->addAction(temporaryAction);
+        }
+
+        if (sel.HasGroupsOnly() && sel.groups.size() < 2)
+            menu->addAction(ungroupEntitiesAction);
 
         // Altering temporary, local and replicated properties is only possible if we have only entities selected
         // and if all the entites have currently the same state.
-        if (!sel.HasComponents() && sel.HasEntities() && sel.entities.first()->Entity())
+        if (sel.HasEntitiesOnly() && sel.entities.first()->Entity())
         {
             bool firstStateLocal = sel.entities.first()->Entity()->IsLocal();
             bool firstStateReplicated = !firstStateLocal; // Entity is always either local or replicated.
             bool localMismatch = false;
             bool replicatedMismatch = false;
+            bool emptyGroup = sel.entities.first()->Entity()->Group().isEmpty();
             bool firstStateTemporary = sel.entities.first()->Entity()->IsTemporary();
             if (sel.entities.size() > 1)
             {
                 for(uint i = 1; i < (uint)sel.entities.size(); ++i)
                     if (sel.entities[i]->Entity())
+                    {
+                        if (!sel.entities[i]->Entity()->Group().isEmpty())
+                            emptyGroup = false;
+
                         if (firstStateLocal != sel.entities[i]->Entity()->IsLocal())
                         {
                             toLocalAction->setDisabled(true);
@@ -410,17 +421,20 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
                             temporaryAction->setDisabled(true);
                             break;
                         }
+                    }
             }
 
             toLocalAction->setEnabled(localMismatch && replicatedMismatch ? false : !firstStateLocal);
             toReplicatedAction->setEnabled(localMismatch && replicatedMismatch ? false : !firstStateReplicated);
             temporaryAction->setChecked(firstStateTemporary);
+            groupEntitiesAction->setEnabled(emptyGroup);
         }
         else
         {
             toLocalAction->setDisabled(true);
             toReplicatedAction->setDisabled(true);
             temporaryAction->setDisabled(true);
+            groupEntitiesAction->setDisabled(true);
         }
     }
 
@@ -507,20 +521,33 @@ SceneTreeWidgetSelection SceneTreeWidget::SelectedItems() const
     while(it.hasNext())
     {
         QTreeWidgetItem *item = it.next();
+        
+        EntityGroupItem *gItem = dynamic_cast<EntityGroupItem *>(item);
+        if (gItem)
+        {
+            ret.groups << gItem;
+            continue;
+        }
+
         EntityItem *eItem = dynamic_cast<EntityItem *>(item);
         if (eItem)
-            ret.entities << eItem;
-        else
         {
-            ComponentItem *cItem = dynamic_cast<ComponentItem *>(item);
-            if (cItem)
-                ret.components << cItem;
-            else
-            {
-                AssetRefItem *aItem = dynamic_cast<AssetRefItem *>(item);
-                if (aItem)
-                    ret.assets << aItem;
-            }
+            ret.entities << eItem;
+            continue;
+        }
+
+        ComponentItem *cItem = dynamic_cast<ComponentItem *>(item);
+        if (cItem)
+        {
+            ret.components << cItem;
+            continue;
+        }
+
+        AssetRefItem *aItem = dynamic_cast<AssetRefItem *>(item);
+        if (aItem)
+        {
+            ret.assets << aItem;
+            continue;
         }
     }
 
@@ -557,6 +584,18 @@ QString SceneTreeWidget::SelectionAsXml() const
             if (component)
                 component->SerializeTo(sceneDoc, sceneElem, true);
         }
+
+        sceneDoc.appendChild(sceneElem);
+    }
+    else if (selection.HasGroupsOnly())
+    {
+        foreach(EntityGroupItem *gItem, selection.groups)
+            for (int i = 0; i < gItem->childCount(); ++i)
+            {
+                EntityItem *eItem = static_cast<EntityItem*>(gItem->child(i));
+                if (eItem && eItem->Entity())
+                    eItem->Entity()->SerializeToXML(sceneDoc, sceneElem, true);
+            }
 
         sceneDoc.appendChild(sceneElem);
     }
@@ -613,14 +652,31 @@ void SceneTreeWidget::Edit()
     if (selection.IsEmpty())
         return;
 
-    if (selection.HasComponents() || selection.HasEntities())
+    QList<entity_id_t> ids;
+    if (selection.HasGroupsOnly() && selection.groups.size() < 2)
+    {
+        EntityGroupItem *gItem = selection.groups.first();
+        if (gItem)
+        {
+            for (int i = 0; i < gItem->childCount(); ++i)
+            {
+                EntityItem *eItem = static_cast<EntityItem*>(gItem->child(i));
+                if (eItem)
+                    ids << eItem->Id();
+            }
+        }
+    }
+    else
+        ids.append(selection.EntityIds());
+
+    if (selection.HasComponents() || selection.HasEntities() || selection.HasGroups())
     {
         if (ecEditors.size()) // If we have an existing editor instance, use it.
         {
             ECEditorWindow *editor = ecEditors.back();
             if (editor)
             {
-                editor->AddEntities(selection.EntityIds(), true);
+                editor->AddEntities(ids, true);
                 editor->show();
                 editor->activateWindow();
                 return;
@@ -653,7 +709,7 @@ void SceneTreeWidget::Edit()
             editor->activateWindow();
         }
 
-        editor->AddEntities(selection.EntityIds(), true);
+        editor->AddEntities(ids, true);
     }
 }
 
@@ -756,7 +812,7 @@ void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item, int column)
             QString newName = eItem->text(0);
             disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *, int)));
             // We don't need to set item text here. It's done when SceneStructureWindow gets AttributeChanged() signal from Scene.
-            undoManager_->Push(new RenameCommand(entity, undoManager_->GetTracker(), entity->Name(), newName));
+            undoManager_->Push(new RenameCommand(entity, undoManager_->Tracker(), entity->Name(), newName));
 //            closePersistentEditor(item);
             setSortingEnabled(true);
             return;
@@ -767,10 +823,10 @@ void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item, int column)
     EntityItem *parentItem = dynamic_cast<EntityItem *>(cItem->parent());
     if (cItem && parentItem)
     {
-        EntityPtr entity = scene->GetEntity(parentItem->id);
+        EntityPtr entity = scene->EntityById(parentItem->id);
         QString newName = cItem->text(0);
         disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *)));
-        ComponentPtr component = entity->GetComponent(cItem->typeName, cItem->name);
+        ComponentPtr component = entity->Component(cItem->typeName, cItem->name);
         if (component)
             component->SetName(newName);
         //cItem->typeName
@@ -804,7 +860,7 @@ void SceneTreeWidget::NewEntity()
     bool replicated = newEntDialog.IsReplicated();
     bool temporary = newEntDialog.IsTemporary();
     if (undoManager_)
-        undoManager_->Push(new AddEntityCommand(scene.lock(), undoManager_->GetTracker(), name, replicated, temporary));
+        undoManager_->Push(new AddEntityCommand(scene.lock(), undoManager_->Tracker(), name, replicated, temporary));
 }
 
 void SceneTreeWidget::NewComponent()
@@ -840,7 +896,7 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
 
     for(int i = 0; i < entities.size(); i++)
     {
-        EntityPtr entity = scene.lock()->GetEntity(entities[i]);
+        EntityPtr entity = scene.lock()->EntityById(entities[i]);
         if (!entity)
         {
             LogWarning("Fail to add new component to entity, since couldn't find a entity with ID:" + QString::number(entities[i]));
@@ -848,7 +904,7 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
         }
 
         // Check if component has been already added to a entity.
-        ComponentPtr comp = entity->GetComponent(dialog->TypeName(), dialog->Name());
+        ComponentPtr comp = entity->Component(dialog->TypeName(), dialog->Name());
         if (comp)
         {
             LogWarning("Fail to add a new component, cause there was already a component with a same name and a type");
@@ -859,7 +915,7 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
     }
 
     if (undoManager_ && !targetEntities.isEmpty())
-        undoManager_->Push(new AddComponentCommand(scene.lock(), undoManager_->Tracker(), targetEntities, dialog->TypeName(), dialog->Name(), dialog->IsReplicated(), dialog->IsTemporary()));
+        undoManager_->Push(new AddComponentCommand(scene.lock(), undoManager_->Tracker(), targetEntities, dialog->TypeId(), dialog->Name(), dialog->IsReplicated(), dialog->IsTemporary()));
 }
 
 void SceneTreeWidget::Delete()
@@ -930,7 +986,7 @@ void SceneTreeWidget::Paste()
         // Get currently selected entities and paste components to them.
         foreach(entity_id_t entityId, SelectedItems().EntityIds())
         {
-            EntityPtr entity = scenePtr->GetEntity(entityId);
+            EntityPtr entity = scenePtr->EntityById(entityId);
             if (entity)
             {
                 while(!componentElem.isNull())
@@ -945,7 +1001,7 @@ void SceneTreeWidget::Paste()
                         // If we already have component with the same type name and name, add suffix to the new component's name.
                         int copy = 2;
                         QString newName = name;
-                        while(entity->GetComponent(type, newName))
+                        while(entity->Component(type, newName))
                             newName = QString(name + " (%1)").arg(copy++);
 
                         componentElem.setAttribute("name", newName);
@@ -1053,7 +1109,7 @@ void SceneTreeWidget::OpenEntityActionDialog()
     QList<EntityWeakPtr> entities;
     foreach(entity_id_t id, sel.EntityIds())
     {
-        EntityPtr e = scene.lock()->GetEntity(id);
+        EntityPtr e = scene.lock()->EntityById(id);
         if (e)
             entities.append(e);
     }
@@ -1705,4 +1761,50 @@ void SceneTreeWidget::SetAsTemporary(bool temporary)
             entities << item->Entity();
     if (undoManager_)
         undoManager_->Push(new ToggleTemporaryCommand(entities, undoManager_->Tracker(), temporary));
+}
+
+void SceneTreeWidget::GroupEntities()
+{
+    ScenePtr scn = scene.lock();
+    if (scn)
+    {
+        bool ok;
+        QList<EntityWeakPtr> entities;
+        QString groupName = QInputDialog::getText(framework->Ui()->MainWindow(), tr("Group selected entities"),
+                                             tr("Enter the name of the group. \nIf there is a group with that name, the entities will be added to said group:"), QLineEdit::Normal,
+                                             "New entity group", &ok);
+
+        if (ok && !groupName.isEmpty())
+        {
+            SceneTreeWidgetSelection sel = SelectedItems();
+            foreach(entity_id_t id, sel.EntityIds())
+                entities << scn->EntityById(id);
+        }
+
+        if (!entities.isEmpty())
+            undoManager_->Push(new GroupEntitiesCommand(entities, undoManager_->Tracker(), "", groupName));
+    }
+}
+
+void SceneTreeWidget::UngroupEntities()
+{
+    ScenePtr scn = scene.lock();
+    if (scn)
+    {
+        QList<EntityWeakPtr> entities;
+        SceneTreeWidgetSelection sel = SelectedItems();
+        EntityGroupItem *item = sel.groups.first();
+        if (!item)
+            return;
+
+        for (int i = 0; i < item->childCount(); ++i)
+        {
+            EntityItem *eItem = static_cast<EntityItem*>(item->child(i));
+            if (eItem)
+                entities << eItem->Entity();
+        }
+
+        if (!entities.isEmpty())
+            undoManager_->Push(new GroupEntitiesCommand(entities, undoManager_->Tracker(), item->GroupName(), ""));
+    }
 }

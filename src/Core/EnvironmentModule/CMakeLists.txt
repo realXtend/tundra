@@ -25,6 +25,6 @@ link_ogre()
 link_package(QT4)
 link_modules(TundraCore Math OgreRenderingModule)
 
-SetupCompileFlagsWithPCH()
+SetupCompileFlags()
 
 final_target ()

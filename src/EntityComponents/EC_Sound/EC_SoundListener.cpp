@@ -24,13 +24,18 @@ EC_SoundListener::EC_SoundListener(Scene* scene):
     // By default, this component is NOT network-replicated
     SetReplicated(false);
 
-    connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
-    connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
-    connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(Initialize()));
 }
 
 EC_SoundListener::~EC_SoundListener()
 {
+}
+
+void EC_SoundListener::Initialize()
+{
+    RetrievePlaceable();
+    connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
+    RegisterActions();
 }
 
 void EC_SoundListener::RetrievePlaceable()

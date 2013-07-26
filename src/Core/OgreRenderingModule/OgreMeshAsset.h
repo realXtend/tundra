@@ -13,8 +13,6 @@
 #include "Geometry/Triangle.h"
 #include "IRenderer.h"
 
-class OpenAssetImport;
-
 /// Represents an Ogre mesh loaded to the GPU.
 class OGRE_MODULE_API OgreMeshAsset : public IAsset, Ogre::ResourceBackgroundQueue::Listener
 {
@@ -58,6 +56,14 @@ public slots:
     /// Returns triangle count for submesh.
     int NumTris(int submeshIndex);
 
+signals:
+    void ExternalConversionRequested(OgreMeshAsset*, const u8*, size_t);
+
+#ifdef ASSIMP_ENABLED
+public slots:
+    void OnAssimpConversionDone(bool);
+#endif
+
 private:
     /// Unload mesh from Ogre. IAsset override.
     virtual void DoUnload();
@@ -68,11 +74,8 @@ private:
     /// Process mesh data after loading to create tangents and such.
     bool GenerateMeshData();
 
-    /// Convert Assimp mesh data to Ogre mesh.
-    void ConvertAssimpDataToOgreMesh(const u8 *data_, size_t numBytes);
-
     /// Is this mesh a Assimp supported file type.
-    bool IsAssimpFileType();
+    bool IsAssimpFileType() const;
 
     /// Sets default material.
     void SetDefaultMaterial();
@@ -91,11 +94,4 @@ private:
 
     /// Triangle counts per submesh.
     std::vector<int> subMeshTriangleCounts;
-
-#ifdef ASSIMP_ENABLED
-    OpenAssetImport *importer;
-
-private slots:
-    void OnAssimpConversionDone(bool);
-#endif
 };

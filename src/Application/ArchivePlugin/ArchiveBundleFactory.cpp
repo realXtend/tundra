@@ -21,6 +21,6 @@ QStringList ArchiveBundleFactory::TypeExtensions() const
 AssetBundlePtr ArchiveBundleFactory::CreateEmptyAssetBundle(AssetAPI *owner, const QString &name)
 {
     if (name.endsWith(".zip", Qt::CaseInsensitive))
-        return AssetBundlePtr(new ZipAssetBundle(owner, Type(), name));
+        return MAKE_SHARED(ZipAssetBundle, owner, Type(), name);
     return AssetBundlePtr();
 }

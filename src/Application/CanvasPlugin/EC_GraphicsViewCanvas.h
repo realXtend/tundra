@@ -21,8 +21,6 @@ class QDropEvent;
 class float2;
 class RedirectedPaintWidget;
 
-const QString cMaterialBaseName = "GraphicsViewCanvas";
-
 /// Makes possible to to embed arbitrary Qt UI elements into a 3D model.
 /** <table class="header">
     <tr>
@@ -62,9 +60,10 @@ class EC_GraphicsViewCanvas : public IComponent
     COMPONENT_NAME("EC_GraphicsViewCanvas", 52)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_GraphicsViewCanvas(Scene* scene);
-
+    /// @endcond
     ~EC_GraphicsViewCanvas();
 
     /// The name of the texture asset we will paint the canvas to.
@@ -113,8 +112,8 @@ private:
     void SendKeyEvent(QEvent::Type type, KeyEvent *e);
     void SendMouseScrollEvent(MouseEvent *e, const QPointF &ptOnScene);
     Ogre::MaterialPtr OgreMaterial();
-    bool IsMouseOnTopOfMainUI();
-    bool IsMouseOnTopOfCanvas(QPoint & mousePos, float2 & uv);
+    bool IsMouseOnTopOfMainUI() const;
+    bool IsMouseOnTopOfCanvas(QPoint & mousePos, float2 & uv) const;
     QPointF GetPointOnView(QPoint & mousePos);
 
 

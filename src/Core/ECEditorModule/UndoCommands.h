@@ -22,6 +22,7 @@
 typedef QList<entity_id_t> EntityIdList;
 typedef QList<TransformAttributeWeakPtr> TransformAttributeWeakPtrList;
 
+class EC_DynamicComponent;
 class EntityIdChangeTracker;
 
 /// Base/interface class for attribute editing command implementations.
@@ -209,7 +210,7 @@ public:
        @param typeName The type of the attribute being added
        @param name The name of the attribute being added
        @param parent The parent command of this command (optional) */
-    AddAttributeCommand(IComponent * comp, const QString &typeName, const QString &name, QUndoCommand * parent = 0);
+    AddAttributeCommand(EC_DynamicComponent *comp, const QString &typeName, const QString &name, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
     int id() const;
@@ -218,10 +219,8 @@ public:
     /// QUndoCommand override
     void redo();
 
-    EntityWeakPtr entity_; ///< A weak pointer to this attribute's parent entity
-    const QString componentName_; ///< Name of this attribute's parent component
-    const QString componentType_; ///< Typename of this attribute's parent component
-    const QString attributeTypeName_; ///< Typename of this attribute
+    weak_ptr<EC_DynamicComponent> owner; ///< A weak pointer to the owner component.
+    const QString attributeTypeName_; ///< Type name of this attribute
     const QString attributeName_; ///< Name of this attribute
 };
 
@@ -244,10 +243,8 @@ public:
     /// QUndoCommand override
     void redo();
 
-    EntityWeakPtr entity_; ///< A weak pointer to this attribute's parent entity
-    const QString componentName_; ///< Name of this attribute's parent component
-    const QString componentType_; ///< Typename of this attribute's parent component
-    const QString attributeTypeName_; ///< Typename of this attribute
+    weak_ptr<EC_DynamicComponent> owner; ///< A weak pointer to the owner component.
+    const QString attributeTypeName_; ///< Type name of this attribute
     const QString attributeName_; ///< Name of this attribute
     QString value_; ///< Value of this attribute represented as string
 };
@@ -259,20 +256,25 @@ public:
     /// Internal QUndoCommand unique ID
     enum { Id = 103 };
 
-    /// Constructor
+    /// Constructor taking a component type ID.
     /* @param scene Scene of which entities we're tracking.
        @param tracker Pointer to the EntityIdChangeTracker object
        @param entities A list of IDs of entities that a component is being added to
-       @param compType Type name of the component being added
+       @param componentTypeId Type ID of the component being added
        @param compName Name of the component being added
        @param sync Sync state of the component being added
        @param temp Temporary state of the component being added
        @param parent The parent command of this command (optional) */
     AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const EntityIdList &entities,
-        const QString &compType, const QString &compName, bool sync, bool temp, QUndoCommand * parent = 0);
+        u32 componentTypeId, const QString &compName, bool sync, bool temp, QUndoCommand * parent = 0);
+
+    /// Constructor taking a component type name.
+    /** @param componentTypeName Type name of the component being added */
+    AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const EntityIdList &entities,
+        const QString &componentTypeName, const QString &compName, bool sync, bool temp, QUndoCommand * parent = 0);
 
     /// Returns this command's ID
-    int id () const;
+    int id() const;
     /// QUndoCommand override
     void undo();
     /// QUndoCommand override
@@ -282,7 +284,8 @@ public:
     EntityIdChangeTracker * tracker_; ///< Pointer to the tracker object, taken from an undo manager
     EntityIdList entityIds_; ///< List of IDs of entities that this component is being added to
     QString componentName_; ///< Name of the component being added
-    QString componentType_; ///< Typename of the component being added
+    QString componentTypeName; ///< Type name of the component being added
+    u32 componentTypeId; ///< Type ID of the component being added
     bool sync_; ///< Sync state of the component
     bool temp_; ///< Temporary state of the component
 };
@@ -455,18 +458,18 @@ public:
 
     enum Action
     {
-        Translate = 0,  // Translate on multiple axes
-        TranslateX,     // Translate X-axis
-        TranslateY,     // Translate Y-axis
-        TranslateZ,     // Translate Z-axis
-        Rotate,         // Rotate on multiple axes
-        RotateX,        // Rotate X-axis
-        RotateY,        // Rotate Y-axis
-        RotateZ,        // Rotate Z-axis
-        Scale,          // Scale on multiple axes
-        ScaleX,         // Scale X-axis
-        ScaleY,         // Scale Y-axis
-        ScaleZ          // Scale Z-axis
+        Translate = 0,  ///< Translate on multiple axes
+        TranslateX,     ///< Translate X-axis
+        TranslateY,     ///< Translate Y-axis
+        TranslateZ,     ///< Translate Z-axis
+        Rotate,         ///< Rotate on multiple axes
+        RotateX,        ///< Rotate X-axis
+        RotateY,        ///< Rotate Y-axis
+        RotateZ,        ///< Rotate Z-axis
+        Scale,          ///< Scale on multiple axes
+        ScaleX,         ///< Scale X-axis
+        ScaleY,         ///< Scale Y-axis
+        ScaleZ          ///< Scale Z-axis
     };
 
     TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3 &offset, QUndoCommand *parent = 0);
@@ -492,6 +495,30 @@ public:
     float3 offset_;
     float3x4 rotation_;
     int nItems_;
+};
+
+class ECEDITOR_MODULE_API GroupEntitiesCommand : public QUndoCommand
+{
+public:
+    GroupEntitiesCommand(const QList<EntityWeakPtr> &entities, EntityIdChangeTracker * tracker, const QString oldGroupName, const QString newGroupName, QUndoCommand *parent = 0);
+
+    /// Internal QUndoCommand unique ID
+    enum { Id = 110 };
+
+    /// Returns this command's ID
+    int id () const;
+    /// QUndoCommand override
+    void undo();
+    /// QUndoCommand override
+    void redo();
+
+    void DoGroupUngroup(QString groupName);
+
+    QString oldGroupName_; ///< Old group name
+    QString newGroupName_; ///< New group name
+    SceneWeakPtr scene_; ///< A weak pointer to the main camera scene
+    EntityIdChangeTracker *tracker_; ///< Pointer to the tracker object, taken from an undo manager
+    EntityIdList entityIds_; ///< List of target entity IDs
 };
 
 /*

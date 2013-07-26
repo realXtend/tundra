@@ -246,4 +246,10 @@ private slots:
     /// Sets currently selected entities' temporary property.
     /** @param bool temporary Do we want to set or unset the temporary property. */
     void SetAsTemporary(bool temporary);
+
+    /// Groups selected entities, or adds entities to an existing group.
+    void GroupEntities();
+
+    /// Ungroups entity or entities. If 'Ungroup' clicked onto a group, it will ungroup all entities within said group. Otherwise ungroups selected entity / entities
+    void UngroupEntities();
 };

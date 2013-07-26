@@ -2,7 +2,7 @@
 //physics.SetRunPhysics(false);
 
 // Look for Entities with Script component and name "CollisionBox" and set RigidBody's mass to 2.0
-var entities = scene.EntitiesWithComponent("EC_Script");
+var entities = scene.EntitiesWithComponent("Script");
 for(i in entities)
 {
     entity = entities[i];

@@ -17,10 +17,6 @@
 #include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
 
-#ifdef ASSIMP_ENABLED
-#include "OpenAssetImport.h"
-#endif
-
 OgreMeshAsset::OgreMeshAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
     IAsset(owner, type_, name_),
     loadTicket_(0)
@@ -34,13 +30,19 @@ OgreMeshAsset::~OgreMeshAsset()
 
 bool OgreMeshAsset::LoadFromFile(QString filename)
 {
+    /// @todo Duplicate allowAsynchronous code in OgreMeshAsset and TextureAsset.
     bool allowAsynchronous = true;
-    if (assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
+    if ((OGRE_THREAD_SUPPORT == 0) || !assetAPI->Cache() || assetAPI->IsHeadless() ||
+        assetAPI->GetFramework()->HasCommandLineParameter("--noAsyncAssetLoad") ||
+        assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load")) /**< @todo Remove support for the deprecated underscore version at some point. */
+    {
         allowAsynchronous = false;
+    }
+
     QString cacheDiskSource;
     if (allowAsynchronous)
     {
-        cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(Name());
+        cacheDiskSource = assetAPI->Cache()->FindInCache(Name());
         if (cacheDiskSource.isEmpty())
             allowAsynchronous = false;
     }
@@ -54,16 +56,22 @@ bool OgreMeshAsset::LoadFromFile(QString filename)
 bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool allowAsynchronous)
 {
     PROFILE(OgreMeshAsset_LoadFromFileInMemory);
-    
+
     /// Force an unload of this data first.
     Unload();
 
-    if (assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0) || IsAssimpFileType())
+    /// @todo Duplicate allowAsynchronous code in OgreMeshAsset and TextureAsset.
+    if ((OGRE_THREAD_SUPPORT == 0) || !assetAPI->Cache() || assetAPI->IsHeadless() || IsAssimpFileType() ||
+        assetAPI->GetFramework()->HasCommandLineParameter("--noAsyncAssetLoad") ||
+        assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load")) /**< @todo Remove support for the deprecated underscore version at some point. */
+    {
         allowAsynchronous = false;
+    }
+
     QString cacheDiskSource;
     if (allowAsynchronous)
     {
-        cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(Name());
+        cacheDiskSource = assetAPI->Cache()->FindInCache(Name());
         if (cacheDiskSource.isEmpty())
             allowAsynchronous = false;
     }
@@ -104,11 +112,11 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
         ogreMesh->setAutoBuildEdgeLists(false);
     }
 
-	// Convert file to Ogre mesh using assimp
+    // Convert file to Ogre mesh using assimp
     if (IsAssimpFileType())
     {
 #ifdef ASSIMP_ENABLED
-        ConvertAssimpDataToOgreMesh(data_, numBytes);
+        emit ExternalConversionRequested(this, data_, numBytes);
         return true;
 #else
         LogError(QString("OgreMeshAsset::DeserializeFromData: cannot convert " + Name() + " to Ogre mesh. OpenAssetImport is not enabled."));
@@ -354,6 +362,8 @@ void OgreMeshAsset::CreateKdTree()
 
 bool OgreMeshAsset::GenerateMeshData()
 {
+    if (ogreMesh.isNull())
+        return false;
     /* NOTE: only the last error handler here returns false - first are ignored.
        This is to keep the behaviour identical to the original version which had these checks inside 
        DeserializeFromData - see https://github.com/realXtend/naali/blob/1806ea04057d447263dbd7cf66d5731c36f4d4a3/src/Core/OgreRenderingModule/OgreMeshAsset.cpp#L89
@@ -371,7 +381,8 @@ bool OgreMeshAsset::GenerateMeshData()
     {
         QString what(e.what());
         // "Cannot locate an appropriate 2D texture coordinate set" is benign, see OgreLogListener::messageLogged
-        bool hideBenignOgreMessages = assetAPI->GetFramework()->HasCommandLineParameter("--hide_benign_ogre_messages");
+        const bool hideBenignOgreMessages = ( assetAPI->GetFramework()->HasCommandLineParameter("--hideBenignOgreMessages") ||
+            assetAPI->GetFramework()->HasCommandLineParameter("--hide_benign_ogre_messages")); /**< @todo Remove support for the deprecated underscore version at some point. */
         if (!hideBenignOgreMessages || (hideBenignOgreMessages && !what.contains("Cannot locate an appropriate 2D texture coordinate set")))
             LogError("OgreMeshAsset::GenerateMeshData: Failed to build tangents for mesh " + this->Name() + ": " + what);
     }
@@ -394,8 +405,8 @@ bool OgreMeshAsset::GenerateMeshData()
     try
     {
         // Assign default materials that won't complain
-		if (!IsAssimpFileType())
-        	SetDefaultMaterial();
+        if (!IsAssimpFileType())
+            SetDefaultMaterial();
         // Set asset references the mesh has
         //ResetReferences();
     }
@@ -517,30 +528,16 @@ bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializat
     return false;
 }
 
-void OgreMeshAsset::ConvertAssimpDataToOgreMesh(const u8 *data_, size_t numBytes)
+bool OgreMeshAsset::IsAssimpFileType() const
 {
-
-#ifdef ASSIMP_ENABLED
-    importer = new OpenAssetImport(assetAPI);
-    connect(importer, SIGNAL(ConversionDone(bool)), this, SLOT(OnAssimpConversionDone(bool)), Qt::UniqueConnection);
-    importer->Convert(data_, numBytes, this->Name(), this->DiskSource(), ogreMesh);
-#endif
-}
-
-bool OgreMeshAsset::IsAssimpFileType()
-{
-    const char *openAssImpFileTypes[] = { ".3d", ".b3d", ".blend", ".dae", ".bvh", ".3ds", ".ase", ".obj", ".ply", ".dxf",
+    const char * const openAssImpFileTypes[] = { ".3d", ".b3d", ".blend", ".dae", ".bvh", ".3ds", ".ase", ".obj", ".ply", ".dxf",
         ".nff", ".smd", ".vta", ".mdl", ".md2", ".md3", ".mdc", ".md5mesh", ".x", ".q3o", ".q3s", ".raw", ".ac",
         ".stl", ".irrmesh", ".irr", ".off", ".ter", ".mdl", ".hmp", ".ms3d", ".lwo", ".lws", ".lxo", ".csm",
         ".ply", ".cob", ".scn" };
 
-    int numSuffixes = NUMELEMS(openAssImpFileTypes);
-
-    for(int i = 0;i < numSuffixes; ++i)
-    {
-        if (this->Name().endsWith(openAssImpFileTypes[i]))
+    for(size_t i = 0; i < NUMELEMS(openAssImpFileTypes); ++i)
+        if (this->Name().endsWith(openAssImpFileTypes[i], Qt::CaseInsensitive))
             return true;
-    }
 
     return false;
 }
@@ -548,18 +545,16 @@ bool OgreMeshAsset::IsAssimpFileType()
 #ifdef ASSIMP_ENABLED
 void OgreMeshAsset::OnAssimpConversionDone(bool success)
 {
+    /// @todo This function gets called many tens of times per assimp mesh - is that normal?
     if(success)
     {
         if (GenerateMeshData())
             assetAPI->AssetLoadCompleted(Name());
-	}
+    }
     else
     {
         assetAPI->AssetLoadFailed(Name());
-        LogError("OgreMeshAsset::DeserializeFromData: Failed to to covert " + Name() +" to Ogre mesh.");
+        LogError("OgreMeshAsset::DeserializeFromData: Failed to to covert " + Name() + " to Ogre mesh.");
     }
-
-    delete importer;
-	
 }
 #endif

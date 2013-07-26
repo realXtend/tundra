@@ -40,9 +40,9 @@ function ClientHandleToggleCamera() {
     // For camera switching to work, must have both the FreeLookCamera & AvatarCamera in the scene
     var freeLookCameraEntity = scene.EntityByName("FreeLookCamera");
     var avatarCameraEntity = scene.EntityByName("AvatarCamera");
-    var freeCameraListener = freeLookCameraEntity.GetComponent("EC_SoundListener");
+    var freeCameraListener = freeLookCameraEntity.Component("SoundListener");
     var avatarEnt = scene.EntityByName("Avatar" + client.connectionId);
-    var avatarListener = avatarEnt.GetComponent("EC_SoundListener");
+    var avatarListener = avatarEnt.Component("SoundListener");
     if (freeLookCameraEntity == null || avatarCameraEntity == null)
         return;
     var freeLookCamera = freeLookCameraEntity.camera;
@@ -95,7 +95,7 @@ function ServerHandleUserConnected(connectionID, user) {
     // - Placeable for position
     // - AnimationController for skeletal animation control
     // - DynamicComponent for holding disabled/enabled avatar features
-    var avatarEntity = scene.CreateEntity(scene.NextFreeId(), ["EC_Script", "EC_Placeable", "EC_AnimationController", "EC_DynamicComponent"]);
+    var avatarEntity = scene.CreateEntity(scene.NextFreeId(), ["Script", "Placeable", "AnimationController", "DynamicComponent"]);
     avatarEntity.SetTemporary(true); // We never want to save the avatar entities to disk.
     avatarEntity.SetName(avatarEntityName);
     
@@ -107,7 +107,7 @@ function ServerHandleUserConnected(connectionID, user) {
 
     // Simpleavatar.js implements the basic avatar movement and animation.
     // Also load an additional script object to the same entity (ExampleAvatarAddon.js) to demonstrate adding features to the avatar.
-    var script2 = avatarEntity.GetOrCreateComponent("EC_Script", "Addon", 0, true);
+    var script2 = avatarEntity.GetOrCreateComponent("Script", "Addon", 0, true);
     script2.className = "AvatarApp.ExampleAvatarAddon";
 
     // Set random starting position for avatar

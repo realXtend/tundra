@@ -66,27 +66,27 @@ void AssetModule::Initialize()
     framework_->RegisterDynamicObject("assetModule", this);
 
     framework_->Console()->RegisterCommand(
-        "RequestAsset", "Request asset from server. Usage: RequestAsset(assetRef, assetType)",
+        "requestAsset", "Request asset from server. Usage: requestAsset(assetRef, assetType)",
         this, SLOT(ConsoleRequestAsset(const QString &, const QString &)));
 
     framework_->Console()->RegisterCommand(
-        "AddAssetStorage", "Usage: AddAssetStorage(storageString). For example: AddAssetStorage(name=MyAssets;type=HttpAssetStorage;src=http://www.myserver.com/;default;)", 
+        "addAssetStorage", "Usage: addAssetStorage(storageString), f.ex.: addAssetStorage(name=MyAssets;type=HttpAssetStorage;src=http://www.myserver.com/;default;)", 
         this, SLOT(AddAssetStorage(const QString &)));
 
     framework_->Console()->RegisterCommand(
-        "ListAssetStorages", "Serializes all currently registered asset storages to the console output log.", 
+        "listAssetStorages", "Serializes all currently registered asset storages to the console output log.", 
         this, SLOT(ListAssetStorages()));
 
     framework_->Console()->RegisterCommand(
-        "RefreshHttpStorages", "Refreshes known assetrefs for all http asset storages", 
+        "refreshHttpStorages", "Refreshes known assetrefs for all http asset storages", 
         this, SLOT(ConsoleRefreshHttpStorages()));
 
     framework_->Console()->RegisterCommand(
-        "DumpAssetTransfers", "Dumps debugging information of current asset transfers to console", 
+        "dumpAssetTransfers", "Dumps debugging information of current asset transfers to console", 
         this, SLOT(ConsoleDumpAssetTransfers()));
 
     framework_->Console()->RegisterCommand(
-        "DumpAssets", "Lists all assets known to the Asset API", 
+        "dumpAssets", "Lists all assets known to the Asset API", 
         this, SLOT(ConsoleDumpAssets()));
     
     ProcessCommandLineOptions();

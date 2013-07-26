@@ -87,7 +87,7 @@ ECBrowser::~ECBrowser()
     clear();
 }
 
-void ECBrowser::AddEntity(EntityPtr entity)
+void ECBrowser::AddEntity(const EntityPtr &entity)
 {
     PROFILE(ECBrowser_AddNewEntity);
 
@@ -98,7 +98,7 @@ void ECBrowser::AddEntity(EntityPtr entity)
     //If entity is already added to browser no point to continue. 
     if(HasEntity(entity))
         return;
-    entities_.push_back(EntityPtr(entity));
+    entities_[entity->Id()] = entity;
 
     connect(entity.get(), SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)),
         SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
@@ -106,36 +106,37 @@ void ECBrowser::AddEntity(EntityPtr entity)
         SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
 }
 
-void ECBrowser::RemoveEntity(EntityPtr entity)
+void ECBrowser::RemoveEntity(const EntityPtr &entity)
 {
     if (!entity)
         return;
 
-    for(EntityWeakPtrList::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
-        if (iter->lock() == entity)
+    EntityMap::iterator iter = entities_.find(entity->Id());
+    if (iter != entities_.end())
+    {
+        Entity *entity = iter->second.lock().get();
+        if (entity)
         {
-            EntityPtr ent_ptr = iter->lock();
-
-            disconnect(entity.get(), SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this,
+            disconnect(entity, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this,
                 SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
-            disconnect(entity.get(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this,
+            disconnect(entity, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this,
                 SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
 
-            const Entity::ComponentMap components = ent_ptr->Components();
+            const Entity::ComponentMap components = entity->Components();
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
                 RemoveComponentFromGroup(i->second);
-
-            entities_.erase(iter);
-            break;
         }
+
+        entities_.erase(iter);
+    }
 }
 
-QList<EntityPtr> ECBrowser::GetEntities() const
+QList<EntityPtr> ECBrowser::Entities() const
 {
     QList<EntityPtr> ret;
-    for(uint i = 0; i < (uint)entities_.size(); i++)
-        if(!entities_[i].expired())
-            ret.push_back(entities_[i].lock());
+    for(EntityMap::const_iterator it = entities_.begin(); it != entities_.end(); ++it)
+        if(!it->second.expired())
+            ret.push_back(it->second.lock());
     return ret;
 }
 
@@ -185,12 +186,12 @@ void ECBrowser::UpdateBrowser()
     // Sorting tends to be a heavy operation so we disable it until we have made all changes to a tree structure.
     treeWidget_->setSortingEnabled(false);
 
-    for(EntityWeakPtrList::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
+    for(EntityMap::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
     {
-        if((*iter).expired())
+        if(iter->second.expired())
             continue;
 
-        const Entity::ComponentMap &components = (*iter).lock()->Components();
+        const Entity::ComponentMap &components = iter->second.lock()->Components();
         for(Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
             AddNewComponentToGroup(i->second);
     }
@@ -440,7 +441,7 @@ void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
                 IComponent* comp = (*iter)->components_[i].lock().get();
                 if (comp)
                 {
-                    IAttribute *attr = comp->GetAttribute(treeWidget_->currentItem()->text(0));
+                    IAttribute *attr = comp->AttributeByName(treeWidget_->currentItem()->text(0));
                     if (attr && attr->TypeId() == cAttributeAssetReference)
                     {
                         Attribute<AssetReference> *attribute = static_cast<Attribute<AssetReference> *>(attr);
@@ -624,13 +625,12 @@ void ECBrowser::PasteComponent()
         if (comp_elem.isNull())
             return;
 
-        for(EntityWeakPtrList::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
+        for(EntityMap::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
         {
-            if((*iter).expired())
+            if (iter->second.expired())
                 continue;
-            EntityPtr entity_ptr = (*iter).lock();
+            EntityPtr entity_ptr = iter->second.lock();
 
-            ComponentPtr component;
             QString type = comp_elem.attribute("type");
             QString name = comp_elem.attribute("name");
             QString sync = comp_elem.attribute("sync");
@@ -638,11 +638,11 @@ void ECBrowser::PasteComponent()
 
             int copy = 2;
             QString newName = name;
-            while(entity_ptr->GetComponent(type, newName))
+            while(entity_ptr->Component(type, newName))
                 newName = QString(name + " (%1)").arg(copy++);
 
             comp_elem.setAttribute("name", newName);
-            component = framework_->Scene()->CreateComponentByName(entity_ptr->ParentScene(), type, newName);
+            ComponentPtr component = framework_->Scene()->CreateComponentByName(entity_ptr->ParentScene(), type, newName);
 
             if (!sync.isEmpty())
                 component->SetReplicated(ParseBool(sync));
@@ -732,10 +732,7 @@ void ECBrowser::CreateAttribute()
     std::vector<ComponentWeakPtr> components = (*iter)->components_;
     for(uint i = 0; i < components.size(); i++)
     {
-        ComponentPtr component = components[i].lock();
-        if (!component)
-            continue;
-        dynComp = dynamic_cast<EC_DynamicComponent*>(component.get());
+        dynComp = dynamic_cast<EC_DynamicComponent*>(components[i].lock().get());
         if (dynComp)
             break;
     }
@@ -852,7 +849,7 @@ void ECBrowser::ResizeHeaderToContents()
     treeWidget_->resizeColumnToContents(1);
 }
 
-ComponentGroup *ECBrowser::FindSuitableGroup(ComponentPtr comp)
+ComponentGroup *ECBrowser::FindSuitableGroup(const ComponentPtr &comp)
 {
     PROFILE(ECBrowser_FindSuitableGroup);
 
@@ -863,7 +860,7 @@ ComponentGroup *ECBrowser::FindSuitableGroup(ComponentPtr comp)
     return 0;
 }
 
-void ECBrowser::AddNewComponentToGroup(ComponentPtr comp)
+void ECBrowser::AddNewComponentToGroup(const ComponentPtr &comp)
 {
     PROFILE(ECBroweser_AddNewComponentToGroup);
     assert(comp);
@@ -994,14 +991,9 @@ void ECBrowser::RemoveComponentGroup(ComponentGroup *componentGroup)
         }
 }
 
-bool ECBrowser::HasEntity(EntityPtr entity) const
+bool ECBrowser::HasEntity(const EntityPtr &entity) const
 {
-    PROFILE(ECBrowser_HasEntity);
-    for(uint i = 0; i < (uint)entities_.size(); i++)
-        if(!entities_[i].expired() && entities_[i].lock().get() == entity.get())
-            return true;
-
-    return false;
+    return entities_.find(entity->Id()) != entities_.end();
 }
 
 void ECBrowser::DeleteAttribute(QTreeWidgetItem *item)
@@ -1044,7 +1036,6 @@ void ECBrowser::DeleteComponent(QTreeWidgetItem *item)
 
     // Perform the actual deletion.
     ComponentPtr comp = componentsToDelete.at(0).lock();
-    editorWindow_->GetUndoManager()->Push(new RemoveCommand(comp->ParentScene()->shared_from_this(), editorWindow_->GetUndoManager()->GetTracker(), 
-            QList<EntityWeakPtr>(),
-            QList<ComponentWeakPtr>::fromVector(QVector<ComponentWeakPtr>::fromStdVector(componentsToDelete))));
+    editorWindow_->GetUndoManager()->Push(new RemoveCommand(comp->ParentScene()->shared_from_this(), editorWindow_->GetUndoManager()->Tracker(),
+            QList<EntityWeakPtr>(), QList<ComponentWeakPtr>::fromVector(QVector<ComponentWeakPtr>::fromStdVector(componentsToDelete))));
 }

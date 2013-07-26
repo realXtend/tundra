@@ -142,7 +142,7 @@ function UpdateEffect(name) {
     var line = findChild(widget_, editName);
     if (line != null) {
         var text = line.plainText;
-        SetParamsToEffect(text, me.GetComponent("EC_OgreCompositor", name));
+        SetParamsToEffect(text, me.Component("OgreCompositor", name));
     }
 }
 
@@ -201,7 +201,7 @@ function ToggleEffect(state) {
 }
 
 function HideEffect(name) {
-    me.RemoveComponent("EC_OgreCompositor",name);
+    me.RemoveComponent("OgreCompositor", name);
     for (var i = 0; i < activeEffects.length; ++i)
     {
         if (activeEffects[i] == name) {
@@ -214,7 +214,7 @@ function HideEffect(name) {
 function ShowEffect(name) {
     activeEffects.push(name);
     // Create component for each effect.
-    var component = me.CreateComponent("EC_OgreCompositor", name);
+    var component = me.CreateComponent("OgreCompositor", name);
     component.compositorName = name;
 }
 

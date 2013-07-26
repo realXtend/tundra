@@ -214,12 +214,9 @@ IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 :: Qt
 :: NOTE For VS2012 support Qt 4.8.3>= needed: http://stackoverflow.com/questions/12113400/compiling-qt-4-8-x-for-visual-studio-2012
-:: In theory, 4.8.4 should support VS2012 out-of-the-box, but in practice doesn't...
-:: NOTE ftp://ftp.qt-project.org/qt/source/ Can be used for Qt < 4.8.2, for Qt >= 4.8.2 use http://releases.qt-project.org/qt4/source/
-::set QT_VER=4.7.4
-::set QT_URL=ftp://ftp.qt-project.org/qt/source/qt-everywhere-opensource-src-%QT_VER%.zip
-set QT_VER=4.8.4
-set QT_URL=http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-%QT_VER%.zip
+:: In theory, Qt >= 4.8.4 should support VS2012 out-of-the-box, but in practice it doesn't...
+set QT_VER=4.8.5
+set QT_URL=http://download.qt-project.org/official_releases/qt/4.8/%QT_VER%/qt-everywhere-opensource-src-%QT_VER%.zip
 IF NOT EXIST "%DEPS%\qt". (
    cd "%DEPS%"
    IF NOT EXIST qt-everywhere-opensource-src-%QT_VER%.zip. (
@@ -286,7 +283,18 @@ IF NOT EXIST %QT_INSTALL_WEBKIT_DLL_FILENAME%. (
     )
 
     cd %QTDIR%
+
+    :: WebKit seems to fail if we've build release first and then trying to build debug, but deleting the generated build files seems to help.
+    IF EXIST src\3rdparty\webkit\Source\Webkit\qt\QtWebKit.%VCPROJ_FILE_EXT%. (
+        del /Q src\3rdparty\webkit\Source\Webkit\qt\QtWebKit.%VCPROJ_FILE_EXT%*
+        del /Q src\3rdparty\webkit\Source\Webkit\qt\Makefile*
+        del /Q src\3rdparty\webkit\Source\Webkit\qt\*.rc
+    )
+
+    :: Clear possible build configuration cache
     IF EXIST configure.cache. del /Q configure.cache
+    IF EXIST projects.sln. del /Q projects.sln
+
     cecho {0D}Configuring Qt build. Please answer 'y'!{# #}{\n}
     configure -platform %QT_PLATFORM% -%DEBUG_OR_RELEASE_LOWERCASE% -opensource -prefix "%DEPS%\qt" -shared -ltcg ^
         -no-qt3support -no-opengl -no-openvg -no-dbus -no-phonon -no-phonon-backend -no-multimedia -no-audio-backend ^
@@ -366,7 +374,7 @@ IF NOT EXIST "%DEPS%\bullet\lib\%BUILD_TYPE%\BulletCollision.lib". (
         IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
         cmake . -G %GENERATOR% -DBUILD_DEMOS:BOOL=OFF -DBUILD_EXTRAS:BOOL=OFF -DBUILD_INTEL_OPENCL_DEMOS:BOOL=OFF ^
             -DBUILD_NVIDIA_OPENCL_DEMOS:BOOL=OFF -DBUILD_UNIT_TESTS:BOOL=OFF -DUSE_DX11:BOOL=OFF -DBUILD_AMD_OPENCL_DEMOS:BOOL=OFF ^
-            -DCMAKE_DEBUG_POSTFIX= -DCMAKE_MINSIZEREL_POSTFIX= -DCMAKE_RELWITHDEBINFO_POSTFIX=
+            -DCMAKE_DEBUG_POSTFIX= -DCMAKE_MINSIZEREL_POSTFIX= -DCMAKE_RELWITHDEBINFO_POSTFIX= -DUSE_MSVC_RUNTIME_LIBRARY_DLL:BOOL=ON
         IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     )
 
@@ -477,7 +485,7 @@ IF NOT EXIST kNet.sln. (
     cecho {0D}Running cmake for kNet.{# #}{\n}
 
     IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
-    cmake . -G %GENERATOR% -DBOOST_ROOT=%BOOST_ROOT% -DUSE_BOOST:BOOL=%USE_BOOST% -DUSE_TINYXML:BOOL=FALSE
+    cmake . -G %GENERATOR% -DBOOST_ROOT=%BOOST_ROOT% -DUSE_BOOST:BOOL=%USE_BOOST% -DUSE_TINYXML:BOOL=FALSE -DUSE_QT:BOOL=TRUE
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     set BUILD_KNET=TRUE
 )
@@ -892,8 +900,8 @@ IF NOT EXIST "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%\libth
     cecho {0D}Building %THEORA_BUILD_TYPE% Theora. Please be patient, this will take a while.{# #}{\n}
 
     cd "%DEPS%\theora\win32\VS2008\libtheora"
-    copy /Y "%TOOLS%\Mods\vs2008-libtheora_static.vcproj" libtheora_static.vcproj
-    IF NOT %VS_VER%==vs2008 IF NOT EXIST libtheora_static.%VCPROJ_FILE_EXT%. VCUpgrade /nologo libtheora_static.vcproj
+    copy /Y "%TOOLS%\Mods\vs2008-%VS_PLATFORM%-libtheora_static.vcproj" libtheora_static.vcproj
+    IF NOT %VS_VER%==vs2008 VCUpgrade /nologo /overwrite libtheora_static.vcproj
 
     MSBuild libtheora_static.%VCPROJ_FILE_EXT% /p:configuration=%THEORA_BUILD_TYPE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%   
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -923,6 +931,14 @@ IF NOT EXIST "%DEPS%\speex\lib\%DEBUG_OR_RELEASE%\libspeexdsp.lib". (
 
     MSBuild libspeex.sln /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
+    :: Speex only builds Release or Debug, to make things easier in cmake dublicate Release as RelWithDebInfo.
+    IF "!BUILD_TYPE!"=="%BUILD_TYPE_RELWITHDEBINFO%" (
+        IF NOT EXIST "%DEPS%\speex\lib\%BUILD_TYPE_RELWITHDEBINFO%". (
+            mkdir "%DEPS%\speex\lib\%BUILD_TYPE_RELWITHDEBINFO%\"
+        )
+        copy /Y "%DEPS%\speex\lib\Release\*.lib" "%DEPS%\speex\lib\%BUILD_TYPE_RELWITHDEBINFO%\"
+    )
 ) ELSE (
    cecho {0D}%DEBUG_OR_RELEASE% Speex already built. Skipping.{# #}{\n}
 )
@@ -995,16 +1011,12 @@ IF NOT EXIST "%DEPS%\celt\lib\%DEBUG_OR_RELEASE%\libcelt.lib" (
     cecho {0D}Building %DEBUG_OR_RELEASE% Celt 0.11.1.{# #}{\n}
     MSBuild libcelt.%VCPROJ_FILE_EXT% /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
 
-    :: Copy libs
-    IF NOT EXIST "%DEPS%\celt\lib". (
-        mkdir "%DEPS%\celt\lib\Debug\"
-        mkdir "%DEPS%\celt\lib\Release\"
-    )
-    IF %TARGET_ARCH%==x64 (
-        copy /Y X64\%DEBUG_OR_RELEASE%\libcelt.lib "%DEPS%\celt\lib\%DEBUG_OR_RELEASE%\"
-    ) ELSE (
-        copy /Y %DEBUG_OR_RELEASE%\libcelt.lib "%DEPS%\celt\lib\%DEBUG_OR_RELEASE%\"
-        REM copy /Y lib\%DEBUG_OR_RELEASE%\libcelt.lib "%DEPS%\celt\lib\%DEBUG_OR_RELEASE%\"
+    :: Celt only build release or debug, to make things easier in cmake copy Release as RelWithDebInfo
+    IF "!BUILD_TYPE!"=="%BUILD_TYPE_RELWITHDEBINFO%" (
+        IF NOT EXIST "%DEPS%\celt\lib\%BUILD_TYPE_RELWITHDEBINFO%". (
+            mkdir "%DEPS%\celt\lib\%BUILD_TYPE_RELWITHDEBINFO%\"
+        )
+        copy /Y "%DEPS%\celt\lib\Release\libcelt.lib" "%DEPS%\celt\lib\%BUILD_TYPE_RELWITHDEBINFO%\"
     )
 
     :: Copy headers
@@ -1078,9 +1090,9 @@ IF NOT EXIST "%DEPS%\qxmpp\". (
     sed 's/# DEFINES += QXMPP_USE_SPEEX/DEFINES += QXMPP_USE_SPEEX/g' < src\src.pro > src\temp
     sed 's/# LIBS += -lspeex/LIBS += -L"..\\\..\\\speex\\\lib\\\libspeex.lib -L"..\\\.\\\speex\\\lib\\\libspeexdsp.lib"/g' < src\temp > src\src.pro
     sed 's/INCLUDEPATH += $$QXMPP_INCLUDE_DIR $$QXMPP_INTERNAL_INCLUDES/INCLUDEPATH += $$QXMPP_INCLUDE_DIR $$QXMPP_INTERNAL_INCLUDES ..\\\..\\\speex\\\include\nDEPENDPATH += ..\\\..\\\speex/g' < src\src.pro > src\temp
-    mv src\temp src\src.pro
+    move src\temp src\src.pro
     sed 's/LIBS += $$QXMPP_LIBS/LIBS += $$QXMPP_LIBS -L"..\\\..\\\speex\\\lib\\\libspeex.lib" -L"..\\\..\\\speex\\\lib\\\libspeexdsp.lib"/g' < tests\tests.pro > tests\temp
-    mv tests\temp tests\tests.pro
+    move tests\temp tests\tests.pro
     qmake
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     IF %USE_JOM%==TRUE (
@@ -1177,9 +1189,9 @@ IF NOT EXIST "%DEPS%\zziplib\lib\zziplib%POSTFIX_D%.lib". (
     :: Use a custom project file as zziblib does not ship with vs2008 project files.
     :: Additionally its include/lib paths are not proper for it to find our zlib build and it has weird lib name postfixes.
     :: It's nicer to use a tailored file rathern than copy duplicates under the zziblib source tree.
-    cecho {0D}Building %DEBUG_OR_RELEASE% zziplib from premade project %TOOLS%\Mods\vs2008-zziplib.vcproj{# #}{\n}
-    copy /Y "%TOOLS%\Mods\vs2008-zziplib.vcproj" zziplib.vcproj
-    IF NOT %VS_VER%==vs2008 IF NOT EXIST zziplib.%VCPROJ_FILE_EXT%. VCUpgrade /nologo zziplib.vcproj
+    cecho {0D}Building %DEBUG_OR_RELEASE% zziplib from premade project %TOOLS%\Mods\vs2008-%VS_PLATFORM%-zziplib.vcproj{# #}{\n}
+    copy /Y "%TOOLS%\Mods\vs2008-%VS_PLATFORM%-zziplib.vcproj" zziplib.vcproj
+    IF NOT %VS_VER%==vs2008 VCUpgrade /nologo /overwrite zziplib.vcproj
     MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
 
     :: Copy results to lib/include

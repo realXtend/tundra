@@ -23,7 +23,7 @@ EC_Material::EC_Material(Scene* scene) :
     INIT_ATTRIBUTE_VALUE(inputMat, "Input Material", ""),
     INIT_ATTRIBUTE_VALUE(outputMat, "Output Material", "")
 {
-    materialAsset = AssetRefListenerPtr(new AssetRefListener());
+    materialAsset = MAKE_SHARED(AssetRefListener);
     connect(materialAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     
     connect(this, SIGNAL(ParentEntitySet()), SLOT(OnParentEntitySet()));

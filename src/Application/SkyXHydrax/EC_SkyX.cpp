@@ -90,17 +90,6 @@ struct EC_SkyX::Impl
     {
         if (sunlight && moonlight)
         {
-            if (sunPosition.y < 0 && sunlight->isVisible() && !moonlight->isVisible())
-            {
-                sunlight->setVisible(false);
-                moonlight->setVisible(true);
-            }
-            else if (sunPosition.y > 0 && !sunlight->isVisible() && moonlight->isVisible())
-            {
-                sunlight->setVisible(true);
-                moonlight->setVisible(false);
-            }
-
             sunlight->setDirection(-controller->getSunDirection()); // -(Earth-to-Sun direction)
             moonlight->setDirection(-controller->getMoonDirection()); // -(Earth-to-Moon direction)
         }
@@ -221,7 +210,7 @@ void EC_SkyX::Create()
     }
 
     // Return if main camera is not set
-    OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
+    OgreWorldPtr w = ParentScene()->Subsystem<OgreWorld>();
     if (!w || !w->Renderer())
         return;
     if (!w->Renderer()->MainCamera())
@@ -262,7 +251,7 @@ void EC_SkyX::Create()
         CreateLights();
         UpdateLightsAndPositions();
     }
-    catch(Ogre::Exception &e)
+    catch(const Ogre::Exception &e)
     {
         // Currently if we try to create more than one SkyX component we end up here due to Ogre internal name collision.
         LogError("Could not create EC_SkyX: " + std::string(e.what()));
@@ -273,7 +262,7 @@ void EC_SkyX::CreateLights()
 {
     if (impl)
     {
-        OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
+        OgreWorldPtr w = ParentScene()->Subsystem<OgreWorld>();
         Ogre::SceneManager *sm = w->OgreSceneManager();
         impl->originalAmbientColor = sm->getAmbientLight();
         sm->setAmbientLight(ambientLightColor.Get());
@@ -291,7 +280,6 @@ void EC_SkyX::CreateLights()
         impl->moonlight->setSpecularColour(moonlightSpecularColor.Get());
         impl->moonlight->setDirection(impl->controller->getMoonDirection());
         impl->moonlight->setCastShadows(true);
-        impl->moonlight->setVisible(false); // Hide moonlight by default
     }
 }
 
@@ -449,8 +437,8 @@ void EC_SkyX::UpdateAttribute(IAttribute *attr, AttributeChange::Type change)
     {
         if ((CloudType)cloudType.Get() == Volumetric)
         {
-            float skyxCoverage = cloudCoverage.Get() / 100.f; // [0,1]
-            float skyxSize = cloudAverageSize.Get() / 100.f; // [0,1]
+            float skyxCoverage = Clamp(cloudCoverage.Get() / 100.f, 0.0f, 1.0f); // Clamp to [0.0,1.0]
+            float skyxSize = Clamp(cloudAverageSize.Get() / 100.f, 0.0f, 1.0f);  // Clamp to [0.0,1.0]
             impl->skyX->getVCloudsManager()->getVClouds()->setWheater(skyxCoverage, skyxSize, false);
         }
     }
@@ -591,8 +579,8 @@ void EC_SkyX::RegisterListeners()
     // with FrameAPI::Updated() there will be rendering artifact when camera is being moved!
     Ogre::Root::getSingleton().addFrameListener(impl->skyX);
 
-    OgreRenderer::OgreRenderingModule *ogreRenderingModule = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>();
-    OgreRenderer::Renderer *renderer = ogreRenderingModule != 0 ? ogreRenderingModule->GetRenderer().get() : 0;
+    OgreRenderer::OgreRenderingModule *ogreRenderingModule = GetFramework()->Module<OgreRenderer::OgreRenderingModule>();
+    OgreRenderer::Renderer *renderer = ogreRenderingModule != 0 ? ogreRenderingModule->Renderer().get() : 0;
     Ogre::RenderWindow *window = renderer != 0 ? renderer->GetCurrentRenderWindow() : 0;
     if (window)
         window->addListener(impl->skyX);
@@ -602,7 +590,7 @@ void EC_SkyX::RegisterListeners()
 
 void EC_SkyX::UnregisterListeners()
 {
-    if (GetFramework()->IsHeadless())
+    if (!framework || framework->IsHeadless())
         return;
     if (!impl || !impl->skyX)
         return;
@@ -610,8 +598,8 @@ void EC_SkyX::UnregisterListeners()
     Ogre::Root::getSingleton().removeFrameListener(impl->skyX);
 
     // Cant use OgreWorld from parent scene as it would fail in the dtor.
-    OgreRenderer::OgreRenderingModule *ogreRenderingModule = GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>();
-    OgreRenderer::Renderer *renderer = ogreRenderingModule != 0 ? ogreRenderingModule->GetRenderer().get() : 0;
+    OgreRenderer::OgreRenderingModule *ogreRenderingModule = GetFramework()->Module<OgreRenderer::OgreRenderingModule>();
+    OgreRenderer::Renderer *renderer = ogreRenderingModule != 0 ? ogreRenderingModule->Renderer().get() : 0;
     Ogre::RenderWindow *window = renderer != 0 ? renderer->GetCurrentRenderWindow() : 0;
     if (window)
         window->removeListener(impl->skyX);
@@ -628,7 +616,21 @@ void EC_SkyX::UpdateLightsAndPositions()
     PROFILE(EC_SkyX_Update);
     // Update our sunlight and moonlight
     impl->UpdateLightPositions(camera);
-    /// @todo Animate dim the light down and up
+
+    // Fade-in / fade-out moonlight and sunlight
+    if (impl->sunlight && impl->moonlight)
+    {
+        const float magicOffset = 200.0;
+        const float fadeInOutHeight = 450.0;
+        float sunColorClamp = Clamp((impl->sunPosition.y + magicOffset) / fadeInOutHeight, 0.0f, 1.0f);
+        float moonColorClamp = Clamp((impl->moonPosition.y - magicOffset) / fadeInOutHeight, 0.0f, 1.0f);
+
+        impl->sunlight->setDiffuseColour(sunlightDiffuseColor.Get() * sunColorClamp);
+        impl->moonlight->setDiffuseColour(moonlightDiffuseColor.Get() * moonColorClamp);
+        impl->sunlight->setVisible(sunColorClamp > 0.0);
+        impl->moonlight->setVisible(moonColorClamp > 0.0);
+    }
+
     impl->UpdateLights();
 }
 

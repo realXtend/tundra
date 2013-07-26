@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>198</width>
-    <height>181</height>
+    <width>238</width>
+    <height>231</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,9 +29,6 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
-      <property name="spacing">
-       <number>6</number>
-      </property>
       <property name="margin">
        <number>0</number>
       </property>
@@ -193,12 +190,33 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>Target FPS (0 disables)</string>
+           <string>Target FPS    (0 disables)</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QDoubleSpinBox" name="targetFpsSpinBox">
+          <property name="decimals">
+           <number>0</number>
+          </property>
+          <property name="maximum">
+           <double>2000.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Target FPS when inactive</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="targetFpsWhenInactiveBox">
           <property name="decimals">
            <number>0</number>
           </property>

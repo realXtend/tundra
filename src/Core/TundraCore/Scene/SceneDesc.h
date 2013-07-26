@@ -14,7 +14,7 @@
 
 /// Description of a scene (Scene).
 /** A source-agnostic scene graph description of a Tundra scene.
-    A Tunda scene consist of entities, components, attributes and assets references.
+    A Tundra scene consist of entities, components, attributes and assets references.
     @sa EntityDesc, ComponentDesc, AttributeDesc and AssetDesc */
 struct TUNDRACORE_API SceneDesc
 {
@@ -47,10 +47,8 @@ struct TUNDRACORE_API EntityDesc
     QList<ComponentDesc> components; ///< List of components the entity has.
 
     /// Default constructor.
-    EntityDesc() : local(false), temporary(false)
-    {
-    }
-    
+    EntityDesc() : local(false), temporary(false) {}
+
     /// Constructor with full input param list.
     EntityDesc(const QString &entityId, const QString &entityName = "", bool isLocal = false, bool isTemporary = false) :
         id(entityId),
@@ -83,32 +81,38 @@ struct TUNDRACORE_API ComponentDesc
 };
 
 /// Description of an attribute (IAttribute).
+/** @note Attribute's type name, name and ID names are handled case-insensitively internally by the SceneAPI,
+    so a case-insensitive comparison is always recommended these values. */
 struct TUNDRACORE_API AttributeDesc
 {
-    /// Type name.
-    /** @note As attribute type names are handled case-insensitively internally by the SceneAPI,
-        a case-insensitive comparison is recommended when comparing attribute type names. */
-    QString typeName;
-    QString name; ///< Name.
-    QString value; ///< Value.
+    QString typeName; ///< Attribute type name, f.ex. "Color".
+    QString name; ///< Human-readable attribute name, f.ex. "Ambient light color".
+    QString value; ///< Value of the attribute serialized to string, f.ex. "ambientLightColor".
+    QString id; ///< Unique ID (within the parent component), i.e. the variable name, of the attribute.
 
-#define LEX_CMP(a, b) if ((a) < (b)) return true; else if ((a) > (b)) return false;
+#define LEX_CMP(a, b, sensitivity) if (a.compare(b, sensitivity) < 0) return true; else if (a.compare(b, sensitivity) > 0) return false;
 
-    /// Less than operator. Compares all values.
+    /// Less than operator.
+    /** @note typeName, id, and name are compared case-insensitively, value as case-sensitively. */
     bool operator <(const AttributeDesc &rhs) const
     {
-        LEX_CMP(typeName, rhs.typeName);
-        LEX_CMP(name, rhs.name);
-        LEX_CMP(value, rhs.value);
+        LEX_CMP(typeName, rhs.typeName, Qt::CaseInsensitive);
+        LEX_CMP(id, rhs.id, Qt::CaseInsensitive);
+        LEX_CMP(name, rhs.name, Qt::CaseInsensitive);
+        LEX_CMP(value, rhs.value, Qt::CaseSensitive);
         return false;
     }
 
 #undef LEX_CMP
 
     /// Equality operator. Returns true if all values match, false otherwise.
+    /** @note typeName, id, and name are compared case-insensitively, value as case-sensitively. */
     bool operator ==(const AttributeDesc &rhs) const
     {
-        return typeName == rhs.typeName && name == rhs.name && value  == rhs.value;
+        return typeName.compare(rhs.typeName,Qt::CaseInsensitive) == 0 &&
+            name.compare(rhs.name, Qt::CaseInsensitive) == 0 &&
+            id.compare(rhs.id, Qt::CaseInsensitive) == 0 &&
+            value  == rhs.value;
     }
 };
 

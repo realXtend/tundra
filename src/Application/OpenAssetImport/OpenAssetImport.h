@@ -6,10 +6,13 @@ Licensed under the MIT license:
 */
 
 #pragma once
+#include "IModule.h"
 
 #include "OpenAssetImportApi.h"
 #include "CoreTypes.h"
 #include "AssetFwd.h"
+
+#include "OgreMeshAsset.h"
 
 #include <OgreMesh.h>
 #include <OgreMeshSerializer.h>
@@ -43,13 +46,15 @@ typedef std::vector<Ogre::MeshPtr> MeshVector;
 typedef std::map<QString, Ogre::MaterialPtr> TextureMaterialPointerMap;
 typedef std::pair<QString, Ogre::MaterialPtr> TexMatPair;
 
-class OPENASSETIMPORT_API OpenAssetImport : public QObject
+class OPENASSETIMPORT_API OpenAssetImport : public IModule
 {
     Q_OBJECT
 
 public:
-    explicit OpenAssetImport(AssetAPI *assetApi);
-    ~OpenAssetImport();
+    explicit OpenAssetImport();
+    virtual ~OpenAssetImport();
+
+    void Initialize(); ///< IModule override
     /// Converts collada files to ogre meshes, also parses and genarates ogre materials.
     void Convert(const u8 *data_, size_t numBytes, const QString &fileName, const QString &diskSource, Ogre::MeshPtr mesh);
 
@@ -106,6 +111,8 @@ private:
     MeshVector mMeshes;
 
 private slots:
+    void OnAssetCreated(AssetPtr asset);
+    void OnConversionRequest(OgreMeshAsset *asset, const u8 *data, size_t len);
     void OnTextureLoaded(IAssetTransfer* assetTransfer);
     void OnTextureLoadFailed(IAssetTransfer* assetTransfer, QString reason);
 };

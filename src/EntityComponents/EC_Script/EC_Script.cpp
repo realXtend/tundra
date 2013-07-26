@@ -1,6 +1,5 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
-#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
 #include "EC_Script.h"
@@ -145,6 +144,9 @@ EC_Script::EC_Script(Scene* scene):
 
 void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type /*change*/)
 {
+    if (!framework)
+        return;
+
     AssetAPI* assetAPI = framework->Asset();
     
     if (attribute == &scriptRef)

@@ -22,10 +22,25 @@
 
 // EntityItem
 
-EntityItem::EntityItem(const EntityPtr &entity) :
-    ptr(entity), id(entity->Id())
+EntityItem::EntityItem(const EntityPtr &entity, EntityGroupItem *parent) :
+    ptr(entity), id(entity->Id()), parentItem(parent)
 {
+    if (parentItem)
+    {
+        parentItem->numberOfEntities++;
+        parentItem->UpdateText();
+    }
+
     SetText(entity.get());
+}
+
+EntityItem::~EntityItem()
+{
+    if (parentItem)
+    {
+        parentItem->numberOfEntities--;
+        parentItem->UpdateText();
+    }
 }
 
 void EntityItem::SetText(::Entity *entity)
@@ -65,6 +80,11 @@ void EntityItem::SetText(::Entity *entity)
         setText(0, name);
 }
 
+EntityGroupItem *EntityItem::Parent() const
+{
+    return parentItem;
+}
+
 EntityPtr EntityItem::Entity() const
 {
     return ptr.lock();
@@ -91,6 +111,19 @@ bool EntityItem::operator <(const QTreeWidgetItem &rhs) const
     }
     else
         return QTreeWidgetItem::operator <(rhs);
+}
+
+EntityGroupItem::EntityGroupItem(const QString &groupName) :
+    name(groupName),
+    numberOfEntities(0)
+{
+    UpdateText();
+}
+
+void EntityGroupItem::UpdateText()
+{
+    QString text = QString("[ group: %1 (%2 item%3) ]").arg(name).arg(numberOfEntities).arg(numberOfEntities > 1 ? "s" : "");
+    setText(0, text);
 }
 
 // ComponentItem
@@ -200,7 +233,17 @@ void AssetRefItem::SetText(IAttribute *attr)
 
 bool SceneTreeWidgetSelection::IsEmpty() const
 {
-    return entities.isEmpty() && components.isEmpty() && assets.isEmpty();
+    return groups.isEmpty() && entities.isEmpty() && components.isEmpty() && assets.isEmpty();
+}
+
+bool SceneTreeWidgetSelection::HasGroups() const
+{
+    return !groups.isEmpty();
+}
+
+bool SceneTreeWidgetSelection::HasGroupsOnly() const
+{
+    return !groups.isEmpty() && entities.isEmpty() && components.isEmpty() && assets.isEmpty();
 }
 
 bool SceneTreeWidgetSelection::HasEntities() const
@@ -208,14 +251,29 @@ bool SceneTreeWidgetSelection::HasEntities() const
     return !entities.isEmpty();
 }
 
+bool SceneTreeWidgetSelection::HasEntitiesOnly() const
+{
+    return groups.isEmpty() && !entities.isEmpty() && components.isEmpty() && assets.isEmpty();
+}
+
 bool SceneTreeWidgetSelection::HasComponents() const
 {
     return !components.isEmpty();
 }
 
+bool SceneTreeWidgetSelection::HasComponentsOnly() const
+{
+    return groups.isEmpty() && entities.isEmpty() && !components.isEmpty() && assets.isEmpty();
+}
+
 bool SceneTreeWidgetSelection::HasAssets() const
 {
     return !assets.isEmpty();
+}
+
+bool SceneTreeWidgetSelection::HasAssetsOnly() const
+{
+    return groups.isEmpty() && entities.isEmpty() && components.isEmpty() && !assets.isEmpty();
 }
 
 QList<entity_id_t> SceneTreeWidgetSelection::EntityIds() const

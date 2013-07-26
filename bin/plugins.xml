@@ -1,43 +1,45 @@
 <?xml version="1.0"?>
 <Tundra>
-  <!-- plugins.xml is hardcoded to be the default configuration file to load if another file is not specified on the command line with the "config filename.xml" parameter. -->
-  <plugin path="OpenAssetImport" />             <!-- Does not depend on any other module -->
-  <plugin path="OgreRenderingModule" />         <!-- Depends on OpenAssetImport -->
-  <plugin path="SceneInteract" />               <!-- Depends on OgreRenderingModule -->
-  <plugin path="EnvironmentModule" />           <!-- Depends on OgreRenderingModule -->
-  <plugin path="PhysicsModule" />               <!-- Depends on OgreRenderingModule and EnvironmentModule -->
-  <plugin path="TundraProtocolModule" />        <!-- Depends on OgreRenderingModule -->
-  <plugin path="ECEditorModule" />              <!-- Depends on OgreRenderingModule and TundraProtocolModule-->
-  <!--  Note: All modules that implicitly depend on JavascriptModule, by performing QtScript object meta type registration in their registered
-        dynamic objects (Framework::RegisterDynamicObject) in OnScriptEngineCreated(QScriptEngine*), must be loaded before JavascriptModule. -->
-  <plugin path="JavascriptModule" />            <!-- Depends on TundraProtocolModule --> 
-  <plugin path="AssetModule" />                 <!-- Depends on TundraProtocolModule -->
-  <plugin path="ArchivePlugin" />               <!-- Does not depend on any other module -->
-  <plugin path="AvatarModule" />                <!-- Depends on AssetModule and OgreRenderingModule -->
-  <plugin path="SkyXHydrax" />                  <!-- Depends on OgreRenderingModule -->
-  <plugin path="OgreAssetEditorModule" />       <!-- Depends on OgreRenderingModule -->
-  <plugin path="DebugStatsModule" />            <!-- Depends on OgreRenderingModule, EnvironmentModule, OgreAssetEditorModule and AssetModule -->
-  <plugin path="SceneWidgetComponents" />       <!-- Depends on OgreRenderingModule and TundraProtocolModule (and optionally on BrowserUiPlugin) -->
-  <plugin path="MumblePlugin" />                <!-- Depends on OgreRenderingModule, JavascriptModule and TundraLogicModule -->
-  <plugin path="CanvasPlugin" />                <!-- Depends on OgreRenderingModule -->
+  <!-- plugins.xml is hardcoded to be the default configuration file to load if another file
+       is not specified on the command line with the "-config filename.xml" parameter. -->
 
-  <!-- NOTE: The startup .js scripts are specified only by base name of the file. Don's specify a path here. Place the startup .js scripts to /bin/jsmodules/startup/. -->
-  <!-- Important: The file names specified here are case sensitive even on Windows! -->
-  <jsplugin path="cameraapplication.js" />
-  <jsplugin path="FirstPersonMouseLook.js" />
-  <jsplugin path="MenuBar.js" />
-  <jsplugin path="RendererSettings.js" />
-  <jsplugin path="SoundSettings.js" />
-  <jsplugin path="InterestManagerSettings.js" />
-  <jsplugin path="LoadingScreen.js" />
+  <!-- Note: All modules that implicitly depend on JavascriptModule, by performing QtScript
+       object meta type registration in their registered dynamic objects (Framework::RegisterDynamicObject)
+       in OnScriptEngineCreated(QScriptEngine*), must be loaded before JavascriptModule. -->
 
-  <!-- Python plugins -->
-  <!-- <pyplugin path="lib/apitests.py" /> -->          <!-- Runs framework api tests -->
-  <!-- pyplugin path="pythonqt_console.py" /-->         <!-- shows qt py console. could enable by default when add to menu etc. for controls, now just shows directly when is enabled here -->
+  <option name="--plugin" value="OgreRenderingModule"/>
+  <option name="--plugin" value="OpenAssetImport"/>
+  <option name="--plugin" value="SceneInteract"/>
+  <option name="--plugin" value="EnvironmentModule"/>
+  <option name="--plugin" value="PhysicsModule"/>
+  <option name="--plugin" value="TundraProtocolModule"/>
+  <option name="--plugin" value="ECEditorModule"/>
+  <option name="--plugin" value="JavascriptModule"/>
+  <option name="--plugin" value="AssetModule"/>
+  <option name="--plugin" value="ArchivePlugin"/>
+  <option name="--plugin" value="AvatarModule"/>
+  <option name="--plugin" value="SkyXHydrax"/>
+  <option name="--plugin" value="OgreAssetEditorModule"/>
+  <option name="--plugin" value="DebugStatsModule"/>
+  <option name="--plugin" value="SceneWidgetComponents"/>
+  <option name="--plugin" value="MumblePlugin"/>
+  <option name="--plugin" value="CanvasPlugin"/>
 
-  <option name="--trustserverstorages" />
-  <option name="--accept_unknown_http_sources" />
-  <option name="--accept_unknown_local_sources" />
-  <option name="--fpslimit" value="60" />
-  <option name="--hide_benign_ogre_messages" />
+  <!-- NOTE: The startup .js scripts are specified only by the base name of the file.
+       Don't specify a path here. Place the startup .js scripts to /bin/jsplugins/startup/. -->
+  <!-- Important: The file names specified here are case-sensitive even on Windows! -->
+  <option name="--jsplugin" value="cameraapplication.js"/>
+  <option name="--jsplugin" value="FirstPersonMouseLook.js"/>
+  <option name="--jsplugin" value="MenuBar.js"/>
+  <option name="--jsplugin" value="RendererSettings.js"/>
+  <option name="--jsplugin" value="SoundSettings.js"/>
+  <option name="--jsplugin" value="InterestManagerSettings.js"/>
+  <option name="--jsplugin" value="LoadingScreen.js"/>
+  <option name="--jsplugin" value="SceneInstructions.js"/>
+
+  <option name="--trustServerStorages" />
+  <option name="--acceptUnknownHttpSources" />
+  <option name="--acceptUnknownLocalSources" />
+  <option name="--fpsLimit" value="60" />
+  <option name="--hideBenignOgreMessages" />
 </Tundra>

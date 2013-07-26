@@ -13,12 +13,12 @@
 
 #include "MemoryLeakCheck.h"
 
-UndoManager::UndoManager(const ScenePtr &scene, QWidget *parent)
+UndoManager::UndoManager(const ScenePtr &scene, QWidget *parent, QWidget *undoMenuParent, QWidget *redoMenuParent)
 {
     undoStack_ = new QUndoStack();
 
-    undoMenu_ = new QMenu();
-    redoMenu_ = new QMenu();
+    undoMenu_ = new QMenu(undoMenuParent);
+    redoMenu_ = new QMenu(redoMenuParent);
     undoViewAction_ = new QAction("View all", 0);
 
     tracker_ = new EntityIdChangeTracker(scene);
@@ -43,16 +43,11 @@ UndoManager::~UndoManager()
         disconnect(undoStack_, SIGNAL(canUndoChanged(bool)), this, SLOT(OnCanUndoChanged(bool)));
         disconnect(undoStack_, SIGNAL(canRedoChanged(bool)), this, SLOT(OnCanRedoChanged(bool)));
     }
-    SAFE_DELETE(undoStack_);
 
-    // Parented, don't delete
-    if (undoView_ && undoView_->parent())
-        undoView_ = 0;
-    else
-        SAFE_DELETE(undoView_);
-    
-    SAFE_DELETE(undoMenu_);
-    SAFE_DELETE(redoMenu_);
+    SAFE_DELETE(undoStack_);
+    SAFE_DELETE(undoView_);
+//    SAFE_DELETE(undoMenu_);
+//    SAFE_DELETE(redoMenu_);
     SAFE_DELETE(undoViewAction_);
     SAFE_DELETE(tracker_);
 }

@@ -5,7 +5,7 @@
     @brief  Makes possible to to embed arbitrary Qt UI elements into a 3D model. */
 
 #define MATH_OGRE_INTEROP
-
+#include "DebugOperatorNew.h"
 #include "EC_GraphicsViewCanvas.h"
 
 #include "AssetAPI.h"
@@ -34,6 +34,10 @@
 #include <QApplication>
 #include <QtGui>
 
+#include "MemoryLeakCheck.h"
+
+static const QString cMaterialBaseName = "GraphicsViewCanvas";
+
 EC_GraphicsViewCanvas::EC_GraphicsViewCanvas(Scene *scene) :
     IComponent(scene),
     INIT_ATTRIBUTE(outputTexture, "Output texture"),
@@ -60,19 +64,6 @@ EC_GraphicsViewCanvas::EC_GraphicsViewCanvas(Scene *scene) :
     graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     graphicsView->setLineWidth(0);
 
-    inputContext = GetFramework()->Input()->RegisterInputContext("EC_GraphicsViewCanvas", 1000);
-    connect(inputContext.get(), SIGNAL(MouseEventReceived(MouseEvent*)), this, SLOT(OnMouseEventReceived(MouseEvent*)));
-    connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent*)), this, SLOT(OnKeyEventReceived(KeyEvent*)));
-
-    if (!framework->IsHeadless())
-    {
-        UiGraphicsView *gv = framework->Ui()->GraphicsView();
-        connect(gv, SIGNAL(DragEnterEvent(QDragEnterEvent *, QGraphicsItem *)), SLOT(OnDragEnterEvent(QDragEnterEvent *)), Qt::UniqueConnection);
-        connect(gv, SIGNAL(DragLeaveEvent(QDragLeaveEvent *)), SLOT(OnDragLeaveEvent(QDragLeaveEvent *)), Qt::UniqueConnection);
-        connect(gv, SIGNAL(DragMoveEvent(QDragMoveEvent *, QGraphicsItem *)), SLOT(OnDragMoveEvent(QDragMoveEvent *)), Qt::UniqueConnection);
-        connect(gv, SIGNAL(DropEvent(QDropEvent *, QGraphicsItem *)), SLOT(OnDropEvent(QDropEvent *)), Qt::UniqueConnection);
-    }
-
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
@@ -85,12 +76,28 @@ EC_GraphicsViewCanvas::~EC_GraphicsViewCanvas()
 
 void EC_GraphicsViewCanvas::UpdateSignals()
 {
+    if (!inputContext)
+    {
+        inputContext = GetFramework()->Input()->RegisterInputContext("EC_GraphicsViewCanvas", 1000);
+        connect(inputContext.get(), SIGNAL(MouseEventReceived(MouseEvent*)), this, SLOT(OnMouseEventReceived(MouseEvent*)));
+        connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent*)), this, SLOT(OnKeyEventReceived(KeyEvent*)));
+
+        if (!framework->IsHeadless())
+        {
+            UiGraphicsView *gv = framework->Ui()->GraphicsView();
+            connect(gv, SIGNAL(DragEnterEvent(QDragEnterEvent *, QGraphicsItem *)), SLOT(OnDragEnterEvent(QDragEnterEvent *)), Qt::UniqueConnection);
+            connect(gv, SIGNAL(DragLeaveEvent(QDragLeaveEvent *)), SLOT(OnDragLeaveEvent(QDragLeaveEvent *)), Qt::UniqueConnection);
+            connect(gv, SIGNAL(DragMoveEvent(QDragMoveEvent *, QGraphicsItem *)), SLOT(OnDragMoveEvent(QDragMoveEvent *)), Qt::UniqueConnection);
+            connect(gv, SIGNAL(DropEvent(QDropEvent *, QGraphicsItem *)), SLOT(OnDropEvent(QDropEvent *)), Qt::UniqueConnection);
+        }
+    }
+
     Entity* parent = ParentEntity();
     if (parent)
     {
         connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), SLOT(UpdateTexture()), Qt::UniqueConnection);
 
-        EC_Mesh *mesh = ParentEntity()->GetComponent<EC_Mesh>().get();
+        EC_Mesh *mesh = ParentEntity()->Component<EC_Mesh>().get();
         if (mesh)
         {
             connect(mesh, SIGNAL(MeshChanged()), this, SLOT(UpdateTexture()), Qt::UniqueConnection);
@@ -126,16 +133,16 @@ void EC_GraphicsViewCanvas::AttributesChanged()
     }
 }
 
-bool EC_GraphicsViewCanvas::IsMouseOnTopOfMainUI()
+bool EC_GraphicsViewCanvas::IsMouseOnTopOfMainUI() const
 {
     QPoint mousePos = GetFramework()->Input()->MousePos();
     QGraphicsItem *itemUnderMouse = GetFramework()->Ui()->GraphicsView()->VisibleItemAtCoords(mousePos.x(), mousePos.y());
     return (itemUnderMouse != 0 && framework->Input()->IsMouseCursorVisible());
 }
 
-bool EC_GraphicsViewCanvas::IsMouseOnTopOfCanvas(QPoint & mousePos, float2 & uv)
+bool EC_GraphicsViewCanvas::IsMouseOnTopOfCanvas(QPoint & mousePos, float2 & uv) const
 {
-    OgreWorldPtr world = ParentScene()->GetWorld<OgreWorld>();
+    OgreWorldPtr world = ParentScene()->Subsystem<OgreWorld>();
     EC_Camera *mainCamera = (world ? world->Renderer()->MainCameraComponent() : 0);
     if (!mainCamera)
         return false;
@@ -155,7 +162,7 @@ bool EC_GraphicsViewCanvas::IsMouseOnTopOfCanvas(QPoint & mousePos, float2 & uv)
     }
 
     return (result && result->entity == ParentEntity() &&
-    (Ogre::uint)result->submesh == submesh.Get() && GetFramework()->Input()->IsMouseCursorVisible());
+        (Ogre::uint)result->submesh == submesh.Get() && GetFramework()->Input()->IsMouseCursorVisible());
 }
 
 QPointF EC_GraphicsViewCanvas::GetPointOnView(QPoint & mousePos)

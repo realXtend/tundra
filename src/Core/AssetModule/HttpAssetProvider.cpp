@@ -19,52 +19,6 @@
 #include <QNetworkReply>
 #include <QLocale>
 
-/// @todo Remove the boost::local_time stuff for good when the TUNDRA_NO_BOOST code path is tested thoroughly.
-#ifndef TUNDRA_NO_BOOST
-// Disable C4245 warning (signed/unsigned mismatch) coming from boost
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4245)
-#endif // _MSC_VER
-#include <boost/date_time/local_time/local_time.hpp>
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif // _MSC_VER
-
-#else // TUNDRA_NO_BOOST
-
-#if defined _MSC_VER
-#ifndef strcasecmp
-#define strcasecmp _stricmp
-#endif
-#endif
-
-static int MonthNameToInt(const char *month)
-{
-    if (!month) return 0;
-    if (!strcasecmp(month, "Jan") || !strcasecmp(month, "January")) return 1;
-    if (!strcasecmp(month, "Feb") || !strcasecmp(month, "February")) return 2;
-    if (!strcasecmp(month, "Mar") || !strcasecmp(month, "March")) return 3;
-    if (!strcasecmp(month, "Apr") || !strcasecmp(month, "April")) return 4;
-    if (!strcasecmp(month, "May") || !strcasecmp(month, "May")) return 5;
-    if (!strcasecmp(month, "Jun") || !strcasecmp(month, "June")) return 6;
-    if (!strcasecmp(month, "Jul") || !strcasecmp(month, "July")) return 7;
-    if (!strcasecmp(month, "Aug") || !strcasecmp(month, "August")) return 8;
-    if (!strcasecmp(month, "Sep") || !strcasecmp(month, "September")) return 9;
-    if (!strcasecmp(month, "Oct") || !strcasecmp(month, "October")) return 10;
-    if (!strcasecmp(month, "Nov") || !strcasecmp(month, "November")) return 11;
-    if (!strcasecmp(month, "Dec") || !strcasecmp(month, "December")) return 12;
-    return 0;
-}
-
-#if defined _MSC_VER
-#ifdef strcasecmp
-#undef strcasecmp
-#endif
-#endif
-
-#endif // TUNDRA_NO_BOOST
-
 #include "MemoryLeakCheck.h"
 
 HttpAssetProvider::HttpAssetProvider(Framework *framework_) :
@@ -74,7 +28,8 @@ HttpAssetProvider::HttpAssetProvider(Framework *framework_) :
     CreateAccessManager();
     connect(framework->App(), SIGNAL(ExitRequested()), SLOT(AboutToExit()));
 
-    enableRequestsOutsideStorages = framework_->HasCommandLineParameter("--accept_unknown_http_sources");
+    enableRequestsOutsideStorages = (framework_->HasCommandLineParameter("--acceptUnknownHttpSources") ||
+        framework_->HasCommandLineParameter("--accept_unknown_http_sources"));  /**< @todo Remove support for the deprecated underscore version at some point. */
 }
 
 HttpAssetProvider::~HttpAssetProvider()
@@ -110,89 +65,6 @@ bool HttpAssetProvider::IsValidRef(QString assetRef, QString)
     QString protocol;
     AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(assetRef.trimmed(), &protocol);
     return (refType == AssetAPI::AssetRefExternalUrl && (protocol == "http" || protocol == "https"));
-}
-
-QDateTime HttpAssetProvider::ParseHttpDate(const QByteArray &value)
-{
-    if (value.isEmpty())
-        return QDateTime();
-
-    int dayNamePos = value.indexOf(',');
-    std::string timeFacetFormat;
-    if (dayNamePos == -1) // "Sun Nov 6 08:49:37 1994" - ANSI C's asctime() format
-        timeFacetFormat = "%a %b %e %H:%M:%S %Y";
-    else if (dayNamePos == 3) // "Sun, 06 Nov 1994 08:49:37 GMT" - RFC 822, updated by RFC 1123
-        timeFacetFormat = "%a, %d %b %Y %H:%M:%S GMT";
-    else if (dayNamePos > 3) // "Sunday, 06-Nov-94 08:49:37 GMT" - RFC 850, obsoleted by RFC 1036
-        timeFacetFormat = "%A, %d-%b-%y %H:%M:%S GMT";
-
-    if (timeFacetFormat.empty())
-    {
-        LogError("HttpAssetProvider::ParseHttpDate: Failed to detect date format from header " + QString(value.data()));
-        return QDateTime();
-    }
-
-    QDateTime qDateTime;
-/// @todo Remove the boost::local_time stuff for good when the TUNDRA_NO_BOOST code path is tested thoroughly.
-#ifndef TUNDRA_NO_BOOST
-    try
-    {
-        using namespace boost::local_time;
-#include "DisableMemoryLeakCheck.h"
-        local_time_input_facet *timeFacet(new local_time_input_facet(timeFacetFormat)); // Not a memory leak, the locale object takes over responsibility of deleting the facet object
-#include "EnableMemoryLeakCheck.h"
-        std::stringstream stringStream;
-        stringStream.exceptions(std::ios_base::failbit);
-        stringStream.imbue(std::locale(std::locale::classic(), timeFacet));
-        stringStream.str(value.data());
-
-        local_date_time dateTime(local_sec_clock::local_time(time_zone_ptr()));
-        stringStream >> dateTime;
-        if (dateTime.is_not_a_date_time())
-        {
-            LogError("HttpAssetProvider::ParseHttpDate: Failed to parse date from header " + QString(value.data()));
-            return QDateTime();
-        }
-
-        local_date_time::date_type boostDate = dateTime.date();
-        local_date_time::time_duration_type boostTime = dateTime.time_of_day();
-
-        // Construct QDateTime and ignore milliseconds
-        qDateTime = QDateTime(QDate(boostDate.year(), boostDate.month(), boostDate.day()),
-                              QTime(boostTime.hours(), boostTime.minutes(), boostTime.seconds(), 0), Qt::UTC);
-    }
-    catch(std::exception &e)
-    {
-        LogError("HttpAssetProvider::ParseHttpDate: Exception while parsing date from header " + QString(value.data()) + " - " + e.what());
-        return QDateTime();
-    }
-#else
-    int hour = 0, min = 0, sec = 0, day = 0, year = 0;
-    char month[4];
-    /// @todo regrex validation for the string in order to prevent possible sscanf crashes.
-    if (dayNamePos == -1) // "Sun Nov 6 08:49:37 1994" - ANSI C's asctime() format
-    {
-        sscanf(value.data(), "%*s %[a-z,A-Z] %d %d:%d:%d %d", month, &day, &hour, &min, &sec, &year);
-        qDateTime = QDateTime(QDate(year, MonthNameToInt(month), day), QTime(hour, min, sec), Qt::UTC);
-    }
-    else if (dayNamePos == 3) // "Sun, 06 Nov 1994 08:49:37 GMT" - RFC 822, updated by RFC 1123
-    {
-        sscanf(value.data(), "%*s %d %[a-z,A-Z] %d %d:%d%:%d", &day, month, &year, &hour, &min, &sec);
-        qDateTime = QDateTime(QDate(year, MonthNameToInt(month), day), QTime(hour, min, sec), Qt::UTC);
-    }
-    else if (dayNamePos > 3) // "Sunday, 06-Nov-94 08:49:37 GMT" - RFC 850, obsoleted by RFC 1036
-    {
-        sscanf(value.data(), "%*s %d-%[a-z,A-Z]-%d %d:%d%:%d", &day, month, &year, &hour, &min, &sec);
-        if (year >= 70 && year <= 99)
-            year += 1900;
-        else if (year >= 0 && year < 70)
-            year += 2000;
-        qDateTime = QDateTime(QDate(year, MonthNameToInt(month), day), QTime(hour, min, sec), Qt::UTC);
-    }
-    if (!qDateTime.isValid())
-        LogError("HttpAssetProvider::ParseHttpDate: Failed to parse date from header " + QString(value.data()));
-#endif
-    return qDateTime;
 }
 
 QByteArray HttpAssetProvider::CreateHttpDate(const QDateTime &dateTime)
@@ -247,7 +119,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
         return AssetTransferPtr();
     }
 
-    HttpAssetTransferPtr transfer = HttpAssetTransferPtr(new HttpAssetTransfer);
+    HttpAssetTransferPtr transfer = MAKE_SHARED(HttpAssetTransfer);
     transfer->source.ref = originalAssetRef;
     transfer->assetType = assetType;
     transfer->provider = shared_from_this();
@@ -425,6 +297,9 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
     // QNetworkAccessManager requires us to delete the QNetworkReply, or it will leak.
     reply->deleteLater();
 
+    int httpStatusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    const QString replyUrl = reply->url().toString();
+
     switch(reply->operation())
     {
     case QNetworkAccessManager::GetOperation:
@@ -440,15 +315,17 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         {
             framework->Asset()->AssetTransferAborted(transfer.get());
         }
-        // Handle 307 Temporary Redirect
-        else if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 307)
+        // Handle '307 Temporary Redirect', '302 Found' and '303 See Other' redirects. All of these should return the Location header.
+        else if (httpStatusCode == 307 || httpStatusCode == 302 || httpStatusCode == 303)
         {           
             // Handle "Location" header that will have the URL where the resource can be found.
             // Note that the original reply to asset transfer mapping will be removed after this block exists.
             QByteArray redirectUrl = reply->rawHeader("Location");
             if (!redirectUrl.isEmpty())
             {
-                LogDebug("HttpAssetProvider: Handling \"307 Temporary Redirect\" from " + reply->url().toString() + " to " + redirectUrl);
+                LogDebug(QString("HttpAssetProvider: Handling \"%1 %2\" from %3 to %4")
+                    .arg(httpStatusCode).arg(httpStatusCode == 307 ? "Temporary Redirect" : httpStatusCode == 302 ? "Found" : "See Other")
+                    .arg(replyUrl).arg(QString(redirectUrl)));
 
                 // Add new mapping to the asset transfer for the new redirect URL.
                 QNetworkRequest redirectRequest;
@@ -459,10 +336,8 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
                 transfers[QPointer<QNetworkReply>(redirectReply)] = transfer;
             }
             else
-            {
-                QString error = "Http GET for address \"" + reply->url().toString() + "\" returned 307 Temporary Redirect but the \"Location\" header is empty, cannot request asset from temporary redirect URL.";
-                framework->Asset()->AssetTransferFailed(transfer.get(), error);
-            }
+                framework->Asset()->AssetTransferFailed(transfer.get(), QString("Http GET for address \"%1\" returned %2 status code but the \"Location\" header is empty, cannot request asset from redirected URL.")
+                    .arg(replyUrl).arg(httpStatusCode));
         }
         // No error, proceed
         else if (reply->error() == QNetworkReply::NoError)
@@ -471,19 +346,17 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             QString sourceRef = transfer->source.ref;
             QString error;
 
-            int replyCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-
             // 304 Not Modified
-            if (replyCode == 304)
+            if (httpStatusCode == 304)
             {
                 // Read cache file to transfer asset data
                 if (!cache->FindInCache(sourceRef).isEmpty())
                     transfer->diskSourceType = IAsset::Cached;
                 else
-                    error = "Http GET for address \"" + reply->url().toString() + "\" returned '304 Not Modified' but existing cache file could not be opened: \"" + cache->GetDiskSourceByRef(sourceRef) + "\"";
+                    error = QString("Http GET for address \"%1\" returned '304 Not Modified' but existing cache file could not be opened: \"%2\"").arg(replyUrl).arg(cache->GetDiskSourceByRef(sourceRef));
             }
             // 200 OK
-            else if (replyCode == 200)
+            else if (httpStatusCode == 200)
             {
                 // Read body to transfer asset data
                 QByteArray bodyData = reply->readAll();
@@ -503,13 +376,9 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
                         // we would send the next request 'If-Modified-Since' header as the write time of the cache file.
                         // This might result in wonky situations when the server file is updated, though we can/could assume if a
                         // server does not return the 'Last-Modified' header it wont process the 'If-Modified-Since' either.
-                        QByteArray header = reply->rawHeader("Last-Modified");
-                        if (!header.isEmpty())
-                        {
-                            QDateTime sourceLastModified = ParseHttpDate(header);
-                            if (sourceLastModified.isValid())
-                                cache->SetLastModified(sourceRef, sourceLastModified);
-                        }
+                        QVariant lastModifiedVariant = reply->header(QNetworkRequest::LastModifiedHeader);
+                        if (lastModifiedVariant.isValid())
+                            cache->SetLastModified(sourceRef, lastModifiedVariant.toDateTime());
                     }
                     else
                         LogWarning("HttpAssetProvider: Failed to store asset to cache after completed reply: " + sourceRef);
@@ -522,7 +391,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
                 }
             }
             else
-                error = "Http GET for address \"" + reply->url().toString() + "\" returned code " + QString::number(replyCode) + " that could not be processed.";
+                error = QString("Http GET for address \"%1\" returned status code %2 that could not be processed.").arg(replyUrl).arg(httpStatusCode);
 
             // Send AssetTransferCompleted or AssetTransferFailed to AssetAPI.
             if (error.isEmpty())
@@ -534,11 +403,9 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
                 framework->Asset()->AssetTransferFailed(transfer.get(), error);
         }
         else
-        {
-            QString error = "Http GET for address \"" + reply->url().toString() + "\" returned an error: \"" + reply->errorString() + "\"";
-            framework->Asset()->AssetTransferFailed(transfer.get(), error);
-        }
+            framework->Asset()->AssetTransferFailed(transfer.get(), QString("Http GET for address \"%1\" returned an error: %2").arg(replyUrl).arg(reply->errorString()));
 
+        // Erase the transfer from internal state.
         transfers.erase(iter);
         break;
     }
@@ -548,46 +415,52 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         UploadTransferMap::iterator iter = uploadTransfers.find(reply);
         if (iter == uploadTransfers.end())
         {
-            LogError("PostOperation: Received a finish signal of an unknown Http upload transfer!");
+            LogError("PostOperation: Received a finish signal of an unknown Http upload transfer: " + replyUrl);
             return;
         }
         AssetUploadTransferPtr transfer = iter->second;
 
         if (reply->error() == QNetworkReply::NoError)
         {
+            LogDebug(QString("Http upload to address \"%1\" returned successfully.").arg(replyUrl));
+
+            // Set reply data.
             transfer->replyData = reply->readAll();
-            QString ref = reply->url().toString();
-            LogDebug("Http upload to address \"" + ref + "\" returned successfully.");
+
+            // Set reply headers.
+            foreach(const QNetworkReply::RawHeaderPair &header, reply->rawHeaderPairs())
+                transfer->replyHeaders[QString(header.first)] = QString(header.second);
+
+            // Report completion.
             framework->Asset()->AssetUploadTransferCompleted(transfer.get());
-            // Add the assetref to matching storage(s)
-            AddAssetRefToStorages(ref);
+
+            // Add the completed asset ref to matching storage(s)
+            AddAssetRefToStorages(replyUrl);
         }
         else
         {
-            LogError("Http upload to address \"" + reply->url().toString() + "\" failed with an error: \"" + reply->errorString() + "\"");
-            ///\todo Call the following when implemented:
-//            framework->Asset()->AssetUploadTransferFailed(transfer);
+            LogError(QString("Http upload to address \"%1\" failed with an error: %2").arg(replyUrl).arg(reply->errorString()));
+            /// @todo Call the AssetAPI::AssetUploadTransferFailed when implemented.
+            //framework->Asset()->AssetUploadTransferFailed(transfer);
             transfer->EmitTransferFailed();
         }
+
+        // Erase the transfer from internal state.
         uploadTransfers.erase(iter);
         break;
     }
     case QNetworkAccessManager::DeleteOperation:
+    {
         if (reply->error() == QNetworkReply::NoError)
         {
-            QString ref = reply->url().toString();
-            LogInfo("Http DELETE to address \"" + ref + "\" returned successfully.");
-            DeleteAssetRefFromStorages(ref);
-            framework->Asset()->EmitAssetDeletedFromStorage(ref);
+            LogDebug(QString("Http DELETE to address \"%1\" returned successfully.").arg(replyUrl));
+            DeleteAssetRefFromStorages(replyUrl);
+            framework->Asset()->EmitAssetDeletedFromStorage(replyUrl);
         }
         else
-            LogError("Http DELETE to address \"" + reply->url().toString() + "\" failed with an error: \"" + reply->errorString() + "\"");
+            LogError(QString("Http DELETE to address \"%1\" failed with an error: %2").arg(replyUrl).arg(reply->errorString()));
         break;
-        /*
-    default:
-        LogInfo("Unknown operation for address \"" + reply->url().toString() + "\" finished with result: \"" + reply->errorString() + "\"");
-        break;
-        */
+    }
     }
 }
 
@@ -604,7 +477,7 @@ HttpAssetStoragePtr HttpAssetProvider::AddStorageAddress(const QString &address,
         }
 
     // Add new if not found
-    HttpAssetStoragePtr storage = HttpAssetStoragePtr(new HttpAssetStorage());
+    HttpAssetStoragePtr storage = MAKE_SHARED(HttpAssetStorage);
     storage->baseAddress = locationCleaned;
     storage->storageName = storageName;
     storage->liveUpdate = liveUpdate;
