@@ -2,13 +2,12 @@
 // Copyright (C) 2006-2012
 // http://www.resedit.net
 
+#include "resource.h"
+#include "TundraVersionInfo.h"
+
 #include <windows.h>
 #include <commctrl.h>
 #include <richedit.h>
-#include "resource.h"
-
-
-
 
 //
 // Icon resources
@@ -16,15 +15,15 @@
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 IDI_ICON1          ICON           "..\\..\\..\\bin\\data\\ui\\images\\icon\\TundraLogo32px.ico"
 
-
+#define PRODUCT_NAME TUNDRA_ORGANIZATION_NAME TUNDRA_APPLICATION_NAME
 
 //
 // Version Information resources
 //
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 1 VERSIONINFO
-    FILEVERSION     0,0,0,0
-    PRODUCTVERSION  0,0,0,0
+    FILEVERSION     TUNDRA_VERSION_MAJOR,TUNDRA_VERSION_MINOR,TUNDRA_VERSION_MAJOR_PATCH,TUNDRA_VERSION_MINOR_PATCH
+    PRODUCTVERSION  TUNDRA_VERSION_MAJOR,TUNDRA_VERSION_MINOR,TUNDRA_VERSION_MAJOR_PATCH,TUNDRA_VERSION_MINOR_PATCH
     FILEOS          VOS_UNKNOWN
     FILETYPE        VFT_UNKNOWN
     FILESUBTYPE     VFT2_UNKNOWN
@@ -36,16 +35,16 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
         BLOCK "04090025"
         {
             VALUE "Comments", ""
-            VALUE "CompanyName", ""
+            VALUE "CompanyName", TUNDRA_ORGANIZATION_NAME
             VALUE "FileDescription", ""
-            VALUE "FileVersion", ""
+            VALUE "FileVersion", TUNDRA_VERSION_STRING
             VALUE "InternalName", ""
             VALUE "LegalCopyright", ""
             VALUE "LegalTrademarks", ""
             VALUE "OriginalFilename", ""
             VALUE "PrivateBuild", ""
-            VALUE "ProductName", ""
-            VALUE "ProductVersion", ""
+            VALUE "ProductName", PRODUCT_NAME
+            VALUE "ProductVersion", TUNDRA_VERSION_STRING
             VALUE "SpecialBuild", ""
         }
     }
