@@ -46,8 +46,11 @@ UndoManager::~UndoManager()
 
     SAFE_DELETE(undoStack_);
     SAFE_DELETE(undoView_);
-//    SAFE_DELETE(undoMenu_);
-//    SAFE_DELETE(redoMenu_);
+    // Explicitly delete menus if they are unparented
+    if (undoMenu_ && !undoMenu_->parent())
+        SAFE_DELETE(undoMenu_);
+    if (redoMenu_ && !redoMenu_->parent())
+        SAFE_DELETE(redoMenu_);
     SAFE_DELETE(undoViewAction_);
     SAFE_DELETE(tracker_);
 }

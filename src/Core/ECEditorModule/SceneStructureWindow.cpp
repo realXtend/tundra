@@ -283,16 +283,19 @@ void SceneStructureWindow::Clear()
 
 EntityItem* SceneStructureWindow::EntityItemOfEntity(Entity *ent)
 {
-    EntityItem *eItem = 0;
-    if (!ent)
-        return eItem;
+    return ent ? EntityItemById(ent->Id()) : 0;
+}
 
+EntityItem* SceneStructureWindow::EntityItemById(entity_id_t id)
+{
+    EntityItem *eItem = 0;
+    
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         EntityItem *temp = dynamic_cast<EntityItem*>(treeWidget->topLevelItem(i));
         if (temp)
         {
-            if (temp->Id() == ent->Id())
+            if (temp->Id() == id)
             {
                 eItem = temp;
                 break;
@@ -306,7 +309,7 @@ EntityItem* SceneStructureWindow::EntityItemOfEntity(Entity *ent)
                 for (int j = 0; j < gItem->childCount(); ++j)
                 {
                     EntityItem *childEnt = dynamic_cast<EntityItem*>(gItem->child(j));
-                    if (childEnt && childEnt->Id() == ent->Id())
+                    if (childEnt && childEnt->Id() == id)
                     {
                         eItem = childEnt;
                         break;
@@ -458,6 +461,20 @@ void SceneStructureWindow::RemoveEntity(Entity* entity)
     if (!item)
         return;
 
+    RemoveEntityItem(item);
+}
+
+void SceneStructureWindow::RemoveEntityById(entity_id_t id)
+{
+    EntityItem *item = EntityItemById(id);
+    if (!item)
+        return;
+
+    RemoveEntityItem(item);
+}
+
+void SceneStructureWindow::RemoveEntityItem(EntityItem* item)
+{
     EntityGroupItem *gItem = item->Parent();
     SAFE_DELETE(item);
 
@@ -470,16 +487,6 @@ void SceneStructureWindow::RemoveEntity(Entity* entity)
     {
         SAFE_DELETE(gItem);
         entityGroupItems_[groupName] = 0;
-    }
-}
-
-void SceneStructureWindow::RemoveEntityById(entity_id_t id)
-{
-    ScenePtr scn = scene.lock();
-    if (scn)
-    {
-        Entity *ent = scn->EntityById(id).get();
-        RemoveEntity(ent);
     }
 }
 
