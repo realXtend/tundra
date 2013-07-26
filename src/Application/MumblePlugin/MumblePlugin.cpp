@@ -71,7 +71,7 @@ void MumblePlugin::Initialize()
     {
         QStringList addedCerts = Mumble::MumbleSSL::addSystemCA();
         foreach(QString certMsg, addedCerts)
-            LogInfo(LC + certMsg);
+            LogDebug(LC + certMsg);
     }
     else
         LogWarning(LC + "SSL not supported, you cannot connect to Murmur servers without it. Either OpenSSL libraries are missing or your Qt libraries were build without OpenSSL support!");

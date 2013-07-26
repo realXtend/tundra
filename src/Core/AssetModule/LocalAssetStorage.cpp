@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "Application.h"
 #include "LocalAssetStorage.h"
 #include "LocalAssetProvider.h"
 #include "AssetAPI.h"
@@ -156,10 +157,16 @@ void LocalAssetStorage::SetupWatcher()
     changeWatcher = new QFileSystemWatcher();
 
     // Add directory contents to watch list.
-    if (recursive) // Make a visible log message - we may hang here for several seconds, since this step involves recursive iteration.
-        LogInfo("LocalAssetStorage::SetupWatcher: recursively adding " + directory + " to file change notification watcher. This may take a while.");
+    if (recursive)
+    {
+        // Make a visible log message - we may hang here for several seconds, since this step involves recursive iteration. Try to make the path relative before printing.
+        QString installDir = QDir::toNativeSeparators(Application::InstallationDirectory());
+        QString watchAbsPath = QDir::toNativeSeparators(QDir(directory).absolutePath());
+        QString watchDirPath = (watchAbsPath.startsWith(installDir) ? QString(".%1%2").arg(QDir::separator()).arg(watchAbsPath.mid(installDir.length())) : watchAbsPath);
+        LogInfo("LocalAssetStorage: Recursively adding all files from " + watchDirPath + " to a watch list. This may take a while...");
+    }
     else
-        LogDebug("LocalAssetStorage::SetupWatcher: adding " + directory + " recursive=" + BoolToString(recursive));
+        LogDebug("LocalAssetStorage: Adding " + directory + " recursive=" + BoolToString(recursive));
 
     QStringList paths = DirectorySearch(directory, recursive, QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
 #ifndef Q_WS_MAC
