@@ -18,6 +18,8 @@ src/Core/Tundra/*.rc
 src/Core/TundraConsole/resource*.h
 src/Core/TundraConsole/*.aps
 src/Core/TundraConsole/*.rc
+src/tundra-addons
+src/TundraAddons
 
 # Windows -specific data - data is stored in our deps repository.
 *.dll
@@ -76,6 +78,9 @@ bin/fullmemoryleaklog.txt
 bin/qtplugins
 bin/vlcplugins
 bin/data/assets
+bin/media/Hydra*
+bin/media/SkyX
+bin/jsmodules/BrowserUi
 build/
 
 # Binary compiled translation files
@@ -97,6 +102,7 @@ tundra.build/
 # Meshmoon
 src/Application/Adminotech*
 src/admino*
+
 bin/7za.exe
 bin/crunch.exe
 bin/OgreXMLConverter*
@@ -107,4 +113,10 @@ bin/*server.bat
 bin/Rocket*
 bin/media/meshmoon
 bin/data/cef
+bin/data/crash-reporter
+bin/EULA*
+bin/CrashSender*
+bin/OpenNIConfig.xml
+bin/licenses
+
 doc/doxygen
