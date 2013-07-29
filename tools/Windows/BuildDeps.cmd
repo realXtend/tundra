@@ -712,23 +712,16 @@ cecho {0D}Deploying %DEBUG_OR_RELEASE% %INTEL_ARCH% %VC_VER% TBB DLL to Tundra b
 copy /Y "%TBB_HOME%\bin\%INTEL_ARCH%\%VC_VER%\tbb%POSTFIX_UNDERSCORE_DEBUG%.dll" "%TUNDRA_BIN%"
 
 cd "%DEPS%\ogre-safe-nocrashes"
-:: If the CMake generator has changed from the previous run, delete the cache file.
-IF EXIST CMakeCache.txt. findstr /x /c:"CMAKE_GENERATOR:INTERNAL=%GENERATOR_NO_DOUBLEQUOTES%" CMakeCache.txt>NUL
-IF NOT %ERRORLEVEL%==0 (
-    IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
-    IF EXIST OGRE.sln. del /Q OGRE.sln
+:: Always regenerate CMake & Ogre solution to support changing the build type
+IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
+IF EXIST OGRE.sln. del /Q OGRE.sln
+IF %USE_BOOST%==FALSE (
+    copy /Y "%TOOLS%\Mods\OgreNoBoost_Dependencies.cmake_" "%DEPS%\ogre-safe-nocrashes\CMake\Dependencies.cmake"
 )
-IF NOT EXIST OGRE.sln. (
-    :: If not wanting to use Boost with Ogre, we need slightly tweaked version of Ogre's Dependencies.cmake
-    :: which doesn't enforce usage of Boost if it's found regardless of the value of OGRE_USE_BOOST
-    IF %USE_BOOST%==FALSE (
-        copy /Y "%TOOLS%\Mods\OgreNoBoost_Dependencies.cmake_" "%DEPS%\ogre-safe-nocrashes\CMake\Dependencies.cmake"
-    )
-    cecho {0D}Running cmake for ogre-safe-nocrashes.{# #}{\n}
-    cmake -G %GENERATOR% -DTBB_HOME=%TBB_HOME% -DOGRE_USE_BOOST:BOOL=%USE_BOOST% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF ^
-        -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1
-    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
-)
+cecho {0D}Running cmake for ogre-safe-nocrashes.{# #}{\n}
+cmake -G %GENERATOR% -DTBB_HOME=%TBB_HOME% -DOGRE_USE_BOOST:BOOL=%USE_BOOST% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF ^
+    -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1
+IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Building %BUILD_TYPE% ogre-safe-nocrashes. Please be patient, this will take a while.{# #}{\n}
 MSBuild OGRE.sln /p:configuration=%BUILD_TYPE% /nologo /m:%NUMBER_OF_PROCESSORS%
