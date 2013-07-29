@@ -16,7 +16,7 @@ add_definitions(-DTUNDRA_VERSION_MAJOR_PATCH=1)
 add_definitions(-DTUNDRA_VERSION_MINOR_PATCH=1)
 add_definitions(-DTUNDRA_ORGANIZATION_NAME="\\"Meshmoon\\"")
 add_definitions(-DTUNDRA_APPLICATION_NAME="\\"Rocket\\"")
-add_definitions(-DTUNDRA_VERSION_STRING="\\"2.5.1.1\\"")
+add_definitions(-DTUNDRA_VERSION_STRING="\\"2.5.1.2\\"")
 
 # TUNDRA_NO_BOOST defines whether we want to replace usage of Boost with the C++ (TR1) standard equivalents.
 # Setting TUNDRA_NO_BOOST to TRUE, i.e. disabling usage of Boost in the Tundra codebase, requires compiler
