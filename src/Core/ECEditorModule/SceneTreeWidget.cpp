@@ -352,8 +352,7 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
     SceneTreeWidgetSelection sel = SelectedItems();
 
     // "Rename" action is possible only if have one entity selected.
-    bool renamePossible = (selectionModel()->selectedIndexes().size() == 1) && !sel.HasGroupsOnly();
-    bool multipleEntitiesSelected = (selectionModel()->selectedIndexes().size() > 1) && sel.HasEntitiesOnly();
+    const bool renamePossible = (selectionModel()->selectedIndexes().size() == 1) && !sel.HasGroupsOnly();
     if (renamePossible)
     {
         renameAction = new QAction(tr("Rename"), menu);
