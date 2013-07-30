@@ -6,18 +6,6 @@
     NOTE: Clears any existing menus in the menu bar so make sure that this script
     is loaded first, or replace with another implementation*/
 
-// Widget for showing instructions if user starts Tundra without any scene.
-var sceneInstructions = null;
-
-function SizeOf(obj)
-{
-    var size = 0, key;
-    for(key in obj)
-        if (obj.hasOwnProperty(key))
-            ++size;
-    return size;
-};
-
 // Applicable only in headful mode.
 if (!framework.IsHeadless())
 {
