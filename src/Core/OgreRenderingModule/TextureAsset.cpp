@@ -724,7 +724,7 @@ void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text
 
 void TextureAsset::PostProcessTexture()
 {
-    if (assetAPI->GetFramework()->HasCommandLineParameter("--autodxtcompress"))
+    if (assetAPI->GetFramework()->HasCommandLineParameter("--autoDxtCompress"))
         CompressTexture();
 }
 
@@ -734,7 +734,7 @@ void TextureAsset::CompressTexture()
     if (ogreTexture.isNull())
         return;
     
-    QStringList sizeParam = assetAPI->GetFramework()->CommandLineParameters("--maxtexturesize");
+    QStringList sizeParam = assetAPI->GetFramework()->CommandLineParameters("--maxTextureSize");
     size_t maxTextureSize = 0;
     if (sizeParam.size() > 0)
     {
@@ -907,7 +907,8 @@ bool TextureAsset::AllowAsyncLoading() const
     /// \todo NeedSizeModification() does not take into account the current texture's data size, in which case we may go on the threaded loading path
     /// without a possibility to resize the texture smaller. This means that potentially one texture may go in unresized and increase the texture load
     /// significantly over the budget.
-    if (NeedSizeModification() || assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || assetAPI->GetFramework()->HasCommandLineParameter("--noAsyncAssetLoad") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
+    if (NeedSizeModification() || assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") ||
+        assetAPI->GetFramework()->HasCommandLineParameter("--noAsyncAssetLoad") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
         return false;
     else
         return true;
@@ -916,7 +917,8 @@ bool TextureAsset::AllowAsyncLoading() const
 bool TextureAsset::NeedSizeModification() const
 {
     OgreRenderer::RendererPtr renderer = assetAPI->GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
-    return assetAPI->GetFramework()->HasCommandLineParameter("--maxtexturesize") || renderer->TextureBudgetUse() > BUDGET_THRESHOLD || renderer->TextureQuality() == OgreRenderer::Renderer::Texture_Low;
+    return assetAPI->GetFramework()->HasCommandLineParameter("--maxTextureSize") || renderer->TextureBudgetUse() > BUDGET_THRESHOLD || 
+        renderer->TextureQuality() == OgreRenderer::Renderer::Texture_Low;
 }
 
 void TextureAsset::CalculateTextureSize(size_t width, size_t height, size_t& outWidth, size_t& outHeight, size_t bitsPerPixel)
@@ -956,9 +958,9 @@ void TextureAsset::CalculateTextureSize(size_t width, size_t height, size_t& out
         }
     }
     
-    if (assetAPI->GetFramework()->HasCommandLineParameter("--maxtexturesize"))
+    if (assetAPI->GetFramework()->HasCommandLineParameter("--maxTextureSize"))
     {
-        QStringList sizeParam = assetAPI->GetFramework()->CommandLineParameters("--maxtexturesize");
+        QStringList sizeParam = assetAPI->GetFramework()->CommandLineParameters("--maxTextureSize");
         size_t maxTextureSize = 0;
         if (sizeParam.size() > 0)
         {
