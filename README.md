@@ -8,15 +8,22 @@ Tundra is licensed under [Apache 2.0] and based on [Qt] and [Ogre3D].
 Getting Started
 ---------------
 
-Tundra uses the traditional client-server architecture for networking. After installing you will find the `Tundra` (and `TundraConsole` on Windows) executable from the install directory, run `Tundra --help` for available command line parameters.
-This executable can be configured to run a set of C++ and JavaScript plugins. You can create your own configuration file, or use the ones provided. Some examples:  
-`Tundra --config viewer.xml` - Starts Tundra with a client configuration which provides an user interface for connecting to Tundra servers.  
-`Tundra --connect localhost:2345;udp;TestUser` - Starts Tundra and automatically connects to a localhost server using the default server port and protocol.  
-`Tundra --server --headless --port 6565 --protocol tcp` - Starts Tundra with the default plugin set in server mode serving TCP connections at port 6565. The Tundra server defaults are port 2345 and UDP protocol, for it you can simply run `Tundra --server --headless`. If no `--config` parameter is provided, the default plugins.xml is used.  
+Tundra uses the traditional client-server architecture for networking. After installing you will find the `Tundra` (and `TundraConsole` on Windows) executable from the install directory, run `Tundra --help` for available command line parameters. This executable can be configured to run a set of C++ and JavaScript plugins and act either as a client or a server. You can create your own configuration file, or use the ones provided.
+
+### Tundra Startup Examples  
+- `Tundra --config viewer.xml` - Starts Tundra with a client configuration which provides an user interface for connecting to Tundra servers.  
+- `Tundra --connect localhost:2345;udp;TestUser` - Starts Tundra and automatically connects to a localhost server using port 2345 and UDP protocol (the Tundra server's defaults).   
+- `Tundra --server --headless --port 6565 --protocol tcp` - Starts Tundra with the default plugin set in server mode serving TCP connections at port 6565.
+
+The Tundra server defaults are port 2345 and UDP protocol, for it you can simply run `Tundra --server --headless`. If no `--config` parameter is provided, the default `plugins.xml` is used.  
 
 The Tundra server mode is used for standalone-mode editing and viewing Tundra documents. To host a 3D scene, run Tundra in dedicated mode using the `--server` and `--headless` command line parameters. The Tundra client mode is used to connect to a server.
 
-See the `scenes` folder for example demo scenes and applications. F.e.x. `Tundra --file scenes/Avatar/scene.txml`
+### Demo Scenes and Applications
+See the [bin/scenes] folder for example demo scenes and applications. F.e.x. `Tundra --file scenes/Canvas/scene.txml`
+
+### Additional Plugins
+Additional Tundra plugins can be found from the [TundraAddons] repository.
 
 Compiling from Sources
 ----------------------
@@ -79,11 +86,13 @@ Releases
 
 New releases are announced on the mailing lists and at the [realXtend blog]. The releases are available at the [realXtend Tundra Google Code] project site.
 
-[Qt]:          http://qt.digia.com/                            "Qt homepage"
-[Ogre3D]:      http://www.ogre3d.org/                          "Ogre3D homepage"
-[Apache 2.0]:  http://www.apache.org/licenses/LICENSE-2.0.txt  "Apache 2.0 license"
-[CMake]:       http://www.cmake.org/                           "CMake homepage"
-[realXtend blog]: http://www.realxtend.org                     "realXtend blog"
+[Qt]: http://qt.digia.com/ "Qt homepage"
+[Ogre3D]: http://www.ogre3d.org/ "Ogre3D homepage"
+[bin/scenes]: https://github.com/realXtend/naali/tree/tundra2/bin/scenes "bin/scenes"
+[TundraAddons]: https://github.com/realXtend/TundraAddons/ "TundraAddons"
+[Apache 2.0]: http://www.apache.org/licenses/LICENSE-2.0.txt "Apache 2.0 license"
+[CMake]: http://www.cmake.org/ "CMake homepage"
+[realXtend blog]: http://www.realxtend.org "realXtend blog"
 [realXtend github repository]: https://github.com/realXtend/naali/tree/tundra2 "realXtend Tundra repository"
 [tools/OSX/BuildDeps.bash]: https://github.com/realXtend/naali/blob/tundra2/tools/OSX/BuildDeps.bash "tools/OSX/BuildDeps.bash"
 [tools/Linux/build-deps.bash]: https://github.com/realXtend/naali/tree/tundra2/tools/Linux/build-deps.bash "tools/Linux/build-deps.bash"

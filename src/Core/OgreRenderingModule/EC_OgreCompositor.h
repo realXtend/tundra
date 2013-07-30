@@ -82,6 +82,7 @@ public slots:
     QStringList ApplicableParameters() const;
 
 private slots:
+    void OnParentEntitySet();
     void OneTimeRefresh();
 
 private:

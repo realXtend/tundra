@@ -5,8 +5,8 @@ print("Loading Collision Sound Script for entity");
 //audio.PlaySound(asset.GetAsset("local://Collision.ogg"));
 
 //Test that needed components exist
-var collisionSound = me.GetComponent("EC_Sound", "Collision");
-var rigidBody = me.GetComponent("EC_Sound", "Collision");
+var collisionSound = me.Component("Sound", "Collision");
+var rigidBody = me.Component("Sound", "Collision");
 if(collisionSound && rigidBody) {
     print("Found needed Components at start, initing.");
     init();

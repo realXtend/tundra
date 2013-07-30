@@ -210,8 +210,10 @@ public:
     Scene(const QString &name, Framework *fw, bool viewEnabled, bool authority);
     /// @endcond
 
+    /// @cond PRIVATE
     // DEPRECATED
     template <class T> shared_ptr<T> GetWorld() const { return Subsystem<T>(); } /**< @deprecated Use Subsystem instead. @todo Remove. */
+    /// @endcond
 
 public slots:
     /// Creates new entity that contains the specified components.
@@ -220,7 +222,7 @@ public slots:
         To create an empty entity, omit the components parameter.
 
         @param id Id of the new entity. Specify 0 to use the next free ID
-        @param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
+        @param components Optional list of component names ("EC_" prefix can be omitted) the entity will use. If omitted or the list is empty, creates an empty entity.
         @param change Notification/network replication mode
         @param replicated Whether entity is replicated. Default true.
         @param componentsReplicated Whether components will be replicated, true by default.
@@ -235,7 +237,7 @@ public slots:
 
         To create an empty entity omit components parameter.
 
-        @param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
+        @param components Optional list of component names ("EC_" prefix can be omitted) the entity will use. If omitted or the list is empty, creates an empty entity.
         @param change Notification/network replication mode
         @param componentsReplicated Whether components will be replicated, true by default.
         @param temporary Will the entity be temporary i.e. it is no serialized to disk by default.
@@ -314,6 +316,10 @@ public slots:
         @note The overload taking type ID is more efficient than this overload. */
     EntityList EntitiesWithComponent(const QString &typeName, const QString &name = "") const;
 
+    /// Returns list of entities that belong to the group 'groupName'
+    /** @param groupName The name of the group to be queried */
+    EntityList EntitiesOfGroup(const QString &groupName) const;
+
     /// Returns all components of specific type (and additionally with specific name) in the scene.
     /*  @param typeId Component type ID.
         @param name Arbitrary name of the component (optional). */
@@ -344,10 +350,10 @@ public slots:
     QList<Entity *> LoadSceneXML(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
 
     /// Returns scene content as an XML string.
-    /** @param getTemporary Are temporary entities wanted to be included.
-        @param getLocal Are local entities wanted to be included.
+    /** @param serializeTemporary Are temporary entities wanted to be included.
+        @param serializeLocal Are local entities wanted to be included.
         @return The scene XML as a byte array string. */
-    QByteArray GetSceneXML(bool getTemporary, bool getLocal) const;
+    QByteArray SerializeToXmlString(bool serializeTemporary, bool serializeLocal) const;
 
     /// Saves the scene to XML.
     /** @param filename File name
@@ -405,6 +411,7 @@ public slots:
         @param change Change signaling mode */
     void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
 
+    /// @cond PRIVATE
     // DEPRECATED function signatures
     EntityPtr GetEntity(entity_id_t id) const { return EntityById(id); } /**< @deprecated Use EntityById @todo Add warning print, remove in some distant future */
     EntityPtr GetEntityByName(const QString& name) const { return EntityByName(name); } /**< @deprecated Use EntityByName  @todo Add warning print, remove in some distant future */
@@ -416,6 +423,8 @@ public slots:
     bool RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { return RemoveEntity(entityid, change); } /**< @deprecated Use RemoveEntity @todo Remove */
     EntityMap Entities() /*non-const intentionally*/ { return entities_; } /**< @deprecated use const version Entities or 'entities' instead. @todo Add deprecation print. @todo Remove. */
     QByteArray GetEntityXml(Entity *entity) const; /**< @deprecated Use Entity::SerializeToXMLString. @todo Remove */
+    QByteArray GetSceneXML(bool serializeTemporary, bool serializeLocal) const; /**< @deprecated Use SerializeToXmlString @todo Remove */
+    /// @endcond
 
 signals:
     /// Signal when an attribute of a component has changed

@@ -1,0 +1,11 @@
+material red
+{
+    technique
+    {
+		pass
+		{
+			diffuse 1 0 0 1
+			ambient 1 0 0 1
+		}
+	}
+}

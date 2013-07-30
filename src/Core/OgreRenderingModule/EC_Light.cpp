@@ -49,28 +49,13 @@ EC_Light::EC_Light(Scene* scene) :
     }
     type.SetMetadata(&typeAttrData);
 
-    if (scene)
-    {
-        world_ = scene->GetWorld<OgreWorld>();
-        if (!world_.expired() && scene->ViewEnabled())
-        {
-            OgreWorldPtr world = world_.lock();
-            Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
-            light_ = sceneMgr->createLight(world->GetUniqueObjectName("EC_Light"));
-            
-            connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-        }
-    }
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
 }
 
 EC_Light::~EC_Light()
 {
     if (world_.expired())
-    {
-        if (light_)
-            LogError("EC_Light: World has expired, skipping uninitialization!");
         return;
-    }
     
     if (light_)
     {
@@ -84,8 +69,16 @@ EC_Light::~EC_Light()
 void EC_Light::UpdateSignals()
 {
     Entity* parent = ParentEntity();
-    if (parent)
+    if (parent && ParentScene())
     {
+        world_ = ParentScene()->GetWorld<OgreWorld>();
+        if (!world_.expired() && ParentScene()->ViewEnabled())
+        {
+            OgreWorldPtr world = world_.lock();
+            Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
+            light_ = sceneMgr->createLight(world->GetUniqueObjectName("EC_Light"));
+        }
+
         connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
         connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
         CheckForPlaceable();

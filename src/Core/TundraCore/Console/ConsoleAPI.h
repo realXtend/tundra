@@ -125,7 +125,9 @@ public slots:
     /// Returns the bitset of currently enabled log channels.
     u32 EnabledLogChannels() const;
 
+    /// Toggles visibility of the GUI console (ConsoleWidget).
     void ToggleConsole();
+
 private:
     Framework *framework;
     CommandMap commands; ///< Stores all the registered console commands.
@@ -138,6 +140,8 @@ private:
 
 private slots:
     void HandleKeyEvent(KeyEvent *e);
+    void CreateNativeConsole(); // Windows-only
+    void RemoveNativeConsole(); // Windows-only
 };
 
 /// Represents a registered console command.

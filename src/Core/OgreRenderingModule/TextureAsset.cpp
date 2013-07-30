@@ -57,11 +57,11 @@ TextureAsset::~TextureAsset()
 bool TextureAsset::LoadFromFile(QString filename)
 {
     bool allowAsynchronous = AllowAsyncLoading();
-    
+
     QString cacheDiskSource;
     if (allowAsynchronous)
     {
-        cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(Name());
+        cacheDiskSource = assetAPI->Cache()->FindInCache(Name());
         if (cacheDiskSource.isEmpty())
             allowAsynchronous = false;
     }
@@ -215,7 +215,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
     QString cacheDiskSource;
     if (allowAsynchronous)
     {
-        cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(Name());
+        cacheDiskSource = assetAPI->Cache()->FindInCache(Name());
         if (cacheDiskSource.isEmpty())
             allowAsynchronous = false;
     }
@@ -368,7 +368,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
             ogreAssetName = AssetAPI::SanitateAssetRef(nameInternal);
             
             // Optionally load textures to default pool for memory use debugging. Do not use in production use due to possible crashes on device loss & missing mipmaps!
-            // Note: this does not affect async loading path, so specify additionally --no_async_asset_load to be sure textures are loaded through this path
+            // Note: this does not affect async loading path, so specify additionally --noAsyncAssetLoad to be sure textures are loaded through this path
             // Furthermore, it may still allocate virtual memory address space due to using AGP memory mapping (we would not actually need a dynamic texture, but there's no way to tell Ogre that)
             if (assetAPI->GetFramework()->HasCommandLineParameter("--d3ddefaultpool"))
             {
@@ -878,7 +878,7 @@ void TextureAsset::CompressTexture()
                 HRESULT hr = surface->LockRect(&lock, 0, 0);
                 if (SUCCEEDED(hr))
                 {
-                    if (lock.Pitch == sourceStride)
+                    if ((size_t)lock.Pitch == sourceStride)
                         memcpy(lock.pBits, src, sourceStride * numRows);
                     else
                         for(size_t y = 0; y < numRows; ++y)
@@ -907,7 +907,7 @@ bool TextureAsset::AllowAsyncLoading() const
     /// \todo NeedSizeModification() does not take into account the current texture's data size, in which case we may go on the threaded loading path
     /// without a possibility to resize the texture smaller. This means that potentially one texture may go in unresized and increase the texture load
     /// significantly over the budget.
-    if (NeedSizeModification() || assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
+    if (NeedSizeModification() || assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || assetAPI->GetFramework()->HasCommandLineParameter("--noAsyncAssetLoad") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
         return false;
     else
         return true;
@@ -950,7 +950,7 @@ void TextureAsset::CalculateTextureSize(size_t width, size_t height, size_t& out
             
             outWidth >>= 1;
             outHeight >>= 1;
-            
+
             // Update the tentative budget and check whether further reduction is needed
             t = renderer->TextureBudgetUse(outWidth * outHeight * bitsPerPixel / 8);
         }
@@ -1085,9 +1085,7 @@ void TextureAsset::ProcessDDSImage(Ogre::DataStreamPtr& stream, std::vector<u8>&
 
             // if the pixel type is DXT1 - the size is half of DXT3 or DXT5
             if (isDXT1)
-            {
-                sizeOfCurTopLevel /= 2; 
-            }
+                sizeOfCurTopLevel /= 2;
 
             // skip the current top level
             totalSizeOfTheSkipTopLevels += sizeOfCurTopLevel;

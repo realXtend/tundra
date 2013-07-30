@@ -85,14 +85,6 @@ EC_Hydrax::EC_Hydrax(Scene* scene) :
     noiseType.SetMetadata(&noiseTypeMetadata);
     normalMode.SetMetadata(&normalModeMetadata);
 */
-    OgreWorldPtr w = scene->GetWorld<OgreWorld>();
-    if (!w)
-    {
-        LogError("EC_Hydrax: no OgreWorld available. Cannot be created.");
-        return;
-    }
-
-    connect(w->Renderer(), SIGNAL(MainCameraChanged(Entity *)), SLOT(OnActiveCameraChanged(Entity *)));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
 
     connect(&configRefListener, SIGNAL(Loaded(AssetPtr)), this, SLOT(ConfigLoadSucceeded(AssetPtr)));
@@ -119,7 +111,7 @@ void EC_Hydrax::Create()
     PROFILE(EC_Hydrax_Create);
     SAFE_DELETE(impl);
 
-    if (framework->IsHeadless())
+    if (!framework || framework->IsHeadless())
         return;
 
     try
@@ -130,9 +122,10 @@ void EC_Hydrax::Create()
             return;
         }
 
-        OgreWorldPtr w = ParentScene()->GetWorld<OgreWorld>();
+        OgreWorldPtr w = ParentScene()->Subsystem<OgreWorld>();
         assert(w);
 
+        connect(w->Renderer(), SIGNAL(MainCameraChanged(Entity *)), SLOT(OnActiveCameraChanged(Entity *)), Qt::UniqueConnection);
         Entity *mainCamera = w->Renderer()->MainCamera();
         if (!mainCamera)
         {
@@ -140,7 +133,7 @@ void EC_Hydrax::Create()
             // This error is benign, and Hydrax will now postpone its initialization to until a camera is set.
             // (see OnActiveCameraChanged()).
             LogDebug("Cannot create EC_Hydrax: No main camera set!");
-            return; 
+            return;
         }
 
         Ogre::Camera *cam = mainCamera->GetComponent<EC_Camera>()->GetCamera();
@@ -158,7 +151,7 @@ void EC_Hydrax::Create()
 
         connect(framework->Frame(), SIGNAL(PostFrameUpdate(float)), SLOT(Update(float)), Qt::UniqueConnection);
     }
-    catch(Ogre::Exception &e)
+    catch(const Ogre::Exception &e)
     {
         // Currently if we try to create more than one Hydrax component we end up here due to Ogre internal name collision.
         LogError("Could not create EC_Hydrax: " + std::string(e.what()));
@@ -311,7 +304,7 @@ void EC_Hydrax::ConfigLoadSucceeded(AssetPtr asset)
 
     if (!impl || !impl->hydrax || !impl->module)
     {
-        LogError("EC_Hydrax: Could not apply Hydrax config \"" + asset->Name() + "\", hydrax could not be initialized!");
+        LogError("EC_Hydrax: Could not apply Hydrax config \"" + asset->Name() + "\", Hydrax could not be initialized!");
         return;
     }
 
@@ -363,7 +356,7 @@ void EC_Hydrax::ConfigLoadSucceeded(AssetPtr asset)
         if (visible.Get())
             impl->hydrax->setPosition(position.Get());
     }
-    catch (Ogre::Exception &e)
+    catch (const Ogre::Exception &e)
     {
         LogError(std::string("EC_Hydrax: Ogre threw exception while loading new config: ") + e.what());
         if (impl && impl->hydrax)

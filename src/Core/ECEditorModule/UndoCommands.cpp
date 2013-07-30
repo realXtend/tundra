@@ -47,10 +47,8 @@ template<> bool EditAttributeCommand<Color>::mergeWith(const QUndoCommand *other
     return (undoValue == otherCommand->undoValue);
 }
 
-AddAttributeCommand::AddAttributeCommand(IComponent * comp, const QString &typeName, const QString &name, QUndoCommand * parent) :
-    entity_(comp->ParentEntity()->shared_from_this()),
-    componentName_(comp->Name()),
-    componentType_(comp->TypeName()),
+AddAttributeCommand::AddAttributeCommand(EC_DynamicComponent *comp, const QString &typeName, const QString &name, QUndoCommand * parent) :
+    owner(static_pointer_cast<EC_DynamicComponent>(comp->shared_from_this())),
     attributeTypeName_(typeName),
     attributeName_(name),
     QUndoCommand(parent)
@@ -65,53 +63,31 @@ int AddAttributeCommand::id() const
 
 void AddAttributeCommand::undo()
 {
-    EntityPtr ent = entity_.lock();
-    if (!ent.get())
-        return;
-
-    ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
-    if (comp.get())
+    shared_ptr<EC_DynamicComponent> dynComp = owner.lock();
+    if (dynComp && dynComp->ContainsAttribute(attributeName_))
     {
-        EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
-        if (dynComp)
-        {
-            if (dynComp->ContainsAttribute(attributeName_))
-            {
-                dynComp->RemoveAttribute(attributeName_);
-                dynComp->ComponentChanged(AttributeChange::Default);
-            }
-        }
+        dynComp->RemoveAttribute(attributeName_);
+        dynComp->ComponentChanged(AttributeChange::Default);
     }
 }
 
 void AddAttributeCommand::redo()
 {
-    EntityPtr ent = entity_.lock();
-    if (!ent.get())
-        return;
-
-    ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
-    if (comp.get())
+    shared_ptr<EC_DynamicComponent> dynComp = owner.lock();
+    if (dynComp && !dynComp->ContainsAttribute(attributeName_))
     {
-        EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
-        if (dynComp)
-            if (!dynComp->ContainsAttribute(attributeName_))
-            {
-                IAttribute * attr = dynComp->CreateAttribute(attributeTypeName_, attributeName_);
-                if (attr)
-                    dynComp->ComponentChanged(AttributeChange::Default);
-                else
-                    QMessageBox::information(dynComp->GetFramework()->Ui()->MainWindow(), QMessageBox::tr("Failed to create attribute"),
-                    QMessageBox::tr("Failed to create %1 attribute \"%2\", please try again.").arg(attributeTypeName_).arg(attributeName_));
-            }
+        IAttribute * attr = dynComp->CreateAttribute(attributeTypeName_, attributeName_);
+        if (attr)
+            dynComp->ComponentChanged(AttributeChange::Default);
+        else
+            QMessageBox::information(dynComp->GetFramework()->Ui()->MainWindow(), QApplication::translate("AddAttributeCommand", "Failed to create attribute"),
+                QApplication::translate("AddAttributeCommand", "Failed to create %1 attribute \"%2\", please try again.").arg(attributeTypeName_).arg(attributeName_));
     }
 }
 
 
 RemoveAttributeCommand::RemoveAttributeCommand(IAttribute *attr, QUndoCommand *parent) : 
-    entity_(attr->Owner()->ParentEntity()->shared_from_this()),
-    componentName_(attr->Owner()->Name()),
-    componentType_(attr->Owner()->TypeName()),
+    owner(static_pointer_cast<EC_DynamicComponent>(attr->Owner()->shared_from_this())),
     attributeTypeName_(attr->TypeName()),
     attributeName_(attr->Name()),
     value_(QString::fromStdString(attr->ToString())),
@@ -127,52 +103,54 @@ int RemoveAttributeCommand::id() const
 
 void RemoveAttributeCommand::undo()
 {
-    EntityPtr ent = entity_.lock();
-    if (!ent.get())
-        return;
-
-    ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
-    if (comp.get())
+    shared_ptr<EC_DynamicComponent> dynComp = owner.lock();
+    if (dynComp)
     {
-        EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
-        if (dynComp)
-        {
-            IAttribute * attr = dynComp->CreateAttribute(attributeTypeName_, attributeName_);
-            attr->FromString(value_.toStdString(), AttributeChange::Default);
-        }
+        IAttribute * attr = dynComp->CreateAttribute(attributeTypeName_, attributeName_);
+        attr->FromString(value_.toStdString(), AttributeChange::Default);
     }
 }
 
 void RemoveAttributeCommand::redo()
 {
-    EntityPtr ent = entity_.lock();
-    if (!ent.get())
-        return;
-
-    ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
-    if (comp.get())
+    shared_ptr<EC_DynamicComponent> dynComp = owner.lock();
+    if (dynComp)
     {
-        EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
-        if (dynComp)
-        {
-            dynComp->RemoveAttribute(attributeName_);
-            dynComp->ComponentChanged(AttributeChange::Default);
-        }
+        dynComp->RemoveAttribute(attributeName_);
+        dynComp->ComponentChanged(AttributeChange::Default);
     }
 }
 
 AddComponentCommand::AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const EntityIdList &entities,
-    const QString &compType, const QString &compName, bool sync, bool temp, QUndoCommand * parent) :
+    u32 compType, const QString &compName, bool sync, bool temp, QUndoCommand * parent) :
     scene_(scene),
     tracker_(tracker),
     entityIds_(entities),
     componentName_(compName),
-    componentType_(compType),
+    componentTypeId(compType),
+    componentTypeName(scene->GetFramework()->Scene()->ComponentTypeNameForTypeId(compType)),
     temp_(temp),
     sync_(sync),
     QUndoCommand(parent)
 {
-    setText("+ Added " + QString(componentType_).replace("EC_", "") + " Component" + (entities.size() == 1 ? "" : QString(" (to %1 entities)").arg(entities.size())));
+    setText("+ Added " + IComponent::EnsureTypeNameWithoutPrefix(componentTypeName) +
+        " Component" + (entities.size() == 1 ? "" : QString(" (to %1 entities)").arg(entities.size())));
+}
+
+AddComponentCommand::AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const EntityIdList &entities,
+    const QString &compTypeName, const QString &compName, bool sync, bool temp, QUndoCommand * parent) :
+    scene_(scene),
+    tracker_(tracker),
+    entityIds_(entities),
+    componentName_(compName),
+    componentTypeId(scene->GetFramework()->Scene()->ComponentTypeIdForTypeName(compTypeName)),
+    componentTypeName(compTypeName),
+    temp_(temp),
+    sync_(sync),
+    QUndoCommand(parent)
+{
+    setText("+ Added " + IComponent::EnsureTypeNameWithoutPrefix(componentTypeName) +
+        " Component" + (entities.size() == 1 ? "" : QString(" (to %1 entities)").arg(entities.size())));
 }
 
 int AddComponentCommand::id() const
@@ -181,21 +159,21 @@ int AddComponentCommand::id() const
 }
 
 void AddComponentCommand::undo()
-{    
+{
     // Call base impl that executes potential attribute edit commands
     QUndoCommand::undo();
 
     ScenePtr scene = scene_.lock();
-    if (!scene.get())
+    if (!scene)
         return;
 
     foreach (entity_id_t id, entityIds_)
     {
         EntityPtr ent = scene->EntityById(tracker_->RetrieveId(id));
-        if (ent.get())
+        if (ent)
         {
-            ComponentPtr comp = ent->GetComponent(componentType_, componentName_);
-            if (comp.get())
+            ComponentPtr comp = ent->Component(componentTypeId, componentName_);
+            if (comp)
             {
                 sync_ = comp->IsReplicated();
                 temp_ = comp->IsTemporary();
@@ -209,7 +187,7 @@ void AddComponentCommand::undo()
 void AddComponentCommand::redo()
 {
     ScenePtr scene = scene_.lock();
-    if (!scene.get())
+    if (!scene)
         return;
 
     foreach (entity_id_t id, entityIds_)
@@ -217,8 +195,7 @@ void AddComponentCommand::redo()
         EntityPtr ent = scene->EntityById(tracker_->RetrieveId(id));
         if (ent.get())
         {
-            Framework *fw = scene->GetFramework();
-            ComponentPtr comp = fw->Scene()->CreateComponentByName(scene.get(), componentType_, componentName_);
+            ComponentPtr comp = scene->GetFramework()->Scene()->CreateComponentById(scene.get(), componentTypeId, componentName_);
             if (comp)
             {
                 comp->SetReplicated(sync_);
@@ -456,9 +433,7 @@ void RemoveCommand::undo()
             entity_id_t newId = sync ? scene->NextFreeId() : scene->NextFreeIdLocal();
             tracker_->TrackId(id, newId);
 
-            QString newIdStr;
-            newIdStr.setNum((int)newId);
-            entityElement.setAttribute("id", newIdStr);
+            entityElement.setAttribute("id", QString::number((int)newId));
 
             entityElement = entityElement.nextSiblingElement();
         }
@@ -561,7 +536,11 @@ void RemoveCommand::Initialize(const QList<EntityWeakPtr> &entityList, const QLi
     bool componentMultiParented = false;
     
     for (QList<EntityWeakPtr>::const_iterator i = entityList.begin(); i != entityList.end(); ++i)
-        entityList_ << (*i).lock()->Id();
+    {
+        EntityPtr ent = (*i).lock();
+        if (ent.get())
+            entityList_ << ent->Id();
+    }
 
     for (QList<ComponentWeakPtr>::const_iterator i = componentList.begin(); i != componentList.end(); ++i)
     {
@@ -847,6 +826,55 @@ bool TransformCommand::mergeWith(const QUndoCommand *other)
     else
         rotation_ = otherCommand->rotation_.Mul(rotation_);
     return true;
+}
+
+GroupEntitiesCommand::GroupEntitiesCommand(const QList<EntityWeakPtr> &entities, EntityIdChangeTracker * tracker, const QString oldGroupName, const QString newGroupName, QUndoCommand *parent) :
+    tracker_(tracker),
+    oldGroupName_(oldGroupName),
+    newGroupName_(newGroupName),
+    QUndoCommand(parent)
+{
+    QString text;
+    text += oldGroupName.isEmpty() ? "* Group " : "* Ungroup ";
+    text += QString("%1").arg(entities.size());
+    text += entities.size() > 1 ? " entities " : " entity ";
+    text += !oldGroupName.isEmpty() ? QString("from %1").arg(oldGroupName) : "";
+    text += !newGroupName.isEmpty() ? QString("to %1").arg(newGroupName) : "";
+    setText(text);
+
+    scene_ = entities.first().lock()->ParentScene()->shared_from_this();
+    for(QList<EntityWeakPtr>::const_iterator i = entities.begin(); i != entities.end(); ++i)
+        entityIds_ << (*i).lock()->Id();
+}
+
+int GroupEntitiesCommand::id() const
+{
+    return Id;
+}
+
+void GroupEntitiesCommand::undo()
+{
+    DoGroupUngroup(oldGroupName_);
+}
+
+void GroupEntitiesCommand::redo()
+{
+    DoGroupUngroup(newGroupName_);
+}
+
+void GroupEntitiesCommand::DoGroupUngroup(QString groupName)
+{
+    ScenePtr scene = scene_.lock();
+    if (!scene.get())
+        return;
+    
+    foreach(entity_id_t i, entityIds_)
+    {
+        entity_id_t id = tracker_->RetrieveId(i);
+        Entity *entity = scene->EntityById(id).get();
+        if (entity)
+            entity->SetGroup(groupName);
+    }
 }
 
 

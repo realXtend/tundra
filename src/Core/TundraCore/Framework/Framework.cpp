@@ -168,7 +168,10 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--port"] = "Specifies the Tundra server port."; // TundraLogicModule
     cmdLineDescs.commands["--protocol"] = "Specifies the Tundra server protocol. Options: '--protocol tcp' and '--protocol udp'. Defaults to udp if no protocol is specified."; // KristalliProtocolModule
     cmdLineDescs.commands["--fpsLimit"] = "Specifies the FPS cap to use in rendering. Default: 60. Pass in 0 to disable."; // Framework
+    cmdLineDescs.commands["--fpsLimitWhenInactive"] = "Specifies the FPS cap to use when the window is not active. Default: 30 (half of the FPS). Pass 0 to disable."; // Framework
     cmdLineDescs.commands["--run"] = "Runs script on startup"; // JavaScriptModule
+    cmdLineDescs.commands["--plugin"] = "Specifies a shared library (a 'plugin') to be loaded, relative to 'TUNDRA_DIRECTORY/plugins' path. Multiple plugin parameters are supported, f.ex. '--plugin MyPlugin --plugin MyOtherPlugin', or multiple parameters per --plugin, separated with semicolon (;) and enclosed in quotation marks, f.ex. --plugin \"MyPlugin;OtherPlugin;Etc\""; // Framework
+    cmdLineDescs.commands["--jsplugin"] = "Specifies a javascript file to be loaded at startup, relative to 'TUNDRA_DIRECTORY/jsplugins' path. Multiple jsplugin parameters are supported, f.ex. '--jsplugin MyPlugin.js --jsplugin MyOtherPlugin.js', or multiple parameters per --jsplugin, separated with semicolon (;) and enclosed in quotation marks, f.ex. --jsplugin \"MyPlugin.js;MyOtherPlugin.js;Etc.js\". If JavascriptModule is not loaded, this parameter has no effect."; // JavascriptModule
     cmdLineDescs.commands["--file"] = "Specifies a startup scene file. Multiple files supported. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI."; // TundraLogicModule & AssetModule
     cmdLineDescs.commands["--storage"] = "Adds the given directory as a local storage directory on startup."; // AssetModule
     cmdLineDescs.commands["--config"] = "Specifies a startup configuration file to use. Multiple config files are supported, f.ex. '--config plugins.xml --config MyCustomAddons.xml'."; // Framework & PluginAPI
@@ -177,7 +180,7 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--netRate"] = "Specifies the number of network updates per second. Default: 30."; // TundraLogicModule
     cmdLineDescs.commands["--noAssetCache"] = "Disable asset cache."; // Framework
     cmdLineDescs.commands["--assetCacheDir"] = "Specify asset cache directory to use."; // Framework
-    cmdLineDescs.commands["--clear-asset-cache"] = "At the start of Tundra, remove all data and metadata files from asset cache."; // AssetCache
+    cmdLineDescs.commands["--clearAssetCache"] = "At the start of Tundra, remove all data and metadata files from asset cache."; // AssetCache
     cmdLineDescs.commands["--logLevel"] = "Sets the current log level: 'error', 'warning', 'info', 'debug'."; // ConsoleAPI
     cmdLineDescs.commands["--logFile"] = "Sets logging file. Usage example: '--logfile TundraLogFile.txt'."; // ConsoleAPI
     cmdLineDescs.commands["--physicsRate"] = "Specifies the number of physics simulation steps per second. Default: 60."; // PhysicsModule
@@ -187,8 +190,8 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--vsync"] = "Synchronizes buffer swaps to monitor vsync, eliminating tearing at the expense of a fixed frame rate."; // OgreRenderingModule
     cmdLineDescs.commands["--vsyncFrequency"] = "Sets display frequency rate for vsync, applicable only if fullscreen is set. Usage: '--vsyncFrequency <number>'."; // OgreRenderingModule
     cmdLineDescs.commands["--antialias"] = "Sets full screen antialiasing factor. Usage '--antialias <number>'."; // OgreRenderingModule
-    cmdLineDescs.commands["--hide_benign_ogre_messages"] = "Sets some uninformative Ogre log messages to be ignored from the log output."; // OgreRenderingModule
-    cmdLineDescs.commands["--no_async_asset_load"] = "Disables threaded loading of Ogre assets."; // OgreRenderingModule
+    cmdLineDescs.commands["--hideBenignOgreMessages"] = "Sets some uninformative Ogre log messages to be ignored from the log output."; // OgreRenderingModule
+    cmdLineDescs.commands["--noAsyncAssetLoad"] = "Disables threaded loading of Ogre assets."; // OgreRenderingModule
     cmdLineDescs.commands["--autoDxtCompress"] = "Compress uncompressed texture assets to DXT1/DXT5 format on load to save memory."; // OgreRenderingModule
     cmdLineDescs.commands["--maxTextureSize"] = "Resize texture assets that are larger than this. Default: no resizing."; // OgreRenderingModule
     cmdLineDescs.commands["--variablePhysicsStep"] = "Use variable physics timestep to avoid taking multiple physics substeps during one frame."; // PhysicsModule
@@ -203,6 +206,9 @@ Framework::Framework(int argc_, char** argv_) :
     cmdLineDescs.commands["--clientExtrapolationTime"] = "Rigid body extrapolation time on client in milliseconds. Default 66."; // TundraProtocolModule
     cmdLineDescs.commands["--noClientPhysics"] = "Disables rigid body handoff to client simulation after no movement packets received from server."; // TundraProtocolModule
     cmdLineDescs.commands["--dumpProfiler"] = "Dump profiling blocks to console every 5 seconds."; // DebugStatsModule
+    cmdLineDescs.commands["--acceptUnknownLocalSources"] = "If specified, assets outside any known local storages are allowed. Otherwise, requests to them will fail."; // AssetModule
+    cmdLineDescs.commands["--acceptUnknownHttpSources"] = "If specified, asset requests outside any registered HTTP storages are also accepted, and will appear as assets with no storage. "
+        "Otherwise, all requests to assets outside any registered storage will fail."; // AssetModule
 
     if (HasCommandLineParameter("--help"))
     {
@@ -255,6 +261,19 @@ Framework::Framework(int argc_, char** argv_) :
             LogWarning("Erroneous FPS limit given with --fpslimit: " + fpsLimitParam.first() + ". Ignoring.");
     }
 
+    QStringList fpsLimitWhenInactive = CommandLineParameters("--fpslimitwheninactive");
+    if (fpsLimitWhenInactive.size() > 1)
+        LogWarning("Multiple --fpslimitwheninactive parameters specified! Using " + fpsLimitWhenInactive.first() + " as the value.");
+    if (fpsLimitWhenInactive.size() > 0)
+    {
+        bool ok;
+        double targetFpsWhenInactive = fpsLimitWhenInactive.first().toDouble(&ok);
+        if (ok)
+            application->SetTargetFpsLimitWhenInactive(targetFpsWhenInactive);
+        else
+            LogWarning("Erroneous FPS limit given with --fpslimitwheninactive: " + fpsLimitWhenInactive.first() + ". Ignoring.");
+    }
+
     // Create core APIs
     frame = new FrameAPI(this);
     scene = new SceneAPI(this);
@@ -277,6 +296,7 @@ Framework::Framework(int argc_, char** argv_) :
     console->RegisterCommand("exit", "Shuts down gracefully.", this, SLOT(Exit()));
     console->RegisterCommand("inputContexts", "Prints all currently registered input contexts in InputAPI.", input, SLOT(DumpInputContexts()));
     console->RegisterCommand("dynamicObjects", "Prints all currently registered dynamic objets in Framework.", this, SLOT(PrintDynamicObjects()));
+    console->RegisterCommand("plugins", "Prints all currently loaded plugins.", plugin, SLOT(ListPlugins()));
 
     RegisterDynamicObject("ui", ui);
     RegisterDynamicObject("frame", frame);
@@ -385,6 +405,9 @@ void Framework::Go()
         LogDebug("Loading plugins from config XML " + config);
         plugin->LoadPluginsFromXML(config);
     }
+
+    LogDebug("Loading plugins specified on the command line...");
+    plugin->LoadPluginsFromCommandLine();
 
     for(size_t i = 0; i < modules.size(); ++i)
     {
@@ -568,9 +591,11 @@ void Framework::LoadStartupOptionsFromXML(QString configurationFile)
         return;
     }
     QString errorMsg;
-    if (!doc.setContent(&file, false, &errorMsg))
+    int errorLine, errorColumn;
+    if (!doc.setContent(&file, false, &errorMsg, &errorLine, &errorColumn))
     {
-        LogError("Framework::LoadStartupOptionsFromXML: Failed to parse XML file \"" + configurationFile + "\": " + errorMsg + "!");
+        LogError(QString("Framework::LoadStartupOptionsFromXML: Failed to parse XML file \"%1\": %2 at line %3, column %4.")
+            .arg(configurationFile).arg(errorMsg).arg(errorLine).arg(errorColumn));
         file.close();
         return;
     }
@@ -597,6 +622,10 @@ void Framework::LoadStartupOptionsFromXML(QString configurationFile)
 
             if (e.hasAttribute("value"))
                 startupOptions << e.attribute("value");
+
+            /// If we have another config XML specified with --config inside this config XML, load those settings also
+            if (!e.attribute("name").compare("--config"))
+                LoadStartupOptionsFromXML(e.attribute("value"));
         }
         n = n.nextSibling();
     }
@@ -667,27 +696,38 @@ QStringList Framework::CommandLineParameters(const QString &key) const
                 ret.append(startupOptions[++i]);
         }
     }
+
     return ret;
 }
 
 void Framework::PrintStartupOptions()
 {
-    int i = 0;
     LogInfo("Startup options:");
+    
+    QString lastOption;
+    int i = 0;
     while(i < startupOptions.size())
     {
-        if (!startupOptions[i].startsWith("--"))
-            LogWarning("Warning: Orphaned startup option parameter value \"" + startupOptions[i] + "\" specified!");
+        QString option = startupOptions[i];
+        if (!option.startsWith("--") || option.startsWith("---"))
+            LogWarning("Orphaned startup option parameter value \"" + option + "\" specified!");
+
+        QString line;
         if (i+1 < startupOptions.size() && !startupOptions[i+1].startsWith("--"))
         {
-            LogInfo("   '" + startupOptions[i] + "' '" + startupOptions[i+1] + "'");
+            QString value = startupOptions[i+1].simplified().replace(" ", "");
+            line = QString("  %1 '%2'").arg(option != lastOption ? option : "", -10).arg(value);
             i += 2;
         }
         else
         {
-            LogInfo("   '" + startupOptions[i] + "'");
+            line = QString("  %1").arg(option, -10);
             ++i;
         }
+        LogInfo(line);
+
+        if (lastOption.compare(option, Qt::CaseSensitive) != 0)
+            lastOption = option;
     }
 }
 

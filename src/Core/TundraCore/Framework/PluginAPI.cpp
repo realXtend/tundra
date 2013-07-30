@@ -7,18 +7,28 @@
 #include "Application.h"
 
 #include <QtXml>
+#include <QDir>
+#include <QFile>
 
 #include <vector>
 #include <sstream>
 
-std::string WStringToString(const std::wstring &str)
+#ifdef WIN32
+#include "Win.h"
+#elif defined(_POSIX_C_SOURCE) || defined(Q_WS_MAC) || defined(ANDROID)
+#include <dlfcn.h>
+#endif
+
+/// @todo Move to CoreStringUtils?
+static std::string WStringToString(const std::wstring &str)
 {
     std::vector<char> c((str.length()+1)*4);
     wcstombs(&c[0], str.c_str(), c.size()-1);
     return &c[0];
 }
 
-std::string GetErrorString(int error)
+/// @todo Move to SystemInfo?
+static std::string GetErrorString(int error)
 {
 #ifdef WIN32
     void *lpMsgBuf = 0;
@@ -75,31 +85,36 @@ void PluginAPI::LoadPlugin(const QString &filename)
     const QString pluginSuffix = ".dylib";
 #endif
 
-    LogInfo("Loading plugin '" + filename + "'.");
+    // Check if the plugin source file even exists.
+    QString path = QDir::toNativeSeparators(Application::InstallationDirectory() + "plugins/" + filename.trimmed() + pluginSuffix);
+    if (!QFile::exists(path))
+    {
+        LogWarning(QString("Cannot load plugin \"%1\" as the file does not exist.").arg(path));
+        return;
+    }
+    LogInfo("Loading plugin " + filename);
     owner->App()->SetSplashMessage("Loading plugin " + filename);
-    QString path = Application::InstallationDirectory() + "plugins/" + filename.trimmed() + pluginSuffix;
 
     ///\todo Unicode support!
 #ifdef WIN32
-    path = path.replace("/", "\\");
     HMODULE module = LoadLibraryA(path.toStdString().c_str());
     if (module == NULL)
     {
         DWORD errorCode = GetLastError();
-        LogError("Failed to load plugin from file \"" + path + "\": Error " + GetErrorString(errorCode).c_str() + "!");
+        LogError(QString("Failed to load plugin from \"%1\": %2 (Missing dependencies?)").arg(path).arg(GetErrorString(errorCode).c_str()));
         return;
     }
     TundraPluginMainSignature mainEntryPoint = (TundraPluginMainSignature)GetProcAddress(module, "TundraPluginMain");
     if (mainEntryPoint == NULL)
     {
         DWORD errorCode = GetLastError();
-        LogError("Failed to find plugin startup function 'TundraPluginMain' from plugin file \"" + path + "\": Error " + GetErrorString(errorCode).c_str() + "!");
+        LogError(QString("Failed to find plugin startup function 'TundraPluginMain' from plugin file \"%1\": %2").arg(path).arg(GetErrorString(errorCode).c_str()));
         return;
     }
 #else
     const char *dlerrstr;
     dlerror();
-    PluginHandle module = dlopen(path.toStdString().c_str(), RTLD_GLOBAL|RTLD_LAZY);
+    void *module = dlopen(path.toStdString().c_str(), RTLD_GLOBAL|RTLD_LAZY);
     if ((dlerrstr=dlerror()) != 0)
     {
         LogError("Failed to load plugin from file \"" + path + "\": Error " + dlerrstr + "!");
@@ -114,7 +129,7 @@ void PluginAPI::LoadPlugin(const QString &filename)
         return;
     }
 #endif
-    Plugin p = { module };
+    Plugin p = { module, filename, path };
     plugins.push_back(p);
     mainEntryPoint(owner);
 }
@@ -123,12 +138,19 @@ void PluginAPI::UnloadPlugins()
 {
     for(std::list<Plugin>::reverse_iterator iter = plugins.rbegin(); iter != plugins.rend(); ++iter)
 #ifdef WIN32
-        FreeLibrary(iter->libraryHandle);
+        FreeLibrary((HMODULE)iter->handle);
 #else
     /// \bug caused memory errors in destructors in the dlclose call chain
-    //        dlclose(iter->libraryHandle);
+    //        dlclose(iter->handle);
 #endif
     plugins.clear();
+}
+
+void PluginAPI::ListPlugins() const
+{
+    LogInfo("Loaded plugins:");
+    foreach(const Plugin &plugin, plugins)
+        LogInfo(plugin.name);
 }
 
 QString LookupRelativePath(QString path)
@@ -162,6 +184,7 @@ QStringList PluginAPI::ConfigurationFiles() const
 
 void PluginAPI::LoadPluginsFromXML(QString pluginConfigurationFile)
 {
+    bool showDeprecationWarning = true;
     pluginConfigurationFile = LookupRelativePath(pluginConfigurationFile);
 
     QDomDocument doc("plugins");
@@ -190,7 +213,27 @@ void PluginAPI::LoadPluginsFromXML(QString pluginConfigurationFile)
         {
             QString pluginPath = e.attribute("path");
             LoadPlugin(pluginPath);
+            if (showDeprecationWarning)
+            {
+                LogWarning("PluginAPI::LoadPluginsFromXML: In file " + pluginConfigurationFile + ", using XML tag <plugin path=\"PluginNameHere\"/> will be deprecated. Consider replacing it with --plugin command line argument instead");
+                showDeprecationWarning = false;
+            }
         }
         n = n.nextSibling();
+    }
+}
+
+void PluginAPI::LoadPluginsFromCommandLine()
+{
+    if (owner->HasCommandLineParameter("--plugin"))
+    {
+        QStringList pluginPaths = owner->CommandLineParameters("--plugin");
+
+        for (int i = 0; i < pluginPaths.size(); ++i)
+        {
+            QStringList pluginList = pluginPaths.at(i).simplified().replace(" ", "").split(";", QString::SkipEmptyParts);
+            for (int j = 0; j < pluginList.size(); ++j)
+                LoadPlugin(pluginList.at(j));
+        }
     }
 }

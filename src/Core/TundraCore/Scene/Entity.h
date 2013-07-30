@@ -19,33 +19,38 @@ class QDomDocument;
 class QDomElement;
 
 /// Represents a single object in a Scene.
-/** An entity is just a collection of components, the components define what
-    the entity is and what it does.
+/** An entity is a collection of components that define the data and the functionality of the entity.
+    Entity can have multiple components of the same type as long as the component names are unique.
+
     Entities should not be directly created, instead use Scene::CreateEntity().
 
-    Each component type that is added to this entity is registered as
-    Q_PROPERTY as in following syntax EC_Light -> light, where EC_ is cut off
-    and name is converted to low case format. This allow scripter to get access to
-    component using a following code "entity.mesh.SetMesh("mesh id");"
-    
-    @note If there are several components that have a same typename only first component
-    is accessible through Q_PROPERTY and if you want to edit other same type of components
-    you should use GetComponent method instead.
+    Each different component type that is added to an entity will be available as a dynamic property
+    (Q_PROPERTY) of the entity. The property is named in the following following fashion: the (possible)
+    "EC_" prefix of the  component type name cut off and the type name is converted to lower camel case
+    format, f.ex. "EC_EnvironmentLight" -> "environmentLight". This allows the scripter to access the
+    component using the following convenient syntax:
+    @code
+    entity.environmentLight.ambientColor = new Color(0.33, 0.33, 0.33, 1);
+    @endcode
 
-    When component is removed from the entity a Q_PROPERTY connection is destroyed from
-    the component. In case that there are several components with the same typename, there is 
-    a name check that ensures that both components names are same before Q_PROPERTY destroyed.
+    @note If there are several components of the same type, only the firstly component is available as a
+    dynamic property. If you want to access other components of the same type in the entity, you should use
+    the Component(typeName, name) method instead, f.ex.:
+    @code
+    entity.Component("EC_EnvironmentLight", "MySpecialLight").ambientColor = new Color(0.33, 0.33, 0.33, 1);
+    @endcode
 
-    @note   Entity can have multiple components with same component type name as long as
-            the component names are unique.
+    When a component is removed from an entity, the dynamic property association is invalidated, i.e. the
+    value of the dynamic property will be null/undefined.
 
-    \ingroup Scene_group */
+    @ingroup Scene_group */
 class TUNDRACORE_API Entity : public QObject, public enable_shared_from_this<Entity>
 {
     Q_OBJECT
     Q_PROPERTY(entity_id_t id READ Id) /**< @copydoc Id */
     Q_PROPERTY(QString name READ Name WRITE SetName) /**< @copydoc Name */
     Q_PROPERTY(QString description READ Description WRITE SetDescription) /**< @copydoc Description */
+    Q_PROPERTY(QString group READ Group WRITE SetGroup)
     Q_PROPERTY(bool replicated READ IsReplicated) /**< @copydoc IsReplicated */
     Q_PROPERTY(bool local READ IsLocal) /**< @copydoc IsLocal */
     Q_PROPERTY(bool unacked READ IsUnacked) /**< @copydoc IsUnacked */
@@ -83,6 +88,13 @@ public:
         @return List of components with certain class type, or empty list if no components was found. */
     template <class T>
     std::vector<shared_ptr<T> > ComponentsOfType() const;
+
+    /// Sets group to this entity in EC_Name component. If the component doesn't exist, it will be created.
+    /** @param groupName Name of the group. */
+    void SetGroup(const QString &groupName);
+
+    /// Returns group name this entity belongs to if EC_Name is available, empty string otherwise.
+    QString Group() const;
 
     /// In the following, deserialization functions are now disabled since deserialization can't safely
     /// process the exact same data that was serialized, or it risks receiving entity ID conflicts in the scene.
@@ -124,6 +136,12 @@ public:
     /// Returns actions map for introspection/reflection.
     const ActionMap &Actions() const { return actions_; }
 
+    /// Connects action with a specific name to a receiver object with member slot.
+    /** @param name Name of the action.
+        @param receiver Receiver object.
+        @param member Member slot. */
+    void ConnectAction(const QString &name, const QObject *receiver, const char *member);
+
     /// @cond PRIVATE
     /// Do not directly allocate new entities using operator new, but use the factory-based Scene::CreateEntity functions instead.
     /** @param framework Framework
@@ -138,16 +156,18 @@ public:
     /// @endcond
 
     // DEPRECATED
+    /// @cond PRIVATE
     template <class T> std::vector<shared_ptr<T> > GetComponents() const { return ComponentsOfType<T>(); } /**< @deprecated Use ComponentsOfType<T> instead. @todo Add deprecation warning print. @todo Remove. */
     template <class T> shared_ptr<T> GetComponent() const { return Component<T>(); } /**< @deprecated Use Component<T> instead. @todo Add deprecation warning print. @todo Remove. */
     template <class T> shared_ptr<T> GetComponent(const QString& name) const { return Component<T>(name); }/**< @deprecated Use Component<T>(name) instead. @todo Add deprecation warning print. @todo Remove. */
+    /// @endcond
 
 public slots:
     /// Returns a component by ID. This is the fastest way to query, as the components are stored in a map by id.
     ComponentPtr ComponentById(component_id_t id) const;
     /// Returns a component with type 'typeName' or empty pointer if component was not found
     /** If there are several components with the specified type, returns the first component found (arbitrary).
-        @param typeName type of the component */
+        @param typeName type of the component, the "EC_" prefix is not required. */
     ComponentPtr Component(const QString &typeName) const;
     /// @overload
     /** @param typeId Component type ID. */
@@ -161,7 +181,7 @@ public slots:
     ComponentPtr Component(u32 typeId, const QString &name) const;
 
     /// Returns a component with type 'typeName' or creates & adds it if not found. If could not create, returns empty pointer
-    /** @param typeName The type string of the component to create, obtained from IComponent::TypeName().
+    /** @param typeName The type name of the component to create, the "EC_" prefix is not required.
         @param change Change signaling mode, in case component has to be created
         @param replicated Whether new component will be replicated through network
         @return Pointer to the component, or an empty pointer if the component could be retrieved or created. */
@@ -183,7 +203,7 @@ public slots:
     ComponentPtr GetOrCreateLocalComponent(const QString &typeName, const QString &name);
 
     /// Creates a new component and attaches it to this entity. 
-    /** @param typeName type of the component
+    /** @param typeName type of the component, the "EC_" prefix is not required.
         @param change Change signaling mode, in case component has to be created
         @param replicated Whether new component will be replicated through network
         @return Returns a pointer to the newly created component, or null if creation failed. Common causes for failing to create an component
@@ -200,9 +220,9 @@ public slots:
         @param name name of the component */
     ComponentPtr CreateComponent(u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool replicated = true);
     
-    /// Creates a local component with type 'typeName' and adds it to the entity. If could not create, return empty pointer
+    /// Creates a local component with type 'typeName' (the "EC_" prefix not required) and adds it to the entity. If could not create, return empty pointer
     ComponentPtr CreateLocalComponent(const QString &typeName);
-    /// Creates a local component with type 'typeName' and name 'name' and adds it to the entity. If could not create, return empty pointer
+    /// @overload @param name The arbitrary name identifier for the component.
     ComponentPtr CreateLocalComponent(const QString &typeName, const QString &name);
     
     /// Attaches an existing parentless component to this entity.
@@ -233,7 +253,7 @@ public slots:
         @param change Specifies how other parts of the system are notified of this removal.
         @sa RemoveComponentById */
     void RemoveComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default); /**< @overload */
-    void RemoveComponent(const QString &typeName, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(typeName), change); }  /**< @overload */
+    void RemoveComponent(const QString &typeName, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(Component(typeName), change); } /**< @overload @param typeName The component type name, the "EC_" prefix is not required. */
     void RemoveComponent(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(typeName, name), change); }  /**< @overload */
     /// Removes component by ID.
     /** @sa RemoveComponent */
@@ -246,7 +266,7 @@ public slots:
     /** @param typeId Component type ID. */
     ComponentVector ComponentsOfType(u32 typeId) const;
     /// @overload
-    /** @param typeName Type name of the component
+    /** @param typeName Type name of the component, the "EC_" prefix is not required.
         @note The overload taking component type ID is more efficient than this overload. */
     ComponentVector ComponentsOfType(const QString &typeName) const;
 
@@ -291,21 +311,15 @@ public slots:
 
     /// Creates and registers new action for this entity, or returns an existing action.
     /** Use this function from scripting languages.
-        @param name Name of the action.
+        @param name Name of the action, case-insensitive.
         @note Never returns null pointer
         @note Never store the returned pointer. */
     EntityAction *Action(const QString &name);
 
-    /// Find & Delete EntityAction object from EntityActions map.
+    /// Removes an existing action.
     /** Use this function from scripting languages.
-        @param name Name of the action. */
+        @param name Name of the action, case-insensitive. */
     void RemoveAction(const QString &name);
-
-    /// Connects action with a specific name to a receiver object with member slot.
-    /** @param name Name of the action.
-        @param receiver Receiver object.
-        @param member Member slot. */
-    void ConnectAction(const QString &name, const QObject *receiver, const char *member);
 
     /// Executes an arbitrary action for all components of this entity.
     /** The components may or may not handle the action.
@@ -368,6 +382,7 @@ public slots:
     Scene* ParentScene() const { return scene_; }
 
     // DEPRECATED:
+    /// @cond PRIVATE
     ComponentPtr GetComponentById(component_id_t id) const { return ComponentById(id); } /**< @deprecated Use ComponentById instead. @todo Add deprecation warning print. @todo Remove. */
     ComponentPtr GetComponent(const QString &typeName) const { return Component(typeName); } /**< @deprecated Use Component instead. @todo Add deprecation warning print. @todo Remove. */
     ComponentPtr GetComponent(u32 typeId) const { return Component(typeId); } /**< @deprecated Use Component instead. @todo Add deprecation warning print. @todo Remove. */
@@ -378,6 +393,7 @@ public slots:
     void RemoveComponentRaw(QObject* comp); /**< @deprecated Use RemoveComponent or RemoveComponentById. */
     ComponentMap Components() /*non-const intentionally*/ { return components_; } /**< @deprecated use const version Components or 'components' instead. @todo Add deprecation print. @todo Remove. */
     ComponentVector GetComponents(const QString &typeName) const { return ComponentsOfType(typeName); } /**< @deprecated use ComponentsOfType instead. @todo Add deprecation print. @todo Remove. */
+    /// @endcond
 
 signals:
     /// A component has been added to the entity

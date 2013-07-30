@@ -27,12 +27,12 @@ function entityLeft(ent){
        
 }
 
-var vol = me.GetOrCreateComponent("EC_VolumeTrigger");
+var vol = me.GetOrCreateComponent("VolumeTrigger");
         
 print(vol.entityEnter.connect(entityEntered));
 print(vol.entityLeave.connect(entityLeft));
         
-var rigid = me.GetOrCreateComponent("EC_RigidBody");
+var rigid = me.GetOrCreateComponent("RigidBody");
 rigid.phantom = true;
       
 mats = me.mesh.meshMaterial;

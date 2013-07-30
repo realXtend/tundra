@@ -42,11 +42,6 @@ use_core_modules(TundraCore Math)
 
 build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
-if (ENABLE_OPEN_ASSET_IMPORT)
-    use_app_modules(OpenAssetImport)
-    link_modules(OpenAssetImport)
-endif()
-
 link_package(QT4)
 link_ogre()
 link_modules(TundraCore Math)

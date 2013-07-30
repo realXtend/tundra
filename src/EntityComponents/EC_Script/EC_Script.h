@@ -75,10 +75,11 @@ public:
         RM_Client,
         RM_Server
     };
-    
+
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Script(Scene* scene);
-
+    /// @endcond
     ~EC_Script();
 
     /// The script assets that will be loaded. If empty, no script engine will be created
