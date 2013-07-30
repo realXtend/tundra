@@ -1069,11 +1069,8 @@ void TextureAsset::ProcessDDSImage(Ogre::DataStreamPtr& stream, std::vector<u8>&
         return; // Can use original stream
     }
 
-    LogDebug("Resizing DDS image from " + QString::number(header.dwWidth) + "x" + QString::number(header.dwHeight) + " to " + QString::number(curWidth) + "x" + QString::number(curHeight));
-
     if (isValidDdsFile)
     {
-
         // store the width and height as local vars for easy access 
         unsigned long width = header.dwWidth;
         unsigned long height = header.dwHeight;
@@ -1110,10 +1107,12 @@ void TextureAsset::ProcessDDSImage(Ogre::DataStreamPtr& stream, std::vector<u8>&
     }
     else
     {
-        LogError("DDS data is not valid, skipping resize");
+        LogDebug("TextureAsset::ProcessDDSImage: texture " + Name() + " does not contain DXT compressed data, skipping resize");
         stream->seek(0);
-        return; // Data was invalid, use original
+        return; // Data could not be processed, use original
     }
+
+    LogDebug("TextureAsset::ProcessDDSImage: resizing texture " + Name() + " from " + QString::number(header.dwWidth) + "x" + QString::number(header.dwHeight) + " to " + QString::number(curWidth) + "x" + QString::number(curHeight));
 
     // create the memory for the loaded data
     size_t sizeOfTheDddWithoutTopLevels = 
