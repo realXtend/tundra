@@ -113,7 +113,17 @@ macro (build_library TARGET_NAME LIB_TYPE)
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     endif ()
 
-    add_library (${TARGET_NAME} ${TARGET_LIB_TYPE} ${ARGN})
+    # Version information for shared libraries.
+    if (${TARGET_LIB_TYPE} STREQUAL "SHARED")
+        if (WIN32)
+            set(RESOURCE_FILES ${RESOURCE_FILES}
+                ${PROJECT_SOURCE_DIR}/src/Core/TundraCore/Resources/resource.h
+                ${PROJECT_SOURCE_DIR}/src/Core/TundraCore/Resources/TundraPlugin.rc)
+        endif()
+        # TODO non-Windows platforms.
+    endif()
+
+    add_library(${TARGET_NAME} ${TARGET_LIB_TYPE} ${ARGN} ${RESOURCE_FILES})
 
     if (MSVC AND ENABLE_BUILD_OPTIMIZATIONS)
         if (${TARGET_LIB_TYPE} STREQUAL "SHARED")
