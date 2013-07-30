@@ -59,6 +59,11 @@ public slots:
 signals:
     void ExternalConversionRequested(OgreMeshAsset*, const u8*, size_t);
 
+#ifdef ASSIMP_ENABLED
+public slots:
+    void OnAssimpConversionDone(bool);
+#endif
+
 private:
     /// Unload mesh from Ogre. IAsset override.
     virtual void DoUnload();
@@ -89,9 +94,4 @@ private:
 
     /// Triangle counts per submesh.
     std::vector<int> subMeshTriangleCounts;
-
-#ifdef ASSIMP_ENABLED
-private slots:
-    void OnAssimpConversionDone(bool);
-#endif
 };

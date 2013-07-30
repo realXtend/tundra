@@ -21,14 +21,13 @@
 #include "Entity.h"
 #include "Renderer.h"
 #include "OgreWorld.h"
-
 #include "LoggingFunctions.h"
 #include "EC_RigidBody.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "ConfigAPI.h"
-#include "IAsset.h"
 #include "AssetAPI.h"
+#include "IAsset.h"
 #include "IAssetTransfer.h"
 #include "IAssetProvider.h"
 #include "IAssetBundle.h"
@@ -63,8 +62,6 @@
 #include "KristalliProtocolModule.h"
 #include <kNet/qt/NetworkDialog.h>
 #endif
-
-#include "TreeWidgetUtils.h"
 
 #include "MemoryLeakCheck.h"
 

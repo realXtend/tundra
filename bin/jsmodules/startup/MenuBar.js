@@ -80,6 +80,7 @@ if (!framework.IsHeadless())
         toolsMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
 
     toolsMenu.addAction("Console").triggered.connect(OpenConsoleWindow);
+
     // Settings menu
     if (framework.ModuleByName("MumbleVoip") || ecEditor)
     {

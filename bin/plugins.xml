@@ -26,6 +26,7 @@
   <option name="--plugin" value="CanvasPlugin"/>
 
   <option name="--plugin" value="AdminotechComponents"/>
+
   <!-- NOTE: The startup .js scripts are specified only by the base name of the file.
        Don't specify a path here. Place the startup .js scripts to /bin/jsplugins/startup/. -->
   <!-- Important: The file names specified here are case-sensitive even on Windows! -->

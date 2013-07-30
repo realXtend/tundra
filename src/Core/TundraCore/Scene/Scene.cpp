@@ -1137,7 +1137,7 @@ void Scene::SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sc
             QStringList foundRefs;
             sregex_iterator searchEnd;
 
-            regex expression("!ref:\\s*(.*?)\\s*(\\n|$)");
+            regex expression("!ref:\\s*(.*?)\\s*(\\n|\\r|$)");
             for(sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
             {
                 QString ref = QString::fromStdString((*iter)[1].str());

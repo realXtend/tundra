@@ -86,11 +86,13 @@ Releases
 
 New releases are announced on the mailing lists and at the [realXtend blog]. The releases are available at the [realXtend Tundra Google Code] project site.
 
-[Qt]:          http://qt.digia.com/                            "Qt homepage"
-[Ogre3D]:      http://www.ogre3d.org/                          "Ogre3D homepage"
-[Apache 2.0]:  http://www.apache.org/licenses/LICENSE-2.0.txt  "Apache 2.0 license"
-[CMake]:       http://www.cmake.org/                           "CMake homepage"
-[realXtend blog]: http://www.realxtend.org                     "realXtend blog"
+[Qt]: http://qt.digia.com/ "Qt homepage"
+[Ogre3D]: http://www.ogre3d.org/ "Ogre3D homepage"
+[bin/scenes]: https://github.com/realXtend/naali/tree/tundra2/bin/scenes "bin/scenes"
+[TundraAddons]: https://github.com/realXtend/TundraAddons/ "TundraAddons"
+[Apache 2.0]: http://www.apache.org/licenses/LICENSE-2.0.txt "Apache 2.0 license"
+[CMake]: http://www.cmake.org/ "CMake homepage"
+[realXtend blog]: http://www.realxtend.org "realXtend blog"
 [realXtend github repository]: https://github.com/realXtend/naali/tree/tundra2 "realXtend Tundra repository"
 [tools/OSX/BuildDeps.bash]: https://github.com/realXtend/naali/blob/tundra2/tools/OSX/BuildDeps.bash "tools/OSX/BuildDeps.bash"
 [tools/Linux/build-deps.bash]: https://github.com/realXtend/naali/tree/tundra2/tools/Linux/build-deps.bash "tools/Linux/build-deps.bash"

@@ -54,7 +54,7 @@ void ScriptAsset::ParseReferences()
 
     // Script asset dependencies are expressed in code comments using lines like "// !ref: http://myserver.com/myasset.png".
     // The asset type can be specified using a comma: "// !ref: http://myserver.com/avatarasset.xml, Avatar".
-    regex expression("!ref:\\s*(.*?)(\\s*,\\s*(.*?))?\\s*(\\n|$)");
+    regex expression("!ref:\\s*(.*?)(\\s*,\\s*(.*?))?\\s*(\\n|\\r|$)");
     for(sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
     {
         AssetReference ref;

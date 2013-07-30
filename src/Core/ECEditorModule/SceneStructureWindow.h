@@ -89,6 +89,8 @@ private:
     void CreateAssetItem(QTreeWidgetItem *parentItem, IAttribute *attr);
 
     EntityItem* EntityItemOfEntity(Entity* ent);
+    EntityItem* EntityItemById(entity_id_t id);
+    void RemoveEntityItem(EntityItem* item);
 
     Framework *framework; ///< Framework.
     SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
