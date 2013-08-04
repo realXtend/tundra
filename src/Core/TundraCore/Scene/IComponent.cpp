@@ -337,7 +337,7 @@ bool IComponent::AddAttribute(IAttribute* attr, u8 index)
 QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_element, bool serializeTemporary) const
 {
     QDomElement comp_element = doc.createElement("component");
-    comp_element.setAttribute("type", TypeName());
+    comp_element.setAttribute("type", EnsureTypeNameWithoutPrefix(TypeName()));
     if (!Name().isEmpty())
         comp_element.setAttribute("name", Name());
     comp_element.setAttribute("sync", BoolToString(replicated));
@@ -365,7 +365,7 @@ void IComponent::WriteAttribute(QDomDocument& doc, QDomElement& comp_element, co
 bool IComponent::BeginDeserialization(QDomElement& comp_element)
 {
     QString type = comp_element.attribute("type");
-    if (type == TypeName())
+    if (EnsureTypeNameWithPrefix(type) == TypeName())
     {
         SetName(comp_element.attribute("name"));
         return true;
