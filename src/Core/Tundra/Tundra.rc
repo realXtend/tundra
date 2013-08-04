@@ -15,7 +15,7 @@
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 IDI_ICON1          ICON           "..\\..\\..\\bin\\data\\ui\\images\\icon\\TundraLogo32px.ico"
 
-#define PRODUCT_NAME TUNDRA_ORGANIZATION_NAME TUNDRA_APPLICATION_NAME
+#define PRODUCT_NAME TUNDRA_ORGANIZATION_NAME " " TUNDRA_APPLICATION_NAME
 
 //
 // Version Information resources
