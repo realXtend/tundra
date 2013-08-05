@@ -4,6 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "Application.h"
+#include "HighPerfClock.h"
 #include "HttpAssetProvider.h"
 #include "HttpAssetTransfer.h"
 #include "IAssetUploadTransfer.h"
@@ -21,6 +22,10 @@
 #include <QThreadPool>
 
 #include "MemoryLeakCheck.h"
+
+/** Currently everything is written async. Adjust this to
+    force smaller files be written in the main thread. */
+int HttpAssetProvider::AsyncCacheWriteThreshold = 0 * 1024;
 
 HttpAssetProvider::HttpAssetProvider(Framework *framework_) :
     framework(framework_),
@@ -76,18 +81,34 @@ QByteArray HttpAssetProvider::CreateHttpDate(const QDateTime &dateTime)
     return QLocale::c().toString(dateTime, "ddd, dd MMM yyyy hh:mm:ss").toAscii() + QByteArray(" GMT");
 }
 
-#ifdef HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
-
-std::vector<HttpAssetTransferPtr> delayedTransfers;
-
-void HttpAssetProvider::Update(f64 frametime)
+void HttpAssetProvider::Update(f64 /*frametime*/)
 {
+#ifdef HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
     for(size_t i = 0; i < delayedTransfers.size(); ++i)
         framework->Asset()->AssetTransferCompleted(delayedTransfers[i].get());
     delayedTransfers.clear();
-}
-
 #endif
+
+    if (!completedTransfers.isEmpty())
+    {
+        const int maxLoadMSecs = 16;
+        tick_t startTime = GetCurrentClockTime();
+
+        while(completedTransfers.size() > 0)
+        {
+            PROFILE(HttpAssetProvider_ProcessCompleted);
+
+            AssetTransferPtr transfer = completedTransfers.front();
+            completedTransfers.pop_front();
+
+            framework->Asset()->AssetTransferCompleted(transfer.get());
+
+            // Throttle asset loading to at most 16 msecs/frame.
+            if (GetCurrentClockTime() - startTime >= GetCurrentClockFreq() * maxLoadMSecs / 1000)
+                break;
+        }
+    }
+}
 
 AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString assetType)
 {
@@ -367,21 +388,33 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
                 QByteArray bodyData = reply->readAll();
                 if (transfer->CachingAllowed())
                 {
-                    // Store last modified header to be set after the write operation is done.
-                    transfer->setProperty("LastModifiedHeader", reply->header(QNetworkRequest::LastModifiedHeader));
+                    if (bodyData.size() > AsyncCacheWriteThreshold)
+                    {
+                        // Store last modified header to be set after the write operation is done.
+                        transfer->setProperty("LastModifiedHeader", reply->header(QNetworkRequest::LastModifiedHeader));
 
-                    // Spawn a new cache write operation for this transfer with the global Qt thread pool.
-                    TransferCacheWriteOperation *cacheWriteOperation = new TransferCacheWriteOperation(transfer, cache->GetDiskSourceByRef(sourceRef), bodyData);
-                    connect(cacheWriteOperation, SIGNAL(Completed(AssetTransferPtr, bool)), SLOT(OnCacheWriteCompleted(AssetTransferPtr, bool)), Qt::QueuedConnection);
-                    QThreadPool::globalInstance()->start(cacheWriteOperation);
+                        // Spawn a new cache write operation for this transfer with the global Qt thread pool.
+                        TransferCacheWriteOperation *cacheWriteOperation = new TransferCacheWriteOperation(transfer, cache->GetDiskSourceByRef(sourceRef), bodyData);
+                        connect(cacheWriteOperation, SIGNAL(Completed(AssetTransferPtr, bool)), SLOT(OnCacheWriteCompleted(AssetTransferPtr, bool)), Qt::QueuedConnection);
+                        QThreadPool::globalInstance()->start(cacheWriteOperation);
 
-                    // Erase transfer from internal state and return.
-                    transfers.erase(iter);
-                    return;
+                        // Erase transfer from internal state and return.
+                        transfers.erase(iter);
+                        return;
+                    }
+
+                    // The data size is below our threshold, write to cache on the main thread.
+                    if (!cache->StoreAsset((u8*)bodyData.data(), bodyData.size(), sourceRef).isEmpty())
+                    {
+                        QVariant lastModifiedVariant = reply->header(QNetworkRequest::LastModifiedHeader);
+                        if (lastModifiedVariant.isValid())
+                            cache->SetLastModified(sourceRef, lastModifiedVariant.toDateTime());
+                    }
+                    else
+                        LogWarning("HttpAssetProvider: Failed to store asset to cache after completed reply: " + replyUrl);
                 }
-
-                // Caching is not allowed. Remove possible cache file from disk.
-                if (!cache->FindInCache(sourceRef).isEmpty())
+                // Caching is not allowed. Remove possible cached source from disk.
+                else
                     cache->DeleteAsset(sourceRef);
 
                 // Write original source data to the transfer.
@@ -390,12 +423,12 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             else
                 error = QString("Http GET for address \"%1\" returned status code %2 that could not be processed.").arg(replyUrl).arg(httpStatusCode);
 
-            // Send AssetTransferCompleted or AssetTransferFailed to AssetAPI.
+            // If no errors queue the trasnfer to be sent to AssetAPI::AssetTransferCompleted
             if (error.isEmpty())
             {
                 // This tells AssetAPI going forward that storing to cache has been done, otherwise it will rewrite the file.
-                transfer->SetCachingBehavior(false, cache->GetDiskSourceByRef(sourceRef));
-                framework->Asset()->AssetTransferCompleted(transfer.get());
+                transfer->SetCachingBehavior(false, transfer->CachingAllowed() ? cache->GetDiskSourceByRef(sourceRef) : "");
+                completedTransfers << transfer;
             }
             else
                 framework->Asset()->AssetTransferFailed(transfer.get(), error);
@@ -481,8 +514,8 @@ void HttpAssetProvider::OnCacheWriteCompleted(AssetTransferPtr transfer, bool ca
     // This tells AssetAPI going forward that storing to cache has been done, otherwise it will rewrite the file.
     transfer->SetCachingBehavior(false, cacheFileWritten ? framework->Asset()->Cache()->GetDiskSourceByRef(sourceRef) : "");
 
-    // The asset transfer is now completed from our perspective.
-    framework->Asset()->AssetTransferCompleted(transfer.get());
+    // Push to completed queue.
+    completedTransfers << transfer;
 }
 
 HttpAssetStoragePtr HttpAssetProvider::AddStorageAddress(const QString &address, const QString &storageName, bool liveUpdate, bool autoDiscoverable, bool liveUpload)

@@ -31,9 +31,11 @@ class ASSET_MODULE_API HttpAssetProvider : public QObject, public IAssetProvider
 
 public:
     explicit HttpAssetProvider(Framework *framework);
-    
     virtual ~HttpAssetProvider();
     
+    /// IAssetProvider override.
+    virtual void Update(f64 frametime);
+
     /// Returns the name of this asset provider.
     virtual QString Name();
     
@@ -84,9 +86,8 @@ public:
     /// Constructs a RFC 822 HTTP date string. f.ex. "Sun, 06 Nov 1994 08:49:37 GMT"
     static QByteArray CreateHttpDate(const QDateTime &dateTime);
 
-#ifdef HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
-    virtual void Update(f64 frametime);
-#endif
+    /// Threshold size for when to perform async cache write.
+    static int AsyncCacheWriteThreshold;
 
     // DEPRECATED
     QNetworkAccessManager* GetNetworkAccessManager() const { return NetworkAccessManager(); } /**< @deprecated Use NetworkAccessManager instead. */
@@ -122,6 +123,13 @@ private:
     /// Maps each Qt Http upload transfer we start to Asset API internal HttpAssetTransfer struct.
     typedef std::map<QNetworkReply*, AssetUploadTransferPtr> UploadTransferMap;
     UploadTransferMap uploadTransfers;
+
+    /// Completed transfers to be sent to AssetAPI.
+    QList<AssetTransferPtr> completedTransfers;
+
+#ifdef HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
+    std::vector<HttpAssetTransferPtr> delayedTransfers;
+#endif
 
     /// If true, asset requests outside any registered storages are also accepted, and will appear as
     /// assets with no storage. If false, all requests to assets outside any registered storage will fail.
