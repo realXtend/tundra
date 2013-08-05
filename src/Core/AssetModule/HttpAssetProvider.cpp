@@ -23,6 +23,10 @@
 
 #include "MemoryLeakCheck.h"
 
+/** Uncomment to enable a --disable_http_ifmodifiedsince command line parameter.
+    This is used to profile the performance effect the HTTP queries have on scene loading times. */
+//#define HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
+
 /** Currently everything is written async. Adjust this to
     force smaller files be written in the main thread. */
 int HttpAssetProvider::AsyncCacheWriteThreshold = 0 * 1024;
@@ -83,12 +87,6 @@ QByteArray HttpAssetProvider::CreateHttpDate(const QDateTime &dateTime)
 
 void HttpAssetProvider::Update(f64 /*frametime*/)
 {
-#ifdef HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
-    for(size_t i = 0; i < delayedTransfers.size(); ++i)
-        framework->Asset()->AssetTransferCompleted(delayedTransfers[i].get());
-    delayedTransfers.clear();
-#endif
-
     if (!completedTransfers.isEmpty())
     {
         const int maxLoadMSecs = 16;
@@ -148,20 +146,13 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     transfer->storage = GetStorageForAssetRef(assetRef);
     transfer->diskSourceType = IAsset::Cached; // The asset's disk source will represent a cached version of the original on the http server
 
-    AssetCache *cache = framework->Asset()->GetAssetCache();
-    QString filenameInCache = cache ? cache->FindInCache(assetRef) : QString();
 #ifdef HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
-    if (cache && framework->HasCommandLineParameter("--disable_http_ifmodifiedsince") && !filenameInCache.isEmpty())
+    QString cachePath = framework->Asset()->GetAssetCache()->FindInCache(assetRef);
+    if (framework->HasCommandLineParameter("--disable_http_ifmodifiedsince") && !cachePath.isEmpty())
     {
         PROFILE(HttpAssetProvider_ReadFileFromCache);
-
-        if (QFile::exists(filenameInCache))
-        {
-            transfer->SetCachingBehavior(false, filenameInCache);
-            delayedTransfers.push_back(transfer);
-        }
-        else
-            framework->Asset()->AssetTransferFailed(transfer.get(), "HttpAssetProvider: Failed to read file '" + filenameInCache + "' from cache!");
+        transfer->SetCachingBehavior(false, cachePath);
+        completedTransfers.push_back(transfer);
     }
     else
 #endif
