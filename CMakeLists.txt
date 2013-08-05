@@ -4,8 +4,19 @@ project(tundra)
 # CMake version requirement, >= 2.5.5 to ensure that ProtoBuf is found ok.
 cmake_minimum_required(VERSION 2.5.5)
 
-# Enable solution folders
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+# Policy CMP0005 - Preprocessor definition values are now escaped automatically.
+# TODO We can move to the new policy when the required CMake version is >= 2.6.
+if (COMMAND cmake_policy)
+    cmake_policy(SET CMP0005 OLD)
+endif()
+# If the following are undefined, the default values in TundraVersionInfo.h are used.
+#add_definitions(-DTUNDRA_VERSION_MAJOR=1)
+#add_definitions(-DTUNDRA_VERSION_MINOR=2)
+#add_definitions(-DTUNDRA_VERSION_MAJOR_PATCH=3)
+#add_definitions(-DTUNDRA_VERSION_MINOR_PATCH=4)
+#add_definitions(-DTUNDRA_ORGANIZATION_NAME="\\"MyOrganization\\"")
+#add_definitions(-DTUNDRA_APPLICATION_NAME="\\"MyApplication\\"")
+#add_definitions(-DTUNDRA_VERSION_STRING="\\"1.2.3.4\\"")
 
 # TUNDRA_NO_BOOST defines whether we want to replace usage of Boost with the C++ (TR1) standard equivalents.
 # Setting TUNDRA_NO_BOOST to TRUE, i.e. disabling usage of Boost in the Tundra codebase, requires compiler
@@ -53,8 +64,11 @@ if (APPLE AND TUNDRA_CPP11_ENABLED) # todo: Test if this works on Linux too
     else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
     endif()
-elseif (MSVC AND TUNDRA_CPP11_ENABLED) # todo: Implement
-    message(AUTHOR_WARNING "C++11 features were requested, but not yet configured for this compiler!")
+elseif (MSVC AND TUNDRA_CPP11_ENABLED)
+    # MSVC has partial C++11 support beginning in VC10
+    if (MSVC90)
+        message(FATAL_ERROR "VC9 does not support C++11 features!")
+    endif()
 endif()
 
 macro(PrintUsedEnvVariables)
@@ -75,24 +89,25 @@ macro(PrintUsedEnvVariables)
     message(STATUS "BULLET_DIR       = " ${BULLET_DIR})
 endmacro()
 
-macro (PrintUsedBuildConfig)
-    message ("\n=========== Used Build Configuration =============\n")
-    message (STATUS "TUNDRA_NO_BOOST            = " ${TUNDRA_NO_BOOST})
-    message (STATUS "TUNDRA_CPP11_ENABLED       = " ${TUNDRA_CPP11_ENABLED})
-    message (STATUS "TUNDRACORE_SHARED          = " ${TUNDRACORE_SHARED})
-    message (STATUS "BUILD_SDK_ONLY             = " ${BUILD_SDK_ONLY})
-    message (STATUS "BUILDING_INSTALLER         = " ${BUILDING_INSTALLER})
-    message (STATUS "ENABLE_BUILD_OPTIMIZATIONS = " ${ENABLE_BUILD_OPTIMIZATIONS})
-    message (STATUS "ENABLE_HYDRAX              = " ${ENABLE_HYDRAX})
-    message (STATUS "ENABLE_SKYX                = " ${ENABLE_SKYX})
-    message (STATUS "ENABLE_OPEN_ASSET_IMPORT   = " ${ENABLE_OPEN_ASSET_IMPORT})
-    message (STATUS "ENABLE_PROFILING           = " ${ENABLE_PROFILING})
-    message (STATUS "ENABLE_JS_PROFILING        = " ${ENABLE_JS_PROFILING})
-    message (STATUS "ENABLE_MEMORY_LEAK_CHECKS  = " ${ENABLE_MEMORY_LEAK_CHECKS})
-    message ("")
-    message (STATUS "Install prefix = " ${CMAKE_INSTALL_PREFIX})
-    message ("")
-endmacro ()
+macro(PrintUsedBuildConfig)
+    message("\n=========== Used Build Configuration =============\n")
+    message(STATUS "TUNDRA_NO_BOOST            = " ${TUNDRA_NO_BOOST})
+    message(STATUS "TUNDRA_CPP11_ENABLED       = " ${TUNDRA_CPP11_ENABLED})
+    message(STATUS "TUNDRACORE_SHARED          = " ${TUNDRACORE_SHARED})
+    message(STATUS "BUILD_SDK_ONLY             = " ${BUILD_SDK_ONLY})
+    message(STATUS "INSTALL_BINARIES_ONLY      = " ${INSTALL_BINARIES_ONLY})
+    message(STATUS "INSTALL_EXAMPLE_SCENES     = " ${INSTALL_EXAMPLE_SCENES})    
+    message(STATUS "ENABLE_BUILD_OPTIMIZATIONS = " ${ENABLE_BUILD_OPTIMIZATIONS})
+    message(STATUS "ENABLE_HYDRAX              = " ${ENABLE_HYDRAX})
+    message(STATUS "ENABLE_SKYX                = " ${ENABLE_SKYX})
+    message(STATUS "ENABLE_OPEN_ASSET_IMPORT   = " ${ENABLE_OPEN_ASSET_IMPORT})
+    message(STATUS "ENABLE_PROFILING           = " ${ENABLE_PROFILING})
+    message(STATUS "ENABLE_JS_PROFILING        = " ${ENABLE_JS_PROFILING})
+    message(STATUS "ENABLE_MEMORY_LEAK_CHECKS  = " ${ENABLE_MEMORY_LEAK_CHECKS})
+    message("")
+    message(STATUS "Install prefix = " ${CMAKE_INSTALL_PREFIX})
+    message("")
+endmacro()
 
 macro(GetLastElementFromPath dirPath outputParam)
     string (FIND ${dirPath} "/" lastPathSepIndex REVERSE)
@@ -103,6 +118,17 @@ macro(GetLastElementFromPath dirPath outputParam)
     else ()
         math(EXPR lastPathSepIndex "${lastPathSepIndex} + 1")
         string(SUBSTRING ${dirPath} ${lastPathSepIndex} -1 ${outputParam})
+    endif ()
+endmacro ()
+
+macro(RemoveLastElementFromPath dirPath outputParam)
+    string (FIND ${dirPath} "/" lastPathSepIndex REVERSE)
+    # This path does not have any subdirs in it
+    if (${lastPathSepIndex} STREQUAL "-1")
+        set (${outputParam} ${dirPath})
+    # Path has subdirs, pick the path in front of it
+    else ()
+        string(SUBSTRING ${dirPath} 0 ${lastPathSepIndex} ${outputParam})
     endif ()
 endmacro ()
 
@@ -246,15 +272,17 @@ if (APPLE)
     endif()
 endif()
 
-# Detect what compiler we are using on Windows
-# TODO Remove these as redundant.
-set(VC90 FALSE)
-set(VC100 FALSE)
+# Detect that a supported Visual Version is used and set up helper variables VC_VER and VS_PLATFORM
 if (MSVC)
+    if (CMAKE_CL_64)
+        set(VS_PLATFORM "x64")
+    else()
+        SET(VS_PLATFORM "Win32")
+    endif()
     if (MSVC90)
-        set(VC90 TRUE)
+        set(VC_VER "vc9")
     elseif(MSVC10)
-        set(VC100 TRUE)
+        set(VC_VER "vc10")
     else()
         message(STATUS "-- Warning: Unsupported Visual Studio version detected. Currently Visual Studio 2008 and 2010 are supported".)
     endif()
@@ -264,6 +292,7 @@ endif()
 # On MSVC, use warning level 4 but disable the following warnings:
 # C4127 conditional expression is constant
 # C4512 'class' : assignment operator could not be generated 
+# TODO Ideally we wouldn't like to disable these, but if we don't, we get warning spam from Qt files.
 if (MSVC)
     add_definitions (/W4 /wd4127 /wd4512)
 else ()

@@ -11,6 +11,6 @@ extern "C"
     DLLEXPORT void TundraPluginMain(Framework *framework)
     {
         Framework::SetInstance(framework);
-        framework->Asset()->RegisterAssetBundleTypeFactory(AssetBundleTypeFactoryPtr(new ArchiveBundleFactory()));
+        framework->Asset()->RegisterAssetBundleTypeFactory(MAKE_SHARED(ArchiveBundleFactory));
     }
 }

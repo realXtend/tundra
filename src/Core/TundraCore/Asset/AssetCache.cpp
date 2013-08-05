@@ -49,10 +49,11 @@ AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) :
         assetDir.mkdir("data");
     assetDataDir = QDir(cacheDirectory + "data");
 
-    // Check --clear-asset-cache start param
-    if (owner->GetFramework()->HasCommandLineParameter("--clear-asset-cache"))
+    // Check --clearAssetCache start param
+    if (owner->GetFramework()->HasCommandLineParameter("--clearAssetCache") ||
+        owner->GetFramework()->HasCommandLineParameter("--clear-asset-cache")) /**< @todo Remove support for the deprecated parameter version at some point. */
     {
-        LogInfo("AssetCache: Removing all data and metadata files from cache, found 'clear-asset-cache' from start params!");
+        LogInfo("AssetCache: Removing all data and metadata files from cache, found 'clearAssetCache' from the startup params!");
         ClearAssetCache();
     }
 }
@@ -151,7 +152,7 @@ bool AssetCache::SetLastModified(const QString &assetRef, const QDateTime &dateT
 {
     if (!dateTime.isValid())
     {
-        LogError("SetLastModified() DateTime is invalid: " + assetRef);
+        LogError("AssetCache::SetLastModified() DateTime is invalid: " + assetRef);
         return false;
     }
 

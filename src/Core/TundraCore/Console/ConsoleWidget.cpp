@@ -192,66 +192,65 @@ bool ConsoleWidget::eventFilter(QObject *obj, QEvent *e)
 {
     if (obj == lineEdit && e->type() == QEvent::KeyPress)
     {
-        QKeyEvent *keyEvent = dynamic_cast<QKeyEvent*>(e);
-        if (keyEvent)
+        switch(static_cast<QKeyEvent*>(e)->key())
         {
-            switch(keyEvent->key())
+        case Qt::Key_Up:
+        {
+            if (commandHistoryIndex+1 < commandHistory.size())
+                lineEdit->setText(commandHistory[++commandHistoryIndex]);
+            return true;
+        }
+        case Qt::Key_Down:
+        {
+            --commandHistoryIndex;
+            if (commandHistoryIndex < 0)
+                commandHistoryIndex = -1;
+
+            // Irssi-like behavior: clear line edit if not browsing history and down is pressed
+            if (commandHistoryIndex == -1)
+                lineEdit->clear();
+            else if (commandHistoryIndex > -1 && commandHistoryIndex < commandHistory.size()-1)
+                lineEdit->setText(commandHistory[commandHistoryIndex]);
+            return true;
+        }
+        case Qt::Key_Tab:
+        {
+            QString text = lineEdit->text().trimmed();
+            if (!text.isEmpty())
             {
-                case Qt::Key_Up:
+                if (text != commandStub && !prevSuggestions.contains(text, Qt::CaseInsensitive))
                 {
-                    if (commandHistoryIndex+1 < commandHistory.size())
-                        lineEdit->setText(commandHistory[++commandHistoryIndex]);
-                    return true;
+                    commandStub = text;
+                    prevSuggestions.clear();
                 }
-                case Qt::Key_Down:
-                {
-                    --commandHistoryIndex;
-                    if (commandHistoryIndex < 0)
-                        commandHistoryIndex = -1;
 
-                    // Irssi-like behavior: clear line edit if not browsing history and down is pressed
-                    if (commandHistoryIndex == -1)
-                        lineEdit->clear();
-                    else if (commandHistoryIndex > -1 && commandHistoryIndex < commandHistory.size()-1)
-                        lineEdit->setText(commandHistory[commandHistoryIndex]);
-                    return true;
+                QStringList suggestions;
+                for(ConsoleAPI::CommandMap::const_iterator it = framework->Console()->Commands().begin();
+                    it != framework->Console()->Commands().end(); ++it)
+                {
+                    if (it->first.startsWith(commandStub, Qt::CaseInsensitive))
+                        suggestions << it->first;
                 }
-                case Qt::Key_Tab:
+
+                // Clear previous suggestion so that we can "start over".
+                if (!prevSuggestions.isEmpty() && suggestions == prevSuggestions)
+                    prevSuggestions.clear();
+
+                foreach(const QString &command, suggestions)
                 {
-                    QString text = lineEdit->text().trimmed().toLower();
-                    if (!text.isEmpty())
-                    {                        
-                        if (text != commandStub && !prevSuggestions.contains(text))
-                        {
-                            commandStub = text;
-                            prevSuggestions.clear();
-                        }
-
-                        QStringList suggestions;
-                        foreach(const QString &command, framework->Console()->AvailableCommands())
-                            if (command.toLower().startsWith(commandStub))
-                                suggestions << command.toLower();
-
-                        // Clear previous suggestion so that we can "start over".
-                        if (!prevSuggestions.isEmpty() && suggestions == prevSuggestions)
-                            prevSuggestions.clear(); 
-
-                        foreach(const QString &command, suggestions)
-                        {
-                            if (!prevSuggestions.contains(command))
-                            {
-                                lineEdit->setText(command);
-                                prevSuggestions << command;
-                                break;
-                            }
-                        }
-
-                        return true;
+                    if (!prevSuggestions.contains(command, Qt::CaseInsensitive))
+                    {
+                        lineEdit->setText(command);
+                        prevSuggestions << command;
+                        break;
                     }
                 }
-                default:
-                    return QObject::eventFilter(obj, e);
+
+                return true;
             }
+        }
+        default:
+            return QObject::eventFilter(obj, e);
         }
     }
 

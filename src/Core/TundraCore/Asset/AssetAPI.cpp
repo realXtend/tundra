@@ -475,12 +475,20 @@ bool AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
     // some object left a dangling strong ref to an asset).
     asset->Unload();
 
+    // Remove any pending transfers for this asset.
+    AssetTransferMap::iterator transferIter = FindTransferIterator(asset->Name());
+    if (transferIter != currentTransfers.end())
+        currentTransfers.erase(transferIter);
+
+    // Remove the asset from internal state.
     AssetMap::iterator iter = assets.find(asset->Name());
     if (iter == assets.end())
     {
         LogError("AssetAPI::ForgetAsset called on asset \"" + asset->Name() + "\", which does not exist in AssetAPI!");
         return false;
     }
+
+    // Remove file from disk watcher.
     if (diskSourceChangeWatcher && !asset->DiskSource().isEmpty())
         diskSourceChangeWatcher->removePath(asset->DiskSource());
     assets.erase(iter);
@@ -1918,17 +1926,17 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
 void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
 {    
     PROFILE(AssetAPI_AssetDependenciesCompleted);
+
     // Emit success for this transfer
     transfer->EmitTransferSucceeded();
-    
-    // This asset transfer has finished - remove it from the internal list of ongoing transfers.
-    AssetTransferMap::iterator iter = FindTransferIterator(transfer.get());
-    if (iter != currentTransfers.end())
-        currentTransfers.erase(iter);
-    else // Even if we didn't know about this transfer, just print a warning and continue execution here nevertheless.
-        LogError("AssetAPI: Asset \"" + transfer->assetType + "\", name \"" + transfer->source.ref + "\" transfer finished, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
 
-    pendingDownloadRequests.erase(transfer->source.ref);
+    // This asset transfer has finished, remove it from the internal state.
+    AssetTransferMap::iterator transferIter = FindTransferIterator(transfer.get());
+    if (transferIter != currentTransfers.end())
+        currentTransfers.erase(transferIter);
+    PendingDownloadRequestMap::iterator downloadIter = pendingDownloadRequests.find(transfer->source.ref);
+    if (downloadIter != pendingDownloadRequests.end())
+        pendingDownloadRequests.erase(downloadIter);
 }
 
 void AssetAPI::NotifyAssetDependenciesChanged(AssetPtr asset)
@@ -2364,6 +2372,7 @@ QString AssetAPI::ResourceTypeForAssetRef(QString assetRef) const
         Seems the resource types have leaked here without the providers being in the code base.
         Where ever the code might be, remove these once the providers have been updated to return
         the type extensions correctly. */
+    /// @todo We don't support QML, remove the following
     if (filename.endsWith(".qml", Qt::CaseInsensitive) || filename.endsWith(".qmlzip", Qt::CaseInsensitive))
         return "QML";
     if (filename.endsWith(".pdf", Qt::CaseInsensitive))

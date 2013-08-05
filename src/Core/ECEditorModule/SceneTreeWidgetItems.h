@@ -10,17 +10,35 @@
 #include "SceneFwd.h"
 #include "AssetFwd.h"
 
+class EntityGroupItem : public QTreeWidgetItem
+{
+public:
+    EntityGroupItem(const QString &groupName);
+    QString GroupName() { return name; }
+    void UpdateText();
+    
+    int numberOfEntities;
+private:
+    QString name;
+};
+
 /// Tree widget item representing an entity.
 class EntityItem : public QTreeWidgetItem
 {
 public:
     /// Constructor.
     /** @param entity Entity which the item represents. */
-    explicit EntityItem(const EntityPtr &entity);
+    explicit EntityItem(const EntityPtr &entity, EntityGroupItem *parent = 0);
+
+    /// Destructor
+    ~EntityItem();
 
     /// Decorates the item (text + color) accordingly to the entity information.
     /** @param entity Entity which the item represents. */
     void SetText(::Entity *entity);
+
+    /// Parent entity group item, if the entity is assigned to a group
+    EntityGroupItem* Parent() const;
 
     /// Returns pointer to the entity this item represents.
     EntityPtr Entity() const;
@@ -35,6 +53,7 @@ public:
 private:
     entity_id_t id; ///< Entity ID associated with this tree widget item.
     EntityWeakPtr ptr; ///< Weak pointer to the component this item represents.
+    EntityGroupItem *parentItem;
 };
 
 /// Tree widget item representing a component.
@@ -94,18 +113,34 @@ struct SceneTreeWidgetSelection
     /// Returns true if no entity or component items selected.
     bool IsEmpty() const;
 
+    /// Returns true if selection contains entity groups.
+    bool HasGroups() const;
+
+    /// Returns true if selection contains entity groups only.
+    bool HasGroupsOnly() const;
+
     /// Returns true if selection contains entities;
     bool HasEntities() const;
 
+    /// Returns true if selection contains entities only;
+    bool HasEntitiesOnly() const;
+
     /// Returns true if selected contains components.
     bool HasComponents() const;
+    
+    /// Returns true if selected contains components only.
+    bool HasComponentsOnly() const;
 
     /// Returns true if selection contains assets.
     bool HasAssets() const;
 
+    /// Returns true if selection contains assets only.
+    bool HasAssetsOnly() const;
+
     /// Returns list containing unique entity IDs of both selected entities and parent entities of selected components
     QList<entity_id_t> EntityIds() const;
 
+    QList<EntityGroupItem *> groups; ///< List of selected entity groups.
     QList<EntityItem *> entities; ///< List of selected entities.
     QList<ComponentItem *> components; ///< List of selected components.
     QList<AssetRefItem *> assets; ///< List of selected asset refs

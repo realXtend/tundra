@@ -9,7 +9,7 @@ endif ()
 
 # Define source files
 file (GLOB CPP_FILES main.cpp)
-file (GLOB H_FILES "") # Dont do *.h it will pickup windows spesific resource.h
+file (GLOB H_FILES "") # Don't do *.h it will pickup Windows-spesific resource.h
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 set (RESOURCE_FILES "")
@@ -17,11 +17,8 @@ set (RESOURCE_FILES "")
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
 if (MSVC)
-    # Windows resource files for icon.
-    if (BUILDING_INSTALLER)
-        set(RESOURCE_FILES ${RESOURCE_FILES} resource.h Tundra.rc)
-    endif()
-
+    # Windows resource files for icon and version information.
+    set(RESOURCE_FILES ${RESOURCE_FILES} resource.h Tundra.rc)
     # Preprocessor defines on MSVC
     set_property(DIRECTORY PROPERTY COMPILE_DEFINITIONS_RELEASE _DMEMDUMP)
     set_property(DIRECTORY PROPERTY COMPILE_DEFINITIONS_RELWITHDEBINFO _DMEMDUMP)
@@ -64,14 +61,15 @@ setup_install_files (${TUNDRA_BIN}/plugins.xml)       # Default startup config
 setup_install_files (${TUNDRA_BIN}/viewer.xml)        # Viewer startup config
 setup_install_files_find (${TUNDRA_BIN}/dox "*.txt" Release|Debug|RelWithDebInfo "dox") # Doc files used in installer
 
-# Install certain things only in non BUILD_SDK_ONLY mode
-if (NOT BUILD_SDK_ONLY)
-    setup_install_directory (${TUNDRA_BIN}/data)        # Data: ui, assets, etc
-    setup_install_directory (${TUNDRA_BIN}/scenes)      # Example application scenes
-    setup_remove_file ("data/assets/dummy.txt")         # Remove git dummy file from data/assets
-endif ()
+# Example application scenes if wanted.
+if (INSTALL_EXAMPLE_SCENES)
+    setup_install_directory (${TUNDRA_BIN}/scenes)
+endif()
 
-# Install deps for windows
+setup_install_directory(${TUNDRA_BIN}/data)        # Data: ui, assets, etc
+setup_remove_file("data/assets/dummy.txt")         # Remove git dummy file from data/assets
+
+# Install deps for Windows
 setup_install_windows_deps_regexp ("" qt/bin/ "[/][Q][t][A-Z].*[^d][4][.]dll$" Release|RelWithDebInfo qt/bin/ "[/][Q][t][A-Z].*[d][4][.]dll$" Debug)
 setup_install_windows_deps_regexp (qtplugins qt/plugins/ "[/]plugins[/].*[/][q].*[^d][4][.]dll$" Release|RelWithDebInfo qt/plugins/ "[/]plugins[/].*[/][q].*[d][4][.]dll$" Debug)
 setup_install_windows_deps ("libeay32.dll;ssleay32.dll" Release|RelWithDebInfo|Debug) # OpenSSL DLLs for SSL support in QNetwork

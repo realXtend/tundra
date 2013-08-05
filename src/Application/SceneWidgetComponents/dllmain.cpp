@@ -17,9 +17,9 @@ extern "C"
     {
         Framework::SetInstance(fw);
         fw->RegisterModule(new SceneWidgetComponents());
-        fw->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_WidgetCanvas>));
-        fw->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_WebView>));
-        fw->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_SlideShow>));
-        fw->Scene()->RegisterComponentFactory(ComponentFactoryPtr(new GenericComponentFactory<EC_WidgetBillboard>));
+        fw->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_WidgetCanvas>));
+        fw->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_WebView>));
+        fw->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_SlideShow>));
+        fw->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_WidgetBillboard>));
     }
 }

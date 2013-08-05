@@ -21,14 +21,18 @@
 #include "Entity.h"
 #include "Renderer.h"
 #include "OgreWorld.h"
-#include "AssetAPI.h"
 #include "LoggingFunctions.h"
 #include "EC_RigidBody.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
-#include "IAsset.h"
 #include "ConfigAPI.h"
-
+#include "AssetAPI.h"
+#include "IAsset.h"
+#include "IAssetTransfer.h"
+#include "IAssetProvider.h"
+#include "IAssetBundle.h"
+#include "ConfigAPI.h"
+#include "TreeWidgetUtils.h"
 #ifdef EC_Script_ENABLED
 #include "IScriptInstance.h"
 #include "EC_Script.h"
@@ -40,6 +44,7 @@
 #include <QTreeWidget>
 #include <QUiLoader>
 #include <QFile>
+#include <QFileInfo>
 #include <QHeaderView>
 #include <QPainter>
 #include <QTreeWidgetItemIterator>
@@ -53,27 +58,27 @@
 #include <btBulletDynamicsCommon.h>
 #include <OgreFontManager.h>
 #include <kNet/Network.h>
-
-#include "TreeWidgetUtils.h"
+#ifdef KNET_USE_QT
+#include "KristalliProtocolModule.h"
+#include <kNet/qt/NetworkDialog.h>
+#endif
 
 #include "MemoryLeakCheck.h"
 
 using namespace std;
 
-const QString DEFAULT_LOG_DIR("logs");
-const QString OGRE_DUMP_FILENAME("profiler-ogre-stats.txt");
-const QString SCENECOMPLEXITY_DUMP_FILENAME("profiler-scene-stats.txt");
-const QString PERFLOGGER_DUMP_FILENAME("profiler-performance-logger.txt");
-
 namespace
 {
+    const QString cDefaultLogDir("logs");
+    const QString cOgreDumpFilename("profiler-ogre-stats.txt");
+    const QString cSceneComplexityDumpFilename("profiler-scene-stats.txt");
+    const QString cPerfLoggerDumpFilename("profiler-performance-logger.txt");
+
     void CopySelectedItemName(QTreeWidget *treeWidget)
     {
         QTreeWidgetItem *item = treeWidget != 0 ? treeWidget->currentItem() : 0;
-        if (!item)
-            return;
-        QClipboard *clipboard = QApplication::clipboard();
-        clipboard->setText(item->text(0));
+        if (item)
+            QApplication::clipboard()->setText(item->text(0));
     }
 }
 
@@ -84,7 +89,7 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     logThreshold_(100.0f),
     visibility_(false),
     contextMenu_(0)
-{       
+{
     ui_.setupUi(this);
     setWindowTitle(tr("Profiler"));
     
@@ -99,9 +104,9 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     
     // Set/init working directory for log files.
     logDirectory_ = Application::UserDataDirectory();
-    if (!logDirectory_.exists(DEFAULT_LOG_DIR))
-        logDirectory_.mkdir(DEFAULT_LOG_DIR);
-    logDirectory_.cd(DEFAULT_LOG_DIR);
+    if (!logDirectory_.exists(cDefaultLogDir))
+        logDirectory_.mkdir(cDefaultLogDir);
+    logDirectory_.cd(cDefaultLogDir);
     
     // Event filters
     ui_.treeProfilingData->installEventFilter(this);
@@ -113,6 +118,11 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     connect(ui_.tabWidget, SIGNAL(currentChanged(int)), this, SLOT(RefreshProfilerTabWidget(int)));
     connect(ui_.ogreTabWidget, SIGNAL(currentChanged(int)), this, SLOT(RefreshOgreTabWidget(int)));
 
+    // Inject kNet's NetworkDialog to the UI as Network page if applicable.
+#ifdef KNET_USE_QT
+    ui_.tabWidget->insertTab(ui_.tabWidget->count(), new kNet::NetworkDialog(this, framework_->Module<KristalliProtocolModule>()->GetNetwork()), tr("Network"));
+#endif
+
     // Tree/table header resizing
     ui_.treeProfilingData->header()->resizeSection(0, 300);
     ui_.treeProfilingData->header()->resizeSection(1, 60);
@@ -120,9 +130,9 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     ui_.treeProfilingData->header()->resizeSection(3, 50);
     ui_.treeProfilingData->header()->resizeSection(4, 50);
 
-    ui_.treeAssetCache->header()->resizeSection(1, 60);
+    ui_.treeAssetCache->header()->resizeSection(1, 90);
 
-    ui_.treeAssetTransfers->header()->resizeSection(0, 240);
+    ui_.treeAssetTransfers->header()->resizeSection(0, 500);
     ui_.treeAssetTransfers->header()->resizeSection(1, 90);
     ui_.treeAssetTransfers->header()->resizeSection(2, 90);
 
@@ -167,8 +177,8 @@ TimeProfilerWindow::TimeProfilerWindow(Framework *fw, QWidget *parent) :
     connect(ui_.pushButtonDumpOgreStats, SIGNAL(pressed()), this, SLOT(DumpOgreResourceStatsToFile()));
     connect(ui_.buttonDumpSceneComplexity, SIGNAL(pressed()), this, SLOT(DumpSceneComplexityToFile()));
     
-    ui_.pushButtonDumpOgreStats->setText("Dump stats to " + QDir::toNativeSeparators(logDirectory_.absoluteFilePath(OGRE_DUMP_FILENAME)));
-    ui_.buttonDumpSceneComplexity->setText("Dump stats to " + QDir::toNativeSeparators(logDirectory_.absoluteFilePath(SCENECOMPLEXITY_DUMP_FILENAME)));
+    ui_.pushButtonDumpOgreStats->setText("Dump stats to " + QDir::toNativeSeparators(logDirectory_.absoluteFilePath(cOgreDumpFilename)));
+    ui_.buttonDumpSceneComplexity->setText("Dump stats to " + QDir::toNativeSeparators(logDirectory_.absoluteFilePath(cSceneComplexityDumpFilename)));
 
     ui_.loggerSpinbox->setRange(0.0, 1000.0);
     ui_.loggerSpinbox->setValue(logThreshold_);
@@ -1002,7 +1012,7 @@ void TimeProfilerWindow::DoThresholdLogging()
      if (ui_.tabWidget->currentIndex() == 1 && !ui_.loggerApply->isChecked())
         return;
 
-    QFile file(logDirectory_.absoluteFilePath(PERFLOGGER_DUMP_FILENAME));
+    QFile file(logDirectory_.absoluteFilePath(cPerfLoggerDumpFilename));
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
          return;
 
@@ -1322,7 +1332,7 @@ static void DumpOgreResManagerStatsToFile(Ogre::ResourceManager &manager, std::o
 
 void TimeProfilerWindow::DumpOgreResourceStatsToFile()
 {
-    QString path = QDir::toNativeSeparators(logDirectory_.absoluteFilePath(OGRE_DUMP_FILENAME));
+    QString path = QDir::toNativeSeparators(logDirectory_.absoluteFilePath(cOgreDumpFilename));
 
     std::ofstream file(path.toStdString().c_str());
     
@@ -1369,7 +1379,7 @@ void TimeProfilerWindow::DumpOgreResourceStatsToFile()
 
 void TimeProfilerWindow::DumpSceneComplexityToFile()
 {       
-    QString path = QDir::toNativeSeparators(logDirectory_.absoluteFilePath(SCENECOMPLEXITY_DUMP_FILENAME));
+    QString path = QDir::toNativeSeparators(logDirectory_.absoluteFilePath(cSceneComplexityDumpFilename));
     
     std::ofstream file(path.toStdString().c_str());
     file << ui_.textSceneComplexity->toPlainText().toStdString();
@@ -1722,6 +1732,17 @@ void RedrawHistoryGraph(const std::vector<double> &data, QLabel *label)
     label->setPixmap(QPixmap::fromImage(image));
 }
 
+struct ProfilerAssetTypeInfo
+{
+    uint countTotal;
+    uint countLoaded;
+    uint countUnloaded;
+    uint countProgrammatic;
+    u64 bytes;
+
+    ProfilerAssetTypeInfo() : countTotal(0), countLoaded(0), countUnloaded(0), countProgrammatic(0), bytes(0) {}
+};
+
 void TimeProfilerWindow::RefreshAssetsPage()
 {
     if (!visibility_ || ui_.tabWidget->currentIndex() != 5)
@@ -1730,51 +1751,110 @@ void TimeProfilerWindow::RefreshAssetsPage()
     ui_.treeAssetCache->clear();
     ui_.treeAssetTransfers->clear();
 
-    /// @todo Regression. Reimplement using the Asset API. -jj.
-/*  
-    shared_ptr<Asset ServiceInterface> asset_service = 
-        framework_->GetServiceManager()->GetService<AssetServiceInterface>(Service::ST_Asset).lock();
-    if (!asset_service)
-        return;
-        
-    AssetCacheInfoMap cache_map = asset_service->GetAssetCacheInfo();
-    AssetCacheInfoMap::const_iterator i = cache_map.begin();
-    while(i != cache_map.end())
+    // Track count per asset type
+    QHash<QString, ProfilerAssetTypeInfo> assetsPerType;
+
+    // Iterate all loaded assets.
+    AssetMap assets = framework_->Asset()->Assets();
+    for (AssetMap::const_iterator iter = assets.begin(); iter != assets.end(); ++iter)
     {
-        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList());
+        AssetPtr asset = iter->second;
+        if (!asset)
+            continue;
+
+        QString type = asset->Type();       
+        if (asset->DiskSourceType() == IAsset::Programmatic)
+            assetsPerType[type].countProgrammatic++;
+
+        assetsPerType[type].countTotal++;
+        if (!asset->IsLoaded())
+        {
+            assetsPerType[type].countUnloaded++;
+            continue;
+        }
+        assetsPerType[type].countLoaded++;
+
+        /** RawData() is going to call SerializeTo() that can produce lots of
+            errors for certain types of assets (eg. materials). Prefer checking
+            size from the disk source instead. We are not getting GPU side
+            memory consumption anyways, just the raw data which is the same on disk. */
+        QString diskSource = asset->DiskSource();
+        if (!diskSource.isEmpty() && QFile::exists(diskSource))
+            assetsPerType[type].bytes += static_cast<u64>(QFileInfo(diskSource).size());
+        else
+        {
+            // Tundra usually generates materials as Programmatic via EC_Material.
+            // Programmatic assets will usually produce lots of serialization errors so leave them out.
+            if (asset->DiskSourceType() != IAsset::Programmatic)
+            {
+                // Some assets do not implement SerializeTo which will only give us errors.
+                if (type != "Audio")
+                    assetsPerType[type].bytes += static_cast<u64>(asset->RawData().size());
+            }
+        }
+    }
+
+    // Iterate loaded bundles
+    AssetBundleMap bundles = framework_->Asset()->AssetBundles();
+    for (AssetBundleMap::const_iterator iter = bundles.begin(); iter != bundles.end(); ++iter)
+    {
+        AssetBundlePtr bundle = iter->second;
+        if (!bundle)
+            continue;
+
+        QString type = bundle->Type();
+        assetsPerType[type].countTotal++;
+        if (!bundle->IsLoaded())
+        {
+            assetsPerType[type].countUnloaded++;
+            continue;
+        }
+        assetsPerType[type].countLoaded++;
+    }
+
+    // Fill the table with results.
+    foreach(const QString &assetType, assetsPerType.keys())
+    {
+        QTreeWidgetItem *item = new QTreeWidgetItem();
         ui_.treeAssetCache->addTopLevelItem(item);
-        
-        item->setText(0, QString(i->first.c_str()));
-        item->setText(1, QString(QString("%1").arg(i->second.count_)));
-        item->setText(2, QString(kNet::FormatBytes((int)i->second.size_).c_str()));
-        
-        ++i;
+
+        const ProfilerAssetTypeInfo &typeInfo = assetsPerType[assetType];
+        item->setText(0, assetType);
+        item->setText(1, QString::number(typeInfo.countTotal));
+        item->setText(2, QString::fromStdString(kNet::FormatBytes(typeInfo.bytes)));
+        item->setText(3, QString::number(typeInfo.countLoaded));
+        item->setText(4, QString::number(typeInfo.countUnloaded));
+        item->setText(5, QString::number(typeInfo.countProgrammatic));
     }
 
-    AssetTransferInfoVector transfer_vector = asset_service->GetAssetTransferInfo();
-    AssetTransferInfoVector::const_iterator j = transfer_vector.begin();
-    while(j != transfer_vector.end())
+    // Fill ongoing transfers
+    std::vector<AssetTransferPtr> pendingTransfers = framework_->Asset()->PendingTransfers();
+    for (std::vector<AssetTransferPtr>::const_iterator iter = pendingTransfers.begin(); iter != pendingTransfers.end(); ++iter)
     {
-        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList());
-        ui_.treeAssetTransfers->addTopLevelItem(item);
-        
-        item->setText(0, QString((*j).id_.c_str()));
-        item->setText(1, QString((*j).type_.c_str()));
-        item->setText(2, QString((*j).provider_.c_str()));
-        item->setText(3, QString(kNet::FormatBytes((int)(*j).size_).c_str()));
-        item->setText(4, QString(kNet::FormatBytes((int)(*j).received_).c_str()));
-        ++j;
-    }
+        AssetTransferPtr pendingTransfer = (*iter);
+        if (!pendingTransfer)
+            continue;
 
+        AssetProviderPtr provider = pendingTransfer->provider.lock();
+        AssetStoragePtr storage = pendingTransfer->storage.lock();
+
+        QTreeWidgetItem *item = new QTreeWidgetItem();
+        ui_.treeAssetTransfers->addTopLevelItem(item);
+
+        item->setText(0, pendingTransfer->SourceUrl());
+        item->setText(1, pendingTransfer->AssetType());
+        item->setText(2, provider.get() ? provider->Name() : "");
+        item->setText(3, storage.get() ? storage->Name() : "");
+    }
+    
     QTimer::singleShot(500, this, SLOT(RefreshAssetsPage()));
-*/
 }
 
 void TimeProfilerWindow::RefreshOgreSceneComplexityPage()
 {
     if (!visibility_ || ui_.ogreTabWidget->currentIndex() != 1)
         return;
-    
+
     Scene *scene = framework_->Scene()->MainCameraScene();
     if (!scene)
     {

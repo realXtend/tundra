@@ -53,7 +53,7 @@ function createEntity(entityName, x, y, z){
     if(outputEnabled){
         print("ACTION: Creating a box(id: " + entityId +") at (x,y,z): " + pos_x + ", " + pos_y + ", " + pos_z);
     }
-    var entity = myScene.CreateEntity(entityId, ["EC_Placeable", "EC_Mesh"]);
+    var entity = myScene.CreateEntity(entityId, ["Placeable", "Mesh"]);
     entity.SetTemporary(true);
     entity.SetName(entityName);
     entity.mesh.SetMeshRef("local://box.mesh");

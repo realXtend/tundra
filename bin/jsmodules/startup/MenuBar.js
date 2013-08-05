@@ -1,9 +1,22 @@
 /**
     For conditions of distribution and use, see copyright notice in LICENSE
 
-    Implements basic menu bar for accessing common Tundra functionality and UIs.
+    MenuBar.js - Implements basic menu bar for accessing common Tundra functionality and UIs.
+
     NOTE: Clears any existing menus in the menu bar so make sure that this script
     is loaded first, or replace with another implementation*/
+
+// Widget for showing instructions if user starts Tundra without any scene.
+var sceneInstructions = null;
+
+function SizeOf(obj)
+{
+    var size = 0, key;
+    for(key in obj)
+        if (obj.hasOwnProperty(key))
+            ++size;
+    return size;
+};
 
 // Applicable only in headful mode.
 if (!framework.IsHeadless())
@@ -20,8 +33,8 @@ if (!framework.IsHeadless())
 
     // File menu
     var fileMenu = menu.addMenu("&File");
-    fileMenu.addAction("New scene").triggered.connect(NewScene);
-    fileMenu.addAction("Open scene").triggered.connect(OpenScene);
+    fileMenu.addAction("New Scene...").triggered.connect(NewScene);
+    fileMenu.addAction("Open Scene...").triggered.connect(OpenScene);
     fileMenu.addSeparator();
 
     var screenshotAct = fileMenu.addAction("Take Screenshot");
@@ -31,8 +44,6 @@ if (!framework.IsHeadless())
     fileMenu.addSeparator();
     fileMenu.addAction("Clear Asset Cache").triggered.connect(ClearAssetCache);
     fileMenu.addSeparator();
-
-
 
     // Reconnect menu items for client only
     if (!server.IsAboutToStart())
@@ -50,46 +61,47 @@ if (!framework.IsHeadless())
     // Set unique object name so that other scripts can query this menu.
     viewMenu.objectName = "ViewMenu";
 
-    if (framework.GetModuleByName("SceneStructure"))
+    if (framework.ModuleByName("SceneStructure"))
     {
         viewMenu.addAction("Assets").triggered.connect(OpenAssetsWindow);
         viewMenu.addAction("Scene").triggered.connect(OpenSceneWindow);
         viewMenu.addAction("Key Bindings").triggered.connect(OpenKeyBindingsWindow);
     }
 
-    var ecEditor = framework.GetModuleByName("ECEditor");
+    var ecEditor = framework.ModuleByName("ECEditor");
     if (ecEditor)
         viewMenu.addAction("EC Editor").triggered.connect(OpenEcEditorWindow);
 
     // TODO: Avatar Editor menu action disabled for now, as it's not fully ready for end-users
-//    if (framework.GetModuleByName("Avatar"))
-//        viewMenu.addAction("Avatar Editor").triggered.connect(OpenAvatarEditorWindow);
+//    if (framework.ModuleByName("Avatar"))
 
-    if (framework.GetModuleByName("DebugStats"))
+    if (framework.ModuleByName("DebugStats"))
         viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
 
+    viewMenu.addAction("Console").triggered.connect(OpenConsoleWindow);
+
     // Settings menu
-    if (framework.GetModuleByName("MumbleVoip") || framework.GetModuleByName("CAVEStereo") || ecEditor)
+    if (framework.ModuleByName("MumbleVoip") || ecEditor)
     {
         var settingsMenu = menu.addMenu("&Settings");
         // Set unique object name so that other scripts can query this menu.
         settingsMenu.objectName = "SettingsMenu";
 
-        settingsMenu.addAction("Open config folder").triggered.connect(OpenConfigFolder);
+        settingsMenu.addAction("Open Config Folder").triggered.connect(OpenConfigFolder);
 
-        if (framework.GetModuleByName("MumbleVoip"))
-            settingsMenu.addAction("Voice settings").triggered.connect(OpenVoiceSettings);
+        if (framework.ModuleByName("MumbleVoip"))
+            settingsMenu.addAction("Voice Settings").triggered.connect(OpenVoiceSettings);
 
         if (ecEditor)
         {
             // Gizmo
-            var showGizmoAction = settingsMenu.addAction("Show editing gizmo");
+            var showGizmoAction = settingsMenu.addAction("Show Editing Gizmo");
             showGizmoAction.checkable = true;
             showGizmoAction.checked = ecEditor.gizmoEnabled;
             showGizmoAction.triggered.connect(ShowEditingGizmo);
 
             // Highlighting of selected entities
-            var showHighlightAction = settingsMenu.addAction("Highlight selected entities");
+            var showHighlightAction = settingsMenu.addAction("Highlight Selected Entities");
             showHighlightAction.checkable = true;
             showHighlightAction.checked = ecEditor.highlightingEnabled;
             showHighlightAction.triggered.connect(HighlightSelectedEntities);
@@ -99,36 +111,55 @@ if (!framework.IsHeadless())
     // Help menu
     var helpMenu = menu.addMenu("&Help");
     var browserIcon = new QIcon(installDir + "data/ui/images/icon/browser.ico");
-    helpMenu.addAction(browserIcon, "Wiki").triggered.connect(OpenWikiUrl);
-    helpMenu.addAction(browserIcon, "Doxygen").triggered.connect(OpenDoxygenUrl);
-    helpMenu.addAction(browserIcon, "Mailing list").triggered.connect(OpenMailingListUrl);
+    helpMenu.addAction(browserIcon, "realXtend Home Page").triggered.connect(OpenHomePageUrl);
+    helpMenu.addAction(browserIcon, "Developer Mailing List").triggered.connect(OpenDevMailingListUrl);
+    helpMenu.addAction(browserIcon, "User Mailing List").triggered.connect(OpenMailingListUrl);
+    helpMenu.addAction(browserIcon, "GitHub").triggered.connect(OpenGitHubUrl);
+    // TODO Doxygen documentation not hosted anywhere currently!
+//    helpMenu.addAction(browserIcon, "Developer Documentation").triggered.connect(OpenDoxygenUrl);
 
-    function NewScene() {
+    function NewScene()
+    {
         if (framework.Scene().MainCameraScene() != null)
         {
-            var result = QMessageBox.warning(ui.MainWindow(), "New scene", "Making a new scene will discard any changes you made to the current scene. Do you want to continue?", QMessageBox.Yes, QMessageBox.No);
+            var result = QMessageBox.warning(ui.MainWindow(), "New Scene", "Making a new scene will discard any changes you made to the current scene. Do you want to continue?", QMessageBox.Yes, QMessageBox.No);
             if (result == QMessageBox.No)
                 return;
         }
+
+        var fileName = QFileDialog.getSaveFileName(ui.MainWindow(), "Save New Scene As", application.currentWorkingDirectory, "Tundra TXML file (*.txml)");
+        if (fileName == "")
+            return;
+
         var sceneNumber = Math.floor(Math.random() * 10000000 + 1);
         var newScene = framework.Scene().CreateScene("Scene" + sceneNumber, true, true);
         if (newScene == null)
             return;
 
+        var storage = asset.DeserializeAssetStorageFromString(fileName, false); 
+        if (!storage)
+        {
+            console.LogError("Failed to create asset storage for file " + fileName);
+            return;
+        }
+
+        asset.SetDefaultAssetStorage(storage);
+
         // Give some sort of feedback (f.ex. make a skybox)
-        var environment = newScene.CreateEntity(newScene.NextFreeId(), ["EC_Name", "EC_Sky"]);
+        var environment = newScene.CreateEntity(newScene.NextFreeId(), ["Name", "Sky"]);
         environment.name = "Environment";
         environment.sky.enabled = true;
     }
 
-    function OpenScene() {
-        var fileName = QFileDialog.getOpenFileName(ui.MainWindow(), "Open scene", framework.application.currentWorkingDirectory, "Tundra TXML file (*.txml)");
+    function OpenScene()
+    {
+        var fileName = QFileDialog.getOpenFileName(ui.MainWindow(), "Open Scene", application.currentWorkingDirectory, "Tundra TXML file (*.txml)");
         if (fileName == "")
             return;
 
         if (framework.Scene().MainCameraScene() != null)
         {
-            var result = QMessageBox.warning(ui.MainWindow(), "Open scene", "Opening a new scene will discard any changes you made to the current scene. Do you want to continue?", QMessageBox.Yes, QMessageBox.No);
+            var result = QMessageBox.warning(ui.MainWindow(), "Open Scene", "Opening a new scene will discard any changes you made to the current scene. Do you want to continue?", QMessageBox.Yes, QMessageBox.No);
             if (result == QMessageBox.No)
                 return;
         }
@@ -140,6 +171,15 @@ if (!framework.IsHeadless())
         var openedStorage = asset.DeserializeAssetStorageFromString(fileName, false);
         if (openedStorage != null)
             asset.SetDefaultAssetStorage(openedStorage);
+
+        var storage = asset.DeserializeAssetStorageFromString(fileName, false); 
+        if (!storage)
+        {
+            console.LogError("Failed to create asset storage for file " + fileName);
+            return;
+        }
+
+        asset.SetDefaultAssetStorage(storage);
 
         openedScene.LoadSceneXML(fileName, true, false, 0);
 
@@ -175,7 +215,7 @@ if (!framework.IsHeadless())
 
     function ClearAssetCache() {
         // Show some additional info: count and size of removed files
-        var cachePath = asset.GetAssetCache().CacheDirectory();
+        var cachePath = asset.Cache().CacheDirectory();
         if (cachePath != "" && cachePath != null)
         {
             var count = 0;
@@ -203,7 +243,7 @@ if (!framework.IsHeadless())
             }
 
             // Clear the cache. If we happen to throw here we wont show false log/ui information.
-            asset.GetAssetCache().ClearAssetCache();
+            asset.Cache().ClearAssetCache();
 
             // Log to console
             var msg = "";
@@ -223,69 +263,73 @@ if (!framework.IsHeadless())
         }
     }
 
-    function OpenMailingListUrl() {
+    function OpenDevMailingListUrl()
+    {
+        QDesktopServices.openUrl(new QUrl("http://groups.google.com/group/realxtend-dev/"));
+    }
+
+    function OpenMailingListUrl()
+    {
         QDesktopServices.openUrl(new QUrl("http://groups.google.com/group/realxtend/"));
     }
     
-    function OpenWikiUrl() {
-        QDesktopServices.openUrl(new QUrl("http://wiki.realxtend.org/"));
+    function OpenHomePageUrl() {
+        QDesktopServices.openUrl(new QUrl("http://realxtend.org/"));
     }
 
-    function OpenDoxygenUrl() {
+    function OpenGitHubUrl() {
+        QDesktopServices.openUrl(new QUrl("https://github.com/realxtend/naali/"));
+    }
+
+    function OpenDoxygenUrl()
+    {
+        // TODO host doxygen-generated documentation somewhere!
         QDesktopServices.openUrl(new QUrl("http://www.realxtend.org/doxygen/"));
     }
 
     function OpenSceneWindow() {
-        framework.GetModuleByName("SceneStructure").ToggleSceneStructureWindow();
+        framework.ModuleByName("SceneStructure").ToggleSceneStructureWindow();
     }
 
     function OpenAssetsWindow() {
-        framework.GetModuleByName("SceneStructure").ToggleAssetsWindow();
+        framework.ModuleByName("SceneStructure").ToggleAssetsWindow();
     }
 
     function OpenKeyBindingsWindow() {
-        framework.GetModuleByName("SceneStructure").ToggleKeyBindingsWindow();
+        framework.ModuleByName("SceneStructure").ToggleKeyBindingsWindow();
     }
 
     function OpenProfilerWindow() {
-        framework.GetModuleByName("DebugStats").ShowProfilerWindow();
-    }
-
-    function OpenTerrainEditor() {
-        framework.GetModuleByName("Environment").ShowTerrainWeightEditor();
-    }
-
-    function OpenPostProcessWindow() {
-        framework.GetModuleByName("Environment").ShowPostProcessWindow();
+        framework.ModuleByName("DebugStats").ShowProfilerWindow();
     }
 
     function OpenVoiceSettings() {
-        framework.GetModuleByName("MumbleVoip").ToggleSettingsWidget();
+        framework.ModuleByName("MumbleVoip").ToggleSettingsWidget();
     }
 
     function OpenConsoleWindow() {
-        framework.GetModuleByName("Console").ToggleConsole();
+        console.ToggleConsole();
     }
 
     function OpenEcEditorWindow() {
-        framework.GetModuleByName("ECEditor").ShowEditorWindow();
+        framework.ModuleByName("ECEditor").ShowEditorWindow();
     }
 
     function OpenAvatarEditorWindow() {
-        framework.GetModuleByName("Avatar").ToggleAvatarEditorWindow();
+        framework.ModuleByName("Avatar").ToggleAvatarEditorWindow();
         if (client.IsConnected())
-           framework.GetModuleByName("Avatar").EditAvatar("Avatar" + client.GetConnectionID())
+           framework.ModuleByName("Avatar").EditAvatar("Avatar" + client.connectionId)
    }
 
     function ShowEditingGizmo(show) {
-        framework.GetModuleByName("ECEditor").gizmoEnabled = show;
+        framework.ModuleByName("ECEditor").gizmoEnabled = show;
     }
 
     function HighlightSelectedEntities(show) {
-        framework.GetModuleByName("ECEditor").highlightingEnabled = show;
+        framework.ModuleByName("ECEditor").highlightingEnabled = show;
     }
 
     function OpenConfigFolder() {
-        QDesktopServices.openUrl(new QUrl(config.GetConfigFolder()));
+        QDesktopServices.openUrl(new QUrl(config.ConfigFolder()));
     }
 }

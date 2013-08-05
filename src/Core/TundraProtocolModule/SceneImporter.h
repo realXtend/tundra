@@ -26,7 +26,6 @@ public:
     /** @param scene Destination scene. */
     explicit SceneImporter(const ScenePtr &scene);
 
-    /// Destroys the importer.
     ~SceneImporter();
 
     /// Imports a single mesh. Scans the mesh for needed skeleton & materials.
@@ -70,12 +69,12 @@ public:
     SceneDesc CreateSceneDescFromMesh(const QString &source) const;
 
     /// Inspects OGRE .scene file and returns a scene description structure of the contents of the file.
-    /** @param filename Filename.
-        @note Currently produces malformed/incomplete SceneDesc structure. Do not use.
-        @todo Re-implement! */
+    /** @param filename .scene filename. */
     SceneDesc CreateSceneDescFromScene(const QString &filename);
 
 private:
+    Q_DISABLE_COPY(SceneImporter)
+
     /// Process the asset references of a node, and its child nodes
     /** @param nodeElem Node element. */
     void ProcessNodeForAssets(QDomElement nodeElem, const QString& inAssetDir);

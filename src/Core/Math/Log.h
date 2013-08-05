@@ -102,7 +102,8 @@ enum ConsoleTextColor
 void SetStdoutTextColor(int newColor);
 
 /// Prints out a variadic message to the log channel User.
-#define LOGUSER(msg, ...) ( /*IsLogChannelActive(LogUser) &&*/ (TimeOutputDebugStringVariadic(LogUser, __FILE__, __LINE__, msg, ##__VA_ARGS__), true) )
+// NOTE: Not needing LOGUSER for Tundra.
+//#define LOGUSER(msg, ...) ( /*IsLogChannelActive(LogUser) &&*/ (TimeOutputDebugStringVariadic(LogUser, __FILE__, __LINE__, msg, ##__VA_ARGS__), true) )
 
 #define STRINGIZE_HELPER(x) #x
 #define STRINGIZE(x) STRINGIZE_HELPER(x)
@@ -218,12 +219,13 @@ void logmsg(const char *msg);
 
 #elif defined(LOGGING_SUPPORT_DISABLED)
 
+// NOTE: Not needing LOG* for Tundra.
 /// If kNet logging is disabled, LOG() macro is a no-op. This avoids having to evaluate the arguments of the
 /// LOG() call, which improves performance.
-#define LOG(...) ((void)0)
-#define LOGE(...) ((void)0)
-#define LOGW(...) ((void)0)
-#define LOGI(...) ((void)0)
+//#define LOG(...) ((void)0)
+//#define LOGE(...) ((void)0)
+//#define LOGW(...) ((void)0)
+//#define LOGI(...) ((void)0)
 
 #else
 

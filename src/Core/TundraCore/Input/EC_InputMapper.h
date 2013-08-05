@@ -75,8 +75,10 @@ class TUNDRACORE_API EC_InputMapper : public IComponent
     COMPONENT_NAME("EC_InputMapper", 13)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_InputMapper(Scene* scene);
+    /// @endcond
     ~EC_InputMapper();
 
     /// This input mapper's input context priority.
@@ -164,6 +166,7 @@ private:
     void AttributesChanged();
 
 private slots:
+    void Initialize();
     /// Handles key events from the input system.
     /** Performs entity action for for the parent entity if action mapping is registered for the key event.
         @param e Key event. */

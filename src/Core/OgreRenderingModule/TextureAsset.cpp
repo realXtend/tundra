@@ -52,13 +52,19 @@ TextureAsset::~TextureAsset()
 
 bool TextureAsset::LoadFromFile(QString filename)
 {
+    /// @todo Duplicate allowAsynchronous code in OgreMeshAsset and TextureAsset.
     bool allowAsynchronous = true;
-    if (assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
+    if ((OGRE_THREAD_SUPPORT == 0) || assetAPI->IsHeadless() || !assetAPI->Cache() ||
+        assetAPI->GetFramework()->HasCommandLineParameter("--noAsyncAssetLoad") ||
+        assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load")) /**< @todo Remove support for the deprecated underscore version at some point. */
+    {
         allowAsynchronous = false;
+    }
+
     QString cacheDiskSource;
     if (allowAsynchronous)
     {
-        cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(Name());
+        cacheDiskSource = assetAPI->Cache()->FindInCache(Name());
         if (cacheDiskSource.isEmpty())
             allowAsynchronous = false;
     }
@@ -207,12 +213,18 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
     // We should never be here in headless mode.
     assert(!assetAPI->IsHeadless());
 
-    if (assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
+    /// @todo Duplicate allowAsynchronous code in OgreMeshAsset and TextureAsset.
+    if ((OGRE_THREAD_SUPPORT == 0) || !assetAPI->Cache() || assetAPI->IsHeadless() ||
+        assetAPI->GetFramework()->HasCommandLineParameter("--noAsyncAssetLoad") ||
+        assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load")) /**< @todo Remove support for the deprecated underscore version at some point. */
+    {
         allowAsynchronous = false;
+    }
+
     QString cacheDiskSource;
     if (allowAsynchronous)
     {
-        cacheDiskSource = assetAPI->GetAssetCache()->FindInCache(Name());
+        cacheDiskSource = assetAPI->Cache()->FindInCache(Name());
         if (cacheDiskSource.isEmpty())
             allowAsynchronous = false;
     }
@@ -339,7 +351,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
             ogreAssetName = AssetAPI::SanitateAssetRef(nameInternal);
             
             // Optionally load textures to default pool for memory use debugging. Do not use in production use due to possible crashes on device loss & missing mipmaps!
-            // Note: this does not affect async loading path, so specify additionally --no_async_asset_load to be sure textures are loaded through this path
+            // Note: this does not affect async loading path, so specify additionally --noAsyncAssetLoad to be sure textures are loaded through this path
             // Furthermore, it may still allocate virtual memory address space due to using AGP memory mapping (we would not actually need a dynamic texture, but there's no way to tell Ogre that)
             if (assetAPI->GetFramework()->HasCommandLineParameter("--d3ddefaultpool"))
             {
@@ -851,7 +863,7 @@ void TextureAsset::CompressTexture()
                 HRESULT hr = surface->LockRect(&lock, 0, 0);
                 if (SUCCEEDED(hr))
                 {
-                    if (lock.Pitch == sourceStride)
+                    if ((size_t)lock.Pitch == sourceStride)
                         memcpy(lock.pBits, src, sourceStride * numRows);
                     else
                         for(size_t y = 0; y < numRows; ++y)
@@ -946,7 +958,7 @@ void TextureAsset::ReduceTextureSize()
                     HRESULT hr = surface->LockRect(&lock, 0, 0);
                     if (SUCCEEDED(hr))
                     {
-                        if (lock.Pitch == destStride)
+                        if ((size_t)lock.Pitch == destStride)
                             memcpy(dest, lock.pBits, destStride * numRows);
                         else
                             for(size_t y = 0; y < numRows; ++y)
@@ -1032,7 +1044,7 @@ void TextureAsset::ReduceTextureSize()
                     HRESULT hr = surface->LockRect(&lock, 0, 0);
                     if (SUCCEEDED(hr))
                     {
-                        if (lock.Pitch == sourceStride)
+                        if ((size_t)lock.Pitch == sourceStride)
                             memcpy(lock.pBits, src, sourceStride * numRows);
                         else
                             for(size_t y = 0; y < numRows; ++y)
