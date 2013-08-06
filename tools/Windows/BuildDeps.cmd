@@ -285,6 +285,7 @@ IF NOT EXIST %QT_INSTALL_WEBKIT_DLL_FILENAME%. (
     cd %QTDIR%
 
     :: WebKit seems to fail if we've build release first and then trying to build debug, but deleting the generated build files seems to help.
+    IF EXIST src\3rdparty\webkit\Source\WebKit.sln. del /Q src\3rdparty\webkit\Source\WebKit.sln
     IF EXIST src\3rdparty\webkit\Source\Webkit\qt\QtWebKit.%VCPROJ_FILE_EXT%. (
         del /Q src\3rdparty\webkit\Source\Webkit\qt\QtWebKit.%VCPROJ_FILE_EXT%*
         del /Q src\3rdparty\webkit\Source\Webkit\qt\Makefile*

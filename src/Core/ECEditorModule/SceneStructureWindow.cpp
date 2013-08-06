@@ -39,6 +39,7 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     // Init main widget
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 5, 5, 5);
+    layout->setSpacing(5);
     setLayout(layout);
     setWindowTitle(tr("Scene Structure"));
     resize(325, 400);
@@ -46,16 +47,19 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     // Create child widgets
     treeWidget = new SceneTreeWidget(fw, this);
     expandAndCollapseButton = new QPushButton(tr("Expand All"), this);
+    expandAndCollapseButton->setFixedHeight(22);
 
     searchField = new QLineEdit(this);
     searchField->setText(tr("Search..."));
     searchField->setStyleSheet("color:grey;");
     searchField->installEventFilter(this);
+    searchField->setFixedHeight(20);
 
     QLabel *sortLabel = new QLabel(tr("Sort by"));
     QComboBox *sortComboBox = new QComboBox;
     sortComboBox->addItem(tr("ID"));
     sortComboBox->addItem(tr("Name"));
+    sortComboBox->setFixedHeight(20);
 
     QCheckBox *compCheckBox = new QCheckBox(tr("Components"), this);
     compCheckBox->setChecked(showComponents);
@@ -74,24 +78,23 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     redoButton_->setIcon(QIcon(Application::InstallationDirectory() + "data/ui/images/icon/redo-icon.png"));
 
     // Fill layouts
-    QHBoxLayout *undoRedoLayout = new QHBoxLayout;
-    undoRedoLayout->addWidget(undoButton_);
-    undoRedoLayout->addWidget(redoButton_);
-    undoRedoLayout->addSpacerItem(new QSpacerItem(20, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
-
     QHBoxLayout *layoutFilterAndSort = new QHBoxLayout();
+    layoutFilterAndSort->setContentsMargins(0,0,0,0);
+    layoutFilterAndSort->setSpacing(5);
     layoutFilterAndSort->addWidget(searchField);
     layoutFilterAndSort->addWidget(sortLabel);
     layoutFilterAndSort->addWidget(sortComboBox);
+    layoutFilterAndSort->addWidget(expandAndCollapseButton);
 
-    QHBoxLayout *layoutSettingsVisibility = new QHBoxLayout;
-    layoutSettingsVisibility->addWidget(expandAndCollapseButton);
-    layoutSettingsVisibility->addWidget(new QLabel(tr("Show:")));
+    QHBoxLayout *layoutSettingsVisibility = new QHBoxLayout();
+    layoutSettingsVisibility->setContentsMargins(0,0,0,0);
+    layoutSettingsVisibility->setSpacing(5);
+    layoutSettingsVisibility->addWidget(undoButton_);
+    layoutSettingsVisibility->addWidget(redoButton_);
+    layoutSettingsVisibility->addSpacerItem(new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
     layoutSettingsVisibility->addWidget(compCheckBox);
     layoutSettingsVisibility->addWidget(assetCheckBox);
-    layoutSettingsVisibility->addSpacerItem(new QSpacerItem(20, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
 
-    layout->addLayout(undoRedoLayout);
     layout->addLayout(layoutFilterAndSort);
     layout->addWidget(treeWidget);
     layout->addLayout(layoutSettingsVisibility);

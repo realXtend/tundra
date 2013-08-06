@@ -13,26 +13,12 @@
 
 #include "MemoryLeakCheck.h"
 
-UndoManager::UndoManager(const ScenePtr &scene, QWidget *parent, QWidget *undoMenuParent, QWidget *redoMenuParent)
+UndoManager::UndoManager(const ScenePtr &scene, QWidget *parent, QWidget *undoMenuParent, QWidget *redoMenuParent) :
+    tracker_(new EntityIdChangeTracker(scene)),
+    undoStack_(new QUndoStack()),
+    undoViewAction_(new QAction("View all", 0))
 {
-    undoStack_ = new QUndoStack();
-
-    undoMenu_ = new QMenu(undoMenuParent);
-    redoMenu_ = new QMenu(redoMenuParent);
-    undoViewAction_ = new QAction("View all", 0);
-
-    tracker_ = new EntityIdChangeTracker(scene);
-
-    undoView_ = new QUndoView(undoStack_, parent);
-    undoView_->setWindowFlags(Qt::Tool);
-    undoView_->setWindowTitle("Editor - Undo stack");
-
-    connect(undoStack_, SIGNAL(indexChanged(int)), this, SLOT(OnIndexChanged(int)));
-    connect(undoStack_, SIGNAL(canUndoChanged(bool)), this, SLOT(OnCanUndoChanged(bool)));
-    connect(undoStack_, SIGNAL(canRedoChanged(bool)), this, SLOT(OnCanRedoChanged(bool)));
-    connect(undoMenu_, SIGNAL(triggered(QAction *)), this, SLOT(OnActionTriggered(QAction *)));
-    connect(redoMenu_, SIGNAL(triggered(QAction *)), this, SLOT(OnActionTriggered(QAction *)));
-    connect(undoViewAction_, SIGNAL(triggered(bool)), undoView_, SLOT(show()));
+    Initialize(parent, undoMenuParent, redoMenuParent);
 }
 
 UndoManager::~UndoManager()
@@ -44,28 +30,61 @@ UndoManager::~UndoManager()
         disconnect(undoStack_, SIGNAL(canRedoChanged(bool)), this, SLOT(OnCanRedoChanged(bool)));
     }
 
-    SAFE_DELETE(undoStack_);
-    SAFE_DELETE(undoView_);
-    // Explicitly delete menus if they are unparented
+    // Explicitly delete objects if they are unparented
+    if (undoView_)
+    {
+        undoView_->close();
+        if (!undoView_->parent())
+            SAFE_DELETE(undoView_);
+    }
+    if (undoStack_ && !undoStack_->parent())
+        SAFE_DELETE(undoStack_);
     if (undoMenu_ && !undoMenu_->parent())
         SAFE_DELETE(undoMenu_);
     if (redoMenu_ && !redoMenu_->parent())
         SAFE_DELETE(redoMenu_);
+
     SAFE_DELETE(undoViewAction_);
     SAFE_DELETE(tracker_);
 }
 
-QMenu * UndoManager::UndoMenu() const
+void UndoManager::Initialize(QWidget *parent, QWidget *undoMenuParent, QWidget *redoMenuParent)
+{
+    // These are QPointer<QMenu> because the parent may be destroyed before this UndoManager.
+    // This would result in dangling ptrs and crashing in the dtor on the menu->parent() checks.
+    undoMenu_ = new QMenu(undoMenuParent);
+    redoMenu_ = new QMenu(redoMenuParent);
+
+    undoView_ = new QUndoView(undoStack_, parent);
+    undoView_->setWindowTitle("Undo Stack");
+    undoView_->setWindowFlags(Qt::Tool);
+    if (parent) undoView_->setWindowIcon(parent->windowIcon());
+    undoView_->hide();
+    
+    connect(undoStack_, SIGNAL(indexChanged(int)), this, SLOT(OnIndexChanged(int)));
+    connect(undoStack_, SIGNAL(canUndoChanged(bool)), this, SLOT(OnCanUndoChanged(bool)));
+    connect(undoStack_, SIGNAL(canRedoChanged(bool)), this, SLOT(OnCanRedoChanged(bool)));
+    connect(undoMenu_, SIGNAL(triggered(QAction *)), this, SLOT(OnActionTriggered(QAction *)));
+    connect(redoMenu_, SIGNAL(triggered(QAction *)), this, SLOT(OnActionTriggered(QAction *)));
+    connect(undoViewAction_, SIGNAL(triggered(bool)), undoView_, SLOT(show()));
+}
+
+QMenu *UndoManager::UndoMenu() const
 {
     return undoMenu_;
 }
 
-QMenu * UndoManager::RedoMenu() const
+QMenu *UndoManager::RedoMenu() const
 {
     return redoMenu_;
 }
 
-EntityIdChangeTracker * UndoManager::Tracker() const
+QUndoView *UndoManager::UndoView() const
+{
+    return undoView_;
+}
+
+EntityIdChangeTracker *UndoManager::Tracker() const
 {
     return tracker_;
 }
@@ -109,7 +128,7 @@ void UndoManager::OnIndexChanged(int idx)
 
     int maxActions = 5;
 
-    for (UndoRedoActionList::reverse_iterator i = actions_.rbegin(); i != actions_.rend(); ++i)
+    for (std::list<QAction*>::reverse_iterator i = actions_.rbegin(); i != actions_.rend(); ++i)
     {
         if (idx > ((*i)->property("index").toInt()))
         {
@@ -123,7 +142,7 @@ void UndoManager::OnIndexChanged(int idx)
     }
 
     maxActions = 5;
-    for (UndoRedoActionList::iterator i = actions_.begin(); i != actions_.end(); ++i)
+    for (std::list<QAction*>::iterator i = actions_.begin(); i != actions_.end(); ++i)
     {
         if (idx <= ((*i)->property("index").toInt()))
         {

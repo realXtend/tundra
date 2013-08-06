@@ -94,7 +94,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
 
     Scene *scene = fw->Scene()->MainCameraScene();
     assert(scene);
-    undoManager_ = new UndoManager(scene->shared_from_this(), framework->Ui()->MainWindow());
+    undoManager_ = new UndoManager(scene->shared_from_this(), this);
     transformEditor = new TransformEditor(scene->shared_from_this(), undoManager_);
 
     QVBoxLayout *layout = new QVBoxLayout(this);

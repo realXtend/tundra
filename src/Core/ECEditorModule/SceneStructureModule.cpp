@@ -60,7 +60,8 @@ SceneStructureModule::SceneStructureModule() :
     assetsWindow(0),
     keyBindingsWindow(0),
     toolTipWidget(0),
-    toolTip(0)
+    toolTip(0),
+    assetDragAndDropEnabled_(false)
 {
 }
 
@@ -86,29 +87,26 @@ void SceneStructureModule::Initialize()
     {
         inputContext = framework_->Input()->RegisterInputContext("SceneStructureInput", 102);
         connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
-
-        UiGraphicsView *gv = framework_->Ui()->GraphicsView();
-        connect(gv, SIGNAL(DragEnterEvent(QDragEnterEvent*, QGraphicsItem*)), SLOT(HandleDragEnterEvent(QDragEnterEvent*, QGraphicsItem*)));
-        connect(gv, SIGNAL(DragLeaveEvent(QDragLeaveEvent*)), SLOT(HandleDragLeaveEvent(QDragLeaveEvent*)));
-        connect(gv, SIGNAL(DragMoveEvent(QDragMoveEvent*, QGraphicsItem*)), SLOT(HandleDragMoveEvent(QDragMoveEvent*, QGraphicsItem*)));
-        connect(gv, SIGNAL(DropEvent(QDropEvent*, QGraphicsItem*)), SLOT(HandleDropEvent(QDropEvent*, QGraphicsItem*)));
-
+        
         // Stay in sync with EC editors' selection.
         connect(framework_->GetModule<ECEditorModule>(), SIGNAL(ActiveEditorChanged(ECEditorWindow *)),
             this, SLOT(SyncSelectionWithEcEditor(ECEditorWindow *)), Qt::UniqueConnection);
 
+        // Drag and drop tooltip widget
         toolTipWidget = new QWidget(0, Qt::ToolTip);
         toolTipWidget->setLayout(new QHBoxLayout());
         toolTipWidget->layout()->setMargin(0);
         toolTipWidget->layout()->setSpacing(0);
         toolTipWidget->setContentsMargins(0,0,0,0);
-        toolTipWidget->setStyleSheet(
-            "QWidget { background-color: transparent; } QLabel { padding: 2px; border: 0.5px solid grey; border-radius: 0px; \
+        toolTipWidget->setStyleSheet("QWidget { background-color: transparent; } QLabel { padding: 2px; border: 0.5px solid grey; border-radius: 0px; \
             background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(246, 246, 246, 255), stop:1 rgba(237, 237, 237, 255)); }");
 
         toolTip = new QLabel(toolTipWidget);
         toolTip->setTextFormat(Qt::RichText);
         toolTipWidget->layout()->addWidget(toolTip);
+
+        // Enable drag and dropping by default.
+        SetAssetDragAndDropEnabled(true);
 
         assetItemMenuHandler = new AssetItemMenuHandler(framework_);
     }
@@ -400,6 +398,43 @@ void SceneStructureModule::ToggleKeyBindingsWindow()
         LoadWindowPosition(keyBindingsWindow.data(), cAssetWindowPos);
         keyBindingsWindow->show();
     }
+}
+
+void SceneStructureModule::SetAssetDragAndDropEnabled(bool enabled)
+{
+    if (framework_->IsHeadless() || !framework_->Ui())
+        return;
+    UiGraphicsView *graphicsView = framework_->Ui()->GraphicsView();
+    if (!graphicsView)
+        return;
+    if (assetDragAndDropEnabled_ == enabled)
+        return;
+    assetDragAndDropEnabled_ = enabled;
+    
+    if (assetDragAndDropEnabled_)
+    {
+        connect(graphicsView, SIGNAL(DragEnterEvent(QDragEnterEvent*, QGraphicsItem*)), this, SLOT(HandleDragEnterEvent(QDragEnterEvent*, QGraphicsItem*)), Qt::UniqueConnection);
+        connect(graphicsView, SIGNAL(DragLeaveEvent(QDragLeaveEvent*)), this, SLOT(HandleDragLeaveEvent(QDragLeaveEvent*)), Qt::UniqueConnection);
+        connect(graphicsView, SIGNAL(DragMoveEvent(QDragMoveEvent*, QGraphicsItem*)), this, SLOT(HandleDragMoveEvent(QDragMoveEvent*, QGraphicsItem*)), Qt::UniqueConnection);
+        connect(graphicsView, SIGNAL(DropEvent(QDropEvent*, QGraphicsItem*)), this, SLOT(HandleDropEvent(QDropEvent*, QGraphicsItem*)), Qt::UniqueConnection);
+    }
+    else
+    {
+        disconnect(graphicsView, SIGNAL(DragEnterEvent(QDragEnterEvent*, QGraphicsItem*)), this, SLOT(HandleDragEnterEvent(QDragEnterEvent*, QGraphicsItem*)));
+        disconnect(graphicsView, SIGNAL(DragLeaveEvent(QDragLeaveEvent*)), this, SLOT(HandleDragLeaveEvent(QDragLeaveEvent*)));
+        disconnect(graphicsView, SIGNAL(DragMoveEvent(QDragMoveEvent*, QGraphicsItem*)), this, SLOT(HandleDragMoveEvent(QDragMoveEvent*, QGraphicsItem*)));
+        disconnect(graphicsView, SIGNAL(DropEvent(QDropEvent*, QGraphicsItem*)), this, SLOT(HandleDropEvent(QDropEvent*, QGraphicsItem*)));
+    }
+    
+    if (toolTipWidget)
+        toolTipWidget->hide();
+    currentToolTipSource.clear();
+    currentToolTipDestination.clear();
+}
+
+bool SceneStructureModule::IsAssetDragAndDropEnabled() const
+{
+    return assetDragAndDropEnabled_;
 }
 
 void SceneStructureModule::SaveWindowPosition(QWidget *widget, const QString &settingName)

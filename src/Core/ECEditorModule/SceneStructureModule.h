@@ -7,6 +7,7 @@
 #pragma once
 
 #include "IModule.h"
+#include "ECEditorModuleApi.h"
 #include "SceneFwd.h"
 #include "InputFwd.h"
 #include "AssetFwd.h"
@@ -32,13 +33,14 @@ class ECEditorWindow;
 
 /// Provides UIs for scene and asset maintenance and content import.
 /** Also implements raycast drag-and-drop import of various content file formats to the main window. */
-class SceneStructureModule : public IModule
+class ECEDITOR_MODULE_API SceneStructureModule : public IModule
 {
     Q_OBJECT
 
 public:
     SceneStructureModule();
     ~SceneStructureModule();
+
     void Initialize();
     void Uninitialize();
 
@@ -69,7 +71,7 @@ public slots:
     /** @param fileRef File name or url. */
     static bool IsMaterialFile(const QString &fileRef);
 
-    /// Returns true if the @c fileRef is a http:// or https:// scema url.
+    /// Returns true if the @c fileRef is a http:// or https:// schema url.
     /** @param fileRef File name or url. */
     static bool IsUrl(const QString &fileRef);
 
@@ -85,6 +87,14 @@ public slots:
 
     /// Toggles visibility of Key Bindings window.
     void ToggleKeyBindingsWindow();
+
+    /// Sets if drag and drop of assets (mesh, material, txml, tbin) should be handled by this module.
+    /** @param Boolean to enable or disable handling asset drag and drops. */
+    void SetAssetDragAndDropEnabled(bool enabled);
+    
+    /// Returns if asset drag and dropping is currently enabled.
+    /** @return If handling asset drag and drop is enabled. */
+    bool IsAssetDragAndDropEnabled() const;
 
 private slots:
     /// @cond PRIVATE
@@ -116,6 +126,7 @@ private:
     SceneMaterialDropData materialDropData;
     QHash<QString, float3> urlToDropPos;
 
+    bool assetDragAndDropEnabled_;
     QWidget *toolTipWidget;
     QLabel *toolTip;
     QString currentToolTipSource;

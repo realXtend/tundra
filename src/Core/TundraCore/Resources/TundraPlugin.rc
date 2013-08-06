@@ -9,14 +9,7 @@
 #include <commctrl.h>
 #include <richedit.h>
 
-//
-// Icon resources
-//
-LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-IDI_ICON1          ICON           "..\\..\\..\\bin\\data\\ui\\images\\icon\\TundraLogo32px.ico"
-
-#define PRODUCT_NAME TUNDRA_ORGANIZATION_NAME " " TUNDRA_APPLICATION_NAME
-
+/// @todo Allow specifying custom product name instead of the hardcoded "realXtend Tundra plugin"?
 //
 // Version Information resources
 //
@@ -32,7 +25,7 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 {
     BLOCK "StringFileInfo"
     {
-        BLOCK "04090025"
+        BLOCK "08000025"
         {
             VALUE "Comments", ""
             VALUE "CompanyName", TUNDRA_ORGANIZATION_NAME
@@ -43,13 +36,13 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
             VALUE "LegalTrademarks", ""
             VALUE "OriginalFilename", ""
             VALUE "PrivateBuild", ""
-            VALUE "ProductName", PRODUCT_NAME
-            VALUE "ProductVersion", TUNDRA_VERSION_STRING
+            VALUE "ProductName", "realXtend Tundra plugin"
+            VALUE "ProductVersion", ""
             VALUE "SpecialBuild", ""
         }
     }
     BLOCK "VarFileInfo"
     {
-        VALUE "Translation", 0x0409, 0x0025
+        VALUE "Translation", 0x0800, 0x0025
     }
 }

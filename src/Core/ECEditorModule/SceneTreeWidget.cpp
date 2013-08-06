@@ -145,7 +145,7 @@ void SceneTreeWidget::SetScene(const ScenePtr &s)
     SAFE_DELETE(undoManager_);
     if (s)
     {
-        undoManager_ = new UndoManager(s, framework->Ui()->MainWindow());
+        undoManager_ = new UndoManager(s, this->parentWidget());
         connect(undoShortcut, SIGNAL(activated()), undoManager_, SLOT(Undo()), Qt::UniqueConnection);
         connect(redoShortcut, SIGNAL(activated()), undoManager_, SLOT(Redo()), Qt::UniqueConnection);
     }
@@ -352,8 +352,7 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
     SceneTreeWidgetSelection sel = SelectedItems();
 
     // "Rename" action is possible only if have one entity selected.
-    bool renamePossible = (selectionModel()->selectedIndexes().size() == 1) && !sel.HasGroupsOnly();
-    bool multipleEntitiesSelected = (selectionModel()->selectedIndexes().size() > 1) && sel.HasEntitiesOnly();
+    const bool renamePossible = (selectionModel()->selectedIndexes().size() == 1) && !sel.HasGroupsOnly();
     if (renamePossible)
     {
         renameAction = new QAction(tr("Rename"), menu);
