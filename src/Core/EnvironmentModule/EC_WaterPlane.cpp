@@ -94,14 +94,11 @@ EC_WaterPlane::EC_WaterPlane(Scene* scene) :
 
 EC_WaterPlane::~EC_WaterPlane()
 {
-    if (world_.expired())
-        return;
-
-    OgreWorldPtr world = world_.lock();
     RemoveWaterPlane();
+    RestoreFog();
 
-    if (node_)
-        world->OgreSceneManager()->destroySceneNode(node_);
+    if (node_ && !world_.expired())
+        world_.lock()->OgreSceneManager()->destroySceneNode(node_);
     node_ = 0;
 }
 
@@ -189,26 +186,9 @@ void EC_WaterPlane::Update()
     bool cameraWasInsideWaterCube = cameraInsideWaterCube;
     cameraInsideWaterCube = IsCameraInsideWaterCube();
     if (!cameraWasInsideWaterCube && cameraInsideWaterCube)
-    {
         SetUnderwaterFog();
-    }
     else if (cameraWasInsideWaterCube && !cameraInsideWaterCube)
-    {
-        // Restore current scene fog settings, if existing.
-        /// @todo Optimize
-        std::vector<shared_ptr<EC_Fog> > fogs = ParentScene()->Components<EC_Fog>();
-        if (!fogs.empty())
-        {
-            world->OgreSceneManager()->setFog((Ogre::FogMode)fogs[0]->mode.Get(), fogs[0]->color.Get(),
-                fogs[0]->expDensity.Get(), fogs[0]->startDistance.Get(), fogs[0]->endDistance.Get());
-            world->Renderer()->MainViewport()->setBackgroundColour(fogs[0]->color.Get());
-        }
-        else // No scene fog, set the default ineffective fog.
-        {
-            world->SetDefaultSceneFog();
-        }
-    }
-    // else status quo
+        RestoreFog();
 }
 
 float3 EC_WaterPlane::GetPointOnPlane(const float3 &point) const 
@@ -492,6 +472,28 @@ void EC_WaterPlane::SetUnderwaterFog()
         /// Do we want to do the same here?
         world->OgreSceneManager()->setFog((Ogre::FogMode)fogMode.Get(), fogColor.Get(), fogExpDensity.Get(), fogStartDistance.Get(), fogEndDistance.Get());
         world->Renderer()->MainViewport()->setBackgroundColour(fogColor.Get());
+    }
+}
+
+void EC_WaterPlane::RestoreFog()
+{
+    if (!ViewEnabled())
+        return;
+    OgreWorldPtr world = world_.lock();
+    if (world)
+    {
+        // Restore current scene fog settings, if existing.
+        /// @todo Optimize
+        std::vector<shared_ptr<EC_Fog> > fogs = ParentScene() ? ParentScene()->Components<EC_Fog>() : std::vector<shared_ptr<EC_Fog> >();
+        if (!fogs.empty())
+        {
+            world->OgreSceneManager()->setFog((Ogre::FogMode)fogs[0]->mode.Get(), fogs[0]->color.Get(),
+                fogs[0]->expDensity.Get(), fogs[0]->startDistance.Get(), fogs[0]->endDistance.Get());
+            world->Renderer()->MainViewport()->setBackgroundColour(fogs[0]->color.Get());
+        }
+        // No scene fog, set the default ineffective fog.
+        else
+            world->SetDefaultSceneFog();
     }
 }
 

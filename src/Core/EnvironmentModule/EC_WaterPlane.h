@@ -214,6 +214,7 @@ private:
     void SetOrientation();
 
     void SetUnderwaterFog();
+    void RestoreFog();
     void UpdateMaterial();
 
     OgreWorldWeakPtr world_;
