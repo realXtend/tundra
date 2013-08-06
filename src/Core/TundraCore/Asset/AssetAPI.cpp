@@ -2296,8 +2296,7 @@ void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStora
 bool LoadFileToVector(const QString &filename, std::vector<u8> &dst)
 {
     QFile file(filename);
-    file.open(QIODevice::ReadOnly);
-    if (!file.isOpen())
+    if (!file.open(QIODevice::ReadOnly))
     {
         LogError("AssetAPI::LoadFileToVector: Failed to open file '" + filename + "' for reading.");
         return false;
@@ -2306,16 +2305,17 @@ bool LoadFileToVector(const QString &filename, std::vector<u8> &dst)
     if (fileSize <= 0)
     {
         LogError("AssetAPI::LoadFileToVector: Failed to read file '" + filename + "' of " + fileSize + " bytes in size.");
+        file.close();
         return false;
     }
     dst.resize(fileSize);
     qint64 numRead = file.read((char*)&dst[0], fileSize);
+    file.close();
     if (numRead < fileSize)
     {
         LogError("AssetAPI::LoadFileToVector: Failed to read " + QString::number(numRead) + " bytes from file '" + filename + "'.");
         return false;
     }
-
     return true;
 }
 

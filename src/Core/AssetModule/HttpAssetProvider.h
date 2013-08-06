@@ -11,6 +11,7 @@
 #include <QDateTime>
 #include <QByteArray>
 #include <QPointer>
+#include <QRunnable>
 
 class QNetworkAccessManager;
 class QNetworkRequest;
@@ -19,10 +20,6 @@ class QNetworkReply;
 class HttpAssetStorage;
 typedef shared_ptr<HttpAssetStorage> HttpAssetStoragePtr;
 
-// Uncomment to enable a --disable_http_ifmodifiedsince command line parameter.
-// This is used to profile the performance effect the HTTP queries have on scene loading times.
-// #define HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
-
 /// Adds support for downloading assets over the web using the 'http://' specifier.
 class ASSET_MODULE_API HttpAssetProvider : public QObject, public IAssetProvider, public enable_shared_from_this<HttpAssetProvider>
 {
@@ -30,9 +27,11 @@ class ASSET_MODULE_API HttpAssetProvider : public QObject, public IAssetProvider
 
 public:
     explicit HttpAssetProvider(Framework *framework);
-    
     virtual ~HttpAssetProvider();
     
+    /// IAssetProvider override.
+    virtual void Update(f64 frametime);
+
     /// Returns the name of this asset provider.
     virtual QString Name();
     
@@ -83,9 +82,8 @@ public:
     /// Constructs a RFC 822 HTTP date string. f.ex. "Sun, 06 Nov 1994 08:49:37 GMT"
     static QByteArray CreateHttpDate(const QDateTime &dateTime);
 
-#ifdef HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
-    virtual void Update(f64 frametime);
-#endif
+    /// Threshold size for when to perform async cache write.
+    static int AsyncCacheWriteThreshold;
 
     // DEPRECATED
     QNetworkAccessManager* GetNetworkAccessManager() const { return NetworkAccessManager(); } /**< @deprecated Use NetworkAccessManager instead. */
@@ -93,6 +91,7 @@ public:
 private slots:
     void AboutToExit();
     void OnHttpTransferFinished(QNetworkReply *reply);
+    void OnCacheWriteCompleted(AssetTransferPtr transfer, bool cacheFileWritten);
     
 private:
     Framework *framework;
@@ -121,8 +120,30 @@ private:
     typedef std::map<QNetworkReply*, AssetUploadTransferPtr> UploadTransferMap;
     UploadTransferMap uploadTransfers;
 
+    /// Completed transfers to be sent to AssetAPI.
+    QList<AssetTransferPtr> completedTransfers;
+
     /// If true, asset requests outside any registered storages are also accepted, and will appear as
     /// assets with no storage. If false, all requests to assets outside any registered storage will fail.
     bool enableRequestsOutsideStorages;
 };
 
+/// Threaded file write operation. Used internally to store assets to cache asynchronously after a trasnfer has completed.
+class ASSET_MODULE_API TransferCacheWriteOperation : public QObject, public QRunnable
+{
+    Q_OBJECT
+
+public:
+    TransferCacheWriteOperation(AssetTransferPtr transfer, const QString &path, const QByteArray &data);
+
+    /// QThread override.
+    virtual void run();
+
+signals:
+    void Completed(AssetTransferPtr transfer, bool cacheFileWritten);
+
+private:
+    AssetTransferPtr transfer_;
+    QString path_;
+    QByteArray data_;
+};
