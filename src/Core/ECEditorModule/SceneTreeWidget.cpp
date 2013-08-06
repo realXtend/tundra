@@ -145,7 +145,7 @@ void SceneTreeWidget::SetScene(const ScenePtr &s)
     SAFE_DELETE(undoManager_);
     if (s)
     {
-        undoManager_ = new UndoManager(s, framework->Ui()->MainWindow());
+        undoManager_ = new UndoManager(s, this->parentWidget());
         connect(undoShortcut, SIGNAL(activated()), undoManager_, SLOT(Undo()), Qt::UniqueConnection);
         connect(redoShortcut, SIGNAL(activated()), undoManager_, SLOT(Redo()), Qt::UniqueConnection);
     }
