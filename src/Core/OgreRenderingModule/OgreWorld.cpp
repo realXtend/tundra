@@ -74,14 +74,20 @@ public:
 			rendersys->clearFrameBuffer(Ogre::FBT_STENCIL);
 			rendersys->setStencilCheckEnabled(true);
 			rendersys->setStencilBufferParams(Ogre::CMPF_ALWAYS_PASS,
+#if OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 9
+                                              0U,
+#endif
                                               STENCIL_VALUE_FOR_OUTLINE_GLOW, STENCIL_FULL_MASK,
-                                              Ogre::SOP_KEEP,Ogre::SOP_KEEP,Ogre::SOP_REPLACE,false);
+                                              Ogre::SOP_KEEP,Ogre::SOP_KEEP,Ogre::SOP_REPLACE, false);
 		}
 		if (queueGroupId == STENCIL_GLOW_OUTLINE)  // outline glow
 		{
 			Ogre::RenderSystem * rendersys = Ogre::Root::getSingleton().getRenderSystem();
 			rendersys->setStencilCheckEnabled(true);
 			rendersys->setStencilBufferParams(Ogre::CMPF_NOT_EQUAL,
+#if OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 9
+                0U,
+#endif
                                               STENCIL_VALUE_FOR_OUTLINE_GLOW, STENCIL_FULL_MASK,
                                               Ogre::SOP_KEEP,Ogre::SOP_KEEP,Ogre::SOP_REPLACE,false);
 		}
