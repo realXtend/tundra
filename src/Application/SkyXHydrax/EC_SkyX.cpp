@@ -37,7 +37,11 @@ struct EC_SkyX::Impl
         sunlight(0),
         moonlight(0),
         cloudLayerBottom(0),
-        cloudLayerTop(0)
+        cloudLayerTop(0),
+        sunPosition(0.0f),
+        sunDirection(0.0f),
+        moonPosition(0.0f),
+        moonDirection(0.0f)
     {
         controller = new SkyX::BasicController(true);
     }
@@ -82,8 +86,16 @@ struct EC_SkyX::Impl
     /// @todo Consider merging UpdateLightPositions and UpdateLights?
     void UpdateLightPositions(Ogre::Camera *camera)
     {
-        sunPosition = camera->getDerivedPosition() + controller->getSunDirection() * skyX->getMeshManager()->getSkydomeRadius(camera);
-        moonPosition = camera->getDerivedPosition() + controller->getMoonDirection() * skyX->getMeshManager()->getSkydomeRadius(camera);
+        if (!controller)
+            return;
+
+        Ogre::Vector3 ogreSunDir = controller->getSunDirection();
+        sunPosition = camera->getDerivedPosition() + ogreSunDir * skyX->getMeshManager()->getSkydomeRadius(camera);
+        sunDirection = ogreSunDir;
+
+        Ogre::Vector3 ogreMoonDir = controller->getMoonDirection();
+        moonPosition = camera->getDerivedPosition() + ogreMoonDir * skyX->getMeshManager()->getSkydomeRadius(camera);
+        moonDirection = ogreMoonDir;
     }
 
     void UpdateLights()
@@ -107,6 +119,9 @@ struct EC_SkyX::Impl
 
     float3 sunPosition;
     float3 moonPosition;
+
+    float3 sunDirection;
+    float3 moonDirection;
 };
 /// @endcond
 
@@ -182,6 +197,11 @@ float3 EC_SkyX::SunPosition() const
     return impl ? impl->sunPosition : float3::nan;
 }
 
+float3 EC_SkyX::SunDirection() const
+{
+    return impl ? impl->sunDirection: float3::nan;
+}
+
 bool EC_SkyX::IsMoonVisible() const
 {
     return impl && impl->moonlight ? impl->moonlight->isVisible(): false;
@@ -190,6 +210,11 @@ bool EC_SkyX::IsMoonVisible() const
 float3 EC_SkyX::MoonPosition() const
 {
     return impl ? impl->moonPosition : float3::nan;
+}
+
+float3 EC_SkyX::MoonDirection() const
+{
+    return impl ? impl->moonDirection: float3::nan;
 }
 
 void EC_SkyX::Remove()
@@ -625,10 +650,17 @@ void EC_SkyX::UpdateLightsAndPositions()
         float sunColorClamp = Clamp((impl->sunPosition.y + magicOffset) / fadeInOutHeight, 0.0f, 1.0f);
         float moonColorClamp = Clamp((impl->moonPosition.y - magicOffset) / fadeInOutHeight, 0.0f, 1.0f);
 
+        // Dirty fix for when both light sources would be hidden.
+        if (sunColorClamp <= 0.0f && moonColorClamp <= 0.0f)
+        {
+            sunColorClamp = 0.001f;
+            moonColorClamp = 0.001f;
+        }
+
         impl->sunlight->setDiffuseColour(sunlightDiffuseColor.Get() * sunColorClamp);
         impl->moonlight->setDiffuseColour(moonlightDiffuseColor.Get() * moonColorClamp);
-        impl->sunlight->setVisible(sunColorClamp > 0.0);
-        impl->moonlight->setVisible(moonColorClamp > 0.0);
+        impl->sunlight->setVisible(sunColorClamp > 0.0f);
+        impl->moonlight->setVisible(moonColorClamp > 0.0f);
     }
 
     impl->UpdateLights();
