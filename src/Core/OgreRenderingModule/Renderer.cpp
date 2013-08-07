@@ -34,6 +34,7 @@
 
 #include <Ogre.h>
 #include <OgreDefaultHardwareBufferManager.h>
+#include <OgreOverlaySystem.h>
 
 #ifdef ANDROID
 #define OGRE_STATIC_GLES2
@@ -42,7 +43,6 @@
 #include "OgreStaticPluginLoader.h"
 #include <OgreRTShaderSystem.h>
 #include <OgreShaderGenerator.h>
-#include <OgreOverlaySystem.h>
 #endif
 
 Q_DECLARE_METATYPE(EC_Placeable*)
@@ -62,6 +62,11 @@ Q_DECLARE_METATYPE(OgreParticleAssetPtr)
 
 // Clamp elapsed frame time to avoid Ogre controllers going crazy
 static const float MAX_FRAME_TIME = 0.1f;
+
+// Default texture budget (megabytes)
+static const int DEFAULT_TEXTURE_BUDGET = 512;
+// Minimum texture budget
+static const int MINIMUM_TEXTURE_BUDGET = 1;
 
 #if defined(DIRECTX_ENABLED) && !defined(WIN32)
 #undef DIRECTX_ENABLED
@@ -248,8 +253,8 @@ namespace OgreRenderer
         mainViewport(0),
 #ifdef ANDROID
         shaderGenerator(0),
-        overlaySystem(0),
 #endif
+        overlaySystem(0),
         uniqueObjectId(0),
         uniqueGroupId(0),
         configFilename(config),
@@ -261,7 +266,8 @@ namespace OgreRenderer
         resizedDirty(0),
         viewDistance(500.0f),
         shadowQuality(Shadows_High),
-        textureQuality(Texture_Normal)
+        textureQuality(Texture_Normal),
+        textureBudget(DEFAULT_TEXTURE_BUDGET)
     {
         compositionHandler = new OgreCompositionHandler();
         logListener = new OgreLogListener(fw->HasCommandLineParameter("--hideBenignOgreMessages") ||
@@ -296,8 +302,8 @@ namespace OgreRenderer
             defaultScene = 0;
         }
 
-#ifdef ANDROID
         SAFE_DELETE(overlaySystem);
+#ifdef ANDROID
         Ogre::RTShader::ShaderGenerator::finalize();
 #endif
 
@@ -391,6 +397,14 @@ namespace OgreRenderer
             rendersystem_name = "NULL Rendering Subsystem";
 
         textureQuality = (Renderer::TextureQualitySetting)framework->Config()->Get(configData, "texture quality").toInt();
+        textureBudget = framework->Config()->Get(configData, "texture budget").toInt();
+        
+        if (framework->HasCommandLineParameter("--texturebudget"))
+        {
+            QStringList sizeParam = framework->CommandLineParameters("--texturebudget");
+            if (sizeParam.size() > 0)
+                SetTextureBudget(sizeParam.first().toInt());
+        }
 
         // Ask Ogre if rendering system is available
         rendersystem = ogreRoot->getRenderSystemByName(rendersystem_name);
@@ -441,10 +455,8 @@ namespace OgreRenderer
             // Set the found rendering system
             ogreRoot->setRenderSystem(rendersystem);
 
-#ifdef ANDROID
-            // On Android (static Ogre linking) create overlaysystem now
+            // Instantiate overlay system
             overlaySystem = new Ogre::OverlaySystem();
-#endif
 
             // Initialise but don't create rendering window yet
             ogreRoot->initialise(false);
@@ -517,6 +529,7 @@ namespace OgreRenderer
 
             /// Create the default scene manager, which is used for nothing but rendering emptiness in case we have no framework scenes
             defaultScene = ogreRoot->createSceneManager(Ogre::ST_GENERIC, "DefaultEmptyScene");
+            defaultScene->addRenderQueueListener(overlaySystem);
 #ifdef ANDROID
             if (shaderGenerator)
                 shaderGenerator->addSceneManager(defaultScene);
@@ -563,6 +576,17 @@ namespace OgreRenderer
     {
         // We cannot effect the new setting immediately, so save only to config
         framework->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "texture quality", (int)quality);
+    }
+    
+    void Renderer::SetTextureBudget(int budget)
+    {
+        textureBudget = Max(budget, MINIMUM_TEXTURE_BUDGET);
+        framework->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "texture budget", textureBudget);
+    }
+
+    float Renderer::TextureBudgetUse(size_t loadDataSize) const
+    {
+        return (float)(Ogre::TextureManager::getSingletonPtr()->getMemoryUsage() + loadDataSize) / (1024.f*1024.f) / (float)textureBudget;
     }
 
     QStringList Renderer::LoadPlugins(const std::string& plugin_filename)

@@ -631,12 +631,7 @@ else
         echoInfo "Cloning $what repository, this may take a while..."
         hg clone $baseurl/$what
         cd $what
-        hg checkout v1-8
-
-        # Patches Ogre with the same diff as the commits https://bitbucket.org/sinbad/ogre/commits/80717a535bd72cc5a0e7fcf0c154c9fa7afeea2c and
-        # https://bitbucket.org/sinbad/ogre/commits/96d3083c89ea8b5acd0590a4d59a6e31e7a9fba6 which are in v1-9 branch.
-        # Todo: remove this patch when ogre-safe-nocrashes is updated to Ogre 1.9
-        patch -p1 -i $patches/Ogre.patch
+        hg checkout v1-9
     else
         cd $what
     fi
@@ -667,12 +662,12 @@ else
         rm CMakeCache.txt
     fi
  
-    cmake -G Xcode -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DOGRE_USE_BOOST:BOOL=$USE_BOOST -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=0 -DOGRE_CONFIG_THREAD_PROVIDER=none -DOGRE_CONFIG_ENABLE_LIBCPP_SUPPORT:BOOL=$NO_BOOST
+    cmake -G Xcode -DCMAKE_FRAMEWORK_PATH=$frameworkpath -DOGRE_USE_BOOST:BOOL=$USE_BOOST -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=0 -DOGRE_CONFIG_THREAD_PROVIDER=none -DOGRE_CONFIG_ENABLE_LIBCPP_SUPPORT:BOOL=$NO_BOOST -DCMAKE_OSX_ARCHITECTURES=x86_64 -DOGRE_LIBRARY_OUTPUT=$OGRE_HOME/lib -DOGRE_ARCHIVE_OUTPUT=$OGRE_HOME/lib
     xcodebuild -configuration RelWithDebInfo
 
     mkdir -p $prefix/$what/{lib,include}
     cp -R $OGRE_HOME/lib/relwithdebinfo/* $prefix/$what/lib
-    cp $prefix/$what/lib/*.dylib $viewer/bin
+    # cp $prefix/$what/lib/*.dylib $viewer/bin
 
     # Replace the install name with more suitable one to avoid link problems
     if [ -f $viewer/bin/RenderSystem_GL.dylib ]; then

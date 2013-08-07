@@ -610,7 +610,7 @@ IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\.hg". (
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\.hg" GOTO :ERROR
    cd ogre-safe-nocrashes
-   hg checkout v1-8
+   hg checkout v1-9
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Updating ogre-safe-nocrashes to newest version from https://bitbucket.org/clb/ogre-safe-nocrashes.{# #}{\n}
