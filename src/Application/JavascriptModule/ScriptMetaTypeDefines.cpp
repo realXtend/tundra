@@ -54,8 +54,6 @@ Q_DECLARE_METATYPE(InputAPI::KeyBindingMap);
 
 // Asset API defines
 Q_DECLARE_METATYPE(AssetPtr);
-Q_DECLARE_METATYPE(AssetTransferPtr);
-Q_DECLARE_METATYPE(IAssetTransfer*);
 Q_DECLARE_METATYPE(AssetUploadTransferPtr);
 Q_DECLARE_METATYPE(IAssetUploadTransfer*);
 Q_DECLARE_METATYPE(AssetStoragePtr);
