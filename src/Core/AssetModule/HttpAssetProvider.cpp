@@ -35,6 +35,10 @@ HttpAssetProvider::HttpAssetProvider(Framework *framework_) :
     framework(framework_),
     networkAccessManager(0)
 {
+    /** @todo @bug Figure out how to do this cleanly. AssetTransferPtr is used in a signal in this class.
+        The Q_DECLARE_METATYPE(AssetTransferPtr) in IAssetTransfer does not do the trick. */
+    qRegisterMetaType<AssetTransferPtr>("AssetTransferPtr");
+
     CreateAccessManager();
     connect(framework->App(), SIGNAL(ExitRequested()), SLOT(AboutToExit()));
 
