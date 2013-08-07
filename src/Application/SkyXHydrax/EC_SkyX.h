@@ -118,11 +118,17 @@ public slots:
     /// Returns position of the sun, or nan if not applicable.
     float3 SunPosition() const;
 
+    /// Returns Earth-to-Sun direction of the sun, or nan if not applicable.
+    float3 SunDirection() const;
+
     /// Returns whether or not the moon is visible (above horizon).
     bool IsMoonVisible() const;
 
     /// Returns position of the moon, or nan if not applicable.
     float3 MoonPosition() const;
+
+    /// Returns Earth-to-Moon direction of the moon, or nan if not applicable.
+    float3 MoonDirection() const;
 
 private slots:
     void Create();
