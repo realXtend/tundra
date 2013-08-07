@@ -113,6 +113,9 @@ private:
     
 };
 
+Q_DECLARE_METATYPE(IAssetTransfer*);
+Q_DECLARE_METATYPE(AssetTransferPtr);
+
 /// Virtual asset transfer for assets that have already been loaded, but are re-requested
 class VirtualAssetTransfer : public IAssetTransfer
 {
