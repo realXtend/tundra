@@ -750,10 +750,8 @@ void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
     }
 }
 
-void SceneStructureWindow::UpdateComponentName(const QString &oldName, const QString &newName)
+void SceneStructureWindow::UpdateComponentName(const QString &oldName, const QString & /*newName*/)
 {
-    UNREFERENCED_PARAM(newName);
-
     IComponent *comp = dynamic_cast<IComponent *>(sender());
     if (!comp)
         return;

@@ -254,7 +254,7 @@ QString ECComponentEditor::GetAttributeType(const QString &name) const
     return QString();
 }
 
-void ECComponentEditor::OnEditorChanged(const QString &name)
+void ECComponentEditor::OnEditorChanged(const QString & /*name*/)
 {
     PROFILE(ECComponentEditor_OnEditorChanged);
     ECAttributeEditorBase *editor = qobject_cast<ECAttributeEditorBase*>(sender());

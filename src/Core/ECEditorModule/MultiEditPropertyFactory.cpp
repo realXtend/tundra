@@ -34,7 +34,8 @@ MultiEditPropertyFactory::~MultiEditPropertyFactory()
     qDeleteAll(editorToProperty_.keys());
 }
 
-void MultiEditPropertyFactory::connectPropertyManager(MultiEditPropertyManager *manager)
+/// @todo Remove?
+void MultiEditPropertyFactory::connectPropertyManager(MultiEditPropertyManager * /*manager*/)
 {
 /*
     connect(manager, SIGNAL(AttributeValuesUpdated(const QtProperty *, const QStringList &)),
@@ -78,7 +79,8 @@ QWidget *MultiEditPropertyFactory::createEditor(MultiEditPropertyManager *manage
     return multiEditButton;
 }
 
-void MultiEditPropertyFactory::disconnectPropertyManager(MultiEditPropertyManager *manager)
+/// @todo Remove?
+void MultiEditPropertyFactory::disconnectPropertyManager(MultiEditPropertyManager * /*manager*/)
 {
 /*
     disconnect(manager, SIGNAL(AttributeValuesUpdated(const QtProperty *, const QStringList &)),
