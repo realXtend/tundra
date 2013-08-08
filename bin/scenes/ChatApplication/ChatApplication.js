@@ -5,7 +5,6 @@
 
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
-engine.ImportExtension("qt.uitools");
 
 //Server side of the ChatApplication
 //Server shows the ChatWidget, but it's not able to use it to send own messages
