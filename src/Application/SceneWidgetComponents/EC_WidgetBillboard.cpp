@@ -331,7 +331,7 @@ void EC_WidgetBillboard::HandlePPMChange()
     }
 }
 
-void EC_WidgetBillboard::ComponentRemoved(IComponent *component, AttributeChange::Type change)
+void EC_WidgetBillboard::ComponentRemoved(IComponent *component, AttributeChange::Type /*change*/)
 {
     if (component != this)
         return;
@@ -380,7 +380,7 @@ void EC_WidgetBillboard::OnUiAssetLoaded(AssetPtr asset)
     RenderInternal();
 }
 
-void EC_WidgetBillboard::OnUiAssetLoadFailed(IAssetTransfer *transfer, QString reason)
+void EC_WidgetBillboard::OnUiAssetLoadFailed(IAssetTransfer * /*transfer*/, QString /*reason*/)
 {
     EC_Billboard *myBillboard = GetBillboardComponent();
     if (myBillboard)

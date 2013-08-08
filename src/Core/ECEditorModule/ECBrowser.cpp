@@ -252,7 +252,7 @@ void ECBrowser::focusInEvent(QFocusEvent *event)
     QtTreePropertyBrowser::focusInEvent(event);
 }
 
-bool ECBrowser::dropMimeData(QTreeWidgetItem *item, int index, const QMimeData *data, Qt::DropAction action)
+bool ECBrowser::dropMimeData(QTreeWidgetItem * /*item*/, int /*index*/, const QMimeData * /*data*/, Qt::DropAction /*action*/)
 {
     return false;
 
@@ -469,7 +469,7 @@ void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
     menu_->popup(mapToGlobal(pos));
 }
 
-void ECBrowser::SelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
+void ECBrowser::SelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem * /*previous*/)
 {
     PROFILE(ECBrowser_SelectionChanged);
 
@@ -503,7 +503,7 @@ void ECBrowser::SelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *prev
     }
 }
 
-void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type) 
+void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type /*type*/)
 {
     EntityPtr entity_ptr = framework_->Scene()->MainCameraScene()->GetEntity(comp->ParentEntity()->Id());
     if(!HasEntity(entity_ptr))
@@ -533,7 +533,7 @@ void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type)
         group->editor_->UpdateUi();
 }
 
-void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type type)
+void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type /*type*/)
 {
     EntityPtr entity_ptr = framework_->Scene()->MainCameraScene()->GetEntity(comp->ParentEntity()->Id());
     if(!HasEntity(entity_ptr))
@@ -691,7 +691,7 @@ void ECBrowser::RemoveAttributeFromDynamicComponent(IAttribute *attr)
         group->editor_->RemoveAttribute(component, attr);
 }
 
-void ECBrowser::OnComponentNameChanged(const QString &newName)
+void ECBrowser::OnComponentNameChanged(const QString & /*newName*/)
 {
     IComponent *component = dynamic_cast<IComponent*>(sender());
     if (!component)
