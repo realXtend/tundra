@@ -112,18 +112,26 @@ QList<IArgumentType *> FunctionInvoker::CreateArgumentList(const QObject *obj, c
     QList<IArgumentType *> args;
     QByteArray normalizedSignature = QMetaObject::normalizedSignature(signature.toStdString().c_str());
     const QMetaObject *mo = obj->metaObject();
-    for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
+
+    while (mo)
     {
-        const QMetaMethod &mm = mo->method(i);
-        if (normalizedSignature == QByteArray(mm.signature()))
-            foreach(const QByteArray &param, mm.parameterTypes())
+        for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
+        {
+            const QMetaMethod &mm = mo->method(i);
+            if (normalizedSignature == QByteArray(mm.signature()))
             {
-                IArgumentType *arg = CreateArgumentType(QString(param));
-                if (arg)
-                    args.append(arg);
-                else
-                    return QList<IArgumentType*>(); // We failed to create some argument - can't call this function!
+                foreach(const QByteArray &param, mm.parameterTypes())
+                {
+                    IArgumentType *arg = CreateArgumentType(QString(param));
+                    if (arg)
+                        args.append(arg);
+                    else
+                        return QList<IArgumentType*>(); // We failed to create some argument - can't call this function!
+                }
             }
+        }
+
+        mo = mo->superClass();
     }
 
     return args;
@@ -133,12 +141,19 @@ int FunctionInvoker::NumArgsForFunction(const QObject *obj, const QString &signa
 {
     QByteArray normalizedSignature = QMetaObject::normalizedSignature(signature.toStdString().c_str());
     const QMetaObject *mo = obj->metaObject();
-    for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
+
+    while (mo)
     {
-        const QMetaMethod &mm = mo->method(i);
-        if (normalizedSignature == QByteArray(mm.signature()))
-            return mm.parameterTypes().size();
+        for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
+        {
+            const QMetaMethod &mm = mo->method(i);
+            if (normalizedSignature == QByteArray(mm.signature()))
+                return mm.parameterTypes().size();
+        }
+
+        mo = mo->superClass();
     }
+
     return -1;
 }
 
@@ -185,19 +200,24 @@ IArgumentType *FunctionInvoker::CreateArgumentType(const QString &type)
 IArgumentType *FunctionInvoker::CreateReturnValueArgument(const QObject *obj, const QString &function)
 {
     const QMetaObject *mo = obj->metaObject();
-    for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
+    while (mo)
     {
-        const QMetaMethod &mm = mo->method(i);
-        QString mmSig = mm.signature();
-        QString mmFunc = mmSig.mid(0, mmSig.indexOf('('));
-        if (function == mmFunc)
+        for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
         {
-            QString returnType = mm.typeName();
-            if (returnType.isEmpty())
-                returnType = "void";
+            const QMetaMethod &mm = mo->method(i);
+            QString mmSig = mm.signature();
+            QString mmFunc = mmSig.mid(0, mmSig.indexOf('('));
+            if (function == mmFunc)
+            {
+                QString returnType = mm.typeName();
+                if (returnType.isEmpty())
+                    returnType = "void";
 
-            return CreateArgumentType(returnType);
+                return CreateArgumentType(returnType);
+            }
         }
+
+        mo = mo->superClass();
     }
 
     return 0;

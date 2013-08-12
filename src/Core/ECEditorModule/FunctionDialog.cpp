@@ -112,6 +112,7 @@ FunctionDialog::FunctionDialog(const QObjectWeakPtrList &objs, QWidget *parent) 
     QDialog(parent, 0),
     objects(objs)
 {
+    setWindowFlags(Qt::Tool);
     Initialize();
 }
 
@@ -119,6 +120,7 @@ FunctionDialog::FunctionDialog(const QObjectWeakPtrList &objs, const InvokeItem 
     QDialog(parent, 0),
     objects(objs)
 {
+    setWindowFlags(Qt::Tool);
     Initialize();
 
     QStringList paramTypeNames;
@@ -476,6 +478,5 @@ void FunctionDialog::GenerateTargetLabelAndFunctions()
     functionComboBox->SetFunctions(fmds);
 
     // If no functions, disable exec buttons.
-    if (functionComboBox->count() == 0)
-        functionComboBox->setDisabled(true);
+    functionComboBox->setDisabled(functionComboBox->count() == 0);
 }
