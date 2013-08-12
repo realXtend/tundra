@@ -10,13 +10,23 @@ if (COMMAND cmake_policy)
     cmake_policy(SET CMP0005 OLD)
 endif()
 # If the following are undefined, the default values in TundraVersionInfo.h are used.
+set(ORGANIZATION_NAME "Meshmoon")
+set(APPLICATION_NAME "Rocket")
+set(VERSION_STRING "2.5.1.2")
+
 add_definitions(-DTUNDRA_VERSION_MAJOR=2)
 add_definitions(-DTUNDRA_VERSION_MINOR=5)
 add_definitions(-DTUNDRA_VERSION_MAJOR_PATCH=1)
 add_definitions(-DTUNDRA_VERSION_MINOR_PATCH=2)
-add_definitions(-DTUNDRA_ORGANIZATION_NAME="\\"Meshmoon\\"")
-add_definitions(-DTUNDRA_APPLICATION_NAME="\\"Rocket\\"")
-add_definitions(-DTUNDRA_VERSION_STRING="\\"2.5.1.2\\"")
+if (APPLE)
+    add_definitions(-DTUNDRA_ORGANIZATION_NAME="\\\\"${ORGANIZATION_NAME}\\\\"")
+    add_definitions(-DTUNDRA_APPLICATION_NAME="\\\\"${APPLICATION_NAME}\\\\"")
+    add_definitions(-DTUNDRA_VERSION_STRING="\\\\"${VERSION_STRING}\\\\"")
+else()
+    add_definitions(-DTUNDRA_ORGANIZATION_NAME="\\"${ORGANIZATION_NAME}\\"")
+    add_definitions(-DTUNDRA_APPLICATION_NAME="\\"${APPLICATION_NAME}\\"")
+    add_definitions(-DTUNDRA_VERSION_STRING="\\"${VERSION_STRING}\\"")
+endif()
 
 # TUNDRA_NO_BOOST defines whether we want to replace usage of Boost with the C++ (TR1) standard equivalents.
 # Setting TUNDRA_NO_BOOST to TRUE, i.e. disabling usage of Boost in the Tundra codebase, requires compiler
