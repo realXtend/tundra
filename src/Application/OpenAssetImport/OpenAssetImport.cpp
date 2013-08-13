@@ -26,8 +26,6 @@ Licensed under the MIT license:
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include <QDebug>
-
 //#define SKELETON_ENABLED
 
 int OpenAssetConverter::msBoneCount = 0;
