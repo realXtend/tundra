@@ -262,6 +262,15 @@ if [ ! -d $prefix/$what ]; then
     ./configure -arch x86_64 -cocoa -debug-and-release -opensource -prefix $prefix/$what -no-qt3support -no-opengl -no-openvg -no-dbus -no-phonon -no-phonon-backend -no-multimedia -no-audio-backend -no-declarative -no-xmlpatterns -nomake examples -nomake demos -qt-zlib  -qt-libpng -qt-libmng -qt-libjpeg -qt-libtiff
     make -j$NPROCS
     make install
+
+    if [[ $OSX_VERSION == 10.8.* ]]; then
+        if [ -f $prefix/$what/mkspecs/common/g++-macx.conf ]; then
+            cp $prefix/$what/mkspecs/common/g++-macx.conf $prefix/$what/mkspecs/common/g++-macx.conf.bak
+            sed -e "s/-mmacosx-version-min=10.5/-mmacosx-version-min=10.6/g" < $prefix/$what/mkspecs/common/g++-macx.conf > $prefix/$what/mkspecs/common/g++-macx.conf.MODIFIED
+            mv $prefix/$what/mkspecs/common/g++-macx.conf.MODIFIED $prefix/$what/mkspecs/common/g++-macx.conf
+        fi
+    fi
+    cp LICENSE.LGPL $prefix/$what
 else
     echoInfo "$what is done"
 fi
@@ -285,6 +294,7 @@ if [ $USE_BOOST == "ON" ]; then
         echoInfo "Building $what"
         ./bootstrap.sh --prefix=$prefix/$what
         ./bjam toolset=darwin link=static threading=multi --with-thread --with-regex install
+        cp LICENSE_1_0.txt $prefix/$what
         touch $tags/$what-done
     fi
 else
@@ -310,6 +320,7 @@ else
     cmake . -DCMAKE_INSTALL_PREFIX=$prefix/$what -DCMAKE_DEBUG_POSTFIX= -DCMAKE_MINSIZEREL_POSTFIX= -DCMAKE_RELWITHDEBINFO_POSTFIX=
     make VERBOSE=1 -j$NPROCS
     make install
+    cp COPYING $prefix/$what
     touch $tags/$what-done
 fi
 
@@ -345,6 +356,7 @@ else
 
     make VERBOSE=1 -j$NPROCS
     make install
+    cp COPYING $prefix/$what
     touch $tags/$what-done
 fi
 
@@ -371,6 +383,7 @@ else
 
     make VERBOSE=1 -j$NPROCS
     make install
+    cp COPYING $prefix/$what
     touch $tags/$what-done
 fi
 
@@ -398,6 +411,7 @@ else
     fi
     make VERBOSE=1 -j$NPROCS
     make install
+    cp COPYING $prefix/$whatw
     touch $tags/$what-done
 fi
 
@@ -448,6 +462,7 @@ else
 
     make VERBOSE=1 -j$NPROCS
     make install
+    cp COPYING $prefix/$what
     touch $tags/$what-done
 fi
 
@@ -473,6 +488,7 @@ else
     fi
     make VERBOSE=1 -j$NPROCS
     make install
+    cp COPYING $prefix/$what
     touch $tags/$what-done
 fi
 
@@ -499,6 +515,7 @@ else
 
     make VERBOSE=1 -j$NPROCS
     make install
+    cp COPYING $prefix/$what
     touch $tags/$what-done
 fi
 
@@ -551,8 +568,9 @@ else
     make all -j$NPROCS
     cd ..
     cd ..
-    mkdir -p $viewer/bin/qtplugins
+    mkdir -p $viewer/bin/qtplugins $prefix/$what
     cp -Rf $build/$what/plugins/script $viewer/bin/qtplugins
+    cp $build/$what/LICENCE.LGPL $prefix/$what
     touch $tags/$what-done
 fi
 
@@ -585,6 +603,7 @@ else
     mkdir -p $prefix/$what/{lib,include}
     cp lib/libkNet.dylib $prefix/$what/lib/
     rsync -r include/* $prefix/$what/include/
+    cp LICENCE.txt $prefix/$what
     touch $tags/$what-done
 fi
 
@@ -678,7 +697,7 @@ else
     mkdir -p $prefix/$what/{lib,include}
     cp -R $OGRE_HOME/lib/relwithdebinfo/* $prefix/$what/lib
     cp $prefix/$what/lib/*.dylib $viewer/bin
-
+    cp COPYING $prefix/$what
     # Replace the install name with more suitable one to avoid link problems
     if [ -f $viewer/bin/RenderSystem_GL.dylib ]; then
         install_name_tool -id $viewer/bin/RenderSystem_GL.dylib $viewer/bin/RenderSystem_GL.dylib
@@ -717,6 +736,8 @@ else
     cmake . -DCMAKE_INSTALL_PREFIX=$prefix/$what
     make -j$NPROCS
     make install
+
+    cp LICENCE $prefix/$what
     touch $tags/$what-done
 fi
 
@@ -759,6 +780,7 @@ else
     make -j$NPROCS
     make install
 
+    cp License.txt $prefix/$what
     touch $tags/$what-done
 fi
 
@@ -781,6 +803,8 @@ else
     if [ -f $prefix/$what/lib/libSkyX.0.dylib ]; then
         install_name_tool -id $prefix/$what/lib/libSkyX.0.dylib $prefix/$what/lib/libSkyX.0.dylib
     fi
+
+    cp License.txt $prefix/$what
     touch $tags/$what-done
 fi
 
@@ -837,6 +861,7 @@ else
     ./configure --prefix=$ZZIPLIBPREFIX --enable-shared=NO --enable-static=YES
     make VERBOSE=1 -j$NPROCS
     make install
+    cp ./docs/COPYING.ZLIB $prefix/$what
     touch $tags/$what-done
 fi
 
