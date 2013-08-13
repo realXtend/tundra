@@ -472,7 +472,7 @@ void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type cha
         }
         
         if (!attr)
-            LogWarning("IComponent::DeserializeFrom: Could not find attribute " + id + " specified in the XML elenent");
+            LogWarning(TypeName() + "::DeserializeFrom: Could not find attribute \"" + id + "\" specified in the XML element.");
         else
             attr->FromString(attribute_element.attribute("value"), change);
         
