@@ -154,24 +154,22 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
 
 IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const QString &id, AttributeChange::Type change)
 {
-    if(ContainsAttribute(name))
-        return IComponent::AttributeByName(name);
+    if (ContainsAttribute(id))
+        return IComponent::AttributeById(id);
 
     IAttribute *attribute = SceneAPI::CreateAttribute(typeName, id);
-    if(!attribute)
+    if (!attribute)
     {
-        LogError("Failed to create new attribute:" + name + " in dynamic component:" + Name());
+        LogError("Failed to create new attribute of type \"" + typeName + "\" with ID \"" + id + "\" to dynamic component \"" + Name() + "\".");
         return 0;
     }
-    
+
     IComponent::AddAttribute(attribute);
-    
-    // Trigger scenemanager signal
+
     Scene* scene = ParentScene();
     if (scene)
         scene->EmitAttributeAdded(this, attribute, change);
-    
-    // Trigger internal signal
+
     emit AttributeAdded(attribute);
     EmitAttributeChanged(attribute, change);
     return attribute;
@@ -179,23 +177,12 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
 
 void EC_DynamicComponent::RemoveAttribute(const QString &id, AttributeChange::Type change)
 {
-    /// \todo Compare needs to be case-insensitive
     for(AttributeVector::iterator iter = attributes.begin(); iter != attributes.end(); iter++)
-    {
         if((*iter) && (*iter)->Id().compare(id, Qt::CaseInsensitive) == 0)
         {
-            // Trigger scenemanager signal
-            Scene* scene = ParentScene();
-            if (scene)
-                scene->EmitAttributeRemoved(this, *iter, change);
-            
-            // Trigger internal signal(s)
-            emit AttributeAboutToBeRemoved(*iter);
-            // Leave a hole in the array, which will be filled when new attributes are created
-            SAFE_DELETE(*iter);
+            IComponent::RemoveAttribute((*iter)->Index(), change);
             break;
         }
-    }
 }
 
 void EC_DynamicComponent::RemoveAllAttributes(AttributeChange::Type change)
@@ -212,7 +199,6 @@ void EC_DynamicComponent::RemoveAllAttributes(AttributeChange::Type change)
             // Trigger internal signal(s)
             emit AttributeAboutToBeRemoved(attributes[i]);
             SAFE_DELETE(attributes[i]);
-            attributes[i] = 0;
         }
         attributes.clear();
     }
