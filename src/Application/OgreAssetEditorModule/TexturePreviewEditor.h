@@ -15,8 +15,6 @@
 #include <QLabel>
 
 class QPushButton;
-class QLabel;
-class QString;
 class QScrollArea;
 
 /// TextureLabel widget is used only in texture preview window.
