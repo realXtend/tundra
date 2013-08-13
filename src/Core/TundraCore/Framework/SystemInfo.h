@@ -20,7 +20,7 @@
 
 #include "TundraCoreApi.h"
 
-class QString;
+#include <QString>
 
 /// Returns the operating system information, for example "Microsoft Windows 8 (build 9200), 64-bit".
 /** @note Currently only implemented on Windows. */
