@@ -159,6 +159,9 @@ public slots:
         @param key Key with possible prefixes, case-insensitive */
     QStringList CommandLineParameters(const QString &key) const;
 
+    /// Returns list of all the config XML filenames specified on command line or within another config XML
+    QStringList ConfigFiles() const { return configFiles; }
+
     /// Prints to console all the used startup options.
     void PrintStartupOptions();
 
@@ -195,8 +198,11 @@ private:
     PluginAPI *plugin;
     IRenderer *renderer;
 
-    /// Stores all command line parameters and startup options specified in the Config XML files.
+    /// Stores all command line parameters and expanded options specified in the Config XML files, except for the config file(s) themselves.
     QStringList startupOptions;
+
+    /// Stores config XML filenames
+    QStringList configFiles;
 
     /// Framework owns the memory of all the modules in the system. These are freed when Framework is exiting.
     std::vector<shared_ptr<IModule> > modules;
