@@ -21,7 +21,7 @@ These instructions assume that the git clone command was run at the user's home 
 Open up a new terminal window, and
 <ol>
 <li>Change into the directory ~/naali/tools/OSX, and run <pre>./BuildDeps.bash -c ~/naali</pre>
-<li>The build should proceed into building SkyX & Hydrax, which fail due to missing Ogre framework. Copy Ogre framework manually from ~/naali/deps/build/ogre-safe-nocrashes/lib/relwithdebinfo into a system framework directory such as /Library/Frameworks (requires admin privileges).
+<li>The build should proceed into building SkyX & Hydrax, which fail due to missing Ogre framework. Copy Ogre frameworks manually from ~/naali/deps/build/ogre-safe-nocrashes/lib/relwithdebinfo into a system framework directory such as /Library/Frameworks (requires admin privileges). If Ogre's include file OgreOverlaySystem.h does not exist inside the OgreOverlay framework's Headers directory, copy the file in question manually from Ogre's Components/Overlay/include directory into both copies of the OgreOverlay framework.
 <li>Rerun <pre>./BuildDeps.bash -c ~/naali</pre>
 <li>If installing vlc fails due to a "disk busy" error, rerun <pre>./BuildDeps.bash -c ~/naali</pre> once more. 
 </ol>

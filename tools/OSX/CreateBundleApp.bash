@@ -71,8 +71,13 @@ cp $ogredir/lib* $bundledir/Contents/Components
 ogresamples=`find $bundledir/Contents/Plugins -name "Sample_*.dylib"`
 rm $ogresamples
 
-echo "Deploying Ogre framework $ogredir to app bundle."
+echo "Deploying Ogre frameworks from $ogredir to app bundle."
 cp -R $ogredir/lib/relwithdebinfo/Ogre.framework $frameworksdir
+cp -R $ogredir/lib/relwithdebinfo/OgreOverlay.framework $frameworksdir
+cp -R $ogredir/lib/relwithdebinfo/Plugin_CgProgramManager.framework $frameworksdir
+cp -R $ogredir/lib/relwithdebinfo/Plugin_OctreeSceneManager.framework $frameworksdir
+cp -R $ogredir/lib/relwithdebinfo/Plugin_ParticleFX.framework $frameworksdir
+cp -R $ogredir/lib/relwithdebinfo/RenderSystem_GL.framework $frameworksdir
 
 # When running in an app bundle, Ogre plugins are loaded from the Plugins/ folder of the app bundle.
 mv $bundledir/Contents/MacOS/*.dylib $bundledir/Contents/Plugins

@@ -89,8 +89,12 @@ if (!framework.IsHeadless())
         }
 */
         var viewDistance = findChild(settingsWidget, "spinbox_viewdistance")
-        viewDistance.setValue(renderer.viewDistace);
+        viewDistance.setValue(renderer.viewDistance);
         viewDistance["valueChanged(double)"].connect(SetViewDistance);
+
+        var textureBudget = findChild(settingsWidget, "spinbox_texturebudget")
+        textureBudget.setValue(renderer.textureBudget);
+        textureBudget["valueChanged(double)"].connect(SetTextureBudget);
 
         var fullscreen = findChild(settingsWidget, "fullscreen_toggle");
         fullscreen.setChecked(renderer.fullScreen);
@@ -153,6 +157,12 @@ if (!framework.IsHeadless())
     function SetViewDistance(value)
     {
         renderer.viewDistance = value;
+    }
+    
+    // Sets new texture budget.
+    function SetTextureBudget(value)
+    {
+        renderer.textureBudget = value;
     }
 
     // Sets fullscreen mode on/off.

@@ -90,6 +90,9 @@ public:
     /// Same as NameInternal but static and takes the textureRef as a parameter.
     static QString NameInternal(const QString &textureRef);
 
+    /// Calculate the size for a texture based on texture budget
+    void CalculateTextureSize(size_t width, size_t height, size_t& outWidth, size_t& outHeight, size_t bitsPerPixel);
+    
     /// Decompresses any CRN input data to DDS.
     /** @param crnData Ptr to compressed crn data.
      ** @param crnNumBytes Size of crn data in bytes.
@@ -114,4 +117,13 @@ public slots:
 private:
     /// Unload texture from ogre
     virtual void DoUnload();
+    
+    /// Check whether we may need texture size modification (texture budget exceeded or the maximum texture size parameter specified).
+    bool NeedSizeModification() const;
+    
+    /// Check whether asynchronous loading can be supported
+    bool AllowAsyncLoading() const;
+    
+    /// Strip the top level mips from a DDS image if it is too large. Overwrite memory stream with modified one as necessary. Needs a temp vector for the modified data.
+    void ProcessDDSImage(Ogre::DataStreamPtr& stream, std::vector<u8>& modifiedDDSData);
 };

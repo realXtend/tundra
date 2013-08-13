@@ -233,7 +233,7 @@ else
         echo "Unknown Linux distribution, please update the build script for your distro and file a pull request, or file a bug report on the tracker."
     fi
     cd $what
-    hg checkout v1-8 # Make sure we are in the right branch
+    hg checkout v1-9 # Make sure we are in the right branch
     # Fix linking with recent boost libs
     sed -i -s 's/OGRE_BOOST_COMPONENTS thread/OGRE_BOOST_COMPONENTS system thread/' CMake/Dependencies.cmake
     mkdir -p $what-build
