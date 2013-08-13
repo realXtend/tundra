@@ -505,6 +505,8 @@ QString OgreMeshAsset::OgreMeshName() const
 
 bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters) const
 {
+    UNREFERENCED_PARAM(serializationParameters);
+
     if (ogreMesh.isNull())
     {
         LogWarning("OgreMeshAsset::SerializeTo: Tried to export non-existing Ogre mesh " + Name() + ".");
@@ -545,7 +547,9 @@ bool OgreMeshAsset::IsAssimpFileType() const
 #ifdef ASSIMP_ENABLED
 void OgreMeshAsset::OnAssimpConversionDone(bool success)
 {
-    /// @todo This function gets called many tens of times per assimp mesh - is that normal?
+    if (!IsAssimpFileType())
+        return;
+
     if(success)
     {
         if (GenerateMeshData())

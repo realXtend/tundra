@@ -56,6 +56,9 @@ public slots:
     /// Returns triangle count for submesh.
     int NumTris(int submeshIndex);
 
+    /// Is this mesh a Assimp supported file type.
+    bool IsAssimpFileType() const;
+
 signals:
     void ExternalConversionRequested(OgreMeshAsset*, const u8*, size_t);
 
@@ -73,9 +76,6 @@ private:
 
     /// Process mesh data after loading to create tangents and such.
     bool GenerateMeshData();
-
-    /// Is this mesh a Assimp supported file type.
-    bool IsAssimpFileType() const;
 
     /// Sets default material.
     void SetDefaultMaterial();
