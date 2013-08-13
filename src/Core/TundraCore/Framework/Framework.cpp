@@ -129,6 +129,7 @@ Framework::Framework(int argc_, char** argv_) :
 {
     // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
     instance = this;
+    bool configFilesSpecified = false;
 
 #ifdef ANDROID
     LoadCommandLineFromFile();
@@ -136,15 +137,26 @@ Framework::Framework(int argc_, char** argv_) :
     // Remember all startup command line options.
     // Skip argv[0], since it is the program name.
     for(int i = 1; i < argc; ++i)
-        startupOptions << argv[i];
-#endif
+    {
+        if (strcmp(argv[i], "--config") == 0)
+        {
+            if (argv[i+1] && strncmp(argv[i+1], "--", 2))
+            {
+                configFilesSpecified = true;
 
-    //  Load additional command line options from each config XML file.
-    QStringList cmdLineParams = CommandLineParameters("--config");
-    if (cmdLineParams.size() == 0) // By default, the plugins.xml file is loaded if no other config items are specified.
+                LoadStartupOptionsFromXML(argv[i+1]);
+                configFiles << argv[i+1];
+                ++i;
+            }
+
+            continue;
+        }
+        startupOptions << argv[i];
+    }
+
+#endif
+    if (!configFilesSpecified)
         LoadStartupOptionsFromXML("plugins.xml");
-    foreach(const QString &config, cmdLineParams)
-        LoadStartupOptionsFromXML(config);
 
     // Make sure we spawn a console window in each case we might need one.
     if (HasCommandLineParameter("--version") || HasCommandLineParameter("--help") || HasCommandLineParameter("--sharedconsole") || HasCommandLineParameter("--console") || HasCommandLineParameter("--headless"))
@@ -617,15 +629,26 @@ void Framework::LoadStartupOptionsFromXML(QString configurationFile)
             if (e.hasAttribute("build") && build.compare(e.attribute("build"), Qt::CaseInsensitive) != 0)
                 continue; // The command line parameter was specified to be included only in the given build (debug/release), but we are not running that build.
 
+            /// If we have another config XML specified with --config inside this config XML, load those settings also
+            if (!e.attribute("name").compare("--config"))
+            {
+                if (!e.attribute("value").isEmpty())
+                {
+                    LoadStartupOptionsFromXML(e.attribute("value"));
+                    configFiles << e.attribute("value");
+                }
+
+                n = n.nextSibling();
+                continue;
+            }
+
             /// \bug Appended in this way, the parsing is not perfect (one configuration can continue from the other)
             startupOptions << e.attribute("name");
 
             if (e.hasAttribute("value"))
                 startupOptions << e.attribute("value");
 
-            /// If we have another config XML specified with --config inside this config XML, load those settings also
-            if (!e.attribute("name").compare("--config"))
-                LoadStartupOptionsFromXML(e.attribute("value"));
+
         }
         n = n.nextSibling();
     }
@@ -633,6 +656,9 @@ void Framework::LoadStartupOptionsFromXML(QString configurationFile)
 
 bool Framework::HasCommandLineParameter(const QString &value) const
 {
+    if (!value.compare("--config"))
+        return !configFiles.isEmpty();
+
     ///\todo Convert startupOptions to a key-value map.
     for(int i = 0; i < startupOptions.size(); ++i)
         if (!startupOptions[i].compare(value, Qt::CaseInsensitive))
@@ -642,6 +668,9 @@ bool Framework::HasCommandLineParameter(const QString &value) const
 
 QStringList Framework::CommandLineParameters(const QString &key) const
 {
+    if (!key.compare("--config"))
+        return ConfigFiles();
+
     ///\todo Remove all this logic. This is Win32-specific command line parsing, and should be done only once for Win32,
     /// and stored in an already processed format for faster retrieval.
     QStringList ret;
