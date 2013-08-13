@@ -332,7 +332,7 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         saveAsAction = new QAction(tr("Save as..."), menu);
         actionsAction = new QAction(tr("Actions..."), menu);
         functionsAction = new QAction(tr("Functions..."), menu);
-        groupEntitiesAction = new QAction(tr("Group selected entities"), menu);
+        groupEntitiesAction = new QAction(tr("Group selected entities..."), menu);
         ungroupEntitiesAction = new QAction(tr("Ungroup"), menu);
 
         connect(editAction, SIGNAL(triggered()), SLOT(Edit()));
@@ -783,7 +783,7 @@ void SceneTreeWidget::OnCommitData(QWidget * editor)
         EntityPtr entity = entityItem->Entity();
         if (entity)
         {
-            QLineEdit *edit = dynamic_cast<QLineEdit*>(editor);
+            QLineEdit *edit = qobject_cast<QLineEdit*>(editor);
             if (edit)
                 // If there are no changes, restore back the previous stripped entity ID from the item, and restore sorting
                 if (edit->text() == entity->Name())
@@ -1102,7 +1102,7 @@ void SceneTreeWidget::OpenNewScene()
 
 void SceneTreeWidget::OpenEntityActionDialog()
 {
-    QAction *action = dynamic_cast<QAction *>(sender());
+    QAction *action = qobject_cast<QAction *>(sender());
     assert(action);
     if (!action)
         return;
@@ -1169,7 +1169,7 @@ void SceneTreeWidget::EntityActionDialogFinished(int result)
 
 void SceneTreeWidget::OpenFunctionDialog()
 {
-    QAction *action = dynamic_cast<QAction *>(sender());
+    QAction *action = qobject_cast<QAction *>(sender());
     assert(action);
     if (!action)
         return;
@@ -1229,8 +1229,8 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
             QString objName = obj->metaObject()->className();
             QString objNameWithId = objName;
             {
-                Entity *e = dynamic_cast<Entity *>(obj);
-                IComponent *c = dynamic_cast<IComponent *>(obj);
+                Entity *e = qobject_cast<Entity *>(obj);
+                IComponent *c = qobject_cast<IComponent *>(obj);
                 if (e)
                     objNameWithId.append('(' + QString::number((uint)e->Id()) + ')');
                 else if (c && !c->Name().trimmed().isEmpty())
@@ -1280,7 +1280,7 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
 
 void SceneTreeWidget::SaveSelectionDialogClosed(int result)
 {
-    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    QFileDialog *dialog = qobject_cast<QFileDialog *>(sender());
     assert(dialog);
     if (!dialog)
         return;
@@ -1351,7 +1351,7 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
 
 void SceneTreeWidget::SaveSceneDialogClosed(int result)
 {
-    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    QFileDialog *dialog = qobject_cast<QFileDialog *>(sender());
     assert(dialog);
     if (!dialog)
         return;
@@ -1395,7 +1395,7 @@ void SceneTreeWidget::SaveSceneDialogClosed(int result)
 
 void SceneTreeWidget::ExportAllDialogClosed(int result)
 {
-    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    QFileDialog *dialog = qobject_cast<QFileDialog *>(sender());
     assert(dialog);
 
     if (!dialog || result != QDialog::Accepted || dialog->selectedFiles().size() != 1 || scene.expired())
@@ -1519,7 +1519,7 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem, bool includ
 
 void SceneTreeWidget::OpenFileDialogClosed(int result)
 {
-    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    QFileDialog *dialog = qobject_cast<QFileDialog *>(sender());
     assert(dialog);
     if (!dialog)
         return;
@@ -1544,7 +1544,7 @@ void SceneTreeWidget::OpenFileDialogClosed(int result)
 
 void SceneTreeWidget::InvokeActionTriggered()
 {
-    QAction *action = dynamic_cast<QAction *>(sender());
+    QAction *action = qobject_cast<QAction *>(sender());
     assert(action);
     if (!action)
         return;
@@ -1646,7 +1646,7 @@ void SceneTreeWidget::SaveAssetAs()
 
 void SceneTreeWidget::SaveAssetDialogClosed(int result)
 {
-    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    QFileDialog *dialog = qobject_cast<QFileDialog *>(sender());
     assert(dialog);
 
     if (!dialog || result != QDialog::Accepted || dialog->selectedFiles().isEmpty() || scene.expired())
