@@ -115,7 +115,7 @@ private:
     InvokeItem *FindMruItem();
 
     /// Returns all asset references for the specified entity item.
-    QSet<QString> GetAssetRefs(const EntityItem *eItem) const;
+    QSet<QString> GetAssetRefs(const EntityItem *eItem, bool includeEmptyRefs = true) const;
 
     Framework *framework; ///< Framework pointer.
     SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
