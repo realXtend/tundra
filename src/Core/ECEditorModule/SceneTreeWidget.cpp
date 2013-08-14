@@ -1049,6 +1049,15 @@ void SceneTreeWidget::SaveSceneAs()
 
 void SceneTreeWidget::ExportAll()
 {
+    /** @todo @bug This exports the txml and all asset refs found from the selected entities.
+        However the asset refs inside the txml are not modified as relative refs.
+        This can be done on top level refs but any dependencies inside eg. Material files
+        will be harder and needs custom logic per IAsset impl or a generic IAsset::SerializeTo
+        that you can tell if dep refs should be made relative or change the context etc.
+
+        Additionally if the txml contains urlBase1/my.asset and urlBase2/my.asset one
+        of these will be replaced by the other as storing is done by base filename only. */
+
     if (fileDialog)
         fileDialog->close();
 
@@ -1407,14 +1416,14 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
         {
             EntityItem *eItem = dynamic_cast<EntityItem *>(topLevelItem(i));
             if (eItem)
-                assets.unite(GetAssetRefs(eItem));
+                assets.unite(GetAssetRefs(eItem, false));
         }
     }
     else
     {
         // Export assets for selected entities
         foreach(EntityItem *eItem, sel.entities)
-            assets.unite(GetAssetRefs(eItem));
+            assets.unite(GetAssetRefs(eItem, false));
     }
 
     savedAssets.clear();
@@ -1434,12 +1443,16 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
     }
 */
 
-    foreach(const QString &assetid, assets)
+    foreach(const QString &assetRef, assets)
     {
-        AssetTransferPtr transfer = framework->Asset()->RequestAsset(assetid);
+        if (assetRef.trimmed().isEmpty())
+            continue;
+        AssetTransferPtr transfer = framework->Asset()->RequestAsset(assetRef);
+        if (!transfer.get())
+            continue;
 
         QString filename = directory.absolutePath();
-        QString assetName = AssetAPI::ExtractFilenameFromAssetRef(assetid);
+        QString assetName = AssetAPI::ExtractFilenameFromAssetRef(assetRef);
         filename += "/" + assetName;
 
         fileSaves.insert(transfer->source.ref, filename);
@@ -1447,7 +1460,7 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
     }
 }
 
-QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
+QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem, bool includeEmptyRefs) const
 {
     assert(scene.lock());
     QSet<QString> assets;
@@ -1467,6 +1480,7 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
 
             const Entity::ComponentMap &components = entity->Components();
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+            {
                 foreach(IAttribute *attr, i->second->Attributes())
                 {
                     if (!attr)
@@ -1476,16 +1490,27 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
                     {
                         Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
                         if (assetRef)
+                        {
+                            if (!includeEmptyRefs && assetRef->Get().ref.trimmed().isEmpty())
+                                continue;
                             assets.insert(assetRef->Get().ref);
+                        }
                     }
                     else if (attr->TypeId() == cAttributeAssetReferenceList)
                     {
                         Attribute<AssetReferenceList> *assetRefs = dynamic_cast<Attribute<AssetReferenceList> *>(attr);
                         if (assetRefs)
+                        {
                             for(int i = 0; i < assetRefs->Get().Size(); ++i)
+                            {
+                                if (!includeEmptyRefs && assetRefs->Get()[i].ref.trimmed().isEmpty())
+                                    continue;
                                 assets.insert(assetRefs->Get()[i].ref);
+                            }
+                        }
                     }
                 }
+            }
         }
     }
 
