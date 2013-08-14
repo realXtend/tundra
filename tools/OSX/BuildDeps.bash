@@ -237,9 +237,9 @@ fi
 
 cd $build
 what=qt
-qtversion=4.8.4
+qtversion=4.8.5
 pkgbase=qt-everywhere-opensource-src-$qtversion
-dlurl=http://releases.qt-project.org/qt4/source/$pkgbase.tar.gz
+dlurl=http://download.qt-project.org/official_releases/qt/4.8/$qtversion/$pkgbase.tar.gz
 zip=$tarballs/$pkgbase.tar.gz
 
 if [ ! -d $prefix/$what ]; then
