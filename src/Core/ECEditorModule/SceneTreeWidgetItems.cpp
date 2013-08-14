@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   SceneTreeWidgetItems.h
- *  @brief  Tree widget -related classes used in @c SceneTreeWidget and @c AssetTreeWidget.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   SceneTreeWidgetItems.h
+    @brief  Tree widget -related classes used in @c SceneTreeWidget and @c AssetTreeWidget. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -52,8 +51,8 @@ void EntityItem::SetText(::Entity *entity)
 
     setTextColor(0, QColor(Qt::black));
     
-    bool local = entity->IsLocal();
-    bool temp = entity->IsTemporary();
+    const bool local = entity->IsLocal();
+    const bool temp = entity->IsTemporary();
 
     QString info;
     if (local)
@@ -129,7 +128,12 @@ void EntityGroupItem::UpdateText()
 // ComponentItem
 
 ComponentItem::ComponentItem(const ComponentPtr &comp, EntityItem *parent) :
-    QTreeWidgetItem(parent), parentItem(parent), ptr(comp), typeName(comp->TypeName()), name(comp->Name())
+    QTreeWidgetItem(parent),
+    parentItem(parent),
+    ptr(comp),
+    typeId(comp->TypeId()),
+    typeName(comp->TypeName()),
+    name(comp->Name())
 {
     SetText(comp.get());
 }
@@ -149,8 +153,8 @@ void ComponentItem::SetText(IComponent *comp)
     QString localOnlyText = QApplication::translate("ComponentItem", "UpdateMode:LocalOnly");
     QString disconnectedText = QApplication::translate("ComponentItem", "UpdateMode:Disconnected");
 
-    bool sync = comp->IsReplicated();
-    bool temporary = comp->IsTemporary();
+    const bool sync = comp->IsReplicated();
+    const bool temporary = comp->IsTemporary();
 
     QString info;
     if (!sync)
@@ -201,32 +205,44 @@ EntityItem *ComponentItem::Parent() const
     return parentItem;
 }
 
+// AttributeItem
+
+AttributeItem::AttributeItem(IAttribute *attr, QTreeWidgetItem *parent) :
+    QTreeWidgetItem(parent),
+    ptr(attr->Owner()->shared_from_this(), attr)
+{
+    Update(attr);
+}
+
+void AttributeItem::Update(IAttribute *attr)
+{
+    if (attr != ptr.Get())
+    {
+        LogError("AttributeItem::Update: trying to update item with wrong attribute.");
+        return;
+    }
+
+    type = attr->TypeName();
+    name = attr->Name();
+    id = attr->Id();
+    value = attr->ToString().c_str();
+
+    setText(0, QString("%1: %2").arg(id).arg(value));
+}
+
 // AssetRefItem
 
 AssetRefItem::AssetRefItem(IAttribute *attr, QTreeWidgetItem *parent) :
-    QTreeWidgetItem(parent)
+    AttributeItem(attr, parent)
 {
-    Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
-    assert(assetRef);
-    name = assetRef->Name();
-    id = assetRef->Get().ref;
-    SetText(assetRef);
 }
 
-AssetRefItem::AssetRefItem(const QString &assetName, const QString &assetRef, QTreeWidgetItem *parent) :
-    QTreeWidgetItem(parent),
-    name(assetName),
-    id(assetRef)
+AssetRefItem::AssetRefItem(IAttribute *attr, const QString &assetRef, QTreeWidgetItem *parent) :
+    AttributeItem(attr, parent)
 {
-    setText(0, QString("%1: %2").arg(name).arg(id));
-}
-
-void AssetRefItem::SetText(IAttribute *attr)
-{
-    Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
-    assert(assetRef);
-    if (assetRef)
-        setText(0, QString("%1: %2").arg(assetRef->Name()).arg(assetRef->Get().ref));
+    // Override the regular AssetReferenceList value "ref1;ref2;etc." with a single ref.
+    value = assetRef;
+    setText(0, QString("%1: %2").arg(id).arg(value));
 }
 
 // SceneTreeWidgetSelection

@@ -19,7 +19,6 @@
 #include "Entity.h"
 #include "EC_Name.h"
 #include "AssetReference.h"
-#include "EC_DynamicComponent.h"
 #include "LoggingFunctions.h"
 
 #include <QTreeWidgetItemIterator>
@@ -31,7 +30,7 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     QWidget(parent),
     framework(fw),
     showComponents(true),
-    showAssets(true),
+    showAttributesMode(ShowAssetReferences),
     treeWidget(0),
     expandAndCollapseButton(0),
     searchField(0)
@@ -50,21 +49,28 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     expandAndCollapseButton->setFixedHeight(22);
 
     searchField = new QLineEdit(this);
+    /// @todo use searchField->setPlaceholderText(); instead of manual custom implementation for "Search..." text.
     searchField->setText(tr("Search..."));
     searchField->setStyleSheet("color:grey;");
     searchField->installEventFilter(this);
     searchField->setFixedHeight(20);
 
-    QLabel *sortLabel = new QLabel(tr("Sort by"));
-    QComboBox *sortComboBox = new QComboBox;
+    QLabel *sortLabel = new QLabel(tr("Sort by"), this);
+    QComboBox *sortComboBox = new QComboBox(this);
     sortComboBox->addItem(tr("ID"));
     sortComboBox->addItem(tr("Name"));
     sortComboBox->setFixedHeight(20);
 
     QCheckBox *compCheckBox = new QCheckBox(tr("Components"), this);
     compCheckBox->setChecked(showComponents);
-    QCheckBox *assetCheckBox = new QCheckBox(tr("Asset References"), this);
-    assetCheckBox->setChecked(showAssets);
+
+    QLabel *attributeLabel = new QLabel(tr("Attributes"), this);
+    QComboBox *attributeComboBox = new QComboBox(this);
+    attributeComboBox->addItem(tr("None"), DoNotShowAttributes);
+    attributeComboBox->addItem(tr("Assets"), ShowAssetReferences);
+    attributeComboBox->addItem(tr("Dynamic"), ShowDynamicAttributes);
+    attributeComboBox->addItem(tr("All"), ShowAllAttributes);
+    attributeComboBox->setCurrentIndex(showAttributesMode);
 
     undoButton_ = new QToolButton();
     undoButton_->setPopupMode(QToolButton::MenuButtonPopup);
@@ -93,16 +99,17 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     layoutSettingsVisibility->addWidget(redoButton_);
     layoutSettingsVisibility->addSpacerItem(new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
     layoutSettingsVisibility->addWidget(compCheckBox);
-    layoutSettingsVisibility->addWidget(assetCheckBox);
+    layoutSettingsVisibility->addWidget(attributeLabel);
+    layoutSettingsVisibility->addWidget(attributeComboBox);
 
     layout->addLayout(layoutFilterAndSort);
     layout->addWidget(treeWidget);
     layout->addLayout(layoutSettingsVisibility);
     
     // Connect to widget signals
-    connect(assetCheckBox, SIGNAL(toggled(bool)), SLOT(ShowAssetReferences(bool)));
+    connect(attributeComboBox, SIGNAL(currentIndexChanged(int)), SLOT(ShowAttributesInternal(int)));
     connect(compCheckBox, SIGNAL(toggled(bool)), SLOT(ShowComponents(bool)));
-    connect(sortComboBox, SIGNAL(currentIndexChanged(const QString &)), SLOT(Sort(const QString &)));
+    connect(sortComboBox, SIGNAL(currentIndexChanged(int)), SLOT(Sort(int)));
     connect(searchField, SIGNAL(textEdited(const QString &)), SLOT(Search(const QString &)));
     connect(expandAndCollapseButton, SIGNAL(clicked()), SLOT(ExpandOrCollapseAll()));
     connect(treeWidget, SIGNAL(itemCollapsed(QTreeWidgetItem*)), SLOT(CheckTreeExpandStatus(QTreeWidgetItem*)));
@@ -181,24 +188,20 @@ void SceneStructureWindow::ShowComponents(bool show)
         }
     }
 
-    if (showAssets)
+    if (showAttributesMode != DoNotShowAttributes)
     {
-        ClearAssetReferences();
-        CreateAssetReferences();
+        ClearAttributes();
+        CreateAttributes();
     }
 
     treeWidget->setSortingEnabled(true);
 
-    if (!showAssets && !showComponents)
-        expandAndCollapseButton->setEnabled(false);
-    else
-        expandAndCollapseButton->setEnabled(true);
+    expandAndCollapseButton->setEnabled(showComponents || showAttributesMode != DoNotShowAttributes);
 }
 
-void SceneStructureWindow::ShowAssetReferences(bool show)
+void SceneStructureWindow::ShowAttributes(AttributeMode show)
 {
-    showAssets = show;
-    //treeWidget->showAssets = show;
+    showAttributesMode = show;
 
     treeWidget->setSortingEnabled(false);
 
@@ -208,17 +211,14 @@ void SceneStructureWindow::ShowAssetReferences(bool show)
         return;
     }
 
-    if (!showAssets)
-        ClearAssetReferences();
-    else
-        CreateAssetReferences();
+    ClearAttributes();
+
+    if (showAttributesMode != DoNotShowAttributes)
+        CreateAttributes();
 
     treeWidget->setSortingEnabled(true);
 
-    if (!showAssets && !showComponents)
-        expandAndCollapseButton->setEnabled(false);
-    else
-        expandAndCollapseButton->setEnabled(true);
+    expandAndCollapseButton->setEnabled(showComponents || showAttributesMode != DoNotShowAttributes);
 }
 
 void SceneStructureWindow::SetEntitySelected(const EntityPtr &entity, bool selected)
@@ -284,12 +284,12 @@ void SceneStructureWindow::Clear()
     }
 }
 
-EntityItem* SceneStructureWindow::EntityItemOfEntity(Entity *ent)
+EntityItem* SceneStructureWindow::EntityItemOfEntity(Entity *ent) const
 {
     return ent ? EntityItemById(ent->Id()) : 0;
 }
 
-EntityItem* SceneStructureWindow::EntityItemById(entity_id_t id)
+EntityItem* SceneStructureWindow::EntityItemById(entity_id_t id) const
 {
     EntityItem *eItem = 0;
     
@@ -325,75 +325,19 @@ EntityItem* SceneStructureWindow::EntityItemById(entity_id_t id)
     return eItem;
 }
 
-void SceneStructureWindow::CreateAssetReferences()
+void SceneStructureWindow::ClearAttributes()
 {
-    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
-    {
-        EntityGroupItem *gItem = dynamic_cast<EntityGroupItem*>(treeWidget->topLevelItem(i));
-        if (gItem)
-        {
-            for (int j = 0; j < gItem->childCount(); ++j)
-                CreateAssetReference(gItem->child(j));
-        }
-        else
-            CreateAssetReference(treeWidget->topLevelItem(i));
-    }
-}
-
-void SceneStructureWindow::CreateAssetReference(QTreeWidgetItem *targetEntityItem)
-{
-    EntityItem *eItem = dynamic_cast<EntityItem*>(targetEntityItem);
-    if (!eItem)
-        return;
-
-    EntityPtr entity = scene.lock()->EntityById(eItem->Id());
-    if (!entity)
-        return;
-
-    // Create asset ref items, if any exist.
-    // If component items are visible, create asset ref items as children of them.
-    if (showComponents)
-    {
-        int entityChildCount = eItem->childCount();
-        for(int j = 0; j < entityChildCount; ++j)
-        {
-            ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
-            if (!cItem)
-                continue;
-
-            ComponentPtr comp = entity->Component(cItem->typeName, cItem->name);
-            if (!comp)
-                continue;
-
-            foreach(IAttribute *attr, comp->Attributes())
-                if (attr && (attr->TypeId() == cAttributeAssetReference || attr->TypeId() == cAttributeAssetReferenceList))
-                    CreateAssetItem(cItem, attr);
-        }
-    }
-    else
-    {
-        // Create asset ref items as children of entity items.
-        const Entity::ComponentMap &components = entity->Components();
-        for(Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
-            foreach(IAttribute *attr, i->second->Attributes())
-                if (attr && (attr->TypeId() == cAttributeAssetReference || attr->TypeId() == cAttributeAssetReferenceList))
-                    CreateAssetItem(eItem, attr);
-    }
-}
-
-void SceneStructureWindow::ClearAssetReferences()
-{
-    QList<AssetRefItem *> assetItems;
+    QList<AttributeItem *> attributeItems;
     QTreeWidgetItemIterator it(treeWidget);
     while(*it)
     {
-        AssetRefItem *aItem = dynamic_cast<AssetRefItem *>(*it);
+        AttributeItem *aItem = dynamic_cast<AttributeItem *>(*it);
         if (aItem)
-            assetItems << aItem;
+            attributeItems << aItem;
         ++it;
     }
 
-    foreach(AssetRefItem *aItem, assetItems)
+    foreach(AttributeItem *aItem, attributeItems)
     {
         QTreeWidgetItem *p = aItem->parent();
         p->removeChild(aItem);
@@ -405,17 +349,19 @@ void SceneStructureWindow::AddEntity(Entity* entity)
 {
     if (!entity->Group().isEmpty())
     {
-        EntityGroupItem *groupItem = static_cast<EntityGroupItem*>(entityGroupItems_[entity->Group()]);
+        EntityGroupItem *groupItem = entityGroupItems_[entity->Group()];
         if (!groupItem)
         {
             groupItem = new EntityGroupItem(entity->Group());
             entityGroupItems_[entity->Group()] = groupItem;
         }
-        groupItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
+
+        const Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
+        groupItem->setFlags(flags);
         treeWidget->addTopLevelItem(groupItem);
 
         EntityItem *entityItem = new EntityItem(entity->shared_from_this(), groupItem);
-        entityItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
+        entityItem->setFlags(flags);
 
         groupItem->addChild(entityItem);
     }
@@ -461,19 +407,15 @@ void SceneStructureWindow::UpdateEntityTemporaryState(Entity *entity)
 void SceneStructureWindow::RemoveEntity(Entity* entity)
 {
     EntityItem *item = EntityItemOfEntity(entity);
-    if (!item)
-        return;
-
-    RemoveEntityItem(item);
+    if (item)
+        RemoveEntityItem(item);
 }
 
 void SceneStructureWindow::RemoveEntityById(entity_id_t id)
 {
     EntityItem *item = EntityItemById(id);
-    if (!item)
-        return;
-
-    RemoveEntityItem(item);
+    if (item)
+        RemoveEntityItem(item);
 }
 
 void SceneStructureWindow::RemoveEntityItem(EntityItem* item)
@@ -507,30 +449,29 @@ void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
     connect(comp, SIGNAL(ComponentNameChanged(const QString &, const QString &)),
         SLOT(UpdateComponentName(const QString &, const QString &)));
 
-    // If name component exists, retrieve name from it. Also hook up change signal so that UI keeps synch with the name.
-    if (comp->TypeName() == EC_Name::TypeNameStatic())
+    if (comp->TypeId() == EC_Name::ComponentTypeId)
     {
+        // Retrieve entity's name from Name component. Also hook up change signal so that UI keeps synch with the name.
         eItem->SetText(entity);
 
         connect(comp, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)),
             SLOT(UpdateEntityName(IAttribute *)), Qt::UniqueConnection);
     }
 
-    // If dynamic component exists, hook up its change signals in case AssetReference attribute is added/removed to it.
-    if (comp->TypeName() == EC_DynamicComponent::TypeNameStatic())
+    if (comp->SupportsDynamicAttributes())
     {
-        connect(comp, SIGNAL(AttributeAdded(IAttribute *)), SLOT(AddAssetReference(IAttribute *)));
-        connect(comp, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)), SLOT(RemoveAssetReference(IAttribute *)));
+        // Hook to changes of dynamic attributes in order to keep the UI in sync (currently only DynamicComponent has these).
+        connect(comp, SIGNAL(AttributeAdded(IAttribute *)),
+            SLOT(AddDynamicAttribute(IAttribute *)), Qt::UniqueConnection);
+        connect(comp, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)),
+            SLOT(RemoveDynamicAttribute(IAttribute *)), Qt::UniqueConnection);
         connect(comp, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)),
-            SLOT(UpdateAssetReference(IAttribute *)), Qt::UniqueConnection);
+            SLOT(UpdateDynamicAttribute(IAttribute *)), Qt::UniqueConnection);
     }
 
-    // Add possible asset references.
-    foreach(IAttribute *attr, comp->Attributes())
-        if (attr && (attr->TypeId() == cAttributeAssetReference || attr->TypeId() == cAttributeAssetReferenceList))
-            CreateAssetItem(cItem, attr);
+    // Add possible attributes.
+    CreateAttributesForComponent(cItem);
 
-    
     // If we have an ongoing search, make sure that the new item is compared too.
     QString searchFilter = searchField->text().trimmed();
     if (!searchFilter.isEmpty() && searchFilter != tr("Search..."))
@@ -546,7 +487,7 @@ void SceneStructureWindow::RemoveComponent(Entity* entity, IComponent* comp)
     for(int j = 0; j < eItem->childCount(); ++j)
     {
         ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
-        if (cItem && (cItem->typeName == comp->TypeName()) && (cItem->name == comp->Name()))
+        if (cItem && cItem->Component().get() == comp)
         {
             eItem->removeChild(cItem);
             SAFE_DELETE(cItem);
@@ -554,45 +495,125 @@ void SceneStructureWindow::RemoveComponent(Entity* entity, IComponent* comp)
         }
     }
 
-    if (comp->TypeName() == EC_Name::TypeNameStatic())
+    if (comp->TypeId() == EC_Name::ComponentTypeId)
         eItem->setText(0, QString("%1").arg(entity->Id()));
 }
 
-void SceneStructureWindow::CreateAssetItem(QTreeWidgetItem *parentItem, IAttribute *attr)
+void SceneStructureWindow::CreateAttributesForEntity(EntityItem *eItem)
 {
-    Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
-    if (assetRef)
+    if (!eItem)
+        return;
+
+    EntityPtr entity = eItem->Entity();
+    if (!entity)
+        return;
+
+    if (showComponents) // Parent to component items.
     {
-        AssetRefItem *aItem = new AssetRefItem(attr, parentItem);
-        aItem->setHidden(!showAssets);
-        parentItem->addChild(aItem);
-    }
-    else
-    {
-        Attribute<AssetReferenceList> *assetRefList = dynamic_cast<Attribute<AssetReferenceList> *>(attr);
-        if (assetRefList)
+        for(int i = 0; i < eItem->childCount(); ++i)
         {
-            AssetReferenceList refs = assetRefList->Get();
-            for(int i = 0; i < refs.Size(); ++i)
+            ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(i));
+            CreateAttributesForComponent(cItem);
+        }
+    }
+    else // Parent to entity items.
+    {
+        const Entity::ComponentMap &components = entity->Components();
+        for(Entity::ComponentMap::const_iterator it = components.begin(); it != components.end(); ++it)
+            foreach(IAttribute *attr, it->second->Attributes())
+                if (attr && (showAttributesMode == ShowAllAttributes ||
+                    (showAttributesMode == ShowDynamicAttributes && attr->IsDynamic()) ||
+                    (showAttributesMode == ShowAssetReferences && (attr->TypeId() == cAttributeAssetReference ||
+                    attr->TypeId() == cAttributeAssetReferenceList))))
+                {
+                    CreateAttributeItem(eItem, attr);
+                }
+    }
+}
+
+void SceneStructureWindow::CreateAttributesForComponent(ComponentItem *cItem)
+{
+    if (cItem && cItem->Component())
+        foreach(IAttribute *attr, cItem->Component()->Attributes())
+            if (attr && (showAttributesMode == ShowAllAttributes ||
+                (showAttributesMode == ShowDynamicAttributes && attr->IsDynamic()) ||
+                (showAttributesMode == ShowAssetReferences && (attr->TypeId() == cAttributeAssetReference ||
+                attr->TypeId() == cAttributeAssetReferenceList))))
             {
-                AssetRefItem *aItem = new AssetRefItem(attr->Name(), refs[i].ref, parentItem);
-                aItem->setHidden(!showAssets);
+                CreateAttributeItem(cItem, attr);
+            }
+}
+
+void SceneStructureWindow::CreateAttributes()
+{
+    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    {
+        EntityGroupItem *gItem = dynamic_cast<EntityGroupItem*>(treeWidget->topLevelItem(i));
+        if (gItem)
+            for(int j = 0; j < gItem->childCount(); ++j)
+                CreateAttributesForEntity(dynamic_cast<EntityItem *>(gItem->child(j)));
+        else
+            CreateAttributesForEntity(dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i)));
+    }
+}
+
+void SceneStructureWindow::CreateAttributeItem(QTreeWidgetItem *parentItem, IAttribute *attr)
+{
+    // Do not create duplicate items. Recreate already existing items in order to guarantee up-to-date information.
+    QList<AttributeItem *> alreadyExisting;
+    for(int i = 0; i < parentItem->childCount(); ++i)
+    {
+        AttributeItem *item = dynamic_cast<AttributeItem *>(parentItem->child(i));
+        if (item && item->ptr.Get() == attr)
+            alreadyExisting << item;
+    }
+
+    foreach(AttributeItem *item, alreadyExisting)
+    {
+        parentItem->removeChild(item);
+        SAFE_DELETE(item);
+    }
+
+    // Create special items for asset references.>
+    if (attr->TypeId() == cAttributeAssetReference || attr->TypeId() == cAttributeAssetReferenceList)
+    {
+        const bool visible = (showAttributesMode == ShowAllAttributes || showAttributesMode == ShowAssetReferences ||
+            (showAttributesMode == ShowDynamicAttributes && attr->IsDynamic()));
+
+        // If this attribute is an empty AssetReferenceList it will have a dummy item so
+        // that it appears in the tree.
+        AttributeItem *aItem = new AssetRefItem(attr, parentItem);
+        aItem->setHidden(!visible);
+        parentItem->addChild(aItem);
+
+        if (attr->TypeId() == cAttributeAssetReferenceList)
+        {
+            // Fill ref for possible already existing first AssetReferenceList item.
+            const AssetReferenceList &refs = static_cast<Attribute<AssetReferenceList> *>(attr)->Get();
+            if (refs.Size() >= 1)
+                aItem->setText(0, QString("%1: %2").arg(attr->Id()).arg(refs[0].ref)); /**< @todo Make this some kind of Update() call instead? */
+
+            // Create new items for rest of the refs.
+            for(int i = 1; i < refs.Size(); ++i)
+            {
+                aItem = new AssetRefItem(attr, refs[i].ref, parentItem);
+                aItem->setHidden(!visible);
                 parentItem->addChild(aItem);
             }
         }
     }
+    else
+    {
+        AttributeItem *aItem = new AttributeItem(attr, parentItem);
+        const bool visible = (showAttributesMode == ShowAllAttributes || (showAttributesMode == ShowDynamicAttributes && attr->IsDynamic()));
+        aItem->setHidden(!visible);
+        parentItem->addChild(aItem);
+    }
 }
 
-void SceneStructureWindow::AddAssetReference(IAttribute *attr)
+void SceneStructureWindow::AddDynamicAttribute(IAttribute *attr)
 {
-    if (!dynamic_cast<Attribute<AssetReference> *>(attr) && !dynamic_cast<Attribute<AssetReferenceList> *>(attr))
-        return;
-
-    EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent *>(sender());
-    if (!dc)
-        return;
-
-    if (!showAssets)
+    if (showAttributesMode != ShowAllAttributes && showAttributesMode != ShowDynamicAttributes)
         return;
 
     QTreeWidgetItem *parentItem = 0;
@@ -603,17 +624,19 @@ void SceneStructureWindow::AddAssetReference(IAttribute *attr)
         while(*it)
         {
             ComponentItem *cItem = dynamic_cast<ComponentItem *>(*it);
-            if (cItem && (cItem->typeName == dc->TypeName()) && (cItem->name == dc->Name()))
+            if (cItem && cItem->Component().get() == attr->Owner())
             {
                 parentItem = cItem;
                 break;
             }
+
+            ++it;
         }
     }
     else
     {
         // Find parent entity item.
-        Entity *entity = dc->ParentEntity();
+        Entity *entity = attr->Owner()->ParentEntity();
         assert(entity);
         if (!entity)
             return;
@@ -628,111 +651,60 @@ void SceneStructureWindow::AddAssetReference(IAttribute *attr)
         return;
     }
 
-    CreateAssetItem(parentItem, attr);
+    CreateAttributeItem(parentItem, attr);
 }
 
-void SceneStructureWindow::RemoveAssetReference(IAttribute *attr)
+void SceneStructureWindow::RemoveDynamicAttribute(IAttribute *attr)
 {
-    EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent *>(sender());
-    if (!dc)
-        return;
+    const bool multipleItems = (attr->TypeId() == cAttributeAssetReferenceList && static_cast<Attribute<AssetReferenceList> *>(attr)->Get().Size() > 1);
 
-    AssetReferenceList assetRefs;
-    if (dynamic_cast<Attribute<AssetReference> *>(attr))
-        assetRefs.Append(dynamic_cast<Attribute<AssetReference> *>(attr)->Get());
-    else if (dynamic_cast<Attribute<AssetReferenceList> *>(attr))
-        assetRefs = dynamic_cast<Attribute<AssetReferenceList> *>(attr)->Get();
-    else
-        return;
-
-    for(int i = 0; i < assetRefs.Size(); ++i)
-    {
-        //AssetRefItem *assetItem = 0;
-        QTreeWidgetItemIterator it(treeWidget);
-        while(*it)
-        {
-            AssetRefItem *a = dynamic_cast<AssetRefItem *>(*it);
-            if (a && (/*a->type == assetRef->Get().type && */a->id == assetRefs[i].ref))
-            {
-                //assetItem = a;
-                SAFE_DELETE(a);
-                break;
-            }
-
-            ++it;
-        }
-    }
-
-//    SAFE_DELETE(assetItem);
-}
-
-void SceneStructureWindow::UpdateAssetReference(IAttribute *attr)
-{
-    Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
-    if (!assetRef)
-        return;
-
-    // Find parent item for the asset reference item.
-    // \todo Should check that the parent matches also? If so, uncomment this
-/*
-    IComponent *ownerComp = assetRef->Owner();
-    assert(ownerComp);
-    Entity *parentEntity = assetRef->Owner()->ParentEntity();
-    assert(parentEntity);
-
-    QTreeWidgetItem *parentItem = 0;
-    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
-    {
-        EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
-        if (eItem)
-        {
-            if (!showComponents)
-                if (eItem->Id() == parentEntity->Id())
-                {
-                    parentItem = eItem;
-                    break;
-                }
-
-            if (showComponents)
-                for(int j = 0; j < eItem->childCount(); ++j)
-                {
-                    ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
-                    if (cItem && (cItem->typeName == ownerComp->TypeName()) && (cItem->name == ownerComp->Name()))
-                    {
-                        parentItem = eItem;
-                        break;
-                    }
-                }
-
-            if (parentItem)
-                break;
-        }
-    }
-*/
-    // Find asset item with the matching parent.
-    AssetRefItem *aItem = 0;
     QTreeWidgetItemIterator it(treeWidget);
     while(*it)
     {
-        AssetRefItem *a = dynamic_cast<AssetRefItem *>(*it);
-        /// \todo Should check that the parent matches also? If so, uncomment above blocks
-        if (a && (a->name == assetRef->Name())) //(a->parent() == parentItem))
+        AttributeItem *item = dynamic_cast<AttributeItem *>(*it);
+        if (item)
         {
-            aItem = a;
+            if (item->ptr.Expired()) // Clean up expired items while at it.
+            {
+                SAFE_DELETE(item);
+            }
+            else if (item->ptr.Get() == attr)
+            {
+                SAFE_DELETE(item);
+                if (!multipleItems)
+                    break;
+            }
+        }
+
+        ++it;
+    }
+}
+
+void SceneStructureWindow::UpdateDynamicAttribute(IAttribute *attr)
+{
+    const bool multipleItems = (attr->TypeId() == cAttributeAssetReferenceList && static_cast<Attribute<AssetReferenceList> *>(attr)->Get().Size() > 1);
+
+    QTreeWidgetItemIterator it(treeWidget);
+    while(*it)
+    {
+        AttributeItem *item = dynamic_cast<AttributeItem *>(*it);
+        if (item && item->ptr.Get() == attr)
+        {
+            // In case of attribute consisting of multiple items, recreate all items in CreateAttributeItem.
+            if (multipleItems)
+                CreateAttributeItem(item->parent(), attr);
+            else
+                item->Update(attr);
             break;
         }
 
         ++it;
     }
-
-    assert(aItem);
-    if (aItem)
-        aItem->SetText(attr);
 }
 
 void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
 {
-    EC_Name *nameComp = dynamic_cast<EC_Name *>(sender());
+    EC_Name *nameComp = qobject_cast<EC_Name *>(sender());
     if (!nameComp || (nameComp->ParentEntity() == 0))
         return;
 
@@ -750,9 +722,9 @@ void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
     }
 }
 
-void SceneStructureWindow::UpdateComponentName(const QString &oldName, const QString & /*newName*/)
+void SceneStructureWindow::UpdateComponentName(const QString & /*oldName*/, const QString & /*newName*/)
 {
-    IComponent *comp = dynamic_cast<IComponent *>(sender());
+    IComponent *comp = qobject_cast<IComponent *>(sender());
     if (!comp)
         return;
 
@@ -762,24 +734,15 @@ void SceneStructureWindow::UpdateComponentName(const QString &oldName, const QSt
         for(int j = 0; j < eItem->childCount(); ++j)
         {
             ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
-            if (cItem && (cItem->typeName == comp->TypeName()) && (cItem->name == oldName))
-            {
+            if (cItem && cItem->Component().get() == comp /* && (cItem->name == oldName)*/)
                 cItem->SetText(comp);
-            }
         }
     }
 }
 
-void SceneStructureWindow::Sort(const QString &criteria)
+void SceneStructureWindow::Sort(int column)
 {
-    Qt::SortOrder order = treeWidget->header()->sortIndicatorOrder();
-    if (order != Qt::AscendingOrder && order != Qt::DescendingOrder)
-        order = Qt::AscendingOrder;
-
-    if (criteria == tr("ID"))
-        treeWidget->sortItems(0, order);
-    if (criteria == tr("Name"))
-        treeWidget->sortItems(1, order);
+    treeWidget->sortItems(column, treeWidget->header()->sortIndicatorOrder());
 }
 
 bool SceneStructureWindow::eventFilter(QObject *obj, QEvent *e)
@@ -831,10 +794,8 @@ void SceneStructureWindow::ExpandOrCollapseAll()
     expandAndCollapseButton->setText(treeExpanded ? tr("Collapse All") : tr("Expand All"));
 }
 
-void SceneStructureWindow::CheckTreeExpandStatus(QTreeWidgetItem *item)
+void SceneStructureWindow::CheckTreeExpandStatus(QTreeWidgetItem * /*item*/)
 {
-    UNREFERENCED_PARAM(item);
-
     bool anyExpanded = false;
     QTreeWidgetItemIterator iter(treeWidget, QTreeWidgetItemIterator::HasChildren);
     while(*iter)
