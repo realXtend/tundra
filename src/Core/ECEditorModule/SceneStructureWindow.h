@@ -10,12 +10,15 @@
 #include "CoreTypes.h"
 
 #include <QWidget>
-#include <QTreeWidgetItem>
+#include <QHash>
 
 class SceneTreeWidget;
 class Framework;
 class EntityItem;
+class EntityGroupItem;
+class ComponentItem;
 
+class QTreeWidgetItem;
 class QLineEdit;
 class QPushButton;
 class QTreeWidgetItem;
@@ -27,6 +30,7 @@ class QToolButton;
 class SceneStructureWindow : public QWidget
 {
     Q_OBJECT
+    Q_ENUMS(AttributeMode)
 
 public:
     /// Constructs the window.
@@ -34,7 +38,6 @@ public:
         @parent parent Parent widget. */
     explicit SceneStructureWindow(Framework *fw, QWidget *parent = 0);
 
-    /// Destructor.
     ~SceneStructureWindow();
 
     /// Sets new scene to be shown in the tree view.
@@ -46,14 +49,22 @@ public:
     /// Event filter to catch and react to child widget events
     virtual bool eventFilter(QObject *obj, QEvent *e);
 
+    enum AttributeMode
+    {
+        DoNotShowAttributes, ///< Do not show attributes.
+        ShowAssetReferences, ///< Show asset reference attributes (AssetReference and AssetReferenceList).
+        ShowDynamicAttributes, ///< Show dynamic attributes.
+        ShowAllAttributes ///< Show all attributes.
+    };
+
 public slots:
     /// Sets do we want to show components in the tree view.
     /** @param show Visibility of components in the tree view. */
     void ShowComponents(bool show);
 
-    /// Sets do we want to show asset references in the tree view.
-    /** @param show Visibility of asset references in the tree view. */
-    void ShowAssetReferences(bool show);
+    /// Sets do we want to show attributes in the tree view.
+    /** @param type The type of attributes we want to show. */
+    void ShowAttributes(AttributeMode type);
 
     /// Decorates (bolds) or undecorates item representing @c entity.
     /** @param entity Entity in question.
@@ -71,33 +82,34 @@ private:
     /// Populates tree widget with all entities.
     void Populate();
 
-    /// Clears tree widget.
+    /// Clears the whole tree widget.
     void Clear();
 
-    /// Creates asset references to a single entity item
-    void CreateAssetReference(QTreeWidgetItem *targetItem);
+    /// Creates attribute items for a single entity item.
+    void CreateAttributesForEntity(EntityItem *targetItem);
+    void CreateAttributesForComponent(ComponentItem *targetItem);
 
-    /// Creates asset reference items to all entities
-    void CreateAssetReferences();
+    /// Creates attribute items depending on the currently set mode.
+    void CreateAttributes();
 
-    /// Clears i.e. deletes all asset reference items.
-    void ClearAssetReferences();
+    /// Clears i.e. deletes all attribute items.
+    void ClearAttributes();
 
     /// Create asset reference item to the tree widget.
     /** @param parentItem Parent item, can be entity or component item.
         @param attr AssetReference attribute. */
-    void CreateAssetItem(QTreeWidgetItem *parentItem, IAttribute *attr);
+    void CreateAttributeItem(QTreeWidgetItem *parentItem, IAttribute *attr);
 
-    EntityItem* EntityItemOfEntity(Entity* ent);
-    EntityItem* EntityItemById(entity_id_t id);
+    EntityItem* EntityItemOfEntity(Entity* ent) const;
+    EntityItem* EntityItemById(entity_id_t id) const;
     void RemoveEntityItem(EntityItem* item);
 
     Framework *framework; ///< Framework.
     SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
     SceneTreeWidget *treeWidget; ///< Scene tree widget.
-    QHash<QString, QTreeWidgetItem*> entityGroupItems_; /// < Entity groups
+    QHash<QString, EntityGroupItem*> entityGroupItems_; ///< Entity groups
     bool showComponents; ///< Do we show components also in the tree view.
-    bool showAssets; ///< Do we show asset references also in the tree view.
+    AttributeMode showAttributesMode; ///< Do we show attributes also in the tree view.
     QLineEdit *searchField; ///< Search field line edit.
     QPushButton *expandAndCollapseButton; ///< Expand/collapse all button.
     QToolButton * undoButton_; ///< Undo button with drop-down menu
@@ -131,19 +143,19 @@ private slots:
         @param comp Component which was removed. */
     void RemoveComponent(Entity *entity, IComponent *comp);
 
-    /// @overload
+    /// Adds an attribute item item to the tree widget.
     /** This is called only by EC_DynamicComponent when asset ref attribute is added to it.
         @param attr AssetReference attribute. */
-    void AddAssetReference(IAttribute *attr);
+    void AddDynamicAttribute(IAttribute *attr);
 
-    /// Removes asset reference from the tree widget.
+    /// Removes an attribute item from the tree widget.
     /** This is called only by EC_DynamicComponent when asset ref attribute is removed from it.
         @param attr AssetReference attribute. */
-    void RemoveAssetReference(IAttribute *attr);
+    void RemoveDynamicAttribute(IAttribute *attr);
 
-    /// When asset reference attribute changes, update UI accordingly.
+    /// Updates an attribute item.
     /** @param attr AssetReference attribute. */
-    void UpdateAssetReference(IAttribute *attr);
+    void UpdateDynamicAttribute(IAttribute *attr);
 
     /// Updates entity's name in the tree widget if entity's EC_Name component's "name" attribute has changed.
     /** EC_Name component's AttributeChanged() signal is connected to this slot.
@@ -156,8 +168,8 @@ private slots:
     void UpdateComponentName(const QString &oldName, const QString &newName);
 
     /// Sort items in the tree widget. The outstanding sort order is used.
-    /** @param criteria Sorting criteria. Currently tr("ID") and tr("Name") are supported. */
-    void Sort(const QString &criteria);
+    /** @param column Column that is used as the sorting criteria. */
+    void Sort(int column);
 
     /// Searches for items containing @c text (case-insensitive) and toggles their visibility.
     /** If match is found the item is set visible and expanded, otherwise it's hidden.
@@ -175,4 +187,5 @@ private slots:
 
     void OnUndoChanged(bool canUndo);
     void OnRedoChanged(bool canRedo);
+    void ShowAttributesInternal(int mode) { ShowAttributes(static_cast<AttributeMode>(mode)); }
 };
