@@ -177,8 +177,8 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
 
 void EC_DynamicComponent::RemoveAttribute(const QString &id, AttributeChange::Type change)
 {
-    for(AttributeVector::iterator iter = attributes.begin(); iter != attributes.end(); iter++)
-        if((*iter) && (*iter)->Id().compare(id, Qt::CaseInsensitive) == 0)
+    for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
+        if(*iter && (*iter)->Id().compare(id, Qt::CaseInsensitive) == 0)
         {
             IComponent::RemoveAttribute((*iter)->Index(), change);
             break;
@@ -187,21 +187,11 @@ void EC_DynamicComponent::RemoveAttribute(const QString &id, AttributeChange::Ty
 
 void EC_DynamicComponent::RemoveAllAttributes(AttributeChange::Type change)
 {
-    for(size_t i = attributes.size() - 1; i < attributes.size(); --i)
-    {
-        if (attributes[i])
-        {
-            // Trigger scenemanager signal
-            Scene* scene = ParentScene();
-            if (scene)
-                scene->EmitAttributeRemoved(this, attributes[i], change);
-            
-            // Trigger internal signal(s)
-            emit AttributeAboutToBeRemoved(attributes[i]);
-            SAFE_DELETE(attributes[i]);
-        }
-        attributes.clear();
-    }
+    for(AttributeVector::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
+        if (*iter)
+            IComponent::RemoveAttribute((*iter)->Index(), change);
+
+    attributes.clear();
 }
 
 int EC_DynamicComponent::GetInternalAttributeIndex(int index) const
