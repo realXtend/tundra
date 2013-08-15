@@ -510,7 +510,7 @@ QString OgreWorld::PrepareInstancingMaterial(OgreMaterialAsset *material)
 
                 // Setup instancing shadowcaster material
                 Ogre::Material* ogreMat = clonedMaterial->ogreMaterial.get();
-                for (size_t i = 0; i < ogreMat->getNumTechniques(); ++i)
+                for (ushort i = 0; i < ogreMat->getNumTechniques(); ++i)
                     ogreMat->getTechnique(i)->setShadowCasterMaterial("rex/ShadowCaster/Instanced");
 
                 return clonedMaterial->ogreAssetName;
