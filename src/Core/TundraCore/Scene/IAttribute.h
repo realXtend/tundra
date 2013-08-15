@@ -79,17 +79,24 @@ public:
     /// Convert QVariant to attribute value.
     virtual void FromQVariant(const QVariant &variant, AttributeChange::Type change) = 0;
 
-    /// Convert QScriptValue to attribute value (QtScript Spesific).
+    /// Convert QScriptValue to attribute value (QtScript specific).
     /// @deprecated FromQVariant should be used instead.
     /// @todo Remove when if possible.
     virtual void FromScriptValue(const QScriptValue &value, AttributeChange::Type change) = 0;
 
     /// Sets attribute's metadata.
-    /** @param meta Metadata. */
-    void SetMetadata(AttributeMetadata *meta) { metadata = meta; }
+    /** If owner component is set calls IComponent::EmitAttributeMetadataChanged to make IComponent emit metadata changed signal.
+        If you change metadata directly with Metadata().property = value; you need to call 
+        EmitAttributeMetadataChanged() to notify the component of the change.
+        @param meta Metadata. */
+    void SetMetadata(AttributeMetadata *meta);
 
     /// Returns attribute's metadata, or null if no metadata exists.
-    AttributeMetadata *Metadata() const { return metadata; }
+    AttributeMetadata *Metadata() const;
+    
+    /// Informs the parent component that this attribute's metadata has changed.
+    /** @see SetMetadata and IComponent::EmitAttributeMetadataChanged. */
+    void EmitAttributeMetadataChanged();
 
     /// Returns whether attribute has been dynamically allocated. By default false
     bool IsDynamic() const { return dynamic; }

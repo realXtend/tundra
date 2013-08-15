@@ -43,13 +43,13 @@ public:
     /** Needed for dynamic components. Updates the UI right away. */
     void RemoveAttribute(ComponentPtr comp, IAttribute *attr);
 
-    /// Updates the UI.
-    void UpdateUi();
-
     /// Return attribute type for given name.
     QString GetAttributeType(const QString &name) const;
 
 public slots:
+    /// Updates the UI.
+    void UpdateUi();
+
     /// If ECAttributeEditor has been reinitialized ComponentEditor need to add new QProperty to it's GroupProperty.
     /// This ensures that newly createated attribute eidtor will get displayed on the ECBrowser.
     void OnEditorChanged(const QString &name);

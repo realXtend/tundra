@@ -401,6 +401,18 @@ void IComponent::EmitAttributeChanged(IAttribute* attribute, AttributeChange::Ty
             attributes[i]->ClearChangedFlag();
 }
 
+void IComponent::EmitAttributeMetadataChanged(IAttribute* attribute)
+{
+    if (!attribute)
+        return;
+    if (!attribute->Metadata())
+    {
+        LogWarning("IComponent::EmitAttributeMetadataChanged: Given attributes metadata is null, signal won't be emitted!");
+        return;
+    }
+    emit AttributeMetadataChanged(attribute, attribute->Metadata());
+}
+
 void IComponent::EmitAttributeChanged(const QString& attributeName, AttributeChange::Type change)
 {
     // If this message should be sent with the default attribute change mode specified in the IComponent,

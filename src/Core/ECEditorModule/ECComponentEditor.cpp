@@ -70,20 +70,14 @@ void ECComponentEditor::CreateAttributeEditors(ComponentPtr component)
         if (!attr)
             continue;
         
-        // Check metadata if this attribute is intended to be shown in designer/editor ui
-        if (attr->Metadata())
-            if (!attr->Metadata()->designable)
-                continue;
-
         ECAttributeEditorBase *attributeEditor = ECComponentEditor::CreateAttributeEditor(propertyBrowser_, this, attr);
         if (!attributeEditor)
             continue;
-
+            
         attributeEditors_[attr->Name()] = attributeEditor;
         groupProperty_->setToolTip("Component type is " + component->TypeName());
         groupProperty_->addSubProperty(attributeEditor->Property());
         connect(attributeEditor, SIGNAL(AttributeAboutToBeEdited(IAttribute*)), this, SIGNAL(AttributeAboutToBeEdited(IAttribute *)));
-
         connect(attributeEditor, SIGNAL(EditorChanged(const QString &)), this, SLOT(OnEditorChanged(const QString &)));
     }
 }
@@ -164,7 +158,7 @@ void ECComponentEditor::AddNewComponent(ComponentPtr component)
 {
     PROFILE(ECComponentEditor_AddNewComponent);
     /// Check that component type is same as editor's typename (We only want to add same type of components to editor).
-    if(component->TypeName() != typeName_)
+    if (component->TypeName() != typeName_)
         return;
 
     components_.push_back(ComponentWeakPtr(component));
@@ -178,6 +172,9 @@ void ECComponentEditor::AddNewComponent(ComponentPtr component)
         iter++;
     }
     UpdateGroupPropertyText();
+
+    // Update UI if any attributes metadata changes.
+    connect(component.get(), SIGNAL(AttributeMetadataChanged(IAttribute*, const AttributeMetadata*)), this, SLOT(UpdateUi()), Qt::UniqueConnection);
 }
 
 void ECComponentEditor::RemoveComponent(ComponentPtr component)
@@ -187,6 +184,8 @@ void ECComponentEditor::RemoveComponent(ComponentPtr component)
 
     if(component->TypeName() != typeName_)
         return;
+
+    disconnect(component.get(), SIGNAL(AttributeMetadataChanged(IAttribute*, const AttributeMetadata*)), this, SLOT(UpdateUi()));
 
     ComponentSet::iterator iter = components_.begin();
     while(iter != components_.end())
