@@ -70,6 +70,23 @@ void IAttribute::FromString(const QString& str, AttributeChange::Type change)
     FromString(str.toStdString(), change);
 }
 
+void IAttribute::SetMetadata(AttributeMetadata *meta)
+{
+    metadata = meta;
+    EmitAttributeMetadataChanged();
+}
+
+void IAttribute::EmitAttributeMetadataChanged()
+{
+    if (owner && metadata)
+        owner->EmitAttributeMetadataChanged(this);
+}
+
+AttributeMetadata *IAttribute::Metadata() const
+{
+    return metadata;
+}
+
 // Hide all template implementations from being included to public documentation
 /// @cond PRIVATE
 
