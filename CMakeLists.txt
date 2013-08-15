@@ -1,7 +1,7 @@
 # Set project name
 project(tundra)
 
-# CMake version requirement, >= 2.5.5 to ensure that ProtoBuf is found ok.
+# CMake version requirement
 cmake_minimum_required(VERSION 2.6.0)
 
 # Policy CMP0005 - Preprocessor definition values are now escaped automatically.
@@ -22,7 +22,7 @@ add_definitions(-DTUNDRA_VERSION_MINOR_PATCH=2)
 # Setting TUNDRA_NO_BOOST to TRUE, i.e. disabling usage of Boost in the Tundra codebase, requires compiler
 # with up-to-date C++ TR1 and preferably the C99 standard cstdint header. Also if the used compiler has C++11 
 # make_shared function available, it is used.
-# If TUNDRA_NO_BOOST is set to TRUE, kNet must also be built without Boost dependecy. In order to make the
+# If TUNDRA_NO_BOOST is set to TRUE, kNet must also be built without Boost dependency. In order to make the
 # Tundra build fully free of Boost, you must also build Ogre and AssImp, which depend on Boost by default,
 # with Boost disabled. See the dependencies scripts for instructions how to control this.
 # On Linux TUNDRA_NO_BOOST can not yet be used
@@ -32,7 +32,7 @@ else ()
     option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." FALSE)
 endif ()
 
-option(TUNDRA_CPP11_ENABLED "Enables C++11 features on Tundra" FALSE)
+option(TUNDRA_CPP11_ENABLED "Enables usage of certain C++11 features on Tundra." FALSE)
 
 if (APPLE)
     set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvm.clang.1_0")
@@ -72,11 +72,19 @@ elseif (MSVC AND TUNDRA_CPP11_ENABLED)
     endif()
 endif()
 
+option(TUNDRA_NO_AUDIO "Specifies whether Tundra is without OpenAL audio playback capabilities." OFF)
+
+if (ANDROID)
+    add_definitions(-DANDROID)
+    # TODO For now, disable audio on Android
+    set(TUNDRA_NO_AUDIO OFF)
+endif()
+
 macro(PrintUsedEnvVariables)
     # Print out the resolved variables. Note that this does not print the env variables
     # in most cases as they should be resolved to our cmake variables and get cached.
     # This way this printed list wont lie if ran without env variables and we are still
-    # succesfully finding all the deps from our cacher (or in bad cases assumed) dirs.
+    # successfully finding all the deps from our cacher (or in bad cases assumed) dirs.
     message("\n=========== Used Environment Variables ===========\n")
     message(STATUS "TUNDRA_DEP_PATH  = " ${ENV_TUNDRA_DEP_PATH})
     message(STATUS "QTDIR            = " ${ENV_QT_DIR})
@@ -93,6 +101,7 @@ endmacro()
 macro(PrintUsedBuildConfig)
     message("\n=========== Used Build Configuration =============\n")
     message(STATUS "TUNDRA_NO_BOOST            = " ${TUNDRA_NO_BOOST})
+    message(STATUS "TUNDRA_NO_AUDIO            = " ${TUNDRA_NO_AUDIO})
     message(STATUS "TUNDRA_CPP11_ENABLED       = " ${TUNDRA_CPP11_ENABLED})
     message(STATUS "TUNDRACORE_SHARED          = " ${TUNDRACORE_SHARED})
     message(STATUS "BUILD_SDK_ONLY             = " ${BUILD_SDK_ONLY})

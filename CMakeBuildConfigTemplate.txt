@@ -46,6 +46,11 @@ if (TUNDRA_NO_BOOST)
     add_definitions(-DTUNDRA_NO_BOOST)
 endif()
 
+# TUNDRA_NO_AUDIO is configured in the root CMakeLists.txt
+if (TUNDRA_NO_AUDIO)
+    add_definitions(-DTUNDRA_NO_AUDIO)
+endif()
+
 # TUNDRA_CPP11_ENABLED is configured in the root CMakeLists.txt
 if (TUNDRA_CPP11_ENABLED)
     add_definitions(-DTUNDRA_CPP11_ENABLED)
@@ -59,12 +64,6 @@ endif()
 
 if (ENABLE_OPEN_ASSET_IMPORT)
     add_definitions(-DASSIMP_ENABLED)
-endif()
-
-# For now, disable audio on Android
-if (ANDROID)
-    add_definitions (-DANDROID)
-    add_definitions (-DTUNDRA_NO_AUDIO)
 endif()
 
 set (ENABLE_PROFILING 1)            # Enable the following flag to add compile with support for a built-in execution time profiler.
@@ -187,5 +186,3 @@ endif ()
 AddProject(Application AssetInterestPlugin)    # Options to only keep assets below certain distance threshold in memory. Can also unload all non used assets from memory. Exposed to scripts so scenes can set the behaviour.
 AddProject(Application CanvasPlugin)            # Component that draws a graphics scene with any number of widgets into a mesh and provides 3D mouse input.
 AddProject(Application ArchivePlugin)          # Provides archived asset bundle capabilities. Enables example sub asset referencing into eg. zip files.
-
-
