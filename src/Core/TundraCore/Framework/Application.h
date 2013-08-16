@@ -46,6 +46,9 @@ public:
     Application(Framework *owner, int &argc, char **argv);
     ~Application();
 
+    /// Performs initialization that requires existence of the framework and stores the pointer.
+    void Initialize(Framework *fw);
+
     virtual bool notify(QObject *receiver, QEvent *e);
 
     /// Request exit. Emits ExitRequested signal which can be used to cancel exit from Framework.

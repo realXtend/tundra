@@ -42,8 +42,9 @@ class TUNDRACORE_API Framework : public QObject
 public:
     /// Constructs and initializes the framework.
     /** @param argc Command line argument count as provided by the operating system.
-        @param argv Command line arguments as provided by the operating system. */
-    Framework(int argc, char** argv);
+        @param argv Command line arguments as provided by the operating system.
+        @param app The application instance. */
+    Framework(int argc, char** argv, Application *app);
 
     ~Framework();
 
