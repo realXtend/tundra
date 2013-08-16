@@ -625,11 +625,7 @@ void Framework::LoadStartupOptionsFromXML(QString configurationFile)
                 continue;
             }
 
-            qDebug() << e.attribute("name") << e.attribute("value");
-            if (e.hasAttribute("value"))
-                AddCommandLineParameter(e.attribute("name"), e.attribute("value"));
-            else
-                AddCommandLineParameter(e.attribute("name"), QString());
+            AddCommandLineParameter(e.attribute("name"), e.attribute("value"));
         }
         n = n.nextSibling();
     }
