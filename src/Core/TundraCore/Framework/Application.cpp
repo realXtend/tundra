@@ -65,9 +65,9 @@ const char *Application::organizationName = TUNDRA_ORGANIZATION_NAME;
 const char *Application::applicationName = TUNDRA_APPLICATION_NAME;
 const char *Application::version = TUNDRA_VERSION_STRING;
 
-Application::Application(Framework *owner, int &argc, char **argv) :
+Application::Application(int &argc, char **argv) :
     QApplication(argc, argv),
-    framework(owner),
+    framework(0),
     appActivated(true),
     nativeTranslator(new QTranslator),
     appTranslator(new QTranslator),
@@ -799,7 +799,7 @@ int TUNDRACORE_API run(int argc, char **argv)
         try
 #endif
         {
-            Application app(0, argc, argv);
+            Application app(argc, argv);
             Framework fw(argc, argv, &app);
             app.Initialize(&fw);
             fw.Go();

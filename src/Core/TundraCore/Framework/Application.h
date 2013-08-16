@@ -42,8 +42,8 @@ public:
     /// Constructs the application singleton.
     /** Qt requires its own data copy of the argc/argv parameters, so this object
         caches them. Pass in received command-line parameters here.
-        @param owner Pass in the root framework pointer here. */
-    Application(Framework *owner, int &argc, char **argv);
+        @note Remember to call Initialize after construction. */
+    Application(int &argc, char **argv);
     ~Application();
 
     /// Performs initialization that requires existence of the framework and stores the pointer.
