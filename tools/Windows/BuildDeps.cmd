@@ -242,7 +242,7 @@ IF NOT EXIST "%DEPS%\qt\jom\jom.exe". (
    cd "%DEPS%"
    IF NOT EXIST jom_%JOM_VERSION%.zip. (
       cecho {0D}Downloading JOM build tool for Qt.{# #}{\n}
-      wget http://releases.qt-project.org/official_releases/jom/jom_%JOM_VERSION%.zip
+      wget http://download.qt-project.org/official_releases/jom/jom_%JOM_VERSION%.zip
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
