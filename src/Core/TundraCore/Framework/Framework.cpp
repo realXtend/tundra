@@ -106,12 +106,12 @@ struct CommandLineParameterMap
 
 Framework *Framework::instance = 0;
 
-Framework::Framework(int argc_, char** argv_) :
+Framework::Framework(int argc_, char** argv_, Application *app) :
     exitSignal(false),
     argc(argc_),
     argv(argv_),
     headless(false),
-    application(0),
+    application(app),
     frame(0),
     console(0),
     scene(0),
@@ -137,8 +137,12 @@ Framework::Framework(int argc_, char** argv_) :
 #endif
 
     // Make sure we spawn a console window in each case we might need one.
-    if (HasCommandLineParameter("--version") || HasCommandLineParameter("--help") || HasCommandLineParameter("--sharedconsole") || HasCommandLineParameter("--console") || HasCommandLineParameter("--headless"))
+    if (HasCommandLineParameter("--version") || HasCommandLineParameter("--help") ||
+        HasCommandLineParameter("--sharedconsole") || HasCommandLineParameter("--console") ||
+        HasCommandLineParameter("--headless"))
+    {
         Application::ShowConsoleWindow(HasCommandLineParameter("--sharedconsole"));
+    }
 
     ///\todo Delete the CommandLineParameterMap mechanism altogether.
     /// Instead, provide the command line parameter help from a help file, where all the various command line parameters can be assembled.
@@ -236,8 +240,7 @@ Framework::Framework(int argc_, char** argv_) :
         LogWarning("Multiple --configdir parameters specified! Using \"" + configDir + "\" as the configuration directory.");
     config->PrepareDataFolder(configDir);
 
-    // Create QApplication, set target FPS limit, if specified.
-    application = new Application(this, argc, argv);
+    // Set target FPS limits, if specified.
     QStringList fpsLimitParam = CommandLineParameters("--fpslimit");
     if (fpsLimitParam.size() > 1)
         LogWarning("Multiple --fpslimit parameters specified! Using " + fpsLimitParam.first() + " as the value.");
@@ -316,11 +319,6 @@ Framework::~Framework()
     SAFE_DELETE(scene);
     SAFE_DELETE(frame);
     SAFE_DELETE(ui);
-
-    // This delete must be the last one in Framework since application derives QApplication.
-    // When we delete QApplication, we must have ensured that all QObjects have been deleted.
-    /// \bug Framework is itself a QObject and we should delete application only after Framework has been deleted. A refactor is required.
-    delete application;
 }
 
 void Framework::ProcessOneFrame()
