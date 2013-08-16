@@ -102,6 +102,11 @@ struct CommandLineParameterMap
 };
 /** @endcond */
 
+bool lessThan(const std::pair<int, std::string> &op1, const std::pair<int, std::string> &op2)
+{
+    return op1.first < op2.first;
+}
+
 } //~unnamed namespace
 
 Framework *Framework::instance = 0;
@@ -129,34 +134,12 @@ Framework::Framework(int argc_, char** argv_) :
 {
     // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
     instance = this;
-    bool configFilesSpecified = false;
 
 #ifdef ANDROID
     LoadCommandLineFromFile();
 #else
-    // Remember all startup command line options.
-    // Skip argv[0], since it is the program name.
-    for(int i = 1; i < argc; ++i)
-    {
-        if (strcmp(argv[i], "--config") == 0)
-        {
-            if (argv[i+1] && strncmp(argv[i+1], "--", 2))
-            {
-                configFilesSpecified = true;
-
-                LoadStartupOptionsFromXML(argv[i+1]);
-                configFiles << argv[i+1];
-                ++i;
-            }
-
-            continue;
-        }
-        startupOptions << argv[i];
-    }
-
+    ProcessStartupOptions();
 #endif
-    if (!configFilesSpecified)
-        LoadStartupOptionsFromXML("plugins.xml");
 
     // Make sure we spawn a console window in each case we might need one.
     if (HasCommandLineParameter("--version") || HasCommandLineParameter("--help") || HasCommandLineParameter("--sharedconsole") || HasCommandLineParameter("--console") || HasCommandLineParameter("--headless"))
@@ -642,16 +625,19 @@ void Framework::LoadStartupOptionsFromXML(QString configurationFile)
                 continue;
             }
 
-            /// \bug Appended in this way, the parsing is not perfect (one configuration can continue from the other)
-            startupOptions << e.attribute("name");
-
+            qDebug() << e.attribute("name") << e.attribute("value");
             if (e.hasAttribute("value"))
-                startupOptions << e.attribute("value");
-
-
+                AddCommandLineParameter(e.attribute("name"), e.attribute("value"));
+            else
+                AddCommandLineParameter(e.attribute("name"), QString());
         }
         n = n.nextSibling();
     }
+}
+
+void Framework::AddCommandLineParameter(const std::string &command, const std::string &parameter)
+{
+    startupMap.insert(std::make_pair(command, std::make_pair(startupMap.size() + 1, parameter)));
 }
 
 bool Framework::HasCommandLineParameter(const QString &value) const
@@ -659,11 +645,7 @@ bool Framework::HasCommandLineParameter(const QString &value) const
     if (!value.compare("--config"))
         return !configFiles.isEmpty();
 
-    ///\todo Convert startupOptions to a key-value map.
-    for(int i = 0; i < startupOptions.size(); ++i)
-        if (!startupOptions[i].compare(value, Qt::CaseInsensitive))
-            return true;
-    return false;
+    return startupMap.find(value.toStdString()) != startupMap.end();
 }
 
 QStringList Framework::CommandLineParameters(const QString &key) const
@@ -671,15 +653,57 @@ QStringList Framework::CommandLineParameters(const QString &key) const
     if (!key.compare("--config"))
         return ConfigFiles();
 
-    ///\todo Remove all this logic. This is Win32-specific command line parsing, and should be done only once for Win32,
-    /// and stored in an already processed format for faster retrieval.
     QStringList ret;
-    for(int i = 0; i+1 < startupOptions.size(); ++i)
+    QList<std::pair<int, std::string> > sortedList;
+    auto iter = startupMap.equal_range(key.toStdString());
+    for (auto i = iter.first; i != iter.second; ++i)
+        sortedList << i->second;
+
+    qSort(sortedList.begin(), sortedList.end(), lessThan);
+
+    for (auto i = sortedList.begin(); i != sortedList.end(); ++i)
+        if (!i->second.empty())
+            ret << i->second.c_str();
+
+    return ret;
+}
+
+void Framework::ProcessStartupOptions()
+{
+    bool configFilesSpecified = false;
+
+    for(int i = 1; i < argc; ++i)
     {
-        if (!startupOptions[i].compare(key, Qt::CaseInsensitive) && !startupOptions[i+1].startsWith("--"))
+        if (!strncmp(argv[i], "--", 2) && argv[i+1])
         {
+#ifndef WIN32
+            std::string option = argv[i];
+            std::string param = argv[i+1];
+
+            if (!strcmp(argv[i], "--config"))
+            {
+                configFilesSpecified = true;
+
+                LoadStartupOptionsFromXML(argv[i+1]);
+                configFiles << argv[i+1];
+                ++i;
+
+                continue;
+            }
+
+            if (strncmp(argv[i+1], "--", 2))
+            {
+                AddCommandLineParameter(option, param);
+                ++i;
+            }
+            else
+                AddCommandLineParameter(option, "");
+#else
             // Inspect for quoted parameters.
-            QString quotedParam = startupOptions[i+1];
+            QString option = argv[i];
+            QString quotedParam = argv[i+1];
+            bool quoteFound = false;
+
             if (quotedParam.startsWith("\""))
             {
                 if (quotedParam.endsWith("\"")) // End quote is in the argv
@@ -687,19 +711,20 @@ QStringList Framework::CommandLineParameters(const QString &key) const
                     // Remove quotes and append to the return list.
                     quotedParam = quotedParam.right(quotedParam.length() -1);
                     quotedParam.chop(1);
-                    ret.append(quotedParam);
+                    quoteFound = true;
+                    ++i;
                 }
                 else // End quote is not in the same argv
                 {
-                    for(int pi=i+2; pi+1 < startupOptions.size(); ++pi)
+                    for(int pi=i+2; pi+1 < argc; ++pi)
                     {
-                        QString param = startupOptions[pi];
+                        QString param = argv[pi];
 
                         // If a new -- key is found before an end quote we have a error.
                         // Report and don't add anything to the return list as the param is malformed.
                         if (param.startsWith("--"))
                         {
-                            LogError("Could not find an end quote for '" + key + "' parameter: " + quotedParam);
+                            LogError("Could not find an end quote for '" + QString(argv[i]) + "' parameter: " + quotedParam);
                             i = pi - 1; // Step one back so the main for loop will inspect this element next.
                             break;
                         }
@@ -707,13 +732,14 @@ QStringList Framework::CommandLineParameters(const QString &key) const
                         // Remove quotes and append to the return list.
                         else if (param.endsWith("\""))
                         {
-                            i = pi; // Set the main for loops index so it will process the proper elements next.
                             quotedParam += " " + param;
                             if (quotedParam.startsWith("\""))
                                 quotedParam = quotedParam.right(quotedParam.length() -1);
                             if (quotedParam.endsWith("\""))
                                 quotedParam.chop(1);
-                            ret.append(quotedParam);
+
+                            quoteFound = true;
+                            i = pi; // Set the main for loops index so it will process the proper elements next.
                             break;
                         }
                         else // Append to param.
@@ -722,41 +748,55 @@ QStringList Framework::CommandLineParameters(const QString &key) const
                 }
             }
             else // No quote start, push as is
-                ret.append(startupOptions[++i]);
+            {
+                quoteFound = true;
+                ++i;
+            }
+
+            if (quoteFound)
+            {
+                if (option.compare("--config", Qt::CaseInsensitive))
+                    AddCommandLineParameter(option, quotedParam);
+                else
+                {
+                    configFilesSpecified = true;
+
+                    LoadStartupOptionsFromXML(quotedParam);
+                    configFiles << quotedParam;
+                }
+            }
+#endif
         }
+        else if (!strncmp(argv[i], "--", 2) && !argv[i+1])
+            AddCommandLineParameter(std::string(argv[i]), "");
+        else
+            LogWarning("Orphaned startup option parameter value specified: " + QString(argv[i]));
+
     }
 
-    return ret;
+    if (!configFilesSpecified)
+        LoadStartupOptionsFromXML("plugins.xml");
 }
 
 void Framework::PrintStartupOptions()
 {
+    std::map<int, std::pair<std::string, std::string> > sortedMap;
+    for (auto i = startupMap.begin(); i != startupMap.end(); ++i)
+        sortedMap.insert(std::make_pair(i->second.first, std::make_pair(i->first, i->second.second)));
+
     LogInfo("Startup options:");
-    
+
     QString lastOption;
     int i = 0;
-    while(i < startupOptions.size())
+    for (auto i = sortedMap.begin(); i != sortedMap.end(); ++i)
     {
-        QString option = startupOptions[i];
-        if (!option.startsWith("--") || option.startsWith("---"))
-            LogWarning("Orphaned startup option parameter value \"" + option + "\" specified!");
-
-        QString line;
-        if (i+1 < startupOptions.size() && !startupOptions[i+1].startsWith("--"))
-        {
-            QString value = startupOptions[i+1].simplified().replace(" ", "");
-            line = QString("  %1 '%2'").arg(option != lastOption ? option : "", -10).arg(value);
-            i += 2;
-        }
+        QString output;
+        if (!i->second.second.empty())
+            output = QString("  %1 '%2'").arg(i->second.first.c_str()).arg(i->second.second.c_str());
         else
-        {
-            line = QString("  %1").arg(option, -10);
-            ++i;
-        }
-        LogInfo(line);
+            output = QString("  %1").arg(i->second.first.c_str());
 
-        if (lastOption.compare(option, Qt::CaseSensitive) != 0)
-            lastOption = option;
+        LogInfo(output);
     }
 }
 
