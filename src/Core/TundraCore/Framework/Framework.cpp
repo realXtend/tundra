@@ -102,11 +102,6 @@ struct CommandLineParameterMap
 };
 /** @endcond */
 
-bool lessThan(const std::pair<int, std::string> &op1, const std::pair<int, std::string> &op2)
-{
-    return op1.first < op2.first;
-}
-
 } //~unnamed namespace
 
 Framework *Framework::instance = 0;
@@ -631,7 +626,7 @@ void Framework::LoadStartupOptionsFromXML(QString configurationFile)
     }
 }
 
-void Framework::AddCommandLineParameter(const std::string &command, const std::string &parameter)
+void Framework::AddCommandLineParameter(const QString &command, const QString &parameter)
 {
     startupMap.insert(std::make_pair(command, std::make_pair(startupMap.size() + 1, parameter)));
 }
@@ -641,25 +636,24 @@ bool Framework::HasCommandLineParameter(const QString &value) const
     if (!value.compare("--config"))
         return !configFiles.isEmpty();
 
-    return startupMap.find(value.toStdString()) != startupMap.end();
+    return startupMap.find(value) != startupMap.end();
 }
 
 QStringList Framework::CommandLineParameters(const QString &key) const
 {
     if (!key.compare("--config"))
         return ConfigFiles();
-
+    
+    typedef std::set<std::pair<int, QString>, OptionMapLessThan> SortedOptionSet;
+    SortedOptionSet sortedSet;
     QStringList ret;
-    QList<std::pair<int, std::string> > sortedList;
-    auto iter = startupMap.equal_range(key.toStdString());
-    for (auto i = iter.first; i != iter.second; ++i)
-        sortedList << i->second;
+    OptionsMapIteratorPair iter = startupMap.equal_range(key);
 
-    qSort(sortedList.begin(), sortedList.end(), lessThan);
+    for (OptionsMap::const_iterator i = iter.first; i != iter.second; ++i)
+        sortedSet.insert(i->second);
 
-    for (auto i = sortedList.begin(); i != sortedList.end(); ++i)
-        if (!i->second.empty())
-            ret << i->second.c_str();
+    for (SortedOptionSet::const_iterator i = sortedSet.begin(); i != sortedSet.end(); ++i)
+        ret << i->second;
 
     return ret;
 }
@@ -673,8 +667,8 @@ void Framework::ProcessStartupOptions()
         if (!strncmp(argv[i], "--", 2) && argv[i+1])
         {
 #ifndef WIN32
-            std::string option = argv[i];
-            std::string param = argv[i+1];
+            QString option = argv[i];
+            QString param = argv[i+1];
 
             if (!strcmp(argv[i], "--config"))
             {
@@ -764,7 +758,7 @@ void Framework::ProcessStartupOptions()
 #endif
         }
         else if (!strncmp(argv[i], "--", 2) && !argv[i+1])
-            AddCommandLineParameter(std::string(argv[i]), "");
+            AddCommandLineParameter(argv[i], "");
         else
             LogWarning("Orphaned startup option parameter value specified: " + QString(argv[i]));
 
@@ -776,21 +770,20 @@ void Framework::ProcessStartupOptions()
 
 void Framework::PrintStartupOptions()
 {
-    std::map<int, std::pair<std::string, std::string> > sortedMap;
-    for (auto i = startupMap.begin(); i != startupMap.end(); ++i)
-        sortedMap.insert(std::make_pair(i->second.first, std::make_pair(i->first, i->second.second)));
-
     LogInfo("Startup options:");
 
-    QString lastOption;
-    int i = 0;
-    for (auto i = sortedMap.begin(); i != sortedMap.end(); ++i)
+    typedef std::map<int, std::pair<QString, QString> > SortedOptionsMap;
+    SortedOptionsMap sortedMap;
+    for (OptionsMap::const_iterator i = startupMap.begin(); i != startupMap.end(); ++i)
+        sortedMap.insert(std::make_pair(i->second.first, std::make_pair(i->first, i->second.second)));
+
+    for (SortedOptionsMap::const_iterator i = sortedMap.begin(); i != sortedMap.end(); ++i)
     {
         QString output;
-        if (!i->second.second.empty())
-            output = QString("  %1 '%2'").arg(i->second.first.c_str()).arg(i->second.second.c_str());
+        if (!i->second.second.isEmpty())
+            output = QString("  %1 '%2'").arg(i->second.first).arg(i->second.second);
         else
-            output = QString("  %1").arg(i->second.first.c_str());
+            output = QString("  %1").arg(i->second.first);
 
         LogInfo(output);
     }
