@@ -13,13 +13,16 @@
 #include <jni.h>
 #endif
 
-#if defined(_MSC_VER) && (_MSC_VER == 1500) || (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 2) || (defined(__APPLE__) && __has_include(<tr1/unordered_map>))
-#include <tr1/unordered_map>
-#define TR1NAMESPACE std::tr1
-#elif defined(_MSC_VER) && (_MSC_VER >= 1600) || (defined(__APPLE__) && defined(__clang__) && __clang_major__ == 4 && __clang_minor__ == 2) && (__has_include(<unordered_map>))
-#include <unordered_map>
-#define TR1NAMESPACE std
-#endif
+typedef struct
+{
+    bool operator()(const std::pair<int, QString> &op1, const std::pair<int, QString> &op2) const
+    {
+        return op1.first < op2.first;
+    }
+} OptionMapLessThan;
+
+typedef std::multimap<QString, std::pair<int, QString> > OptionsMap;
+typedef std::pair<OptionsMap::const_iterator, OptionsMap::const_iterator> OptionsMapIteratorPair;
 
 /// The system root access object.
 class TUNDRACORE_API Framework : public QObject
@@ -157,10 +160,6 @@ public slots:
     /// Returns true if framework is in the process of exiting (will exit at next possible opportunity)
     bool IsExiting() const { return exitSignal; }
 
-    /// Adds new command line parameter (option | value pair) to the unordered multimap
-    void AddCommandLineParameter(const std::string &command, const std::string &parameter);
-    void AddCommandLineParameter(const QString &command, const QString &parameter) { AddCommandLineParameter(command.toStdString(), parameter.toStdString()); }
-
     /// Returns whether or not the command line arguments contain a specific value.
     /** @param value Key or value with possible prefixes, case-insensitive. */
     bool HasCommandLineParameter(const QString &value) const;
@@ -174,6 +173,7 @@ public slots:
     /// Returns list of all the config XML filenames specified on command line or within another config XML
     QStringList ConfigFiles() const { return configFiles; }
 
+    /// Processes command line options and stores them into a multimap
     void ProcessStartupOptions();
 
     /// Prints to console all the used startup options.
@@ -186,6 +186,9 @@ public slots:
     IModule *GetModuleByName(const QString &name) const { return ModuleByName(name); } /**< @deprecated Use ModuleByName instead. @todo Add deprecation warning print. @todo Remove. */
 
 private:
+    /// Adds new command line parameter (option | value pair) to the unordered multimap
+    void AddCommandLineParameter(const QString &command, const QString &parameter);
+
     /// Appends all found startup options from the given file to the startupOptions member.
     void LoadStartupOptionsFromXML(QString configurationFile);
 
@@ -213,7 +216,7 @@ private:
     IRenderer *renderer;
 
     /// Stores all command line parameters and expanded options specified in the Config XML files, except for the config file(s) themselves.
-    TR1NAMESPACE::unordered_multimap<std::string, std::pair<int, std::string> > startupMap;
+    OptionsMap startupMap;
 
     /// Stores config XML filenames
     QStringList configFiles;
