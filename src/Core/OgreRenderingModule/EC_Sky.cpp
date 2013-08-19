@@ -41,6 +41,12 @@ EC_Sky::EC_Sky(Scene* scene) :
     INIT_ATTRIBUTE_VALUE(drawFirst, "Draw first", true),
     INIT_ATTRIBUTE_VALUE(enabled, "Enabled", true)
 {
+    if (framework->IsHeadless())
+        return;
+
+    if (scene)
+        world_ = scene->Subsystem<OgreWorld>();
+
     materialAsset = MAKE_SHARED(AssetRefListener);
     connect(materialAsset.get(), SIGNAL(Loaded(AssetPtr)), SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
 }
@@ -102,17 +108,20 @@ void EC_Sky::AttributesChanged()
 
 void EC_Sky::Update()
 {
-    if (!ViewEnabled() || !ParentScene())
+    if (!ViewEnabled())
         return;
 
-    OgreWorldPtr world = ParentScene()->Subsystem<OgreWorld>();
-    if (!world)
+    if (world_.expired() && ParentScene())
+        world_ = ParentScene()->Subsystem<OgreWorld>();
+    if (world_.expired())
+        return;
+    if (!world_.lock()->OgreSceneManager())
         return;
 
     try
     {
         if (!enabled.Get() || (enabled.Get() && !currentMaterial.isEmpty())) // If enabled == true, do not allow passing empty material name (material not loaded yet).
-            world->OgreSceneManager()->setSkyBox(enabled.Get(), currentMaterial.toStdString(), distance.Get(), drawFirst.Get(), orientation.Get());
+            world_.lock()->OgreSceneManager()->setSkyBox(enabled.Get(), currentMaterial.toStdString(), distance.Get(), drawFirst.Get(), orientation.Get());
     }
     catch(const Ogre::Exception &e)
     {
