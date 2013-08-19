@@ -21,7 +21,15 @@ typedef struct
     }
 } OptionMapLessThan;
 
-typedef std::multimap<QString, std::pair<int, QString> > OptionsMap;
+typedef struct
+{
+    bool operator()(const QString& op1, const QString& op2) const
+    {
+        return op1.toLower() < op2.toLower();
+    }
+} OptionMapCaseInsensitive;
+
+typedef std::multimap<QString, std::pair<int, QString>, OptionMapCaseInsensitive> OptionsMap;
 typedef std::pair<OptionsMap::const_iterator, OptionsMap::const_iterator> OptionsMapIteratorPair;
 
 /// The system root access object.
