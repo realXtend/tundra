@@ -41,9 +41,6 @@ EC_Sky::EC_Sky(Scene* scene) :
     INIT_ATTRIBUTE_VALUE(drawFirst, "Draw first", true),
     INIT_ATTRIBUTE_VALUE(enabled, "Enabled", true)
 {
-    if (framework->IsHeadless())
-        return;
-
     if (scene)
         world_ = scene->Subsystem<OgreWorld>();
 
