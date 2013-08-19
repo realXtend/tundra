@@ -608,7 +608,7 @@ void Framework::LoadStartupOptionsFromXML(QString configurationFile)
                 continue; // The command line parameter was specified to be included only in the given build (debug/release), but we are not running that build.
 
             /// If we have another config XML specified with --config inside this config XML, load those settings also
-            if (!e.attribute("name").compare("--config"))
+            if (!e.attribute("name").compare("--config", Qt::CaseInsensitive))
             {
                 if (!e.attribute("value").isEmpty())
                 {
@@ -633,7 +633,7 @@ void Framework::AddCommandLineParameter(const QString &command, const QString &p
 
 bool Framework::HasCommandLineParameter(const QString &value) const
 {
-    if (!value.compare("--config"))
+    if (!value.compare("--config", Qt::CaseInsensitive))
         return !configFiles.isEmpty();
 
     return startupMap.find(value) != startupMap.end();
@@ -641,7 +641,7 @@ bool Framework::HasCommandLineParameter(const QString &value) const
 
 QStringList Framework::CommandLineParameters(const QString &key) const
 {
-    if (!key.compare("--config"))
+    if (!key.compare("--config", Qt::CaseInsensitive))
         return ConfigFiles();
     
     typedef std::set<std::pair<int, QString>, OptionMapLessThan> SortedOptionSet;
@@ -670,7 +670,7 @@ void Framework::ProcessStartupOptions()
             QString option = argv[i];
             QString param = argv[i+1];
 
-            if (!strcmp(argv[i], "--config"))
+            if (!option.compare("--config", Qt::CaseInsensitive))
             {
                 configFilesSpecified = true;
 
@@ -681,7 +681,7 @@ void Framework::ProcessStartupOptions()
                 continue;
             }
 
-            if (strncmp(argv[i+1], "--", 2))
+            if (!param.startsWith("--"))
             {
                 AddCommandLineParameter(option, param);
                 ++i;
