@@ -9,6 +9,8 @@
 #include <QObject>
 #include <QStringList>
 
+#include <map>
+
 #ifdef ANDROID
 #include <jni.h>
 #endif
