@@ -95,17 +95,12 @@ assetAPI(assetAPI_)
     impl->soundMasterGain[SoundChannel::Voice] = 1.f;
     impl->listenerPosition = float3(0.0, 0.0, 0.0);
     
-    QStringList audioDevice = fw->CommandLineParameters("--audioDevice"); /**< @todo document to help */
-    QString device = "";
-    if (audioDevice.size() >= 1)
-        device = audioDevice.back();
-    if (audioDevice.size() > 1)
-        LogWarning("Specified multiple --audioDevice parameters. Using \"" + device + "\".");
-    Initialize(device);
+    QStringList devices = fw->CommandLineParameters("--audioDevice"); /**< @todo document to help */
+    if (devices.size() > 1)
+        LogWarning("[AudioAPI]: Specified multiple --audioDevice parameters. Using \"" + devices.last() + "\".");
 
-    // Load sound settings. If we have "master_gain" in config we very likely have all the other settings as well.
-    if (fw->Config()->HasValue(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_SOUND, "master_gain"))
-        LoadSoundSettingsFromConfig();
+    Initialize(!devices.isEmpty() ? devices.last() : "");    
+    LoadSoundSettingsFromConfig();
 
     QStringList audioTypeExtensions(QStringList() << ".wav" << ".ogg");
     if (!fw->IsHeadless())
@@ -149,9 +144,7 @@ bool AudioAPI::Initialize(const QString &playbackDeviceName)
     }
 
     alcMakeContextCurrent(impl->context);
-    if (playbackDeviceName.isEmpty())
-        LogInfo("Opened default OpenAL playback device.");
-    else
+    if (!playbackDeviceName.isEmpty())
         LogInfo("Opened OpenAL playback device '" + playbackDeviceName + "'.");
 
     impl->initialized = true;
@@ -292,20 +285,34 @@ void AudioAPI::SaveSoundSettingsToConfig()
 
 void AudioAPI::LoadSoundSettingsFromConfig()
 {
-    if (IsInitialized())
+    if (!IsInitialized())
+        return;
+    
+    ConfigAPI &cfg = *assetAPI->GetFramework()->Config();
+    ConfigData sound(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_SOUND);
+    
+    float val = 0.0f; 
+    bool ok = false;
+    if (cfg.HasValue(sound, "master_gain"))
     {
-        ConfigAPI &cfg = *assetAPI->GetFramework()->Config();
-        ConfigData sound(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_SOUND);
-        bool ok;
-        float val = cfg.Get(sound, "master_gain").toFloat(&ok);
+        val = cfg.Get(sound, "master_gain").toFloat(&ok);
         if (ok)
             SetMasterGain(val);
+    }
+    if (cfg.HasValue(sound, "triggered_sound_gain"))
+    {
         val = cfg.Get(sound, "triggered_sound_gain").toFloat(&ok);
         if (ok)
             SetSoundMasterGain(SoundChannel::Triggered, val);
+    }
+    if (cfg.HasValue(sound, "ambient_sound_gain"))
+    {
         val = cfg.Get(sound, "ambient_sound_gain").toFloat(&ok);
         if (ok)
             SetSoundMasterGain(SoundChannel::Ambient, val);
+    }
+    if (cfg.HasValue(sound, "voice_sound_gain"))
+    {
         val = cfg.Get(sound, "voice_sound_gain").toFloat(&ok);
         if (ok)
             SetSoundMasterGain(SoundChannel::Voice, val);
