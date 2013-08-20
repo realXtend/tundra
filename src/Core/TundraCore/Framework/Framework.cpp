@@ -606,7 +606,7 @@ bool Framework::LoadStartupOptionsFromXML(QString configurationFile)
                 continue; // The command line parameter was specified to be included only in the given build (debug/release), but we are not running that build.
 
             /// If we have another config XML specified with --config inside this config XML, load those settings also
-            if (!e.attribute("name").compare("--config", Qt::CaseInsensitive))
+            if (e.attribute("name").compare("--config", Qt::CaseInsensitive) == 0)
             {
                 if (!e.attribute("value").isEmpty())
                 {
@@ -627,7 +627,7 @@ bool Framework::LoadStartupOptionsFromXML(QString configurationFile)
 
 void Framework::AddCommandLineParameter(const QString &command, const QString &parameter)
 {
-    startupMap.insert(std::make_pair(command, std::make_pair(startupMap.size() + 1, parameter)));
+    startupOptions.insert(std::make_pair(command, std::make_pair(startupOptions.size() + 1, parameter)));
 }
 
 bool Framework::HasCommandLineParameter(const QString &value) const
@@ -635,18 +635,18 @@ bool Framework::HasCommandLineParameter(const QString &value) const
     if (value.compare("--config", Qt::CaseInsensitive) == 0)
         return !configFiles.isEmpty();
 
-    return startupMap.find(value) != startupMap.end();
+    return startupOptions.find(value) != startupOptions.end();
 }
 
 QStringList Framework::CommandLineParameters(const QString &key) const
 {
-    if (!key.compare("--config", Qt::CaseInsensitive))
+    if (key.compare("--config", Qt::CaseInsensitive) == 0)
         return ConfigFiles();
     
     typedef std::set<std::pair<int, QString>, OptionMapLessThan> SortedOptionSet;
     SortedOptionSet sortedSet;
     QStringList ret;
-    OptionsMapIteratorPair iter = startupMap.equal_range(key);
+    OptionsMapIteratorPair iter = startupOptions.equal_range(key);
 
     for (OptionsMap::const_iterator i = iter.first; i != iter.second; ++i)
         sortedSet.insert(i->second);
@@ -748,7 +748,7 @@ void Framework::PrintStartupOptions()
 {
     typedef std::map<int, std::pair<QString, QString> > SortedOptionsMap;
     SortedOptionsMap sortedMap;
-    for (OptionsMap::const_iterator i = startupMap.begin(); i != startupMap.end(); ++i)
+    for (OptionsMap::const_iterator i = startupOptions.begin(); i != startupOptions.end(); ++i)
         sortedMap.insert(std::make_pair(i->second.first, std::make_pair(i->first, i->second.second)));
 
     QString lastOption;
