@@ -200,7 +200,7 @@ private:
     void AddCommandLineParameter(const QString &command, const QString &parameter);
 
     /// Appends all found startup options from the given file to the startupOptions member.
-    void LoadStartupOptionsFromXML(QString configurationFile);
+    bool LoadStartupOptionsFromXML(QString configurationFile);
 
     /// Appends startup options from a commandline file, Android only
 #ifdef ANDROID
