@@ -14,6 +14,8 @@ v2.5.1 https://github.com/realXtend/naali/compare/tundra2.5...tundra2.5.1
 - All startup parameters unified to lowerCamelCase format for better readability. Old format also retained for now.
 - Possibility to access scene components without the EC_ prefix from script; .txml files saved without the EC_ prefix.
 - Possibility to access entity's components in lowerCamelCase from script for better readability.
+- Show attributes optionally in the Scene Structure window.
+- Live-update attribute metadata in the EC-editor if changed during runtime.
 - Split less used or deprecated modules to the TundraAddons repository.
 - Add version information to the Tundra executables and libraries on Windows.
 - Distance along the ray added to RayCastResult.
