@@ -569,7 +569,7 @@ bool Framework::RegisterDynamicObject(QString name, QObject *object)
 
 QString LookupRelativePath(QString path);
 
-void Framework::LoadStartupOptionsFromXML(QString configurationFile)
+bool Framework::LoadStartupOptionsFromXML(QString configurationFile)
 {
     configurationFile = LookupRelativePath(configurationFile);
 
@@ -577,17 +577,17 @@ void Framework::LoadStartupOptionsFromXML(QString configurationFile)
     QFile file(configurationFile);
     if (!file.open(QIODevice::ReadOnly))
     {
-        LogError("Framework::LoadStartupOptionsFromXML: Failed to open file \"" + configurationFile + "\"!");
-        return;
+        LogError("Failed to open config file \"" + configurationFile + "\"!");
+        return false;
     }
     QString errorMsg;
     int errorLine, errorColumn;
     if (!doc.setContent(&file, false, &errorMsg, &errorLine, &errorColumn))
     {
-        LogError(QString("Framework::LoadStartupOptionsFromXML: Failed to parse XML file \"%1\": %2 at line %3, column %4.")
+        LogError(QString("Failed to parse config file XML \"%1\": %2 at line %3, column %4.")
             .arg(configurationFile).arg(errorMsg).arg(errorLine).arg(errorColumn));
         file.close();
-        return;
+        return false;
     }
     file.close();
 
@@ -612,8 +612,8 @@ void Framework::LoadStartupOptionsFromXML(QString configurationFile)
             {
                 if (!e.attribute("value").isEmpty())
                 {
-                    LoadStartupOptionsFromXML(e.attribute("value"));
-                    configFiles << e.attribute("value");
+                    if (LoadStartupOptionsFromXML(e.attribute("value")))
+                        configFiles << e.attribute("value");
                 }
 
                 n = n.nextSibling();
@@ -624,6 +624,7 @@ void Framework::LoadStartupOptionsFromXML(QString configurationFile)
         }
         n = n.nextSibling();
     }
+    return true;
 }
 
 void Framework::AddCommandLineParameter(const QString &command, const QString &parameter)
@@ -633,7 +634,7 @@ void Framework::AddCommandLineParameter(const QString &command, const QString &p
 
 bool Framework::HasCommandLineParameter(const QString &value) const
 {
-    if (!value.compare("--config", Qt::CaseInsensitive))
+    if (value.compare("--config", Qt::CaseInsensitive) == 0)
         return !configFiles.isEmpty();
 
     return startupMap.find(value) != startupMap.end();
@@ -660,132 +661,113 @@ QStringList Framework::CommandLineParameters(const QString &key) const
 
 void Framework::ProcessStartupOptions()
 {
-    bool configFilesSpecified = false;
-
     for(int i = 1; i < argc; ++i)
     {
-        if (!strncmp(argv[i], "--", 2) && argv[i+1])
+        QString option(argv[i]);
+        QString peekOption = (argv[i+1] ? QString(argv[i+1]) : "");
+        if (option.startsWith("--") && !peekOption.isEmpty())
         {
-#ifndef WIN32
-            QString option = argv[i];
-            QString param = argv[i+1];
-
-            if (!option.compare("--config", Qt::CaseInsensitive))
+#ifdef WIN32
+            // --key "value
+            if (peekOption.startsWith("\""))
             {
-                configFilesSpecified = true;
-
-                LoadStartupOptionsFromXML(argv[i+1]);
-                configFiles << argv[i+1];
-                ++i;
-
-                continue;
-            }
-
-            if (!param.startsWith("--"))
-            {
-                AddCommandLineParameter(option, param);
-                ++i;
-            }
-            else
-                AddCommandLineParameter(option, "");
-#else
-            // Inspect for quoted parameters.
-            QString option = argv[i];
-            QString quotedParam = argv[i+1];
-            bool quoteFound = false;
-
-            if (quotedParam.startsWith("\""))
-            {
-                if (quotedParam.endsWith("\"")) // End quote is in the argv
+                // --key "value"
+                if (peekOption.endsWith("\""))
                 {
                     // Remove quotes and append to the return list.
-                    quotedParam = quotedParam.right(quotedParam.length() -1);
-                    quotedParam.chop(1);
-                    quoteFound = true;
-                    ++i;
+                    peekOption = peekOption.mid(1);
+                    peekOption.chop(1);
                 }
-                else // End quote is not in the same argv
+                // --key "val u e"
+                else
                 {
                     for(int pi=i+2; pi+1 < argc; ++pi)
                     {
-                        QString param = argv[pi];
-
                         // If a new -- key is found before an end quote we have a error.
                         // Report and don't add anything to the return list as the param is malformed.
+                        QString param = argv[pi];
                         if (param.startsWith("--"))
                         {
-                            LogError("Could not find an end quote for '" + QString(argv[i]) + "' parameter: " + quotedParam);
+                            LogError("Could not find an end quote for '" + option + "' parameter: " + peekOption);
                             i = pi - 1; // Step one back so the main for loop will inspect this element next.
                             break;
                         }
-                        // We found the end of the quoted param.
-                        // Remove quotes and append to the return list.
-                        else if (param.endsWith("\""))
-                        {
-                            quotedParam += " " + param;
-                            if (quotedParam.startsWith("\""))
-                                quotedParam = quotedParam.right(quotedParam.length() -1);
-                            if (quotedParam.endsWith("\""))
-                                quotedParam.chop(1);
+                        
+                        peekOption += " " + param;
+                        if (param.endsWith("\""))
+                        {                            
+                            if (peekOption.startsWith("\""))
+                                peekOption = peekOption.mid(1);
+                            if (peekOption.endsWith("\""))
+                                peekOption.chop(1);
 
-                            quoteFound = true;
-                            i = pi; // Set the main for loops index so it will process the proper elements next.
+                            // Set the main for loops index so it will skip the 
+                            // parts that included in this quoted param.
+                            i = pi; 
                             break;
                         }
-                        else // Append to param.
-                            quotedParam += " " + param;
                     }
-                }
-            }
-            else // No quote start, push as is
-            {
-                quoteFound = true;
-                ++i;
-            }
-
-            if (quoteFound)
-            {
-                if (option.compare("--config", Qt::CaseInsensitive))
-                    AddCommandLineParameter(option, quotedParam);
-                else
-                {
-                    configFilesSpecified = true;
-
-                    LoadStartupOptionsFromXML(quotedParam);
-                    configFiles << quotedParam;
                 }
             }
 #endif
         }
-        else if (!strncmp(argv[i], "--", 2) && !argv[i+1])
-            AddCommandLineParameter(argv[i], "");
+        else if (option.startsWith("--") && peekOption.isEmpty())
+            AddCommandLineParameter(option, "");
         else
+        {
             LogWarning("Orphaned startup option parameter value specified: " + QString(argv[i]));
+            continue;
+        }
 
+        if (option.trimmed().isEmpty())
+            continue;
+
+        // --config
+        if (option.compare("--config", Qt::CaseInsensitive) == 0)
+        {
+            if (LoadStartupOptionsFromXML(peekOption))
+                configFiles << peekOption;
+            ++i;
+            continue;
+        }
+
+        // --key value
+        if (!peekOption.startsWith("--"))
+        {
+            AddCommandLineParameter(option, peekOption);
+            ++i;
+        }
+        // --key
+        else
+            AddCommandLineParameter(option, "");
     }
 
-    if (!configFilesSpecified)
-        LoadStartupOptionsFromXML("plugins.xml");
+    if (!HasCommandLineParameter("--config") && LoadStartupOptionsFromXML("plugins.xml"))        
+        configFiles << "plugins.xml";
 }
 
 void Framework::PrintStartupOptions()
 {
-    LogInfo("Startup options:");
-
     typedef std::map<int, std::pair<QString, QString> > SortedOptionsMap;
     SortedOptionsMap sortedMap;
     for (OptionsMap::const_iterator i = startupMap.begin(); i != startupMap.end(); ++i)
         sortedMap.insert(std::make_pair(i->second.first, std::make_pair(i->first, i->second.second)));
 
+    QString lastOption;
     for (SortedOptionsMap::const_iterator i = sortedMap.begin(); i != sortedMap.end(); ++i)
     {
-        QString output;
-        if (!i->second.second.isEmpty())
-            output = QString("  %1 '%2'").arg(i->second.first).arg(i->second.second);
+        QString output = "";
+        QString option = i->second.first;
+        QString value = i->second.second;
+        if (!value.isEmpty())
+            output = QString("  %1 '%2'").arg(option != lastOption ? option : "", -10).arg(value);
         else
-            output = QString("  %1").arg(i->second.first);
+            output = QString("  %1").arg(option);
 
         LogInfo(output);
+        
+        if (lastOption.compare(option, Qt::CaseSensitive) != 0)
+            lastOption = option;
     }
 }
 
