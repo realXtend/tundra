@@ -1,3 +1,33 @@
+v2.5.1 https://github.com/realXtend/naali/compare/tundra2.5...tundra2.5.1
+------
+
+- Update to Qt 4.8.5 on Windows and OS X.
+- Update to Ogre 1.9 RC1.
+- Update to a new version of MathGeoLib with several new functions and bugfixes.
+- Configurable texture budget: when exceeded or near exceeded, textures will be loaded in reduced resolution.
+- Ogre instancing support in the Mesh component. Automatic generation of instanced versions of the SuperShaders.
+- Threaded HttpAssetProvider cache write to improve performance and responsiveness when loading a scene with a "cold" cache.
+- Improved build and installer scripts on Windows, including support for 64-bit targets. Installer detects and optionally removes old Tundra installation.
+- Improved Linux build script. Contributed by Peter C.
+- Possibility to build only Debug or Release dependencies instead of both to reduce the dependencies build time.
+- Cleaned up startup configuration file syntax: use the same commands as command line startup parameters. Allow configuration files to include other configuration files.
+- All startup parameters unified to lowerCamelCase format for better readability. Old format also retained for now.
+- Possibility to access scene components without the EC_ prefix from script; .txml files saved without the EC_ prefix.
+- Possibility to access entity's components in lowerCamelCase from script for better readability.
+- Split less used or deprecated modules to the TundraAddons repository.
+- Add version information to the Tundra executables and libraries on Windows.
+- Distance along the ray added to RayCastResult.
+- RaycastAll() functions in OgreWorld for returning all hit objects along a ray.
+- PhysicsConstraint component.
+- Separate machine-readable ID's for component attributes in addition to the human-readable attribute names. This allow changing the human-readable name without breaking scene files.
+- Help text is shown if starting Tundra without a scene file.
+- Improved Profiler display. kNet network statistics shown in its own Profiler tab by default.
+- Bug fixes to allow creating components unparented (without a scene or entity). When serializing a scene description on import, use this feature to prevent changing the actual scene yet.
+- Transform gizmo bugfix: allow unlimited drag to the negative axis direction.
+- Fix loading of Ogg Vorbis sounds sometimes producing garbage audio.
+- API cleanup; more getter functions modified to concise form without the Get-prefix. Old functions retained, but marked deprecated.
+- Plus much more bugfixes and misc. improvements.
+
 v2.5 https://github.com/realXtend/naali/compare/tundra2.4.1...tundra2.5
 ------
 - Undo/redo functionality in scene editing.

@@ -3,7 +3,7 @@
 
 # Note: You can define custom version from outside this script by using /DVERSION=YourCustomVersion
 !ifndef VERSION
-!define VERSION "2.5"
+!define VERSION "2.5.1"
 !endif
 
 !ifndef ARCH
