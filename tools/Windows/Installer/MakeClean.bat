@@ -179,4 +179,7 @@ del viewerautomove.xml
 ::del data\ui\images\icon\update.ico
 ::del data\ui\LoginWebWidget.ui
 
+:: Delete .pdb files
+del /s /q *.pdb
+
 pause

@@ -236,18 +236,19 @@ IF NOT EXIST "%DEPS%\qt". (
    cecho {0D}Qt already downloaded. Skipping.{# #}{\n}
 )
 
+set JOM_VERSION=1_0_11
 IF %USE_JOM%==FALSE GOTO :SKIP_JOM
 IF NOT EXIST "%DEPS%\qt\jom\jom.exe". (
    cd "%DEPS%"
-   IF NOT EXIST jom_1_0_11.zip. (
+   IF NOT EXIST jom_%JOM_VERSION%.zip. (
       cecho {0D}Downloading JOM build tool for Qt.{# #}{\n}
-      wget http://releases.qt-project.org/jom/jom_1_0_11.zip
+      wget http://download.qt-project.org/official_releases/jom/jom_%JOM_VERSION%.zip
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
 
    cecho {0D}Installing JOM build tool for to %DEPS%\qt\jom.{# #}{\n}
    mkdir %DEPS%\qt\jom
-   7za x -y -oqt\jom jom_1_0_11.zip
+   7za x -y -oqt\jom jom_%JOM_VERSION%.zip
 ) ELSE (
    cecho {0D}JOM already installed to %DEPS%\qt\jom. Skipping.{# #}{\n}
 )
@@ -610,7 +611,7 @@ IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\.hg". (
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\.hg" GOTO :ERROR
    cd ogre-safe-nocrashes
-   hg checkout v1-8
+   hg checkout v1-9
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}Updating ogre-safe-nocrashes to newest version from https://bitbucket.org/clb/ogre-safe-nocrashes.{# #}{\n}

@@ -5,6 +5,7 @@
 
 #include "TextureAsset.h"
 #include "OgreRenderingModule.h"
+#include "Renderer.h"
 
 #include "Profiler.h"
 #include "AssetCache.h"
@@ -39,6 +40,9 @@
 
 #include "MemoryLeakCheck.h"
 
+const float BUDGET_THRESHOLD = 0.80f; // The point at which we start reducing texture size
+const float BUDGET_STEP = 0.05f; // The step at which texture maximum size limit is halved
+
 TextureAsset::TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
     IAsset(owner, type_, name_), loadTicket_(0)
 {
@@ -52,14 +56,7 @@ TextureAsset::~TextureAsset()
 
 bool TextureAsset::LoadFromFile(QString filename)
 {
-    /// @todo Duplicate allowAsynchronous code in OgreMeshAsset and TextureAsset.
-    bool allowAsynchronous = true;
-    if ((OGRE_THREAD_SUPPORT == 0) || assetAPI->IsHeadless() || !assetAPI->Cache() ||
-        assetAPI->GetFramework()->HasCommandLineParameter("--noAsyncAssetLoad") ||
-        assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load")) /**< @todo Remove support for the deprecated underscore version at some point. */
-    {
-        allowAsynchronous = false;
-    }
+    bool allowAsynchronous = AllowAsyncLoading();
 
     QString cacheDiskSource;
     if (allowAsynchronous)
@@ -213,14 +210,8 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
     // We should never be here in headless mode.
     assert(!assetAPI->IsHeadless());
 
-    /// @todo Duplicate allowAsynchronous code in OgreMeshAsset and TextureAsset.
-    if ((OGRE_THREAD_SUPPORT == 0) || !assetAPI->Cache() || assetAPI->IsHeadless() ||
-        assetAPI->GetFramework()->HasCommandLineParameter("--noAsyncAssetLoad") ||
-        assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load")) /**< @todo Remove support for the deprecated underscore version at some point. */
-    {
-        allowAsynchronous = false;
-    }
-
+    allowAsynchronous &= AllowAsyncLoading();
+    
     QString cacheDiskSource;
     if (allowAsynchronous)
     {
@@ -229,9 +220,12 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
             allowAsynchronous = false;
     }
 
+    QString nameSuffix = NameSuffix();
+    bool isCompressed = nameSuffix == "crn" || nameSuffix == "dds";
+    
     // Check if this is a crunch library CRN file and we need to decompress to DDS.
     std::vector<u8> crnUncompressData;
-    if (NameSuffix() == "crn")
+    if (nameSuffix == "crn")
     {
         /** If asynchronous loading is allowed we want to store the decompressed DDS data to the asset cache.
             This way below threaded loading can be done on the DDS disk source. If saving to disk fails, it is not
@@ -323,14 +317,37 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
     // Synchronous loading
     try
     {
-        // Convert the data into Ogre's own DataStream format.
-        std::vector<u8> tempData(data, data + numBytes);
 #include "DisableMemoryLeakCheck.h"
-        Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&tempData[0], tempData.size(), false));
+        Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)data, numBytes, false));
+        
+        std::vector<u8> modifiedDDSData;
+        // Resize DDS images here if necessary
+        if (isCompressed)
+            ProcessDDSImage(stream, modifiedDDSData);
+        
 #include "EnableMemoryLeakCheck.h"
         // Load up the image as an Ogre CPU image object.
         Ogre::Image image;
         image.load(stream);
+
+        // Resize non-DDS images here if necessary
+        if (!isCompressed)
+        {
+            size_t outWidth, outHeight;
+            CalculateTextureSize(image.getWidth(), image.getHeight(), outWidth, outHeight, 4*8); // Assume RGBA
+            if (outWidth != image.getWidth() || outHeight != image.getHeight())
+            {
+                try
+                {
+                    LogDebug("Resizing image from " + QString::number(image.getWidth()) + "x" + QString::number(image.getHeight()) + " to " + QString::number(outWidth) + "x" + QString::number(outHeight));
+                    image.resize(outWidth, outHeight);
+                }
+                catch (Ogre::Exception& e)
+                {
+                    LogError("TextureAsset::DeserializeFromData: Failed to resize image " + Name().toStdString() + ": " + std::string(e.what()));
+                }
+            }
+        }
 
         // Internal name that will be passed to Ogre for creating and loading the texture.
         // This differs from Name() only if the data was pre-processed above, eg. CRN files.
@@ -707,10 +724,8 @@ void TextureAsset::SetContentsDrawText(int newWidth, int newHeight, QString text
 
 void TextureAsset::PostProcessTexture()
 {
-    if (assetAPI->GetFramework()->HasCommandLineParameter("--autodxtcompress"))
+    if (assetAPI->GetFramework()->HasCommandLineParameter("--autoDxtCompress"))
         CompressTexture();
-    if (assetAPI->GetFramework()->HasCommandLineParameter("--maxtexturesize"))
-        ReduceTextureSize();
 }
 
 void TextureAsset::CompressTexture()
@@ -719,7 +734,7 @@ void TextureAsset::CompressTexture()
     if (ogreTexture.isNull())
         return;
     
-    QStringList sizeParam = assetAPI->GetFramework()->CommandLineParameters("--maxtexturesize");
+    QStringList sizeParam = assetAPI->GetFramework()->CommandLineParameters("--maxTextureSize");
     size_t maxTextureSize = 0;
     if (sizeParam.size() > 0)
     {
@@ -887,187 +902,236 @@ void TextureAsset::CompressTexture()
 #endif
 }
 
-void TextureAsset::ReduceTextureSize()
+bool TextureAsset::AllowAsyncLoading() const
 {
-#if defined(DIRECTX_ENABLED) && defined(WIN32)
-    if (ogreTexture.isNull())
-        return;
-    
-    QStringList sizeParam = assetAPI->GetFramework()->CommandLineParameters("--maxtexturesize");
-    size_t maxTextureSize = 0;
-    if (sizeParam.size() > 0)
-    {
-        int size = sizeParam.first().toInt();
-        if (size > 0)
-            maxTextureSize = size;
-    }
-    if (!maxTextureSize)
-        return;
-    
-    if (ogreTexture->getWidth() <= maxTextureSize && ogreTexture->getHeight() <= maxTextureSize)
-        return; // Texture OK, no reduction needed
-    
-    PROFILE(TextureAsset_ReduceTextureSize);
-    
-    size_t origWidth = ogreTexture->getWidth();
-    size_t origHeight = ogreTexture->getHeight();
-    
-    if (Ogre::Root::getSingletonPtr()->getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
-    {
-        LogWarning("Skipping ReduceTextureSize on OpenGL as it is prone to crash");
-        return;
-    }
-    
-    Ogre::PixelFormat sourceFormat = ogreTexture->getFormat();
-    
-    // Get original texture data
-    std::vector<unsigned char*> imageData;
-    std::vector<Ogre::PixelBox> imageBoxes;
-    
-    size_t numMipmaps = ogreTexture->getNumMipmaps();
-    
-    // If mipmaps are present in the source texture, reject those larger than acceptable texture size, however ensure at least 1 mipmap
-    for (size_t level = 0; level <= numMipmaps; ++level)
-    {
-        try
-        {
-            Ogre::HardwarePixelBufferSharedPtr buf = ogreTexture->getBuffer(0, level);
-            
-            if (numMipmaps > 0 && level < numMipmaps && imageBoxes.size() == 0 && (buf->getWidth() > maxTextureSize || buf->getHeight() > maxTextureSize))
-                continue;
-            
-            unsigned char* levelData = new unsigned char[Ogre::PixelUtil::getMemorySize(buf->getWidth(), buf->getHeight(), 1, buf->getFormat())];
-            imageData.push_back(levelData);
-            Ogre::PixelBox levelBox(Ogre::Box(0, 0, buf->getWidth(), buf->getHeight()), buf->getFormat(), levelData);
-            
-            if (sourceFormat >= Ogre::PF_DXT1 && sourceFormat <= Ogre::PF_DXT5)
-            {
-                // Ogre does not retrieve the texture data properly if the miplevel width is not divisible by 4, so we write manual code for Direct3D9
-                /// \todo Fix bug in ogre-safe-nocrashes branch
-                size_t bytesPerBlock = sourceFormat == Ogre::PF_DXT1 ? 8 : 16;
-                size_t numRows = (buf->getHeight() + 3) / 4;
-                size_t destStride = (buf->getWidth() + 3) / 4 * bytesPerBlock;
-                unsigned char* dest = levelData;
-                
-                Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(buf.get());
-                assert(pixelBuffer);
-                LPDIRECT3DSURFACE9 surface = pixelBuffer->getSurface(Ogre::D3D9RenderSystem::getActiveD3D9Device());
-                if (surface)
-                {
-                    D3DLOCKED_RECT lock;
-                    HRESULT hr = surface->LockRect(&lock, 0, 0);
-                    if (SUCCEEDED(hr))
-                    {
-                        if ((size_t)lock.Pitch == destStride)
-                            memcpy(dest, lock.pBits, destStride * numRows);
-                        else
-                            for(size_t y = 0; y < numRows; ++y)
-                                memcpy(dest + destStride * y, (u8*)lock.pBits + lock.Pitch * y, destStride);
-                        surface->UnlockRect();
-                    }
-                }
-            }
-            else
-                buf->blitToMemory(levelBox);
-            
-            imageBoxes.push_back(levelBox);
-        }
-        catch (std::exception& e)
-        {
-            LogError("TextureAsset::ReduceTextureSize: Caught exception " + QString(e.what()) + " while handling miplevel " + QString::number(level) + ", aborting.");
-            break;
-        }
-    }
-    
-    // If only one level, resize it. But do not attempt this for textures which already are DXT compressed
-    if (imageBoxes.size() == 1 && (imageBoxes[0].right > maxTextureSize || imageBoxes[0].bottom > maxTextureSize))
-    {
-        if (sourceFormat >= Ogre::PF_DXT1 && sourceFormat <= Ogre::PF_DXT5)
-        {
-            LogWarning("TextureAsset::ReduceTextureSize: not resizing already DDS compressed texture " + Name());
-            for (size_t i = 0; i < imageData.size(); ++i)
-                delete[] imageData[i];
-            return;
-        }
-        
-        size_t targetWidth = imageBoxes[0].right;
-        size_t targetHeight = imageBoxes[0].bottom;
-        while (targetWidth > maxTextureSize || targetHeight > maxTextureSize)
-        {
-            targetWidth >>= 1;
-            targetHeight >>= 1;
-        }
-        if (!targetWidth)
-            targetWidth = 1;
-        if (!targetHeight)
-            targetHeight = 1;
-        
-        unsigned char* scaledPixelData = new unsigned char[Ogre::PixelUtil::getMemorySize(targetWidth, targetHeight, 1, sourceFormat)];
-        Ogre::PixelBox targetBox(Ogre::Box(0, 0, targetWidth, targetHeight), sourceFormat, scaledPixelData);
-        Ogre::Image::scale(imageBoxes[0], targetBox);
-        
-        // Delete the unscaled original data and replace the original pixelbox
-        delete[] imageData[0];
-        imageData[0] = scaledPixelData;
-        imageBoxes[0] = targetBox;
-    }
-    
-    // Change texture parameters
-    ogreTexture->freeInternalResources();
-    ogreTexture->setWidth(imageBoxes[0].right);
-    ogreTexture->setHeight(imageBoxes[0].bottom);
-    ogreTexture->setNumMipmaps(imageBoxes.size() - 1);
-    ogreTexture->createInternalResources();
-    
-    // Upload new texture data
-    for (size_t level = 0; level < imageBoxes.size(); ++level)
-    {
-        try
-        {
-            Ogre::HardwarePixelBufferSharedPtr buf = ogreTexture->getBuffer(0, level);
-            
-            if (sourceFormat >= Ogre::PF_DXT1 && sourceFormat <= Ogre::PF_DXT5)
-            {
-                // Ogre does not load the texture data properly if the miplevel width is not divisible by 4, so we write manual code for Direct3D9
-                /// \todo Fix bug in ogre-safe-nocrashes branch. It also affects Ogre's loading of already compressed DDS files
-                size_t bytesPerBlock = sourceFormat == Ogre::PF_DXT1 ? 8 : 16;
-                size_t numRows = (buf->getHeight() + 3) / 4;
-                size_t sourceStride = (buf->getWidth() + 3) / 4 * bytesPerBlock;
-                unsigned char* src = imageData[level];
-                
-                Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(buf.get());
-                assert(pixelBuffer);
-                LPDIRECT3DSURFACE9 surface = pixelBuffer->getSurface(Ogre::D3D9RenderSystem::getActiveD3D9Device());
-                if (surface)
-                {
-                    D3DLOCKED_RECT lock;
-                    HRESULT hr = surface->LockRect(&lock, 0, 0);
-                    if (SUCCEEDED(hr))
-                    {
-                        if ((size_t)lock.Pitch == sourceStride)
-                            memcpy(lock.pBits, src, sourceStride * numRows);
-                        else
-                            for(size_t y = 0; y < numRows; ++y)
-                                memcpy((u8*)lock.pBits + lock.Pitch * y, src + sourceStride * y, sourceStride);
-                        surface->UnlockRect();
-                    }
-                }
-            }
-            else
-                buf->blitFromMemory(imageBoxes[level]);
-        }
-        catch (std::exception& e)
-        {
-            LogError("TextureAsset::ReduceTextureSize: Caught exception " + QString(e.what()) + " while handling miplevel " + QString::number(level) + ", aborting.");
-            break;
-        }
-    }
-    
-    // Delete CPU-side temp image data
-    for (size_t i = 0; i < imageData.size(); ++i)
-        delete[] imageData[i];
-    
-    LogDebug("TextureAsset::ReduceTextureSize: asset " + Name() + " reduced from " + QString::number(origWidth) + "x" + QString::number(origHeight) + " to " + QString::number(ogreTexture->getWidth()) + "x" + QString::number(ogreTexture->getHeight()));
-#endif
+    /// \todo NeedSizeModification() does not take into account the current texture's data size, in which case we may go on the threaded loading path
+    /// without a possibility to resize the texture smaller. This means that potentially one texture may go in unresized and increase the texture load
+    /// significantly over the budget.
+    if (NeedSizeModification() || assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") ||
+        assetAPI->GetFramework()->HasCommandLineParameter("--noAsyncAssetLoad") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
+        return false;
+    else
+        return true;
 }
 
+bool TextureAsset::NeedSizeModification() const
+{
+    OgreRenderer::RendererPtr renderer = assetAPI->GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+    return assetAPI->GetFramework()->HasCommandLineParameter("--maxTextureSize") || renderer->TextureBudgetUse() > BUDGET_THRESHOLD || 
+        renderer->TextureQuality() == OgreRenderer::Renderer::Texture_Low;
+}
+
+void TextureAsset::CalculateTextureSize(size_t width, size_t height, size_t& outWidth, size_t& outHeight, size_t bitsPerPixel)
+{
+    OgreRenderer::RendererPtr renderer = assetAPI->GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+
+    outWidth = width;
+    outHeight = height;
+    
+    if (renderer->TextureQuality() == OgreRenderer::Renderer::Texture_Low)
+    {
+        outWidth >>= 1;
+        outHeight >>= 1;
+    }
+    
+    float t = renderer->TextureBudgetUse(outWidth * outHeight * bitsPerPixel / 8);
+    if (t > BUDGET_THRESHOLD)
+    {
+        for (;;)
+        {
+            size_t maxTextureSize = 4096;
+            int factor = (int)((t - BUDGET_THRESHOLD) / BUDGET_STEP);
+            if (factor < 0)
+                factor = 0;
+            maxTextureSize >>= factor;
+            if (!maxTextureSize)
+                maxTextureSize = 1;
+
+            if (outWidth <= maxTextureSize && outHeight <= maxTextureSize)
+                break;
+            
+            outWidth >>= 1;
+            outHeight >>= 1;
+
+            // Update the tentative budget and check whether further reduction is needed
+            t = renderer->TextureBudgetUse(outWidth * outHeight * bitsPerPixel / 8);
+        }
+    }
+    
+    if (assetAPI->GetFramework()->HasCommandLineParameter("--maxTextureSize"))
+    {
+        QStringList sizeParam = assetAPI->GetFramework()->CommandLineParameters("--maxTextureSize");
+        size_t maxTextureSize = 0;
+        if (sizeParam.size() > 0)
+        {
+            int size = sizeParam.first().toInt();
+            if (size > 0)
+                maxTextureSize = size;
+        }
+        if (maxTextureSize)
+        {
+            while (outWidth > maxTextureSize || outHeight > maxTextureSize)
+            {
+                outWidth >>= 1;
+                outHeight >>= 1;
+            }
+        }
+    }
+    
+    if (!outWidth)
+        outWidth = 1;
+    if (!outHeight)
+        outHeight = 1;
+}
+
+#include "DisableMemoryLeakCheck.h"
+
+// Code from http://www.ogre3d.org/forums/viewtopic.php?f=4&t=50282&hilit=gpu+memory+mipmap#p342476
+
+/** Removes top MipMap levels from a dds file (stream)
+   @remarks This function loads an image file from a stream,
+       if the file is a dds file that has MipMaps -
+       the number of top MipMap level that are defined
+       by a parameter will be removed
+   @param stream - source stream with the image file data
+   @param numberOfTopMipMapToSkip - number of top MipMap levels that will be removed
+   @returns - a self releasing memory stream with the modified dds
+   */
+void TextureAsset::ProcessDDSImage(Ogre::DataStreamPtr& stream, std::vector<u8>& modifiedDDSData)
+{
+    // simplified dds header struct with the minimum data needed
+    struct DDSHEADER {
+        char cMagic[4];
+        unsigned dwSize;
+        unsigned dwFlags;
+        unsigned dwHeight;
+        unsigned dwWidth;
+        unsigned dwPitchOrLinearSize;
+        unsigned dwDepth;
+        unsigned dwMipMapCount;
+        unsigned dwReserved1[11];
+        unsigned dwSizeOfPixelFormat;
+        unsigned dwFlagsOfPixelFormat;
+        char cFourCharIdOfPixelFormat[4];
+        char dataThatWeDoNotNeed[40];
+    };
+
+    // return to the stream beginning 
+    stream->seek(0);
+
+    // read the header
+    DDSHEADER header;
+    stream->read(&header, sizeof(DDSHEADER));
+
+    // check if this is a valid dds file by the image type id
+    bool isMagicValid = ( memcmp(header.cMagic, "DDS ", 4) == 0);
+
+    // check if the pixel type is DXT (do the check only if the magic is valid...)
+    bool isDXT = isMagicValid && memcmp(header.cFourCharIdOfPixelFormat, "DXT", 3) == 0;
+    bool isDXT1 = memcmp(header.cFourCharIdOfPixelFormat, "DXT1", 4) == 0;
+    
+    // check if this is a valid dds file by the image type id
+    bool isValidDdsFile = isMagicValid && isDXT;
+
+    size_t totalSizeOfTheSkipTopLevels = 0;
+
+    size_t outWidth, outHeight;
+    CalculateTextureSize(header.dwWidth, header.dwHeight, outWidth, outHeight, isDXT1 ? 4 : 8);
+
+    if (outWidth == header.dwWidth && outHeight == header.dwHeight)
+    {
+        stream->seek(0);
+        return; // No resize, can use original stream
+    }
+
+    size_t numberOfTopMipMapToSkip = 0;
+    size_t curWidth = header.dwWidth;
+    size_t curHeight = header.dwHeight;
+    while (curWidth > outWidth || curHeight > outHeight)
+    {
+        // Do not allow to go below 4 in either dimension
+        if (curWidth == 4 || curHeight == 4)
+            break;
+        curWidth >>= 1;
+        curHeight >>= 1;
+        ++numberOfTopMipMapToSkip;
+    }
+    
+    // If no mips, can not resize
+    if (!header.dwMipMapCount || header.dwMipMapCount == 1)
+        numberOfTopMipMapToSkip = 0;
+    else if (numberOfTopMipMapToSkip > header.dwMipMapCount - 1)
+        numberOfTopMipMapToSkip = header.dwMipMapCount - 1;
+    
+    if (!numberOfTopMipMapToSkip)
+    {
+        stream->seek(0);
+        return; // Can use original stream
+    }
+
+    if (isValidDdsFile)
+    {
+        // store the width and height as local vars for easy access 
+        unsigned long width = header.dwWidth;
+        unsigned long height = header.dwHeight;
+        unsigned long mipMapCount = header.dwMipMapCount;
+
+        // skip the levels (if has MipMap and a valid file)
+        for (size_t i = 0 ; i < numberOfTopMipMapToSkip && mipMapCount > 1 && isValidDdsFile ; i++)
+        {
+            // calculate the size current top level
+            long sizeOfCurTopLevel = width  * height;
+
+            // if the pixel type is DXT1 - the size is half of DXT3 or DXT5
+            if (isDXT1)
+                sizeOfCurTopLevel /= 2;
+
+            // skip the current top level
+            totalSizeOfTheSkipTopLevels += sizeOfCurTopLevel;
+        
+            // update to the new size
+            height /= 2;
+            width /= 2;
+
+            // decrement the MipMap count by one  
+            mipMapCount -= 1; 
+        }
+
+        // change the header to be without the top levels that were removed
+        header.dwHeight = height;
+        header.dwWidth = width;
+        header.dwMipMapCount = mipMapCount; 
+
+        // skip the top levels in the stream
+        stream->skip(totalSizeOfTheSkipTopLevels);
+    }
+    else
+    {
+        LogDebug("TextureAsset::ProcessDDSImage: texture " + Name() + " does not contain DXT compressed data, skipping resize");
+        stream->seek(0);
+        return; // Data could not be processed, use original
+    }
+
+    LogDebug("TextureAsset::ProcessDDSImage: resizing texture " + Name() + " from " + QString::number(header.dwWidth) + "x" + QString::number(header.dwHeight) + " to " + QString::number(curWidth) + "x" + QString::number(curHeight));
+
+    // create the memory for the loaded data
+    size_t sizeOfTheDddWithoutTopLevels = 
+        stream->size() - totalSizeOfTheSkipTopLevels;
+
+    modifiedDDSData.resize(sizeOfTheDddWithoutTopLevels);
+
+    // add the header
+    memcpy(&modifiedDDSData[0], &header, sizeof(DDSHEADER));
+
+    // read the rest of the data
+    size_t sizeOfTheDddsWithoutTopLevelsAndHeaders 
+        = sizeOfTheDddWithoutTopLevels - sizeof(DDSHEADER);
+
+    stream->read(&modifiedDDSData[sizeof(DDSHEADER)], 
+        sizeOfTheDddsWithoutTopLevelsAndHeaders);
+
+    // Overwrite stream with new
+    stream = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(&modifiedDDSData[0], sizeOfTheDddWithoutTopLevels, false));
+}
+
+#include "EnableMemoryLeakCheck.h"

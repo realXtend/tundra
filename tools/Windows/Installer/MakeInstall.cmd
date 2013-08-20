@@ -20,7 +20,7 @@ call RunCMake.cmd %*
 cd ..\..
 
 :: Pass in VS_PLATFORM in order to ensure that we're deploying the version we intented to.
-MSBuild INSTALL.%VCPROJ_FILE_EXT% /p:configuration=RelWithDebInfo /p:platform="%VS_PLATFORM%" /nologo /m
+MSBuild INSTALL.%VCPROJ_FILE_EXT% /p:configuration=RelWithDebInfo /p:platform="%VS_PLATFORM%" /nologo
 IF NOT %ERRORLEVEL%==0 GOTO :End
 
 copy /y tools\Windows\Installer\%VS_VER%\vcredist_%TARGET_ARCH%.exe build\bin\vcredist.exe
