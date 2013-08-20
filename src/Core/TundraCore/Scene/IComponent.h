@@ -298,6 +298,11 @@ public slots:
         This function is called by IAttribute::Changed whenever the value in that
         attribute is changed. */
     void EmitAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
+
+    /// Informs this component that the metadata of a member Attribute has changed.
+    /** @param The attribute of which metadata was changed. The attribute passed here must be an Attribute member of this component. */
+    void EmitAttributeMetadataChanged(IAttribute* attribute);
+
     /// @overload
     /** @param attributeName Name of the attribute that changed. @note this is a no-op if the named attribute is not found.
         @param change Informs to the component the type of change that occurred. */
@@ -354,6 +359,9 @@ public slots:
 signals:
     /// This signal is emitted when an Attribute of this Component has changed. 
     void AttributeChanged(IAttribute* attribute, AttributeChange::Type change);
+    
+    /// This signal is emitted when metadata of an Attribute in this Component has changed.
+    void AttributeMetadataChanged(IAttribute *attribute, const AttributeMetadata *metadata);
 
     ///\todo In the future, provide a method of listening to a change of specific Attribute, instead of having to
     /// always connect to the above function and if(...)'ing if it was the change we were interested in.

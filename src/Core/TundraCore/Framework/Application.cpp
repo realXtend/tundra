@@ -65,9 +65,9 @@ const char *Application::organizationName = TUNDRA_ORGANIZATION_NAME;
 const char *Application::applicationName = TUNDRA_APPLICATION_NAME;
 const char *Application::version = TUNDRA_VERSION_STRING;
 
-Application::Application(Framework *owner, int &argc, char **argv) :
+Application::Application(int &argc, char **argv) :
     QApplication(argc, argv),
-    framework(owner),
+    framework(0),
     appActivated(true),
     nativeTranslator(new QTranslator),
     appTranslator(new QTranslator),
@@ -133,6 +133,23 @@ Application::Application(Framework *owner, int &argc, char **argv) :
     // this flag in any case.
     setQuitOnLastWindowClosed(false);
 
+    /// @todo This seems a bit odd here. Would there be a better place and could this be configurable at startup-/run-time?
+#ifndef ANDROID
+    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true); //enable flash
+#endif
+}
+
+Application::~Application()
+{
+    SAFE_DELETE(splashScreen);
+    SAFE_DELETE(nativeTranslator);
+    SAFE_DELETE(appTranslator);
+}
+
+void Application::Initialize(Framework *fw)
+{
+    framework = fw;
+
     QDir dir("data/translations/qt_native_translations");
     QStringList qmFiles = FindQmFiles(dir);
 
@@ -147,24 +164,11 @@ Application::Application(Framework *owner, int &argc, char **argv) :
 
     this->installTranslator(nativeTranslator);
 
-    if (!framework->Config()->HasValue(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language"))
-        framework->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language", "data/translations/tundra_en");
-
-    QString default_language = framework->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language").toString();
-    ChangeLanguage(default_language);
-
-#ifndef ANDROID
-    QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true); //enable flash
-#endif
+    QString defaultLanguage = framework->Config()->DeclareSetting(ConfigAPI::FILE_FRAMEWORK,
+        ConfigAPI::SECTION_FRAMEWORK, "language", "data/translations/tundra_en").toString();
+    ChangeLanguage(defaultLanguage);
 
     ReadTargetFpsLimitFromConfig();
-}
-
-Application::~Application()
-{
-    SAFE_DELETE(splashScreen);
-    SAFE_DELETE(nativeTranslator);
-    SAFE_DELETE(appTranslator);
 }
 
 void Application::InitializeSplash()
@@ -795,9 +799,10 @@ int TUNDRACORE_API run(int argc, char **argv)
         try
 #endif
         {
-            Framework* fw = new Framework(argc, argv);
-            fw->Go();
-            delete fw;
+            Application app(argc, argv);
+            Framework fw(argc, argv, &app);
+            app.Initialize(&fw);
+            fw.Go();
         }
 #if !defined(_DEBUG) || !defined (_MSC_VER)
         catch(std::exception& e)

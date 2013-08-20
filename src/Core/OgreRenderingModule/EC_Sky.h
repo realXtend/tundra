@@ -78,6 +78,8 @@ private:
     AssetRefListenerPtr materialAsset;
     std::vector<AssetRefListenerPtr> textureAssets;
     QString currentMaterial; ///< Ogre resource name for the currently used material.
+    
+    OgreWorldWeakPtr world_;
 
 private slots:
     void OnMaterialAssetLoaded(AssetPtr mat);

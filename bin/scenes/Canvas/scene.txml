@@ -110,7 +110,7 @@
    <attribute value="LoadingScreen.png" name="Output texture"/>
    <attribute value="400" name="Texture width"/>
    <attribute value="400" name="Texture height"/>
-   <attribute value="0" name=""/>
+   <attribute value="0" name="Submesh"/>
   </component>
   <component type="EC_RigidBody" sync="1">
    <attribute value="0" name="Mass"/>
@@ -174,7 +174,7 @@
    <attribute value="LoadingScreen.png" name="Output texture"/>
    <attribute value="400" name="Texture width"/>
    <attribute value="400" name="Texture height"/>
-   <attribute value="0" name=""/>
+   <attribute value="0" name="Submesh"/>
   </component>
   <component type="EC_RigidBody" sync="1">
    <attribute value="0" name="Mass"/>

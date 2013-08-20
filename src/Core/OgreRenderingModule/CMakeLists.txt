@@ -66,6 +66,7 @@ endif()
 # Install windows deps
 setup_install_windows_deps("cg.dll" Release|RelWithDebInfo|Debug)
 setup_install_windows_deps("OgreMain.dll" Release|RelWithDebInfo "OgreMain_d.dll" Debug)
+setup_install_windows_deps("OgreOverlay.dll" Release|RelWithDebInfo "OgreOverlay_d.dll" Debug)
 
 if (TUNDRA_NO_BOOST)
     setup_install_windows_deps("tbb.dll" Release|RelWithDebInfo "tbb_debug.dll" Debug)

@@ -1,20 +1,20 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   SceneTreeWidgetItems.h
- *  @brief  Tree widget -related classes used in @c SceneTreeWidget and @c AssetTreeWidget.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   SceneTreeWidgetItems.h
+    @brief  Tree widget -related classes used in @c SceneTreeWidget and @c AssetTreeWidget. */
 
 #pragma once
 
 #include "SceneFwd.h"
 #include "AssetFwd.h"
+#include "IAttribute.h"
 
 class EntityGroupItem : public QTreeWidgetItem
 {
 public:
-    EntityGroupItem(const QString &groupName);
-    QString GroupName() { return name; }
+    explicit EntityGroupItem(const QString &groupName);
+    QString GroupName() const { return name; }
     void UpdateText();
     
     int numberOfEntities;
@@ -75,6 +75,7 @@ public:
     /// Returns the parent entity item.
     EntityItem *Parent() const;
 
+    u32 typeId; ///< Type ID.
     QString typeName; ///< Type name.
     QString name; ///< Name, if applicable.
 
@@ -84,27 +85,36 @@ private:
 };
 
 /// Tree widget item representing an asset reference.
-class AssetRefItem : public QTreeWidgetItem
+class AttributeItem : public QTreeWidgetItem
 {
 public:
     /// Constructor.
     /** @param attr Asset reference attribute.
         @param parent Parent item. */
+    AttributeItem(IAttribute *attr, QTreeWidgetItem *parent = 0);
+
+    /// Updates the item's text accordingly to the current attribute information.
+    void Update(IAttribute *attr);
+
+    AttributeWeakPtr ptr;
+    QString type; ///< Type name.
+    QString id; ///< ID.
+    QString name; ///< Name.
+    QString value; ///< Value.
+};
+
+/// Tree widget item representing an asset reference attribute.
+class AssetRefItem : public AttributeItem
+{
+public:
+    /// Constructor.
+    /** @param attr AssetReference or AssetReferenceList attribute.
+        @param parent Parent item. */
     AssetRefItem(IAttribute *attr, QTreeWidgetItem *parent = 0);
 
-    /// Constructor.
-    /** @param name Name of the asset.
-        @param ref Asset reference.
-        @param parent Parent item. */
-    AssetRefItem(const QString &assetName, const QString &assetRef, QTreeWidgetItem *parent = 0);
-
-    /// Sets the item text accordingly to the attribute information.
-    /** @param attr Asset reference attribute. */
-    void SetText(IAttribute *attr);
-
-    QString name; ///< Name of the attribute.
-    QString id; ///< ID.
-    QString type; ///< Type. \todo Remove/evaluate if needed.
+    /// Constructor for creating individual items for AssetReferenceList.
+    /** @param assetRef Asset reference. */
+    AssetRefItem(IAttribute *attr, const QString &assetRef, QTreeWidgetItem *parent = 0);
 };
 
 /// Represents selection of SceneTreeWidget items.

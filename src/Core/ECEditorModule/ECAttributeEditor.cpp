@@ -1149,7 +1149,7 @@ template<> void ECAttributeEditor<Color>::Initialize()
     emit EditorChanged(name_);
 }
 
-template<> void ECAttributeEditor<Color>::Set(QtProperty *property)
+template<> void ECAttributeEditor<Color>::Set(QtProperty * /*property*/)
 {
     if(listenEditorChangedSignal_)
     {
@@ -1641,7 +1641,7 @@ template<> void ECAttributeEditor<QVariantList>::Initialize()
     emit EditorChanged(name_);
 }
 
-template<> void ECAttributeEditor<QVariantList>::Set(QtProperty *property)
+template<> void ECAttributeEditor<QVariantList>::Set(QtProperty * /*property*/)
 {
     if (listenEditorChangedSignal_)
     {
@@ -2063,7 +2063,7 @@ template<> void ECAttributeEditor<AssetReferenceList>::Initialize()
     emit EditorChanged(name_);
 }
 
-template<> void ECAttributeEditor<AssetReferenceList>::Set(QtProperty *property)
+template<> void ECAttributeEditor<AssetReferenceList>::Set(QtProperty * /*property*/)
 {
     if (listenEditorChangedSignal_)
     {

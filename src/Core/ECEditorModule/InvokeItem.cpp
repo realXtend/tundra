@@ -92,7 +92,7 @@ void InvokeItem::FromSetting(const QString &str)
         if (!converted)
         {
             QString err("Failed to parse invoke history: could not convert " + value.toString() + " to QVariant::Type " + type);
-            throw Exception(err.toStdString().c_str());
+            throw Exception(err.toStdString().c_str()); //\ todo: is it really necessary to crash the client if history cannot be parsed?
         }
         parameters.push_back(value);
     }

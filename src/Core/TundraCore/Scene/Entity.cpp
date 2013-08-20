@@ -390,8 +390,9 @@ Entity::ComponentVector Entity::ComponentsOfType(u32 typeId) const
 
 ComponentPtr Entity::Component(const QString &type_name, const QString& name) const
 {
+    const QString ecTypeName = IComponent::EnsureTypeNameWithPrefix(type_name);
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
-        if (i->second->TypeName() == type_name && i->second->Name() == name)
+        if (i->second->TypeName() == ecTypeName && i->second->Name() == name)
             return i->second;
 
     return ComponentPtr();

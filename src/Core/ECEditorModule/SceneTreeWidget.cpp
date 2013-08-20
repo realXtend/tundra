@@ -332,7 +332,7 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         saveAsAction = new QAction(tr("Save as..."), menu);
         actionsAction = new QAction(tr("Actions..."), menu);
         functionsAction = new QAction(tr("Functions..."), menu);
-        groupEntitiesAction = new QAction(tr("Group selected entities"), menu);
+        groupEntitiesAction = new QAction(tr("Group selected entities..."), menu);
         ungroupEntitiesAction = new QAction(tr("Ungroup"), menu);
 
         connect(editAction, SIGNAL(triggered()), SLOT(Edit()));
@@ -783,7 +783,7 @@ void SceneTreeWidget::OnCommitData(QWidget * editor)
         EntityPtr entity = entityItem->Entity();
         if (entity)
         {
-            QLineEdit *edit = dynamic_cast<QLineEdit*>(editor);
+            QLineEdit *edit = qobject_cast<QLineEdit*>(editor);
             if (edit)
                 // If there are no changes, restore back the previous stripped entity ID from the item, and restore sorting
                 if (edit->text() == entity->Name())
@@ -1049,6 +1049,15 @@ void SceneTreeWidget::SaveSceneAs()
 
 void SceneTreeWidget::ExportAll()
 {
+    /** @todo @bug This exports the txml and all asset refs found from the selected entities.
+        However the asset refs inside the txml are not modified as relative refs.
+        This can be done on top level refs but any dependencies inside eg. Material files
+        will be harder and needs custom logic per IAsset impl or a generic IAsset::SerializeTo
+        that you can tell if dep refs should be made relative or change the context etc.
+
+        Additionally if the txml contains urlBase1/my.asset and urlBase2/my.asset one
+        of these will be replaced by the other as storing is done by base filename only. */
+
     if (fileDialog)
         fileDialog->close();
 
@@ -1093,7 +1102,7 @@ void SceneTreeWidget::OpenNewScene()
 
 void SceneTreeWidget::OpenEntityActionDialog()
 {
-    QAction *action = dynamic_cast<QAction *>(sender());
+    QAction *action = qobject_cast<QAction *>(sender());
     assert(action);
     if (!action)
         return;
@@ -1160,7 +1169,7 @@ void SceneTreeWidget::EntityActionDialogFinished(int result)
 
 void SceneTreeWidget::OpenFunctionDialog()
 {
-    QAction *action = dynamic_cast<QAction *>(sender());
+    QAction *action = qobject_cast<QAction *>(sender());
     assert(action);
     if (!action)
         return;
@@ -1220,8 +1229,8 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
             QString objName = obj->metaObject()->className();
             QString objNameWithId = objName;
             {
-                Entity *e = dynamic_cast<Entity *>(obj);
-                IComponent *c = dynamic_cast<IComponent *>(obj);
+                Entity *e = qobject_cast<Entity *>(obj);
+                IComponent *c = qobject_cast<IComponent *>(obj);
                 if (e)
                     objNameWithId.append('(' + QString::number((uint)e->Id()) + ')');
                 else if (c && !c->Name().trimmed().isEmpty())
@@ -1271,7 +1280,7 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
 
 void SceneTreeWidget::SaveSelectionDialogClosed(int result)
 {
-    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    QFileDialog *dialog = qobject_cast<QFileDialog *>(sender());
     assert(dialog);
     if (!dialog)
         return;
@@ -1342,7 +1351,7 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
 
 void SceneTreeWidget::SaveSceneDialogClosed(int result)
 {
-    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    QFileDialog *dialog = qobject_cast<QFileDialog *>(sender());
     assert(dialog);
     if (!dialog)
         return;
@@ -1386,7 +1395,7 @@ void SceneTreeWidget::SaveSceneDialogClosed(int result)
 
 void SceneTreeWidget::ExportAllDialogClosed(int result)
 {
-    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    QFileDialog *dialog = qobject_cast<QFileDialog *>(sender());
     assert(dialog);
 
     if (!dialog || result != QDialog::Accepted || dialog->selectedFiles().size() != 1 || scene.expired())
@@ -1407,14 +1416,14 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
         {
             EntityItem *eItem = dynamic_cast<EntityItem *>(topLevelItem(i));
             if (eItem)
-                assets.unite(GetAssetRefs(eItem));
+                assets.unite(GetAssetRefs(eItem, false));
         }
     }
     else
     {
         // Export assets for selected entities
         foreach(EntityItem *eItem, sel.entities)
-            assets.unite(GetAssetRefs(eItem));
+            assets.unite(GetAssetRefs(eItem, false));
     }
 
     savedAssets.clear();
@@ -1434,12 +1443,16 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
     }
 */
 
-    foreach(const QString &assetid, assets)
+    foreach(const QString &assetRef, assets)
     {
-        AssetTransferPtr transfer = framework->Asset()->RequestAsset(assetid);
+        if (assetRef.trimmed().isEmpty())
+            continue;
+        AssetTransferPtr transfer = framework->Asset()->RequestAsset(assetRef);
+        if (!transfer.get())
+            continue;
 
         QString filename = directory.absolutePath();
-        QString assetName = AssetAPI::ExtractFilenameFromAssetRef(assetid);
+        QString assetName = AssetAPI::ExtractFilenameFromAssetRef(assetRef);
         filename += "/" + assetName;
 
         fileSaves.insert(transfer->source.ref, filename);
@@ -1447,7 +1460,7 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
     }
 }
 
-QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
+QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem, bool includeEmptyRefs) const
 {
     assert(scene.lock());
     QSet<QString> assets;
@@ -1467,6 +1480,7 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
 
             const Entity::ComponentMap &components = entity->Components();
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+            {
                 foreach(IAttribute *attr, i->second->Attributes())
                 {
                     if (!attr)
@@ -1476,16 +1490,27 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
                     {
                         Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
                         if (assetRef)
+                        {
+                            if (!includeEmptyRefs && assetRef->Get().ref.trimmed().isEmpty())
+                                continue;
                             assets.insert(assetRef->Get().ref);
+                        }
                     }
                     else if (attr->TypeId() == cAttributeAssetReferenceList)
                     {
                         Attribute<AssetReferenceList> *assetRefs = dynamic_cast<Attribute<AssetReferenceList> *>(attr);
                         if (assetRefs)
+                        {
                             for(int i = 0; i < assetRefs->Get().Size(); ++i)
+                            {
+                                if (!includeEmptyRefs && assetRefs->Get()[i].ref.trimmed().isEmpty())
+                                    continue;
                                 assets.insert(assetRefs->Get()[i].ref);
+                            }
+                        }
                     }
                 }
+            }
         }
     }
 
@@ -1494,7 +1519,7 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
 
 void SceneTreeWidget::OpenFileDialogClosed(int result)
 {
-    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    QFileDialog *dialog = qobject_cast<QFileDialog *>(sender());
     assert(dialog);
     if (!dialog)
         return;
@@ -1519,7 +1544,7 @@ void SceneTreeWidget::OpenFileDialogClosed(int result)
 
 void SceneTreeWidget::InvokeActionTriggered()
 {
-    QAction *action = dynamic_cast<QAction *>(sender());
+    QAction *action = qobject_cast<QAction *>(sender());
     assert(action);
     if (!action)
         return;
@@ -1621,7 +1646,7 @@ void SceneTreeWidget::SaveAssetAs()
 
 void SceneTreeWidget::SaveAssetDialogClosed(int result)
 {
-    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    QFileDialog *dialog = qobject_cast<QFileDialog *>(sender());
     assert(dialog);
 
     if (!dialog || result != QDialog::Accepted || dialog->selectedFiles().isEmpty() || scene.expired())

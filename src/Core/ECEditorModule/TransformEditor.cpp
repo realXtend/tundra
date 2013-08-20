@@ -535,7 +535,7 @@ void TransformEditor::OnGizmoAxisSelected(int axis)
     FocusGizmoPivotToAabbCenter();
 }
 
-void TransformEditor::OnUpdated(float frameTime)
+void TransformEditor::OnUpdated(float /*frameTime*/)
 {
     if (targets.size() && !scene.expired())
     {

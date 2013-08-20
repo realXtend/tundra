@@ -55,7 +55,20 @@ public:
     virtual ~OpenAssetImport();
 
     void Initialize(); ///< IModule override
-    /// Converts collada files to ogre meshes, also parses and genarates ogre materials.
+private slots:
+    void OnAssetCreated(AssetPtr asset);
+    void OnConversionRequest(OgreMeshAsset *asset, const u8 *data, size_t len);
+private:
+    AssetAPI *assetAPI;
+};
+
+class OpenAssetConverter : public QObject
+{
+    Q_OBJECT
+public:
+    OpenAssetConverter(Framework *fw);
+    ~OpenAssetConverter();
+    /// Converts collada files to ogre meshes, also parses and generates ogre materials.
     void Convert(const u8 *data_, size_t numBytes, const QString &fileName, const QString &diskSource, Ogre::MeshPtr mesh);
 
 signals:
@@ -111,8 +124,6 @@ private:
     MeshVector mMeshes;
 
 private slots:
-    void OnAssetCreated(AssetPtr asset);
-    void OnConversionRequest(OgreMeshAsset *asset, const u8 *data, size_t len);
     void OnTextureLoaded(IAssetTransfer* assetTransfer);
     void OnTextureLoadFailed(IAssetTransfer* assetTransfer, QString reason);
 };

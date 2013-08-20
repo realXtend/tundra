@@ -19,6 +19,7 @@
 EntityActionDialog::EntityActionDialog(const QList<EntityWeakPtr> &entities, QWidget *p) :
     QDialog(p, 0)
 {
+    setWindowFlags(Qt::Tool);
     this->entities = entities;
     Initialize();
 }
@@ -26,6 +27,7 @@ EntityActionDialog::EntityActionDialog(const QList<EntityWeakPtr> &entities, QWi
 EntityActionDialog::EntityActionDialog(const QList<EntityWeakPtr> &entities, const InvokeItem &invokeItem, QWidget *p) :
     QDialog(p, 0)
 {
+    setWindowFlags(Qt::Tool);
     this->entities = entities;
     Initialize();
 

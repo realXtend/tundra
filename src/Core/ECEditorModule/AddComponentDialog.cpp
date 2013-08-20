@@ -202,7 +202,7 @@ void AddComponentDialog::CheckTempAndSync()
     temp_check_box_->setStyleSheet(temp_check_box_->isChecked() ? "color: red;" : "color: black;");
 }
 
-void AddComponentDialog::hideEvent(QHideEvent *event)
+void AddComponentDialog::hideEvent(QHideEvent * /*event*/)
 {
     deleteLater();
 }

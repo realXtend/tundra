@@ -28,12 +28,10 @@ Licensed under the MIT license:
 
 //#define SKELETON_ENABLED
 
-int OpenAssetImport::msBoneCount = 0;
+int OpenAssetConverter::msBoneCount = 0;
 
 OpenAssetImport::OpenAssetImport() :
-    IModule("OpenAssetImport"),
-    meshCreated(false),
-    texCount(0)
+    IModule("OpenAssetImport")
 {
 }
 
@@ -50,16 +48,30 @@ void OpenAssetImport::Initialize()
 void OpenAssetImport::OnAssetCreated(AssetPtr asset)
 {
     OgreMeshAsset *meshAsset = dynamic_cast<OgreMeshAsset*>(asset.get());
-    if (meshAsset)
+    if (meshAsset && meshAsset->IsAssimpFileType())
     {
         connect(meshAsset, SIGNAL(ExternalConversionRequested(OgreMeshAsset*, const u8*, size_t)), SLOT(OnConversionRequest(OgreMeshAsset*, const u8*, size_t)), Qt::UniqueConnection);
-        connect(this, SIGNAL(ConversionDone(bool)), meshAsset, SLOT(OnAssimpConversionDone(bool)), Qt::UniqueConnection);
     }
 }
 
+
 void OpenAssetImport::OnConversionRequest(OgreMeshAsset *asset, const u8 *data, size_t len)
 {
-    Convert(data, len, asset->Name(), asset->DiskSource(), asset->ogreMesh);
+    OpenAssetConverter *converter = new OpenAssetConverter(GetFramework());
+    connect(converter, SIGNAL(ConversionDone(bool)), asset, SLOT(OnAssimpConversionDone(bool)), Qt::UniqueConnection);
+    converter->Convert(data, len, asset->Name(), asset->DiskSource(), asset->ogreMesh);
+}
+
+OpenAssetConverter::OpenAssetConverter(Framework *fw) :
+    assetAPI(fw->Asset()),
+    meshCreated(false),
+    texCount(0)
+{
+}
+
+OpenAssetConverter::~OpenAssetConverter()
+{
+    disconnect();
 }
 
 /**************************************************************************
@@ -80,7 +92,7 @@ and texturePath = http://.../texture.jpg
 return value is http://.../texture.jpg
 ***************************************************************************/
 
-QString OpenAssetImport::GetPathToTexture(const QString &meshFileName, const QString &meshFileDiskSource, QString &texturePath)
+QString OpenAssetConverter::GetPathToTexture(const QString &meshFileName, const QString &meshFileDiskSource, QString &texturePath)
 {
     texturePath.replace("\\", "/"); // Normalize all path separators to use forward slashes.
     QString path;
@@ -147,7 +159,7 @@ QString OpenAssetImport::GetPathToTexture(const QString &meshFileName, const QSt
 }
 
 //Loads texture file from disk or from http asset server.
-void OpenAssetImport::LoadTextureFile(QString &filename)
+void OpenAssetConverter::LoadTextureFile(QString &filename)
 {
 
     //Loads the texture from http address
@@ -184,7 +196,7 @@ void OpenAssetImport::LoadTextureFile(QString &filename)
     }
 }
 
-void OpenAssetImport::SetTexture(QString &texFile)
+void OpenAssetConverter::SetTexture(QString &texFile)
 {
     Ogre::MaterialPtr ogreMat = texMatMap.find(texFile)->second;
     ogreMat->getTechnique(0)->getPass(0)->createTextureUnitState(AssetAPI::SanitateAssetRef(texFile.toStdString()));
@@ -196,13 +208,13 @@ void OpenAssetImport::SetTexture(QString &texFile)
         emit ConversionDone(true);
 }
 
-void OpenAssetImport::OnTextureLoaded(IAssetTransfer* assetTransfer)
+void OpenAssetConverter::OnTextureLoaded(IAssetTransfer* assetTransfer)
 {
     QString texFile = assetTransfer->Asset()->Name();
     SetTexture(texFile);
 }
 
-void OpenAssetImport::OnTextureLoadFailed(IAssetTransfer* assetTransfer, QString reason)
+void OpenAssetConverter::OnTextureLoadFailed(IAssetTransfer* assetTransfer, QString reason)
 {
     QString texFile = assetTransfer->Asset()->Name();
     LogError("AssImp importer::createMaterial: Failed to load texture file " +texFile.toStdString()+ " reason: " + reason.toStdString());
@@ -212,12 +224,9 @@ void OpenAssetImport::OnTextureLoadFailed(IAssetTransfer* assetTransfer, QString
         emit ConversionDone(true); //mesh created succesfully without textures
 }
 
-bool OpenAssetImport::PendingTextures()
+bool OpenAssetConverter::PendingTextures()
 {
-    if(texMatMap.empty())
-        return true;
-    else
-        return false;
+    return texMatMap.empty();
 }
 
 aiMatrix4x4 UpdateAnimationFunc(const aiScene * scene, aiNodeAnim * pchannel, Ogre::Real val, float & ticks, aiMatrix4x4 & mat)
@@ -405,8 +414,9 @@ void GetBasePose(const aiScene * sc, const aiNode * nd)
     }
 }
 
-void OpenAssetImport::Convert(const u8 *data_, size_t numBytes, const QString &fileName, const QString &diskSource, Ogre::MeshPtr mesh)
+void OpenAssetConverter::Convert(const u8 *data_, size_t numBytes, const QString &fileName, const QString &diskSource, Ogre::MeshPtr mesh)
 {
+    meshCreated = false;
     LogInfo("AssImp importer: Converting file:" +fileName.toStdString());
     Assimp::DefaultLogger::create("asslogger.log",Assimp::Logger::VERBOSE);
     mAnimationSpeedModifier = 1.0f;
@@ -582,11 +592,12 @@ void OpenAssetImport::Convert(const u8 *data_, size_t numBytes, const QString &f
 	
     if(meshCreated && PendingTextures())
         emit ConversionDone(true);
-
 }
 
-void OpenAssetImport::ParseAnimation (const aiScene* mScene, int index, aiAnimation* anim)
+void OpenAssetConverter::ParseAnimation (const aiScene* mScene, int index, aiAnimation* anim)
 {
+    UNREFERENCED_PARAM(mScene);
+
     // DefBonePose a matrix that represents the local bone transform (can build from Ogre bone components)
     // PoseToKey a matrix representing the keyframe translation
     // What assimp stores aiNodeAnim IS the decomposed form of the transform (DefBonePose * PoseToKey)
@@ -667,7 +678,7 @@ void OpenAssetImport::ParseAnimation (const aiScene* mScene, int index, aiAnimat
     mSkeleton->optimiseAllAnimations();
 }
 
-void OpenAssetImport::MarkAllChildNodesAsNeeded(const aiNode *pNode)
+void OpenAssetConverter::MarkAllChildNodesAsNeeded(const aiNode *pNode)
 {
     FlagNodeAsNeeded(pNode->mName.data);
     // Traverse all child nodes of the current node instance
@@ -678,7 +689,7 @@ void OpenAssetImport::MarkAllChildNodesAsNeeded(const aiNode *pNode)
     }
 }
 
-void OpenAssetImport::GrabNodeNamesFromNode(const aiScene* mScene, const aiNode* pNode)
+void OpenAssetConverter::GrabNodeNamesFromNode(const aiScene* mScene, const aiNode* pNode)
 {
     boneNode bNode;
     bNode.node = const_cast<aiNode*>(pNode);
@@ -702,7 +713,7 @@ void OpenAssetImport::GrabNodeNamesFromNode(const aiScene* mScene, const aiNode*
 }
 
 
-void OpenAssetImport::ComputeNodesDerivedTransform(const aiScene* mScene,  const aiNode *pNode, const aiMatrix4x4 accTransform)
+void OpenAssetConverter::ComputeNodesDerivedTransform(const aiScene* mScene,  const aiNode *pNode, const aiMatrix4x4 accTransform)
 {
     if(mNodeDerivedTransformByName.find(pNode->mName.data) == mNodeDerivedTransformByName.end())
     {
@@ -715,7 +726,7 @@ void OpenAssetImport::ComputeNodesDerivedTransform(const aiScene* mScene,  const
     }
 }
 
-void OpenAssetImport::CreateBonesFromNode(const aiScene* mScene,  const aiNode *pNode)
+void OpenAssetConverter::CreateBonesFromNode(const aiScene* mScene,  const aiNode *pNode)
 {
     if(IsNodeNeeded(pNode->mName.data))
     {
@@ -746,7 +757,7 @@ void OpenAssetImport::CreateBonesFromNode(const aiScene* mScene,  const aiNode *
     }
 }
 
-void OpenAssetImport::CreateBoneHiearchy(const aiScene* mScene,  const aiNode *pNode)
+void OpenAssetConverter::CreateBoneHiearchy(const aiScene* mScene,  const aiNode *pNode)
 {
     if(IsNodeNeeded(pNode->mName.data))
     {
@@ -776,7 +787,7 @@ void OpenAssetImport::CreateBoneHiearchy(const aiScene* mScene,  const aiNode *p
     }
 }
 
-void OpenAssetImport::FlagNodeAsNeeded(const char* name)
+void OpenAssetConverter::FlagNodeAsNeeded(const char* name)
 {
     BoneMapType::iterator iter = boneMap.find(Ogre::String(name));
     if(iter != boneMap.end())
@@ -785,7 +796,7 @@ void OpenAssetImport::FlagNodeAsNeeded(const char* name)
     }
 }
 
-bool OpenAssetImport::IsNodeNeeded(const char* name)
+bool OpenAssetConverter::IsNodeNeeded(const char* name)
 {
     BoneMapType::iterator iter = boneMap.find(Ogre::String(name));
     if(iter != boneMap.end())
@@ -795,7 +806,7 @@ bool OpenAssetImport::IsNodeNeeded(const char* name)
     return false;
 }
 
-void OpenAssetImport::GrabBoneNamesFromNode(const aiScene* mScene,  const aiNode *pNode)
+void OpenAssetConverter::GrabBoneNamesFromNode(const aiScene* mScene,  const aiNode *pNode)
 {
 
     if(pNode->mNumMeshes > 0)
@@ -853,7 +864,7 @@ void OpenAssetImport::GrabBoneNamesFromNode(const aiScene* mScene,  const aiNode
     }
 }
 
-Ogre::MaterialPtr OpenAssetImport::CreateVertexColorMaterial()
+Ogre::MaterialPtr OpenAssetConverter::CreateVertexColorMaterial()
 {
     Ogre::MaterialManager* ogreMaterialMgr = Ogre::MaterialManager::getSingletonPtr();
     Ogre::String materialName = "vertexcolor.material";
@@ -873,7 +884,7 @@ Ogre::MaterialPtr OpenAssetImport::CreateVertexColorMaterial()
     return ogreMaterial;
 }
 
-Ogre::MaterialPtr OpenAssetImport::CreateMaterial(Ogre::String& matName, const aiMaterial* mat, const QString &meshFileDiskSource, const QString &meshFileName)
+Ogre::MaterialPtr OpenAssetConverter::CreateMaterial(Ogre::String& matName, const aiMaterial* mat, const QString &meshFileDiskSource, const QString &meshFileName)
 {
     std::ostringstream matname;
     Ogre::MaterialManager* ogreMaterialMgr =  Ogre::MaterialManager::getSingletonPtr();
@@ -954,7 +965,7 @@ Ogre::MaterialPtr OpenAssetImport::CreateMaterial(Ogre::String& matName, const a
     return ogreMaterial;
 }
 
-bool OpenAssetImport::CreateVertexData(const Ogre::String& name, const aiNode* pNode, const aiMesh *mesh, Ogre::SubMesh* submesh, Ogre::AxisAlignedBox& mAAB)
+bool OpenAssetConverter::CreateVertexData(const Ogre::String& name, const aiNode* pNode, const aiMesh *mesh, Ogre::SubMesh* submesh, Ogre::AxisAlignedBox& mAAB)
 {
     // if animated all submeshes must have bone weights
     if(mBonesByName.size() && !mesh->HasBones())
@@ -1183,7 +1194,7 @@ bool OpenAssetImport::CreateVertexData(const Ogre::String& name, const aiNode* p
     return true;
 }
 
-void OpenAssetImport::LoadDataFromNode(const aiScene* mScene,  const aiNode *pNode, const QString &meshFileDiskSource, const QString &meshFileName,Ogre::MeshPtr mesh)
+void OpenAssetConverter::LoadDataFromNode(const aiScene* mScene,  const aiNode *pNode, const QString &meshFileDiskSource, const QString &meshFileName,Ogre::MeshPtr mesh)
 {
     if(pNode->mNumMeshes > 0)
     {

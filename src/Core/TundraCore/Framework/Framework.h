@@ -5,9 +5,12 @@
 #include "TundraCoreApi.h"
 #include "FrameworkFwd.h"
 #include "CoreTypes.h"
+#include "CoreStringUtils.h"
 
 #include <QObject>
 #include <QStringList>
+
+#include <map>
 
 #ifdef ANDROID
 #include <jni.h>
@@ -21,8 +24,9 @@ class TUNDRACORE_API Framework : public QObject
 public:
     /// Constructs and initializes the framework.
     /** @param argc Command line argument count as provided by the operating system.
-        @param argv Command line arguments as provided by the operating system. */
-    Framework(int argc, char** argv);
+        @param argv Command line arguments as provided by the operating system.
+        @param app The application instance. */
+    Framework(int argc, char** argv, Application *app);
 
     ~Framework();
 
@@ -159,6 +163,12 @@ public slots:
         @param key Key with possible prefixes, case-insensitive */
     QStringList CommandLineParameters(const QString &key) const;
 
+    /// Returns list of all the config XML filenames specified on command line or within another config XML
+    QStringList ConfigFiles() const { return configFiles; }
+
+    /// Processes command line options and stores them into a multimap
+    void ProcessStartupOptions();
+
     /// Prints to console all the used startup options.
     void PrintStartupOptions();
 
@@ -169,8 +179,11 @@ public slots:
     IModule *GetModuleByName(const QString &name) const { return ModuleByName(name); } /**< @deprecated Use ModuleByName instead. @todo Add deprecation warning print. @todo Remove. */
 
 private:
+    /// Adds new command line parameter (option | value pair) to the unordered multimap
+    void AddCommandLineParameter(const QString &command, const QString &parameter);
+
     /// Appends all found startup options from the given file to the startupOptions member.
-    void LoadStartupOptionsFromXML(QString configurationFile);
+    bool LoadStartupOptionsFromXML(QString configurationFile);
 
     /// Appends startup options from a commandline file, Android only
 #ifdef ANDROID
@@ -195,8 +208,23 @@ private:
     PluginAPI *plugin;
     IRenderer *renderer;
 
-    /// Stores all command line parameters and startup options specified in the Config XML files.
-    QStringList startupOptions;
+    /// Sorts OptionsMap by options' insertion order.
+    struct OptionMapLessThan
+    {
+        bool operator()(const std::pair<int, QString> &op1, const std::pair<int, QString> &op2) const
+        {
+            return op1.first < op2.first;
+        }
+    };
+
+    typedef std::multimap<QString, std::pair<int, QString>, QStringLessThanNoCase> OptionsMap;
+    typedef std::pair<OptionsMap::const_iterator, OptionsMap::const_iterator> OptionsMapIteratorPair;
+    
+    /// Stores all command line parameters and expanded options specified in the Config XML files, except for the config file(s) themselves.
+    OptionsMap startupOptions;
+
+    /// Stores config XML filenames
+    QStringList configFiles;
 
     /// Framework owns the memory of all the modules in the system. These are freed when Framework is exiting.
     std::vector<shared_ptr<IModule> > modules;

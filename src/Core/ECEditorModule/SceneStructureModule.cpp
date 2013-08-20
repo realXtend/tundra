@@ -119,7 +119,7 @@ void SceneStructureModule::Uninitialize()
     SaveWindowPosition(keyBindingsWindow.data(), cKeyBindingsWindowPos);
 }
 
-void SceneStructureModule::InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool clearScene)
+void SceneStructureModule::InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool /*clearScene*/)
 {
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
@@ -539,7 +539,7 @@ void SceneStructureModule::HandleDragEnterEvent(QDragEnterEvent *e, QGraphicsIte
     e->setAccepted(accept);
 }
 
-void SceneStructureModule::HandleDragLeaveEvent(QDragLeaveEvent *e)
+void SceneStructureModule::HandleDragLeaveEvent(QDragLeaveEvent * /*e*/)
 {
     if (!toolTipWidget)
         return;

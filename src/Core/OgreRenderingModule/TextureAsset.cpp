@@ -340,7 +340,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
                 try
                 {
                     LogDebug("Resizing image from " + QString::number(image.getWidth()) + "x" + QString::number(image.getHeight()) + " to " + QString::number(outWidth) + "x" + QString::number(outHeight));
-                    image.resize(outWidth, outHeight);
+                    image.resize((ushort)outWidth, (ushort)outHeight);
                 }
                 catch (Ogre::Exception& e)
                 {
@@ -1033,7 +1033,7 @@ void TextureAsset::ProcessDDSImage(Ogre::DataStreamPtr& stream, std::vector<u8>&
     // check if this is a valid dds file by the image type id
     bool isValidDdsFile = isMagicValid && isDXT;
 
-    size_t totalSizeOfTheSkipTopLevels = 0;
+    long totalSizeOfTheSkipTopLevels = 0;
 
     size_t outWidth, outHeight;
     CalculateTextureSize(header.dwWidth, header.dwHeight, outWidth, outHeight, isDXT1 ? 4 : 8);
