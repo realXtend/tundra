@@ -8,8 +8,8 @@ macro (configure_zziplib)
     endif()
     
     sagase_configure_package(ZZIPLIB
-        NAMES zziplib zzip # zzip find headers. Important in NAMES so it will pick up /include instead of /include/zzip
-        COMPONENTS zziplib zzip zziplibd zzipd
+        NAMES zziplib zzip zziplibd zzipd # zzip find headers. Important in NAMES so it will pick up /include instead of /include/zzip
+        COMPONENTS zziplib zzip
         PREFIXES ${ZZIPLIB_ROOT} ${ENV_TUNDRA_DEP_PATH})
     
     sagase_configure_report (ZZIPLIB)
