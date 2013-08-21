@@ -6,7 +6,7 @@ md build
 copy README.md build
 copy LICENSE build\LICENSE.txt
 copy WhatsNew.txt build
-copy tools\Windows\Installer\VS2008\vcredist_x86.exe build\vcredist.exe
+copy tools\Windows\Installer\VS2008\vcredist_x64.exe build\vcredist.exe
 copy tools\Windows\Installer\oalinst.exe build
 copy tools\Windows\Installer\dxwebsetup.exe build
 xcopy bin\*.* build /S /C /Y
