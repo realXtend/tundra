@@ -63,7 +63,7 @@
 /// @note Modify these values from the root CMakeLists.txt if you are making a custom Tundra build.
 const char *Application::organizationName = TUNDRA_ORGANIZATION_NAME;
 const char *Application::applicationName = TUNDRA_APPLICATION_NAME;
-const char *Application::version = TUNDRA_VERSION_STRING;
+const char *Application::version = TUNDRA_VERSION_STRING TUNDRA_VERSION_POSTFIX;
 
 Application::Application(int &argc, char **argv) :
     QApplication(argc, argv),

@@ -43,8 +43,16 @@
 #endif
 
 /** @def TUNDRA_VERSION_STRING
-    The Tundra application's version as a string, by default this is simply the version numbers concatenated while omitting possible trailing zeros, f.ex. "2.5.1".
+    The Tundra application's version as a string, by default this is simply the version numbers
+    concatenated while omitting possible trailing zeros, f.ex. "2.5.1".
     @note This is the authoritative source of the Application's version information.*/
 #ifndef TUNDRA_VERSION_STRING
 #define TUNDRA_VERSION_STRING "2.5.1"
+#endif
+
+/** @def TUNDRA_VERSION_POSTFIX
+    Postfix that is appended to the TUNDRA_VERSION_STRING in Application.cpp, an empty string by default.
+    Can be specified during the CMake invocation f.ex. when building automated nightly releases. */
+#ifndef TUNDRA_VERSION_POSTFIX
+#define TUNDRA_VERSION_POSTFIX ""
 #endif
