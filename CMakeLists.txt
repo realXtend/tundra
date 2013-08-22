@@ -10,13 +10,13 @@ if (COMMAND cmake_policy)
 endif()
 
 # If the following are undefined, the default values in TundraVersionInfo.h are used.
-#add_definitions(-DTUNDRA_VERSION_MAJOR=1)
-#add_definitions(-DTUNDRA_VERSION_MINOR=2)
-#add_definitions(-DTUNDRA_VERSION_MAJOR_PATCH=3)
-#add_definitions(-DTUNDRA_VERSION_MINOR_PATCH=4)
-#add_definitions(-DTUNDRA_ORGANIZATION_NAME="\\"MyOrganization\\"")
-#add_definitions(-DTUNDRA_APPLICATION_NAME="\\"MyApplication\\"")
-#add_definitions(-DTUNDRA_VERSION_STRING="\\"1.2.3.4\\"")
+add_definitions(-DTUNDRA_ORGANIZATION_NAME="Meshmoon")
+add_definitions(-DTUNDRA_APPLICATION_NAME="Rocket")
+add_definitions(-DTUNDRA_VERSION_STRING="2.5.1.2")
+add_definitions(-DTUNDRA_VERSION_MAJOR=2)
+add_definitions(-DTUNDRA_VERSION_MINOR=5)
+add_definitions(-DTUNDRA_VERSION_MAJOR_PATCH=1)
+add_definitions(-DTUNDRA_VERSION_MINOR_PATCH=2)
 # TUNDRA_VERSION_POSTFIX can be used to append information to the version string f.ex.
 # when doing automated nightly builds or release candidates.
 if (DEFINED TUNDRA_VERSION_POSTFIX)
@@ -397,7 +397,6 @@ if (NOT TUNDRA_NO_BOOST)
     configure_boost()
 endif()
 configure_qt4()
-configure_qjson()
 if (NOT APPLE) # Python and PythonQt are not available currently on Mac.
     if ("$ENV{TUNDRA_PYTHON_ENABLED}" STREQUAL "TRUE") 
         configure_python()
