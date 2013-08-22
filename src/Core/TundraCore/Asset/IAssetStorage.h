@@ -62,8 +62,8 @@ public:
     }
     static TrustState TrustStateFromString(const QString &s)
     {
-        if (!s.compare("true", Qt::CaseInsensitive)) return StorageTrusted;
-        if (!s.compare("ask", Qt::CaseInsensitive)) return StorageAskTrust;
+        if (s.compare("true", Qt::CaseInsensitive) == 0) return StorageTrusted;
+        if (s.compare("ask", Qt::CaseInsensitive) == 0) return StorageAskTrust;
         return StorageUntrusted;
     }
 

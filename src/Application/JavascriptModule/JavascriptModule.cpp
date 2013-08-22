@@ -326,7 +326,7 @@ EC_Script* JavascriptModule::FindScriptApplication(EC_Script* instance, const QS
     for(unsigned i = 0; i < scripts.size(); ++i)
     {
         const QString& name = scripts[i]->applicationName.Get();
-        if (!name.isEmpty() && !name.trimmed().compare(appName, Qt::CaseInsensitive))
+        if (!name.isEmpty() && name.trimmed().compare(appName, Qt::CaseInsensitive) == 0)
             return scripts[i].get();
     }
 
