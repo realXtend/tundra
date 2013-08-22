@@ -94,7 +94,7 @@ Application::Application(int &argc, char **argv) :
         {
             // Conversion failed. Is this the last number in the string? Maybe some kind of
             // postfix is used, "-RC1" or " RC1" or similar f.ex., so handle that.
-            if (i == numberList.size() - 1)
+            if (i == numberList.size() - 1 || i == 3)
             {
                 QStringList lastNumber = numberList[i].split(QRegExp("[^0-9]"));
                 if (!lastNumber.isEmpty())
