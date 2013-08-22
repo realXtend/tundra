@@ -188,7 +188,7 @@ public:
     Attribute<T> *AttributeByName(const QString &name) const
     {
         for(size_t i = 0; i < attributes.size(); ++i)
-            if (attributes[i] && !attributes[i]->Name().compare(name, Qt::CaseInsensitive))
+            if (attributes[i] && attributes[i]->Name().compare(name, Qt::CaseInsensitive) == 0)
                 return dynamic_cast<Attribute<T> *>(&attributes[i]);
         return 0;
     }
@@ -202,7 +202,7 @@ public:
     Attribute<T> *AttributeById(const QString &id) const
     {
         for(size_t i = 0; i < attributes.size(); ++i)
-            if (attributes[i] && !attributes[i]->Id().compare(id, Qt::CaseInsensitive))
+            if (attributes[i] && attributes[i]->Id().compare(id, Qt::CaseInsensitive) == 0)
                 return dynamic_cast<Attribute<T> *>(&attributes[i]);
         return 0;
     }
@@ -240,7 +240,7 @@ public:
     {
         LogWarning("IComponent::GetAttribute<T> is deprecated and will be removed. Use AttributeByName<T> or AttributeById<T> instead");
         for(size_t i = 0; i < attributes.size(); ++i)
-            if (attributes[i] && !attributes[i]->Name().compare(name, Qt::CaseInsensitive))
+            if (attributes[i] && attributes[i]->Name().compare(name, Qt::CaseInsensitive) == 0)
                 return dynamic_cast<Attribute<T> *>(&attributes[i]);
         return 0;
     }

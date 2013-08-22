@@ -1075,8 +1075,8 @@ SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) 
                     compDesc.attributes.append(attrDesc);
 
                     QString attrValue = QString(a->ToString().c_str()).trimmed();
-                    if ((!typeName.compare("AssetReference", Qt::CaseInsensitive) || !typeName.compare("AssetReferenceList", Qt::CaseInsensitive) || 
-                        (a->Metadata() && !a->Metadata()->elementType.compare("AssetReference", Qt::CaseInsensitive))) &&
+                    if ((typeName.compare("AssetReference", Qt::CaseInsensitive) == 0 || typeName.compare("AssetReferenceList", Qt::CaseInsensitive) == 0|| 
+                        (a->Metadata() && a->Metadata()->elementType.compare("AssetReference", Qt::CaseInsensitive) == 0)) &&
                         !attrValue.isEmpty())
                     {
                         // We might have multiple references, ";" used as a separator.
@@ -1262,8 +1262,8 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
                                 compDesc.attributes.append(attrDesc);
 
                                 QString attrValue = QString(a->ToString().c_str()).trimmed();
-                                if ((!typeName.compare("AssetReference", Qt::CaseInsensitive) || !typeName.compare("AssetReferenceList", Qt::CaseInsensitive) || 
-                                    (a->Metadata() && !a->Metadata()->elementType.compare("AssetReference", Qt::CaseInsensitive))) &&
+                                if ((typeName.compare("AssetReference", Qt::CaseInsensitive) == 0 || typeName.compare("AssetReferenceList", Qt::CaseInsensitive) == 0 || 
+                                    (a->Metadata() && a->Metadata()->elementType.compare("AssetReference", Qt::CaseInsensitive) == 0)) &&
                                     !attrValue.isEmpty())
                                 {
                                     // We might have multiple references, ";" used as a separator.

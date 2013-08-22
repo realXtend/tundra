@@ -159,7 +159,7 @@ AssetMap AssetAPI::AssetsOfType(const QString& type) const
 {
     AssetMap ret;
     for(AssetMap::const_iterator i = assets.begin(); i != assets.end(); ++i)
-        if (!i->second->Type().compare(type, Qt::CaseInsensitive))
+        if (i->second->Type().compare(type, Qt::CaseInsensitive) == 0)
             ret[i->first] = i->second;
     return ret;
 }

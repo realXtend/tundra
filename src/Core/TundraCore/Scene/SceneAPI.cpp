@@ -185,7 +185,7 @@ u32 SceneAPI::AttributeTypeIdForTypeName(const QString &attributeTypename)
 {
     for (int i = 0; i < attributeTypeNames.size(); ++i)
     {
-        if (!attributeTypeNames[i].compare(attributeTypename, Qt::CaseInsensitive))
+        if (attributeTypeNames[i].compare(attributeTypename, Qt::CaseInsensitive) == 0)
             return i + 1; // 0 is illegal, actual types start from 1
     }
     return 0;
