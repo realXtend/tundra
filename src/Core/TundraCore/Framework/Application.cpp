@@ -63,7 +63,7 @@
 /// @note Modify these values from the root CMakeLists.txt if you are making a custom Tundra build.
 const char *Application::organizationName = TUNDRA_ORGANIZATION_NAME;
 const char *Application::applicationName = TUNDRA_APPLICATION_NAME;
-const char *Application::version = TUNDRA_VERSION_STRING;
+const char *Application::version = TUNDRA_VERSION_STRING TUNDRA_VERSION_POSTFIX;
 
 Application::Application(int &argc, char **argv) :
     QApplication(argc, argv),
@@ -179,7 +179,7 @@ void Application::InitializeSplash()
     if (!splashScreen)
     {
         QString runDir = InstallationDirectory();
-        splashScreen = new QSplashScreen(QPixmap(runDir + "/data/ui/images/realxtend_tundra_splash.png"));
+        splashScreen = new QSplashScreen(QPixmap(runDir + "/data/ui/images/adminotech_tundra_splash.png"));
         splashScreen->setFont(QFont("Calibri", 9));
         splashScreen->show();
         splashScreen->activateWindow();
@@ -205,7 +205,7 @@ void Application::SetSplashMessage(const QString &message)
     {
         // Call QApplication::processEvents() to update splash painting as at this point main loop is not running yet
         QString finalMessage = "v" + QString(Application::Version()) + " - " + message.toUpper();
-        splashScreen->showMessage(finalMessage, Qt::AlignBottom|Qt::AlignLeft, QColor(240, 240, 240));
+        splashScreen->showMessage(finalMessage, Qt::AlignBottom|Qt::AlignLeft, QColor(25, 25, 25));
         processEvents();
     }
 }
