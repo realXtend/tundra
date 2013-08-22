@@ -397,7 +397,8 @@ namespace OgreRenderer
             rendersystem_name = "NULL Rendering Subsystem";
 
         textureQuality = (Renderer::TextureQualitySetting)framework->Config()->Get(configData, "texture quality").toInt();
-        textureBudget = framework->Config()->Get(configData, "texture budget").toInt();
+
+        textureBudget = framework->Config()->DeclareSetting(configData, "texture budget", DEFAULT_TEXTURE_BUDGET).toInt();
         
         if (framework->HasCommandLineParameter("--texturebudget"))
         {
