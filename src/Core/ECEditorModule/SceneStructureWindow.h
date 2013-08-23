@@ -46,9 +46,6 @@ public:
         @param newScene Scene. */
     void SetScene(const ScenePtr &newScene);
 
-    /// Event filter to catch and react to child widget events
-    virtual bool eventFilter(QObject *obj, QEvent *e);
-
     enum AttributeMode
     {
         DoNotShowAttributes, ///< Do not show attributes.
