@@ -1158,24 +1158,17 @@ void MumblePlugin::UpdatePositionalInfo(VoicePacketInfo &packetInfo)
     Scene *scene = framework_->Renderer()->MainCameraScene();
 
     Entity *activeListener = 0;
-    EntityList listenerEnts = scene->GetEntitiesWithComponent(EC_SoundListener::TypeNameStatic());
-    for(EntityList::const_iterator iter = listenerEnts.begin(); iter != listenerEnts.end(); ++iter)
-    {
-        Entity *ent = (*iter).get();
-        if (ent)
+    std::vector<shared_ptr<EC_SoundListener> > listeners = scene->Components<EC_SoundListener>();
+    for(size_t i = 0; i < listeners.size(); ++i)
+        if (listeners[i]->active.Get())
         {
-            EC_SoundListener *listener = ent->GetComponent<EC_SoundListener>().get();
-            if (listener && listener->ParentEntity() && listener->active.Get())
-            {
-                activeListener = listener->ParentEntity();
-                break;
-            }
+            activeListener = listeners[i]->ParentEntity();
+            break;
         }
-    }
 
     if (activeListener)
     {
-        EC_Placeable *placeable = activeListener->GetComponent<EC_Placeable>().get();
+        EC_Placeable *placeable = activeListener->Component<EC_Placeable>().get();
         if (placeable)
         {
             float3 worldPos = placeable->WorldPosition();

@@ -45,19 +45,19 @@ void EC_ProximityTrigger::Update(float /*timeStep*/)
     Scene* scene = entity->ParentScene();
     if (!scene)
         return;
-    EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
+    EC_Placeable* placeable = entity->Component<EC_Placeable>().get();
     if (!placeable)
         return;
 
     float3 pos = placeable->WorldPosition();
 
-    EntityList otherTriggers = scene->GetEntitiesWithComponent(EC_ProximityTrigger::TypeNameStatic());
+    EntityList otherTriggers = scene->EntitiesWithComponent<EC_ProximityTrigger>();
     for(EntityList::iterator i = otherTriggers.begin(); i != otherTriggers.end(); ++i)
     {
         Entity* otherEntity = (*i).get();
         if (otherEntity != entity)
         {
-            EC_Placeable* otherPlaceable = otherEntity->GetComponent<EC_Placeable>().get();
+            EC_Placeable* otherPlaceable = otherEntity->Component<EC_Placeable>().get();
             if (!otherPlaceable)
                 continue;
 
