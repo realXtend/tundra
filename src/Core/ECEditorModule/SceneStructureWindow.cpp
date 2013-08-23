@@ -49,10 +49,7 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     expandAndCollapseButton->setFixedHeight(22);
 
     searchField = new QLineEdit(this);
-    /// @todo use searchField->setPlaceholderText(); instead of manual custom implementation for "Search..." text.
-    searchField->setText(tr("Search..."));
-    searchField->setStyleSheet("color:grey;");
-    searchField->installEventFilter(this);
+    searchField->setPlaceholderText(tr("Search..."));
     searchField->setFixedHeight(20);
 
     QLabel *sortLabel = new QLabel(tr("Sort by"), this);
@@ -377,9 +374,8 @@ void SceneStructureWindow::AddEntity(Entity* entity)
         AddComponent(entity, i->second.get());
 
     // If we have an ongoing search, make sure that the new item is compared too.
-    QString searchFilter = searchField->text().trimmed();
-    if (!searchFilter.isEmpty() && searchFilter != tr("Search..."))
-        TreeWidgetSearch(treeWidget, 0, searchFilter);
+    if (!searchField->text().isEmpty())
+        TreeWidgetSearch(treeWidget, 0, searchField->text());
 }
 
 void SceneStructureWindow::AckEntity(Entity* entity, entity_id_t oldId)
@@ -473,9 +469,8 @@ void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
     CreateAttributesForComponent(cItem);
 
     // If we have an ongoing search, make sure that the new item is compared too.
-    QString searchFilter = searchField->text().trimmed();
-    if (!searchFilter.isEmpty() && searchFilter != tr("Search..."))
-        TreeWidgetSearch(treeWidget, 0, searchFilter);
+    if (!searchField->text().isEmpty())
+        TreeWidgetSearch(treeWidget, 0, searchField->text());
 }
 
 void SceneStructureWindow::RemoveComponent(Entity* entity, IComponent* comp)
@@ -743,42 +738,6 @@ void SceneStructureWindow::UpdateComponentName(const QString & /*oldName*/, cons
 void SceneStructureWindow::Sort(int column)
 {
     treeWidget->sortItems(column, treeWidget->header()->sortIndicatorOrder());
-}
-
-bool SceneStructureWindow::eventFilter(QObject *obj, QEvent *e)
-{
-    if (searchField && searchField == obj)
-    {
-        switch (e->type())
-        {
-            case QEvent::FocusIn:
-            {
-                QString currentText = searchField->text();
-                if (currentText == "Search...")
-                {
-                    searchField->setText("");
-                    searchField->setStyleSheet("color:black;");
-                }
-                else if (!currentText.isEmpty())
-                {
-                    // Calling selectAll() directly here won't do anything
-                    // as the ongoing QFocusEvent will overwrite what it does.
-                    QTimer::singleShot(1, searchField, SLOT(selectAll()));
-                }
-                break;
-            }
-            case QEvent::FocusOut:
-                if (searchField->text().simplified().isEmpty())
-                {
-                    searchField->setText(tr("Search..."));
-                    searchField->setStyleSheet("color:grey;");
-                }
-                break;
-            default:
-                break;
-        }
-    }
-    return QWidget::eventFilter(obj, e);
 }
 
 void SceneStructureWindow::Search(const QString &filter)
