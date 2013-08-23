@@ -48,7 +48,9 @@ void EC_ProximityTrigger::Update(float /*timeStep*/)
     EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
     if (!placeable)
         return;
-    
+
+    float3 pos = placeable->WorldPosition();
+
     EntityList otherTriggers = scene->GetEntitiesWithComponent(EC_ProximityTrigger::TypeNameStatic());
     for(EntityList::iterator i = otherTriggers.begin(); i != otherTriggers.end(); ++i)
     {
@@ -58,13 +60,11 @@ void EC_ProximityTrigger::Update(float /*timeStep*/)
             EC_Placeable* otherPlaceable = otherEntity->GetComponent<EC_Placeable>().get();
             if (!otherPlaceable)
                 continue;
-            float3 offset = placeable->transform.Get().pos - otherPlaceable->transform.Get().pos;
+
+            float3 offset = pos - otherPlaceable->WorldPosition();
             float distance = offset.Length();
-            
             if ((threshold <= 0.0f) || (distance <= threshold))
-            {
                 emit triggered(otherEntity, distance);
-            }
         }
     }
 }
