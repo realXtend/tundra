@@ -69,10 +69,11 @@ public:
 
 signals:
     /// Trigger signal.
-    /** When active flag is on, is sent each frame for every other entity that also has an EC_ProximityTrigger and is close enough.
-        @note needs to be lowercase for QML to accept connections to it.
-        @todo Make signature uppercase, QML support is deprecated. */
-    void triggered(Entity* otherEntity, float distance);
+    /** When active flag is on, is sent each frame for every other entity that also has an EC_ProximityTrigger and is close enough. */
+    void Triggered(Entity* otherEntity, float distance);
+
+    // DEPRECATED
+    void triggered(Entity* otherEntity, float distance); /**< @deprecated Use Triggered instead. @todo Remove. */
 
 private:
     /// Attribute has been updated

@@ -63,8 +63,11 @@ void EC_ProximityTrigger::Update(float /*timeStep*/)
 
             float3 offset = pos - otherPlaceable->WorldPosition();
             float distance = offset.Length();
-            if ((threshold <= 0.0f) || (distance <= threshold))
+            if (threshold <= 0.0f || distance <= threshold)
+            {
+                emit Triggered(otherEntity, distance);
                 emit triggered(otherEntity, distance);
+            }
         }
     }
 }
