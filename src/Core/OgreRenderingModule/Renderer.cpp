@@ -610,7 +610,7 @@ namespace OgreRenderer
         QStringList loadedPlugins;
 
         QString renderingConfig = (framework->HasCommandLineParameter("--ogreConfig") ?
-            framework->CommandLineParameters("--ogreConfig").first() : "tundra-rendering-ogre.json");
+            framework->CommandLineParameters("--ogreConfig").first() : QDir(Application::InstallationDirectory()).absoluteFilePath("tundra-rendering-ogre.json"));
 
         bool ok = false;
         QVariantMap configData = TundraJson::ParseFile(renderingConfig, true, &ok).toMap();
@@ -672,7 +672,7 @@ namespace OgreRenderer
     void Renderer::LoadOgreResourceLocations()
     {
         QString renderingConfig = (framework->HasCommandLineParameter("--ogreConfig") ?
-            framework->CommandLineParameters("--ogreConfig").first() : "tundra-rendering-ogre.json");
+            framework->CommandLineParameters("--ogreConfig").first() : QDir(Application::InstallationDirectory()).absoluteFilePath("tundra-rendering-ogre.json"));
 
         bool ok = false;
         QVariantMap configData = TundraJson::ParseFile(renderingConfig, true, &ok).toMap();
