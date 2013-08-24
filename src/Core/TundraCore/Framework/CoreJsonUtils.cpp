@@ -27,7 +27,19 @@ namespace TundraJson
         QByteArray data = file.readAll();
         file.close();
         if (removeCommentLines)
-            data = RemoveLines(data, QStringList() << "//" << "#");
+        {
+            // If we are removing lines, we have to parse here to report correct error line!
+            // If this wont be reported right, startup and rendering config errors in console
+            // are going to be very confusing to people as the line numbers won't match the file content.
+            uint removedLines = 0;
+            data = RemoveLines(data, QStringList() << "//" << "#", &removedLines);
+            QJson::Parser parser;
+            QVariant result = parser.parse(data, ok);
+            if (ok != 0 && *ok == false)
+                LogError(QString("TundraJson::Parse: Error on line %1: %2")
+                    .arg(parser.errorLine()+removedLines).arg(parser.errorString()));
+            return result;
+        }
         return Parse(data, ok);
     }
 
@@ -36,7 +48,8 @@ namespace TundraJson
         QJson::Parser parser;
         QVariant result = parser.parse(data, ok);
         if (ok != 0 && *ok == false)
-            LogError(QString("TundraJson::Parse: Error on line %1: %2").arg(parser.errorLine()).arg(parser.errorString()));
+            LogError(QString("TundraJson::Parse: Error on line %1: %2")
+                .arg(parser.errorLine()).arg(parser.errorString()));
         return result;
     }
 

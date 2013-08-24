@@ -87,8 +87,11 @@ std::vector<s8> StringToBuffer(const std::string& str)
     return ret;
 }
 
-QByteArray RemoveLines(const QByteArray &data, QStringList linePrefixes)
+QByteArray RemoveLines(const QByteArray &data, QStringList linePrefixes, uint *removedLineCount)
 {
+    if (removedLineCount != 0)
+        *removedLineCount = 0;
+        
     QByteArray result;
     QTextStream out(&result, QIODevice::WriteOnly);
     QTextStream in(data, QIODevice::ReadOnly);
@@ -109,6 +112,8 @@ QByteArray RemoveLines(const QByteArray &data, QStringList linePrefixes)
             if (!in.atEnd()) 
                 out << endl;
         }
+        else if (removedLineCount != 0)
+            *removedLineCount += 1;
     }
     return result;
 }
