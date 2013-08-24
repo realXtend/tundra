@@ -9,6 +9,8 @@
 #include "HighPerfClock.h"
 
 #include <QObject>
+#include <QVariant>
+#include <QDir>
 
 class QScriptEngine;
 class Framework;
@@ -47,11 +49,8 @@ namespace OgreRenderer
         
     public:
         /// Constructor
-        /** @param framework Framework pointer.
-            @param configFile Config filename.
-            @param pluginsFile Plugins filename.
-            @param windowTitle Renderer window title. */
-        Renderer(Framework* framework, const std::string& configFile, const std::string& pluginsFile, const std::string& windowTitle);
+        /** @param Framework pointer. */
+        Renderer(Framework *framework);
 
         /// Destructor
         virtual ~Renderer();
@@ -159,9 +158,36 @@ namespace OgreRenderer
         /// Renders the screen. Advances Ogre's time internally by the frameTime specified
         virtual void Render(float frameTime);
 
-        /// Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
-        /** @param directory Directory path to add. */
-        void AddResourceDirectory(const QString &directory);
+        /// Add or remove Ogre resource location.
+        /** @note Relative paths will be resolved to Application::InstallationDirectory.
+            @see InitializeOgreResourceGroup.
+            @param Path to the resource directory.
+            @param Ogre resource group name to add the resource location to.
+            @param True if you want to remove this location, false will add the location if it does not exist yet in this for the Ogre group name. */
+        void ProcessOgreResourceLocation(const QString &directoryPath, const QString &ogreResourceGroup, bool removeLocation = false);
+
+        /// Add or remove Ogre resource locations from a map of data.
+        /** This map needs to have the same format as the rendering config passed to --ogreConfig.
+            @code
+            {
+                "MyResourceGroupName" :
+                [
+                    { "Zip"        : "C:/my/resources.zip" },
+                    { "FileSystem" : "media/custom-meshes" },
+                ]
+            }
+            @endcode
+            @see InitializeOgreResourceGroup.
+            @param Data map. Keys are read as the Ogre resource group name. Value needs to be a list of maps, mapping resource location type to a path.
+            @param Root directory where to resolve relative paths to.
+            @param True if you want to remove this location, false will add the location if it does not exist yet in for the Ogre group name. */
+        void ProcessOgreResourceLocations(const QVariantMap &resources, const QDir &rootDirectory, bool removeLocation = false);
+
+        /// Initializes a Ogre resourcegroup.
+        /** @see ProcessOgreResourceLocation and ProcessOgreResourceLocations.
+            @param Ogre resource group name.
+            @return True if resource group exists and the group is either already initialized or was initialized now. False if group does not exist. */
+        bool InitializeOgreResourceGroup(const QString &ogreResourceGroup);
 
         /// Performs a full UI repaint with Qt and re-fills the GPU surface accordingly.
         void DoFullUIRedraw();
@@ -214,13 +240,14 @@ namespace OgreRenderer
         /// Sleeps the main thread to throttle the main loop execution speed.
         void DoFrameTimeLimiting();
 
-        /// Loads Ogre plugins in a manner which allows individual plugin loading to fail
-        /** @param pluginFilename Absolute path to the Ogre plugins file.
-            @return Successfully loaded plugin names. */
-        QStringList LoadPlugins(const std::string& pluginFilename);
+        /// Loads Ogre plugins in a manner which allows individual plugin loading to fail.
+        /** @note Uses --ogreConfig cmd line param, if not present defaults to 'tundra-rendering-ogre.json'. */
+        QStringList LoadOgrePlugins();
 
-        /// Sets up Ogre resources based on resources.cfg
-        void SetupResources();
+        /// Load Ogre resource locations and initialize them.
+        /** This does not actually load the assets, the files are just being recognized by the Ogre resource system.
+            @note Uses --ogreConfig cmd line param, if not present defaults to 'tundra-rendering-ogre.json'. */
+        void LoadOgreResourceLocations();
         
         /// Create instancing variants of all vertex shaders
         void CreateInstancingShaders();
@@ -228,14 +255,14 @@ namespace OgreRenderer
         /// Prepare the config with needed default values if they are not there.
         void PrepareConfig();
 
+        /// Returns platform string that is used in --ogreConfig files.
+        QString RenderingConfigPlatform() const;
+
         /// Successfully initialized flag
         bool initialized;
 
         /// Ogre root object
         OgreRootPtr ogreRoot;
-
-        /// Default hardware buffer manager for headless mode
-//        Ogre::DefaultHardwareBufferManager* bufferManager; ///< @todo Unused - delete for good?
 
         /// All created OgreWorlds (scene managers)
         std::map<Scene*, OgreWorldPtr> ogreWorlds;
@@ -276,18 +303,6 @@ namespace OgreRenderer
 
         /// Counter for unique resource group creation
         uint uniqueGroupId;
-
-        /// filename for the Ogre3D configuration file
-        std::string configFilename;
-
-        /// filename for the Ogre3D plugins file
-        std::string pluginsFilename;
-
-        /// window title to be used when creating renderwindow
-        std::string windowTitle;
-
-        /// added resource directories
-        StringVector resourceDirectories;
 
         /// handler for post-processing effects
         OgreCompositionHandler *compositionHandler;

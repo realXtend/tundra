@@ -1,0 +1,82 @@
+{
+    "Resources" :
+    {
+        "Common" :
+        {
+            "Bootstrap" :
+            [
+                { "Zip" : "media/OgreCore.zip" }
+            ],
+
+            "General" : 
+            [
+                { "FileSystem" : "media"                    },
+                { "FileSystem" : "media/fonts"              },
+                { "FileSystem" : "media/materials/scripts"  },
+                { "FileSystem" : "media/materials/programs" },
+                { "FileSystem" : "media/models"             },
+                { "FileSystem" : "media/textures"           },
+                { "FileSystem" : "media/particle"           }
+            ],
+
+            "Hydrax" :
+            [
+                { "FileSystem" : "media/Hydrax" }
+            ],
+
+            "SkyX" :
+            [
+                { "FileSystem" : "media/SkyX" }
+            ]
+        },
+
+        "Android" :
+        {
+            "General" :
+            [
+                { "FileSystem" : "media/RTShaderLib"           },
+                { "FileSystem" : "media/RTShaderLib/materials" }
+            ]
+        }
+    },
+
+    "Plugins" :
+    {
+        "Common" :
+        [
+            "Plugin_ParticleFX",
+            "Plugin_CgProgramManager",
+            "Plugin_OctreeSceneManager"
+        ],
+
+        "Windows" :
+        {
+            "DebugPostfix" : "_d",
+            "Plugins"      :
+            [
+                "RenderSystem_Direct3D9",
+                // "RenderSystem_Direct3D11",
+                "RenderSystem_GL",
+                "RenderSystem_NULL"
+            ]
+        },
+
+        "Linux" :
+        {
+            // Alternatively use system Ogre from /usr/lib/OGRE
+            "Folder"    : "../../naali-deps/install/lib/OGRE", 
+            "Plugins"   :
+            [
+                "RenderSystem_GL"
+            ]
+        },
+
+        "Mac" :
+        {
+            "Plugins"   :
+            [
+                "RenderSystem_GL"
+            ]
+        }
+    }
+}

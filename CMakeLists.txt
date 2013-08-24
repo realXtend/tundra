@@ -391,6 +391,7 @@ if (NOT TUNDRA_NO_BOOST)
     configure_boost()
 endif()
 configure_qt4()
+configure_qjson()
 if (NOT APPLE) # Python and PythonQt are not available currently on Mac.
     if ("$ENV{TUNDRA_PYTHON_ENABLED}" STREQUAL "TRUE") 
         configure_python()

@@ -30,7 +30,6 @@
 #include "Entity.h"
 #include "Scene/Scene.h"
 #include "AssetAPI.h"
-#include "AssetCache.h"
 #include "GenericAssetFactory.h"
 #include "NullAssetFactory.h"
 #include "Profiler.h"
@@ -50,7 +49,7 @@
 namespace OgreRenderer
 {
 
-std::string OgreRenderingModule::CACHE_RESOURCE_GROUP = "CACHED_ASSETS_GROUP";
+std::string OgreRenderingModule::CACHE_RESOURCE_GROUP = "TundraAssetCache";
 
 #ifdef OGRE_HAS_PROFILER_HOOKS
 
@@ -169,22 +168,7 @@ void OgreRenderingModule::Load()
 
 void OgreRenderingModule::Initialize()
 {
-    std::string ogreConfigFilename = Application::InstallationDirectory().toStdString() + "ogre.cfg"; ///\todo Unicode support!
-#if defined (_WINDOWS) && (_DEBUG)
-    std::string pluginsFilename = "pluginsd.cfg";
-#elif defined (_WINDOWS)
-    std::string pluginsFilename = "plugins.cfg";
-#elif defined(__APPLE__)
-    std::string pluginsFilename = "plugins-mac.cfg";
-#else
-    std::string pluginsFilename = "plugins-unix.cfg";
-#endif
-
-    pluginsFilename = Application::InstallationDirectory().toStdString() + pluginsFilename; ///\todo Unicode support!
-
-    std::string windowTitle = Application::FullIdentifier().toStdString();
-
-    renderer = MAKE_SHARED(OgreRenderer::Renderer, framework_, ogreConfigFilename, pluginsFilename, windowTitle);
+    renderer = MAKE_SHARED(OgreRenderer::Renderer, framework_);
     assert(renderer);
     assert(!renderer->IsInitialized());
 
@@ -202,18 +186,10 @@ void OgreRenderingModule::Initialize()
     // Register renderer.
     framework_->RegisterRenderer(renderer.get());
     framework_->RegisterDynamicObject("renderer", renderer.get());
-    
+
     // Connect to scene change signals.
     connect(framework_->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(OnSceneAdded(const QString&)));
     connect(framework_->Scene(), SIGNAL(SceneRemoved(const QString&)), this, SLOT(OnSceneRemoved(const QString&)));
-
-    // Add asset cache directory as its own resource group to ogre to support threaded loading.
-    if (GetFramework()->Asset()->Cache())
-    {
-        std::string cacheResourceDir = GetFramework()->Asset()->Cache()->CacheDirectory().toStdString();
-        if (!Ogre::ResourceGroupManager::getSingleton().resourceLocationExists(cacheResourceDir, CACHE_RESOURCE_GROUP))
-            Ogre::ResourceGroupManager::getSingleton().addResourceLocation(cacheResourceDir, "FileSystem", CACHE_RESOURCE_GROUP);
-    }
 
     framework_->Console()->RegisterCommand("renderStats", "Prints out render statistics.",
         this, SLOT(ConsoleStats()));

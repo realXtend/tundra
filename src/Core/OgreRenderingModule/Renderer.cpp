@@ -22,9 +22,11 @@
 #include "UiGraphicsView.h"
 #include "Scene/Scene.h"
 #include "CoreException.h"
+#include "CoreJsonUtils.h"
 #include "Entity.h"
 #include "SceneAPI.h"
 #include "Profiler.h"
+#include "AssetCache.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "UiGraphicsView.h"
@@ -244,22 +246,15 @@ namespace OgreRenderer
     };
     /// @endcond
 
-    Renderer::Renderer(Framework* fw, const std::string& config, const std::string& plugins, const std::string& window_title) :
+    Renderer::Renderer(Framework* fw) :
         initialized(false),
         framework(fw),
-//        bufferManager(0), ///< @todo Unused - delete for good?
         defaultScene(0),
         dummyDefaultCamera(0),
         mainViewport(0),
-#ifdef ANDROID
-        shaderGenerator(0),
-#endif
         overlaySystem(0),
         uniqueObjectId(0),
         uniqueGroupId(0),
-        configFilename(config),
-        pluginsFilename(plugins),
-        windowTitle(window_title),
         renderWindow(0),
         lastWidth(0),
         lastHeight(0),
@@ -268,6 +263,10 @@ namespace OgreRenderer
         shadowQuality(Shadows_High),
         textureQuality(Texture_Normal),
         textureBudget(DEFAULT_TEXTURE_BUDGET)
+#ifdef ANDROID
+        , staticPluginLoader(0)
+        , shaderGenerator(0)
+#endif
     {
         compositionHandler = new OgreCompositionHandler();
         logListener = new OgreLogListener(fw->HasCommandLineParameter("--hideBenignOgreMessages") ||
@@ -352,13 +351,13 @@ namespace OgreRenderer
 
         LogInfo("Renderer: Initializing Ogre");
 
-        // Create Ogre root with logfile
+        // Create Ogre root with log file
         QDir logDir(Application::UserDataDirectory());
         if (!logDir.exists("logs"))
             logDir.mkdir("logs");
         logDir.cd("logs");
-
         logfilepath = logDir.absoluteFilePath("Ogre.log").toStdString(); ///<\todo Unicode support
+
 #include "DisableMemoryLeakCheck.h"
 // On Android instantiating our own LogManager results in a crash during Ogre initialization. Ogre has its own Android logging hook, so this can be skipped for now
 #ifndef ANDROID
@@ -369,7 +368,7 @@ namespace OgreRenderer
         Ogre::LogManager::getSingleton().getDefaultLog()->addListener(logListener); // Make all Ogre log output to come to our log listener.
         Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_NORMAL); // This is probably the default level anyway, but be explicit.
 #endif
-        ogreRoot = OgreRootPtr(new Ogre::Root("", configFilename, logfilepath));
+        ogreRoot = OgreRootPtr(new Ogre::Root("", "", logfilepath));
 
 #include "EnableMemoryLeakCheck.h"
 
@@ -377,7 +376,7 @@ namespace OgreRenderer
         viewDistance = framework->Config()->Get(configData, "view distance").toFloat();
 
         // Load plugins
-        QStringList loadedPlugins = LoadPlugins(pluginsFilename);
+        QStringList loadedPlugins = LoadOgrePlugins();
 
         // Read the default rendersystem from Config API.
         rendersystem_name = framework->Config()->Get(configData, "rendering plugin").toString().toStdString();
@@ -464,12 +463,15 @@ namespace OgreRenderer
 
             try
             {
+                renderWindow = new RenderWindow();
+
+                QString windowTitle = Application::FullIdentifier();
+                bool fullscreen = framework->HasCommandLineParameter("--fullscreen");
                 int width = framework->Ui()->GraphicsView()->viewport()->size().width();
                 int height = framework->Ui()->GraphicsView()->viewport()->size().height();
                 int window_left = 0;
                 int window_top = 0;
-                renderWindow = new RenderWindow();
-                bool fullscreen = framework->HasCommandLineParameter("--fullscreen");
+
 #ifdef Q_WS_MAC
                 // Fullscreen causes crash on Mac OS X. See https://github.com/realXtend/naali/issues/522
                 if (fullscreen)
@@ -478,6 +480,7 @@ namespace OgreRenderer
                     fullscreen = false;
                 }
 #endif
+
                 // On some systems, the Ogre rendering output is overdrawn by the Windows desktop compositing manager, but the actual cause of this
                 // is uncertain.
                 // As a workaround, it is possible to have Ogre output directly on the main window HWND of the ui chain. On other systems, this gives
@@ -488,10 +491,10 @@ namespace OgreRenderer
                     // below the actual position to hit it. It's an error in our ui overlay to InputAPI mapping and gets fixed by hiding the toolbar.
                     if (fullscreen && framework->Ui()->MainWindow()->menuBar())
                         framework->Ui()->MainWindow()->menuBar()->hide();
-                    renderWindow->CreateRenderWindow(framework->Ui()->MainWindow(), windowTitle.c_str(), width, height, window_left, window_top, fullscreen, framework);
+                    renderWindow->CreateRenderWindow(framework->Ui()->MainWindow(), windowTitle, width, height, window_left, window_top, fullscreen, framework);
                 }
                 else if (framework->HasCommandLineParameter("--nouicompositing"))
-                    renderWindow->CreateRenderWindow(0, windowTitle.c_str(), width, height, window_left, window_top, fullscreen, framework);
+                    renderWindow->CreateRenderWindow(0, windowTitle, width, height, window_left, window_top, fullscreen, framework);
                 else // Normally, we want to render Ogre onto the UiGraphicsview viewport window.
                 {
                     // Even if the user has requested fullscreen mode, init Ogre in windowed mode, since the main graphics view is not a top-level window, and Ogre cannot
@@ -500,7 +503,7 @@ namespace OgreRenderer
                     if (framework->CommandLineParameters("--vsync").length() > 0 && ParseBool(framework->CommandLineParameters("--vsync").first()))
                         LogWarning("--vsync was specified, but Ogre is initialized in windowed mode to a non-top-level window. VSync will probably *not* be active. To enable vsync in full screen mode, "
                             "specify the flags --vsync, --fullscreen and --ogrecapturetopwindow together.");
-                    renderWindow->CreateRenderWindow(framework->Ui()->GraphicsView()->viewport(), windowTitle.c_str(), width, height, window_left, window_top, false, framework);
+                    renderWindow->CreateRenderWindow(framework->Ui()->GraphicsView()->viewport(), windowTitle, width, height, window_left, window_top, false, framework);
                 }
 
                 connect(framework->Ui()->GraphicsView(), SIGNAL(WindowResized(int, int)), renderWindow, SLOT(Resize(int, int)));
@@ -518,7 +521,7 @@ namespace OgreRenderer
             }
 
             LogInfo("Renderer: Loading Ogre resources");
-            SetupResources();
+            LoadOgreResourceLocations();
             CreateInstancingShaders();
 
 #ifdef ANDROID
@@ -590,96 +593,214 @@ namespace OgreRenderer
         return (float)(Ogre::TextureManager::getSingletonPtr()->getMemoryUsage() + loadDataSize) / (1024.f*1024.f) / (float)textureBudget;
     }
 
-    QStringList Renderer::LoadPlugins(const std::string& plugin_filename)
+#ifdef ANDROID
+
+    QStringList Renderer::LoadOgrePlugins()
     {
-        QStringList loadedPlugins;
-
-#ifndef ANDROID
-        Ogre::ConfigFile file;
-        try
-        {
-            file.load(plugin_filename);
-        }
-        catch(Ogre::Exception &/*e*/)
-        {
-            LogError("Could not load Ogre plugins configuration file");
-            return loadedPlugins;
-        }
-
-        Ogre::String plugin_dir = file.getSetting("PluginFolder");
-        if (plugin_dir == ".")
-            plugin_dir = QDir::toNativeSeparators(QFileInfo(plugin_filename.c_str()).dir().path()).toStdString(); ///<\todo Unicode support?
-        Ogre::StringVector plugins = file.getMultiSetting("Plugin");
-
-        if (plugin_dir.length() && plugin_dir[plugin_dir.length() - 1] != '\\' && plugin_dir[plugin_dir.length() - 1] != '/')
-            plugin_dir += QDir::separator().toAscii();
-
-        for(uint i = 0; i < plugins.size(); ++i)
-        {
-            try
-            {
-                ogreRoot->loadPlugin(plugin_dir + plugins[i]);
-                loadedPlugins.append(QString::fromStdString(plugins[i]));
-            }
-            catch(Ogre::Exception &/*e*/)
-            {
-                LogError("Plugin " + plugins[i] + " failed to load");
-            }
-        }
-#else
         // On Android, load Ogre plugins statically
         staticPluginLoader = new Ogre::StaticPluginLoader();
         staticPluginLoader->load();
+        return QStringList();
+    }
+
+#else
+
+    QStringList Renderer::LoadOgrePlugins()
+    {
+        QStringList loadedPlugins;
+
+        QString renderingConfig = (framework->HasCommandLineParameter("--ogreConfig") ?
+            framework->CommandLineParameters("--ogreConfig").first() : "tundra-rendering-ogre.json");
+
+        bool ok = false;
+        QVariantMap configData = TundraJson::ParseFile(renderingConfig, true, &ok).toMap();
+        if (!ok)
+        {
+            LogError("LoadOgrePlugins: Failed to parse Ogre config file: " + renderingConfig);
+            return loadedPlugins;
+        }
+        QVariantMap pluginsSection = TundraJson::Value(configData, "Plugins").toMap();
+        if (pluginsSection.isEmpty())
+        {
+            LogError("LoadOgrePlugins: 'Plugins' section is empty in config file: " + renderingConfig);
+            return loadedPlugins;
+        }
+
+        // Read platform specific section.
+        QVariantMap platformSection = TundraJson::Value(pluginsSection, RenderingConfigPlatform()).toMap();
+
+        // Plugin folder. Relative paths will resolved to the config file dir.
+        QString pluginFolder = TundraJson::Value(platformSection, "Folder", "./").toString();
+        if (QFileInfo(pluginFolder).isRelative())
+            pluginFolder = QFileInfo(renderingConfig).dir().absoluteFilePath(pluginFolder);
+        QDir pluginsDir(pluginFolder);
+        if (!pluginsDir.exists())
+        {
+            LogError(QString("LoadOgrePlugins: %1 platform plugins folder does not exist: %2")
+                .arg(RenderingConfigPlatform()).arg(pluginFolder));
+            return loadedPlugins;
+        }
+
+        // Platform plugin debug postfix.
+        QString pluginPostFix = "";
+#ifdef _DEBUG
+        pluginPostFix = TundraJson::Value(platformSection, "DebugPostfix", "").toString();
 #endif
+
+        // Platform and common plugins.
+        QStringList plugins = TundraJson::Value(platformSection, "Plugins", QStringList()).toStringList();
+        plugins += TundraJson::Value(pluginsSection, "Common", QStringList()).toStringList();
+        foreach(const QString &pluginName, plugins)
+        {
+            QString absolutePluginPath = QDir::toNativeSeparators(pluginsDir.absoluteFilePath(pluginName + pluginPostFix));
+            try
+            {
+                ogreRoot->loadPlugin(absolutePluginPath.toStdString());
+                loadedPlugins << pluginName;
+            }
+            catch(Ogre::Exception &e)
+            {
+                LogError(QString("LoadOgrePlugins: Plugin %1 failed to load: %2")
+                    .arg(absolutePluginPath).arg(e.what()));
+            }
+        }
         return loadedPlugins;
     }
 
-    void Renderer::SetupResources()
+#endif
+
+    void Renderer::LoadOgreResourceLocations()
     {
-        Ogre::ConfigFile cf;
-        cf.load("resources.cfg");
+        QString renderingConfig = (framework->HasCommandLineParameter("--ogreConfig") ?
+            framework->CommandLineParameters("--ogreConfig").first() : "tundra-rendering-ogre.json");
 
-        Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
-        Ogre::String sec_name, type_name, arch_name;
-
-        while(seci.hasMoreElements())
+        bool ok = false;
+        QVariantMap configData = TundraJson::ParseFile(renderingConfig, true, &ok).toMap();
+        if (!ok)
         {
-            sec_name = seci.peekNextKey();
-            Ogre::ConfigFile::SettingsMultiMap* settings = seci.getNext();
-            Ogre::ConfigFile::SettingsMultiMap::iterator i;
-            for(i = settings->begin(); i != settings->end(); ++i)
-            {
-                type_name = i->first;
-                arch_name = i->second;
-                if (QDir::isRelativePath(arch_name.c_str()))
-                    arch_name = QDir::cleanPath(Application::InstallationDirectory() + arch_name.c_str()).toStdString(); ///<\todo Unicode support
+            LogError("LoadOgreResourceLocations: Failed to parse Ogre config file: " + renderingConfig);
+            return;
+        }
+        QVariantMap resourcesSection = TundraJson::Value(configData, "Resources").toMap();
+        if (resourcesSection.isEmpty())
+        {
+            LogError("LoadOgreResourceLocations: 'Resources' section is empty in config file: " + renderingConfig);
+            return;
+        }
 
-                Ogre::ResourceGroupManager::getSingleton().addResourceLocation(arch_name, type_name, sec_name);
+        QDir configDir = QFileInfo(renderingConfig).dir();
+
+        // Load common resource locations first.
+        ProcessOgreResourceLocations(TundraJson::Value(resourcesSection, "Common").toMap(), configDir);
+
+        // Load platform specific resource locations first.
+        ProcessOgreResourceLocations(TundraJson::Value(resourcesSection, RenderingConfigPlatform()).toMap(), configDir);
+
+        // Load super shader program definitions directory according to the shadow quality level.
+        ProcessOgreResourceLocation(QString("media/materials/scripts/") + (shadowQuality == Shadows_Off ? "shadows_off" : (shadowQuality == Shadows_High ? "shadows_high" : "shadows_low")),
+            QString::fromStdString(Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
+
+        Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+
+        // Now that the resource groups are initialized, add Tundra cache path as a resource group.
+        // This group is used for various Ogre asset type threaded loading to provide the disk source from Tundra cache.
+        // Added after group initialization as we don't want Ogre to iterate over potentially thousands of files during startup.
+        if (framework->Asset()->Cache())
+            ProcessOgreResourceLocation(framework->Asset()->Cache()->CacheDirectory(), QString::fromStdString(OgreRenderingModule::CACHE_RESOURCE_GROUP));
+    }
+
+    bool Renderer::InitializeOgreResourceGroup(const QString &ogreResourceGroup)
+    {
+        std::string resourceGroup = ogreResourceGroup.toStdString();
+        Ogre::ResourceGroupManager &resourceManager = Ogre::ResourceGroupManager::getSingleton();
+        if (resourceManager.resourceGroupExists(resourceGroup))
+        {
+            if (!resourceManager.isResourceGroupInitialised(resourceGroup))
+                resourceManager.initialiseResourceGroup(resourceGroup);
+            return true;
+        }
+        return false;
+    }
+
+    void Renderer::ProcessOgreResourceLocation(const QString &directoryPath, const QString &ogreResourceGroup, bool removeLocation)
+    {
+        QString resourceLocation = directoryPath;
+        if (QFileInfo(resourceLocation).isRelative())
+            resourceLocation = QDir(Application::InstallationDirectory()).absoluteFilePath(resourceLocation);
+        resourceLocation = QDir::toNativeSeparators(resourceLocation);
+
+        if (!removeLocation)
+        {
+            if (!Ogre::ResourceGroupManager::getSingleton().resourceLocationExists(resourceLocation.toStdString(), ogreResourceGroup.toStdString()))
+            {
+                Ogre::ResourceGroupManager::getSingleton().addResourceLocation(resourceLocation.toStdString(),
+                    "FileSystem", ogreResourceGroup.toStdString());
+                LogDebug(QString("ProcessOgreResourceLocation: Added %1 to Ogre resource group %2.")
+                    .arg(resourceLocation).arg(ogreResourceGroup));
+            }
+            else
+                LogWarning(QString("ProcessOgreResourceLocation: Location %1 for Ogre resource group %2 already exists.")
+                    .arg(resourceLocation).arg(ogreResourceGroup));
+        }
+        else
+        {
+            Ogre::ResourceGroupManager::getSingleton().removeResourceLocation(resourceLocation.toStdString(), ogreResourceGroup.toStdString());
+            LogDebug(QString("ProcessOgreResourceLocation: Removed %1 from Ogre resource group %2.")
+                .arg(resourceLocation).arg(ogreResourceGroup));
+        }
+    }
+
+    void Renderer::ProcessOgreResourceLocations(const QVariantMap &resources, const QDir &rootDirectory, bool removeLocation)
+    {
+        foreach(const QString &ogreResourceGroup, resources.keys())
+        {
+            foreach(const QVariant &locationVariant, resources[ogreResourceGroup].toList())
+            {
+                QVariantMap location = locationVariant.toMap();
+                foreach(const QString &ogreResourceLocationType, location.keys())
+                {
+                    QString ogreResourceLocation = location[ogreResourceLocationType].toString();
+                    if (QFileInfo(ogreResourceLocation).isRelative())
+                        ogreResourceLocation = rootDirectory.absoluteFilePath(ogreResourceLocation);
+                    ogreResourceLocation = QDir::toNativeSeparators(ogreResourceLocation);
+
+                    if (!removeLocation)
+                    {
+                        if (!Ogre::ResourceGroupManager::getSingleton().resourceLocationExists(ogreResourceLocation.toStdString(), ogreResourceGroup.toStdString()))
+                        {
+                            Ogre::ResourceGroupManager::getSingleton().addResourceLocation(ogreResourceLocation.toStdString(),
+                                ogreResourceLocationType.toStdString(), ogreResourceGroup.toStdString());
+                            LogDebug(QString("ProcessOgreResourceLocations: Added %1 with type %2 to Ogre resource group %3.")
+                                .arg(ogreResourceLocation).arg(ogreResourceLocationType).arg(ogreResourceGroup));
+                        }
+                        else
+                            LogWarning(QString("ProcessOgreResourceLocation: Location %1 for Ogre resource group %2 already exists.")
+                                .arg(ogreResourceLocation).arg(ogreResourceGroup));
+                    }
+                    else
+                    {
+                        Ogre::ResourceGroupManager::getSingleton().removeResourceLocation(ogreResourceLocation.toStdString(), ogreResourceGroup.toStdString());
+                        LogDebug(QString("ProcessOgreResourceLocations: Removed %1 from Ogre resource group %2.")
+                            .arg(ogreResourceLocation).arg(ogreResourceGroup));
+                    }
+                }
             }
         }
+    }
 
-        // Add supershader program definitions directory according to the shadow quality level
-        std::string shadowPath = Application::InstallationDirectory().toStdString(); ///<\todo Unicode support
-        switch(shadowQuality)
-        {
-        case Shadows_Off:
-            shadowPath.append("media/materials/scripts/shadows_off");
-            break;
-        case Shadows_High:
-            shadowPath.append("media/materials/scripts/shadows_high");
-            break;
-        default:
-            shadowPath.append("media/materials/scripts/shadows_low");
-            break;
-        }
-
-        Ogre::ResourceGroupManager::getSingleton().addResourceLocation(shadowPath, "FileSystem", "General");
-#if ANDROID
-        // Initialize RTShader resources
-        Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/RTShaderLib", "FileSystem", "General");
-        Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Application::InstallationDirectory().toStdString() + "media/RTShaderLib/materials", "FileSystem", "General");
+    QString Renderer::RenderingConfigPlatform() const
+    {
+#ifdef ANDROID
+        return QString("Android");
+#elif defined(Q_WS_WIN)
+        return QString("Windows");
+#elif defined(Q_WS_MAC)
+        return QString("Mac");
+#elif defined(Q_WS_X11)
+        return QString("Linux");
+#else
+        return QString();
 #endif
-        Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
     }
 
     void Renderer::CreateInstancingShaders()
@@ -1182,52 +1303,6 @@ namespace OgreRenderer
     std::string Renderer::GetUniqueObjectName(const std::string &prefix)
     {
         return QString("%1_%2").arg(prefix.c_str()).arg(uniqueObjectId++).toStdString();
-    }
-
-    void Renderer::AddResourceDirectory(const QString &qdirectory)
-    {
-        std::string directory = qdirectory.toStdString();
-
-        // Check to not add the same directory more than once
-        for(uint i = 0; i < resourceDirectories.size(); ++i)
-            if (resourceDirectories[i] == directory)
-                return;
-
-        Ogre::ResourceGroupManager& resgrpmgr = Ogre::ResourceGroupManager::getSingleton();
-
-        std::string groupname = "grp" + QString::number(uniqueGroupId++).toStdString();
-
-        // Check if resource group already exists (should not).
-        bool exists = false;
-        Ogre::StringVector groups = resgrpmgr.getResourceGroups();
-        for(uint i = 0; i < groups.size(); ++i)
-        {
-            if (groups[i] == groupname)
-            {
-                exists = true;
-                break;
-            }
-        }
-
-        // Create if doesn't exist
-        if (!exists)
-        {
-            try
-            {
-                resgrpmgr.createResourceGroup(groupname);
-            }
-            catch(...) {}
-        }
-        
-        // Add directory as a resource location, then initialize group
-        try
-        {
-            resgrpmgr.addResourceLocation(directory, "FileSystem", groupname);
-            resgrpmgr.initialiseResourceGroup(groupname);
-        }
-        catch(...) {}
-
-        resourceDirectories.push_back(directory);
     }
 
     void Renderer::OnScriptEngineCreated(QScriptEngine* engine)
