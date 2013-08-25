@@ -240,6 +240,9 @@ namespace OgreRenderer
         /// Sleeps the main thread to throttle the main loop execution speed.
         void DoFrameTimeLimiting();
 
+        /// Returns the headless renderer for this platform from --ogreConfig, empty string if not defined.
+        QString HeadlessRenderingPluginName() const;
+
         /// Loads Ogre plugins in a manner which allows individual plugin loading to fail.
         /** @note Uses --ogreConfig cmd line param, if not present defaults to 'tundra-rendering-ogre.json'. */
         QStringList LoadOgrePlugins();

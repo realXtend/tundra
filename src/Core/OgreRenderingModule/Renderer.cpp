@@ -371,14 +371,33 @@ namespace OgreRenderer
 
 #include "EnableMemoryLeakCheck.h"
 
+        // Write/read config.
         ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
         viewDistance = framework->Config()->Get(configData, "view distance").toFloat();
+        textureQuality = (Renderer::TextureQualitySetting)framework->Config()->Get(configData, "texture quality").toInt();
+        textureBudget = framework->Config()->DeclareSetting(configData, "texture budget", DEFAULT_TEXTURE_BUDGET).toInt();
+
+        if (framework->HasCommandLineParameter("--texturebudget"))
+        {
+            QStringList sizeParam = framework->CommandLineParameters("--texturebudget");
+            if (sizeParam.size() > 0)
+                SetTextureBudget(sizeParam.first().toInt());
+        }
 
         // Load plugins
         QStringList loadedPlugins = LoadOgrePlugins();
 
         // Read the default rendersystem from Config API.
         rendersystem_name = framework->Config()->Get(configData, "rendering plugin").toString().toStdString();
+
+        // Headless renderer is selected from Ogre config if defined.
+        // This can be overridden with --d3d9 and --opengl cmd line params.
+        if (framework->IsHeadless())
+        {
+            QString headlessRenderer = HeadlessRenderingPluginName();
+            if (!headlessRenderer.isEmpty())
+                rendersystem_name = headlessRenderer.toStdString();
+        }
 
 #ifdef _WINDOWS
         // If --direct3d9 is specified, it overrides the option that was set in config.
@@ -394,28 +413,17 @@ namespace OgreRenderer
         if (framework->HasCommandLineParameter("--nullrenderer"))
             rendersystem_name = "NULL Rendering Subsystem";
 
-        textureQuality = (Renderer::TextureQualitySetting)framework->Config()->Get(configData, "texture quality").toInt();
-
-        textureBudget = framework->Config()->DeclareSetting(configData, "texture budget", DEFAULT_TEXTURE_BUDGET).toInt();
-        
-        if (framework->HasCommandLineParameter("--texturebudget"))
-        {
-            QStringList sizeParam = framework->CommandLineParameters("--texturebudget");
-            if (sizeParam.size() > 0)
-                SetTextureBudget(sizeParam.first().toInt());
-        }
-
         // Ask Ogre if rendering system is available
         rendersystem = ogreRoot->getRenderSystemByName(rendersystem_name);
 
 #ifdef _WINDOWS
-        // If windows did not have Direct3D fallback to OpenGL.
-        if (!rendersystem)
-            rendersystem = ogreRoot->getRenderSystemByName("OpenGL Rendering Subsystem");
-
-        // If windows did not have OpenGL fallback to Direct3D.
-        if (!rendersystem)
+        // If windows did not have the config/headless renderer fallback to Direct3D.
+        if (!rendersystem && rendersystem_name != "Direct3D9 Rendering Subsystem")
             rendersystem = ogreRoot->getRenderSystemByName("Direct3D9 Rendering Subsystem");
+
+        // If windows did not have Direct3D fallback to OpenGL.
+        if (!rendersystem && rendersystem_name != "OpenGL Rendering Subsystem")
+            rendersystem = ogreRoot->getRenderSystemByName("OpenGL Rendering Subsystem");
 #endif
 
 #ifdef ANDROID
@@ -428,7 +436,7 @@ namespace OgreRenderer
             throw Exception("Could not find Ogre rendersystem.");
 
         // Report rendering plugin to log so user can check what actually got loaded
-        LogInfo("Renderer: Using " + rendersystem->getName());
+        LogInfo(QString("Renderer: Using '%1'").arg(rendersystem->getName().c_str()));
 
         // Allow PSSM mode shadows only on DirectX
         // On OpenGL (arbvp & arbfp) it runs out of vertex shader outputs
@@ -443,11 +451,18 @@ namespace OgreRenderer
 
         if (framework->IsHeadless())
         {
-            // If we are running in headless mode, initialize the Ogre 'DefaultHardwareBufferManager', which is a software-emulation
-            // mode for Ogre's HardwareBuffers (i.e. can create meshes into CPU memory).
+            /** If we are running in headless mode, initialize the Ogre 'DefaultHardwareBufferManager',
+                which is a software-emulation mode for Ogre's HardwareBuffers (i.e. can create meshes into CPU memory).
+
+                @note If we are using a renderer that is intended for headless use, it may have already created the
+                DefaultHardwareBufferManager singleton. This can be the case if the plugin knows Ogre::Root is not
+                going to be initialized. */
+            if (!Ogre::HardwareBufferManager::getSingletonPtr())
+            {
 #include "DisableMemoryLeakCheck.h"
-            new Ogre::DefaultHardwareBufferManager(); // This creates a Ogre manager singleton, so can discard the return value from operator new.
+                new Ogre::DefaultHardwareBufferManager();
 #include "EnableMemoryLeakCheck.h"
+            }
         }
         else
         {
@@ -457,7 +472,7 @@ namespace OgreRenderer
             // Instantiate overlay system
             overlaySystem = new Ogre::OverlaySystem();
 
-            // Initialise but don't create rendering window yet
+            // Initialize but don't create rendering window yet
             ogreRoot->initialise(false);
 
             try
@@ -592,6 +607,30 @@ namespace OgreRenderer
         return (float)(Ogre::TextureManager::getSingletonPtr()->getMemoryUsage() + loadDataSize) / (1024.f*1024.f) / (float)textureBudget;
     }
 
+    QString Renderer::HeadlessRenderingPluginName() const
+    {
+        QString renderingConfig = (framework->HasCommandLineParameter("--ogreConfig") ?
+            framework->CommandLineParameters("--ogreConfig").first() : QDir(Application::InstallationDirectory()).absoluteFilePath("tundra-rendering-ogre.json"));
+
+        bool ok = false;
+        QVariantMap configData = TundraJson::ParseFile(renderingConfig, true, &ok).toMap();
+        if (!ok)
+        {
+            LogError("LoadOgrePlugins: Failed to parse Ogre config file: " + renderingConfig);
+            return "";
+        }
+        QVariantMap pluginsSection = TundraJson::Value(configData, "Plugins").toMap();
+        if (pluginsSection.isEmpty())
+        {
+            LogError("LoadOgrePlugins: 'Plugins' section is empty in config file: " + renderingConfig);
+            return "";
+        }
+
+        QVariantMap platformSection = TundraJson::Value(pluginsSection, RenderingConfigPlatform(), QVariantMap()).toMap();
+        QVariantMap headlessRenderers = TundraJson::Value(platformSection, "Headless", QVariantMap()).toMap();
+        return TundraJson::Value(headlessRenderers, "Renderer", "").toString();
+    }
+
 #ifdef ANDROID
 
     QStringList Renderer::LoadOgrePlugins()
@@ -646,8 +685,36 @@ namespace OgreRenderer
         pluginPostFix = TundraJson::Value(platformSection, "DebugPostfix", "").toString();
 #endif
 
-        // Platform and common plugins.
-        QStringList plugins = TundraJson::Value(platformSection, "Plugins", QStringList()).toStringList();
+        // Does this platform have headless plugin declaration?
+        QStringList plugins;
+        if (framework->IsHeadless())
+        {
+            QVariantMap headlessSection = TundraJson::Value(platformSection, "Headless").toMap();
+            if (headlessSection.contains("Plugins"))
+                plugins += TundraJson::Value(headlessSection, "Plugins", QStringList()).toStringList();
+        }
+
+        QStringList platformPlugins = TundraJson::Value(platformSection, "Plugins", QStringList()).toStringList();
+
+        // No headless section found? Load the normal plugins.
+        if (plugins.isEmpty())
+            plugins = platformPlugins;
+
+        // Cmd line param force to a certain renderer?
+#ifdef _WINDOWS
+        if (framework->HasCommandLineParameter("--d3d9") || framework->HasCommandLineParameter("--direct3d9"))
+        {
+            if (platformPlugins.contains("RenderSystem_Direct3D9", Qt::CaseSensitive) && !plugins.contains("RenderSystem_Direct3D9", Qt::CaseSensitive))
+                plugins += "RenderSystem_Direct3D9";
+        }
+#endif
+        if (framework->HasCommandLineParameter("--opengl"))
+        {
+            if (platformPlugins.contains("RenderSystem_GL", Qt::CaseSensitive) && !plugins.contains("RenderSystem_GL", Qt::CaseSensitive))
+                plugins += "RenderSystem_GL";
+        }
+
+        // Common plugins for all platforms
         plugins += TundraJson::Value(pluginsSection, "Common", QStringList()).toStringList();
         foreach(const QString &pluginName, plugins)
         {

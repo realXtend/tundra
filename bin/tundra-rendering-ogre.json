@@ -56,16 +56,24 @@
             [
                 "RenderSystem_Direct3D9",
                 // "RenderSystem_Direct3D11",
-                "RenderSystem_GL",
-                "RenderSystem_NULL"
-            ]
+                "RenderSystem_GL"
+            ],
+
+            "Headless" :
+            {
+                "Renderer" : "NULL Rendering Subsystem",
+                "Plugins"  :
+                [
+                    "RenderSystem_NULL"
+                ]
+            }
         },
 
         "Linux" :
         {
             // Alternatively use system Ogre from /usr/lib/OGRE
-            "Folder"    : "../../naali-deps/install/lib/OGRE", 
-            "Plugins"   :
+            "Folder"  : "../../naali-deps/install/lib/OGRE",
+            "Plugins" :
             [
                 "RenderSystem_GL"
             ]
@@ -73,7 +81,7 @@
 
         "Mac" :
         {
-            "Plugins"   :
+            "Plugins" :
             [
                 "RenderSystem_GL"
             ]
