@@ -7,36 +7,38 @@
     // by performing QtScript object meta type registration in their
     // registered dynamic objects (Framework::RegisterDynamicObject)
     // in OnScriptEngineCreated(QScriptEngine*), must be loaded before JavascriptModule.
-    { "--plugin"   : "OgreRenderingModule"          },
-    { "--plugin"   : "OpenAssetImport"              },
-    { "--plugin"   : "SceneInteract"                },    
-    { "--plugin"   : "EnvironmentModule"            },
-    { "--plugin"   : "PhysicsModule"                },
-    { "--plugin"   : "TundraProtocolModule"         },
-    { "--plugin"   : "ECEditorModule"               },
-    { "--plugin"   : "JavascriptModule"             },
-    { "--plugin"   : "AssetModule"                  },
-    { "--plugin"   : "ArchivePlugin"                },
-    { "--plugin"   : "AvatarModule"                 },
-    { "--plugin"   : "SkyXHydrax"                   },
-    { "--plugin"   : "OgreAssetEditorModule"        },
-    { "--plugin"   : "DebugStatsModule"             },
-    { "--plugin"   : "SceneWidgetComponents"        },
-    { "--plugin"   : "MumblePlugin"                 },
-    { "--plugin"   : "CanvasPlugin"                 },
+    { "--plugin" : [ "OgreRenderingModule",
+                     "OpenAssetImport",
+                     "SceneInteract",
+                     "EnvironmentModule",
+                     "PhysicsModule",
+                     "TundraProtocolModule",
+                     "ECEditorModule",
+                     "JavascriptModule",
+                     "AssetModule",
+                     "ArchivePlugin",
+                     "AvatarModule",
+                     "SkyXHydrax",
+                     "OgreAssetEditorModule",
+                     "DebugStatsModule",
+                     "SceneWidgetComponents",
+                     "MumblePlugin",
+                     "CanvasPlugin" ]
+    },
 
     // Javascript plugins
     // Only spesifies the base name of the file. 
     // Loading is done from jsplugins/startup folder.
     // File names are case-sensitive also on Windows.
-    { "--jsplugin" : "cameraapplication.js"         },
-    { "--jsplugin" : "FirstPersonMouseLook.js"      },
-    { "--jsplugin" : "MenuBar.js"                   },
-    { "--jsplugin" : "RendererSettings.js"          },
-    { "--jsplugin" : "SoundSettings.js"             },
-    { "--jsplugin" : "InterestManagerSettings.js"   },
-    { "--jsplugin" : "LoadingScreen.js"             },
-    { "--jsplugin" : "SceneInstructions.js"         },
+    { "--jsplugin" : [ "cameraapplication.js",
+                       "FirstPersonMouseLook.js",
+                       "MenuBar.js",
+                       "RendererSettings.js",
+                       "SoundSettings.js",
+                       "InterestManagerSettings.js",
+                       "LoadingScreen.js",
+                       "SceneInstructions.js" ]
+    },
 
     // Default options
     { "--fpsLimit" : 60 },

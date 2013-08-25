@@ -661,28 +661,33 @@ bool Framework::LoadStartupOptionsFromJSON(QString configurationFile)
     foreach(const QVariant &option, startupOptions)
     {
         QVariant::Type t = option.type();
-        
+
         // Command-to-parameter pair(s)
-        if (t == QVariant::Map)
+        if (t == QVariant::Map || t == QVariant::Hash)
         {
-            QVariantMap map = option.toMap();
-            foreach(const QString command, map.keys())
+            QVariantMap optionMap;
+            if (t == QVariant::Map)
+                optionMap = option.toMap();
+            else if (t == QVariant::Hash)
             {
-                if (command.compare("--config", Qt::CaseInsensitive) != 0)
-                    AddCommandLineParameter(command, map[command].toString());
-                else
-                    LoadStartupOptionsFromFile(map[command].toString());
+                QVariantHash optionsHash = option.toHash();
+                foreach(const QString &hashKey, optionsHash.keys())
+                    optionMap[hashKey] = optionsHash[hashKey];
             }
-        }
-        else if (t == QVariant::Hash)
-        {
-            QVariantHash map = option.toHash();
-            foreach(const QString command, map.keys())
+            foreach(const QString command, optionMap.keys())
             {
+                QVariant value = optionMap[command];
                 if (command.compare("--config", Qt::CaseInsensitive) != 0)
-                    AddCommandLineParameter(command, map[command].toString());
+                {
+                    // Support giving multiple values as a list or a single value.
+                    if (value.type() == QVariant::String)
+                        AddCommandLineParameter(command, value.toString());
+                    else if (value.type() == QVariant::StringList || value.type() == QVariant::List)
+                        foreach(const QVariant &valueIter, value.toList())
+                            AddCommandLineParameter(command, valueIter.toString());
+                }
                 else
-                    LoadStartupOptionsFromFile(map[command].toString());
+                    LoadStartupOptionsFromFile(value.toString());
             }
         }
         // Command only
@@ -697,7 +702,7 @@ bool Framework::LoadStartupOptionsFromJSON(QString configurationFile)
                 AddCommandLineParameter(command.toString(), "");
         }
         else
-            LogError("LoadStartupOptionsFromJSON: QVariant::Type %1 is not supported: " + option.toString());
+            LogError(QString("LoadStartupOptionsFromJSON: QVariant::Type %1 is not supported: %2").arg(t).arg(option.toString()));
     }
     return true;
 }
