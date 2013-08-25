@@ -301,9 +301,6 @@ namespace OgreRenderer
         /// Counter for unique name creation
         uint uniqueObjectId;
 
-        /// Counter for unique resource group creation
-        uint uniqueGroupId;
-
         /// handler for post-processing effects
         OgreCompositionHandler *compositionHandler;
 

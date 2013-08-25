@@ -254,7 +254,6 @@ namespace OgreRenderer
         mainViewport(0),
         overlaySystem(0),
         uniqueObjectId(0),
-        uniqueGroupId(0),
         renderWindow(0),
         lastWidth(0),
         lastHeight(0),
