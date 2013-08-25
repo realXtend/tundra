@@ -108,9 +108,7 @@ QByteArray RemoveLines(const QByteArray &data, QStringList linePrefixes, uint *r
         if (!found)
         {
             // readLine() removes end-of-line characters, preserve them.
-            out << line;
-            if (!in.atEnd()) 
-                out << endl;
+            out << line << endl;
         }
         else if (removedLineCount != 0)
             *removedLineCount += 1;
