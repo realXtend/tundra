@@ -180,6 +180,9 @@ void EC_Hydrax::OnActiveCameraChanged(Entity *newActiveCamera)
 
 void EC_Hydrax::RequestConfigAsset()
 {
+    if (framework->IsHeadless())
+        return;
+
     PROFILE(EC_Hydrax_RequestConfigAsset);
     QString ref = configRef.Get().ref.trimmed();
     if (ref.isEmpty())
