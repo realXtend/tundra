@@ -182,8 +182,14 @@ private:
     /// Adds new command line parameter (option | value pair) to the unordered multimap
     void AddCommandLineParameter(const QString &command, const QString &parameter);
 
+    /// Directs to XML of JSON parsing function depending on file suffix.
+    bool LoadStartupOptionsFromFile(const QString &configurationFile);
+    
     /// Appends all found startup options from the given file to the startupOptions member.
     bool LoadStartupOptionsFromXML(QString configurationFile);
+    
+    /// Appends all found startup options from the given file to the startupOptions member.
+    bool LoadStartupOptionsFromJSON(QString configurationFile);
 
     /// Appends startup options from a commandline file, Android only
 #ifdef ANDROID

@@ -1,0 +1,49 @@
+[
+    // tundra.json configuration file will be loaded if a --config
+    // startup parameter is not passed to the Tundra executable.
+
+    // C++ plugins
+    // All modules that implicitly depend on JavascriptModule, 
+    // by performing QtScript object meta type registration in their
+    // registered dynamic objects (Framework::RegisterDynamicObject)
+    // in OnScriptEngineCreated(QScriptEngine*), must be loaded before JavascriptModule.
+    { "--plugin" : [ "OgreRenderingModule",
+                     "OpenAssetImport",
+                     "SceneInteract",
+                     "EnvironmentModule",
+                     "PhysicsModule",
+                     "TundraProtocolModule",
+                     "ECEditorModule",
+                     "JavascriptModule",
+                     "AssetModule",
+                     "ArchivePlugin",
+                     "AvatarModule",
+                     "SkyXHydrax",
+                     "OgreAssetEditorModule",
+                     "DebugStatsModule",
+                     "SceneWidgetComponents",
+                     "MumblePlugin",
+                     "CanvasPlugin" ]
+    },
+
+    // Javascript plugins
+    // Only spesifies the base name of the file. 
+    // Loading is done from jsplugins/startup folder.
+    // File names are case-sensitive also on Windows.
+    { "--jsplugin" : [ "cameraapplication.js",
+                       "FirstPersonMouseLook.js",
+                       "MenuBar.js",
+                       "RendererSettings.js",
+                       "SoundSettings.js",
+                       "InterestManagerSettings.js",
+                       "LoadingScreen.js",
+                       "SceneInstructions.js" ]
+    },
+
+    // Default options
+    { "--fpsLimit" : 60 },
+    [ "--trustServerStorages",
+      "--acceptUnknownHttpSources",
+      "--acceptUnknownLocalSources",
+      "--hideBenignOgreMessages" ]
+]

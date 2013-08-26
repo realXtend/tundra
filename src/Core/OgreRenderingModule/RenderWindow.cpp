@@ -45,10 +45,10 @@ namespace
     const char rttMaterialName[] = "MainWindow Material";
 }
 
-RenderWindow::RenderWindow()
-:renderWindow(0),
-overlay(0),
-overlayContainer(0)
+RenderWindow::RenderWindow() :
+    renderWindow(0),
+    overlay(0),
+    overlayContainer(0)
 {
 }
 

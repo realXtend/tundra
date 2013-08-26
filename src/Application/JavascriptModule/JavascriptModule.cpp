@@ -529,6 +529,9 @@ QStringList JavascriptModule::ParseStartupScriptConfig()
     bool deprecationWarning = true;
     foreach(const QString &configFile, framework_->Plugins()->ConfigurationFiles())
     {
+        if (!configFile.trimmed().endsWith(".xml", Qt::CaseInsensitive))
+            continue;
+
         QDomDocument doc("plugins");
         QFile file(configFile);
         if (!file.open(QIODevice::ReadOnly))
@@ -572,7 +575,6 @@ QStringList JavascriptModule::StartupScripts()
     QStringList scripts;
     if (framework_->HasCommandLineParameter("--jsplugin"))
         scripts << framework_->CommandLineParameters("--jsplugin");
-
     return scripts;
 }
 
