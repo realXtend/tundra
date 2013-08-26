@@ -132,12 +132,16 @@ macro(configure_qjson)
     endif ()
 
     # Find QJson/Parser header and back up one folder for <QJson/Parser> style includes.
-    find_path (QJSON_INCLUDE_DIR parser.h HINTS ${QJSON_ROOT}/include PATH_SUFFIXES qjson)
+    # Windows uses the /build directory for headers, as the install step is a bit wonky.
+    find_path (QJSON_INCLUDE_DIR parser.h HINTS ${QJSON_ROOT}/build/include ${QJSON_ROOT}/include PATH_SUFFIXES qjson)
     RemoveLastElementFromPath(${QJSON_INCLUDE_DIR} QJSON_INCLUDE_DIRS)
 
     if (NOT MSVC)
         find_library (QJSON_LIBRARIES NAMES qjson HINTS ${QJSON_ROOT}/lib)
     else ()
+        # We could use /build directory for the lib too. But this would not allow us to change build modes on the fly.
+        # It's recommended to run the build modes deps script before building with it, but its still nicer to
+        # pass in a single link directory and have your build type subdirs below it, Visual Studio will do the right thing.
         find_path (QJSON_LIBRARY_DIR NAMES qjson.lib HINTS ${QJSON_ROOT}/lib PATH_SUFFIXES Release RelWithDebInfo Debug)
         RemoveLastElementFromPath(${QJSON_LIBRARY_DIR} QJSON_LIBRARY_DIRS)
         set(QJSON_LIBRARIES qjson.lib)

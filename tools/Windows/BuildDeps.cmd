@@ -361,12 +361,13 @@ IF NOT EXIST "%DEPS%\qjson\". (
     IF NOT EXIST "%DEPS%\qjson\.git" GOTO :ERROR
 )
 
+:: Check if this configuration is built
 IF NOT EXIST "%DEPS%\qjson\lib\%BUILD_TYPE%\qjson.dll". (
     cd "%DEPS%\qjson\"
     IF NOT EXIST qjson.sln. (
         cecho {0D}Running CMake for QJson.{# #}{\n}
         IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
-        cmake . -G %GENERATOR%
+        cmake . -G %GENERATOR% -DCMAKE_INSTALL_PREFIX=./build
         IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     )
     cecho {0D}Building %BUILD_TYPE% QJson.{# #}{\n}
@@ -374,8 +375,12 @@ IF NOT EXIST "%DEPS%\qjson\lib\%BUILD_TYPE%\qjson.dll". (
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 
+:: Install the correct build type into qjson/build
 cecho {0D}Deploying %BUILD_TYPE% QJson DLL to Tundra bin\ directory.{# #}{\n}
-copy /Y "%DEPS%\qjson\lib\%BUILD_TYPE%\qjson.dll" "%TUNDRA_BIN%"
+cd "%DEPS%\qjson\"
+MSBuild INSTALL.%VCPROJ_FILE_EXT% /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+copy /Y "%DEPS%\qjson\build\bin\qjson.dll" "%TUNDRA_BIN%"
 
 :: Bullet physics engine
 :: version 2.81 sp1, svn rev 2613
