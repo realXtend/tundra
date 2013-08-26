@@ -42,7 +42,7 @@
 
 #include <QToolTip>
 #include <QCursor>
-/* // Regression: TODO: reimplement! Preferably in some nicer manner that doesn't require compiling OpenAssetImport support into ECEditorModule!
+/* /// @todo Regression: TODO: reimplement! Preferably in some nicer manner that doesn't require compiling OpenAssetImport support into ECEditorModule!
 #ifdef ASSIMP_ENABLED
 #include <OpenAssetImport.h>
 #endif
@@ -50,9 +50,9 @@
 #include "MemoryLeakCheck.h"
 
 // Shortcuts for config keys.
-static const char *cSceneWindowPos = "scene window pos";
-static const char *cAssetWindowPos = "asset window pos";
-static const char *cKeyBindingsWindowPos = "key bindings window pos";
+static const char * const cSceneWindowPos = "scene window pos";
+static const char * const cAssetWindowPos = "asset window pos";
+static const char * const cKeyBindingsWindowPos = "key bindings window pos";
 
 SceneStructureModule::SceneStructureModule() :
     IModule("SceneStructure"),
@@ -442,7 +442,7 @@ void SceneStructureModule::SaveWindowPosition(QWidget *widget, const QString &se
     if (widget)
     {
         ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name(), settingName, widget->pos());
-        framework_->Config()->Set(configData);
+        framework_->Config()->Write(configData);
     }
 }
 
@@ -451,7 +451,7 @@ void SceneStructureModule::LoadWindowPosition(QWidget *widget, const QString &se
     if (framework_->Ui()->MainWindow() && widget)
     {
         ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name(), settingName);
-        QPoint pos = framework_->Config()->Get(configData).toPoint();
+        QPoint pos = framework_->Config()->Read(configData).toPoint();
         UiMainWindow::EnsurePositionWithinDesktop(widget, pos);
     }
 }
@@ -574,7 +574,7 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e, QGraphicsItem 
             e->setAccepted(false);
             currentToolTipDestination = "<br><span style='font-weight:bold;'>Destination:</span> ";
             // Raycast to see if there is a submesh under the material drop
-            OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+            OgreRendererPtr renderer = framework_->Module<OgreRenderingModule>()->Renderer();
             if (renderer)
             {
                 RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
@@ -603,7 +603,7 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e, QGraphicsItem 
 
     if (e->isAccepted() && currentToolTipDestination.isEmpty())
     {
-        OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+        OgreRendererPtr renderer = framework_->Module<OgreRenderingModule>()->Renderer();
         if (renderer)
         {
             RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
@@ -718,7 +718,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e, QGraphicsItem *widget)
 void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString &materialRef)
 {
     // Raycast to see if there is a submesh under the material drop
-    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+    OgreRendererPtr renderer = framework_->Module<OgreRenderingModule>()->Renderer();
     if (renderer)
     {
         RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
@@ -949,6 +949,7 @@ void SceneStructureModule::SyncSelectionWithEcEditor(ECEditorWindow *editor)
     {
         if (qobject_cast<ECEditorModule *>(sender()) && syncedECEditor == editor)
             return;
+
         // Store a ref to the active editor. We don't want to do this selection
         // logic multiple times for the same editor as its quite expensive for
         // large number of selected entities. This slot will be called upon show() and setFocus()
@@ -956,9 +957,11 @@ void SceneStructureModule::SyncSelectionWithEcEditor(ECEditorWindow *editor)
         syncedECEditor = editor;
 
         sceneWindow->ClearSelectedEntites();
-        foreach(const EntityPtr &entity, editor->SelectedEntities())
-            sceneWindow->SetEntitySelected(entity, true);
+        sceneWindow->SetEntitiesSelected(editor->SelectedEntities(), true);
+
         connect(editor, SIGNAL(EntitySelected(const EntityPtr &, bool)),
             sceneWindow, SLOT(SetEntitySelected(const EntityPtr &, bool)), Qt::UniqueConnection);
+        connect(editor, SIGNAL(EntitiesSelected(const EntityList &, bool)),
+            sceneWindow, SLOT(SetEntitiesSelected(const EntityList &, bool)), Qt::UniqueConnection);
     }
 }

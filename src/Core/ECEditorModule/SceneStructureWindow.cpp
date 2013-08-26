@@ -144,14 +144,14 @@ void SceneStructureWindow::SetScene(const ScenePtr &newScene)
         connect(undoButton_, SIGNAL(clicked()), undoMgr, SLOT(Undo()), Qt::UniqueConnection);
         connect(redoButton_, SIGNAL(clicked()), undoMgr, SLOT(Redo()), Qt::UniqueConnection);
 
-        Scene *scenePtr = scene.lock().get();
-        connect(scenePtr, SIGNAL(EntityAcked(Entity *, entity_id_t)), SLOT(AckEntity(Entity *, entity_id_t)));
-        connect(scenePtr, SIGNAL(EntityCreated(Entity *, AttributeChange::Type)), SLOT(AddEntity(Entity *)));
-        connect(scenePtr, SIGNAL(EntityTemporaryStateToggled(Entity *, AttributeChange::Type)), SLOT(UpdateEntityTemporaryState(Entity *)));
-        connect(scenePtr, SIGNAL(EntityRemoved(Entity *, AttributeChange::Type)), SLOT(RemoveEntity(Entity *)));
-        connect(scenePtr, SIGNAL(ComponentAdded(Entity *, IComponent *, AttributeChange::Type)),
+        ScenePtr s = scene.lock();
+        connect(s.get(), SIGNAL(EntityAcked(Entity *, entity_id_t)), SLOT(AckEntity(Entity *, entity_id_t)));
+        connect(s.get(), SIGNAL(EntityCreated(Entity *, AttributeChange::Type)), SLOT(AddEntity(Entity *)));
+        connect(s.get(), SIGNAL(EntityTemporaryStateToggled(Entity *, AttributeChange::Type)), SLOT(UpdateEntityTemporaryState(Entity *)));
+        connect(s.get(), SIGNAL(EntityRemoved(Entity *, AttributeChange::Type)), SLOT(RemoveEntity(Entity *)));
+        connect(s.get(), SIGNAL(ComponentAdded(Entity *, IComponent *, AttributeChange::Type)),
             SLOT(AddComponent(Entity *, IComponent *)));
-        connect(scenePtr, SIGNAL(ComponentRemoved(Entity *, IComponent *, AttributeChange::Type)),
+        connect(s.get(), SIGNAL(ComponentRemoved(Entity *, IComponent *, AttributeChange::Type)),
             SLOT(RemoveComponent(Entity *, IComponent *)));
 
         Populate();
@@ -232,8 +232,15 @@ void SceneStructureWindow::SetEntitySelected(const EntityPtr &entity, bool selec
     }
 }
 
+void SceneStructureWindow::SetEntitiesSelected(const EntityList &entities, bool selected)
+{
+    for(EntityList::const_iterator it = entities.begin(); it != entities.end(); ++it)
+        SetEntitySelected(*it, selected);
+}
+
 void SceneStructureWindow::ClearSelectedEntites()
 {
+    /// @todo Utilize SetEntitySelected here.
     for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
