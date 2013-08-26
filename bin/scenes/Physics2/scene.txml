@@ -23052,12 +23052,12 @@
    <attribute value="30.0" name="light inner angle"/>
    <attribute value="0.0" name="constant atten"/>
    <attribute value="0.0 0.0 0.0" name="specular color"/>
-   <attribute value="" name="lighttype"/>
+   <attribute value="" name="Light type"/>
    <attribute value="false" name="cast shadows"/>
    <attribute value="1.0 1.0 1.0" name="diffuse color"/>
    <attribute value="0.01" name="linear atten"/>
    <attribute value="1.0" name="brightness"/>
-   <attribute value="40.0" name="lilght outer angle"/>
+   <attribute value="40.0" name="Light outer angle"/>
    <attribute value="0.01" name="quadratic atten"/>
   </component>
   <component type="EC_Placeable" sync="1">
@@ -23108,7 +23108,6 @@
    <attribute value="0.36 0.36 0.36 1.0" name="Ambient light color"/>
    <attribute value="-1.0 -1.0 -1.0" name="Sunlight direction vector"/>
    <attribute value="0.63 0.63 0.63 1.0" name="Sunlight color"/>
-   <attribute value="0.93 0.93 0.93 1.0" name="Sunlight diffuse color"/>
   </component>
   <component type="EC_Sky" sync="1">
    <attribute value="true" name="Draw first"/>
