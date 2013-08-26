@@ -45,6 +45,8 @@ public:
         If scene is set to null, the tree view is cleared and previous signal connections are disconnected.
         @param newScene Scene. */
     void SetScene(const ScenePtr &newScene);
+    /// The scene that is shown in the tree view.
+    ScenePtr Scene() const { return scene.lock(); }
 
     enum AttributeMode
     {
@@ -63,10 +65,15 @@ public slots:
     /** @param type The type of attributes we want to show. */
     void ShowAttributes(AttributeMode type);
 
-    /// Decorates (bolds) or undecorates item representing @c entity.
+    /// Decorates (bolds) or undecorates item representing the @c entity.
     /** @param entity Entity in question.
         @param selected Whether to decorate (true) or undecorate (false) the item. */
     void SetEntitySelected(const EntityPtr &entity, bool selected);
+
+    /// Decorates (bolds) or undecorates items representing the @c entities.
+    /** @param entities Entities in question.
+        @param selected Whether to decorate (true) or undecorate (false) the item. */
+    void SetEntitiesSelected(const EntityList &entities, bool selected);
 
     /// Undecorates all selected entities.
     void ClearSelectedEntites();

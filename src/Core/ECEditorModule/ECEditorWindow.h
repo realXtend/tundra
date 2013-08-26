@@ -58,20 +58,21 @@ public:
     /** @param fw Framework. */
     explicit ECEditorWindow(Framework* fw, QWidget *parent = 0);
 
-    /// Destructor.
     ~ECEditorWindow();
 
     /// Adds new entity to the entity list.
-    /** @param id Entity ID.
+    /** @param entity Entity.
         @param updateUi Do we want to update the UI.
         @return The created list item. */
-    EntityListWidgetItem *AddEntity(entity_id_t id, bool updateUi = true);
+    EntityListWidgetItem *AddEntity(const EntityPtr &entity, bool updateUi = true);
+    EntityListWidgetItem *AddEntity(entity_id_t id, bool updateUi = true); /**< @overload @param id Entity ID. */
 
     /// Sets new list of entities to be shown in the editor.
     /** Calling this method will clear previously selected entities from the editor.
         @param entities a new list of entities that we want to add into the editor.
         @param selectAll Do we want to select all entities from the list. */
     void AddEntities(const QList<entity_id_t> &entities, bool selectAll = false);
+    /// @todo Add void AddEntities(const EntityList &entities, bool selectAll = false);
 
     /// Removes entity from the entity list.
     /** @param id Entity ID.
@@ -87,15 +88,15 @@ public:
 
     /// Returns components that are currently selected.
     /** @return If any components aren't selected return empty list. */
-    QObjectList SelectedComponents() const;
+    std::vector<ComponentPtr> SelectedComponents() const;
 
     /// Returns list of selected entities.
-    QList<EntityPtr> SelectedEntities() const;
+    EntityList SelectedEntities() const;
 
     /// Sets item active in the entity list. Also adds/removes EC_Highlight for the entity, if applicable.
     /** @param item Item to be select or deselect
         @param select Do we want to select or deselect. */
-    void SetEntitySelected(EntityListWidgetItem *item, bool select);
+    void SetEntitySelected(EntityListWidgetItem *item, bool select, bool signal = true);
 
     /// Returns list item for specific entity.
     /** @param id Entity ID. */
@@ -170,15 +171,15 @@ public slots:
         @param highlight Do we want to show highlight or hide it. */
     void HighlightEntity(const EntityPtr &entity, bool highlight);
 
-    void OnAboutToEditAttribute(IAttribute *attr);
-
 signals:
     /// Emitted user wants to edit entity's EC attributes in XML editor.
-    /** @param entities list of entities */
+    /** @param entities list of entities.
+        @todo Use EntityList instead. */
     void EditEntityXml(const QList<EntityPtr> &entities);
 
     /// Emitted user wants to edit EC attributes in XML editor.
-    /** @param list of components */
+    /** @param list of components.
+        @todo Use std::vector<ComponentPtr> instead. */
     void EditComponentXml(const QList<ComponentPtr> & components);
 
     /// Signal is emitted when this window has gained a focus.
@@ -192,15 +193,13 @@ signals:
         @param selected Was the entity selected (true) or deselected (false). */
     void EntitySelected(const EntityPtr &entity, bool selected);
 
+    /// Same as EntitySelected but used for batch selections.
+    void EntitiesSelected(const EntityList &entity, bool selected);
+
 protected:
-    /// QWidget override.
-    void hideEvent(QHideEvent *e);
-
-    /// QWidget override.
-    void changeEvent(QEvent *e);
-
-    /// QWidget override.
-    bool eventFilter(QObject *obj, QEvent *event);
+    void hideEvent(QHideEvent *e); ///< QWidget override.
+    void changeEvent(QEvent *e); ///< QWidget override.
+    bool eventFilter(QObject *obj, QEvent *event); ///< QWidget override.
 
 private slots:
     /// Key event handler.
@@ -232,6 +231,7 @@ private slots:
     /// Called by add component dialog when it's finished.
     void AddComponentDialogFinished(int result);
 
+    void OnAboutToEditAttribute(IAttribute *attr);
     void OnUndoChanged(bool canUndo);
     void OnRedoChanged(bool canRedo);
 

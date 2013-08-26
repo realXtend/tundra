@@ -51,14 +51,14 @@ public:
     void RemoveEntity(const EntityPtr &entity);
 
     /// Return list of entities that has added to browser widget. Return empty list if no entities have been added.
-    QList<EntityPtr> Entities() const;
+    EntityList Entities() const;
 
     /// Sets used item expand memory. Expand memory is used to load and save the expanded items in the tree widget.
     /** @param expandMem Tree widget item expand memory. */
     void SetItemExpandMemory(const shared_ptr<TreeWidgetItemExpandMemory> &expandMem) { expandMemory_ = expandMem; }
 
     /// Reads selected components from ComponentGroup and return them as QObjectList.
-    QObjectList SelectedComponents() const;
+    std::vector<ComponentPtr> SelectedComponents() const;
 
 public slots:
     /// Reset browser state to where it was after the browser initialization. Override method from the QtTreePropertyBrowser.
