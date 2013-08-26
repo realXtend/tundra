@@ -721,7 +721,13 @@ namespace OgreRenderer
             QString absolutePluginPath = QDir::toNativeSeparators(pluginsDir.absoluteFilePath(pluginName + pluginPostFix));
             try
             {
+#ifndef Q_WS_MAC
                 ogreRoot->loadPlugin(absolutePluginPath.toStdString());
+#else
+                // On Mac, Ogre is hardcoded to look for frameworks inside <EXECUTABLE_PATH_HERE>/Contents/Frameworks
+                // Instead absolute paths, pass only the plugin names
+                ogreRoot->loadPlugin(pluginName.toStdString());
+#endif
                 loadedPlugins << pluginName;
             }
             catch(Ogre::Exception &e)
