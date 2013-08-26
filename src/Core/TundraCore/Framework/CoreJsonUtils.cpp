@@ -5,9 +5,9 @@
 #include "CoreStringUtils.h"
 #include "LoggingFunctions.h"
 
-#include <QJson/Parser>
-#include <QJson/Serializer>
-#include <QJson/QObjectHelper>
+#include <qjson/parser.h>
+#include <qjson/serializer.h>
+#include <qjson/qobjectHelper.h>
 
 #include <QFile>
 

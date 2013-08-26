@@ -132,7 +132,7 @@ macro(configure_qjson)
     endif ()
 
     # Find QJson/Parser header and back up one folder for <QJson/Parser> style includes.
-    find_path (QJSON_INCLUDE_DIR Parser HINTS ${QJSON_ROOT}/include PATH_SUFFIXES QJson)
+    find_path (QJSON_INCLUDE_DIR parser.h HINTS ${QJSON_ROOT}/include PATH_SUFFIXES qjson)
     RemoveLastElementFromPath(${QJSON_INCLUDE_DIR} QJSON_INCLUDE_DIRS)
 
     if (NOT MSVC)
