@@ -61,10 +61,10 @@
 
             "Headless" :
             {
-                "Renderer" : "NULL Rendering Subsystem",
+                "Renderer" : "Headless Rendering Subsystem",
                 "Plugins"  :
                 [
-                    "RenderSystem_NULL"
+                    "RenderSystem_Headless"
                 ]
             }
         },
