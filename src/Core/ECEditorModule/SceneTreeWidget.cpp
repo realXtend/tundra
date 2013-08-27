@@ -198,7 +198,7 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
     const QMimeData *data = e->mimeData();
     if (data->hasUrls())
     {
-        SceneStructureModule *sceneStruct = framework->GetModule<SceneStructureModule>();
+        SceneStructureModule *sceneStruct = framework->Module<SceneStructureModule>();
         if (!sceneStruct)
             LogError("Could not retrieve SceneStructureModule. Cannot instantiate content.");
 
@@ -683,7 +683,7 @@ void SceneTreeWidget::Edit()
         }
 
         // Check for active editor
-        ECEditorWindow *editor = framework->GetModule<ECEditorModule>()->ActiveEditor();
+        ECEditorWindow *editor = framework->Module<ECEditorModule>()->ActiveEditor();
         if (editor && !ecEditors.contains(editor))
         {
             editor->setAttribute(Qt::WA_DeleteOnClose);
@@ -1534,7 +1534,7 @@ void SceneTreeWidget::OpenFileDialogClosed(int result)
         if (dialog->windowTitle() == tr("Open New Scene"))
             clearScene = true;
 
-        SceneStructureModule *sceneStruct = framework->GetModule<SceneStructureModule>();
+        SceneStructureModule *sceneStruct = framework->Module<SceneStructureModule>();
         if (sceneStruct)
             sceneStruct->InstantiateContent(filename, float3::zero, clearScene);
         else

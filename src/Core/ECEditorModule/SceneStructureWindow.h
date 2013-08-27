@@ -17,6 +17,7 @@ class Framework;
 class EntityItem;
 class EntityGroupItem;
 class ComponentItem;
+class AttributeItem;
 
 class QTreeWidgetItem;
 class QLineEdit;
@@ -30,7 +31,7 @@ class QToolButton;
 class SceneStructureWindow : public QWidget
 {
     Q_OBJECT
-    Q_ENUMS(AttributeMode)
+    Q_ENUMS(AttributeVisibility)
 
 public:
     /// Constructs the window.
@@ -48,7 +49,7 @@ public:
     /// The scene that is shown in the tree view.
     ScenePtr Scene() const { return scene.lock(); }
 
-    enum AttributeMode
+    enum AttributeVisibilityType
     {
         DoNotShowAttributes, ///< Do not show attributes.
         ShowAssetReferences, ///< Show asset reference attributes (AssetReference and AssetReferenceList).
@@ -61,9 +62,9 @@ public slots:
     /** @param show Visibility of components in the tree view. */
     void ShowComponents(bool show);
 
-    /// Sets do we want to show attributes in the tree view.
+    /// Sets what kind of attributes we want to show in the tree view.
     /** @param type The type of attributes we want to show. */
-    void ShowAttributes(AttributeMode type);
+    void SetAttributeVisibility(AttributeVisibilityType type);
 
     /// Decorates (bolds) or undecorates item representing the @c entity.
     /** @param entity Entity in question.
@@ -79,8 +80,7 @@ public slots:
     void ClearSelectedEntites();
 
 protected:
-    /// QWidget override.
-    void changeEvent(QEvent* e);
+    void changeEvent(QEvent* e); ///< QWidget override.
 
 private:
     /// Populates tree widget with all entities.
@@ -90,14 +90,14 @@ private:
     void Clear();
 
     /// Creates attribute items for a single entity item.
-    void CreateAttributesForEntity(EntityItem *targetItem);
-    void CreateAttributesForComponent(ComponentItem *targetItem);
+    void CreateAttributesForItem(ComponentItem *cItem);
+    void CreateAttributesForItem(EntityItem *eItem);
 
-    /// Creates attribute items depending on the currently set mode.
-    void CreateAttributes();
+    /// Shows (and creates) attribute items depending on the currently set visibility type.
+    void ShowAttributes();
 
-    /// Clears i.e. deletes all attribute items.
-    void ClearAttributes();
+    /// Hides all attribute items.
+    void HideAttributes();
 
     /// Create asset reference item to the tree widget.
     /** @param parentItem Parent item, can be entity or component item.
@@ -105,27 +105,40 @@ private:
     void CreateAttributeItem(QTreeWidgetItem *parentItem, IAttribute *attr);
 
     EntityItem* EntityItemOfEntity(Entity* ent) const;
+    /// @note This function does lookup from a different map than EntityItemOfEntity.
     EntityItem* EntityItemById(entity_id_t id) const;
     void RemoveEntityItem(EntityItem* item);
+    ComponentItem *ComponentItemOfComponent(IComponent *) const;
+    std::vector<AttributeItem *> AttributeItemOfAttribute(IAttribute *) const;
+    void SetEntityItemSelected(EntityItem *item, bool selected);
 
     Framework *framework; ///< Framework.
     SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
     SceneTreeWidget *treeWidget; ///< Scene tree widget.
-    QHash<QString, EntityGroupItem*> entityGroupItems_; ///< Entity groups
     bool showComponents; ///< Do we show components also in the tree view.
-    AttributeMode showAttributesMode; ///< Do we show attributes also in the tree view.
+    AttributeVisibilityType attributeVisibility; ///< Do we show attributes also in the tree view.
     QLineEdit *searchField; ///< Search field line edit.
     QPushButton *expandAndCollapseButton; ///< Expand/collapse all button.
     QToolButton * undoButton_; ///< Undo button with drop-down menu
     QToolButton * redoButton_; ///< Redo button with drop-down menu
 
+    typedef std::map<entity_id_t, EntityItem *> EntityItemIdMap;
+    typedef std::map<Entity *, EntityItem *> EntityItemMap;
+    typedef std::map<IComponent *, ComponentItem *> ComponentItemMap;
+    typedef std::multimap<IAttribute *, AttributeItem *> AttributeItemMap;
+    typedef std::pair<AttributeItemMap::iterator, AttributeItemMap::iterator> AttributeItemMapRange;
+    typedef std::pair<AttributeItemMap::const_iterator, AttributeItemMap::const_iterator> AttributeItemMapConstRange;
+    QHash<QString, EntityGroupItem*> entityGroupItems; ///< Entity groups
+    EntityItemIdMap entityItemsById;
+    EntityItemMap entityItems;
+    ComponentItemMap componentItems;
+    AttributeItemMap attributeItems;
+
 private slots:
-    /// Adds the entity to the tree widget.
-    /** @param entity Entity to be added. */
+    /// Adds the item represeting the @c entity to the tree widget.
     void AddEntity(Entity *entity);
 
-    /// Removes entity from the tree widget.
-    /** @param entity Entity to be removed. */
+    /// Removes item representing @c entity from the tree widget.
     void RemoveEntity(Entity *entity);
 
     /// Readds entity on server ack.
@@ -166,10 +179,8 @@ private slots:
         @param attr EC_Name's attribute which was changed. */
     void UpdateEntityName(IAttribute *attr);
 
-    /// Updates component's name in the tree widget if components name has changed.
-    /** @param oldName Old component name.
-        @param newName New component name. */
-    void UpdateComponentName(const QString &oldName, const QString &newName);
+    /// Updates the sender component's name in the tree widget when the component's name changeds.
+    void UpdateComponentName();
 
     /// Sort items in the tree widget. The outstanding sort order is used.
     /** @param column Column that is used as the sorting criteria. */
@@ -189,7 +200,7 @@ private slots:
     /// Removes entity from the tree widget by ID
     void RemoveEntityById(entity_id_t id);
 
-    void OnUndoChanged(bool canUndo);
-    void OnRedoChanged(bool canRedo);
-    void ShowAttributesInternal(int mode) { ShowAttributes(static_cast<AttributeMode>(mode)); }
+    void SetUndoEnabled(bool canUndo);
+    void SetRedoEnabled(bool canRedo);
+    void SetAttributeVisibilityInternal(int mode) { SetAttributeVisibility(static_cast<AttributeVisibilityType>(mode)); }
 };
