@@ -14,10 +14,11 @@ class EntityGroupItem : public QTreeWidgetItem
 {
 public:
     explicit EntityGroupItem(const QString &groupName);
-    QString GroupName() const { return name; }
+    const QString &GroupName() const { return name; }
     void UpdateText();
-    
+
     int numberOfEntities;
+
 private:
     QString name;
 };
@@ -101,6 +102,7 @@ public:
     QString id; ///< ID.
     QString name; ///< Name.
     QString value; ///< Value.
+    int index; ///< AssetReference index in the AssetReferenceList. -1 if not initialized. @todo Maybe to this other list types too?
 };
 
 /// Tree widget item representing an asset reference attribute.
@@ -114,7 +116,7 @@ public:
 
     /// Constructor for creating individual items for AssetReferenceList.
     /** @param assetRef Asset reference. */
-    AssetRefItem(IAttribute *attr, const QString &assetRef, QTreeWidgetItem *parent = 0);
+    AssetRefItem(IAttribute *attr, int assetRefIndex, QTreeWidgetItem *parent = 0);
 };
 
 /// Represents selection of SceneTreeWidget items.

@@ -121,8 +121,7 @@ EntityGroupItem::EntityGroupItem(const QString &groupName) :
 
 void EntityGroupItem::UpdateText()
 {
-    QString text = QString("[ group: %1 (%2 item%3) ]").arg(name).arg(numberOfEntities).arg(numberOfEntities > 1 ? "s" : "");
-    setText(0, text);
+    setText(0, QString("Group: %1 (%2 item(s))").arg(name).arg(numberOfEntities));
 }
 
 // ComponentItem
@@ -209,7 +208,8 @@ EntityItem *ComponentItem::Parent() const
 
 AttributeItem::AttributeItem(IAttribute *attr, QTreeWidgetItem *parent) :
     QTreeWidgetItem(parent),
-    ptr(attr->Owner()->shared_from_this(), attr)
+    ptr(attr->Owner()->shared_from_this(), attr),
+    index(-1)
 {
     Update(attr);
 }
@@ -227,6 +227,13 @@ void AttributeItem::Update(IAttribute *attr)
     id = attr->Id();
     value = attr->ToString().c_str();
 
+    if (index > -1 && attr->TypeId() == cAttributeAssetReferenceList)
+    {
+        const AssetReferenceList &refs = static_cast<Attribute<AssetReferenceList> *>(attr)->Get();
+        if (index < refs.Size())
+            value = refs[index].ref;
+    }
+
     setText(0, QString("%1: %2").arg(id).arg(value));
 }
 
@@ -237,12 +244,12 @@ AssetRefItem::AssetRefItem(IAttribute *attr, QTreeWidgetItem *parent) :
 {
 }
 
-AssetRefItem::AssetRefItem(IAttribute *attr, const QString &assetRef, QTreeWidgetItem *parent) :
+AssetRefItem::AssetRefItem(IAttribute *attr, int assetRefIndex, QTreeWidgetItem *parent) :
     AttributeItem(attr, parent)
 {
     // Override the regular AssetReferenceList value "ref1;ref2;etc." with a single ref.
-    value = assetRef;
-    setText(0, QString("%1: %2").arg(id).arg(value));
+    index = assetRefIndex;
+    Update(attr);
 }
 
 // SceneTreeWidgetSelection
