@@ -32,6 +32,12 @@ namespace
     const ConfigData cShowGroupsSetting(ConfigAPI::FILE_FRAMEWORK, "Scene Structure Window", "Show Groups", true);
     const ConfigData cShowComponentsSetting(ConfigAPI::FILE_FRAMEWORK, "Scene Structure Window", "Show Components", true);
     const ConfigData cAttributeVisibilitySetting(ConfigAPI::FILE_FRAMEWORK, "Scene Structure Window", "Attribute Visibility", SceneStructureWindow::ShowAssetReferences);
+
+    void SetTreeWidgetItemVisible(QTreeWidgetItem *item, bool visible)
+    {
+        item->setHidden(!visible);
+        item->setDisabled(!visible);
+    }
 }
 
 SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
@@ -227,7 +233,8 @@ void SceneStructureWindow::ShowGroups(bool show)
                 treeWidget->addTopLevelItem(it->second);
             }
         }
-        gItem->setHidden(!showGroups);
+
+        SetTreeWidgetItemVisible(gItem, showGroups);
    }
 
     treeWidget->setSortingEnabled(true);
@@ -283,12 +290,12 @@ void SceneStructureWindow::ShowComponents(bool show)
             it->first->addChild(it->second);
         }
 
-        cItem->setHidden(!showComponents);
+        SetTreeWidgetItemVisible(cItem, showComponents);
    }
 
     treeWidget->setSortingEnabled(true);
 
-    expandAndCollapseButton->setEnabled(showComponents || attributeVisibility != DoNotShowAttributes);
+    expandAndCollapseButton->setEnabled(showGroups || showComponents || attributeVisibility != DoNotShowAttributes);
 }
 
 void SceneStructureWindow::SetAttributeVisibility(AttributeVisibilityType type)
@@ -306,14 +313,11 @@ void SceneStructureWindow::SetAttributeVisibility(AttributeVisibilityType type)
         return;
     }
 
-    if (attributeVisibility == DoNotShowAttributes)
-        HideAttributes();
-    else
-        ShowAttributes();
+    SetAttributesVisible(attributeVisibility != DoNotShowAttributes);
 
     treeWidget->setSortingEnabled(true);
 
-    expandAndCollapseButton->setEnabled(showComponents || attributeVisibility != DoNotShowAttributes);
+    expandAndCollapseButton->setEnabled(showGroups || showComponents || attributeVisibility != DoNotShowAttributes);
 }
 
 void SceneStructureWindow::SetEntitySelected(const EntityPtr &entity, bool selected)
@@ -459,12 +463,6 @@ void SceneStructureWindow::SetEntityItemSelected(EntityItem *item, bool selected
     }
 }
 
-void SceneStructureWindow::HideAttributes()
-{
-    for(AttributeItemMap::iterator it = attributeItems.begin(); it != attributeItems.end(); ++it)
-        it->second->setHidden(true);
-}
-
 void SceneStructureWindow::AddEntity(Entity* entity)
 {
     if (EntityItemOfEntity(entity))
@@ -585,7 +583,7 @@ void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
 
     ComponentItem *cItem = new ComponentItem(comp->shared_from_this(), eItem);
     componentItems[comp] = cItem;
-    cItem->setHidden(!showComponents);
+    SetTreeWidgetItemVisible(cItem, showComponents);
 
     eItem->addChild(cItem);
 
@@ -661,17 +659,25 @@ void SceneStructureWindow::CreateAttributesForItem(EntityItem *eItem)
     }
 }
 
-void SceneStructureWindow::ShowAttributes()
+void SceneStructureWindow::SetAttributesVisible(bool show)
 {
-    for(EntityItemMap::const_iterator it = entityItems.begin(); it != entityItems.end(); ++it)
-        if (showComponents) // Parent to component items.
-            for(int i = 0; i < it->second->childCount(); ++i)
-            {
-                ComponentItem *cItem = dynamic_cast<ComponentItem *>(it->second->child(i));
-                CreateAttributesForItem(cItem);
-            }
-        else // Parent to entity items.
-            CreateAttributesForItem(it->second);
+    if (show)
+    {
+        for(EntityItemMap::const_iterator it = entityItems.begin(); it != entityItems.end(); ++it)
+            if (showComponents) // Parent to component items.
+                for(int i = 0; i < it->second->childCount(); ++i)
+                {
+                    ComponentItem *cItem = dynamic_cast<ComponentItem *>(it->second->child(i));
+                    CreateAttributesForItem(cItem);
+                }
+            else // Parent to entity items.
+                CreateAttributesForItem(it->second);
+    }
+    else
+    {
+        for(AttributeItemMap::iterator it = attributeItems.begin(); it != attributeItems.end(); ++it)
+            SetTreeWidgetItemVisible(it->second, false);
+    }
 }
 
 void SceneStructureWindow::CreateAttributeItem(QTreeWidgetItem *parentItem, IAttribute *attr)
@@ -685,7 +691,7 @@ void SceneStructureWindow::CreateAttributeItem(QTreeWidgetItem *parentItem, IAtt
     {
         // Item(s) for this attribute doesn't match the current showing criteria so hide them.
         for(size_t i = 0; i < existingItems.size(); ++i)
-            existingItems[i]->setHidden(true);
+            SetTreeWidgetItemVisible(existingItems[i], false);
         return;
     }
 
@@ -694,7 +700,7 @@ void SceneStructureWindow::CreateAttributeItem(QTreeWidgetItem *parentItem, IAtt
         for(size_t i = 0; i < existingItems.size(); ++i)
         {
             existingItems[i]->Update(attr);
-            existingItems[i]->setHidden(false);
+            SetTreeWidgetItemVisible(existingItems[i], true);
         }
     }
     else // Create new items.
@@ -709,7 +715,7 @@ void SceneStructureWindow::CreateAttributeItem(QTreeWidgetItem *parentItem, IAtt
             // that it appears in the tree.
             AttributeItem *aItem = new AssetRefItem(attr, parentItem);
             attributeItems.insert(std::make_pair(attr, aItem));
-            aItem->setHidden(!visible);
+            SetTreeWidgetItemVisible(aItem, visible);
             parentItem->addChild(aItem);
 
             if (attr->TypeId() == cAttributeAssetReferenceList)
@@ -726,7 +732,7 @@ void SceneStructureWindow::CreateAttributeItem(QTreeWidgetItem *parentItem, IAtt
                 for(int i = 1; i < refs.Size(); ++i)
                 {
                     aItem = new AssetRefItem(attr, i, parentItem);
-                    aItem->setHidden(!visible);
+                    SetTreeWidgetItemVisible(aItem, visible);
                     parentItem->addChild(aItem);
                     attributeItems.insert(std::make_pair(attr, aItem));
                 }
@@ -737,7 +743,7 @@ void SceneStructureWindow::CreateAttributeItem(QTreeWidgetItem *parentItem, IAtt
             AttributeItem *aItem = new AttributeItem(attr, parentItem);
             attributeItems.insert(std::make_pair(attr, aItem));
             const bool visible = (attributeVisibility == ShowAllAttributes || (attributeVisibility == ShowDynamicAttributes && attr->IsDynamic()));
-            aItem->setHidden(!visible);
+            SetTreeWidgetItemVisible(aItem, visible);
             parentItem->addChild(aItem);
         }
     }

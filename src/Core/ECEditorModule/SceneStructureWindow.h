@@ -97,11 +97,8 @@ private:
     void CreateAttributesForItem(ComponentItem *cItem);
     void CreateAttributesForItem(EntityItem *eItem);
 
-    /// Shows (and creates) attribute items depending on the currently set visibility type.
-    void ShowAttributes();
-
-    /// Hides all attribute items.
-    void HideAttributes();
+    /// Shows attributes of the current visibility type or hides the all.
+    void SetAttributesVisible(bool show);
 
     /// Create asset reference item to the tree widget.
     /** @param parentItem Parent item, can be entity or component item.
