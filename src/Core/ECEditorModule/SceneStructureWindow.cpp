@@ -20,11 +20,19 @@
 #include "EC_Name.h"
 #include "AssetReference.h"
 #include "LoggingFunctions.h"
+#include "ConfigAPI.h"
 
 #include <QTreeWidgetItemIterator>
 #include <QToolButton>
 
 #include "MemoryLeakCheck.h"
+
+namespace
+{
+    const ConfigData cShowGroupsSetting(ConfigAPI::FILE_FRAMEWORK, "Scene Structure Window", "Show Groups", true);
+    const ConfigData cShowComponentsSetting(ConfigAPI::FILE_FRAMEWORK, "Scene Structure Window", "Show Components", true);
+    const ConfigData cAttributeVisibilitySetting(ConfigAPI::FILE_FRAMEWORK, "Scene Structure Window", "Attribute Visibility", SceneStructureWindow::ShowAssetReferences);
+}
 
 SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     QWidget(parent),
@@ -36,6 +44,11 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     expandAndCollapseButton(0),
     searchField(0)
 {
+    ConfigAPI &cfg = *framework->Config();
+    showGroups = cfg.DeclareSetting(cShowGroupsSetting).toBool();
+    showComponents = cfg.DeclareSetting(cShowComponentsSetting).toBool();
+    attributeVisibility = static_cast<AttributeVisibilityType>(cfg.DeclareSetting(cAttributeVisibilitySetting).toUInt());
+
     // Init main widget
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 5, 5, 5);
@@ -121,6 +134,11 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
 
 SceneStructureWindow::~SceneStructureWindow()
 {
+    ConfigAPI &cfg = *framework->Config();
+    cfg.Write(cShowGroupsSetting, cShowGroupsSetting.key, showGroups);
+    cfg.Write(cShowComponentsSetting, cShowComponentsSetting.key, showComponents);
+    cfg.Write(cAttributeVisibilitySetting, cAttributeVisibilitySetting.key, attributeVisibility);
+
     SetScene(ScenePtr());
 }
 
@@ -594,7 +612,10 @@ void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
     }
 
     // Add possible attributes.
-    CreateAttributesForItem(cItem);
+    if (showComponents)
+        CreateAttributesForItem(cItem);
+    else
+        CreateAttributesForItem(eItem);
 
     // If we have an ongoing search, make sure that the new item is compared too.
     if (!searchField->text().isEmpty())
