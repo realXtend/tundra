@@ -29,6 +29,7 @@
 SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     QWidget(parent),
     framework(fw),
+    showGroups(true),
     showComponents(true),
     attributeVisibility(ShowAssetReferences),
     treeWidget(0),
@@ -57,6 +58,9 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     sortComboBox->addItem(tr("ID"));
     sortComboBox->addItem(tr("Name"));
     sortComboBox->setFixedHeight(20);
+
+    QCheckBox *groupCheckBox = new QCheckBox(tr("Groups"), this);
+    groupCheckBox->setChecked(showGroups);
 
     QCheckBox *compCheckBox = new QCheckBox(tr("Components"), this);
     compCheckBox->setChecked(showComponents);
@@ -95,6 +99,7 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     layoutSettingsVisibility->addWidget(undoButton_);
     layoutSettingsVisibility->addWidget(redoButton_);
     layoutSettingsVisibility->addSpacerItem(new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
+    layoutSettingsVisibility->addWidget(groupCheckBox);
     layoutSettingsVisibility->addWidget(compCheckBox);
     layoutSettingsVisibility->addWidget(attributeLabel);
     layoutSettingsVisibility->addWidget(attributeComboBox);
@@ -105,6 +110,7 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
 
     // Connect to widget signals
     connect(attributeComboBox, SIGNAL(currentIndexChanged(int)), SLOT(SetAttributeVisibilityInternal(int)));
+    connect(groupCheckBox, SIGNAL(toggled(bool)), SLOT(ShowGroups(bool)));
     connect(compCheckBox, SIGNAL(toggled(bool)), SLOT(ShowComponents(bool)));
     connect(sortComboBox, SIGNAL(currentIndexChanged(int)), SLOT(Sort(int)));
     connect(searchField, SIGNAL(textEdited(const QString &)), SLOT(Search(const QString &)));
@@ -156,6 +162,59 @@ void SceneStructureWindow::SetScene(const ScenePtr &newScene)
 
         Populate();
     }
+}
+
+void SceneStructureWindow::ShowGroups(bool show)
+{
+    if (show == showGroups)
+        return;
+
+    showGroups = show;
+
+    treeWidget->setSortingEnabled(false);
+
+    // (new parent, child) mapping. Null as a new parent means that child should be added to the top-level items.
+    typedef std::multimap<QTreeWidgetItem *, QTreeWidgetItem *> ParentChildMap;
+
+    for(EntityGroupItemMap::const_iterator it = entityGroupItems.begin(); it != entityGroupItems.end(); ++it)
+    {
+        ParentChildMap toBeReparented;
+
+        EntityGroupItem *gItem = *it;
+
+        if (showGroups)
+            //for(int i = 0; i < gItem->childCount(); ++i)
+            {
+                EntityList entities = Scene()->EntitiesOfGroup(gItem->GroupName());
+                for(EntityList::const_iterator iter = entities.begin(); iter != entities.end(); ++iter)
+                    toBeReparented.insert(std::make_pair(gItem, EntityItemOfEntity((*iter).get())));
+                    //toBeReparented.insert(std::make_pair(static_cast<EntityItem *>(gItem->child(i))->Parent(), gItem->child(i)));
+            }
+        else
+            foreach(QTreeWidgetItem *eItem, gItem->takeChildren())
+                toBeReparented.insert(std::make_pair((QTreeWidgetItem *)0, eItem));
+
+        for(ParentChildMap::const_iterator it = toBeReparented.begin(); it != toBeReparented.end(); ++it)
+        {
+            LogInfo(it->second->text(0));
+            if (it->first)
+            {
+                treeWidget->takeTopLevelItem(treeWidget->indexOfTopLevelItem(it->second));
+                treeWidget->addTopLevelItem(it->first);
+                it->first->addChild(it->second);
+            }
+            else
+            {
+                treeWidget->takeTopLevelItem(treeWidget->indexOfTopLevelItem(gItem));
+                treeWidget->addTopLevelItem(it->second);
+            }
+        }
+        gItem->setHidden(!showGroups);
+   }
+
+    treeWidget->setSortingEnabled(true);
+
+    expandAndCollapseButton->setEnabled(showGroups || showComponents || attributeVisibility != DoNotShowAttributes);
 }
 
 void SceneStructureWindow::ShowComponents(bool show)
@@ -283,16 +342,51 @@ void SceneStructureWindow::Populate()
 
 void SceneStructureWindow::Clear()
 {
-    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    // Can't rely simply on the following as we very likely have unparented items floating around.
+    /*for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         QTreeWidgetItem *item = treeWidget->topLevelItem(i);
         SAFE_DELETE(item);
-    }
+    }*/
 
-    entityItemsById.clear();
-    entityItems.clear();
-    componentItems.clear();
+    /// @todo 28.08.2013 Check memory leak report for this file!
+
+    for(AttributeItemMap::const_iterator it = attributeItems.begin(); it != attributeItems.end(); ++it)
+    {
+        AttributeItem *item = it->second;
+        if (item->parent())
+            item->parent()->removeChild(item);
+        SAFE_DELETE(item);
+    }
     attributeItems.clear();
+
+    for(ComponentItemMap::const_iterator it = componentItems.begin(); it != componentItems.end(); ++it)
+    {
+        ComponentItem *item = it->second;
+        if (item->parent())
+            item->parent()->removeChild(item);
+        SAFE_DELETE(item);
+    }
+    componentItems.clear();
+
+    for(EntityItemMap::const_iterator it = entityItems.begin(); it != entityItems.end(); ++it)
+    {
+        EntityItem *item = it->second;
+        if (item->parent())
+            item->parent()->removeChild(item);
+        SAFE_DELETE(item);
+    }
+    entityItems.clear();
+
+    // entityItemsById holds only "weak" refs to EntityItems.
+    entityItemsById.clear();
+
+    for(EntityGroupItemMap::const_iterator it = entityGroupItems.begin(); it != entityGroupItems.end(); ++it)
+    {
+        EntityGroupItem *item = *it;
+        SAFE_DELETE(item);
+    }
+    entityGroupItems.clear();
 }
 
 EntityItem* SceneStructureWindow::EntityItemOfEntity(Entity *entity) const
@@ -445,19 +539,21 @@ void SceneStructureWindow::RemoveEntityItem(EntityItem* item)
 
     entityItemsById.erase(item->Id());
 
-    EntityGroupItem *gItem = item->Parent();
+//    EntityGroupItem *gItem = item->Parent();
     SAFE_DELETE(item);
 
     // Delete entity group item if this entity being deleted is the last child
+    /*
     if (!gItem)
         return;
 
     if (!gItem->childCount())
     {
-        QString groupName = gItem->GroupName();
+        const QString groupName = gItem->GroupName();
         SAFE_DELETE(gItem);
         entityGroupItems[groupName] = 0;
     }
+    */
 }
 
 void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
@@ -673,6 +769,7 @@ void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
     {
         if (attr == &nameComp->group)
         {
+            /// @todo This is slow! Implement more efficiently. 28.08.2013
             RemoveEntity(entity);
             AddEntity(entity);
         }

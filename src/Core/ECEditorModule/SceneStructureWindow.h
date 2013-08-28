@@ -58,6 +58,10 @@ public:
     };
 
 public slots:
+    /// Sets do we want to entity groups in the tree view.
+    /** @param show Visibility of entity groups in the tree view. */
+    void ShowGroups(bool show);
+
     /// Sets do we want to show components in the tree view.
     /** @param show Visibility of components in the tree view. */
     void ShowComponents(bool show);
@@ -115,8 +119,9 @@ private:
     Framework *framework; ///< Framework.
     SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
     SceneTreeWidget *treeWidget; ///< Scene tree widget.
-    bool showComponents; ///< Do we show components also in the tree view.
-    AttributeVisibilityType attributeVisibility; ///< Do we show attributes also in the tree view.
+    bool showGroups; ///< Are entity groups shown in the tree view.
+    bool showComponents; ///< Are components shown in the tree view.
+    AttributeVisibilityType attributeVisibility; ///< What types of attributes, if any, are shown in the tree view.
     QLineEdit *searchField; ///< Search field line edit.
     QPushButton *expandAndCollapseButton; ///< Expand/collapse all button.
     QToolButton * undoButton_; ///< Undo button with drop-down menu
@@ -128,7 +133,8 @@ private:
     typedef std::multimap<IAttribute *, AttributeItem *> AttributeItemMap;
     typedef std::pair<AttributeItemMap::iterator, AttributeItemMap::iterator> AttributeItemMapRange;
     typedef std::pair<AttributeItemMap::const_iterator, AttributeItemMap::const_iterator> AttributeItemMapConstRange;
-    QHash<QString, EntityGroupItem*> entityGroupItems; ///< Entity groups
+    typedef QHash<QString, EntityGroupItem *> EntityGroupItemMap;
+    EntityGroupItemMap entityGroupItems; ///< Entity groups
     EntityItemIdMap entityItemsById;
     EntityItemMap entityItems;
     ComponentItemMap componentItems;
