@@ -21,6 +21,7 @@
 #include "AssetReference.h"
 #include "LoggingFunctions.h"
 #include "ConfigAPI.h"
+#include "Profiler.h"
 
 #include <QTreeWidgetItemIterator>
 #include <QToolButton>
@@ -33,7 +34,7 @@ namespace
     const ConfigData cShowComponentsSetting(ConfigAPI::FILE_FRAMEWORK, "Scene Structure Window", "Show Components", true);
     const ConfigData cAttributeVisibilitySetting(ConfigAPI::FILE_FRAMEWORK, "Scene Structure Window", "Attribute Visibility", SceneStructureWindow::ShowAssetReferences);
 
-    void SetTreeWidgetItemVisible(QTreeWidgetItem *item, bool visible)
+    inline void SetTreeWidgetItemVisible(QTreeWidgetItem *item, bool visible)
     {
         item->setHidden(!visible);
         item->setDisabled(!visible);
@@ -190,6 +191,8 @@ void SceneStructureWindow::SetScene(const ScenePtr &newScene)
 
 void SceneStructureWindow::ShowGroups(bool show)
 {
+    PROFILE(SceneStructureWindow_ShowGroups)
+
     if (show == showGroups)
         return;
 
@@ -207,16 +210,16 @@ void SceneStructureWindow::ShowGroups(bool show)
         EntityGroupItem *gItem = *it;
 
         if (showGroups)
-            //for(int i = 0; i < gItem->childCount(); ++i)
-            {
-                EntityList entities = Scene()->EntitiesOfGroup(gItem->GroupName());
-                for(EntityList::const_iterator iter = entities.begin(); iter != entities.end(); ++iter)
-                    toBeReparented.insert(std::make_pair(gItem, EntityItemOfEntity((*iter).get())));
-                    //toBeReparented.insert(std::make_pair(static_cast<EntityItem *>(gItem->child(i))->Parent(), gItem->child(i)));
-            }
+        {
+            EntityList entities = Scene()->EntitiesOfGroup(gItem->GroupName());
+            for(EntityList::const_iterator iter = entities.begin(); iter != entities.end(); ++iter)
+                toBeReparented.insert(std::make_pair(gItem, EntityItemOfEntity((*iter).get())));
+        }
         else
+        {
             foreach(QTreeWidgetItem *eItem, gItem->takeChildren())
                 toBeReparented.insert(std::make_pair((QTreeWidgetItem *)0, eItem));
+        }
 
         for(ParentChildMap::const_iterator it = toBeReparented.begin(); it != toBeReparented.end(); ++it)
         {
@@ -241,6 +244,8 @@ void SceneStructureWindow::ShowGroups(bool show)
 
 void SceneStructureWindow::ShowComponents(bool show)
 {
+    PROFILE(SceneStructureWindow_ShowComponents)
+
     if (show == showComponents)
         return;
 
@@ -295,6 +300,8 @@ void SceneStructureWindow::ShowComponents(bool show)
 
 void SceneStructureWindow::SetAttributeVisibility(AttributeVisibilityType type)
 {
+    PROFILE(SceneStructureWindow_SetAttributeVisibility)
+
     if (attributeVisibility == type)
         return;
 
@@ -336,12 +343,31 @@ void SceneStructureWindow::changeEvent(QEvent* e)
 
 void SceneStructureWindow::Populate()
 {
-    ScenePtr s = scene.lock();
+    PROFILE(SceneStructureWindow_Populate)
+
+    ScenePtr s = Scene();
     if (!s)
     {
         LogWarning("Scene pointer expired. Cannot populate tree widget.");
         return;
     }
+
+    /// @todo Would reserving size for the item maps be any help?
+    /*
+    for(Scene::const_iterator eit = s->begin(); eit != s->end(); ++eit)
+    {
+        entityItems[eit->second.get()] = 0;
+        entityItemsById[eit->first] = 0;
+        const Entity::ComponentMap &components = eit->second->Components();
+        for(Entity::ComponentMap::const_iterator cit = components.begin(); cit != components.end(); ++cit)
+        {
+            componentItems[cit->second.get()] = 0;
+            const AttributeVector& attrs = cit->second->Attributes();
+            for(size_t ait = 0; ait < attrs.size(); ++ait)
+                attributeItems.insert(std::make_pair(attrs[ait], (AttributeItem *)0));
+        }
+    }
+    */
 
     BeginModifications();
 
@@ -353,6 +379,8 @@ void SceneStructureWindow::Populate()
 
 void SceneStructureWindow::Clear()
 {
+    PROFILE(SceneStructureWindow_Clear)
+
     BeginModifications();
 
     // Can't rely simply on the following as we very likely have unparented items floating around.
@@ -367,7 +395,7 @@ void SceneStructureWindow::Clear()
     for(AttributeItemMap::const_iterator it = attributeItems.begin(); it != attributeItems.end(); ++it)
     {
         AttributeItem *item = it->second;
-        if (item->parent())
+        if (item && item->parent())
             item->parent()->removeChild(item);
         SAFE_DELETE(item);
     }
@@ -376,7 +404,7 @@ void SceneStructureWindow::Clear()
     for(ComponentItemMap::const_iterator it = componentItems.begin(); it != componentItems.end(); ++it)
     {
         ComponentItem *item = it->second;
-        if (item->parent())
+        if (item && item->parent())
             item->parent()->removeChild(item);
         SAFE_DELETE(item);
     }
@@ -385,7 +413,7 @@ void SceneStructureWindow::Clear()
     for(EntityItemMap::const_iterator it = entityItems.begin(); it != entityItems.end(); ++it)
     {
         EntityItem *item = it->second;
-        if (item->parent())
+        if (item && item->parent())
             item->parent()->removeChild(item);
         SAFE_DELETE(item);
     }
@@ -458,22 +486,26 @@ void SceneStructureWindow::SetEntityItemSelected(EntityItem *item, bool selected
 
 void SceneStructureWindow::BeginModifications()
 {
+//    treeWidget->blockSignals(true);
     treeWidget->setSortingEnabled(false);
 }
 
 void SceneStructureWindow::EndModifications()
 {
-    expandAndCollapseButton->setEnabled(showGroups || showComponents || attributeVisibility != DoNotShowAttributes);
+    expandAndCollapseButton->setEnabled((!entityGroupItems.empty() && showGroups) || showComponents || attributeVisibility != DoNotShowAttributes);
 
     // If we have an ongoing search, make sure that changes are takeng into account.
     if (!searchField->text().isEmpty())
         TreeWidgetSearch(treeWidget, 0, searchField->text());
 
     treeWidget->setSortingEnabled(true);
+//    treeWidget->blockSignals(false);
 }
 
 void SceneStructureWindow::AddEntity(Entity* entity)
 {
+    PROFILE(SceneStructureWindow_AddEntity)
+
     if (EntityItemOfEntity(entity))
         return;
 
@@ -507,9 +539,12 @@ void SceneStructureWindow::AddEntity(Entity* entity)
     else
         treeWidget->addTopLevelItem(entityItem);
 
-    const Entity::ComponentMap &components = entity->Components();
-    for(Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
-        AddComponent(entity, i->second.get());
+    //if (showComponents)
+    {
+        const Entity::ComponentMap &components = entity->Components();
+        for(Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
+            AddComponent(entityItem, entity, i->second.get());
+    }
 
     EndModifications();
 }
@@ -583,12 +618,20 @@ void SceneStructureWindow::RemoveEntityItem(EntityItem* item)
 
 void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
 {
-    EntityItem *eItem = EntityItemOfEntity(entity);
+    AddComponent(EntityItemOfEntity(entity), entity, comp);
+}
+
+void SceneStructureWindow::AddComponent(EntityItem *eItem, Entity *entity, IComponent *comp)
+{
+    PROFILE(SceneStructureWindow_AddComponent)
+
     if (!eItem)
         return;
 
     if (ComponentItemOfComponent(comp))
         return;
+
+    BeginModifications();
 
     ComponentItem *cItem = new ComponentItem(comp->shared_from_this(), eItem);
     componentItems[comp] = cItem;
@@ -596,7 +639,7 @@ void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
 
     eItem->addChild(cItem);
 
-    connect(comp, SIGNAL(ComponentNameChanged(const QString &, const QString &)), SLOT(UpdateComponentName()));
+    connect(comp, SIGNAL(ComponentNameChanged(const QString &, const QString &)), SLOT(UpdateComponentName()), Qt::UniqueConnection);
 
     if (comp->TypeId() == EC_Name::ComponentTypeId)
     {
@@ -618,21 +661,26 @@ void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
             SLOT(UpdateDynamicAttribute(IAttribute *)), Qt::UniqueConnection);
     }
 
-    // Add possible attributes.
-    if (showComponents)
-        CreateAttributesForItem(cItem);
-    else
-        CreateAttributesForItem(eItem);
+    if (attributeVisibility != DoNotShowAttributes)
+    {
+        if (showComponents)
+            CreateAttributesForItem(cItem);
+        else
+            CreateAttributesForItem(eItem);
+    }
 
     EndModifications();
 }
 
 void SceneStructureWindow::RemoveComponent(Entity* entity, IComponent* comp)
 {
+    RemoveComponent(EntityItemOfEntity(entity), entity, comp);
+}
+
+void SceneStructureWindow::RemoveComponent(EntityItem *eItem ,Entity* entity, IComponent* comp)
+{
     foreach(IAttribute *attr, comp->Attributes())
         RemoveAttribute(attr);
-
-    EntityItem *eItem = EntityItemOfEntity(entity);
 
     ComponentItemMap::iterator iter = componentItems.find(comp);
     if (iter != componentItems.end())
@@ -693,6 +741,8 @@ void SceneStructureWindow::SetAttributesVisible(bool show)
 
 void SceneStructureWindow::CreateAttributeItem(QTreeWidgetItem *parentItem, IAttribute *attr)
 {
+    PROFILE(SceneStructureWindow_CreateAttributeItem)
+
     std::vector<AttributeItem *> existingItems = AttributeItemOfAttribute(attr);
 
     if (!(attr && (attributeVisibility == ShowAllAttributes ||
@@ -808,7 +858,7 @@ void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
         if (attr == &nameComp->group)
         {
             /// @todo This is slow! Implement more efficiently. 28.08.2013
-            RemoveEntity(entity);
+            RemoveEntityItem(item);
             AddEntity(entity);
         }
         else if (attr == &nameComp->name)

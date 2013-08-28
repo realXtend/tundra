@@ -128,6 +128,7 @@ private:
     QToolButton * undoButton_; ///< Undo button with drop-down menu
     QToolButton * redoButton_; ///< Redo button with drop-down menu
 
+    /// @todo Consider using unordered_(multi)map
     typedef std::map<entity_id_t, EntityItem *> EntityItemIdMap;
     typedef std::map<Entity *, EntityItem *> EntityItemMap;
     typedef std::map<IComponent *, ComponentItem *> ComponentItemMap;
@@ -161,11 +162,13 @@ private slots:
     /** @param entity Altered entity.
         @param comp Component which was added. */
     void AddComponent(Entity *entity, IComponent *comp);
+    void AddComponent(EntityItem *eItem, Entity *entity, IComponent *comp);
 
     /// Removes entity from the tree widget.
     /** @param entity Altered entity.
         @param comp Component which was removed. */
     void RemoveComponent(Entity *entity, IComponent *comp);
+    void RemoveComponent(EntityItem *eItem, Entity *entity, IComponent *comp);
 
     /// Adds an attribute item item to the tree widget.
     /** This is called only by EC_DynamicComponent when asset ref attribute is added to it.
