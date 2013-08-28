@@ -361,7 +361,7 @@ void SceneStructureWindow::AddEntity(Entity* entity)
     const Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
 
     EntityGroupItem *groupItem = 0;
-    const QString &groupName = entity->Group();
+    const QString groupName = entity->Group();
     if (!groupName.isEmpty())
     {
         groupItem = entityGroupItems[groupName];
@@ -433,8 +433,17 @@ void SceneStructureWindow::RemoveEntityById(entity_id_t id)
 
 void SceneStructureWindow::RemoveEntityItem(EntityItem* item)
 {
+    EntityPtr entity = item->Entity();
+    if (entity)
+    {
+        entityItems.erase(entity.get());
+
+        const Entity::ComponentMap &components = entity->Components();
+        for(Entity::ComponentMap::const_iterator it = components.begin(); it != components.end(); ++it)
+            RemoveComponent(entity.get(), it->second.get());
+    }
+
     entityItemsById.erase(item->Id());
-    entityItems.erase(item->Entity().get());
 
     EntityGroupItem *gItem = item->Parent();
     SAFE_DELETE(item);
@@ -483,7 +492,7 @@ void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
         connect(comp, SIGNAL(AttributeAdded(IAttribute *)),
             SLOT(AddDynamicAttribute(IAttribute *)), Qt::UniqueConnection);
         connect(comp, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)),
-            SLOT(RemoveDynamicAttribute(IAttribute *)), Qt::UniqueConnection);
+            SLOT(RemoveAttribute(IAttribute *)), Qt::UniqueConnection);
         connect(comp, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)),
             SLOT(UpdateDynamicAttribute(IAttribute *)), Qt::UniqueConnection);
     }
@@ -498,6 +507,9 @@ void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
 
 void SceneStructureWindow::RemoveComponent(Entity* entity, IComponent* comp)
 {
+    foreach(IAttribute *attr, comp->Attributes())
+        RemoveAttribute(attr);
+
     EntityItem *eItem = EntityItemOfEntity(entity);
 
     ComponentItemMap::iterator iter = componentItems.find(comp);
@@ -510,7 +522,7 @@ void SceneStructureWindow::RemoveComponent(Entity* entity, IComponent* comp)
         SAFE_DELETE(cItem);
     }
 
-    if (comp->TypeId() == EC_Name::ComponentTypeId)
+    if (eItem && comp->TypeId() == EC_Name::ComponentTypeId)
         eItem->setText(0, QString("%1").arg(entity->Id()));
 }
 
@@ -627,8 +639,11 @@ void SceneStructureWindow::AddDynamicAttribute(IAttribute *attr)
         CreateAttributeItem(parentItem, attr);
 }
 
-void SceneStructureWindow::RemoveDynamicAttribute(IAttribute *attr)
+void SceneStructureWindow::RemoveAttribute(IAttribute *attr)
 {
+    if (!attr)
+        return;
+
     AttributeItemMapRange range = attributeItems.equal_range(attr);
     for(AttributeItemMap::iterator it = range.first; it != range.second; ++it)
     {

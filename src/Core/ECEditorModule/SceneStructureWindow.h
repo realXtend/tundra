@@ -168,7 +168,7 @@ private slots:
     /// Removes an attribute item from the tree widget.
     /** This is called only by EC_DynamicComponent when asset ref attribute is removed from it.
         @param attr AssetReference attribute. */
-    void RemoveDynamicAttribute(IAttribute *attr);
+    void RemoveAttribute(IAttribute *attr);
 
     /// Updates an attribute item.
     /** @param attr AssetReference attribute. */
