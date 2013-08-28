@@ -107,11 +107,15 @@ private:
 
     EntityItem* EntityItemOfEntity(Entity* ent) const;
     /// @note This function does lookup from a different map than EntityItemOfEntity.
-    EntityItem* EntityItemById(entity_id_t id) const;
+    EntityItem* EntityItemById(entity_id_t id) const ;
     void RemoveEntityItem(EntityItem* item);
     ComponentItem *ComponentItemOfComponent(IComponent *) const;
     std::vector<AttributeItem *> AttributeItemOfAttribute(IAttribute *) const;
     void SetEntityItemSelected(EntityItem *item, bool selected);
+    /// Call before modifying treeWidget's content.
+    void BeginModifications();
+    /// Call after treeWidget's content modifications are done.
+    void EndModifications();
 
     Framework *framework; ///< Framework.
     SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.

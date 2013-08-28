@@ -195,7 +195,7 @@ void SceneStructureWindow::ShowGroups(bool show)
 
     showGroups = show;
 
-    treeWidget->setSortingEnabled(false);
+    BeginModifications();
 
     // (new parent, child) mapping. Null as a new parent means that child should be added to the top-level items.
     typedef std::multimap<QTreeWidgetItem *, QTreeWidgetItem *> ParentChildMap;
@@ -220,7 +220,6 @@ void SceneStructureWindow::ShowGroups(bool show)
 
         for(ParentChildMap::const_iterator it = toBeReparented.begin(); it != toBeReparented.end(); ++it)
         {
-            LogInfo(it->second->text(0));
             if (it->first)
             {
                 treeWidget->takeTopLevelItem(treeWidget->indexOfTopLevelItem(it->second));
@@ -235,11 +234,9 @@ void SceneStructureWindow::ShowGroups(bool show)
         }
 
         SetTreeWidgetItemVisible(gItem, showGroups);
-   }
+    }
 
-    treeWidget->setSortingEnabled(true);
-
-    expandAndCollapseButton->setEnabled(showGroups || showComponents || attributeVisibility != DoNotShowAttributes);
+    EndModifications();
 }
 
 void SceneStructureWindow::ShowComponents(bool show)
@@ -250,7 +247,7 @@ void SceneStructureWindow::ShowComponents(bool show)
     showComponents = show;
     treeWidget->showComponents = show;
 
-    treeWidget->setSortingEnabled(false);
+    BeginModifications();
 
     // Set component items' visiblity and reparented attribute items.
     typedef std::multimap<QTreeWidgetItem *, QTreeWidgetItem *> ParentChildMap; // (new parent, child) mapping.
@@ -291,11 +288,9 @@ void SceneStructureWindow::ShowComponents(bool show)
         }
 
         SetTreeWidgetItemVisible(cItem, showComponents);
-   }
+    }
 
-    treeWidget->setSortingEnabled(true);
-
-    expandAndCollapseButton->setEnabled(showGroups || showComponents || attributeVisibility != DoNotShowAttributes);
+    EndModifications();
 }
 
 void SceneStructureWindow::SetAttributeVisibility(AttributeVisibilityType type)
@@ -305,8 +300,6 @@ void SceneStructureWindow::SetAttributeVisibility(AttributeVisibilityType type)
 
     attributeVisibility = type;
 
-    treeWidget->setSortingEnabled(false);
-
     if (scene.expired())
     {
         Clear();
@@ -314,10 +307,6 @@ void SceneStructureWindow::SetAttributeVisibility(AttributeVisibilityType type)
     }
 
     SetAttributesVisible(attributeVisibility != DoNotShowAttributes);
-
-    treeWidget->setSortingEnabled(true);
-
-    expandAndCollapseButton->setEnabled(showGroups || showComponents || attributeVisibility != DoNotShowAttributes);
 }
 
 void SceneStructureWindow::SetEntitySelected(const EntityPtr &entity, bool selected)
@@ -354,16 +343,18 @@ void SceneStructureWindow::Populate()
         return;
     }
 
-    treeWidget->setSortingEnabled(false);
+    BeginModifications();
 
     for(Scene::iterator it = s->begin(); it != s->end(); ++it)
         AddEntity((*it).second.get());
 
-    treeWidget->setSortingEnabled(true);
+    EndModifications();
 }
 
 void SceneStructureWindow::Clear()
 {
+    BeginModifications();
+
     // Can't rely simply on the following as we very likely have unparented items floating around.
     /*for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
@@ -409,6 +400,8 @@ void SceneStructureWindow::Clear()
         SAFE_DELETE(item);
     }
     entityGroupItems.clear();
+
+    EndModifications();
 }
 
 EntityItem* SceneStructureWindow::EntityItemOfEntity(Entity *entity) const
@@ -463,10 +456,28 @@ void SceneStructureWindow::SetEntityItemSelected(EntityItem *item, bool selected
     }
 }
 
+void SceneStructureWindow::BeginModifications()
+{
+    treeWidget->setSortingEnabled(false);
+}
+
+void SceneStructureWindow::EndModifications()
+{
+    expandAndCollapseButton->setEnabled(showGroups || showComponents || attributeVisibility != DoNotShowAttributes);
+
+    // If we have an ongoing search, make sure that changes are takeng into account.
+    if (!searchField->text().isEmpty())
+        TreeWidgetSearch(treeWidget, 0, searchField->text());
+
+    treeWidget->setSortingEnabled(true);
+}
+
 void SceneStructureWindow::AddEntity(Entity* entity)
 {
     if (EntityItemOfEntity(entity))
         return;
+
+    BeginModifications();
 
     const Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
 
@@ -500,9 +511,7 @@ void SceneStructureWindow::AddEntity(Entity* entity)
     for(Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
         AddComponent(entity, i->second.get());
 
-    // If we have an ongoing search, make sure that the new item is compared too.
-    if (!searchField->text().isEmpty())
-        TreeWidgetSearch(treeWidget, 0, searchField->text());
+    EndModifications();
 }
 
 void SceneStructureWindow::AckEntity(Entity* entity, entity_id_t oldId)
@@ -615,9 +624,7 @@ void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
     else
         CreateAttributesForItem(eItem);
 
-    // If we have an ongoing search, make sure that the new item is compared too.
-    if (!searchField->text().isEmpty())
-        TreeWidgetSearch(treeWidget, 0, searchField->text());
+    EndModifications();
 }
 
 void SceneStructureWindow::RemoveComponent(Entity* entity, IComponent* comp)
@@ -638,7 +645,7 @@ void SceneStructureWindow::RemoveComponent(Entity* entity, IComponent* comp)
     }
 
     if (eItem && comp->TypeId() == EC_Name::ComponentTypeId)
-        eItem->setText(0, QString("%1").arg(entity->Id()));
+        eItem->setText(0, QString("%1").arg(entity->Id())); /**< @todo Doesn't append the extra information, but cannot call SetText as the EC_Name still exists. */
 }
 
 void SceneStructureWindow::CreateAttributesForItem(ComponentItem *cItem)
@@ -661,6 +668,8 @@ void SceneStructureWindow::CreateAttributesForItem(EntityItem *eItem)
 
 void SceneStructureWindow::SetAttributesVisible(bool show)
 {
+    BeginModifications();
+
     if (show)
     {
         for(EntityItemMap::const_iterator it = entityItems.begin(); it != entityItems.end(); ++it)
@@ -678,6 +687,8 @@ void SceneStructureWindow::SetAttributesVisible(bool show)
         for(AttributeItemMap::iterator it = attributeItems.begin(); it != attributeItems.end(); ++it)
             SetTreeWidgetItemVisible(it->second, false);
     }
+
+    EndModifications();
 }
 
 void SceneStructureWindow::CreateAttributeItem(QTreeWidgetItem *parentItem, IAttribute *attr)
