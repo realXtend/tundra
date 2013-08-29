@@ -19,27 +19,70 @@
 
 #include "MemoryLeakCheck.h"
 
+// EntityGroupItem
+
+EntityGroupItem::EntityGroupItem(const QString &groupName) :
+    name(groupName)
+{
+    UpdateText();
+}
+
+EntityGroupItem::~EntityGroupItem()
+{
+    // Don't leave children free-floating.
+    foreach(QTreeWidgetItem *child, takeChildren())
+        treeWidget()->addTopLevelItem(child);
+}
+
+void EntityGroupItem::UpdateText()
+{
+    setText(0, QString("Group: %1 (%2 item(s))").arg(name).arg(entityItems.size()));
+}
+
+void EntityGroupItem::AddEntityItem(EntityItem *eItem)
+{
+    EntityGroupItem *parentItem = eItem->Parent();
+    if (!parentItem)
+        treeWidget()->takeTopLevelItem(treeWidget()->indexOfTopLevelItem(eItem)); // currently a top-level item, remove from top-level.
+
+    if (parentItem && parentItem != this)
+        eItem->Parent()->RemoveEntityItem(eItem);
+
+    addChild(eItem);
+
+    entityItems << eItem;
+    UpdateText();
+}
+
+void EntityGroupItem::RemoveEntityItem(EntityItem *eItem)
+{
+    EntityGroupItem *parentItem = eItem->Parent();
+    removeChild(eItem);
+
+    if (parentItem == this)
+        treeWidget()->addTopLevelItem(eItem);
+
+    entityItems.removeAll(eItem);
+    UpdateText();
+}
+
 // EntityItem
 
-EntityItem::EntityItem(const EntityPtr &entity, EntityGroupItem *parent) :
-    ptr(entity), id(entity->Id()), parentItem(parent)
+EntityItem::EntityItem(const EntityPtr &entity, EntityGroupItem *parentItem) :
+    QTreeWidgetItem(parentItem),
+    ptr(entity),
+    id(entity->Id())
 {
     if (parentItem)
-    {
-        parentItem->numberOfEntities++;
-        parentItem->UpdateText();
-    }
+        parentItem->AddEntityItem(this);
 
     SetText(entity.get());
 }
 
 EntityItem::~EntityItem()
 {
-    if (parentItem)
-    {
-        parentItem->numberOfEntities--;
-        parentItem->UpdateText();
-    }
+    if (Parent())
+        Parent()->RemoveEntityItem(this);
 }
 
 void EntityItem::SetText(::Entity *entity)
@@ -81,7 +124,7 @@ void EntityItem::SetText(::Entity *entity)
 
 EntityGroupItem *EntityItem::Parent() const
 {
-    return parentItem;
+    return dynamic_cast<EntityGroupItem *>(parent());
 }
 
 EntityPtr EntityItem::Entity() const
@@ -110,18 +153,6 @@ bool EntityItem::operator <(const QTreeWidgetItem &rhs) const
     }
     else
         return QTreeWidgetItem::operator <(rhs);
-}
-
-EntityGroupItem::EntityGroupItem(const QString &groupName) :
-    name(groupName),
-    numberOfEntities(0)
-{
-    UpdateText();
-}
-
-void EntityGroupItem::UpdateText()
-{
-    setText(0, QString("Group: %1 (%2 item(s))").arg(name).arg(numberOfEntities));
 }
 
 // ComponentItem

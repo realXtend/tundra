@@ -211,6 +211,7 @@ void SceneStructureWindow::ShowGroups(bool show)
 
         if (showGroups)
         {
+            /// @todo Optimize 29.08.2013
             EntityList entities = Scene()->EntitiesOfGroup(gItem->GroupName());
             for(EntityList::const_iterator iter = entities.begin(); iter != entities.end(); ++iter)
                 toBeReparented.insert(std::make_pair(gItem, EntityItemOfEntity((*iter).get())));
@@ -355,8 +356,7 @@ void SceneStructureWindow::Populate()
     }
 
     /// @todo Would reserving size for the item maps be any help?
-    /*
-    for(Scene::const_iterator eit = s->begin(); eit != s->end(); ++eit)
+    /*for(Scene::const_iterator eit = s->begin(); eit != s->end(); ++eit)
     {
         entityItems[eit->second.get()] = 0;
         entityItemsById[eit->first] = 0;
@@ -368,7 +368,22 @@ void SceneStructureWindow::Populate()
             for(size_t ait = 0; ait < attrs.size(); ++ait)
                 attributeItems.insert(std::make_pair(attrs[ait], (AttributeItem *)0));
         }
+    }*/
+    // If using unordered maps:
+    /*size_t numEntities = s->Entities().size();
+    size_t numComps = 0, numAttrs = 0;
+    for(Scene::const_iterator eit = s->begin(); eit != s->end(); ++eit)
+    {
+        const Entity::ComponentMap &components = eit->second->Components();
+        numComps += components.size();
+        for(Entity::ComponentMap::const_iterator cit = components.begin(); cit != components.end(); ++cit)
+            numAttrs += cit->second->Attributes().size();
     }
+    // Emulate the missing reserve() function, http://stackoverflow.com/questions/10617829/boostunordered-map-missing-reserve-like-stdunordered-map/10618264#10618264
+    entityItems.rehash(std::ceil(numEntities / entityItems.max_load_factor()));
+    entityItemsById.rehash(std::ceil(numEntities/ entityItemsById.max_load_factor()));
+    componentItems.rehash(std::ceil(numComps / componentItems.max_load_factor()));
+    attributeItems.rehash(std::ceil(numAttrs / attributeItems.max_load_factor()));
     */
 
     treeWidget->setSortingEnabled(false);
@@ -436,8 +451,25 @@ void SceneStructureWindow::Clear()
     treeWidget->setSortingEnabled(true);
 }
 
+EntityGroupItem *SceneStructureWindow::GetOrCreateEntityGroupItem(const QString &name)
+{
+    EntityGroupItem *groupItem = entityGroupItems[name];
+    if (!groupItem)
+    {
+        groupItem = new EntityGroupItem(name);
+        groupItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
+        treeWidget->addTopLevelItem(groupItem);
+
+        entityGroupItems[name] = groupItem;
+    }
+
+    return groupItem;
+}
+
 EntityItem* SceneStructureWindow::EntityItemOfEntity(Entity *entity) const
 {
+    PROFILE(SceneStructureWindow_EntityItemOfEntity)
+
     if (!entity)
         return 0;
 
@@ -456,6 +488,8 @@ EntityItem* SceneStructureWindow::EntityItemById(entity_id_t id) const
 
 ComponentItem *SceneStructureWindow::ComponentItemOfComponent(IComponent *component) const
 {
+    PROFILE(SceneStructureWindow_ComponentItemOfComponent)
+
     if (!component)
         return 0;
 
@@ -468,6 +502,8 @@ ComponentItem *SceneStructureWindow::ComponentItemOfComponent(IComponent *compon
 
 std::vector<AttributeItem *> SceneStructureWindow::AttributeItemOfAttribute(IAttribute *attribute) const
 {
+    PROFILE(SceneStructureWindow_AttributeItemOfAttribute)
+
     std::vector<AttributeItem *> items;
     AttributeItemMapConstRange range = attributeItems.equal_range(attribute);
     for(AttributeItemMap::const_iterator it = range.first; it != range.second; ++it)
@@ -509,17 +545,7 @@ void SceneStructureWindow::AddEntity(Entity* entity)
     EntityGroupItem *groupItem = 0;
     const QString groupName = entity->Group();
     if (!groupName.isEmpty())
-    {
-        groupItem = entityGroupItems[groupName];
-        if (!groupItem)
-        {
-            groupItem = new EntityGroupItem(groupName);
-            groupItem->setFlags(flags);
-            treeWidget->addTopLevelItem(groupItem);
-
-            entityGroupItems[groupName] = groupItem;
-        }
-    }
+        groupItem = GetOrCreateEntityGroupItem(groupName);
 
     EntityItem *entityItem = new EntityItem(entity->shared_from_this(), groupItem);
     entityItem->setFlags(flags);
@@ -528,7 +554,7 @@ void SceneStructureWindow::AddEntity(Entity* entity)
     entityItemsById[entity->Id()] = entityItem;
 
     if (groupItem)
-        groupItem->addChild(entityItem);
+        groupItem->AddEntityItem(entityItem);
     else
         treeWidget->addTopLevelItem(entityItem);
 
@@ -848,9 +874,21 @@ void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
     {
         if (attr == &nameComp->group)
         {
-            /// @todo This is slow! Implement more efficiently. 28.08.2013
-            RemoveEntityItem(item);
-            AddEntity(entity);
+            const QString groupName = nameComp->group.Get().trimmed();
+            EntityGroupItem *gItem = item->Parent();
+            if (groupName.isEmpty() && gItem)
+            {
+                gItem->RemoveEntityItem(item); // empty group -> remove from possible previous group.
+                if (gItem->childCount() == 0)
+                {
+                    EntityGroupItemMap::iterator it = entityGroupItems.find(gItem->GroupName());
+                    if (it != entityGroupItems.end())
+                        entityGroupItems.erase(it);
+                    SAFE_DELETE(gItem);
+                }
+            }
+            else
+                GetOrCreateEntityGroupItem(groupName)->AddEntityItem(item);
         }
         else if (attr == &nameComp->name)
             item->SetText(entity);

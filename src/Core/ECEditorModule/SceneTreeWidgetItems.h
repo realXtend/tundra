@@ -10,17 +10,26 @@
 #include "AssetFwd.h"
 #include "IAttribute.h"
 
+class EntityItem;
+
+/// Tree widget item representing an entity group.
 class EntityGroupItem : public QTreeWidgetItem
 {
 public:
     explicit EntityGroupItem(const QString &groupName);
+    virtual ~EntityGroupItem();
+
     const QString &GroupName() const { return name; }
     void UpdateText();
+    /// If @c eItem is attached to another group, it will be removed from that group.
+    void AddEntityItem(EntityItem *eItem);
+    void RemoveEntityItem(EntityItem *eItem);
 
-    int numberOfEntities;
+    QList<EntityItem *> entityItems;
 
 private:
-    QString name;
+    Q_DISABLE_COPY(EntityGroupItem)
+    const QString name;
 };
 
 /// Tree widget item representing an entity.
@@ -30,9 +39,7 @@ public:
     /// Constructor.
     /** @param entity Entity which the item represents. */
     explicit EntityItem(const EntityPtr &entity, EntityGroupItem *parent = 0);
-
-    /// Destructor
-    ~EntityItem();
+    virtual ~EntityItem();
 
     /// Decorates the item (text + color) accordingly to the entity information.
     /** @param entity Entity which the item represents. */
@@ -52,6 +59,7 @@ public:
     bool operator <(const QTreeWidgetItem &rhs) const;
 
 private:
+    Q_DISABLE_COPY(EntityItem)
     entity_id_t id; ///< Entity ID associated with this tree widget item.
     EntityWeakPtr ptr; ///< Weak pointer to the component this item represents.
     EntityGroupItem *parentItem;
@@ -81,6 +89,7 @@ public:
     QString name; ///< Name, if applicable.
 
 private:
+    Q_DISABLE_COPY(ComponentItem)
     ComponentWeakPtr ptr; ///< Weak pointer to the component this item represents.
     EntityItem *parentItem; ///< Parent entity item.
 };
@@ -103,6 +112,9 @@ public:
     QString name; ///< Name.
     QString value; ///< Value.
     int index; ///< AssetReference index in the AssetReferenceList. -1 if not initialized. @todo Maybe to this other list types too?
+
+private:
+    Q_DISABLE_COPY(AttributeItem)
 };
 
 /// Tree widget item representing an asset reference attribute.
@@ -179,6 +191,7 @@ public:
     void SetText(IAsset *asset);
 
 private:
+    Q_DISABLE_COPY(AssetItem)
     AssetWeakPtr assetPtr; ///< Weak pointer to the asset.
 };
 
@@ -195,6 +208,7 @@ public:
     AssetStoragePtr Storage() const;
 
 private:
+    Q_DISABLE_COPY(AssetStorageItem)
     AssetStorageWeakPtr assetStorage; ///< Weak pointer to the asset storage.
 };
 
@@ -216,6 +230,7 @@ public:
     AssetStoragePtr Storage() const;
 
 private:
+    Q_DISABLE_COPY(AssetBundleItem)
     AssetBundleWeakPtr assetBundle; ///< Weak pointer to the asset bundle.
 };
 
