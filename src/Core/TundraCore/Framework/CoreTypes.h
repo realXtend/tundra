@@ -93,13 +93,32 @@ typedef unsigned int component_id_t;
 #include <boost/make_shared.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/regex.hpp>
+#include <boost/unordered_map.hpp>
 #else
 #include <memory>
 #include <regex>
+// <unordered_map> is a bit trickier to include.
+// __has_include is a Clang-only define.
+#ifndef __has_include
+#define __has_include(x) 0
+#endif
+/// @todo Verify the Clang and GCC parts! The GCC part is probably wrong, but that's ok for now
+/// as TUNDRA_NO_BOOST cannot be used yet on GCC+Linux. For now assuming that if __APPLE__ is
+/// defined it means the we're using Clang (and __has_include is available).
+#if (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 2) || (defined(__APPLE__) && __has_include(<tr1/unordered_map>))
+#include <tr1/unordered_map>
+#elif defined(_MSC_VER) || /** @todo check for GCC defines */ (defined(__APPLE__) && __has_include(<unordered_map>))
+#include <unordered_map>
+#endif
 #endif
 
 /** @def CORETYPES_NAMESPACE
-    The namespace from which C++ TR1 functionalities are used (boost, std::tr1 or std). 
+    The namespace from which C++ TR1 functionalities are used (boost, std::tr1 or std).
+    The following symbols must be used without the namespace:
+    -shared_ptr, weak_ptr, dynamic_pointer_cast, static_pointer_cast, enable_shared_from_this,
+    -regex, wregex, sregex_iterator, regex_search, smatch, wsmatch,
+    -unordered_map and unordered_multimap.
+
     @note As of Xcode 4.X Apple has dropped GCC in favor of clang, which means that
           a 'stock GCC' in Xcode is very unlikely in the future. Last used GCC version in
           Macs was 4.2 which has initial TR1 implementations. For now, we assume that 
@@ -127,6 +146,9 @@ using CORETYPES_NAMESPACE::sregex_iterator;
 using CORETYPES_NAMESPACE::regex_search;
 using CORETYPES_NAMESPACE::smatch;
 using CORETYPES_NAMESPACE::wsmatch;
+// From <unordered_map>:
+using CORETYPES_NAMESPACE::unordered_map;
+using CORETYPES_NAMESPACE::unordered_multimap;
 
 /** @def MAKE_SHARED(type, ...)
     Workaround for the fact that make_shared is not a C++ TR1 feature, but a C++11 feature.
