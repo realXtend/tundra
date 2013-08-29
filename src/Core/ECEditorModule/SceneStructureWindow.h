@@ -105,6 +105,7 @@ private:
         @param attr AssetReference attribute. */
     void CreateAttributeItem(QTreeWidgetItem *parentItem, IAttribute *attr);
 
+    EntityGroupItem *GetOrCreateEntityGroupItem(const QString &name);
     EntityItem* EntityItemOfEntity(Entity* ent) const;
     /// @note This function does lookup from a different map than EntityItemOfEntity.
     EntityItem* EntityItemById(entity_id_t id) const ;
@@ -153,38 +154,26 @@ private slots:
     void AckEntity(Entity *entity, entity_id_t oldId);
 
     /// Updates temporary state of an entity and its components in the tree widget
-    /** @param entity The entity which temporary state was toggled */
     void UpdateEntityTemporaryState(Entity *entity);
 
-    /// Adds the entity to the tree widget.
-    /** @param entity Altered entity.
-        @param comp Component which was added. */
+    /// Adds the entity to the tree widget, performs EntityItemOfEntity lookup.
     void AddComponent(Entity *entity, IComponent *comp);
     void AddComponent(EntityItem *eItem, Entity *entity, IComponent *comp);
 
-    /// Removes entity from the tree widget.
-    /** @param entity Altered entity.
-        @param comp Component which was removed. */
+    /// Removes entity from the tree widget, performs EntityItemOfEntity lookup.
     void RemoveComponent(Entity *entity, IComponent *comp);
     void RemoveComponent(EntityItem *eItem, Entity *entity, IComponent *comp);
 
-    /// Adds an attribute item item to the tree widget.
-    /** This is called only by EC_DynamicComponent when asset ref attribute is added to it.
-        @param attr AssetReference attribute. */
+    /// Adds an attribute item item to the tree widget, invoked only by dynamic components' currently.
     void AddDynamicAttribute(IAttribute *attr);
 
     /// Removes an attribute item from the tree widget.
-    /** This is called only by EC_DynamicComponent when asset ref attribute is removed from it.
-        @param attr AssetReference attribute. */
     void RemoveAttribute(IAttribute *attr);
 
-    /// Updates an attribute item.
-    /** @param attr AssetReference attribute. */
+    /// Updates an attribute item, invoked only by dynamic components' currently.
     void UpdateDynamicAttribute(IAttribute *attr);
 
-    /// Updates entity's name in the tree widget if entity's EC_Name component's "name" attribute has changed.
-    /** EC_Name component's AttributeChanged() signal is connected to this slot.
-        @param attr EC_Name's attribute which was changed. */
+    /// Updates entity item's name or group in the tree widget if entity's Name component has changed.
     void UpdateEntityName(IAttribute *attr);
 
     /// Updates the sender component's name in the tree widget when the component's name changeds.
