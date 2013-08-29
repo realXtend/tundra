@@ -198,7 +198,7 @@ void SceneStructureWindow::ShowGroups(bool show)
 
     showGroups = show;
 
-    BeginModifications();
+    treeWidget->setSortingEnabled(false);
 
     // (new parent, child) mapping. Null as a new parent means that child should be added to the top-level items.
     typedef std::multimap<QTreeWidgetItem *, QTreeWidgetItem *> ParentChildMap;
@@ -239,7 +239,7 @@ void SceneStructureWindow::ShowGroups(bool show)
         SetTreeWidgetItemVisible(gItem, showGroups);
     }
 
-    EndModifications();
+    treeWidget->setSortingEnabled(true);
 }
 
 void SceneStructureWindow::ShowComponents(bool show)
@@ -252,7 +252,7 @@ void SceneStructureWindow::ShowComponents(bool show)
     showComponents = show;
     treeWidget->showComponents = show;
 
-    BeginModifications();
+    treeWidget->setSortingEnabled(false);
 
     // Set component items' visiblity and reparented attribute items.
     typedef std::multimap<QTreeWidgetItem *, QTreeWidgetItem *> ParentChildMap; // (new parent, child) mapping.
@@ -295,7 +295,9 @@ void SceneStructureWindow::ShowComponents(bool show)
         SetTreeWidgetItemVisible(cItem, showComponents);
     }
 
-    EndModifications();
+    Refresh();
+
+    treeWidget->setSortingEnabled(true);
 }
 
 void SceneStructureWindow::SetAttributeVisibility(AttributeVisibilityType type)
@@ -369,19 +371,21 @@ void SceneStructureWindow::Populate()
     }
     */
 
-    BeginModifications();
+    treeWidget->setSortingEnabled(false);
 
     for(Scene::iterator it = s->begin(); it != s->end(); ++it)
         AddEntity((*it).second.get());
 
-    EndModifications();
+    Refresh();
+
+    treeWidget->setSortingEnabled(true);
 }
 
 void SceneStructureWindow::Clear()
 {
     PROFILE(SceneStructureWindow_Clear)
 
-    BeginModifications();
+    treeWidget->setSortingEnabled(false);
 
     // Can't rely simply on the following as we very likely have unparented items floating around.
     /*for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
@@ -429,7 +433,7 @@ void SceneStructureWindow::Clear()
     }
     entityGroupItems.clear();
 
-    EndModifications();
+    treeWidget->setSortingEnabled(true);
 }
 
 EntityItem* SceneStructureWindow::EntityItemOfEntity(Entity *entity) const
@@ -484,22 +488,13 @@ void SceneStructureWindow::SetEntityItemSelected(EntityItem *item, bool selected
     }
 }
 
-void SceneStructureWindow::BeginModifications()
-{
-//    treeWidget->blockSignals(true);
-    treeWidget->setSortingEnabled(false);
-}
-
-void SceneStructureWindow::EndModifications()
+void SceneStructureWindow::Refresh()
 {
     expandAndCollapseButton->setEnabled((!entityGroupItems.empty() && showGroups) || showComponents || attributeVisibility != DoNotShowAttributes);
 
     // If we have an ongoing search, make sure that changes are takeng into account.
     if (!searchField->text().isEmpty())
         TreeWidgetSearch(treeWidget, 0, searchField->text());
-
-    treeWidget->setSortingEnabled(true);
-//    treeWidget->blockSignals(false);
 }
 
 void SceneStructureWindow::AddEntity(Entity* entity)
@@ -508,8 +503,6 @@ void SceneStructureWindow::AddEntity(Entity* entity)
 
     if (EntityItemOfEntity(entity))
         return;
-
-    BeginModifications();
 
     const Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
 
@@ -546,7 +539,7 @@ void SceneStructureWindow::AddEntity(Entity* entity)
             AddComponent(entityItem, entity, i->second.get());
     }
 
-    EndModifications();
+    Refresh();
 }
 
 void SceneStructureWindow::AckEntity(Entity* entity, entity_id_t oldId)
@@ -602,6 +595,7 @@ void SceneStructureWindow::RemoveEntityItem(EntityItem* item)
 //    EntityGroupItem *gItem = item->Parent();
     SAFE_DELETE(item);
 
+    Refresh();
     // Delete entity group item if this entity being deleted is the last child
     /*
     if (!gItem)
@@ -630,8 +624,6 @@ void SceneStructureWindow::AddComponent(EntityItem *eItem, Entity *entity, IComp
 
     if (ComponentItemOfComponent(comp))
         return;
-
-    BeginModifications();
 
     ComponentItem *cItem = new ComponentItem(comp->shared_from_this(), eItem);
     componentItems[comp] = cItem;
@@ -669,7 +661,7 @@ void SceneStructureWindow::AddComponent(EntityItem *eItem, Entity *entity, IComp
             CreateAttributesForItem(eItem);
     }
 
-    EndModifications();
+    Refresh();
 }
 
 void SceneStructureWindow::RemoveComponent(Entity* entity, IComponent* comp)
@@ -716,19 +708,16 @@ void SceneStructureWindow::CreateAttributesForItem(EntityItem *eItem)
 
 void SceneStructureWindow::SetAttributesVisible(bool show)
 {
-    BeginModifications();
+    treeWidget->setSortingEnabled(false);
 
     if (show)
     {
-        for(EntityItemMap::const_iterator it = entityItems.begin(); it != entityItems.end(); ++it)
-            if (showComponents) // Parent to component items.
-                for(int i = 0; i < it->second->childCount(); ++i)
-                {
-                    ComponentItem *cItem = dynamic_cast<ComponentItem *>(it->second->child(i));
-                    CreateAttributesForItem(cItem);
-                }
-            else // Parent to entity items.
-                CreateAttributesForItem(it->second);
+            if (showComponents)
+                for(ComponentItemMap::const_iterator it = componentItems.begin(); it != componentItems.end(); ++it)
+                    CreateAttributesForItem(it->second);  // Parent to component items.
+            else
+                for(EntityItemMap::const_iterator it = entityItems.begin(); it != entityItems.end(); ++it)
+                    CreateAttributesForItem(it->second); // Parent to entity items.
     }
     else
     {
@@ -736,7 +725,9 @@ void SceneStructureWindow::SetAttributesVisible(bool show)
             SetTreeWidgetItemVisible(it->second, false);
     }
 
-    EndModifications();
+    Refresh();
+
+    treeWidget->setSortingEnabled(true);
 }
 
 void SceneStructureWindow::CreateAttributeItem(QTreeWidgetItem *parentItem, IAttribute *attr)
