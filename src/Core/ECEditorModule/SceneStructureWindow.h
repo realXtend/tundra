@@ -112,10 +112,8 @@ private:
     ComponentItem *ComponentItemOfComponent(IComponent *) const;
     std::vector<AttributeItem *> AttributeItemOfAttribute(IAttribute *) const;
     void SetEntityItemSelected(EntityItem *item, bool selected);
-    /// Call before modifying treeWidget's content.
-    void BeginModifications();
-    /// Call after treeWidget's content modifications are done.
-    void EndModifications();
+
+    void Refresh();
 
     Framework *framework; ///< Framework.
     SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
