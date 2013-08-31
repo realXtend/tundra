@@ -52,7 +52,7 @@
 class EC_Highlight : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_Highlight", 28)
+    COMPONENT_NAME("Highlight", 28)
 
 public:
     /// @cond PRIVATE

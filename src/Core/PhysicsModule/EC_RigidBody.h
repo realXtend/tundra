@@ -103,14 +103,16 @@ class EC_Terrain;
 class PHYSICS_MODULE_API EC_RigidBody : public IComponent, public btMotionState /**< @todo pimpl */
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_RigidBody", 23)
+    COMPONENT_NAME("RigidBody", 23)
     Q_ENUMS(ShapeType)
 
     friend class Physics::PhysicsWorld;
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_RigidBody(Scene* scene);
+    /// @endcond
     virtual ~EC_RigidBody();
 
     enum ShapeType

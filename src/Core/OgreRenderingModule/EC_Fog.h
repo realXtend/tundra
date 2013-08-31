@@ -35,11 +35,13 @@
 class OGRE_MODULE_API EC_Fog : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_Fog", 9)
+    COMPONENT_NAME("Fog", 9)
 
 public:
+     /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Fog(Scene* scene);
+    /// @endcond
     /// Sets fog to None.
     ~EC_Fog();
 

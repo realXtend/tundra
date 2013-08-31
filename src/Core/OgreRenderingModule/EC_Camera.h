@@ -74,16 +74,18 @@ namespace Ogre
 
     Does not emit any actions.
 
-    <b>Depends on the component @ref EC_ Placeable "Placeable".</b>
+    <b>Depends on the component @ref EC_Placeable "Placeable".</b>
     </table> */
 class OGRE_MODULE_API EC_Camera : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_Camera", 15)
+    COMPONENT_NAME("Camera", 15)
 
 public:
+     /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Camera(Scene* scene);
+    /// @endcond
     virtual ~EC_Camera();
 
     /// Camera up vector. Defines the yaw axis

@@ -53,7 +53,7 @@ namespace Ogre { class Matrix4; }
 class ENVIRONMENT_MODULE_API EC_Terrain : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_Terrain", 11)
+    COMPONENT_NAME("Terrain", 11)
 
 public:
     /// @cond PRIVATE

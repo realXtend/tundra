@@ -74,12 +74,13 @@
 class ENVIRONMENT_MODULE_API EC_WaterPlane : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_WaterPlane", 12)
+    COMPONENT_NAME("WaterPlane", 12)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_WaterPlane(Scene* scene);
-
+    /// @endcond
     virtual ~EC_WaterPlane();
 
     /// Water plane size in x-axis.

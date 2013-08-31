@@ -63,7 +63,7 @@ class EC_RigidBody;
 class EC_PhysicsConstraint : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_PhysicsConstraint", 53)
+    COMPONENT_NAME("PhysicsConstraint", 53)
     Q_ENUMS(ConstraintType)
 
 public:

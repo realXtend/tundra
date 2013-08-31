@@ -68,12 +68,13 @@
 class EC_Sound : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_Sound", 6)
+    COMPONENT_NAME("Sound", 6)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Sound(Scene* scene);
-
+    /// @endcond
     ~EC_Sound();
 
     /// Sound asset reference.

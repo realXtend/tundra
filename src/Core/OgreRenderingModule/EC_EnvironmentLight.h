@@ -35,11 +35,13 @@
 class OGRE_MODULE_API EC_EnvironmentLight : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_EnvironmentLight", 8)
+    COMPONENT_NAME("EnvironmentLight", 8)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_EnvironmentLight(Scene* scene);
+    /// @endcond
     virtual ~EC_EnvironmentLight();
 
     /// Defines sun (diffuse) color.

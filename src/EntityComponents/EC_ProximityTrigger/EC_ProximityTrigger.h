@@ -45,10 +45,13 @@
 class EC_ProximityTrigger : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_ProximityTrigger", 33)
+    COMPONENT_NAME("ProximityTrigger", 33)
 
 public:
-    explicit EC_ProximityTrigger(Scene *scene);
+    /// @cond PRIVATE
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_ProximityTrigger(Scene* scene);
+    /// @endcond
     ~EC_ProximityTrigger();
 
     /// Active flag. Trigger signals are only generated when this is true. Is true by default

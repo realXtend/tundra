@@ -25,7 +25,7 @@ namespace Ogre
 class SCENEWIDGET_MODULE_API EC_SlideShow : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_SlideShow", 41)
+    COMPONENT_NAME("SlideShow", 41)
 
 public:
     /// List of slide asset references (to texture assets).

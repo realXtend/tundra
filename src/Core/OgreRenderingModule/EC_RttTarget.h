@@ -44,7 +44,7 @@ Does not emit any actions.
 class OGRE_MODULE_API EC_RttTarget : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_RttTarget", 21)
+    COMPONENT_NAME("RttTarget", 21)
 
 public:
     /// @cond PRIVATE

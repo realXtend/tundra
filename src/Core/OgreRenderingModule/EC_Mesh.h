@@ -96,7 +96,7 @@
 class OGRE_MODULE_API EC_Mesh : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_Mesh", 17)
+    COMPONENT_NAME("Mesh", 17)
 
 public:
     /// @cond PRIVATE
