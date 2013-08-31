@@ -22,10 +22,13 @@
 class EC_StencilGlow : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_StencilGlow", 108)
+    COMPONENT_NAME("StencilGlow", 108)
+
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_StencilGlow(Scene* scene);
+    /// @endcond
     ~EC_StencilGlow();
 
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled)
