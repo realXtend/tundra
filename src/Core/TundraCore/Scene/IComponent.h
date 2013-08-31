@@ -21,21 +21,19 @@ class QDomElement;
 class Framework;
 
 /// Specifies unique type name and unique type ID of this component.
-/** This #define should be instantiated inside the public slots: section of the component.
-    Warning: This #define alters the current visibility specifier in the class file. */
+/** Warning: This #define alters the current visibility specifier in the class file. */
 #define COMPONENT_NAME(componentTypeName, componentTypeId)                              \
 public:                                                                                 \
+    enum { ComponentTypeId = componentTypeId };                                         \
     static const QString &TypeNameStatic()                                              \
     {                                                                                   \
-        static const QString name(componentTypeName);                                       \
+        static const QString name = EnsureTypeNameWithPrefix(componentTypeName);        \
         return name;                                                                    \
     }                                                                                   \
     static u32 TypeIdStatic()                                                           \
     {                                                                                   \
         return componentTypeId;                                                         \
     }                                                                                   \
-    enum { ComponentTypeId = componentTypeId };                                         \
-public slots:                                                                           \
     virtual const QString &TypeName() const                                             \
     {                                                                                   \
         return TypeNameStatic();                                                        \
@@ -62,9 +60,10 @@ private: // Return the class visibility specifier to the strictest form so that 
 /** Inherit your own components from this class. Never directly allocate new components using operator new,
     but use the factory-based SceneAPI::CreateComponent functions instead.
 
-    Each Component has a compile-time specified type name that identifies the class-name of the Component.
+    Each Component has a compile-time specified type name and type ID that identify the type of the Component.
     This differentiates different derived implementations of the IComponent class. Each implemented Component
-    must have a unique type name.
+    must have a unique type name and type ID. Always prefer type ID over type name when inspecting Component's
+    type (performance).
 
     Additionally, each Component has a Name string, which identifies different instances of the same Component,
     if more than one is added to an Entity.
@@ -84,6 +83,7 @@ class TUNDRACORE_API IComponent : public QObject, public enable_shared_from_this
     Q_OBJECT
     Q_PROPERTY(QString name READ Name WRITE SetName) /**< @copybrief Name */
     Q_PROPERTY(QString typeName READ TypeName) /**< @copybrief TypeName */
+    Q_PROPERTY(u32 typeId READ TypeId) /**< @copybrief TypeId */
     Q_PROPERTY(bool replicated READ IsReplicated)  /**< @copybrief IsReplicated */
     Q_PROPERTY(bool local READ IsLocal) /**< @copybrief IsLocal */
     /// @note Use "component.updateMode = { value : <AttributeChange::Type value as int> };" syntax when settings updateMode from QtScript.
@@ -167,8 +167,7 @@ public:
 
     /// Create an attribute with specified index, type and ID. Return it if successful or null if not. Called by SyncManager.
     /** Component must override SupportsDynamicAttributes() to allow creating attributes. 
-        @note For dynamic attributes ID and name will be same
-      */
+        @note For dynamic attributes ID and name will be same. */
     IAttribute* CreateAttribute(u8 index, u32 typeID, const QString& id, AttributeChange::Type change = AttributeChange::Default);
 
     /// Remove an attribute at the specified index. Called by network sync.
