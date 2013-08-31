@@ -52,12 +52,13 @@
 class OGRE_MODULE_API EC_ParticleSystem : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_ParticleSystem", 27)
+    COMPONENT_NAME("ParticleSystem", 27)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_ParticleSystem(Scene* scene);
-
+    /// @endcond
     ~EC_ParticleSystem();
 
     /// Particle asset reference

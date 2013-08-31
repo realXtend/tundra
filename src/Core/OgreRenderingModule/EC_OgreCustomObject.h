@@ -46,11 +46,13 @@ Does not emit any actions.
 class OGRE_MODULE_API EC_OgreCustomObject : public IComponent
 {
     Q_OBJECT
+    COMPONENT_NAME("OgreCustomObject", 19)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_OgreCustomObject(Scene* scene);
-
+    /// @endcond
     virtual ~EC_OgreCustomObject();
 
     /// gets placeable component
@@ -58,13 +60,11 @@ public:
 
     /// sets placeable component
     /** set a null placeable to detach the object, otherwise will attach
-        @param placeable placeable component
-     */
+        @param placeable placeable component */
     void SetPlaceable(ComponentPtr placeable);
 
     /// sets draw distance
-    /** @param draw_distance New draw distance, 0.0 = draw always (default)
-     */
+    /** @param draw_distance New draw distance, 0.0 = draw always (default) */
     void SetDrawDistance(float draw_distance);
 
     /// Sets if the object casts shadows or not.
@@ -72,15 +72,13 @@ public:
 
     /// Commit changes from a manual object
     /** converts ManualObject to mesh, makes an entity out of it & clears the manualobject.
-        @return true if successful
-     */
+        @return true if successful */
     bool CommitChanges(Ogre::ManualObject* object);
 
     /// Sets material on already committed geometry, similar to EC_Mesh
     /** @param index submesh index
         @param material_name material name
-        @return true if successful
-     */
+        @return true if successful */
     bool SetMaterial(uint index, const std::string& material_name);
 
     /// gets number of materials (submeshes) in committed geometry
@@ -88,8 +86,7 @@ public:
 
     /// gets material name from committed geometry
     /** @param index submesh index
-        @return name if successful, empty if not committed / illegal index
-     */
+        @return name if successful, empty if not committed / illegal index */
     const std::string& GetMaterialName(uint index) const;
 
     /// Returns true if geometry has been committed and mesh entity created
@@ -100,10 +97,7 @@ public:
     /// Returns the Ogre entity.
     Ogre::Entity *GetEntity() const { return entity_; }
 
-    COMPONENT_NAME("EC_OgreCustomObject", 19)
-
 private:
-    
     /// attaches entity to placeable
     void AttachEntity();
     
@@ -131,4 +125,3 @@ private:
     /// draw distance
     float draw_distance_;
 };
-

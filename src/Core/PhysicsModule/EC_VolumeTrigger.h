@@ -62,7 +62,7 @@ class EC_VolumeTrigger : public IComponent
     friend class Physics::PhysicsWorld;
     
     Q_OBJECT
-    COMPONENT_NAME("EC_VolumeTrigger", 24)
+    COMPONENT_NAME("VolumeTrigger", 24)
 
 public:
     /// @cond PRIVATE

@@ -35,12 +35,13 @@
 class OGRE_MODULE_API EC_Sky : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_Sky", 10)
+    COMPONENT_NAME("Sky", 10)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Sky(Scene* scene);
-
+    /// @endcond
     virtual ~EC_Sky();
 
     /// Sky material reference.

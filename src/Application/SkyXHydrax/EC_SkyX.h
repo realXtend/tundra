@@ -21,11 +21,13 @@ namespace Ogre { class Camera; }
 class SKYX_HYDRAX_API EC_SkyX : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_SkyX", 38)
+    COMPONENT_NAME("SkyX", 38)
 
 public:
+     /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_SkyX(Scene* scene);
+    /// @endcond
     ~EC_SkyX();
 
     /// Different cloud types supported by SkyX

@@ -57,7 +57,7 @@ class RedirectedPaintWidget;
 class EC_GraphicsViewCanvas : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_GraphicsViewCanvas", 52)
+    COMPONENT_NAME("GraphicsViewCanvas", 52)
 
 public:
     /// @cond PRIVATE

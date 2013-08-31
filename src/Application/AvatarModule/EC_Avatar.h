@@ -45,11 +45,13 @@ typedef shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
 class AV_MODULE_API EC_Avatar : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_Avatar", 1)
+    COMPONENT_NAME("Avatar", 1)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Avatar(Scene* scene);
+    /// @endcond
     virtual ~EC_Avatar();
 
     /// Asset id for the avatar appearance file that will be used to generate the visible avatar.
