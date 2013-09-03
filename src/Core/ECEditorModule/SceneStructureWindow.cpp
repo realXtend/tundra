@@ -420,6 +420,10 @@ void SceneStructureWindow::Clear()
     for(EntityItemMap::const_iterator it = entityItems.begin(); it != entityItems.end(); ++it)
     {
         EntityItem *item = it->second;
+        // "Stealth" removal so that we don't crash in QTreeWidget internals; no point to do
+        // it properly (EntityGroupItem::RemoveEntityItem) as we're deleting everything anyways.
+        if (item && item->parent())
+            item->parent()->removeChild(item);
         SAFE_DELETE(item);
     }
     entityItems.clear();
