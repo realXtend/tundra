@@ -2,7 +2,7 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   AssetItemMenuHandler.h
-    @brief  Handles populating of assets and asset storages context menus and their chosen actions. */
+    @brief  AssetItemMenuHandler handles populating of assets and asset storages context menus and their chosen actions. */
 
 #pragma once
 
@@ -22,6 +22,7 @@ struct AssetAndStorageItems
 class AssetItemMenuHandler : public QObject
 {
     Q_OBJECT
+
 public:
     AssetItemMenuHandler(Framework *fw);
 
@@ -98,6 +99,7 @@ private slots:
     /// Called by function dialog when it's finished.
     /** @param result Result of finished. Close is 0, Execute and Close is 1, Execute is 2. */
     void FunctionDialogFinished(int result);
+
 private:
     Framework *framework_;
     AssetAndStorageItems targets_;
