@@ -30,8 +30,9 @@ EntityGroupItem::EntityGroupItem(const QString &groupName) :
 EntityGroupItem::~EntityGroupItem()
 {
     // Don't leave children free-floating.
-    foreach(QTreeWidgetItem *child, takeChildren())
-        treeWidget()->addTopLevelItem(child);
+    if (treeWidget())
+        foreach(QTreeWidgetItem *child, takeChildren())
+            treeWidget()->addTopLevelItem(child);
 }
 
 void EntityGroupItem::UpdateText()
@@ -41,6 +42,8 @@ void EntityGroupItem::UpdateText()
 
 void EntityGroupItem::AddEntityItem(EntityItem *eItem)
 {
+    if (entityItems.contains(eItem))
+        return;
     EntityGroupItem *parentItem = eItem->Parent();
     if (!parentItem)
         treeWidget()->takeTopLevelItem(treeWidget()->indexOfTopLevelItem(eItem)); // currently a top-level item, remove from top-level.
@@ -56,6 +59,9 @@ void EntityGroupItem::AddEntityItem(EntityItem *eItem)
 
 void EntityGroupItem::RemoveEntityItem(EntityItem *eItem)
 {
+    if (!entityItems.contains(eItem))
+        return;
+
     EntityGroupItem *parentItem = eItem->Parent();
     removeChild(eItem);
 
@@ -333,6 +339,9 @@ bool SceneTreeWidgetSelection::HasAssetsOnly() const
 QList<entity_id_t> SceneTreeWidgetSelection::EntityIds() const
 {
     QSet<entity_id_t> ids;
+    foreach(EntityGroupItem *g, groups)
+        foreach(EntityItem *e, g->entityItems)
+            ids.insert(e->Id());
     foreach(EntityItem *e, entities)
         ids.insert(e->Id());
     foreach(ComponentItem *c, components)

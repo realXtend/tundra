@@ -161,7 +161,7 @@ struct SceneTreeWidgetSelection
     /// Returns true if selection contains assets only.
     bool HasAssetsOnly() const;
 
-    /// Returns list containing unique entity IDs of both selected entities and parent entities of selected components
+    /// Returns list containing unique entity IDs of selected groups, entities and parent entities of components.
     QList<entity_id_t> EntityIds() const;
 
     QList<EntityGroupItem *> groups; ///< List of selected entity groups.
