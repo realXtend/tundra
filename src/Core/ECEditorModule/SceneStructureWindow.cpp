@@ -852,7 +852,7 @@ void SceneStructureWindow::UpdateDynamicAttribute(IAttribute *attr)
         items[i]->Update(attr);
 }
 
-void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
+void SceneStructureWindow::UpdateEntityName(IAttribute * /*attr*/)
 {
     EC_Name *nameComp = qobject_cast<EC_Name *>(sender());
     if (!nameComp || !nameComp->ParentEntity())
@@ -862,7 +862,7 @@ void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
     EntityItem *item = EntityItemOfEntity(entity);
     if (item)
     {
-        if (attr == &nameComp->group)
+        if (nameComp->group.ValueChanged())
         {
             const QString groupName = nameComp->group.Get().trimmed();
             if (groupName.isEmpty())
@@ -883,7 +883,7 @@ void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
             else
                 GetOrCreateEntityGroupItem(groupName)->AddEntityItem(item);
         }
-        else if (attr == &nameComp->name)
+        if (nameComp->name.ValueChanged())
             item->SetText(entity);
     }
 }
