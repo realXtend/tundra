@@ -865,16 +865,19 @@ void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
         if (attr == &nameComp->group)
         {
             const QString groupName = nameComp->group.Get().trimmed();
-            EntityGroupItem *gItem = item->Parent();
-            if (groupName.isEmpty() && gItem)
+            if (groupName.isEmpty())
             {
-                gItem->RemoveEntityItem(item); // empty group -> remove from possible previous group.
-                if (gItem->childCount() == 0)
+                EntityGroupItem *gItem = item->Parent();
+                if (gItem)
                 {
-                    EntityGroupItemMap::iterator it = entityGroupItems.find(gItem->GroupName());
-                    if (it != entityGroupItems.end())
-                        entityGroupItems.erase(it);
-                    SAFE_DELETE(gItem);
+                    gItem->RemoveEntityItem(item); // empty group -> remove from possible previous group.
+                    if (gItem->childCount() == 0)
+                    {
+                        EntityGroupItemMap::iterator it = entityGroupItems.find(gItem->GroupName());
+                        if (it != entityGroupItems.end())
+                            entityGroupItems.erase(it);
+                        SAFE_DELETE(gItem);
+                    }
                 }
             }
             else
