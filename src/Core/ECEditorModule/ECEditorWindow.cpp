@@ -219,10 +219,12 @@ void ECEditorWindow::AddEntities(const QList<entity_id_t> &entities, bool select
     // SetEntitySelected() will block entity list's signals, no need to do it here.
     ClearEntities();
 
+    Scene *scene = framework->Scene()->MainCameraScene();
     EntityList entityPtrs;
+
     foreach(entity_id_t id, entities)
     {
-        EntityPtr entity = framework->Scene()->MainCameraScene()->EntityById(id);
+        EntityPtr entity = scene->EntityById(id);
         entityPtrs.push_back(entity);
         EntityListWidgetItem *item = AddEntity(entity, false);
         if (selectAll)
@@ -927,11 +929,13 @@ void ECEditorWindow::setVisible(bool visible)
 
 void ECEditorWindow::DeselectAllEntities()
 {
+    emit EntitiesSelected(SelectedEntities(), false);
+
     for(int i = 0; i < entityList->count(); i++)
     {
         EntityListWidgetItem *item = checked_static_cast<EntityListWidgetItem*>(entityList->item(i));
         if (item)
-            SetEntitySelected(item, false);
+            SetEntitySelected(item, false, false);
     }
 }
 
@@ -955,7 +959,9 @@ void ECEditorWindow::HighlightEntity(const EntityPtr &entity, bool highlight)
         
         if (highlight)
         {
-            shared_ptr<EC_Highlight> hl = entity->GetOrCreateComponent<EC_Highlight>(cEcEditorHighlight, AttributeChange::Default, false);
+            // Create Highlights as disconnected: gives tremendous performance gain when dealing with hundreds or even thousands of entities
+            // as Scene Structure window doesn't create potentially thousands of items that exists only for a brief moment.
+            shared_ptr<EC_Highlight> hl = entity->GetOrCreateComponent<EC_Highlight>(cEcEditorHighlight, AttributeChange::Disconnected, false);
             if (hl)
             {
                 hl->SetTemporary(true);

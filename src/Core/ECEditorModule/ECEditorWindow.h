@@ -163,6 +163,7 @@ public slots:
     void setVisible(bool visible);
 
     /// Deselects all entities in the list.
+    /** @note Emits EntitiesSelected only, not EntitySelected. */
     void DeselectAllEntities();
 
     /// Highlights an entity.
