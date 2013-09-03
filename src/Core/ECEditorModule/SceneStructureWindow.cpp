@@ -399,23 +399,13 @@ void SceneStructureWindow::Populate()
 void SceneStructureWindow::Clear()
 {
     PROFILE(SceneStructureWindow_Clear)
-
     treeWidget->setSortingEnabled(false);
-
-    // Can't rely simply on the following as we very likely have unparented items floating around.
-    /*for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
-    {
-        QTreeWidgetItem *item = treeWidget->topLevelItem(i);
-        SAFE_DELETE(item);
-    }*/
 
     /// @todo 28.08.2013 Check memory leak report for this file!
 
     for(AttributeItemMap::const_iterator it = attributeItems.begin(); it != attributeItems.end(); ++it)
     {
         AttributeItem *item = it->second;
-        if (item && item->parent())
-            item->parent()->removeChild(item);
         SAFE_DELETE(item);
     }
     attributeItems.clear();
@@ -423,8 +413,6 @@ void SceneStructureWindow::Clear()
     for(ComponentItemMap::const_iterator it = componentItems.begin(); it != componentItems.end(); ++it)
     {
         ComponentItem *item = it->second;
-        if (item && item->parent())
-            item->parent()->removeChild(item);
         SAFE_DELETE(item);
     }
     componentItems.clear();
@@ -432,8 +420,6 @@ void SceneStructureWindow::Clear()
     for(EntityItemMap::const_iterator it = entityItems.begin(); it != entityItems.end(); ++it)
     {
         EntityItem *item = it->second;
-        if (item && item->parent())
-            item->parent()->removeChild(item);
         SAFE_DELETE(item);
     }
     entityItems.clear();
