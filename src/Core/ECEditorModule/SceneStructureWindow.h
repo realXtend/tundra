@@ -45,9 +45,9 @@ public:
     /** Populates tree view with entities.
         If scene is set to null, the tree view is cleared and previous signal connections are disconnected.
         @param newScene Scene. */
-    void SetScene(const ScenePtr &newScene);
+    void SetShownScene(const ScenePtr &newScene);
     /// The scene that is shown in the tree view.
-    ScenePtr Scene() const { return scene.lock(); }
+    ScenePtr ShownScene() const { return scene.lock(); }
 
     enum AttributeVisibilityType
     {
@@ -89,9 +89,6 @@ protected:
 private:
     /// Populates tree widget with all entities.
     void Populate();
-
-    /// Clears the whole tree widget.
-    void Clear();
 
     /// Creates attribute items for a single entity item.
     void CreateAttributesForItem(ComponentItem *cItem);
@@ -142,6 +139,9 @@ private:
     AttributeItemMap attributeItems;
 
 private slots:
+    /// Clears the whole tree widget.
+    void Clear();
+
     /// Adds the item represeting the @c entity to the tree widget.
     void AddEntity(Entity *entity);
 
@@ -200,4 +200,5 @@ private slots:
     void SetUndoEnabled(bool canUndo);
     void SetRedoEnabled(bool canRedo);
     void SetAttributeVisibilityInternal(int mode) { SetAttributeVisibility(static_cast<AttributeVisibilityType>(mode)); }
+    void OnSceneRemoved(Scene *);
 };

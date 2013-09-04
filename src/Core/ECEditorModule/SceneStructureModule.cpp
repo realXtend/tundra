@@ -341,7 +341,7 @@ void SceneStructureModule::ToggleSceneStructureWindow()
         sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
         sceneWindow->setAttribute(Qt::WA_DeleteOnClose);
         sceneWindow->setWindowFlags(Qt::Tool);
-        sceneWindow->SetScene(scene->shared_from_this());
+        sceneWindow->SetShownScene(scene->shared_from_this());
         LoadWindowPosition(sceneWindow.data(), cSceneWindowPos);
         sceneWindow->show();
 

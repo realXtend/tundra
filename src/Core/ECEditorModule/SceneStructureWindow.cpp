@@ -22,6 +22,7 @@
 #include "LoggingFunctions.h"
 #include "ConfigAPI.h"
 #include "Profiler.h"
+#include "SceneAPI.h"
 
 #include <QTreeWidgetItemIterator>
 #include <QToolButton>
@@ -137,6 +138,8 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     connect(expandAndCollapseButton, SIGNAL(clicked()), SLOT(ExpandOrCollapseAll()));
     connect(treeWidget, SIGNAL(itemCollapsed(QTreeWidgetItem*)), SLOT(CheckTreeExpandStatus(QTreeWidgetItem*)));
     connect(treeWidget, SIGNAL(itemExpanded(QTreeWidgetItem*)), SLOT(CheckTreeExpandStatus(QTreeWidgetItem*)));
+
+    connect(framework->Scene(), SIGNAL(SceneAboutToBeRemoved(Scene *, AttributeChange::Type)), SLOT(OnSceneRemoved(Scene *)));
 }
 
 SceneStructureWindow::~SceneStructureWindow()
@@ -146,15 +149,15 @@ SceneStructureWindow::~SceneStructureWindow()
     cfg.Write(cShowComponentsSetting, cShowComponentsSetting.key, showComponents);
     cfg.Write(cAttributeVisibilitySetting, cAttributeVisibilitySetting.key, attributeVisibility);
 
-    SetScene(ScenePtr());
+    SetShownScene(ScenePtr());
 }
 
-void SceneStructureWindow::SetScene(const ScenePtr &newScene)
+void SceneStructureWindow::SetShownScene(const ScenePtr &newScene)
 {
     if (!scene.expired() && newScene == scene.lock())
         return;
 
-    ScenePtr previous = Scene();
+    ScenePtr previous = ShownScene();
     if (previous)
     {
         disconnect(previous.get());
@@ -175,15 +178,14 @@ void SceneStructureWindow::SetScene(const ScenePtr &newScene)
         connect(undoButton_, SIGNAL(clicked()), undoMgr, SLOT(Undo()), Qt::UniqueConnection);
         connect(redoButton_, SIGNAL(clicked()), undoMgr, SLOT(Redo()), Qt::UniqueConnection);
 
-        ScenePtr s = Scene();
-        connect(s.get(), SIGNAL(EntityAcked(Entity *, entity_id_t)), SLOT(AckEntity(Entity *, entity_id_t)));
-        connect(s.get(), SIGNAL(EntityCreated(Entity *, AttributeChange::Type)), SLOT(AddEntity(Entity *)));
-        connect(s.get(), SIGNAL(EntityTemporaryStateToggled(Entity *, AttributeChange::Type)), SLOT(UpdateEntityTemporaryState(Entity *)));
-        connect(s.get(), SIGNAL(EntityRemoved(Entity *, AttributeChange::Type)), SLOT(RemoveEntity(Entity *)));
-        connect(s.get(), SIGNAL(ComponentAdded(Entity *, IComponent *, AttributeChange::Type)),
-            SLOT(AddComponent(Entity *, IComponent *)));
-        connect(s.get(), SIGNAL(ComponentRemoved(Entity *, IComponent *, AttributeChange::Type)),
-            SLOT(RemoveComponent(Entity *, IComponent *)));
+        Scene* s = ShownScene().get();
+        connect(s, SIGNAL(EntityAcked(Entity *, entity_id_t)), SLOT(AckEntity(Entity *, entity_id_t)));
+        connect(s, SIGNAL(EntityCreated(Entity *, AttributeChange::Type)), SLOT(AddEntity(Entity *)));
+        connect(s, SIGNAL(EntityTemporaryStateToggled(Entity *, AttributeChange::Type)), SLOT(UpdateEntityTemporaryState(Entity *)));
+        connect(s, SIGNAL(EntityRemoved(Entity *, AttributeChange::Type)), SLOT(RemoveEntity(Entity *)));
+        connect(s, SIGNAL(ComponentAdded(Entity *, IComponent *, AttributeChange::Type)), SLOT(AddComponent(Entity *, IComponent *)));
+        connect(s, SIGNAL(ComponentRemoved(Entity *, IComponent *, AttributeChange::Type)), SLOT(RemoveComponent(Entity *, IComponent *)));
+        connect(s, SIGNAL(SceneCleared(Scene*)), SLOT(Clear()));
 
         Populate();
     }
@@ -212,7 +214,7 @@ void SceneStructureWindow::ShowGroups(bool show)
         if (showGroups)
         {
             /// @todo Optimize 29.08.2013
-            EntityList entities = Scene()->EntitiesOfGroup(gItem->GroupName());
+            EntityList entities = ShownScene()->EntitiesOfGroup(gItem->GroupName());
             for(EntityList::const_iterator iter = entities.begin(); iter != entities.end(); ++iter)
                 toBeReparented.insert(std::make_pair(gItem, EntityItemOfEntity((*iter).get())));
         }
@@ -348,7 +350,7 @@ void SceneStructureWindow::Populate()
 {
     PROFILE(SceneStructureWindow_Populate)
 
-    ScenePtr s = Scene();
+    ScenePtr s = ShownScene();
     if (!s)
     {
         LogWarning("Scene pointer expired. Cannot populate tree widget.");
@@ -945,4 +947,10 @@ void SceneStructureWindow::SetUndoEnabled(bool canUndo)
 void SceneStructureWindow::SetRedoEnabled(bool canRedo)
 {
     redoButton_->setEnabled(canRedo);
+}
+
+void SceneStructureWindow::OnSceneRemoved(Scene *removedScene)
+{
+    if (removedScene == ShownScene().get())
+        SetShownScene(ScenePtr());
 }
