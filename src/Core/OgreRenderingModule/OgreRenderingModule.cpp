@@ -202,10 +202,10 @@ void OgreRenderingModule::Initialize()
     // Register renderer.
     framework_->RegisterRenderer(renderer.get());
     framework_->RegisterDynamicObject("renderer", renderer.get());
-    
+
     // Connect to scene change signals.
-    connect(framework_->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(OnSceneAdded(const QString&)));
-    connect(framework_->Scene(), SIGNAL(SceneRemoved(const QString&)), this, SLOT(OnSceneRemoved(const QString&)));
+    connect(framework_->Scene(), SIGNAL(SceneCreated(Scene *, AttributeChange::Type)), SLOT(CreateOgreWorld(Scene *)));
+    connect(framework_->Scene(), SIGNAL(SceneAboutToBeRemoved(Scene *, AttributeChange::Type)), SLOT(RemoveOgreWorld(Scene *)));
 
     // Add asset cache directory as its own resource group to ogre to support threaded loading.
     if (GetFramework()->Asset()->Cache())
@@ -267,36 +267,21 @@ void OgreRenderingModule::ToggleOgreProfilerOverlay()
 #endif
 }
 
-void OgreRenderingModule::OnSceneAdded(const QString& name)
+void OgreRenderingModule::CreateOgreWorld(Scene *scene)
 {
-    ScenePtr scene = GetFramework()->Scene()->SceneByName(name);
-    if (!scene)
-    {
-        LogError("OgreRenderingModule::OnSceneAdded: Could not find created scene");
-        return;
-    }
-    
     // Add an OgreWorld to the scene
-    OgreWorldPtr newWorld = MAKE_SHARED(OgreWorld, renderer.get(), scene);
-    renderer->ogreWorlds[scene.get()] = newWorld;
+    OgreWorldPtr newWorld = MAKE_SHARED(OgreWorld, renderer.get(), scene->shared_from_this());
+    renderer->ogreWorlds[scene] = newWorld;
     scene->setProperty(OgreWorld::PropertyName(), QVariant::fromValue<QObject*>(newWorld.get()));
 }
 
-void OgreRenderingModule::OnSceneRemoved(const QString& name)
+void OgreRenderingModule::RemoveOgreWorld(Scene *scene)
 {
-    // Remove the OgreWorld from the scene
-    ScenePtr scene = GetFramework()->Scene()->SceneByName(name);
-    if (!scene)
-    {
-        LogError("OgreRenderingModule::OnSceneRemoved: Could not find scene about to be removed");
-        return;
-    }
-    
-    OgreWorld* worldPtr = scene->Subsystem<OgreWorld>().get();
+    OgreWorldPtr worldPtr = scene->Subsystem<OgreWorld>();
     if (worldPtr)
     {
         scene->setProperty(OgreWorld::PropertyName(), QVariant());
-        renderer->ogreWorlds.erase(scene.get());
+        renderer->ogreWorlds.erase(scene);
     }
 }
 
