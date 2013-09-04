@@ -6,6 +6,7 @@
 #include "SceneFwd.h"
 #include "CoreTypes.h"
 #include "CoreStringUtils.h"
+#include "AttributeChangeType.h"
 
 #include <QObject>
 
@@ -134,16 +135,26 @@ public slots:
 
 signals:
     /// Emitted after new scene has been added to framework.
-    /** @param name new scene name. */
-    void SceneAdded(const QString &name);
-    /// Emitted after scene has been removed from the framework.
-    /** @param name removed scene name. */
-    void SceneRemoved(const QString &name);
+    /** @param scene Scene that was just created.
+        @param change Change signaling mode.
+        @note @c change is currently always AttributeChange::Default. */
+    void SceneCreated(Scene *scene, AttributeChange::Type change);
 
-    /// Emitted after new scene has been added to framework.
-    /// @todo void SceneCreated(Scene *scene, AttributeChange::Type change);
     /// Emitted after scene has been removed from the framework.
-    /// @todo void SceneRemoved(Scene *scene, AttributeChange::Type change);
+    /** @param scene Scene that is about to be removed.
+        @param change Change signaling mode.
+        @note @c change is currently always AttributeChange::Default. */
+    void SceneAboutToBeRemoved(Scene *scene, AttributeChange::Type change);
+
+    // DEPRECATED
+    /// @cond PRIVATE
+    /// Emitted after scene has been removed from the framework.
+    /** @deprecated Use SceneAboutToBeRemoved instead.
+        @param name removed scene name.
+        @note Important: do not trust that the scene exists anymore when this signal is emitted (currently it exists though). */
+    void SceneRemoved(const QString &name);
+    void SceneAdded(const QString &name); /**< @deprecated Use SceneCreated instead. */
+    /// @endcond
 
 private:
     friend class Framework;
