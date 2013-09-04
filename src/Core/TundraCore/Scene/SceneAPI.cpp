@@ -60,16 +60,16 @@ Scene *SceneAPI::MainCameraScene()
     return framework->Renderer()->MainCameraScene();
 }
 
-ScenePtr SceneAPI::CreateScene(const QString &name, bool viewenabled, bool authority)
+ScenePtr SceneAPI::CreateScene(const QString &name, bool viewEnabled, bool authority)
 {
     if (SceneByName(name))
         return ScenePtr();
 
-    ScenePtr newScene = MAKE_SHARED(Scene, name, framework, viewenabled, authority);
+    ScenePtr newScene = MAKE_SHARED(Scene, name, framework, viewEnabled, authority);
     scenes[name] = newScene;
 
     // Emit signal of creation
-//    emit SceneCreated(newScene.get(), AttributeChange::Default);
+    emit SceneCreated(newScene.get(), AttributeChange::Default);
     emit SceneAdded(newScene->Name());
     return newScene;
 }
@@ -79,11 +79,12 @@ bool SceneAPI::RemoveScene(const QString &name)
     SceneMap::iterator sceneIter = scenes.find(name);
     if (sceneIter == scenes.end())
         return false;
+
     // Remove entities before the scene subsystems or worlds are erased by various modules
     sceneIter->second->RemoveAllEntities(false);
-    
+
     // Emit signal about removed scene
-//    emit SceneRemoved(sceneIter->second.get(), AttributeChange::Default);
+    emit SceneAboutToBeRemoved(sceneIter->second.get(), AttributeChange::Default);
     emit SceneRemoved(name);
 
     scenes.erase(sceneIter);
