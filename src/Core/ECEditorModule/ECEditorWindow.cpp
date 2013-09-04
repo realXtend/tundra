@@ -694,8 +694,8 @@ void ECEditorWindow::RefreshPropertyBrowser()
     }
 
     EntityList old_entities = ecBrowser->Entities();
-    std::sort(entities.begin(), entities.end());
-    std::sort(old_entities.begin(), old_entities.end());
+    entities.sort();
+    old_entities.sort();
 
     // Check what entities need to get removed/added to browser.
     EntityList::iterator iter1 = old_entities.begin(), iter2 = entities.begin();
