@@ -75,8 +75,8 @@ void PhysicsModule::Initialize()
 {
     framework_->RegisterDynamicObject("physics", this);
     
-    connect(framework_->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(OnSceneAdded(const QString&)));
-    connect(framework_->Scene(), SIGNAL(SceneRemoved(const QString&)), this, SLOT(OnSceneRemoved(const QString&)));
+    connect(framework_->Scene(), SIGNAL(SceneCreated(Scene *, AttributeChange::Type)), this, SLOT(CreatePhysicsWorld(Scene *)));
+    connect(framework_->Scene(), SIGNAL(SceneAboutToBeRemoved(Scene *, AttributeChange::Type)), this, SLOT(RemovePhysicsWorld(Scene *)));
 
     framework_->Console()->RegisterCommand("physicsDebug",
         "Toggles drawing of physics debug geometry.",
@@ -158,13 +158,13 @@ void PhysicsModule::AutoCollisionMesh()
     {
         EntityPtr entity = iter->second;
         // Only assign to entities that don't have a rigidbody yet, but have a mesh and a placeable
-        if (!entity->GetComponent<EC_RigidBody>() && entity->GetComponent<EC_Placeable>() && entity->GetComponent<EC_Mesh>())
+        if (!entity->Component<EC_RigidBody>() && entity->Component<EC_Placeable>() && entity->Component<EC_Mesh>())
         {
             shared_ptr<EC_RigidBody> body = entity->GetOrCreateComponent<EC_RigidBody>();
             body->SetShapeFromVisibleMesh();
         }
         // Terrain mode: assign if no rigid body, but there is a terrain component
-        if (!entity->GetComponent<EC_RigidBody>() && entity->GetComponent<EC_Terrain>())
+        if (!entity->Component<EC_RigidBody>() && entity->Component<EC_Terrain>())
         {
             shared_ptr<EC_RigidBody> body = entity->GetOrCreateComponent<EC_RigidBody>();
             body->shapeType.Set(EC_RigidBody::Shape_HeightField, AttributeChange::Default);
@@ -184,38 +184,23 @@ void PhysicsModule::Update(f64 frametime)
     }
 }
 
-void PhysicsModule::OnSceneAdded(const QString& name)
+void PhysicsModule::CreatePhysicsWorld(Scene *scene)
 {
-    ScenePtr scene = GetFramework()->Scene()->GetScene(name);
-    if (!scene)
-    {
-        LogError("Could not find created scene");
-        return;
-    }
-    
-    shared_ptr<PhysicsWorld> newWorld = MAKE_SHARED(PhysicsWorld, scene, !scene->IsAuthority());
+    shared_ptr<PhysicsWorld> newWorld = MAKE_SHARED(PhysicsWorld, scene->shared_from_this(), !scene->IsAuthority());
     newWorld->SetGravity(scene->UpVector() * -9.81f);
     newWorld->SetPhysicsUpdatePeriod(defaultPhysicsUpdatePeriod_);
     newWorld->SetMaxSubSteps(defaultMaxSubSteps_);
-    physicsWorlds_[scene.get()] = newWorld;
+    physicsWorlds_[scene] = newWorld;
     scene->setProperty(PhysicsWorld::PropertyName(), QVariant::fromValue<QObject*>(newWorld.get()));
 }
 
-void PhysicsModule::OnSceneRemoved(const QString& name)
+void PhysicsModule::RemovePhysicsWorld(Scene *scene)
 {
-    // Remove the PhysicsWorld from the scene
-    ScenePtr scene = GetFramework()->Scene()->GetScene(name);
-    if (!scene)
-    {
-        LogError("Could not find scene about to be removed");
-        return;
-    }
-    
-    PhysicsWorld* worldPtr = scene->GetWorld<PhysicsWorld>().get();
+    PhysicsWorldPtr worldPtr = scene->Subsystem<PhysicsWorld>();
     if (worldPtr)
     {
         scene->setProperty(PhysicsWorld::PropertyName(), QVariant());
-        physicsWorlds_.erase(scene.get());
+        physicsWorlds_.erase(scene);
     }
 }
 

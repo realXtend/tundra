@@ -79,10 +79,10 @@ public slots:
     void OnScriptEngineCreated(QScriptEngine* engine);
 
 private slots:
-    /// New scene has been created
-    void OnSceneAdded(const QString &name);
-    /// Scene is about to be removed
-    void OnSceneRemoved(const QString &name);
+    /// Creates PhysicsWorld for a Scene.
+    void CreatePhysicsWorld(Scene *scene);
+    /// Removes PhysicsWorld of a Scene.
+    void RemovePhysicsWorld(Scene *scene);
 
 private:
     typedef std::map<Scene*, shared_ptr<Physics::PhysicsWorld> > PhysicsWorldMap;
@@ -106,4 +106,3 @@ void PHYSICS_MODULE_API UpdateBulletProfilingData(QTreeWidgetItem *treeRoot, int
 #endif
 
 }
-
