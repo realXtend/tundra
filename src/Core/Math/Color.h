@@ -85,7 +85,7 @@ public:
     static const Color Blue; ///< (0, 0, 1, 1)
     static const Color White; ///< (1, 1, 1, 1)
     static const Color Black; ///< (0, 0, 0, 1)
-    static const Color Yellow; ///< (1, 0, 0, 1)
+    static const Color Yellow; ///< (1, 1, 0, 1)
     static const Color Cyan; ///< (0, 1, 1, 1)
     static const Color Magenta; ///< (1, 0, 1, 1)
     static const Color Gray; ///< (0.5, 0.5, 0.5, 1)
