@@ -391,7 +391,6 @@ public slots:
     QObjectList ComponentsList() const; /**< @deprecated Use Components @todo Remove */
     QObjectList GetComponentsRaw(const QString &typeName) const; /**< @deprecated Use GetComponents or Components instead */
     void RemoveComponentRaw(QObject* comp); /**< @deprecated Use RemoveComponent or RemoveComponentById. */
-    ComponentMap Components() /*non-const intentionally*/ { return components_; } /**< @deprecated use const version Components or 'components' instead. @todo Add deprecation print. @todo Remove. */
     ComponentVector GetComponents(const QString &typeName) const { return ComponentsOfType(typeName); } /**< @deprecated use ComponentsOfType instead. @todo Add deprecation print. @todo Remove. */
     /// @endcond
 
