@@ -274,7 +274,7 @@ else
         rm -r CMakeCache.txt
     else
         echoInfo "Cloning repository of $what, this could take a while..."
-        git clone git@github.com:flavio/qjson.git
+        git clone https://github.com/flavio/qjson
         cd $what
     fi
 
