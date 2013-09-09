@@ -192,10 +192,9 @@ Color OgreWorld::DefaultSceneAmbientLightColor()
 void OgreWorld::SetDefaultSceneFog()
 {
     if (sceneManager_)
-    {
         sceneManager_->setFog(Ogre::FOG_LINEAR, Ogre::ColourValue::White, 0.001f, 2000.0f, 4000.0f);
-        Renderer()->MainViewport()->setBackgroundColour(Color()); // Color default ctor == black
-    }
+    if (renderer_ && renderer_->MainViewport())
+        renderer_->MainViewport()->setBackgroundColour(Color::Black);
 }
 
 Ogre::InstancedEntity *OgreWorld::CreateInstance(IComponent *owner, const QString &meshRef, const AssetReferenceList &materials, float drawDistance, bool castShadows)
