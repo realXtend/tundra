@@ -128,7 +128,11 @@ macro(configure_qjson)
     endif ()
 
     if ("${QJSON_ROOT}" STREQUAL "")
-        set (QJSON_ROOT ${ENV_TUNDRA_DEP_PATH}/qjson)
+        if (WIN32 OR APPLE)
+            set (QJSON_ROOT ${ENV_TUNDRA_DEP_PATH}/qjson)
+        else ()
+            set (QJSON_ROOT ${ENV_TUNDRA_DEP_PATH})
+        endif ()
     endif ()
 
     # Find QJson/Parser header and back up one folder for <QJson/Parser> style includes.

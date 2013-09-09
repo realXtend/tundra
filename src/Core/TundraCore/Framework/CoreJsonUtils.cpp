@@ -7,7 +7,7 @@
 
 #include <qjson/parser.h>
 #include <qjson/serializer.h>
-#include <qjson/qobjectHelper.h>
+#include <qjson/qobjecthelper.h>
 
 #include <QFile>
 

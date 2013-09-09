@@ -86,6 +86,26 @@ else
     echo "Unknown Linux distribution, please update the build script for your distro and file a pull request, or file a bug report on the tracker."
 fi
 
+what=qjson
+if test -f $tags/$what-done; then
+    echo $what is done
+else
+    cd $build
+    if [ -d $build/$what ]; then
+        cd $what
+        git pull
+        rm -r CMakeCache.txt
+    else
+        git clone https://github.com/flavio/qjson
+        cd $what
+    fi
+
+    cmake . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DQJSON_BUILD_TESTS=no
+    make -j $nprocs
+    make install
+    touch $tags/$what-done
+fi
+
 what=bullet-2.81-rev2613
 if test -f $tags/$what-done; then
     echo $what is done
