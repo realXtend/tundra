@@ -34,6 +34,8 @@
 
 // This variable is used for the interpolation stop check
 kNet::MessageConnection* currentSender = 0;
+// Used to print EC mismatch warnings only once per EC.
+static std::set<u32> mismatchingComponentTypes;
 
 namespace TundraLogic
 {
@@ -1879,7 +1881,11 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
                     attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
                 else
                 {
-                    LogWarning("Not enough static attribute data in component " + comp->TypeName() + " (version mismatch)");
+                    if (mismatchingComponentTypes.find(comp->TypeId()) == mismatchingComponentTypes.end())
+                    {
+                        mismatchingComponentTypes.insert(comp->TypeId());
+                        LogWarning("Not enough static attribute data in component " + comp->TypeName() + " (version mismatch).");
+                    }
                     break;
                 }
             }
@@ -1902,7 +1908,13 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const char
                 }
             }
             else if (attrDs.BitsLeft())
-                LogWarning("Extra static attribute data in component " + comp->TypeName() + " (version mismatch)");
+            {
+                if (mismatchingComponentTypes.find(comp->TypeId()) == mismatchingComponentTypes.end())
+                {
+                    mismatchingComponentTypes.insert(comp->TypeId());
+                    LogWarning("Extra static attribute data in component " + comp->TypeName() + " (version mismatch).");
+                }
+            }
         }
     } catch(kNet::NetException &/*e*/)
     {
@@ -2029,7 +2041,11 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
                     attrs[i]->FromBinary(attrDs, AttributeChange::Disconnected);
                 else
                 {
-                    LogWarning("Not enough static attribute data in component " + comp->TypeName() + " (version mismatch)");
+                    if (mismatchingComponentTypes.find(comp->TypeId()) == mismatchingComponentTypes.end())
+                    {
+                        mismatchingComponentTypes.insert(comp->TypeId());
+                        LogWarning("Not enough static attribute data in component " + comp->TypeName() + " (version mismatch).");
+                    }
                     break;
                 }
             }
@@ -2052,7 +2068,13 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
                 }
             }
             else if (attrDs.BitsLeft())
-                LogWarning("Extra static attribute data in component " + comp->TypeName() + " (version mismatch)");
+            {
+                if (mismatchingComponentTypes.find(comp->TypeId()) == mismatchingComponentTypes.end())
+                {
+                    mismatchingComponentTypes.insert(comp->TypeId());
+                    LogWarning("Extra static attribute data in component " + comp->TypeName() + " (version mismatch).");
+                }
+            }
         }
     } catch(kNet::NetException &/*e*/)
     {
