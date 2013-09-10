@@ -14,6 +14,7 @@ deps*/
 *.sln
 *.ipch
 *.sdf
+*.opensdf
 src/Core/Tundra/resource*.h
 src/Core/Tundra/*.aps
 src/Core/Tundra/*.rc
@@ -75,6 +76,7 @@ bin/fullmemoryleaklog.txt
 bin/qtplugins
 bin/vlcplugins
 bin/data/assets
+bin/asslogger.log
 build/
 
 # Binary compiled translation files
@@ -92,3 +94,4 @@ bin/data/translations/*.ts
 *.xcodeproj
 CMakeScripts/
 tundra.build/
+
