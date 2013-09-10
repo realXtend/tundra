@@ -657,15 +657,15 @@ InvokeItem *SceneTreeWidget::FindMruItem()
 /// @todo Partly duplicate code with EditInNew 03.09.2013
 void SceneTreeWidget::Edit()
 {
-    const SceneTreeWidgetSelection selection = SelectedItems();
-    if (selection.IsEmpty())
+    const QList<entity_id_t> entities = SelectedItems().EntityIds();
+    if (entities.isEmpty())
         return;
 
     // If we have an existing editor instance, use it.
     ECEditorWindow *editor = (!ecEditors.empty() ? ecEditors.back() : 0);
     if (editor)
     {
-        editor->AddEntities(selection.EntityIds(), true);
+        editor->AddEntities(entities, true);
         editor->show();
         editor->activateWindow();
         return;
@@ -694,7 +694,7 @@ void SceneTreeWidget::Edit()
         editor->activateWindow();
     }
 
-    editor->AddEntities(selection.EntityIds(), true);
+    editor->AddEntities(entities, true);
 }
 
 /// @todo Partly duplicate code with Edit 03.09.2013
