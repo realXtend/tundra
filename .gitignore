@@ -14,6 +14,7 @@ deps*/
 *.sln
 *.ipch
 *.sdf
+*.opensdf
 src/Core/Tundra/resource*.h
 src/Core/Tundra/*.aps
 src/Core/Tundra/*.rc
@@ -83,6 +84,7 @@ bin/data/assets
 bin/media/Hydra*
 bin/media/SkyX
 bin/jsmodules/BrowserUi
+bin/asslogger.log
 build/
 
 # Binary compiled translation files
