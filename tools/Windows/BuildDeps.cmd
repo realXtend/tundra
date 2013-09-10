@@ -451,10 +451,13 @@ IF NOT EXIST "%DEPS%\boost". (
 :SKIP_BOOST
 
 IF NOT EXIST "%DEPS%\assimp\". (
-    cecho {0D}Checking out OpenAssetImport library from https://assimp.svn.sourceforge.net/svnroot/assimp/trunk into "%DEPS%\assimp".{# #}{\n}
+    cecho {0D}Checking out OpenAssetImport library from https://github.com/assimp/assimp.git into "%DEPS%\assimp".{# #}{\n}
     cd "%DEPS%"
-    :: Note the fixed revision number. OpenAssetImport does not have an up-to-date tagged release, so fix to a recent revision of trunk.
-    svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk assimp
+    :: Note the fixed revision hash (equals SVN rev 1300.) OpenAssetImport does not have an up-to-date tagged release, so fix to a recent revision of trunk.
+    git clone https://github.com/assimp/assimp.git assimp
+    cd "%DEPS%\assimp"
+    git checkout e22bb03f807b345a9058352e5453b6491a235677
+    cd "%DEPS%"
 )
 
 IF NOT EXIST "%DEPS%\assimp\bin\%BUILD_TYPE%\assimp%POSTFIX_D%.dll". (

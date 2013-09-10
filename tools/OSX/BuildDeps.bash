@@ -706,16 +706,17 @@ if [ "$USE_BOOST" == "ON" ]; then
 fi
 
 what=assimp
-baseurl=https://assimp.svn.sourceforge.net/svnroot/assimp/trunk
+baseurl=https://github.com/assimp/assimp.git
 if test -f $tags/$what-done; then
     echoInfo "$what is done"
 else
     cd $build
     rm -rf $what
     echoInfo "Cloning $what repository, this may take a while..."
-    svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk $what
+    git clone https://github.com/assimp/assimp.git $what
     cd $what
-
+    git checkout e22bb03f807b345a9058352e5453b6491a235677
+    
     # Patch assimp 
     patch -p0 -i $patches/assimp.patch
     if [ "$USE_BOOST" == "ON" ]; then
