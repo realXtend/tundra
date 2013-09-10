@@ -13,6 +13,7 @@ deps*/
 *.lib
 *.sln
 *.ipch
+*.sdf
 src/Core/Tundra/resource*.h
 src/Core/Tundra/*.aps
 src/Core/Tundra/*.rc
