@@ -12,6 +12,7 @@ deps*/
 *.vcxproj.filters
 *.lib
 *.sln
+*.ipch
 src/Core/Tundra/resource*.h
 src/Core/Tundra/*.aps
 src/Core/Tundra/*.rc
