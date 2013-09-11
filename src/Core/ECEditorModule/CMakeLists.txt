@@ -8,7 +8,7 @@ file(GLOB CPP_FILES *.cpp)
 file(GLOB H_FILES *.h)
 file(GLOB XML_FILES *.xml)
 file(GLOB MOC_FILES ECEditorModule.h ECEditorWindow.h ECAttributeEditor.h ECBrowser.h
-    EcXmlEditorWidget.h MultiEditPropertyFactory.h MultiEditPropertyManager.h EntityPlacer.h
+    EcXmlEditorWidget.h MultiEditPropertyFactory.h MultiEditPropertyManager.h
     ECComponentEditor.h LineEditPropertyFactory.h AddComponentDialog.h EntityActionDialog.h
     FunctionDialog.h TreeWidgetItemExpandMemory.h SceneStructureModule.h SceneStructureWindow.h
     SceneTreeWidget.h AddContentWindow.h AssetsWindow.h AssetTreeWidget.h RequestNewAssetDialog.h
