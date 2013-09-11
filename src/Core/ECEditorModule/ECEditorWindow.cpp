@@ -9,7 +9,6 @@
 
 #include "ECEditorWindow.h"
 #include "ECBrowser.h"
-#include "EntityPlacer.h"
 #include "AddComponentDialog.h"
 #include "EntityActionDialog.h"
 #include "FunctionDialog.h"
@@ -561,13 +560,6 @@ void ECEditorWindow::CopyEntity()
 
 void ECEditorWindow::PasteEntity()
 {
-    ///\todo EntityPlacer is deprecated? If so, remove for good.
-    // Dont allow paste operation if we are placing previosuly pasted object to a scene.
-//    if(findChild<QObject*>("EntityPlacer"))
-//        return;
-
-    // First we need to check if component is holding EC_Placeable component to tell where entity should be located at.
-    /// \todo local only server wont save those objects.
     Scene *scene = framework->Scene()->MainCameraScene();
     assert(scene);
     if (!scene)
@@ -590,7 +582,7 @@ void ECEditorWindow::PasteEntity()
     if (ent_elem.isNull())
         return;
     QString id = ent_elem.attribute("id");
-    EntityPtr originalEntity = scene->EntityById((entity_id_t)id.toInt());
+    EntityPtr originalEntity = scene->EntityById(id.toUInt());
     if (!originalEntity)
     {
         LogWarning("ECEditorWindow::PasteEntity: cannot create a new copy of entity, because scene manager couldn't find the original entity. (id " + id + ").");
@@ -602,13 +594,9 @@ void ECEditorWindow::PasteEntity()
     if (!entity)
         return;
 
-//    bool hasPlaceable = false;
     const Entity::ComponentMap &components =  originalEntity->Components();
     for(Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
     {
-        // If the entity is holding placeable component we can place it into the scene.
-//        if (i->second->TypeId() == EC_Placeable::ComponentTypeId)
-//            hasPlaceable = true;
         ComponentPtr component = entity->GetOrCreateComponent(i->second->TypeId(), i->second->Name(), AttributeChange::Default);
         const AttributeVector &attributes = i->second->Attributes();
         for(size_t j = 0; j < attributes.size(); j++)
@@ -620,16 +608,7 @@ void ECEditorWindow::PasteEntity()
             }
     }
 
-    ///\todo EntityPlacer is deprecated? If so, remove for good.
-/*
-    if(hasPlaceable)
-    {
-        EntityPlacer *entityPlacer = new EntityPlacer(framework, entity->Id(), this);
-        entityPlacer->setObjectName("EntityPlacer");
-    }
-*/
-
-    AddEntity(entity->Id());
+    AddEntity(entity);
 }
 
 void ECEditorWindow::OpenEntityActionDialog()
