@@ -288,9 +288,9 @@ void EditXMLCommand::Deserialize(const QDomDocument docState)
 
     while(!entityElement.isNull())
     {
-        entity_id_t id = (entity_id_t)entityElement.attribute("id").toInt();
+        entity_id_t id = entityElement.attribute("id").toUInt();
 
-        EntityPtr entity = scene->GetEntity(id);
+        EntityPtr entity = scene->EntityById(id);
         if (entity)
         {
             QDomElement componentElement = entityElement.firstChildElement("component");
@@ -298,7 +298,7 @@ void EditXMLCommand::Deserialize(const QDomDocument docState)
             {
                 QString typeName = componentElement.attribute("type");
                 QString name = componentElement.attribute("name");
-                ComponentPtr comp = entity->GetComponent(typeName, name);
+                ComponentPtr comp = entity->Component(typeName, name);
                 if (comp)
                     comp->DeserializeFrom(componentElement, AttributeChange::Default);
 
@@ -425,7 +425,7 @@ void RemoveCommand::undo()
         QDomElement entityElement = sceneElement.firstChildElement("entity");
         while (!entityElement.isNull())
         {
-            entity_id_t id = entityElement.attribute("id").toInt();
+            entity_id_t id = entityElement.attribute("id").toUInt();
             bool sync = ParseBool(entityElement.attribute("sync"));
 
             entity_id_t newId = sync ? scene->NextFreeId() : scene->NextFreeIdLocal();
@@ -444,7 +444,7 @@ void RemoveCommand::undo()
         QDomElement entityElement = componentsDocument_.firstChildElement("entity");
         while (!entityElement.isNull())
         {
-            entity_id_t entityId = entityElement.attribute("id").toInt();
+            entity_id_t entityId = entityElement.attribute("id").toUInt();
             EntityPtr ent = scene->EntityById(tracker_->RetrieveId(entityId));
             if (ent.get())
             {
@@ -499,7 +499,7 @@ void RemoveCommand::redo()
 
                 for (ComponentList::iterator i = componentMap_[key].begin(); i != componentMap_[key].end(); ++i)
                 {
-                    ComponentPtr comp = ent->GetComponent((*i).first, (*i).second);
+                    ComponentPtr comp = ent->Component((*i).first, (*i).second);
                     if (comp.get())
                     {
                         comp->SerializeTo(componentsDocument_, entityElem, true);
