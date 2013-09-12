@@ -60,7 +60,7 @@ Scene *SceneAPI::MainCameraScene()
     return framework->Renderer()->MainCameraScene();
 }
 
-ScenePtr SceneAPI::CreateScene(const QString &name, bool viewEnabled, bool authority)
+ScenePtr SceneAPI::CreateScene(const QString &name, bool viewEnabled, bool authority, AttributeChange::Type change)
 {
     if (SceneByName(name))
         return ScenePtr();
@@ -69,23 +69,30 @@ ScenePtr SceneAPI::CreateScene(const QString &name, bool viewEnabled, bool autho
     scenes[name] = newScene;
 
     // Emit signal of creation
-    emit SceneCreated(newScene.get(), AttributeChange::Default);
-    emit SceneAdded(newScene->Name());
+    if (change != AttributeChange::Disconnected)
+    {
+        emit SceneCreated(newScene.get(), change);
+        emit SceneAdded(newScene->Name());
+    }
+
     return newScene;
 }
 
-bool SceneAPI::RemoveScene(const QString &name)
+bool SceneAPI::RemoveScene(const QString &name, AttributeChange::Type change)
 {
     SceneMap::iterator sceneIter = scenes.find(name);
     if (sceneIter == scenes.end())
         return false;
 
     // Remove entities before the scene subsystems or worlds are erased by various modules
-    sceneIter->second->RemoveAllEntities(false);
+    sceneIter->second->RemoveAllEntities(false, change);
 
     // Emit signal about removed scene
-    emit SceneAboutToBeRemoved(sceneIter->second.get(), AttributeChange::Default);
-    emit SceneRemoved(name);
+    if (change != AttributeChange::Disconnected)
+    {
+        emit SceneAboutToBeRemoved(sceneIter->second.get(), change);
+        emit SceneRemoved(name);
+    }
 
     scenes.erase(sceneIter);
     return true;

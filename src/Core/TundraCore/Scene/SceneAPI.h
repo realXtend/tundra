@@ -63,11 +63,17 @@ public slots:
     Scene *MainCameraScene();
 
     /// Creates new empty scene.
-    /** @param name name of the new scene
-        @param viewEnabled Whether the scene is view enabled
-        @param authority True for server & standalone scenes, false for network client scenes
+    /** @param name name of the new scene.
+        @param viewEnabled Whether the scene is view enabled.
+        @param authority True for server & standalone scenes, false for network client scene.
+        @param change Notification/network replication mode.
+
+        @note As Tundra doesn't currently support multiple replicated scenes, @c change has no real effect,
+        unless AttributeChange::Disconnected is passed, which can be used f.ex. when creating dummy scenes silently
+        (no OgreWorld or PhysicsWorld will be created) for serialization purposes.
+
         @return The new scene, or empty pointer if scene with the specified name already exists. */
-    ScenePtr CreateScene(const QString &name, bool viewEnabled, bool authority);
+    ScenePtr CreateScene(const QString &name, bool viewEnabled, bool authority, AttributeChange::Type change = AttributeChange::Default);
 
     /// Removes a scene with the specified name.
     /** The scene may not get deleted since there may be dangling references to it.
@@ -77,8 +83,13 @@ public slots:
         Does nothing if scene with the specified name doesn't exist.
 
         @param name name of the scene to delete
+        @param change Notification/network replication mode.
+
+        @note As Tundra doesn't currently support multiple replicated scenes, @c change has no real effect,
+        unless AttributeChange::Disconnected is passed, meaning that the SceneAboutToBeRemoved signal is not emitted.
+
         @return True if the scene was found and removed, false otherwise. */
-    bool RemoveScene(const QString &name);
+    bool RemoveScene(const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
     /// Return if a component factory has been registered for a type name.
     bool IsComponentFactoryRegistered(const QString &typeName) const;
@@ -137,13 +148,13 @@ signals:
     /// Emitted after new scene has been added to framework.
     /** @param scene Scene that was just created.
         @param change Change signaling mode.
-        @note @c change is currently always AttributeChange::Default. */
+        @note As Tundra doesn't currently support multiple replicated scenes, @c change has no real meaning. */
     void SceneCreated(Scene *scene, AttributeChange::Type change);
 
     /// Emitted after scene has been removed from the framework.
     /** @param scene Scene that is about to be removed.
         @param change Change signaling mode.
-        @note @c change is currently always AttributeChange::Default. */
+        @note As Tundra doesn't currently support multiple replicated scenes, @c change has no real meaning. */
     void SceneAboutToBeRemoved(Scene *scene, AttributeChange::Type change);
 
     // DEPRECATED
