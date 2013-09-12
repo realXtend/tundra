@@ -145,20 +145,22 @@ entity_id_t EntityItem::Id() const
 
 bool EntityItem::operator <(const QTreeWidgetItem &rhs) const
 {
-    int c = treeWidget()->sortColumn();
-    if (c == 0)
-        return (entity_id_t)text(0).split(" ")[0].toInt() < (entity_id_t)rhs.text(0).split(" ")[0].toInt();
-    else if (c == 1)
+    switch(treeWidget()->sortColumn())
     {
-        QStringList lhsText = text(0).split(" ");
-        QStringList rhsText = rhs.text(0).split(" ");
+    case 0: // ID
+        return text(0).split(" ")[0].toUInt() < rhs.text(0).split(" ")[0].toUInt();
+    case 1: // Name
+    {
+        const QStringList lhsText = text(0).split(" ");
+        const QStringList rhsText = rhs.text(0).split(" ");
         if (lhsText.size() > 1 && rhsText.size() > 1)
-            return lhsText[1].toLower() < rhsText[1].toLower();
+            return lhsText[1].compare(rhsText[1]) < 0;
         else
             return false;
     }
-    else
+    default:
         return QTreeWidgetItem::operator <(rhs);
+    }
 }
 
 // ComponentItem
