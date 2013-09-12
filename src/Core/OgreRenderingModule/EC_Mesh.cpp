@@ -1419,11 +1419,11 @@ AABB EC_Mesh::WorldAABB() const
 AABB EC_Mesh::LocalAABB() const
 {
     if (!entity_)
-        return AABB();
+        return AABB(float3(1e-9f, 1e-9f, 1e-9f), float3::zero);
 
     Ogre::MeshPtr mesh = entity_->getMesh();
     if (mesh.isNull())
-        return AABB();
+        return AABB(float3(1e-9f, 1e-9f, 1e-9f), float3::zero);
 
     return AABB(mesh->getBounds());
 }

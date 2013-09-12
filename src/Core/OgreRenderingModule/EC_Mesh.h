@@ -266,10 +266,12 @@ public slots:
     float3 AttachmentScale(uint index) const;
 
     /// Returns the affine transform that maps from the local space of this mesh to the space of the EC_Placeable component of this mesh.
-    /** If the Entity this mesh is part of does not have an EC_Placeable component, returns the local->world transform of this mesh instance. */
+    /** If the Entity this mesh is part of does not have an EC_Placeable component, returns the local->world transform of this mesh instance.
+        Precondition: HasMesh must be true. */
     float3x4 LocalToParent() const;
 
     /// Returns the affine transform that maps from the local space of this mesh to the world space of the scene.
+    /** Precondition: HasMesh must be true. */
     float3x4 LocalToWorld() const;
 
     /// Return names of all bones. If no entity or skeleton, returns empty list
@@ -302,15 +304,20 @@ public slots:
     float AttachmentMorphWeight(unsigned index, const QString& morphName) const;
 
     /// Returns the world space bounding box of this object.
+    /** @copydetails LocalAABB */
     OBB WorldOBB() const;
 
     /// Returns the local space bounding box of this object.
+    /** @copydetails LocalAABB */
     OBB LocalOBB() const;
 
     /// Returns the world space axis-aligned bounding box of this object.
+    /** @copydetails LocalAABB */
     AABB WorldAABB() const;
 
     /// Returns the local space axis-aligned bounding box of this object.
+    /** Precondition: Ogre::Entity must exists and have a Ogre::Mesh.
+        @return For the sake of script-safety, a minimally degenerate bounding box is returned if preconditions are not met. */
     AABB LocalAABB() const;
 
     /// Returns the mesh asset used by this component.
