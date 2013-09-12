@@ -550,14 +550,16 @@ void InputAPI::SaveKeyBindingsToFile()
 Qt::Key StripModifiersFromKey(int qtKeyWithModifiers)
 {
     // Remove the modifier bit flags from the given key with modifiers.
-    // See http://doc.qt.nokia.com/4.6/qt.html#Key-enum
-    // and http://doc.qt.nokia.com/4.6/qt.html#KeyboardModifier-enum
+    // See http://qt-project.org/doc/qt-4.8/qt.html#Key-enum
+    // and http://qt-project.org/doc/qt-4.8/qt.html#KeyboardModifier-enum
     Qt::Key key = static_cast<Qt::Key>(qtKeyWithModifiers & 0x01FFFFFF);
     // Non-ASCII keys will end up being invalid Qt::Key values. Make sure that the key code
     // isn't in the invalid range as it can cause a crash in QtScript.
     if (key < Qt::Key_Space || key > Qt::Key_unknown ||
         (key > Qt::Key_ssharp && key < Qt::Key_division) ||
-        (key > Qt::Key_division && key < Qt::Key_ydiaeresis))
+        (key > Qt::Key_division && key < Qt::Key_ydiaeresis) ||
+    // The key's int value is mapped 1:1 with the equivalent Unicode value, but we want to ignore all of them due tp QtScript incompatibility
+        (key > Qt::Key_ydiaeresis && key <= 0xFFFF))
     {
         key = Qt::Key_unknown;
     }
