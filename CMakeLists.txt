@@ -111,7 +111,8 @@ macro(PrintUsedBuildConfig)
     message(STATUS "TUNDRACORE_SHARED          = " ${TUNDRACORE_SHARED})
     message(STATUS "BUILD_SDK_ONLY             = " ${BUILD_SDK_ONLY})
     message(STATUS "INSTALL_BINARIES_ONLY      = " ${INSTALL_BINARIES_ONLY})
-    message(STATUS "INSTALL_EXAMPLE_SCENES     = " ${INSTALL_EXAMPLE_SCENES})    
+    message(STATUS "INSTALL_EXAMPLE_SCENES     = " ${INSTALL_EXAMPLE_SCENES})
+    message(STATUS "ENABLE_TRANSLATIONS        = " ${ENABLE_TRANSLATIONS})
     message(STATUS "ENABLE_BUILD_OPTIMIZATIONS = " ${ENABLE_BUILD_OPTIMIZATIONS})
     message(STATUS "ENABLE_HYDRAX              = " ${ENABLE_HYDRAX})
     message(STATUS "ENABLE_SKYX                = " ${ENABLE_SKYX})
@@ -466,20 +467,22 @@ endif()
 include(CMakeBuildConfig.txt)
 
 # Collect translation files.
-file(GLOB TRANSLATIONS_FILES bin/data/translations/*.ts)
+if (ENABLE_TRANSLATIONS)
+    file(GLOB TRANSLATIONS_FILES bin/data/translations/*.ts)
 
-# Collect ui-files which are stored into data/
-file(GLOB ui_src bin/data/ui/*.ui)
+    # Collect ui-files which are stored into data/
+    file(GLOB ui_src bin/data/ui/*.ui)
 
-set(FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${ui_src})
+    set(FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${ui_src})
 
-if (UPDATE_LANGUAGE_TRANSLATIONS)
-   message (STATUS "Update .ts files with new translation data.")
-   update_translation_files(TRANSLATIONS_FILES)
+    if (UPDATE_LANGUAGE_TRANSLATIONS) # TODO UPDATE_LANGUAGE_TRANSLATIONS is not specified currently anywhere.
+        message(STATUS "Update .ts files with new translation data.")
+        update_translation_files(TRANSLATIONS_FILES)
+    endif()
+
+    update_qm_files(TRANSLATIONS_FILES)
+    message (STATUS "Language translations generated")
 endif()
-
-update_qm_files(TRANSLATIONS_FILES)
-message (STATUS "Language translations generated")
 
 PrintUsedEnvVariables ()
 PrintUsedBuildConfig ()
