@@ -112,7 +112,7 @@ public:
     void SetGizmoVisible(bool show);
 
     /// Returns undo manager for this editor.
-    UndoManager *GetUndoManager();
+    UndoManager *GetUndoManager() const { return undoManager_; }
 
 public slots:
     /// Deletes selected entity entries from the list (does not delete the entity itself).
@@ -235,6 +235,8 @@ private slots:
     void OnAboutToEditAttribute(IAttribute *attr);
     void OnUndoChanged(bool canUndo);
     void OnRedoChanged(bool canRedo);
+    /// Clears the window if the scene of which entities are shown is cleared or removed.
+    void OnSceneRemoved(Scene *);
 
 private:
     struct EntityComponentSelection
