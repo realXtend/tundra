@@ -27,8 +27,8 @@ option(INSTALL_BINARIES_ONLY "Do we want to deploy only the binaries (contents o
 # Do we want to deploy the example scenes (bin/scenes) when running the INSTALL project.
 option(INSTALL_EXAMPLE_SCENES "Do we want to deploy the example scenes (bin/scenes) when running the INSTALL project." TRUE)
 # Enables certain build optimizations on the release builds, f.ex. disables math correctness checks and error prints.
-# On Windows also enables some of the more aggressive compiler and linker optimizations, so do not enable this if you are
-# planning to retain usable debug information. Warning: increasing the build time significantly.
+# On Windows also enables some of the more aggressive linker optimizations (increases build time significantly),
+# so do not enable this if you are planning to retain usable debug and symbol information. 
 set(ENABLE_BUILD_OPTIMIZATIONS 0)
 # 3rd party dependencies:
 if (NOT ANDROID)
@@ -91,19 +91,20 @@ if (MSVC)
     endif()
 
     # Common flags for all configurations.
-    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MP /Zm1000")
-    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MP /Zm1000")
-    set (CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MP /Zm1000")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MP /Zm1000")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MP /Zm1000")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MP /Zm1000")
+    # NOTE: RelWithDebInfo and Release use O2 (=Ox+Gl+Gy) by default 
 
     if (ENABLE_BUILD_OPTIMIZATIONS)
-        set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL /Gy /GF /Ox /Ob2 /Ot")
-        set (CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELEASE})
-        set (CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF /OPT:ICF")
-        set (CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO ${CMAKE_SHARED_LINKER_FLAGS_RELEASE})
-        set (CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF /OPT:ICF")
-        set (CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO ${CMAKE_EXE_LINKER_FLAGS_RELEASE})
-    endif ()
-endif ()
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL")
+        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELEASE})
+        set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF") # /OPT:REF enables also /OPT:ICF
+        set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO ${CMAKE_SHARED_LINKER_FLAGS_RELEASE})
+        set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF")
+        set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO ${CMAKE_EXE_LINKER_FLAGS_RELEASE})
+    endif()
+endif()
 
 ###### ENTITY-COMPONENTS ######
 message("\n=========== Configuring Optional Entity-Components ===========\n")
