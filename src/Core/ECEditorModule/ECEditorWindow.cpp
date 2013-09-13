@@ -171,8 +171,12 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     connect(undoManager_, SIGNAL(CanRedoChanged(bool)), this, SLOT(OnRedoChanged(bool)));
     connect(undoButton_, SIGNAL(clicked()), undoManager_, SLOT(Undo()));
     connect(redoButton_, SIGNAL(clicked()), undoManager_, SLOT(Redo()));
-    
+
     connect(framework->Input()->TopLevelInputContext(), SIGNAL(KeyPressed(KeyEvent*)), SLOT(OnKeyEvent(KeyEvent*)));
+
+    // Make sure the editor is cleared if the scene is cleared or removed.
+    connect(scene, SIGNAL(SceneCleared(Scene *)), SLOT(OnSceneRemoved(Scene *)));
+    connect(framework->Scene(), SIGNAL(SceneAboutToBeRemoved(Scene *, AttributeChange::Type)), SLOT(OnSceneRemoved(Scene *)));
 }
 
 ECEditorWindow::~ECEditorWindow()
@@ -218,7 +222,7 @@ void ECEditorWindow::AddEntities(const QList<entity_id_t> &entities, bool select
     // SetEntitySelected() will block entity list's signals, no need to do it here.
     ClearEntities();
 
-    Scene *scene = framework->Scene()->MainCameraScene();
+    Scene *scene = framework->Scene()->MainCameraScene(); /**< @todo Use "scene of this editor", or use Entity's Scene. */
     EntityList entityPtrs;
 
     foreach(entity_id_t id, entities)
@@ -277,7 +281,7 @@ void ECEditorWindow::SetSelectedEntities(const QList<entity_id_t> &ids)
         for(int i = 0; i < entityList->count(); ++i)
         {
             QListWidgetItem *item = entityList->item(i);
-            if (id == (entity_id_t)item->text().toInt())
+            if (id == item->text().toUInt())
             {
                 item->setSelected(true);
                 break;
@@ -308,7 +312,7 @@ EntityList ECEditorWindow::SelectedEntities() const
     if (!entityList)
         return ret;
 
-    Scene *scene = framework->Scene()->MainCameraScene();
+    Scene *scene = framework->Scene()->MainCameraScene(); /**< @todo Use "scene of this editor", or use Entity's Scene. */
     if (!scene)
         return ret;
 
@@ -524,7 +528,7 @@ void ECEditorWindow::OnActionTriggered(Entity *entity, const QString &action, co
 
 void ECEditorWindow::DeleteEntity()
 {
-    Scene *scene = framework->Scene()->MainCameraScene();
+    Scene *scene = framework->Scene()->MainCameraScene(); /**< @todo Use "scene of this editor", or use Entity's Scene. */
     if (!scene)
         return;
 
@@ -560,7 +564,7 @@ void ECEditorWindow::CopyEntity()
 
 void ECEditorWindow::PasteEntity()
 {
-    Scene *scene = framework->Scene()->MainCameraScene();
+    Scene *scene = framework->Scene()->MainCameraScene(); /**< @todo Use "scene of this editor", or use Entity's Scene. */
     assert(scene);
     if (!scene)
         return;
@@ -654,7 +658,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
     if (!ecBrowser)
         return;
 
-    Scene *scene = framework->Scene()->MainCameraScene();
+    Scene *scene = framework->Scene()->MainCameraScene(); /**< @todo Use "scene of this editor", or use Entity's Scene. */
     if (!scene)
     {
         ecBrowser->clear();
@@ -1008,6 +1012,7 @@ void ECEditorWindow::BoldEntityListItems(const QSet<entity_id_t> &bolded_entitie
     }
 }
 
+/// @todo Make this some sort of SetScene function.
 /*
 void ECEditorWindow::OnDefaultSceneChanged(Scene *scene)
 {
@@ -1031,7 +1036,7 @@ void ECEditorWindow::AddComponentDialogFinished(int result)
     if (result != QDialog::Accepted)
         return;
 
-    Scene *scene = framework->Scene()->MainCameraScene();
+    Scene *scene = framework->Scene()->MainCameraScene(); /**< @todo Use "scene of this editor", or use Entity's Scene. */
     if (!scene)
     {
         LogWarning("Failed to add new component to entity, since main camera scene was null");
@@ -1135,7 +1140,15 @@ void ECEditorWindow::OnRedoChanged(bool canRedo)
     redoButton_->setEnabled(canRedo);
 }
 
-UndoManager *ECEditorWindow::GetUndoManager()
+void ECEditorWindow::OnSceneRemoved(Scene *removedScene)
 {
-    return undoManager_;
+    for(int i = 0; i < entityList->count(); ++i)
+    {
+        EntityListWidgetItem *item = checked_static_cast<EntityListWidgetItem*>(entityList->item(i));
+        if (item && (!item->Entity() || !item->Entity()->ParentScene() || item->Entity()->ParentScene() == removedScene))
+        {
+            ClearEntities(); /**< @todo Assuming all the edited entities are from the same scene. */
+            break;
+        }
+    }
 }
