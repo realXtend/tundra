@@ -29,7 +29,7 @@ option(INSTALL_EXAMPLE_SCENES "Do we want to deploy the example scenes (bin/scen
 # Enables certain build optimizations on the release builds, f.ex. disables math correctness checks and error prints.
 # On Windows also enables some of the more aggressive linker optimizations (increases build time significantly),
 # so do not enable this if you are planning to retain usable debug and symbol information. 
-set(ENABLE_BUILD_OPTIMIZATIONS 0)
+option(ENABLE_BUILD_OPTIMIZATIONS "Enables certain build optimizations on the release builds." OFF)
 # 3rd party dependencies:
 if (NOT ANDROID)
     set(ENABLE_HYDRAX 1)            # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
