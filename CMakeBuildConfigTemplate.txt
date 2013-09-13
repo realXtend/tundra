@@ -26,6 +26,8 @@ set(BUILD_SDK_ONLY 0)
 option(INSTALL_BINARIES_ONLY "Do we want to deploy only the binaries (contents of bin) when running the INSTALL project." TRUE)
 # Do we want to deploy the example scenes (bin/scenes) when running the INSTALL project.
 option(INSTALL_EXAMPLE_SCENES "Do we want to deploy the example scenes (bin/scenes) when running the INSTALL project." TRUE)
+# Do we want to enable usage of language translations. Currently bitrot/deprecated and off by default.
+option(ENABLE_TRANSLATIONS "Do we want to enable usage of language translations. Currently bitrot/deprecated and off by default." OFF)
 # Enables certain build optimizations on the release builds, f.ex. disables math correctness checks and error prints.
 # On Windows also enables some of the more aggressive linker optimizations (increases build time significantly),
 # so do not enable this if you are planning to retain usable debug and symbol information. 
@@ -84,6 +86,9 @@ endif()
 if (ENABLE_BUILD_OPTIMIZATIONS)
     add_definitions (-DOPTIMIZED_RELEASE) # Disable MathGeoLib assume() prints in an optimized build
 endif ()
+if (ENABLE_TRANSLATIONS)
+    add_definitions (-DENABLE_TRANSLATIONS)
+endif()
 
 if (MSVC)
     if (ENABLE_MEMORY_LEAK_CHECKS)

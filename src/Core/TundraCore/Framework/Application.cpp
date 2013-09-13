@@ -69,11 +69,14 @@ Application::Application(int &argc, char **argv) :
     QApplication(argc, argv),
     framework(0),
     appActivated(true),
+#ifdef ENABLE_TRANSLATIONS
     nativeTranslator(new QTranslator),
     appTranslator(new QTranslator),
+#endif
     targetFpsLimit(60.0),
     splashScreen(0)
 {
+
     targetFpsLimitWhenInactive = targetFpsLimit / 2.f;
     // Reflect our versioning information to Qt internals, if something tries to obtain it straight from there.
     QApplication::setOrganizationName(organizationName);
@@ -142,14 +145,17 @@ Application::Application(int &argc, char **argv) :
 Application::~Application()
 {
     SAFE_DELETE(splashScreen);
+#ifdef ENABLE_TRANSLATIONS
     SAFE_DELETE(nativeTranslator);
     SAFE_DELETE(appTranslator);
+#endif
 }
 
 void Application::Initialize(Framework *fw)
 {
     framework = fw;
 
+#ifdef ENABLE_TRANSLATIONS
     QDir dir("data/translations/qt_native_translations");
     QStringList qmFiles = FindQmFiles(dir);
 
@@ -167,6 +173,7 @@ void Application::Initialize(Framework *fw)
     QString defaultLanguage = framework->Config()->DeclareSetting(ConfigAPI::FILE_FRAMEWORK,
         ConfigAPI::SECTION_FRAMEWORK, "language", "data/translations/tundra_en").toString();
     ChangeLanguage(defaultLanguage);
+#endif
 
     ReadTargetFpsLimitFromConfig();
 }
@@ -557,6 +564,7 @@ bool Application::eventFilter(QObject *obj, QEvent *event)
 
 void Application::ChangeLanguage(const QString& file)
 {
+#ifdef ENABLE_TRANSLATIONS
     QString filename = file;
     if (!filename.endsWith(".qm", Qt::CaseInsensitive))
         filename.append(".qm");
@@ -600,6 +608,10 @@ void Application::ChangeLanguage(const QString& file)
     }
     
     emit LanguageChanged();
+#else
+    UNREFERENCED_PARAM(file);
+    LogError("Application::ChangeLanguage: application not build with translations enabled.");
+#endif
 }
 
 #ifdef __APPLE__
