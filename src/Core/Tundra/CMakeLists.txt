@@ -69,6 +69,10 @@ endif()
 setup_install_directory(${TUNDRA_BIN}/data)        # Data: ui, assets, etc
 setup_remove_file("data/assets/dummy.txt")         # Remove git dummy file from data/assets
 
+if (NOT ENABLE_TRANSLATIONS)
+    setup_remove_directory("data/translations/")
+endif()
+
 # Install deps for Windows
 setup_install_windows_deps_regexp ("" qt/bin/ "[/][Q][t][A-Z].*[^d][4][.]dll$" Release|RelWithDebInfo qt/bin/ "[/][Q][t][A-Z].*[d][4][.]dll$" Debug)
 setup_install_windows_deps_regexp (qtplugins qt/plugins/ "[/]plugins[/].*[/][q].*[^d][4][.]dll$" Release|RelWithDebInfo qt/plugins/ "[/]plugins[/].*[/][q].*[d][4][.]dll$" Debug)
