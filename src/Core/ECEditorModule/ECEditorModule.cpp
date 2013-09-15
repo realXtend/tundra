@@ -209,7 +209,7 @@ void ECEditorModule::CreateXmlEditor(const QList<EntityPtr> &entities)
         xmlEditor->setAttribute(Qt::WA_DeleteOnClose);
         xmlEditor->setWindowFlags(Qt::Tool);
         if (activeEditor) // make sure the editing gizmo follow the entity when it's saved
-            connect(xmlEditor, SIGNAL(Saved()), activeEditor.data(), SLOT(RefreshPropertyBrowser()), Qt::UniqueConnection);
+            connect(xmlEditor, SIGNAL(Saved()), activeEditor.data(), SLOT(Refresh()), Qt::UniqueConnection);
     }
 
     xmlEditor->SetEntity(entities);

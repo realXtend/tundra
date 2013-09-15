@@ -83,7 +83,7 @@ public:
     /** @param ids List of entity ID's. */
     void SetSelectedEntities(const QList<entity_id_t> &ids);
 
-    /// Clears entity list.
+    /// Clears the entity list.
     void ClearEntities();
 
     /// Returns components that are currently selected.
@@ -115,38 +115,8 @@ public:
     UndoManager *GetUndoManager() const { return undoManager_; }
 
 public slots:
-    /// Deletes selected entity entries from the list (does not delete the entity itself).
-    void DeleteEntitiesFromList();
-
-    /// Remove component from entity and refresh property browser.
-    void DeleteComponent(const QString &componentType, const QString &name);
-
-    /// Opens a dialog that will handle new entity creation.
-    /** After the dialog is done, ComponentDialogFinished method is called. */
-    void CreateComponent();
-
-    /// Shows dialog for invoking entity actions for currently selected entities.
-    void OpenEntityActionDialog();
-
-    /// Shows dialog for invoking functions for currently selected entities.
-    void OpenFunctionDialog();
-
-    /// If entity selection different from previous update change browser to fit those changes.
-    ///\todo Rename or split into pieces; does more just than the aforementioned.
-    void RefreshPropertyBrowser();
-
-    /// Shows context menu for entities.
-    /** @param pos Mouse position of right-click event. */
-    void ShowEntityContextMenu(const QPoint &pos);
-
-    /// Shows EC XML editor. or entity's all components.
-    void ShowXmlEditorForEntity();
-
-    /// Shows EC XML editor for each components.
-    void ShowXmlEditorForComponent(const QList<ComponentPtr> &components);
-
-    /// Shows EC XML editor for a single component.
-    void ShowXmlEditorForComponent(const QString &componentType);
+    /// Refreshes the component view to match the selected entities.
+    void Refresh();
 
     /// Show/Hide entity list.
     void ToggleEntityList();
@@ -165,12 +135,6 @@ public slots:
     /// Deselects all entities in the list.
     /** @note Emits EntitiesSelected only, not EntitySelected. */
     void DeselectAllEntities();
-
-    /// Highlights an entity.
-    /** @note No-op if EC_Highlight is not included in the build.
-        @param entity Entity to be highlighted.
-        @param highlight Do we want to show highlight or hide it. */
-    void HighlightEntity(const EntityPtr &entity, bool highlight);
 
 signals:
     /// Emitted user wants to edit entity's EC attributes in XML editor.
@@ -203,9 +167,37 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event); ///< QWidget override.
 
 private slots:
-    /// Key event handler.
+    /// Opens a dialog that will handle new entity creation.
+    /** After the dialog is done, ComponentDialogFinished method is called. */
+    void CreateComponent();
+
+    /// Shows dialog for invoking entity actions for currently selected entities.
+    void OpenEntityActionDialog();
+
+    /// Shows dialog for invoking functions for currently selected entities.
+    void OpenFunctionDialog();
+
+    /// Shows context menu for entities.
+    /** @param pos Mouse position of right-click event. */
+    void ShowEntityContextMenu(const QPoint &pos);
+
+    /// Shows EC XML editor for entity's all components.
+    void ShowXmlEditorForEntity();
+
+    /// Shows EC XML editor for specific components.
+    void ShowXmlEditorForComponent(const QList<ComponentPtr> &components);
+
+    /// Shows EC XML editor for a single component.
+    void ShowXmlEditorForComponent(const QString &componentType);
+
+    /// Highlights an entity.
+    /** @note No-op if EC_Highlight is not included in the build.
+        @param entity Entity to be highlighted.
+        @param highlight Do we want to show highlight or hide it. */
+    void HighlightEntity(const EntityPtr &entity, bool highlight);
+
     void OnKeyEvent(KeyEvent *keyEvent);
-    
+
     /// Called by entity action dialog when it's finished.
     /** @param result Result of finished. Close is 0, Execute and Close is 1, Execute is 2. */
     void EntityActionDialogFinished(int result);

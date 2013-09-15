@@ -148,7 +148,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     if (entityList)
     {
         entityList->setSelectionMode(QAbstractItemView::ExtendedSelection);
-        connect(entityList, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshPropertyBrowser()));
+        connect(entityList, SIGNAL(itemSelectionChanged()), this, SLOT(Refresh()));
         connect(entityList, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ShowEntityContextMenu(const QPoint &)));
     }
 
@@ -194,12 +194,7 @@ EntityListWidgetItem *ECEditorWindow::AddEntity(const EntityPtr &entity, bool up
     {
         entityList->blockSignals(true);
 
-        // Append entity's name to the text if non-empty.
-        QString text = QString::number(entity->Id());
-        QString name = entity->Name();
-        if (!name.isEmpty())
-            text.append(" " + name);
-
+        QString text = QString("%1 %2").arg(entity->Id()).arg(entity->Name().isEmpty() ? "(no name)" : entity->Name());
         int row = AddUniqueListItem(entity, entityList, text);
         item = checked_static_cast<EntityListWidgetItem *>(entityList->item(row));
 
@@ -207,7 +202,7 @@ EntityListWidgetItem *ECEditorWindow::AddEntity(const EntityPtr &entity, bool up
     }
 
     if (updateUi)
-        RefreshPropertyBrowser();
+        Refresh();
 
     return item;
 }
@@ -237,7 +232,7 @@ void ECEditorWindow::AddEntities(const QList<entity_id_t> &entities, bool select
     if (selectAll)
         emit EntitiesSelected(entityPtrs, selectAll);
 
-    RefreshPropertyBrowser();
+    Refresh();
 }
 
 void ECEditorWindow::RemoveEntity(entity_id_t entity_id, bool udpate_ui)
@@ -267,7 +262,7 @@ void ECEditorWindow::RemoveEntity(entity_id_t entity_id, bool udpate_ui)
 
     entityList->blockSignals(false);
     if (udpate_ui)
-        RefreshPropertyBrowser();
+        Refresh();
 }
 
 void ECEditorWindow::SetSelectedEntities(const QList<entity_id_t> &ids)
@@ -289,7 +284,7 @@ void ECEditorWindow::SetSelectedEntities(const QList<entity_id_t> &ids)
         }
 
     entityList->blockSignals(false);
-    RefreshPropertyBrowser();
+    Refresh();
 }
 
 void ECEditorWindow::ClearEntities()
@@ -297,7 +292,7 @@ void ECEditorWindow::ClearEntities()
     DeselectAllEntities();
     if (entityList)
         entityList->clear();
-    RefreshPropertyBrowser();
+    Refresh();
 }
 
 std::vector<ComponentPtr> ECEditorWindow::SelectedComponents() const
@@ -370,30 +365,6 @@ void ECEditorWindow::SetGizmoVisible(bool show)
     transformEditor->SetGizmoVisible(show);
 }
 
-void ECEditorWindow::DeleteEntitiesFromList()
-{
-    if (entityList && entityList->hasFocus())
-        for(int i = entityList->count() - 1; i >= 0; --i)
-            if (entityList->item(i)->isSelected())
-            {
-                QListWidgetItem* item = entityList->takeItem(i);
-                delete item;
-            }
-}
-
-void ECEditorWindow::DeleteComponent(const QString &componentType, const QString &name)
-{
-    if(componentType.isEmpty())
-        return;
-
-    foreach(const EntityPtr &entity, SelectedEntities())
-    {
-        ComponentPtr component = entity->Component(componentType, name);
-        if (component)
-            entity->RemoveComponent(component, AttributeChange::Default);
-    }
-}
-
 void ECEditorWindow::CreateComponent()
 {
     QList<entity_id_t> ids;
@@ -412,7 +383,7 @@ void ECEditorWindow::CreateComponent()
 
 void ECEditorWindow::OnKeyEvent(KeyEvent *keyEvent)
 {
-    if (!isVisible() || !undoManager_ || !framework || !framework->Input())
+    if (!isVisible() || !undoManager_)
         return;
 
     const QKeySequence undo = framework->Input()->KeyBinding("TundraEditors.Undo", QKeySequence(Qt::ControlModifier + Qt::Key_Z));
@@ -423,7 +394,7 @@ void ECEditorWindow::OnKeyEvent(KeyEvent *keyEvent)
         undoManager_->Undo();
         keyEvent->Suppress();
     }
-    else if( keyEvent->sequence == redo)
+    else if (keyEvent->sequence == redo)
     {
         undoManager_->Redo();
         keyEvent->Suppress();
@@ -517,11 +488,9 @@ void ECEditorWindow::OnActionTriggered(Entity *entity, const QString &action, co
             if (item)
                 SetEntitySelected(item, !item->isSelected());
             else
-            {
-                item = AddEntity(entity->Id());
-                SetEntitySelected(item, true);
-            }
-            RefreshPropertyBrowser();
+                SetEntitySelected(AddEntity(entity->shared_from_this()), true);
+
+            Refresh();
         }
     }
 }
@@ -652,9 +621,9 @@ void ECEditorWindow::HighlightEntities(const QString &type, const QString &name)
     BoldEntityListItems(entities);
 }
 
-void ECEditorWindow::RefreshPropertyBrowser()
+void ECEditorWindow::Refresh()
 {
-    PROFILE(ECEditorWindow_RefreshPropertyBrowser);
+    PROFILE(ECEditorWindow_Refresh);
     if (!ecBrowser)
         return;
 
