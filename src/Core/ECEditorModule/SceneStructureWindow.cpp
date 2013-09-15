@@ -50,7 +50,8 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     attributeVisibility(ShowAssetReferences),
     treeWidget(0),
     expandAndCollapseButton(0),
-    searchField(0)
+    searchField(0),
+    sortingCriteria(SortById)
 {
     ConfigAPI &cfg = *framework->Config();
     showGroups = cfg.DeclareSetting(cShowGroupsSetting).toBool();
@@ -396,6 +397,8 @@ void SceneStructureWindow::Populate()
     Refresh();
 
     treeWidget->setSortingEnabled(true);
+
+    SortBy(sortingCriteria, treeWidget->header()->sortIndicatorOrder());
 }
 
 void SceneStructureWindow::Clear()
@@ -900,7 +903,13 @@ void SceneStructureWindow::UpdateComponentName()
 
 void SceneStructureWindow::Sort(int column)
 {
-    treeWidget->sortItems(column, treeWidget->header()->sortIndicatorOrder());
+    sortingCriteria = (SortCriteria)column;
+    SortBy(sortingCriteria, treeWidget->header()->sortIndicatorOrder());
+}
+
+void SceneStructureWindow::SortBy(SortCriteria criteria, Qt::SortOrder order)
+{
+    treeWidget->sortItems((int)criteria, order);
 }
 
 void SceneStructureWindow::Search(const QString &filter)

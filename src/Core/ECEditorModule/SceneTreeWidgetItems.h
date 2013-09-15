@@ -55,7 +55,7 @@ public:
     entity_id_t Id() const;
 
     /// QTreeWidgetItem override.
-    /** If treeWidget::sortColumn() is 0, items are sorted by ID, or if it's 1, items are sorted by name (if applicable). */
+    /** Uses SceneStructureWindow::SortingCriteria for the criteria, if applicable, otherwise treeWidget::sortColumn(). */
     bool operator <(const QTreeWidgetItem &rhs) const;
 
 private:

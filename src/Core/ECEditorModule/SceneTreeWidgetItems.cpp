@@ -8,6 +8,7 @@
 #include "DebugOperatorNew.h"
 
 #include "SceneTreeWidgetItems.h"
+#include "SceneStructureWindow.h"
 
 #include "Entity.h"
 #include "AssetReference.h"
@@ -16,6 +17,7 @@
 #include "IAssetStorage.h"
 #include "AssetAPI.h"
 #include "LoggingFunctions.h"
+#include "Profiler.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -145,7 +147,14 @@ entity_id_t EntityItem::Id() const
 
 bool EntityItem::operator <(const QTreeWidgetItem &rhs) const
 {
-    switch(treeWidget()->sortColumn())
+    PROFILE(EntityItem_OperatorLessThan)
+
+    // Cannot trust to treeWidget()->sortColumn() here due to our hackish approach:
+    // no separate tree widget columns for ID and Name, sort column is only considered
+    // as metadata.
+    SceneStructureWindow *w = qobject_cast<SceneStructureWindow *>(treeWidget()->parent());
+    const int criteria = w ? (int)w->SortingCriteria() : treeWidget()->sortColumn();
+    switch(criteria)
     {
     case 0: // ID
         return text(0).split(" ")[0].toUInt() < rhs.text(0).split(" ")[0].toUInt();
@@ -154,7 +163,7 @@ bool EntityItem::operator <(const QTreeWidgetItem &rhs) const
         const QStringList lhsText = text(0).split(" ");
         const QStringList rhsText = rhs.text(0).split(" ");
         if (lhsText.size() > 1 && rhsText.size() > 1)
-            return lhsText[1].compare(rhsText[1]) < 0;
+            return lhsText[1].localeAwareCompare(rhsText[1]) < 0;
         else
             return false;
     }

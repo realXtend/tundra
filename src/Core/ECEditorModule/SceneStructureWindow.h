@@ -32,6 +32,7 @@ class SceneStructureWindow : public QWidget
 {
     Q_OBJECT
     Q_ENUMS(AttributeVisibility)
+    Q_ENUMS(SortCriteria)
 
 public:
     /// Constructs the window.
@@ -56,6 +57,17 @@ public:
         ShowDynamicAttributes, ///< Show dynamic attributes.
         ShowAllAttributes ///< Show all attributes.
     };
+
+    enum SortCriteria
+    {
+        SortById,
+        SortByName
+    };
+
+    /// Sets the sorting criteria and sorts the contents accordingly.
+    void SortBy(SortCriteria criteria, Qt::SortOrder order);
+    /// Returns the currently used sorting criteria.
+    SortCriteria SortingCriteria() const { return sortingCriteria; }
 
 public slots:
     /// Sets do we want to entity groups in the tree view.
@@ -113,7 +125,7 @@ private:
 
     void Refresh();
 
-    Framework *framework; ///< Framework.
+    Framework *framework;
     SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
     SceneTreeWidget *treeWidget; ///< Scene tree widget.
     bool showGroups; ///< Are entity groups shown in the tree view.
@@ -123,8 +135,9 @@ private:
     QPushButton *expandAndCollapseButton; ///< Expand/collapse all button.
     QToolButton * undoButton_; ///< Undo button with drop-down menu
     QToolButton * redoButton_; ///< Redo button with drop-down menu
+    SortCriteria sortingCriteria;
 
-    /// @todo Consider using unordered_(multi)map
+    /// @todo 15.09.2013 Profile if unordered_(multi)map would give better performance
     typedef std::map<entity_id_t, EntityItem *> EntityItemIdMap;
     typedef std::map<Entity *, EntityItem *> EntityItemMap;
     typedef std::map<IComponent *, ComponentItem *> ComponentItemMap;
