@@ -246,6 +246,7 @@ void SceneStructureWindow::ShowGroups(bool show)
     treeWidget->setSortingEnabled(true);
 }
 
+/// @todo Try to optimize 09.09.2013
 void SceneStructureWindow::ShowComponents(bool show)
 {
     PROFILE(SceneStructureWindow_ShowComponents)
@@ -461,6 +462,22 @@ EntityGroupItem *SceneStructureWindow::GetOrCreateEntityGroupItem(const QString 
     return groupItem;
 }
 
+void SceneStructureWindow::RemoveEntityGroupItem(const QString &name)
+{
+    EntityGroupItemMap::iterator it = entityGroupItems.find(name);
+    if (it != entityGroupItems.end())
+    {
+        EntityGroupItem *gItem = *it;
+        SAFE_DELETE(gItem);
+        entityGroupItems.erase(it);
+    }
+}
+
+void SceneStructureWindow::RemoveEntityGroupItem(EntityGroupItem *gItem)
+{
+    RemoveEntityGroupItem(gItem->GroupName());
+}
+
 EntityItem* SceneStructureWindow::EntityItemOfEntity(Entity *entity) const
 {
     PROFILE(SceneStructureWindow_EntityItemOfEntity)
@@ -613,22 +630,14 @@ void SceneStructureWindow::RemoveEntityItem(EntityItem* item)
 
     entityItemsById.erase(item->Id());
 
-//    EntityGroupItem *gItem = item->Parent();
+    EntityGroupItem *gItem = item->Parent();
     SAFE_DELETE(item);
 
-    Refresh();
     // Delete entity group item if this entity being deleted is the last child
-    /*
-    if (!gItem)
-        return;
+    if (gItem && gItem->childCount() == 0)
+        RemoveEntityGroupItem(gItem);
 
-    if (!gItem->childCount())
-    {
-        const QString groupName = gItem->GroupName();
-        SAFE_DELETE(gItem);
-        entityGroupItems[groupName] = 0;
-    }
-    */
+    Refresh();
 }
 
 void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
@@ -711,6 +720,8 @@ void SceneStructureWindow::RemoveComponent(EntityItem *eItem ,Entity* entity, IC
 
 void SceneStructureWindow::CreateAttributesForItem(ComponentItem *cItem)
 {
+    PROFILE(SceneStructureWindow_CreateAttributesForItem_ComponentItem)
+
     if (cItem && cItem->Component())
         foreach(IAttribute *attr, cItem->Component()->Attributes())
             CreateAttributeItem(cItem, attr);
@@ -718,6 +729,8 @@ void SceneStructureWindow::CreateAttributesForItem(ComponentItem *cItem)
 
 void SceneStructureWindow::CreateAttributesForItem(EntityItem *eItem)
 {
+    PROFILE(SceneStructureWindow_CreateAttributesForItem_EntityItem)
+
     if (eItem && eItem->Entity())
     {
         const Entity::ComponentMap &components = eItem->Entity()->Components();
@@ -729,6 +742,8 @@ void SceneStructureWindow::CreateAttributesForItem(EntityItem *eItem)
 
 void SceneStructureWindow::SetAttributesVisible(bool show)
 {
+    PROFILE(SceneStructureWindow_SetAttributesVisible)
+
     treeWidget->setSortingEnabled(false);
 
     if (show)
@@ -877,12 +892,7 @@ void SceneStructureWindow::UpdateEntityName(IAttribute * /*attr*/)
                 {
                     gItem->RemoveEntityItem(item); // empty group -> remove from possible previous group.
                     if (gItem->childCount() == 0)
-                    {
-                        EntityGroupItemMap::iterator it = entityGroupItems.find(gItem->GroupName());
-                        if (it != entityGroupItems.end())
-                            entityGroupItems.erase(it);
-                        SAFE_DELETE(gItem);
-                    }
+                        RemoveEntityGroupItem(gItem);
                 }
             }
             else
