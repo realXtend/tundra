@@ -280,6 +280,7 @@ void AttributeItem::Update(IAttribute *attr)
         const AssetReferenceList &refs = static_cast<Attribute<AssetReferenceList> *>(attr)->Get();
         if (index < refs.Size())
             value = refs[index].ref;
+        id = id + "[" + QString::number(index) + "]";
     }
 
     setText(0, QString("%1: %2").arg(id).arg(value));
