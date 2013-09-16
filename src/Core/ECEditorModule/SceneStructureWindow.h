@@ -115,6 +115,10 @@ private:
     void CreateAttributeItem(QTreeWidgetItem *parentItem, IAttribute *attr);
 
     EntityGroupItem *GetOrCreateEntityGroupItem(const QString &name);
+    void RemoveEntityGroupItem(const QString &name);
+    /// @note gItem will be deleted and null after calling this function.
+    void RemoveEntityGroupItem(EntityGroupItem *gItem);
+
     EntityItem* EntityItemOfEntity(Entity* ent) const;
     /// @note This function does lookup from a different map than EntityItemOfEntity.
     EntityItem* EntityItemById(entity_id_t id) const ;
