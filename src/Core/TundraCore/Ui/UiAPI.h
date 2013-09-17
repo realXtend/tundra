@@ -142,14 +142,14 @@ public slots:
 
     /// Emits a signal that can be used to attach context menu actions for specific object types.
     /** @param menu Menu to which possible functionality can be appended.
-        @param targets List of target objects for which the context menu is about to open. */
-    void EmitContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
+        @param targets List of target objects for which the context menu is about to open.
+        @param sender Sender, if applicable/available. Can be null. */
+    void EmitContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets, QObject *sender = 0);
 
 signals:
     /// Signals that context menu @c menu is about to open for specific objects.
-    /** @param menu Menu to which append functionalities.
-        @param targets List of target objects for which the context menu is about to open. */
-    void ContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
+    /** @copydetails EmitContextMenuAboutToOpen */
+    void ContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets, QObject *sender);
 
 private slots:
     /// Removes proxy widget from internally maintained lists upon destruction.

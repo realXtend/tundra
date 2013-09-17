@@ -32,26 +32,28 @@ AssetItemMenuHandler::AssetItemMenuHandler(Framework *fw) :
     framework_(fw),
     sender_(0)
 {
-    connect(framework_->Ui(), SIGNAL(ContextMenuAboutToOpen(QMenu *, QList<QObject *>)), this, SLOT(AddAssetMenuItems(QMenu *, QList<QObject *>)), Qt::UniqueConnection);
+    connect(framework_->Ui(), SIGNAL(ContextMenuAboutToOpen(QMenu *, QList<QObject *>, QObject *)),
+        SLOT(AddAssetMenuItems(QMenu *, QList<QObject *>, QObject *)), Qt::UniqueConnection);
 }
 
-void AssetItemMenuHandler::AddAssetMenuItems(QMenu * menu, QList<QObject *> targets)
+void AssetItemMenuHandler::AddAssetMenuItems(QMenu * menu, QList<QObject *> targets, QObject *sender)
 {
+    sender_ = sender;
+
     AssetAndStorageItems items;
 
-    foreach (QObject *target, targets)
+    foreach(QObject *target, targets)
     {
         IAsset * asset = qobject_cast<IAsset*>(target);
         if (asset)
-            items.assets << asset;
-        else
         {
-            IAssetStorage* storage = qobject_cast<IAssetStorage*>(target);
-            if (storage)
-                items.storages << storage;
-            else if (qobject_cast<AssetsWindow*> (target))
-                sender_ = target;
+            items.assets << asset;
+            continue;
         }
+
+        IAssetStorage* storage = qobject_cast<IAssetStorage*>(target);
+        if (storage)
+            items.storages << storage;
     }
 
     if (items.assets.isEmpty() && items.storages.isEmpty())

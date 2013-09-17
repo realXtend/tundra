@@ -576,9 +576,9 @@ LanguagePair UiAPI::LanguageName(QString qmFile)
     return languagePair;
 }
 
-void UiAPI::EmitContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets)
+void UiAPI::EmitContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets, QObject *sender)
 {
-    emit ContextMenuAboutToOpen(menu,targets);
+    emit ContextMenuAboutToOpen(menu, targets, sender);
 }
 
 void UiAPI::ShowWidget(QWidget *widget) const
