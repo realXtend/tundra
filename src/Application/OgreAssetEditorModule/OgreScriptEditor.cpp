@@ -252,9 +252,7 @@ void OgreScriptEditor::CreateTextEdit()
     textEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     textEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     textEdit->setLineWrapMode(QTextEdit::NoWrap);
-
-    QVBoxLayout *layout  = findChild<QWidget *>("OgreScriptEditor")->findChild<QVBoxLayout *>("verticalLayoutEditor");
-    layout->addWidget(textEdit);
+    verticalLayoutEditor->addWidget(textEdit);
     textEdit->show();
 }
 
