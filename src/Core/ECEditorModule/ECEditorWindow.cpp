@@ -212,27 +212,35 @@ EntityListWidgetItem *ECEditorWindow::AddEntity(entity_id_t id, bool updateUi)
     return AddEntity(framework->Scene()->MainCameraScene()->EntityById(id), updateUi);
 }
 
-void ECEditorWindow::AddEntities(const QList<entity_id_t> &entities, bool selectAll)
+void ECEditorWindow::AddEntities(const EntityList &entities, bool selectAll)
 {
     // SetEntitySelected() will block entity list's signals, no need to do it here.
     ClearEntities();
 
-    Scene *scene = framework->Scene()->MainCameraScene(); /**< @todo Use "scene of this editor", or use Entity's Scene. */
-    EntityList entityPtrs;
-
-    foreach(entity_id_t id, entities)
+    foreach(const EntityPtr &entity, entities)
     {
-        EntityPtr entity = scene->EntityById(id);
-        entityPtrs.push_back(entity);
         EntityListWidgetItem *item = AddEntity(entity, false);
         if (selectAll)
             SetEntitySelected(item, true, false);
     }
 
     if (selectAll)
-        emit EntitiesSelected(entityPtrs, selectAll);
+        emit EntitiesSelected(entities, selectAll);
 
     Refresh();
+}
+
+void ECEditorWindow::AddEntities(const QList<entity_id_t> &entities, bool selectAll)
+{
+    EntityList entityPtrs;
+    Scene *scene = framework->Scene()->MainCameraScene(); /**< @todo Use "scene of this editor", or use Entity's Scene. */
+    foreach(entity_id_t id, entities)
+    {
+        EntityPtr entity = scene->EntityById(id);
+        entityPtrs.push_back(entity);
+    }
+
+    AddEntities(entityPtrs, selectAll);
 }
 
 void ECEditorWindow::RemoveEntity(entity_id_t entity_id, bool udpate_ui)
@@ -641,6 +649,7 @@ void ECEditorWindow::Refresh()
     if (entities.empty()) // If any of entities was not selected clear the browser window.
     {
         ecBrowser->clear();
+        transformEditor->SetSelection(QList<EntityPtr>());
         transformEditor->SetGizmoVisible(false);
         return;
     }
