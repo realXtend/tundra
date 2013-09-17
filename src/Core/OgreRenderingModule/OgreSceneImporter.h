@@ -2,9 +2,7 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   Transform.h
-    @brief  Importer tool for OGRE .scene and .mesh files.
-    @todo   Rename This file into OgreSceneImporter.h. */
-
+    @brief  Importer tool for OGRE .scene and .mesh files. */
 
 #pragma once
 
@@ -113,6 +111,3 @@ private:
     /** For supporting binary duplicate detection, this is a map which maps the original names to actual assets that will be stored. */
     QMap<QString, QString> mesh_names_;
 };
-
-/// @todo Temporary workaround.
-namespace TundraLogic { typedef OgreSceneImporter SceneImporter; }

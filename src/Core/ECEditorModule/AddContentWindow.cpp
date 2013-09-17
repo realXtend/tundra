@@ -21,7 +21,7 @@
 #include "IAssetUploadTransfer.h"
 #include "SceneDesc.h"
 #include "Scene/Scene.h"
-#include "SceneImporter.h"
+#include "OgreSceneImporter.h"
 #include "Transform.h"
 #include "LoggingFunctions.h"
 #include "CoreException.h"

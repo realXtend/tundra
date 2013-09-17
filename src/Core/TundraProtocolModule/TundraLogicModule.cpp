@@ -6,7 +6,7 @@
 #include "TundraLogicModule.h"
 #include "Client.h"
 #include "Server.h"
-#include "SceneImporter.h"
+#include "OgreSceneImporter.h"
 #include "SyncManager.h"
 #include "KristalliProtocolModule.h"
 
@@ -394,7 +394,7 @@ bool TundraLogicModule::ImportScene(QString filename, bool clearScene, bool repl
     LogInfo("Importing Ogre .scene " + filename + " ...");
 
     kNet::PolledTimer timer;
-    SceneImporter importer(scene->shared_from_this());
+    OgreSceneImporter importer(scene->shared_from_this());
     QList<Entity *> entities = importer.Import(filename, QFileInfo(filename).dir().path(), Transform(),
         "local://", AttributeChange::Default, clearScene, replace);
 
@@ -419,7 +419,7 @@ bool TundraLogicModule::ImportMesh(QString filename, const float3 &pos, const fl
 
     LogInfo("Importing Ogre .mesh " + filename + " ...");
 
-    SceneImporter importer(scene->shared_from_this());
+    OgreSceneImporter importer(scene->shared_from_this());
     EntityPtr entity = importer.ImportMesh(filename, QFileInfo(filename).dir().path(), Transform(pos, rot, scale),
         "", "local://", AttributeChange::Default, inspect);
     if (!entity)

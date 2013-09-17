@@ -24,7 +24,7 @@
 #include "InputAPI.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
-#include "SceneImporter.h"
+#include "OgreSceneImporter.h"
 #include "EC_Camera.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
@@ -139,12 +139,12 @@ void SceneStructureModule::InstantiateContent(const QStringList &filenames, cons
         if (filename.endsWith(cOgreSceneFileExtension, Qt::CaseInsensitive))
         {
             ///\todo Implement ogre.scene url drops at some point?
-            TundraLogic::SceneImporter importer(scene->shared_from_this());
+            OgreSceneImporter importer(scene->shared_from_this());
             sceneDescs.append(importer.CreateSceneDescFromScene(filename));
         }
         else if (filename.endsWith(cOgreMeshFileExtension, Qt::CaseInsensitive))
         {
-            TundraLogic::SceneImporter importer(scene->shared_from_this());
+            OgreSceneImporter importer(scene->shared_from_this());
             ///\todo Perhaps download the mesh before instantiating so we could inspect the mesh binary for materials and skeleton?
             /// The path is already there for tundra scene file web drops
             //if (IsUrl(filename)) ...
@@ -197,7 +197,7 @@ void SceneStructureModule::InstantiateContent(const QStringList &filenames, cons
                 std::vector<AssImp::MeshData> meshNames;
                 assimporter.GetMeshData(filename, meshNames);
 
-                TundraLogic::SceneImporter sceneImporter(scene->shared_from_this());
+                OgreSceneImporter sceneImporter(scene->shared_from_this());
                 for(size_t i=0 ; i<meshNames.size() ; ++i)
                     sceneImporter.ImportMesh(meshNames[i].file_, dirname, meshNames[i].transform_,
                         "", "local://", AttributeChange::Default, false, meshNames[i].name_);
