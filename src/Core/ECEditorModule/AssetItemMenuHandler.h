@@ -27,7 +27,7 @@ public:
     AssetItemMenuHandler(Framework *fw);
 
 private slots:
-    void AddAssetMenuItems(QMenu * menu, QList<QObject *> targets);
+    void AddAssetMenuItems(QMenu * menu, QList<QObject *> targets, QObject *sender);
     
     /// Opens Request New Asset dialog.
     void RequestNewAsset();
