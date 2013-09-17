@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   TexturePreviewEditor.cpp
- *  @brief  Preview window for textures.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   TexturePreviewEditor.cpp
+    @brief  Preview window for textures. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -16,7 +15,6 @@
 #include "Application.h"
 #include "LoggingFunctions.h"
 
-#include <QUiLoader>
 #include <QFile>
 #include <QPushButton>
 #include <QLabel>
@@ -55,16 +53,8 @@ TexturePreviewEditor::TexturePreviewEditor(const AssetPtr &textureAsset, Framewo
     imageSize_(QSize(0,0)),
     useOriginalImageSize_(true)
 {
-    QUiLoader loader;
-    QFile file(Application::InstallationDirectory() + "data/ui/texture_preview.ui");
-    if (!file.exists())
-    {
-        LogError("Cannot find Texture Preview Editor .ui file.");
-        return;
-    }
-
-    mainWidget_ = loader.load(&file);
-    file.close();
+    setupUi(this);
+    mainWidget_ = this;
 
     resize(cWindowMinimumWidth, cWindowMinimumHeight);
 

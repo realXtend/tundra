@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   MaterialWizard.cpp
- *  @brief  Utitility tool for choosing right material script from the material script template library.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   MaterialWizard.cpp
+    @brief  Utitility tool for choosing right material script from the material script template library. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -12,8 +11,6 @@
 #include "OgreAssetEditorModule.h"
 #include "LoggingFunctions.h"
 #include "Application.h"
-
-#include <QUiLoader>
 
 #include "MemoryLeakCheck.h"
 
@@ -27,17 +24,8 @@ MaterialWizard::MaterialWizard(QWidget *parent) :
     currentOptions_(Material_None),
     scriptName_("")
 {
-    QUiLoader loader;
-    QFile file(Application::InstallationDirectory() + "data/ui/materialwizard.ui");
-    if (!file.exists())
-    {
-        LogError("Cannot find Material Wizard .ui file.");
-        return;
-    }
-
-    // Get pointers to widgets.
-    mainWidget_ = loader.load(&file, this);
-    file.close();
+    setupUi(this);
+    mainWidget_ = this;
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(mainWidget_);
@@ -222,7 +210,7 @@ void MaterialWizard::RefreshWidgets()
     labelCurrent->setText(GetCurrentMaterialFilename());
 
 #if 0
-    // OLD SHIT STARTS HERE
+    // OLD CODE STARTS HERE
 
     // Diffuse
     if (radioDiffRgbTexParam->isChecked())
@@ -420,7 +408,7 @@ void MaterialWizard::RefreshWidgets()
     QLabel *labelCurrent = mainWidget_->findChild<QLabel *>("labelCurrent");
     labelCurrent->setText(GetCurrentMaterialFilename());
     */
-    // OLD SHIT ENDS HERE
+    // OLD CODE ENDS HERE
 #endif
 }
 

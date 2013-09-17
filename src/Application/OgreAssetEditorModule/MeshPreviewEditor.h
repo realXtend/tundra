@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "ui_MeshPreviewEditor.h"
 
 #include "CoreTypes.h"
 #include "OgreModuleFwd.h"
@@ -35,7 +36,7 @@ protected:
 };
 
 /// Mesh preview UI
-class ASSET_EDITOR_MODULE_API MeshPreviewEditor: public QWidget
+class ASSET_EDITOR_MODULE_API MeshPreviewEditor: public QWidget, public Ui::MeshPreviewEditor
 {
     Q_OBJECT
 

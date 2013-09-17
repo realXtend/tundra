@@ -15,7 +15,6 @@
 #include "IAsset.h"
 #include "IAssetTransfer.h"
 
-#include <QUiLoader>
 #include <QFile>
 #include <QLayout>
 #include <QPushButton>
@@ -40,16 +39,8 @@ AudioPreviewEditor::AudioPreviewEditor(const AssetPtr &audioAsset, Framework *fw
     if (assetPtr->Type() != "OgreMaterial" && assetPtr->Type() != "OgreParticle")
         LogWarning("Created AudioPreviewEditor for non-supported asset type " + assetPtr->Type() + ".");
 
-    // Create widget from ui file
-    QUiLoader loader;
-    QFile file(Application::InstallationDirectory() + "data/ui/audio_preview.ui");
-    if (!file.exists())
-    {
-        LogError("Cannot find OGRE Script Editor .ui file.");
-        return;
-    }
-    mainWidget_ = loader.load(&file);
-    file.close();
+    setupUi(this);
+    mainWidget_ = this;
 
     resize(mainWidget_->size());
 
