@@ -26,7 +26,6 @@
 #include "Entity.h"
 
 #include "ConfigAPI.h"
-#include <QUiLoader>
 #include <QFile>
 #include <QLineEdit>
 #include <QPushButton>
