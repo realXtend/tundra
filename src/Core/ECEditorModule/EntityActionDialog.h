@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EntityActionDialog.h
- *  @brief  Dialog for invoking entity actions.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EntityActionDialog.h
+    @brief  Dialog for invoking entity actions. */
 
 #pragma once
 
