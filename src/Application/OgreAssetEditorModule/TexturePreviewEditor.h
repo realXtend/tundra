@@ -1,11 +1,12 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   TexturePreviewEditor.h
- *  @brief  Preview window for textures.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   TexturePreviewEditor.h
+    @brief  Preview window for textures. */
 
 #pragma once
+
+#include "ui_TexturePreviewEditor.h"
 
 #include "CoreTypes.h"
 #include "OgreAssetEditorModuleApi.h"
@@ -23,6 +24,7 @@ class QScrollArea;
 class TextureLabel: public QLabel
 {
     Q_OBJECT
+
 public:
     TextureLabel(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     virtual ~TextureLabel();
@@ -39,7 +41,7 @@ protected:
 
 /// Preview window for textures.
 /** Will convert texture asset into Qt image format and display the image in image label. */
-class ASSET_EDITOR_MODULE_API TexturePreviewEditor: public QWidget
+class ASSET_EDITOR_MODULE_API TexturePreviewEditor: public QWidget, public Ui::TexturePreviewEditor
 {
     Q_OBJECT
 

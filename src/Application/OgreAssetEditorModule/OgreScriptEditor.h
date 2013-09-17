@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "ui_OgreScriptEditor.h"
 #include "OgreAssetEditorModuleApi.h"
 #include "AssetFwd.h"
 
@@ -18,7 +19,7 @@ class QTextEdit;
 //class PropertyTableWidget;
 
 /// Text editing tool for OGRE material and particle scripts.
-class ASSET_EDITOR_MODULE_API OgreScriptEditor : public QWidget
+class ASSET_EDITOR_MODULE_API OgreScriptEditor : public QWidget, public Ui::OgreScriptEditor
 {
     Q_OBJECT
 
@@ -41,9 +42,6 @@ private:
 
     Framework *framework;
     AssetWeakPtr asset;
-    QLineEdit *lineEditName; ///< Asset name line edit.
-    QPushButton *buttonSave; ///< Save button.
-    QPushButton *buttonSaveAs; ///< Save As button.
     QTextEdit *textEdit; ///< Text edit field used in raw edit mode.
 //    PropertyTableWidget *propertyTable; ///< Table widget for editing material properties.
 
