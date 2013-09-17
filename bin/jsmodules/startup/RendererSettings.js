@@ -72,7 +72,7 @@ if (!framework.IsHeadless())
         settingsWidget = new QWidget(ui.MainWindow());
         settingsWidget.setWindowFlags(Qt.Tool);
         settingsWidget.setLayout(new QVBoxLayout());
-        var child = ui.LoadFromFile(application.installationDirectory + "data/ui/renderersettings.ui", false);
+        var child = ui.LoadFromFile(application.installationDirectory + "data/ui/_RendererSettings.ui", false);
         child.setParent(settingsWidget);
         settingsWidget.layout().addWidget(child, 0, 0);
 

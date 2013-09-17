@@ -75,11 +75,11 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     QUiLoader loader;
     loader.setLanguageChangeEnabled(true);
     /// @todo Create UI fully in code (very simple UI file).
-    QFile file(Application::InstallationDirectory() + "data/ui/eceditor.ui");
+    QFile file(Application::InstallationDirectory() + "data/ui/_ECEditor.ui");
     file.open(QFile::ReadOnly);
     if (!file.exists())
     {
-        LogError("Cannot find " + Application::InstallationDirectory() + "data/ui/eceditor.ui file.");
+        LogError("Cannot find " + Application::InstallationDirectory() + "data/ui/_ECEditor.ui file.");
         return;
     }
 
