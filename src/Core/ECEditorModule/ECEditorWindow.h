@@ -71,8 +71,8 @@ public:
     /** Calling this method will clear previously selected entities from the editor.
         @param entities a new list of entities that we want to add into the editor.
         @param selectAll Do we want to select all entities from the list. */
-    void AddEntities(const QList<entity_id_t> &entities, bool selectAll = false);
-    /// @todo Add void AddEntities(const EntityList &entities, bool selectAll = false);
+    void AddEntities(const EntityList &entities, bool selectAll = false);
+    void AddEntities(const QList<entity_id_t> &entities, bool selectAll = false); /**< @overload @param entities IDs of the entities. */
 
     /// Removes entity from the entity list.
     /** @param id Entity ID.

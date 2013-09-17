@@ -275,16 +275,18 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
                 Scene *activeScene = framework_->Scene()->MainCameraScene();
                 if (activeScene)
                 {
-                    // We can only manipulate entities that have placeable, but exclude temporarys (avatar, cameras etc.)
+                    // We can only manipulate entities that have placeable, but exclude temporaries (avatar, cameras etc.)
                     /// @todo Shouldn't "select all" select all, not exclude some entities with some random criteria?
                     /// Maybe add separate actions for the right-click context menu for each criteria (local, replicated, temprorary etc.)
-                    QList<entity_id_t> entIdsSelection;
-                    foreach(const EntityPtr &e, activeScene->EntitiesWithComponent(EC_Placeable::TypeNameStatic()))
-                        if (!e->IsTemporary())
-                            entIdsSelection.append(e->Id());
+                    EntityList selection = activeScene->EntitiesWithComponent<EC_Placeable>();
+                    for(EntityList::iterator it = selection.begin(); it != selection.end();)
+                        if ((*it)->IsTemporary())
+                            it = selection.erase(it);
+                        else
+                            ++it;
 
-                    if (!entIdsSelection.isEmpty())
-                        activeEditor->AddEntities(entIdsSelection, true);
+                    if (!selection.empty())
+                        activeEditor->AddEntities(selection, true);
                 }
             }
             else
