@@ -42,7 +42,6 @@
 
 #include <QVBoxLayout>
 #include <QTreeWidget>
-#include <QUiLoader>
 #include <QFile>
 #include <QFileInfo>
 #include <QHeaderView>
