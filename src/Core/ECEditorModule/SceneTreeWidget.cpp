@@ -14,7 +14,7 @@
 #include "Scene/Scene.h"
 #include "FileUtils.h"
 #include "LoggingFunctions.h"
-#include "SceneImporter.h"
+#include "OgreSceneImporter.h"
 #include "UndoManager.h"
 #include "UndoCommands.h"
 

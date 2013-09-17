@@ -2,14 +2,12 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   SceneImporter.cpp
-    @brief  Importer tool for OGRE .scene and .mesh files.
-    @todo   Rename This file into OgreSceneImporter.cpp. */
-
+    @brief  Importer tool for OGRE .scene and .mesh files. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include "SceneImporter.h"
+#include "OgreSceneImporter.h"
 
 #include "Scene/Scene.h"
 #include "Entity.h"
