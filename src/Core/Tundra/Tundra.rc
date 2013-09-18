@@ -36,7 +36,7 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
         {
             VALUE "Comments", ""
             VALUE "CompanyName", TUNDRA_ORGANIZATION_NAME
-            VALUE "FileDescription", ""
+            VALUE "FileDescription", PRODUCT_NAME
             VALUE "FileVersion", TUNDRA_VERSION_STRING
             VALUE "InternalName", ""
             VALUE "LegalCopyright", ""
