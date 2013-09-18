@@ -34,7 +34,7 @@ Tundra uses [CMake] as its build system and depends on various other open source
 
 ### Windows
 
-Visual Studio 2008 and 2010 build environments are currently supported. Make sure that you have the latest Visual Studio Service Packs installed.
+Visual Studio 2008 and 2010 build environments are currently supported. Make sure that you have the latest Visual Studio Service Packs installed. Visual Studio 2012 and newer can be used to open and build the VS2010-generated Tundra solution as long as the solution is not upgraded to the newer format.
 
 The Tundra dependencies are acquired and built using an automated build script:  
 1. Open up the Visual Studio (x64 Win64) Command Prompt which is required in order to have the required build tools and several other utilities in your PATH.  
