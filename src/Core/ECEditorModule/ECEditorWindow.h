@@ -7,22 +7,18 @@
 #pragma once
 
 #include "ECEditorModuleApi.h"
+#include "ui_ECEditor.h"
+
 #include "CoreTypes.h"
 #include "SceneFwd.h"
 #include "InputFwd.h"
 
-#include <QMap>
 #include <QSet>
 #include <QListWidgetItem>
 #include <QPointer>
-#include <QWidget>
 
-class QPushButton;
-class QListWidget;
-class QTreeWidget;
 class QPoint;
 class QUndoStack;
-class QToolButton;
 
 class Framework;
 class ECBrowser;
@@ -49,7 +45,7 @@ private:
 /** @ingroup ECEditorModuleClient.
     @todo Currently EC Editor is hardcoded to edit the main camera scene.
           Enhance the API so that the scene can be set by the user. */
-class ECEDITOR_MODULE_API ECEditorWindow : public QWidget
+class ECEDITOR_MODULE_API ECEditorWindow : public QWidget, public Ui::ECEditor
 {
     Q_OBJECT
 
@@ -242,13 +238,8 @@ private:
     void BoldEntityListItems(const QSet<entity_id_t> &bolded_entities);
 
     Framework *framework;
-    QPushButton* toggleEntitiesButton;
-    QListWidget* entityList;
     ECBrowser *ecBrowser;
     bool hasFocus; ///< To track if this editor has a focus.
     TransformEditor *transformEditor;
-
-    QToolButton *undoButton_;
-    QToolButton *redoButton_;
     UndoManager * undoManager_;
 };

@@ -14,11 +14,14 @@ file(GLOB MOC_FILES ECEditorModule.h ECEditorWindow.h ECAttributeEditor.h ECBrow
     SceneTreeWidget.h AddContentWindow.h AssetsWindow.h AssetTreeWidget.h RequestNewAssetDialog.h
     CloneAssetDialog.h EditorButtonFactory.h TransformEditor.h NewEntityDialog.h AddAttributeDialog.h
     KeyBindingsConfigWindow.h UndoCommands.h UndoManager.h EntityIdChangeTracker.h AssetItemMenuHandler.h)
+file(GLOB UI_FILES ui/*.ui)
 
 set(SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-# Qt4 Moc files to subgroup "CMake Moc"
+# Create subfolders for Qt files
 MocFolder()
+UiFolder()
+source_group("UI Files" FILES ${UI_FILES})
 
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
@@ -31,11 +34,10 @@ add_definitions(-DECEDITOR_MODULE_EXPORTS)
 
 use_package(QT_PROPERTY_BROWSER)
 use_package_qtpropertybrowser()
-# Audio is needed only for visualization purposes to access the attributes of EC_Sound.
 UseTundraCore()
 use_core_modules(TundraCore Math OgreRenderingModule TundraProtocolModule)
 
-build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
+build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
 link_package(QT4)
 link_package_knet()
