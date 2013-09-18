@@ -5,7 +5,11 @@
     @brief  Controls Transform attributes for group of entities. */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "TransformEditor.h"
+#include "UndoManager.h"
+
 #include "LoggingFunctions.h"
 #include "OgreWorld.h"
 #include "Scene/Scene.h"
@@ -20,7 +24,6 @@
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "UndoCommands.h"
-#include "UndoManager.h"
 #ifdef EC_TransformGizmo_ENABLED
 #include "EC_TransformGizmo.h"
 #endif
@@ -28,14 +31,11 @@
 #include "ConfigAPI.h"
 #include "Application.h"
 
-#include <QUiLoader>
-
 #include "MemoryLeakCheck.h"
 
-static const char *cTransformEditorWindowPos = "transform editor window pos";
+static const ConfigData cWindowPosConfig(ConfigAPI::FILE_FRAMEWORK, "eceditor", "transform editor window pos", QPoint(50, 50));
 
 TransformEditor::TransformEditor(const ScenePtr &editedScene, UndoManager *manager) :
-    editorSettings(0),
     localAxes(false),
     scene(editedScene),
     undoManager(manager)
@@ -421,37 +421,15 @@ void TransformEditor::CreateGizmo()
     connect(tg, SIGNAL(Translated(const float3 &)), SLOT(TranslateTargets(const float3 &)));
     connect(tg, SIGNAL(Rotated(const Quat &)), SLOT(RotateTargets(const Quat &)));
     connect(tg, SIGNAL(Scaled(const float3 &)), SLOT(ScaleTargets(const float3 &)));
-    
-    // Create editor window for choosing gizmo mode
-    QUiLoader loader;
-    loader.setLanguageChangeEnabled(true);
-    QFile file(Application::InstallationDirectory() + "data/ui/EditorSettings.ui");
-    file.open(QFile::ReadOnly);
-    if (!file.exists())
-    {
-        LogError("TransformEditor::CreateGizmo: Cannot find " + Application::InstallationDirectory() + "data/ui/EditorSettings.ui file.");
-        return;
-    }
-    editorSettings = loader.load(&file, s->GetFramework()->Ui()->MainWindow());
-    file.close();
-    if (!editorSettings)
-    {
-        LogError("Could not load editor settings layout");
-        return;
-    }
-    
-    QComboBox* modeCombo = editorSettings->findChild<QComboBox*>("modeComboBox");
-    if (modeCombo)
-        connect(modeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(OnGizmoModeSelected(int)));
-    QComboBox* axisCombo = editorSettings->findChild<QComboBox*>("axisComboBox");
-    if (axisCombo)
-        connect(axisCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(OnGizmoAxisSelected(int)));
+
+    editorSettings = new EditorSettings(s->GetFramework()->Ui()->MainWindow());
+    editorSettings->setWindowFlags(Qt::Tool);
+    connect(editorSettings->modeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnGizmoModeSelected(int)));
+    connect(editorSettings->axisComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnGizmoAxisSelected(int)));
 
     // Load position from config
-    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, "eceditor", cTransformEditorWindowPos);
-    QPoint pos = s->GetFramework()->Config()->Get(configData).toPoint();
+    QPoint pos = s->GetFramework()->Config()->DeclareSetting(cWindowPosConfig).toPoint();
     UiMainWindow::EnsurePositionWithinDesktop(editorSettings, pos);
-    editorSettings->setWindowFlags(Qt::Tool);
 #endif
 }
 
@@ -461,11 +439,9 @@ void TransformEditor::DeleteGizmo()
     if (s && gizmo)
         s->RemoveEntity(gizmo->Id());
 
-    if (s && s->GetFramework() && s->GetFramework()->Config() && editorSettings) // Save position to config.
-    {
-        ConfigData configData(ConfigAPI::FILE_FRAMEWORK, "eceditor", cTransformEditorWindowPos);
-        s->GetFramework()->Config()->Set(configData, cTransformEditorWindowPos, editorSettings->pos());
-    }
+    if (s && editorSettings) // Save position to config.
+        s->GetFramework()->Config()->Write(cWindowPosConfig, cWindowPosConfig.key, editorSettings->pos());
+
     SAFE_DELETE(editorSettings);
 }
 
