@@ -452,19 +452,19 @@ std::ostream &operator <<(std::ostream &o, const Ray &ray)
 
 Ray operator *(const float3x3 &transform, const Ray &ray)
 {
-	assume(transform.IsInvertible());
+	assume(transform.IsInvertible(1e-6f)); // Tundra: use smaller epsilon in order to prevent assumption spam when raycasting to non-uniformly scaled objects.
 	return Ray(transform * ray.pos, (transform * ray.dir).Normalized());
 }
 
 Ray operator *(const float3x4 &transform, const Ray &ray)
 {
-	assume(transform.IsInvertible());
+	assume(transform.IsInvertible(1e-6f)); // Tundra: use smaller epsilon in order to prevent assumption spam when raycasting to non-uniformly scaled objects.
 	return Ray(transform.MulPos(ray.pos), transform.MulDir(ray.dir).Normalized());
 }
 
 Ray operator *(const float4x4 &transform, const Ray &ray)
 {
-	assume(transform.IsInvertible());
+	assume(transform.IsInvertible(1e-6f)); // Tundra: use smaller epsilon in order to prevent assumption spam when raycasting to non-uniformly scaled objects.
 	return Ray(transform.MulPos(ray.pos), transform.MulDir(ray.dir).Normalized());
 }
 
