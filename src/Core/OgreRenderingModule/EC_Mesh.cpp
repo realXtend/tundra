@@ -1406,7 +1406,10 @@ OBB EC_Mesh::WorldOBB() const
 
 OBB EC_Mesh::LocalOBB() const
 {
-    return OBB(LocalAABB());
+    OBB obb(LocalAABB());
+    if (obb.IsDegenerate() || !obb.IsFinite())
+        obb.SetNegativeInfinity();
+    return obb;
 }
 
 AABB EC_Mesh::WorldAABB() const
@@ -1419,11 +1422,11 @@ AABB EC_Mesh::WorldAABB() const
 AABB EC_Mesh::LocalAABB() const
 {
     if (!entity_)
-        return AABB(float3(1e-9f, 1e-9f, 1e-9f), float3::zero);
+        return AABB(float3::inf, -float3::inf); // AABB::SetNegativeInfinity as one-liner
 
     Ogre::MeshPtr mesh = entity_->getMesh();
     if (mesh.isNull())
-        return AABB(float3(1e-9f, 1e-9f, 1e-9f), float3::zero);
+        return AABB(float3::inf, -float3::inf); // AABB::SetNegativeInfinity as one-liner
 
     return AABB(mesh->getBounds());
 }
