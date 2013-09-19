@@ -92,7 +92,7 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     attributeComboBox->addItem(tr("None"), DoNotShowAttributes);
     attributeComboBox->addItem(tr("Assets"), ShowAssetReferences);
     attributeComboBox->addItem(tr("Dynamic"), ShowDynamicAttributes);
-    attributeComboBox->addItem(tr("All"), ShowAllAttributes);
+//    attributeComboBox->addItem(tr("All"), ShowAllAttributes); /**< @todo Disabled temporarily until the performance problems have been solved. */
     attributeComboBox->setCurrentIndex(attributeVisibility);
 
     undoButton_ = new QToolButton();
@@ -246,7 +246,7 @@ void SceneStructureWindow::ShowGroups(bool show)
     treeWidget->setSortingEnabled(true);
 }
 
-/// @todo Try to optimize 09.09.2013
+/// @todo Optimize! Reparenting attribute items way too heavy when dealing with hundreds of entities and all attribute shown 09.09.2013
 void SceneStructureWindow::ShowComponents(bool show)
 {
     PROFILE(SceneStructureWindow_ShowComponents)
@@ -289,6 +289,8 @@ void SceneStructureWindow::ShowComponents(bool show)
                 toBeReparented.insert(std::make_pair(eItem, aItem));
         }
 
+        SetTreeWidgetItemVisible(cItem, showComponents);
+
         // Detach from the old parent and attach to the new.
         for(ParentChildMap::const_iterator it = toBeReparented.begin(); it != toBeReparented.end(); ++it)
         {
@@ -296,9 +298,10 @@ void SceneStructureWindow::ShowComponents(bool show)
                 it->second->parent()->removeChild(it->second);
             it->first->addChild(it->second);
         }
-
-        SetTreeWidgetItemVisible(cItem, showComponents);
     }
+
+    /// @todo Make attribute visibility works correctly without this potentially quite heavy call.
+    SetAttributesVisible(attributeVisibility != DoNotShowAttributes);
 
     Refresh();
 
@@ -616,22 +619,22 @@ void SceneStructureWindow::RemoveEntityById(entity_id_t id)
         RemoveEntityItem(item);
 }
 
-void SceneStructureWindow::RemoveEntityItem(EntityItem* item)
+void SceneStructureWindow::RemoveEntityItem(EntityItem* eItem)
 {
-    EntityPtr entity = item->Entity();
+    EntityPtr entity = eItem->Entity();
     if (entity)
     {
         entityItems.erase(entity.get());
 
         const Entity::ComponentMap &components = entity->Components();
         for(Entity::ComponentMap::const_iterator it = components.begin(); it != components.end(); ++it)
-            RemoveComponent(entity.get(), it->second.get());
+            RemoveComponent(eItem, 0/*entity.get()*/, it->second.get());
     }
 
-    entityItemsById.erase(item->Id());
+    entityItemsById.erase(eItem->Id());
 
-    EntityGroupItem *gItem = item->Parent();
-    SAFE_DELETE(item);
+    EntityGroupItem *gItem = eItem->Parent();
+    SAFE_DELETE(eItem);
 
     // Delete entity group item if this entity being deleted is the last child
     if (gItem && gItem->childCount() == 0)
@@ -699,7 +702,7 @@ void SceneStructureWindow::RemoveComponent(Entity* entity, IComponent* comp)
     RemoveComponent(EntityItemOfEntity(entity), entity, comp);
 }
 
-void SceneStructureWindow::RemoveComponent(EntityItem *eItem ,Entity* entity, IComponent* comp)
+void SceneStructureWindow::RemoveComponent(EntityItem *eItem, Entity *entity, IComponent* comp)
 {
     foreach(IAttribute *attr, comp->Attributes())
         RemoveAttribute(attr);
@@ -714,7 +717,7 @@ void SceneStructureWindow::RemoveComponent(EntityItem *eItem ,Entity* entity, IC
         SAFE_DELETE(cItem);
     }
 
-    if (eItem && comp->TypeId() == EC_Name::ComponentTypeId)
+    if (entity && eItem && comp->TypeId() == EC_Name::ComponentTypeId)
         eItem->setText(0, QString("%1").arg(entity->Id())); /**< @todo Doesn't append the extra information, but cannot call SetText as the EC_Name still exists. */
 }
 
@@ -785,6 +788,7 @@ void SceneStructureWindow::CreateAttributeItem(QTreeWidgetItem *parentItem, IAtt
 
     if (!existingItems.empty()) // Update existing items.
     {
+        /// @todo 16.09.2013 AssetReferenceList items are not updated properly.
         for(size_t i = 0; i < existingItems.size(); ++i)
         {
             existingItems[i]->Update(attr);

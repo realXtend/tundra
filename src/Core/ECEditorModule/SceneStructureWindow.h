@@ -179,6 +179,7 @@ private slots:
 
     /// Removes entity from the tree widget, performs EntityItemOfEntity lookup.
     void RemoveComponent(Entity *entity, IComponent *comp);
+    /// @note Null entity can be passed if the entity is about to be deleted.
     void RemoveComponent(EntityItem *eItem, Entity *entity, IComponent *comp);
 
     /// Adds an attribute item item to the tree widget, invoked only by dynamic components' currently.
