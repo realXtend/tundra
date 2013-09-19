@@ -317,7 +317,8 @@ public slots:
 
     /// Returns the local space axis-aligned bounding box of this object.
     /** Precondition: Ogre::Entity must exists and have a Ogre::Mesh.
-        @return For the sake of script-safety, a minimally degenerate bounding box is returned if preconditions are not met. */
+        @note For the sake of script-safety, a negatively infinite bounding box (AABB::SetNegativeInfinity or OBB::SetNegativeInfinity),
+        for which IsDegenerate == true and IsFinite == false, is returned instead of an uninitialized bounding box, if the preconditions are not met. */
     AABB LocalAABB() const;
 
     /// Returns the mesh asset used by this component.
