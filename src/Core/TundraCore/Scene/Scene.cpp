@@ -97,7 +97,7 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
 
     EntityPtr entity = MAKE_SHARED(Entity, framework_, id, this);
     entity->SetTemporary(temporary);
-    for(int i = 0 ; i < (int)components.size(); ++i)
+    for(int i = 0 ;i < components.size(); ++i)
     {
         ComponentPtr newComp = framework_->Scene()->CreateComponentByName(this, components[i]);
         if (newComp)
