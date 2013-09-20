@@ -662,7 +662,7 @@ void Framework::ProcessStartupOptions()
     for(int i = 1; i < argc; ++i)
     {
         QString option(argv[i]);
-        QString peekOption = (argv[i+1] ? QString(argv[i+1]) : "");
+        QString peekOption = (i+1 < argc ? QString(argv[i+1]) : "");
         if (option.startsWith("--") && !peekOption.isEmpty())
         {
 #ifdef WIN32
