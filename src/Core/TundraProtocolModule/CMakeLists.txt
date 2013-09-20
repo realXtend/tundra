@@ -20,7 +20,6 @@ add_definitions(-DTUNDRAPROTOCOL_MODULE_EXPORTS)
 add_definitions(-D_WINSOCKAPI_)
 
 # Includes
-use_package_bullet()
 UseTundraCore()
 use_core_modules(TundraCore Math OgreRenderingModule PhysicsModule)
 

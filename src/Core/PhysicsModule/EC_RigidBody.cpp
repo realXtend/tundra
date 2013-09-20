@@ -860,9 +860,9 @@ bool EC_RigidBody::IsPrimitiveShape() const
     }
 }
 
-Physics::PhysicsWorld* EC_RigidBody:GetPhysicsWorld() const
+Physics::PhysicsWorld* EC_RigidBody::GetPhysicsWorld() const
 {
-    LogWarning("EC_RigidBody:GetPhysicsWorld: this functions is deprecated and will be removed. Use World() instead.")
+    LogWarning("EC_RigidBody:GetPhysicsWorld: this functions is deprecated and will be removed. Use World() instead.");
     return World();
 }
 
