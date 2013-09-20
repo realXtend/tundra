@@ -11,6 +11,7 @@
 #include "EC_VolumeTrigger.h"
 #include "EC_PhysicsMotor.h"
 #include "EC_PhysicsConstraint.h"
+
 #include "OgreRenderingModule.h"
 #include "EC_Mesh.h"
 #include "EC_Placeable.h"
@@ -25,6 +26,7 @@
 #include "IComponentFactory.h"
 #include "QScriptEngineHelpers.h"
 #include "LoggingFunctions.h"
+#include "StaticPluginRegistry.h"
 
 // Disable unreferenced formal parameter coming from Bullet
 #ifdef _MSC_VER
@@ -41,16 +43,7 @@
 
 #include <Ogre.h>
 
-#include "StaticPluginRegistry.h"
-
 #include "MemoryLeakCheck.h"
-
-Q_DECLARE_METATYPE(Physics::PhysicsModule*);
-Q_DECLARE_METATYPE(Physics::PhysicsWorld*);
-Q_DECLARE_METATYPE(PhysicsRaycastResult*);
-
-namespace Physics
-{
 
 PhysicsModule::PhysicsModule()
 :IModule("Physics"),
@@ -150,7 +143,7 @@ void PhysicsModule::AutoCollisionMesh()
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
-        LogError("No active scene!");
+        LogError("PhysicsModule::AutoCollisionMesh: No active scene!");
         return;
     }
     
@@ -212,8 +205,8 @@ void PhysicsModule::SetRunPhysics(bool enable)
 
 void PhysicsModule::OnScriptEngineCreated(QScriptEngine* engine)
 {
-    qScriptRegisterQObjectMetaType<Physics::PhysicsModule*>(engine);
-    qScriptRegisterQObjectMetaType<Physics::PhysicsWorld*>(engine);
+    qScriptRegisterQObjectMetaType<PhysicsModule*>(engine);
+    qScriptRegisterQObjectMetaType<PhysicsWorld*>(engine);
     qScriptRegisterQObjectMetaType<PhysicsRaycastResult*>(engine);
 }
 
@@ -276,29 +269,29 @@ static QTreeWidgetItem *FindItemByName(QTreeWidgetItem *parent, const char *name
 
 void UpdateBulletProfilingData(CProfileIterator* profileIterator, QTreeWidgetItem *parentItem, int numFrames)
 {
-	profileIterator->First();
-	if (profileIterator->Is_Done())
-		return;
+    profileIterator->First();
+    if (profileIterator->Is_Done())
+        return;
 
-//	float accumulated_time=0;
+//    float accumulated_time=0;
 //    float parent_time = profileIterator->Is_Root() ? CProfileManager::Get_Time_Since_Reset() : profileIterator->Get_Current_Parent_Total_Time();
-	int i;
-	int frames_since_reset = CProfileManager::Get_Frame_Count_Since_Reset();
+    int i;
+    int frames_since_reset = CProfileManager::Get_Frame_Count_Since_Reset();
 
 //    const char *bulletParentNodeName = profileIterator->Get_Current_Parent_Name();
-//	printf("Profiling: %s (total running time: %.3f ms) ---\n",	profileIterator->Get_Current_Parent_Name(), parent_time );
+//    printf("Profiling: %s (total running time: %.3f ms) ---\n",    profileIterator->Get_Current_Parent_Name(), parent_time );
 
     std::vector<QTreeWidgetItem*> itemsThisLevel; // Cache items at this level to a vector, since bullet profiling iterator requires us to do two passes.
-	int numChildren = 0;
+    int numChildren = 0;
     for(int i = 0; !profileIterator->Is_Done(); i++,profileIterator->Next())
-	{
+    {
         ++numChildren;
-		float current_total_time = profileIterator->Get_Current_Total_Time();
-//		accumulated_time += current_total_time;
-//		float fraction = parent_time > SIMD_EPSILON ? (current_total_time / parent_time) * 100 : 0.f;
-		//printf("%d -- %s (%.2f %%) :: %.3f ms / frame (%d calls)\n",i, profileIterator->Get_Current_Name(), fraction,(current_total_time / (double)frames_since_reset),profileIterator->Get_Current_Total_Calls());
-//		totalTime += current_total_time;
-		//recurse into children
+        float current_total_time = profileIterator->Get_Current_Total_Time();
+//        accumulated_time += current_total_time;
+//        float fraction = parent_time > SIMD_EPSILON ? (current_total_time / parent_time) * 100 : 0.f;
+        //printf("%d -- %s (%.2f %%) :: %.3f ms / frame (%d calls)\n",i, profileIterator->Get_Current_Name(), fraction,(current_total_time / (double)frames_since_reset),profileIterator->Get_Current_Total_Calls());
+//        totalTime += current_total_time;
+        //recurse into children
 
         QTreeWidgetItem *item = FindItemByName(parentItem, profileIterator->Get_Current_Name());
         if (!item)
@@ -319,12 +312,12 @@ void UpdateBulletProfilingData(CProfileIterator* profileIterator, QTreeWidgetIte
         item->setText(6, "?");
     }
 
-	for (i=0;i<numChildren;i++)
+    for (i=0;i<numChildren;i++)
     {
-		profileIterator->Enter_Child(i);
-		UpdateBulletProfilingData(profileIterator, itemsThisLevel[i], numFrames);
-		profileIterator->Enter_Parent();
-	}
+        profileIterator->Enter_Child(i);
+        UpdateBulletProfilingData(profileIterator, itemsThisLevel[i], numFrames);
+        profileIterator->Enter_Parent();
+    }
 }
 
 void UpdateBulletProfilingData(QTreeWidgetItem *treeRoot, int numFrames)
@@ -333,18 +326,14 @@ void UpdateBulletProfilingData(QTreeWidgetItem *treeRoot, int numFrames)
     if (!bulletRootNode)
         return; // We've lost the physics world update node, or no physics occurring, skip bullet profiling altogether.
 
-	CProfileIterator* profileIterator = 0;
-	profileIterator = CProfileManager::Get_Iterator();
+    CProfileIterator* profileIterator = 0;
+    profileIterator = CProfileManager::Get_Iterator();
 
     UpdateBulletProfilingData(profileIterator, bulletRootNode, numFrames);
 
-	CProfileManager::Release_Iterator(profileIterator);
+    CProfileManager::Release_Iterator(profileIterator);
 }
 #endif
-
-}
-
-using namespace Physics;
 
 extern "C"
 {
@@ -355,7 +344,6 @@ DEFINE_STATIC_PLUGIN_MAIN(PhysicsModule)
 #endif
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
-    IModule *module = new Physics::PhysicsModule();
-    fw->RegisterModule(module);
+    fw->RegisterModule(new PhysicsModule());
 }
 }

@@ -1535,7 +1535,7 @@ void TimeProfilerWindow::RefreshProfilingDataTree(float msecsOccurred)
         FillProfileTimingWindow(item, node, numFrames, msecsOccurred / 1000.f);
     }
     
-    Physics::UpdateBulletProfilingData(ui_.treeProfilingData->invisibleRootItem(), numFrames);
+    UpdateBulletProfilingData(ui_.treeProfilingData->invisibleRootItem(), numFrames);
     profiler.Release();
     
     // Filter
@@ -2534,7 +2534,7 @@ void TimeProfilerWindow::RefreshBulletPage()
     if (!scene)
         return;
 
-    shared_ptr<Physics::PhysicsWorld> physics = scene->GetWorld<Physics::PhysicsWorld>();
+    PhysicsWorldPtr physics = scene->Subsystem<PhysicsWorld>();
     const std::set<std::pair<const btCollisionObject*, const btCollisionObject*> > &collisions = physics->PreviousFrameCollisions();
 
     for(std::set<std::pair<const btCollisionObject*, const btCollisionObject*> >::const_iterator iter = collisions.begin(); iter != collisions.end(); ++iter)

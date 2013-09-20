@@ -17,7 +17,7 @@
     <h2>RigidBody</h2>
     Physics rigid body entity-component
 
-    Registered by Physics::PhysicsModule.
+    Registered by PhysicsModule.
 
     <b>Attributes</b>:
     <ul>
@@ -101,7 +101,7 @@ class PHYSICS_MODULE_API EC_RigidBody : public IComponent
     COMPONENT_NAME("RigidBody", 23)
     Q_ENUMS(ShapeType)
 
-    friend class Physics::PhysicsWorld;
+    friend class PhysicsWorld;
 
 public:
     /// @cond PRIVATE
@@ -291,7 +291,7 @@ public slots:
     void Rotate(const float3& rotation);
 
     /// Return physics world
-    Physics::PhysicsWorld* World() const;
+    PhysicsWorld* World() const;
 
     /// Return whether have authority. On the client, returns false for non-local objects.
     bool HasAuthority() const;
@@ -304,7 +304,7 @@ public slots:
     bool IsPrimitiveShape() const;
 
     // DEPRECATED
-    Physics::PhysicsWorld* GetPhysicsWorld() const; /**< @deprecated use World instead. @todo Remove at some point. */
+    PhysicsWorld* GetPhysicsWorld() const; /**< @deprecated use World instead. @todo Remove at some point. */
 
 private slots:
     /// Called when the parent entity has been set.
