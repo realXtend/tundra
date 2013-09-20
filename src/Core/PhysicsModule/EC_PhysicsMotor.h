@@ -17,7 +17,7 @@ class EC_Placeable;
     Physics motor component
     Drives a RigidBody by impulses on each physics update, and optionally applies a damping (braking) force.
 
-    Registered by Physics::PhysicsModule.
+    Registered by PhysicsModule.
 
     <b>Attributes</b>:
     <ul>

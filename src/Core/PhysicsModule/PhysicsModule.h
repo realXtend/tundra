@@ -9,6 +9,7 @@
 
 #include <set>
 #include <QObject>
+#include <QMetaType>
 
 namespace Ogre
 {
@@ -21,8 +22,6 @@ class QScriptEngine;
 class QTreeWidgetItem;
 #endif
 
-namespace Physics
-{
 /// Provides physics rendering by utilizing Bullet.
 class PHYSICS_MODULE_API PhysicsModule : public IModule
 {
@@ -85,7 +84,7 @@ private slots:
     void RemovePhysicsWorld(Scene *scene);
 
 private:
-    typedef std::map<Scene*, shared_ptr<Physics::PhysicsWorld> > PhysicsWorldMap;
+    typedef std::map<Scene*, PhysicsWorldPtr > PhysicsWorldMap;
     /// Map of physics worlds assigned to scenes
     PhysicsWorldMap physicsWorlds_;
     
@@ -100,9 +99,8 @@ private:
     float defaultPhysicsUpdatePeriod_;
     int defaultMaxSubSteps_;
 };
+Q_DECLARE_METATYPE(PhysicsModule*);
 
 #ifdef PROFILING
 void PHYSICS_MODULE_API UpdateBulletProfilingData(QTreeWidgetItem *treeRoot, int numFrames);
 #endif
-
-}

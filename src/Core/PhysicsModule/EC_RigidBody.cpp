@@ -180,9 +180,9 @@ struct EC_RigidBody::Impl : public btMotionState
     /// Bullet collision child shape. This is needed to use btScaledBvhTriangleMeshShape
     btCollisionShape* childShape;
     /// Physics world. May be 0 if the scene does not have a physics world. In that case most of EC_RigidBody's functionality is a no-op
-    Physics::PhysicsWorld* world;
+    PhysicsWorld* world;
     /// PhysicsModule pointer
-    Physics::PhysicsModule* owner;
+    PhysicsModule* owner;
     /// Cached shapetype (last created)
     int cachedShapeType;
     /// Cached shapesize (last created)
@@ -190,7 +190,7 @@ struct EC_RigidBody::Impl : public btMotionState
     /// Bullet triangle mesh
     shared_ptr<btTriangleMesh> triangleMesh;
     /// Convex hull set
-    shared_ptr<Physics::ConvexHullSet> convexHullSet;
+    shared_ptr<ConvexHullSet> convexHullSet;
     /// Bullet heightfield shape. Note: this is always put inside a compound shape (impl->shape)
     btHeightfieldTerrainShape* heightField;
     /// Heightfield values, for the case the shape is a heightfield.
@@ -803,7 +803,7 @@ void EC_RigidBody::Rotate(const float3& rotation)
     impl->disconnected = false;
 }
 
-Physics::PhysicsWorld* EC_RigidBody::World() const
+PhysicsWorld* EC_RigidBody::World() const
 {
     return impl->world;
 }
@@ -860,7 +860,7 @@ bool EC_RigidBody::IsPrimitiveShape() const
     }
 }
 
-Physics::PhysicsWorld* EC_RigidBody::GetPhysicsWorld() const
+PhysicsWorld* EC_RigidBody::GetPhysicsWorld() const
 {
     LogWarning("EC_RigidBody:GetPhysicsWorld: this functions is deprecated and will be removed. Use World() instead.");
     return World();
