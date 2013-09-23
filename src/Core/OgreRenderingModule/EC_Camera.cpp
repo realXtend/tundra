@@ -594,7 +594,7 @@ void EC_Camera::QueryVisibleEntities()
 void EC_Camera::SetNearClipDistance(float distance)
 {
     if (camera_ && !world_.expired())
-        camera_->setNearClipDistance(Clamp(distance, 0.0f, floatMax)); // Ogre throws an exception if negative value given.
+        try { camera_->setNearClipDistance(Max(distance, 1e-9f)); } catch(...) {} // Ogre throws an exception if zero or negative value given.
 }
 
 QString EC_Camera::SaveScreenshot(bool renderUi)
