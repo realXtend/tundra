@@ -295,23 +295,6 @@ macro(link_package_vorbis)
     endif()
 endmacro()
 
-macro(use_package_theora)
-    # Using full-built deps made from fullbui
-    include_directories(${ENV_TUNDRA_DEP_PATH}/theora/include)
-    link_directories(${ENV_TUNDRA_DEP_PATH}/theora/lib)
-endmacro()
-
-macro(link_package_theora)
-    if (MSVC)
-        # Always use ENV_TUNDRA_DEP_PATH as its read from cache. $ENV{TUNDRA_DEP_PATH} is not and can be empty/incorrect.
-        # Using full-built deps.
-        target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/theora/win32/VS2008/$(PlatformName)/Release_SSE2/libtheora_static.lib)
-        target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/theora/win32/VS2008/$(PlatformName)/Debug/libtheora_static.lib)
-    else()
-        target_link_libraries(${TARGET_NAME} general theora)
-    endif()
-endmacro()
-
 macro(use_package_assimp)
     if (WIN32 OR APPLE)
         if ("${ENV_ASSIMP_DIR}" STREQUAL "")
