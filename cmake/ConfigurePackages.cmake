@@ -77,7 +77,7 @@ macro(configure_qt4)
     if (NOT ANDROID)
         sagase_configure_package(QT4
             NAMES Qt4 4.6.1
-            COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools
+            COMPONENTS QtCore QtGui QtWebkit QtScript QtXml QtNetwork QtUiTools
         PREFIXES ${ENV_QT_DIR} ${ENV_TUNDRA_DEP_PATH})
     else()
         find_package(Qt4 COMPONENTS QtCore QtGui QtXml QtNetwork QtScript QtUiTools)
@@ -120,40 +120,6 @@ macro(configure_qt4)
     endif ()
     sagase_configure_report(QT4)
 endmacro(configure_qt4)
-
-macro (configure_python)
-    sagase_configure_package (PYTHON
-        NAMES PythonLibs Python python Python26 python26 Python2.6 python2.6
-        COMPONENTS Python python Python26 python Python2.6 python2.6
-        PREFIXES ${ENV_TUNDRA_DEP_PATH})
-
-    # FindPythonLibs.cmake
-    if (PYTHONLIBS_FOUND)
-        set (PYTHON_LIBRARIES ${PYTHON_LIBRARY})
-        set (PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_PATH})
-        #unset (PYTHON_DEBUG_LIBRARIES ${PYTHON_DEBUG_LIBRARY})
-    endif ()
-    
-    # FindPythonLibs.cmake prefers the system-wide Python, which does not
-    # include debug libraries, so we force to TUNDRA_DEP_PATH.
-    if (MSVC)
-        set (PYTHON_LIBRARY_DIRS ${ENV_TUNDRA_DEP_PATH}/Python/lib)
-        set (PYTHON_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/Python/include)
-        set (PYTHON_LIBRARIES python26)
-        set (PYTHON_DEBUG_LIBRARIES python26_d)
-    endif()
-    
-    sagase_configure_report (PYTHON)
-endmacro (configure_python)
-
-macro (configure_python_qt)
-    sagase_configure_package (PYTHON_QT
-        NAMES PythonQt
-        COMPONENTS PythonQt PythonQt_QtAll
-        PREFIXES ${ENV_TUNDRA_DEP_PATH})
-
-    sagase_configure_report (PYTHON_QT)
-endmacro (configure_python_qt)
 
 macro (configure_qtpropertybrowser)
     if (NOT MSVC AND NOT APPLE)
