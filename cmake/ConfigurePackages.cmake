@@ -1,9 +1,8 @@
 # =============================================================================
-# per-dependency configuration macros
+# Configuration macros for global dependencies.
 #
-# All per-dependency configuration (or hacks) should go here. All per-module
-# build instructions should go in <Module>/CMakeLists.txt. The rest should
-# remain generic.
+# All global dependency configurations should go here.
+# All per-module dependency configurations should go in <Module>/CMakeLists.txt.
 
 macro(configure_boost)
 
@@ -120,17 +119,6 @@ macro(configure_qt4)
     endif ()
     sagase_configure_report(QT4)
 endmacro(configure_qt4)
-
-macro (configure_qtpropertybrowser)
-    if (NOT MSVC AND NOT APPLE)
-      sagase_configure_package (QT_PROPERTY_BROWSER
-          NAMES QtPropertyBrowser QtSolutions_PropertyBrowser-2.5 QtSolutions_PropertyBrowser-head
-          COMPONENTS QtPropertyBrowser QtSolutions_PropertyBrowser-2.5 QtSolutions_PropertyBrowser-head
-          PREFIXES ${ENV_TUNDRA_DEP_PATH})
-
-      sagase_configure_report (QT_PROPERTY_BROWSER)
-    endif()
-endmacro (configure_qtpropertybrowser)
 
 macro(configure_openal)
     if (CMAKE_CL_64)
@@ -289,23 +277,6 @@ macro(link_package_theora)
         target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/theora/win32/VS2008/$(PlatformName)/Debug/libtheora_static.lib)
     else()
         target_link_libraries(${TARGET_NAME} general theora)
-    endif()
-endmacro()
-
-macro(use_package_qtpropertybrowser)
-    if (NOT APPLE)
-        include_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/src) # For full-built deps.
-        link_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/lib) # For full-built deps.
-    else ()
-        include_directories(${ENV_TUNDRA_DEP_PATH}/qtpropertybrowser/include) # For full-built deps.
-        link_directories(${ENV_TUNDRA_DEP_PATH}/qtpropertybrowser/lib) # For full-built deps.
-    endif ()
-endmacro()
-
-macro(link_package_qtpropertybrowser)
-    if (MSVC)
-        target_link_libraries(${TARGET_NAME} debug QtSolutions_PropertyBrowser-headd.lib)
-        target_link_libraries(${TARGET_NAME} optimized QtSolutions_PropertyBrowser-head.lib)
     endif()
 endmacro()
 

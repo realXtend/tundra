@@ -1,3 +1,33 @@
+macro(use_package_qtpropertybrowser)
+    if (NOT APPLE)
+        include_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/src) # For full-built deps.
+        link_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/lib) # For full-built deps.
+    else()
+        include_directories(${ENV_TUNDRA_DEP_PATH}/qtpropertybrowser/include) # For full-built deps.
+        link_directories(${ENV_TUNDRA_DEP_PATH}/qtpropertybrowser/lib) # For full-built deps.
+    endif()
+endmacro()
+
+macro(link_package_qtpropertybrowser)
+    if (MSVC)
+        target_link_libraries(${TARGET_NAME} debug QtSolutions_PropertyBrowser-headd.lib)
+        target_link_libraries(${TARGET_NAME} optimized QtSolutions_PropertyBrowser-head.lib)
+    endif()
+endmacro()
+
+macro(configure_qtpropertybrowser)
+    if (NOT MSVC AND NOT APPLE)
+        sagase_configure_package(QT_PROPERTY_BROWSER
+            NAMES QtPropertyBrowser QtSolutions_PropertyBrowser-2.5 QtSolutions_PropertyBrowser-head
+            COMPONENTS QtPropertyBrowser QtSolutions_PropertyBrowser-2.5 QtSolutions_PropertyBrowser-head
+            PREFIXES ${ENV_TUNDRA_DEP_PATH})
+
+      sagase_configure_report(QT_PROPERTY_BROWSER)
+    endif()
+endmacro(configure_qtpropertybrowser)
+
+configure_qtpropertybrowser()
+
 # Define target name and output directory
 init_target(ECEditorModule OUTPUT plugins)
 
