@@ -353,6 +353,35 @@ del /Q "%TUNDRA_BIN%\QtSql*.dll"
 del /Q "%TUNDRA_BIN%\QtSvg*.dll"
 del /Q "%TUNDRA_BIN%\QtTest*.dll"
 
+:: QJson
+IF NOT EXIST "%DEPS%\qjson\". (
+    cecho {0D}Cloning QJson into "%DEPS%\qjson".{# #}{\n}
+    cd "%DEPS%"
+    git clone https://github.com/jonnenauha/qjson.git
+    IF NOT EXIST "%DEPS%\qjson\.git" GOTO :ERROR
+)
+
+:: Check if this configuration is built
+IF NOT EXIST "%DEPS%\qjson\lib\%BUILD_TYPE%\qjson.dll". (
+    cd "%DEPS%\qjson\"
+    IF NOT EXIST qjson.sln. (
+        cecho {0D}Running CMake for QJson.{# #}{\n}
+        IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
+        cmake . -G %GENERATOR% -DCMAKE_INSTALL_PREFIX=./build
+        IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+    )
+    cecho {0D}Building %BUILD_TYPE% QJson.{# #}{\n}
+    MSBuild qjson.sln /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+)
+
+:: Install the correct build type into qjson/build
+cecho {0D}Deploying %BUILD_TYPE% QJson DLL to Tundra bin\ directory.{# #}{\n}
+cd "%DEPS%\qjson\"
+MSBuild INSTALL.%VCPROJ_FILE_EXT% /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+copy /Y "%DEPS%\qjson\build\bin\qjson.dll" "%TUNDRA_BIN%"
+
 :: Bullet physics engine
 :: version 2.81 sp1, svn rev 2613
 IF NOT EXIST "%DEPS%\bullet\". (
@@ -422,10 +451,13 @@ IF NOT EXIST "%DEPS%\boost". (
 :SKIP_BOOST
 
 IF NOT EXIST "%DEPS%\assimp\". (
-    cecho {0D}Checking out OpenAssetImport library from https://assimp.svn.sourceforge.net/svnroot/assimp/trunk into "%DEPS%\assimp".{# #}{\n}
+    cecho {0D}Checking out OpenAssetImport library from https://github.com/assimp/assimp.git into "%DEPS%\assimp".{# #}{\n}
     cd "%DEPS%"
-    :: Note the fixed revision number. OpenAssetImport does not have an up-to-date tagged release, so fix to a recent revision of trunk.
-    svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk assimp
+    :: Note the fixed revision hash (equals SVN rev 1300.) OpenAssetImport does not have an up-to-date tagged release, so fix to a recent revision of trunk.
+    git clone https://github.com/assimp/assimp.git assimp
+    cd "%DEPS%\assimp"
+    git checkout e22bb03f807b345a9058352e5453b6491a235677
+    cd "%DEPS%"
 )
 
 IF NOT EXIST "%DEPS%\assimp\bin\%BUILD_TYPE%\assimp%POSTFIX_D%.dll". (
@@ -620,17 +652,20 @@ IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\.hg". (
    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 
-IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\RenderSystems\RenderSystem_NULL". (
-   cecho {0D}Attaching RenderSystem_NULL to be built with ogre-safe-nocrashes.{# #}{\n}
-   mkdir "%DEPS%\ogre-safe-nocrashes\RenderSystems\RenderSystem_NULL"
+:: Headless Ogre Render System
+IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\RenderSystems\Headless". (
+   cecho {0D}Closing RenderSystem_Headless to be built with ogre-safe-nocrashes.{# #}{\n}
+   cd "%DEPS%\ogre-safe-nocrashes\RenderSystems"
+   git clone https://github.com/jonnenauha/ogre-headless-renderer.git Headless
    copy /Y "%TOOLS%\Mods\Ogre_RenderSystems_CMakeLists.txt" "%DEPS%\ogre-safe-nocrashes\RenderSystems\CMakeLists.txt"
 )
 
 REM Instead of the copying above, would like to do the line below, but IF () terminates prematurely on the ) below!
-REM   echo add_subdirectory(RenderSystem_NULL) >> "%DEPS%\ogre-safe-nocrashes\RenderSystems\CMakeLists.txt"
+REM   echo add_subdirectory(Headless) >> "%DEPS%\ogre-safe-nocrashes\RenderSystems\CMakeLists.txt"
 
-cecho {0D}Updating RenderSystem_NULL to the newest version in ogre-safe-nocrashes.{# #}{\n}
-xcopy /Q /E /I /C /H /R /Y "%DEPS%\realxtend-tundra-deps\RenderSystem_NULL" "%DEPS%\ogre-safe-nocrashes\RenderSystems\RenderSystem_NULL"
+cecho {0D}Updating RenderSystem_Headless to the newest version in ogre-safe-nocrashes.{# #}{\n}
+cd "%DEPS%\ogre-safe-nocrashes\RenderSystems\Headless"
+git pull
 
 :: Ogre dependencies
 IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\ogredeps\.hg". (

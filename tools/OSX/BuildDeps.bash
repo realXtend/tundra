@@ -263,6 +263,33 @@ fi
 
 cd $build
 
+what=qjson
+if test -f $tags/$what-done; then
+    echoInfo "$what is done"
+else
+    if [ -d $build/$what ]; then
+        cd $what
+        echoInfo "Fetching latest code for $what, this could take a while..."
+        git pull
+        rm -r CMakeCache.txt
+    else
+        echoInfo "Cloning repository of $what, this could take a while..."
+        git clone https://github.com/flavio/qjson
+        cd $what
+    fi
+
+    echoInfo "Building $what, this could take a while... "
+    cmake . -DCMAKE_INSTALL_PREFIX=$prefix/$what -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DQJSON_BUILD_TESTS=no
+    make -j$NPROCS
+    make install
+
+    cd $prefix/$what/lib
+    install_name_tool -id $PWD/libqjson.dylib libqjson.dylib
+    touch $tags/$what-done
+fi
+
+cd $build
+
 if [ $USE_BOOST == "ON" ]; then
     what=boost    
     urlbase=http://downloads.sourceforge.net/project/boost/boost/1.46.1
@@ -667,12 +694,6 @@ else
 
     mkdir -p $prefix/$what/{lib,include}
     cp -R $OGRE_HOME/lib/relwithdebinfo/* $prefix/$what/lib
-    # cp $prefix/$what/lib/*.dylib $viewer/bin
-
-    # Replace the install name with more suitable one to avoid link problems
-    if [ -f $viewer/bin/RenderSystem_GL.dylib ]; then
-        install_name_tool -id $viewer/bin/RenderSystem_GL.dylib $viewer/bin/RenderSystem_GL.dylib
-    fi
 
     export PKG_CONFIG_PATH=$build/$what/pkgconfig
 fi
@@ -685,16 +706,17 @@ if [ "$USE_BOOST" == "ON" ]; then
 fi
 
 what=assimp
-baseurl=https://assimp.svn.sourceforge.net/svnroot/assimp/trunk
+baseurl=https://github.com/assimp/assimp.git
 if test -f $tags/$what-done; then
     echoInfo "$what is done"
 else
     cd $build
     rm -rf $what
     echoInfo "Cloning $what repository, this may take a while..."
-    svn checkout -r 1300 https://assimp.svn.sourceforge.net/svnroot/assimp/trunk $what
+    git clone https://github.com/assimp/assimp.git $what
     cd $what
-
+    git checkout e22bb03f807b345a9058352e5453b6491a235677
+    
     # Patch assimp 
     patch -p0 -i $patches/assimp.patch
     if [ "$USE_BOOST" == "ON" ]; then

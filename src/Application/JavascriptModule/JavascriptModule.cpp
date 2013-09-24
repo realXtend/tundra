@@ -326,7 +326,7 @@ EC_Script* JavascriptModule::FindScriptApplication(EC_Script* instance, const QS
     for(unsigned i = 0; i < scripts.size(); ++i)
     {
         const QString& name = scripts[i]->applicationName.Get();
-        if (!name.isEmpty() && !name.trimmed().compare(appName, Qt::CaseInsensitive))
+        if (!name.isEmpty() && name.trimmed().compare(appName, Qt::CaseInsensitive) == 0)
             return scripts[i].get();
     }
 
@@ -529,6 +529,9 @@ QStringList JavascriptModule::ParseStartupScriptConfig()
     bool deprecationWarning = true;
     foreach(const QString &configFile, framework_->Plugins()->ConfigurationFiles())
     {
+        if (!configFile.trimmed().endsWith(".xml", Qt::CaseInsensitive))
+            continue;
+
         QDomDocument doc("plugins");
         QFile file(configFile);
         if (!file.open(QIODevice::ReadOnly))
@@ -572,7 +575,6 @@ QStringList JavascriptModule::StartupScripts()
     QStringList scripts;
     if (framework_->HasCommandLineParameter("--jsplugin"))
         scripts << framework_->CommandLineParameters("--jsplugin");
-
     return scripts;
 }
 

@@ -225,15 +225,19 @@ void PluginAPI::LoadPluginsFromXML(QString pluginConfigurationFile)
 
 void PluginAPI::LoadPluginsFromCommandLine()
 {
-    if (owner->HasCommandLineParameter("--plugin"))
-    {
-        QStringList pluginPaths = owner->CommandLineParameters("--plugin");
+    if (!owner->HasCommandLineParameter("--plugin"))
+        return;
 
-        for (int i = 0; i < pluginPaths.size(); ++i)
+    QStringList plugins = owner->CommandLineParameters("--plugin");
+    foreach(QString plugin, plugins)
+    {
+        plugin = plugin.trimmed();
+        if (!plugin.contains(";"))
+            LoadPlugin(plugin);
+        else
         {
-            QStringList pluginList = pluginPaths.at(i).simplified().replace(" ", "").split(";", QString::SkipEmptyParts);
-            for (int j = 0; j < pluginList.size(); ++j)
-                LoadPlugin(pluginList.at(j));
+            foreach(const QString &pluginIter, plugin.simplified().replace(" ", "").split(";", QString::SkipEmptyParts))
+                LoadPlugin(pluginIter);
         }
     }
 }

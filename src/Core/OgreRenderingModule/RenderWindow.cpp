@@ -45,10 +45,10 @@ namespace
     const char rttMaterialName[] = "MainWindow Material";
 }
 
-RenderWindow::RenderWindow()
-:renderWindow(0),
-overlay(0),
-overlayContainer(0)
+RenderWindow::RenderWindow() :
+    renderWindow(0),
+    overlay(0),
+    overlayContainer(0)
 {
 }
 
@@ -294,8 +294,10 @@ void RenderWindow::Resize(int width, int height)
     if (width == (int)renderWindow->getWidth() && height == (int)renderWindow->getHeight())
         return; // Avoid recreating resources if the size didn't actually change.
 
+#ifndef Q_WS_MAC
     renderWindow->resize(width, height);
     renderWindow->windowMovedOrResized();
+#endif
 
     if (overlay && Ogre::TextureManager::getSingletonPtr() && Ogre::OverlayManager::getSingletonPtr())
     {

@@ -7,6 +7,7 @@
 #include "Profiler.h"
 #include "IRenderer.h"
 #include "CoreException.h"
+#include "CoreJsonUtils.h"
 #include "Application.h"
 #include "ConfigAPI.h"
 #include "PluginAPI.h"
@@ -388,13 +389,17 @@ void Framework::Go()
     StaticPluginRegistryInstance()->RunPluginMainFunctions(this);
 #endif
 
+    /** @todo This only handles the deprecated/old .xml format.
+        It does not find plugins correctly from current generation xml files.
+        New style xml plugins are added to the command line params.
+        Remove this at some point when people have converted their startup xmls. */
     foreach(const QString &config, plugin->ConfigurationFiles())
     {
-        LogDebug("Loading plugins from config XML " + config);
-        plugin->LoadPluginsFromXML(config);
+        if (config.trimmed().endsWith(".xml", Qt::CaseInsensitive))
+            plugin->LoadPluginsFromXML(config);
     }
 
-    LogDebug("Loading plugins specified on the command line...");
+    // Load plugins from command line params and from new style xml/json config files.
     plugin->LoadPluginsFromCommandLine();
 
     for(size_t i = 0; i < modules.size(); ++i)
@@ -567,6 +572,21 @@ bool Framework::RegisterDynamicObject(QString name, QObject *object)
 
 QString LookupRelativePath(QString path);
 
+bool Framework::LoadStartupOptionsFromFile(const QString &configurationFile)
+{
+    QString suffix = QFileInfo(configurationFile).suffix().toLower();
+    bool read = false;
+    if (suffix == "xml")
+        read = LoadStartupOptionsFromXML(configurationFile);
+    else if (suffix == "json")
+        read = LoadStartupOptionsFromJSON(configurationFile);
+    else
+        LogError("Invalid config file format. Only .xml and .json are supported: " + configurationFile);
+    if (read)
+        configFiles << configurationFile;        
+    return read;
+}
+
 bool Framework::LoadStartupOptionsFromXML(QString configurationFile)
 {
     configurationFile = LookupRelativePath(configurationFile);
@@ -609,11 +629,7 @@ bool Framework::LoadStartupOptionsFromXML(QString configurationFile)
             if (e.attribute("name").compare("--config", Qt::CaseInsensitive) == 0)
             {
                 if (!e.attribute("value").isEmpty())
-                {
-                    if (LoadStartupOptionsFromXML(e.attribute("value")))
-                        configFiles << e.attribute("value");
-                }
-
+                    LoadStartupOptionsFromFile(e.attribute("value"));
                 n = n.nextSibling();
                 continue;
             }
@@ -621,6 +637,72 @@ bool Framework::LoadStartupOptionsFromXML(QString configurationFile)
             AddCommandLineParameter(e.attribute("name"), e.attribute("value"));
         }
         n = n.nextSibling();
+    }
+    return true;
+}
+
+bool Framework::LoadStartupOptionsFromJSON(QString configurationFile)
+{
+    configurationFile = LookupRelativePath(configurationFile);
+    
+    bool ok = false;
+    QVariantList startupOptions = TundraJson::ParseFile(configurationFile, true, &ok).toList();
+    if (!ok)
+    {
+        LogError(QString("Failed to parse config file JSON: %1").arg(configurationFile));
+        return false;
+    }
+    if (startupOptions.isEmpty())
+    {
+        LogWarning("Config file does not seem to have any values is it: " + configurationFile);
+        return false;
+    }
+    
+    foreach(const QVariant &option, startupOptions)
+    {
+        QVariant::Type t = option.type();
+
+        // Command-to-parameter pair(s)
+        if (t == QVariant::Map || t == QVariant::Hash)
+        {
+            QVariantMap optionMap;
+            if (t == QVariant::Map)
+                optionMap = option.toMap();
+            else if (t == QVariant::Hash)
+            {
+                QVariantHash optionsHash = option.toHash();
+                foreach(const QString &hashKey, optionsHash.keys())
+                    optionMap[hashKey] = optionsHash[hashKey];
+            }
+            foreach(const QString command, optionMap.keys())
+            {
+                QVariant value = optionMap[command];
+                if (command.compare("--config", Qt::CaseInsensitive) != 0)
+                {
+                    // Support giving multiple values as a list or a single value.
+                    if (value.type() == QVariant::String)
+                        AddCommandLineParameter(command, value.toString());
+                    else if (value.type() == QVariant::StringList || value.type() == QVariant::List)
+                        foreach(const QVariant &valueIter, value.toList())
+                            AddCommandLineParameter(command, valueIter.toString());
+                }
+                else
+                    LoadStartupOptionsFromFile(value.toString());
+            }
+        }
+        // Command only
+        else if (t == QVariant::String)
+        {
+            AddCommandLineParameter(option.toString(), "");
+        }
+        // List of commands
+        else if (t == QVariant::StringList || t == QVariant::List)
+        {
+            foreach(const QVariant &command, option.toList())
+                AddCommandLineParameter(command.toString(), "");
+        }
+        else
+            LogError(QString("LoadStartupOptionsFromJSON: QVariant::Type %1 is not supported: %2").arg(t).arg(option.toString()));
     }
     return true;
 }
@@ -723,8 +805,7 @@ void Framework::ProcessStartupOptions()
         // --config
         if (option.compare("--config", Qt::CaseInsensitive) == 0)
         {
-            if (LoadStartupOptionsFromXML(peekOption))
-                configFiles << peekOption;
+            LoadStartupOptionsFromFile(peekOption);
             ++i;
             continue;
         }
