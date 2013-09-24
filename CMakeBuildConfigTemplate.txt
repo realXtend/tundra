@@ -29,8 +29,7 @@ option(INSTALL_EXAMPLE_SCENES "Do we want to deploy the example scenes (bin/scen
 # Do we want to enable usage of language translations. Currently bitrot/deprecated and off by default.
 option(ENABLE_TRANSLATIONS "Do we want to enable usage of language translations. Currently bitrot/deprecated and off by default." OFF)
 # Enables certain build optimizations on the release builds, f.ex. disables math correctness checks and error prints.
-# On Windows also enables some of the more aggressive linker optimizations (increases build time significantly),
-# so do not enable this if you are planning to retain usable debug and symbol information. 
+# On Windows also enables some of the more aggressive linker optimizations. Do not enable if you are planning to retain reusable symbol information.
 option(ENABLE_BUILD_OPTIMIZATIONS "Enables certain build optimizations on the release builds." OFF)
 # 3rd party dependencies:
 if (NOT ANDROID)
@@ -95,14 +94,15 @@ if (MSVC)
         add_definitions(-DMEMORY_LEAK_CHECK)
     endif()
 
-    # Common flags for all configurations.
+    # Common flags for all configurations: build with multiple processes and increase PCH size in order to overcome occasional errors.
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MP /Zm1000")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MP /Zm1000")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MP /Zm1000")
-    # NOTE: RelWithDebInfo and Release use O2 (=Ox+Gl+Gy) by default 
 
+    # NOTE: RelWithDebInfo and Release use O2 (= /Ox /Gl /Gy/ = Og /Oi /Ot /Oy /Ob2 /Gs /GF /Gy) by default,
+    # with the exception with RelWithDebInfo has /Ob1 instead.
     if (ENABLE_BUILD_OPTIMIZATIONS)
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL")
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Ob2 /GL")
         set(CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELEASE})
         set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF") # /OPT:REF enables also /OPT:ICF
         set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO ${CMAKE_SHARED_LINKER_FLAGS_RELEASE})
