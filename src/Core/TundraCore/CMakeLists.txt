@@ -39,6 +39,7 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 UseTundraCore() # Include all subfolders within the project
 use_core_modules(Math)
+use_package(QJSON)
 
 add_definitions(-DTUNDRACORE_EXPORTS)
 
@@ -56,6 +57,7 @@ if (NOT TUNDRA_NO_BOOST)
 endif()
 
 link_package(QT4)
+link_package(QJSON)
 link_package_knet()     # Scene
 if (NOT ANDROID)
     link_package(OPENAL)    # Audio

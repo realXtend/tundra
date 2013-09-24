@@ -689,44 +689,51 @@ void TimeProfilerWindow::RefreshOgreTabWidget(int pageIndex)
         // Materials
         case 4:
         {
-            RefreshOgreDataTree(Ogre::MaterialManager::getSingleton(), ui_.materialDataTree, "material");
+            if (Ogre::MaterialManager::getSingletonPtr())
+                RefreshOgreDataTree(Ogre::MaterialManager::getSingleton(), ui_.materialDataTree, "material");
             break;
         }
         // Textures
         case 5:
         {
-            RefreshOgreDataTree(Ogre::TextureManager::getSingleton(), ui_.textureDataTree, "texture");
+            if (Ogre::TextureManager::getSingletonPtr())
+                RefreshOgreDataTree(Ogre::TextureManager::getSingleton(), ui_.textureDataTree, "texture");
             break;
         }
         // Meshes
         case 6:
         {
-            RefreshOgreDataTree(Ogre::MeshManager::getSingleton(), ui_.meshDataTree, "mesh");
+            if (Ogre::MeshManager::getSingletonPtr())
+                RefreshOgreDataTree(Ogre::MeshManager::getSingleton(), ui_.meshDataTree, "mesh");
             break;
         }
 
         // Skeletons
         case 7:
         {
-            RefreshOgreDataTree(Ogre::SkeletonManager::getSingleton(), ui_.skeletonDataTree, "skeleton");
+            if (Ogre::SkeletonManager::getSingletonPtr())
+                RefreshOgreDataTree(Ogre::SkeletonManager::getSingleton(), ui_.skeletonDataTree, "skeleton");
             break;
         }
         // GPU Programs
         case 8:
         {
-            RefreshOgreDataTree(Ogre::HighLevelGpuProgramManager::getSingleton(), ui_.gpuDataTree, "gpuasset");
+            if (Ogre::HighLevelGpuProgramManager::getSingletonPtr())
+                RefreshOgreDataTree(Ogre::HighLevelGpuProgramManager::getSingleton(), ui_.gpuDataTree, "gpuasset");
             break;
         }
         // Compositors
         case 9:
         {
-            RefreshOgreDataTree(Ogre::CompositorManager::getSingleton(), ui_.compositorDataTree, "compositor");
+            if (Ogre::CompositorManager::getSingletonPtr())
+                RefreshOgreDataTree(Ogre::CompositorManager::getSingleton(), ui_.compositorDataTree, "compositor");
             break;
         }
         // Fonts
         case 10:
         {
-            RefreshOgreDataTree(Ogre::FontManager::getSingleton(), ui_.fontDataTree, "font");
+            if (Ogre::FontManager::getSingletonPtr())
+                RefreshOgreDataTree(Ogre::FontManager::getSingleton(), ui_.fontDataTree, "font");
             break;
         }
     }
@@ -1224,16 +1231,19 @@ int CountSize(Ogre::MapIterator<T> iter)
     return count;
 }
 
-static std::string ReadOgreManagerStatus(Ogre::ResourceManager &manager)
+static std::string ReadOgreManagerStatus(Ogre::ResourceManager *manager)
 {
-    QString budget = QString::fromStdString(kNet::FormatBytes((u64)manager.getMemoryBudget()));
-    QString usage = QString::fromStdString(kNet::FormatBytes((u64)manager.getMemoryUsage()));
+    if (!manager)
+        return "Resource manager not available";
+
+    QString budget = QString::fromStdString(kNet::FormatBytes((u64)manager->getMemoryBudget()));
+    QString usage = QString::fromStdString(kNet::FormatBytes((u64)manager->getMemoryUsage()));
     if (budget.lastIndexOf(".") >= budget.lastIndexOf(" ")-3) budget.insert(budget.lastIndexOf(" "), "0");
     if (budget.endsWith(" B")) budget += " ";
     if (usage.lastIndexOf(".") >= usage.lastIndexOf(" ")-3) usage.insert(usage.lastIndexOf(" "), "0");
     if (usage.endsWith(" B")) usage += " ";
 
-    Ogre::ResourceManager::ResourceMapIterator iter = manager.getResourceIterator();
+    Ogre::ResourceManager::ResourceMapIterator iter = manager->getResourceIterator();
     return QString("Budget: %1    Usage: %2     Resource count: %3").arg(budget, 12).arg(usage, 12).arg(CountSize(iter), 6).toStdString();
 }
 
@@ -1252,17 +1262,19 @@ void TimeProfilerWindow::RefreshOgreOverviewPage()
     ui_.labelNumSceneManagers->setText(QString("%1").arg(CountSize(root->getSceneManagerIterator())));
     ui_.labelNumArchives->setText(QString("%1").arg(CountSize(Ogre::ArchiveManager::getSingleton().getArchiveIterator())));
 
+    /// @todo This check is only here for Null render system that can crash via the texture manager calls.
+    /// Once its no longer needed ReadOgreManagerStatus can be used safely with Headless render system.
     if (!framework_->IsHeadless())
-        ui_.labelTextureManager->setText(ReadOgreManagerStatus(Ogre::TextureManager::getSingleton()).c_str());
+        ui_.labelTextureManager->setText(ReadOgreManagerStatus(Ogre::TextureManager::getSingletonPtr()).c_str());
     else
-        ui_.labelTextureManager->setText("Texture information not available in headless mode.");
+        ui_.labelTextureManager->setText("Resource manager not available");
 
-    ui_.labelMeshManager->setText(ReadOgreManagerStatus(Ogre::MeshManager::getSingleton()).c_str());
-    ui_.labelMaterialManager->setText(ReadOgreManagerStatus(Ogre::MaterialManager::getSingleton()).c_str());
-    ui_.labelSkeletonManager->setText(ReadOgreManagerStatus(Ogre::SkeletonManager::getSingleton()).c_str());
-    ui_.labelCompositorManager->setText(ReadOgreManagerStatus(Ogre::CompositorManager::getSingleton()).c_str());
-    ui_.labelGPUProgramManager->setText(ReadOgreManagerStatus(Ogre::HighLevelGpuProgramManager::getSingleton()).c_str());
-    ui_.labelFontManager->setText(ReadOgreManagerStatus(Ogre::FontManager::getSingleton()).c_str());
+    ui_.labelMeshManager->setText(ReadOgreManagerStatus(Ogre::MeshManager::getSingletonPtr()).c_str());
+    ui_.labelMaterialManager->setText(ReadOgreManagerStatus(Ogre::MaterialManager::getSingletonPtr()).c_str());
+    ui_.labelSkeletonManager->setText(ReadOgreManagerStatus(Ogre::SkeletonManager::getSingletonPtr()).c_str());
+    ui_.labelCompositorManager->setText(ReadOgreManagerStatus(Ogre::CompositorManager::getSingletonPtr()).c_str());
+    ui_.labelGPUProgramManager->setText(ReadOgreManagerStatus(Ogre::HighLevelGpuProgramManager::getSingletonPtr()).c_str());
+    ui_.labelFontManager->setText(ReadOgreManagerStatus(Ogre::FontManager::getSingletonPtr()).c_str());
 
     OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
     if (renderer.get() && renderer->GetActiveOgreWorld().get())
@@ -1286,11 +1298,16 @@ void TimeProfilerWindow::RefreshOgreOverviewPage()
     updateTimer_.start(500);
 }
 
-static void DumpOgreResManagerStatsToFile(Ogre::ResourceManager &manager, std::ofstream &file)
+static void DumpOgreResManagerStatsToFile(Ogre::ResourceManager *manager, std::ofstream &file)
 {
+    if (!manager)
+    {
+        file << "Resource manager not available" << std::endl;
+        return;
+    }
     std::vector<ResNameAndSize> resources;
 
-    Ogre::ResourceManager::ResourceMapIterator iter = manager.getResourceIterator();
+    Ogre::ResourceManager::ResourceMapIterator iter = manager->getResourceIterator();
 
     file << "In load order(?): " << std::endl;
     while(iter.hasMoreElements())
@@ -1338,32 +1355,32 @@ void TimeProfilerWindow::DumpOgreResourceStatsToFile()
     file << "COMPRESSED MANAGER STATS";
     file << std::endl << "=======================================================" << std::endl << std::endl;
     
-    file << "Ogre Texture Manager      " << ReadOgreManagerStatus(Ogre::TextureManager::getSingleton()) << std::endl;
-    file << "Ogre Mesh Manager         " << ReadOgreManagerStatus(Ogre::MeshManager::getSingleton()) << std::endl;
-    file << "Ogre Material Manager     " << ReadOgreManagerStatus(Ogre::MaterialManager::getSingleton()) << std::endl;
-    file << "Ogre Skeleton Manager     " << ReadOgreManagerStatus(Ogre::SkeletonManager::getSingleton()) << std::endl;
-    file << "Ogre Compositor Manager   " << ReadOgreManagerStatus(Ogre::CompositorManager::getSingleton()) << std::endl;
-    file << "Ogre GPUProgram Manager   " << ReadOgreManagerStatus(Ogre::HighLevelGpuProgramManager::getSingleton()) << std::endl;
-    file << "Ogre Font Manager         " << ReadOgreManagerStatus(Ogre::FontManager::getSingleton()) << std::endl;
+    file << "Ogre Texture Manager      " << ReadOgreManagerStatus(Ogre::TextureManager::getSingletonPtr()) << std::endl;
+    file << "Ogre Mesh Manager         " << ReadOgreManagerStatus(Ogre::MeshManager::getSingletonPtr()) << std::endl;
+    file << "Ogre Material Manager     " << ReadOgreManagerStatus(Ogre::MaterialManager::getSingletonPtr()) << std::endl;
+    file << "Ogre Skeleton Manager     " << ReadOgreManagerStatus(Ogre::SkeletonManager::getSingletonPtr()) << std::endl;
+    file << "Ogre Compositor Manager   " << ReadOgreManagerStatus(Ogre::CompositorManager::getSingletonPtr()) << std::endl;
+    file << "Ogre GPUProgram Manager   " << ReadOgreManagerStatus(Ogre::HighLevelGpuProgramManager::getSingletonPtr()) << std::endl;
+    file << "Ogre Font Manager         " << ReadOgreManagerStatus(Ogre::FontManager::getSingletonPtr()) << std::endl;
 
     file << std::endl << "=======================================================" << std::endl;
     file << "DETAILED MANAGER STATS";
     file << std::endl << "=======================================================" << std::endl << std::endl;
             
     file << "Ogre Texture Manager:" << std::endl << "==============================" << std::endl;
-    DumpOgreResManagerStatsToFile(Ogre::TextureManager::getSingleton(), file);
+    DumpOgreResManagerStatsToFile(Ogre::TextureManager::getSingletonPtr(), file);
     file << std::endl << std::endl << std::endl << "Ogre Mesh Manager" << std::endl << "==============================" << std::endl;
-    DumpOgreResManagerStatsToFile(Ogre::MeshManager::getSingleton(), file);
+    DumpOgreResManagerStatsToFile(Ogre::MeshManager::getSingletonPtr(), file);
     file << std::endl << std::endl << std::endl << "Ogre Material Manager" << std::endl << "==============================" << std::endl;
-    DumpOgreResManagerStatsToFile(Ogre::MaterialManager::getSingleton(), file);
+    DumpOgreResManagerStatsToFile(Ogre::MaterialManager::getSingletonPtr(), file);
     file << std::endl << std::endl << std::endl << "Ogre Skeleton Manager" << std::endl << "==============================" << std::endl;
-    DumpOgreResManagerStatsToFile(Ogre::SkeletonManager::getSingleton(), file);
+    DumpOgreResManagerStatsToFile(Ogre::SkeletonManager::getSingletonPtr(), file);
     file << std::endl << std::endl << std::endl << "Ogre Compositor Manager" << std::endl << "==============================" << std::endl;
-    DumpOgreResManagerStatsToFile(Ogre::CompositorManager::getSingleton(), file);
+    DumpOgreResManagerStatsToFile(Ogre::CompositorManager::getSingletonPtr(), file);
     file << std::endl << std::endl << std::endl << "Ogre GPUProgram Manager" << std::endl << "==============================" << std::endl;
-    DumpOgreResManagerStatsToFile(Ogre::HighLevelGpuProgramManager::getSingleton(), file);
+    DumpOgreResManagerStatsToFile(Ogre::HighLevelGpuProgramManager::getSingletonPtr(), file);
     file << std::endl << std::endl << std::endl << "Ogre Font Manager" << std::endl;
-    DumpOgreResManagerStatsToFile(Ogre::FontManager::getSingleton(), file);
+    DumpOgreResManagerStatsToFile(Ogre::FontManager::getSingletonPtr(), file);
     file.close();
     
     if (QFile::exists(path))
@@ -1852,7 +1869,7 @@ void TimeProfilerWindow::RefreshOgreSceneComplexityPage()
 {
     if (!visibility_ || ui_.ogreTabWidget->currentIndex() != 1)
         return;
-
+        
     Scene *scene = framework_->Scene()->MainCameraScene();
     if (!scene)
     {
@@ -1871,9 +1888,12 @@ void TimeProfilerWindow::RefreshOgreSceneComplexityPage()
         LogError("[Profiler]: RefreshOgreSceneComplexityPage: Ogre Root is null, cannot continue!");
         return;
     }
-    
+
+    /// In headless more we are not setting a render system to Ogre::Root. No need to go further.
+    if (framework_->IsHeadless())
+        return;
+
     Ogre::RenderSystem* rendersys = root->getRenderSystem();
-    assert(rendersys);
     if (!rendersys)
         return;
     
@@ -2576,6 +2596,10 @@ void TimeProfilerWindow::RefreshOgreRenderTargetPage()
         LogError("[Profiler]: RefreshOgreRenderTargetPage: Ogre Root is null, cannot continue!");
         return;
     }
+
+    /// In headless more we are not setting a render system to Ogre::Root. No need to go further.
+    if (framework_->IsHeadless())
+        return;
 
     Ogre::RenderSystem* rendersys = root->getRenderSystem();
     assert(rendersys);

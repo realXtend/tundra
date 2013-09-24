@@ -1,0 +1,6 @@
+[
+    { "--config"   : "tundra.json"    },
+    { "--jsplugin" : "LoginScreen.js" },
+
+    "--splash"
+]

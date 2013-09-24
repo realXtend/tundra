@@ -40,6 +40,15 @@ inline float ParseInt(const std::string &val, int defaultValue) { return ParseIn
 inline uint ParseUInt(const QString &val, uint defaultValue) { bool ok; uint ret = val.toUInt(&ok); return ok ? ret : defaultValue; }
 inline float ParseUInt(const std::string &val, uint defaultValue) { return ParseInt(QString::fromStdString(val), defaultValue); } /**< @overload */
 
+/// Removes requested lines from data.
+/** Parses data line by line, ignoring starting whitespace and matching linePrefixes. Matched lines will be removed.
+    String comparisons are done with Qt::CaseSensitive. Useful for removing comment lines from data by passing "//" and/or "#" as linePrefixes.
+    @param Data string.
+    @param Line prefixes. If a line starts with one of these (after starting whitespace) it will be removed.
+    @param Removed line count will be reported here if ptr is not null.
+    @return Result data. */
+QByteArray TUNDRACORE_API RemoveLines(const QByteArray &data, QStringList linePrefixes, uint *removedLineCount = 0);
+
 /// Split a string by separator char
 StringVector TUNDRACORE_API SplitString(const std::string& str, char separator);
 

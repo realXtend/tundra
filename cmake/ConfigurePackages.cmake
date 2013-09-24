@@ -120,6 +120,38 @@ macro(configure_qt4)
     sagase_configure_report(QT4)
 endmacro(configure_qt4)
 
+macro(configure_qjson)
+    if ("${QJSON_ROOT}" STREQUAL "")
+        file (TO_CMAKE_PATH "$ENV{QJSON_ROOT}" QJSON_ROOT)
+        set (QJSON_ROOT ${QJSON_ROOT} CACHE PATH "QJSON_ROOT dependency path" FORCE)
+    endif ()
+
+    if ("${QJSON_ROOT}" STREQUAL "")
+        if (WIN32 OR APPLE)
+            set (QJSON_ROOT ${ENV_TUNDRA_DEP_PATH}/qjson)
+        else ()
+            set (QJSON_ROOT ${ENV_TUNDRA_DEP_PATH})
+        endif ()
+    endif ()
+
+    # Find QJson/Parser header and back up one folder for <QJson/Parser> style includes.
+    # Windows uses the /build directory for headers, as the install step is a bit wonky.
+    find_path (QJSON_INCLUDE_DIR parser.h HINTS ${QJSON_ROOT}/build/include ${QJSON_ROOT}/include PATH_SUFFIXES qjson)
+    RemoveLastElementFromPath(${QJSON_INCLUDE_DIR} QJSON_INCLUDE_DIRS)
+
+    if (NOT MSVC)
+        find_library (QJSON_LIBRARIES NAMES qjson HINTS ${QJSON_ROOT}/lib)
+    else ()
+        # We could use /build directory for the lib too. But this would not allow us to change build modes on the fly.
+        # It's recommended to run the build modes deps script before building with it, but its still nicer to
+        # pass in a single link directory and have your build type subdirs below it, Visual Studio will do the right thing.
+        find_path (QJSON_LIBRARY_DIR NAMES qjson.lib HINTS ${QJSON_ROOT}/lib PATH_SUFFIXES Release RelWithDebInfo Debug)
+        RemoveLastElementFromPath(${QJSON_LIBRARY_DIR} QJSON_LIBRARY_DIRS)
+        set(QJSON_LIBRARIES qjson.lib)
+    endif ()
+    sagase_configure_report(QJSON)
+endmacro(configure_qjson)
+
 macro(configure_openal)
     if (CMAKE_CL_64)
         SET(WIN_PLATFORM Win64)

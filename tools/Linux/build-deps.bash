@@ -86,6 +86,26 @@ else
     echo "Unknown Linux distribution, please update the build script for your distro and file a pull request, or file a bug report on the tracker."
 fi
 
+what=qjson
+if test -f $tags/$what-done; then
+    echo $what is done
+else
+    cd $build
+    if [ -d $build/$what ]; then
+        cd $what
+        git pull
+        rm -r CMakeCache.txt
+    else
+        git clone https://github.com/flavio/qjson
+        cd $what
+    fi
+
+    cmake . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DQJSON_BUILD_TESTS=no
+    make -j $nprocs
+    make install
+    touch $tags/$what-done
+fi
+
 what=bullet-2.81-rev2613
 if test -f $tags/$what-done; then
     echo $what is done
@@ -170,18 +190,15 @@ fi
 mkdir -p $viewer/bin/qtplugins/script
 cp -lf $build/$what/plugins/script/* $viewer/bin/qtplugins/script/
 
-what=assimp--3.0.1270-source-only
+what=assimp
 if test -f $tags/$what-done; then
     echo $what is done
 else
     cd $build
     rm -rf $what
-    test -f $tarballs/$what.zip || wget -P $tarballs http://downloads.sourceforge.net/project/assimp/assimp-3.0/assimp--3.0.1270-source-only.zip
-    unzip $tarballs/$what.zip
-    #git clone git://github.com/assimp/assimp.git $what
+    git clone git://github.com/assimp/assimp.git $what
     cd $what
-    #sed -e "s/string_type::size_type/typename string_type::size_type/" < code/ObjTools.h > x
-    #mv x code/ObjTools.h
+    git checkout e22bb03f807b345a9058352e5453b6491a235677
     cmake -DCMAKE_INSTALL_PREFIX=$prefix .
     make -j $nprocs
     make install

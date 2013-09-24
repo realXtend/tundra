@@ -3,6 +3,8 @@
 #include "StableHeaders.h"
 #include "CoreStringUtils.h"
 
+#include <QTextStream>
+
 QString QStringFromWCharArray(const wchar_t *string, int size)
 {
     QString qstr;
@@ -83,6 +85,35 @@ std::vector<s8> StringToBuffer(const std::string& str)
     if (str.size())
         memcpy(&ret[0], &str[0], str.size());
     return ret;
+}
+
+QByteArray RemoveLines(const QByteArray &data, QStringList linePrefixes, uint *removedLineCount)
+{
+    if (removedLineCount != 0)
+        *removedLineCount = 0;
+        
+    QByteArray result;
+    QTextStream out(&result, QIODevice::WriteOnly);
+    QTextStream in(data, QIODevice::ReadOnly);
+    while (!in.atEnd())
+    {
+        QString line = in.readLine();
+        bool found = false;
+        foreach(const QString &commentPrefix, linePrefixes)
+        {
+            found = line.simplified().startsWith(commentPrefix, Qt::CaseSensitive);
+            if (found)
+                break;
+        }
+        if (!found)
+        {
+            // readLine() removes end-of-line characters, preserve them.
+            out << line << endl;
+        }
+        else if (removedLineCount != 0)
+            *removedLineCount += 1;
+    }
+    return result;
 }
 
 StringVector SplitString(const std::string& str, char separator)

@@ -172,10 +172,14 @@ bool Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
             return false;
         }
         
-        // Before an entity is removed, make it remove all of its components to signal removals properly
+        /// \bug Emit entity removal first, as there may be scripts which depend on components still being there for their cleanup.
+        /// This is necessary as QScriptEngine may not handle later access to removed objects gracefully and may eg exit() the whole program.
+        /// Even a malfunctioning script should not be able to bring the Tundra process down in this manner.
+        EmitEntityRemoved(del_entity.get(), change);
+        
+        // Then make the entity remove all of its components, so that their individual removals are signaled properly
         del_entity->RemoveAllComponents(change);
         
-        EmitEntityRemoved(del_entity.get(), change);
         entities_.erase(it);
         
         // If entity somehow manages to live, at least it doesn't belong to the scene anymore
