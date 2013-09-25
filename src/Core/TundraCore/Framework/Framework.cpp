@@ -155,8 +155,8 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
     cmdLineDescs.commands["--d3d9"] = "Use Ogre with \"Direct3D9 Rendering Subsystem\", overrides the option that was set in config.";
     cmdLineDescs.commands["--direct3d9"] = "Same as --d3d9.";
 #endif
-    cmdLineDescs.commands["--help"] = "Produces help message."; // Framework
-    cmdLineDescs.commands["--version"] = "Produces version information."; // Framework
+    cmdLineDescs.commands["--help"] = "Produces help message and exits."; // Framework
+    cmdLineDescs.commands["--version"] = "Produces version information and exits."; // Framework
     cmdLineDescs.commands["--headless"] = "Runs Tundra in headless mode without any windows or rendering."; // Framework
     cmdLineDescs.commands["--disableRunOnLoad"] = "Prevents script applications (EC_Script's with applicationName defined) starting automatically."; //JavascriptModule
     cmdLineDescs.commands["--server"] = "Starts Tundra as server."; // TundraLogicModule
@@ -211,6 +211,9 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
         std::cout << cmdLineDescs.ToString();
     }
 
+    if (HasCommandLineParameter("--version"))
+        LogInfo(Application::FullIdentifier());
+
     if (HasCommandLineParameter("--version") || HasCommandLineParameter("--help"))
     {
 #ifdef WIN32
@@ -221,6 +224,12 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
         ForceExit();
         return;
     }
+
+    // Initialization prints
+    LogInfo("Starting up " + Application::FullIdentifier());
+    LogInfo("* Installation directory : " + Application::InstallationDirectory());
+    LogInfo("* Working directory      : " + Application::CurrentWorkingDirectory());
+    LogInfo("* User data directory    : " + Application::UserDataDirectory());
 
     // In headless mode, no main UI/rendering window is initialized.
     if (HasCommandLineParameter("--headless"))

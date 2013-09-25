@@ -784,12 +784,6 @@ int TUNDRACORE_API run(int argc, char **argv)
 #endif
         int return_value = EXIT_SUCCESS;
 
-        // Initialization prints
-        LogInfo("Starting up " + Application::FullIdentifier());
-        LogInfo("* Installation directory : " + Application::InstallationDirectory());
-        LogInfo("* Working directory      : " + Application::CurrentWorkingDirectory());
-        LogInfo("* User data directory    : " + Application::UserDataDirectory());
-
     // Create application object
 #if !defined(_DEBUG) || !defined (_MSC_VER)
         try
