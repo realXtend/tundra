@@ -217,7 +217,8 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
         std::cout << std::endl;
         system("pause");
 #endif
-        Exit();
+        // Use ForceExist as we don't want anybody to cancel exiting because Application and Framework will not be fully intialized.
+        ForceExit();
         return;
     }
 
@@ -233,16 +234,27 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
 
     // Create ConfigAPI, pass application data and prepare data folder.
     config = new ConfigAPI(this);
-    QStringList configDirs = CommandLineParameters("--configdir");
+    QStringList configDirs = CommandLineParameters("--configDir");
     QString configDir = "$(USERDATA)/configuration"; // The default configuration goes to "C:\Users\username\AppData\Roaming\Tundra\configuration"
     if (configDirs.size() >= 1)
         configDir = configDirs.last();
     if (configDirs.size() > 1)
-        LogWarning("Multiple --configdir parameters specified! Using \"" + configDir + "\" as the configuration directory.");
+        LogWarning("Multiple --configDir parameters specified! Using \"" + configDir + "\" as the configuration directory.");
     config->PrepareDataFolder(configDir);
 
     // Set target FPS limits, if specified.
-    QStringList fpsLimitParam = CommandLineParameters("--fpslimit");
+    ConfigData targetFpsConfigData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
+    if (config->HasKey(targetFpsConfigData, "fps target limit"))
+    {
+        bool ok;
+        double targetFps = config->Read(targetFpsConfigData, "fps target limit").toDouble(&ok);
+        if (ok && targetFps >= 0.0)
+            application->SetTargetFpsLimit(targetFps);
+        else
+            LogWarning("Invalid target FPS value " + QString::number(targetFps) + " read from config. Ignoring.");
+    }
+
+    const QStringList fpsLimitParam = CommandLineParameters("--fpsLimit");
     if (fpsLimitParam.size() > 1)
         LogWarning("Multiple --fpslimit parameters specified! Using " + fpsLimitParam.first() + " as the value.");
     if (fpsLimitParam.size() > 0)
@@ -252,12 +264,12 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
         if (ok)
             application->SetTargetFpsLimit(targetFpsLimit);
         else
-            LogWarning("Erroneous FPS limit given with --fpslimit: " + fpsLimitParam.first() + ". Ignoring.");
+            LogWarning("Erroneous FPS limit given with --fpsLimit: " + fpsLimitParam.first() + ". Ignoring.");
     }
 
-    QStringList fpsLimitWhenInactive = CommandLineParameters("--fpslimitwheninactive");
+    const QStringList fpsLimitWhenInactive = CommandLineParameters("--fpsLimitWhenInactive");
     if (fpsLimitWhenInactive.size() > 1)
-        LogWarning("Multiple --fpslimitwheninactive parameters specified! Using " + fpsLimitWhenInactive.first() + " as the value.");
+        LogWarning("Multiple --fpsLimitWhenInactive parameters specified! Using " + fpsLimitWhenInactive.first() + " as the value.");
     if (fpsLimitWhenInactive.size() > 0)
     {
         bool ok;
@@ -265,7 +277,7 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
         if (ok)
             application->SetTargetFpsLimitWhenInactive(targetFpsWhenInactive);
         else
-            LogWarning("Erroneous FPS limit given with --fpslimitwheninactive: " + fpsLimitWhenInactive.first() + ". Ignoring.");
+            LogWarning("Erroneous FPS limit given with --fpsLimitWhenInactive: " + fpsLimitWhenInactive.first() + ". Ignoring.");
     }
 
     // Create core APIs
@@ -674,7 +686,7 @@ bool Framework::LoadStartupOptionsFromJSON(QString configurationFile)
                 foreach(const QString &hashKey, optionsHash.keys())
                     optionMap[hashKey] = optionsHash[hashKey];
             }
-            foreach(const QString command, optionMap.keys())
+            foreach(const QString &command, optionMap.keys())
             {
                 QVariant value = optionMap[command];
                 if (command.compare("--config", Qt::CaseInsensitive) != 0)
