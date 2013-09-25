@@ -174,8 +174,6 @@ void Application::Initialize(Framework *fw)
         ConfigAPI::SECTION_FRAMEWORK, "language", "data/translations/tundra_en").toString();
     ChangeLanguage(defaultLanguage);
 #endif
-
-    ReadTargetFpsLimitFromConfig();
 }
 
 void Application::InitializeSplash()
@@ -516,20 +514,6 @@ const char *Application::Version()
 QString Application::FullIdentifier()
 {
     return QString("%1 %2 %3").arg(organizationName).arg(applicationName).arg(version).trimmed();
-}
-
-void Application::ReadTargetFpsLimitFromConfig()
-{
-    ConfigData targetFpsConfigData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
-    if (framework->Config()->HasValue(targetFpsConfigData, "fps target limit"))
-    {
-        bool ok;
-        double targetFps = framework->Config()->Get(targetFpsConfigData, "fps target limit").toDouble(&ok);
-        if (ok && targetFps >= 0.0)
-            SetTargetFpsLimit(targetFps);
-        else
-            LogWarning("Application: Invalid target FPS value " + QString::number(targetFps) + " read from config. Ignoring.");
-    }
 }
 
 bool Application::eventFilter(QObject *obj, QEvent *event)

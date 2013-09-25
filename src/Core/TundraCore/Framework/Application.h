@@ -149,9 +149,6 @@ public:
     /// Returns the current FPS limit when inactive.
     double TargetFpsLimitWhenInactive() const { return targetFpsLimitWhenInactive; }
 
-    /// Reads and applies target FPS limit from config file.
-    void ReadTargetFpsLimitFromConfig();
-
     /// Find .qm translation files from @c dir.
     QStringList FindQmFiles(const QDir &dir);
 
