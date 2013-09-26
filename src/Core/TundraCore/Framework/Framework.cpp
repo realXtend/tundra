@@ -130,97 +130,102 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
 {
     // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
     instance = this;
-
+    // In headless mode, no main UI/rendering window is initialized.
+    headless = HasCommandLineParameter("--headless");
+    // Create ConsoleAPI as early as possible in order to catch log prints.
+    console = new ConsoleAPI(this); // ConsoleAPI depends on UiAPI and InputAPI and is not initialized fully until they're created.
 #ifdef ANDROID
     LoadCommandLineFromFile();
 #else
     ProcessStartupOptions();
 #endif
+    // Are we about to exit almost immediately?
+    exitSignal = HasCommandLineParameter("--version") || HasCommandLineParameter("--help");
 
     // Make sure we spawn a console window in each case we might need one.
     if (HasCommandLineParameter("--version") || HasCommandLineParameter("--help") ||
-        HasCommandLineParameter("--sharedconsole") || HasCommandLineParameter("--console") ||
+        HasCommandLineParameter("--sharedConsole") || HasCommandLineParameter("--console") ||
         HasCommandLineParameter("--headless"))
     {
-        Application::ShowConsoleWindow(HasCommandLineParameter("--sharedconsole"));
-    }
-
-    ///\todo Delete the CommandLineParameterMap mechanism altogether.
-    /// Instead, provide the command line parameter help from a help file, where all the various command line parameters can be assembled.
-    CommandLineParameterMap cmdLineDescs;
-#ifdef WIN32
-    cmdLineDescs.commands["--console"] = "Shows a text-based console along with the main UI window.";
-    cmdLineDescs.commands["--sharedConsole"] = "Same as '--console' but attaches the Tundra console to the parent process, without creating new command prompt for the console.";
-    cmdLineDescs.commands["--perfHud"] = "Use Ogre with NVIDIA PerfHUD enabled, if applicable.";
-    cmdLineDescs.commands["--d3d9"] = "Use Ogre with \"Direct3D9 Rendering Subsystem\", overrides the option that was set in config.";
-    cmdLineDescs.commands["--direct3d9"] = "Same as --d3d9.";
-#endif
-    cmdLineDescs.commands["--help"] = "Produces help message and exits."; // Framework
-    cmdLineDescs.commands["--version"] = "Produces version information and exits."; // Framework
-    cmdLineDescs.commands["--headless"] = "Runs Tundra in headless mode without any windows or rendering."; // Framework
-    cmdLineDescs.commands["--disableRunOnLoad"] = "Prevents script applications (EC_Script's with applicationName defined) starting automatically."; //JavascriptModule
-    cmdLineDescs.commands["--server"] = "Starts Tundra as server."; // TundraLogicModule
-    cmdLineDescs.commands["--port"] = "Specifies the Tundra server port."; // TundraLogicModule
-    cmdLineDescs.commands["--protocol"] = "Specifies the Tundra server protocol. Options: '--protocol tcp' and '--protocol udp'. Defaults to udp if no protocol is specified."; // KristalliProtocolModule
-    cmdLineDescs.commands["--fpsLimit"] = "Specifies the FPS cap to use in rendering. Default: 60. Pass in 0 to disable."; // Framework
-    cmdLineDescs.commands["--fpsLimitWhenInactive"] = "Specifies the FPS cap to use when the window is not active. Default: 30 (half of the FPS). Pass 0 to disable."; // Framework
-    cmdLineDescs.commands["--run"] = "Runs script on startup"; // JavaScriptModule
-    cmdLineDescs.commands["--plugin"] = "Specifies a shared library (a 'plugin') to be loaded, relative to 'TUNDRA_DIRECTORY/plugins' path. Multiple plugin parameters are supported, f.ex. '--plugin MyPlugin --plugin MyOtherPlugin', or multiple parameters per --plugin, separated with semicolon (;) and enclosed in quotation marks, f.ex. --plugin \"MyPlugin;OtherPlugin;Etc\""; // Framework
-    cmdLineDescs.commands["--jsplugin"] = "Specifies a javascript file to be loaded at startup, relative to 'TUNDRA_DIRECTORY/jsplugins' path. Multiple jsplugin parameters are supported, f.ex. '--jsplugin MyPlugin.js --jsplugin MyOtherPlugin.js', or multiple parameters per --jsplugin, separated with semicolon (;) and enclosed in quotation marks, f.ex. --jsplugin \"MyPlugin.js;MyOtherPlugin.js;Etc.js\". If JavascriptModule is not loaded, this parameter has no effect."; // JavascriptModule
-    cmdLineDescs.commands["--file"] = "Specifies a startup scene file. Multiple files supported. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI."; // TundraLogicModule & AssetModule
-    cmdLineDescs.commands["--storage"] = "Adds the given directory as a local storage directory on startup."; // AssetModule
-    cmdLineDescs.commands["--config"] = "Specifies a startup configuration file to use. Multiple config files are supported, f.ex. '--config plugins.xml --config MyCustomAddons.xml'."; // Framework & PluginAPI
-    cmdLineDescs.commands["--connect"] = "Connects to a Tundra server automatically. Syntax: '--connect serverIp;port;protocol;name;password'. Password is optional."; // TundraLogicModule & AssetModule
-    cmdLineDescs.commands["--login"] = "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username."; // TundraLogicModule & AssetModule
-    cmdLineDescs.commands["--netRate"] = "Specifies the number of network updates per second. Default: 30."; // TundraLogicModule
-    cmdLineDescs.commands["--noAssetCache"] = "Disable asset cache."; // Framework
-    cmdLineDescs.commands["--assetCacheDir"] = "Specify asset cache directory to use."; // Framework
-    cmdLineDescs.commands["--clearAssetCache"] = "At the start of Tundra, remove all data and metadata files from asset cache."; // AssetCache
-    cmdLineDescs.commands["--logLevel"] = "Sets the current log level: 'error', 'warning', 'info', 'debug'."; // ConsoleAPI
-    cmdLineDescs.commands["--logFile"] = "Sets logging file. Usage example: '--logfile TundraLogFile.txt'."; // ConsoleAPI
-    cmdLineDescs.commands["--physicsRate"] = "Specifies the number of physics simulation steps per second. Default: 60."; // PhysicsModule
-    cmdLineDescs.commands["--physicsMaxSteps"] = "Specifies the maximum number of physics simulation steps in one frame to limit CPU usage. If the limit would be exceeded, physics will appear to slow down. Default: 6."; // PhysicsModule
-    cmdLineDescs.commands["--splash"] = "Shows splash screen during the startup."; // Framework
-    cmdLineDescs.commands["--fullscreen"] = "Starts application in fullscreen mode."; // OgreRenderingModule
-    cmdLineDescs.commands["--vsync"] = "Synchronizes buffer swaps to monitor vsync, eliminating tearing at the expense of a fixed frame rate."; // OgreRenderingModule
-    cmdLineDescs.commands["--vsyncFrequency"] = "Sets display frequency rate for vsync, applicable only if fullscreen is set. Usage: '--vsyncFrequency <number>'."; // OgreRenderingModule
-    cmdLineDescs.commands["--antialias"] = "Sets full screen antialiasing factor. Usage '--antialias <number>'."; // OgreRenderingModule
-    cmdLineDescs.commands["--hideBenignOgreMessages"] = "Sets some uninformative Ogre log messages to be ignored from the log output."; // OgreRenderingModule
-    cmdLineDescs.commands["--noAsyncAssetLoad"] = "Disables threaded loading of Ogre assets."; // OgreRenderingModule
-    cmdLineDescs.commands["--autoDxtCompress"] = "Compress uncompressed texture assets to DXT1/DXT5 format on load to save memory."; // OgreRenderingModule
-    cmdLineDescs.commands["--maxTextureSize"] = "Resize texture assets that are larger than this. Default: no resizing."; // OgreRenderingModule
-    cmdLineDescs.commands["--variablePhysicsStep"] = "Use variable physics timestep to avoid taking multiple physics substeps during one frame."; // PhysicsModule
-    cmdLineDescs.commands["--opengl"] = "Use Ogre with \"OpenGL Rendering Subsystem\" for rendering, overrides the option that was set in config.";
-    cmdLineDescs.commands["--nullRenderer"] = "Disables all Ogre rendering operations."; // OgreRenderingModule
-    cmdLineDescs.commands["--ogreCaptureTopWindow"] = "On some systems, the Ogre rendering output is overdrawn by the desktop compositing manager, "
-        "but the actual cause of this is uncertain. As a workaround, try this switch to make Ogre output directly on the main window handle of the UI chain. "
-        "However, this might introduce graphical issues."; // OgreRenderingModule
-    cmdLineDescs.commands["--noUiCompositing"] = "Disables the UI compositing, use for debugging purposes only."; // Framework & OgreRenderingModule
-    cmdLineDescs.commands["--noCentralWidget"] = "Disables the usage of QMainWindow's central widget."; // Framework
-    cmdLineDescs.commands["--noMenuBar"] = "Disables showing of the application menu bar automatically."; // Framework
-    cmdLineDescs.commands["--clientExtrapolationTime"] = "Rigid body extrapolation time on client in milliseconds. Default 66."; // TundraProtocolModule
-    cmdLineDescs.commands["--noClientPhysics"] = "Disables rigid body handoff to client simulation after no movement packets received from server."; // TundraProtocolModule
-    cmdLineDescs.commands["--dumpProfiler"] = "Dump profiling blocks to console every 5 seconds."; // DebugStatsModule
-    cmdLineDescs.commands["--acceptUnknownLocalSources"] = "If specified, assets outside any known local storages are allowed. Otherwise, requests to them will fail."; // AssetModule
-    cmdLineDescs.commands["--acceptUnknownHttpSources"] = "If specified, asset requests outside any registered HTTP storages are also accepted, and will appear as assets with no storage. "
-        "Otherwise, all requests to assets outside any registered storage will fail."; // AssetModule
-
-    if (HasCommandLineParameter("--help"))
-    {
-        LogInfo("Supported command line arguments (case-insensitive):");
-        std::cout << cmdLineDescs.ToString();
+        Application::ShowConsoleWindow(HasCommandLineParameter("--sharedConsole"));
     }
 
     if (HasCommandLineParameter("--version"))
         LogInfo(Application::FullIdentifier());
 
-    if (HasCommandLineParameter("--version") || HasCommandLineParameter("--help"))
+    if (HasCommandLineParameter("--help"))
+    {
+        ///\todo Delete the CommandLineParameterMap mechanism altogether.
+        /// Instead, provide the command line parameter help from a help file, where all the various command line parameters can be assembled.
+        CommandLineParameterMap cmdLineDescs;
+#ifdef WIN32
+        cmdLineDescs.commands["--console"] = "Shows a text-based console along with the main UI window.";
+        cmdLineDescs.commands["--sharedConsole"] = "Same as '--console' but attaches the Tundra console to the parent process, without creating new command prompt for the console.";
+        cmdLineDescs.commands["--perfHud"] = "Use Ogre with NVIDIA PerfHUD enabled, if applicable.";
+        cmdLineDescs.commands["--d3d9"] = "Use Ogre with \"Direct3D9 Rendering Subsystem\", overrides the option that was set in config.";
+        cmdLineDescs.commands["--direct3d9"] = "Same as --d3d9.";
+#endif
+        cmdLineDescs.commands["--help"] = "Produces help message and exits."; // Framework
+        cmdLineDescs.commands["--version"] = "Produces version information and exits."; // Framework
+        cmdLineDescs.commands["--headless"] = "Runs Tundra in headless mode without any windows or rendering."; // Framework
+        cmdLineDescs.commands["--disableRunOnLoad"] = "Prevents script applications (EC_Script's with applicationName defined) starting automatically."; //JavascriptModule
+        cmdLineDescs.commands["--server"] = "Starts Tundra as server."; // TundraLogicModule
+        cmdLineDescs.commands["--port"] = "Specifies the Tundra server port."; // TundraLogicModule
+        cmdLineDescs.commands["--protocol"] = "Specifies the Tundra server protocol. Options: '--protocol tcp' and '--protocol udp'. Defaults to udp if no protocol is specified."; // KristalliProtocolModule
+        cmdLineDescs.commands["--fpsLimit"] = "Specifies the FPS cap to use in rendering. Default: 60. Pass in 0 to disable."; // Framework
+        cmdLineDescs.commands["--fpsLimitWhenInactive"] = "Specifies the FPS cap to use when the window is not active. Default: 30 (half of the FPS). Pass 0 to disable."; // Framework
+        cmdLineDescs.commands["--run"] = "Runs script on startup"; // JavaScriptModule
+        cmdLineDescs.commands["--plugin"] = "Specifies a shared library (a 'plugin') to be loaded, relative to 'TUNDRA_DIRECTORY/plugins' path. Multiple plugin parameters are supported, f.ex. '--plugin MyPlugin --plugin MyOtherPlugin', or multiple parameters per --plugin, separated with semicolon (;) and enclosed in quotation marks, f.ex. --plugin \"MyPlugin;OtherPlugin;Etc\""; // Framework
+        cmdLineDescs.commands["--jsplugin"] = "Specifies a javascript file to be loaded at startup, relative to 'TUNDRA_DIRECTORY/jsplugins' path. Multiple jsplugin parameters are supported, f.ex. '--jsplugin MyPlugin.js --jsplugin MyOtherPlugin.js', or multiple parameters per --jsplugin, separated with semicolon (;) and enclosed in quotation marks, f.ex. --jsplugin \"MyPlugin.js;MyOtherPlugin.js;Etc.js\". If JavascriptModule is not loaded, this parameter has no effect."; // JavascriptModule
+        cmdLineDescs.commands["--file"] = "Specifies a startup scene file. Multiple files supported. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI."; // TundraLogicModule & AssetModule
+        cmdLineDescs.commands["--storage"] = "Adds the given directory as a local storage directory on startup."; // AssetModule
+        cmdLineDescs.commands["--config"] = "Specifies a startup configuration file to use. Multiple config files are supported, f.ex. '--config plugins.xml --config MyCustomAddons.xml'."; // Framework & PluginAPI
+        cmdLineDescs.commands["--connect"] = "Connects to a Tundra server automatically. Syntax: '--connect serverIp;port;protocol;name;password'. Password is optional."; // TundraLogicModule & AssetModule
+        cmdLineDescs.commands["--login"] = "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username."; // TundraLogicModule & AssetModule
+        cmdLineDescs.commands["--netRate"] = "Specifies the number of network updates per second. Default: 30."; // TundraLogicModule
+        cmdLineDescs.commands["--noAssetCache"] = "Disable asset cache."; // Framework
+        cmdLineDescs.commands["--assetCacheDir"] = "Specify asset cache directory to use."; // Framework
+        cmdLineDescs.commands["--clearAssetCache"] = "At the start of Tundra, remove all data and metadata files from asset cache."; // AssetCache
+        cmdLineDescs.commands["--logLevel"] = "Sets the current log level: 'error', 'warning', 'info', 'debug'."; // ConsoleAPI
+        cmdLineDescs.commands["--logFile"] = "Sets logging file. Usage example: '--logfile TundraLogFile.txt'."; // ConsoleAPI
+        cmdLineDescs.commands["--physicsRate"] = "Specifies the number of physics simulation steps per second. Default: 60."; // PhysicsModule
+        cmdLineDescs.commands["--physicsMaxSteps"] = "Specifies the maximum number of physics simulation steps in one frame to limit CPU usage. If the limit would be exceeded, physics will appear to slow down. Default: 6."; // PhysicsModule
+        cmdLineDescs.commands["--splash"] = "Shows splash screen during the startup."; // Framework
+        cmdLineDescs.commands["--fullscreen"] = "Starts application in fullscreen mode."; // OgreRenderingModule
+        cmdLineDescs.commands["--vsync"] = "Synchronizes buffer swaps to monitor vsync, eliminating tearing at the expense of a fixed frame rate."; // OgreRenderingModule
+        cmdLineDescs.commands["--vsyncFrequency"] = "Sets display frequency rate for vsync, applicable only if fullscreen is set. Usage: '--vsyncFrequency <number>'."; // OgreRenderingModule
+        cmdLineDescs.commands["--antialias"] = "Sets full screen antialiasing factor. Usage '--antialias <number>'."; // OgreRenderingModule
+        cmdLineDescs.commands["--hideBenignOgreMessages"] = "Sets some uninformative Ogre log messages to be ignored from the log output."; // OgreRenderingModule
+        cmdLineDescs.commands["--noAsyncAssetLoad"] = "Disables threaded loading of Ogre assets."; // OgreRenderingModule
+        cmdLineDescs.commands["--autoDxtCompress"] = "Compress uncompressed texture assets to DXT1/DXT5 format on load to save memory."; // OgreRenderingModule
+        cmdLineDescs.commands["--maxTextureSize"] = "Resize texture assets that are larger than this. Default: no resizing."; // OgreRenderingModule
+        cmdLineDescs.commands["--variablePhysicsStep"] = "Use variable physics timestep to avoid taking multiple physics substeps during one frame."; // PhysicsModule
+        cmdLineDescs.commands["--opengl"] = "Use Ogre with \"OpenGL Rendering Subsystem\" for rendering, overrides the option that was set in config.";
+        cmdLineDescs.commands["--nullRenderer"] = "Disables all Ogre rendering operations."; // OgreRenderingModule
+        cmdLineDescs.commands["--ogreCaptureTopWindow"] = "On some systems, the Ogre rendering output is overdrawn by the desktop compositing manager, "
+            "but the actual cause of this is uncertain. As a workaround, try this switch to make Ogre output directly on the main window handle of the UI chain. "
+            "However, this might introduce graphical issues."; // OgreRenderingModule
+        cmdLineDescs.commands["--noUiCompositing"] = "Disables the UI compositing, use for debugging purposes only."; // Framework & OgreRenderingModule
+        cmdLineDescs.commands["--noCentralWidget"] = "Disables the usage of QMainWindow's central widget."; // Framework
+        cmdLineDescs.commands["--noMenuBar"] = "Disables showing of the application menu bar automatically."; // Framework
+        cmdLineDescs.commands["--clientExtrapolationTime"] = "Rigid body extrapolation time on client in milliseconds. Default 66."; // TundraProtocolModule
+        cmdLineDescs.commands["--noClientPhysics"] = "Disables rigid body handoff to client simulation after no movement packets received from server."; // TundraProtocolModule
+        cmdLineDescs.commands["--dumpProfiler"] = "Dump profiling blocks to console every 5 seconds."; // DebugStatsModule
+        cmdLineDescs.commands["--acceptUnknownLocalSources"] = "If specified, assets outside any known local storages are allowed. Otherwise, requests to them will fail."; // AssetModule
+        cmdLineDescs.commands["--acceptUnknownHttpSources"] = "If specified, asset requests outside any registered HTTP storages are also accepted, and will appear as assets with no storage. "
+            "Otherwise, all requests to assets outside any registered storage will fail."; // AssetModule
+
+        LogInfo("Supported command line arguments (case-insensitive):");
+        std::cout << cmdLineDescs.ToString();
+    }
+
+    if (exitSignal)
     {
 #ifdef WIN32
         std::cout << std::endl;
         system("pause");
 #endif
-        // Use ForceExist as we don't want anybody to cancel exiting because Application and Framework will not be fully intialized.
+        // Use ForceExit as we can't let anything to cancel exiting and leave Application and Framework in uninitialized state.
         ForceExit();
         return;
     }
@@ -230,10 +235,6 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
     LogInfo("* Installation directory : " + Application::InstallationDirectory());
     LogInfo("* Working directory      : " + Application::CurrentWorkingDirectory());
     LogInfo("* User data directory    : " + Application::UserDataDirectory());
-
-    // In headless mode, no main UI/rendering window is initialized.
-    if (HasCommandLineParameter("--headless"))
-        headless = true;
 
 #ifdef PROFILING
     profiler = new Profiler();
@@ -297,17 +298,17 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
 
     // Prepare asset cache, if used.
     QString assetCacheDir = Application::UserDataDirectory() + "assetcache";
-    if (CommandLineParameters("--assetcachedir").size() > 0)
-        assetCacheDir = Application::ParseWildCardFilename(CommandLineParameters("--assetcachedir").last());
-    if (CommandLineParameters("--assetcachedir").size() > 1)
-        LogWarning("Multiple --assetcachedir parameters specified! Using \"" + CommandLineParameters("--assetcachedir").last() + "\" as the assetcache directory.");
-    if (!HasCommandLineParameter("--noassetcache"))
+    if (CommandLineParameters("--assetCacheDir").size() > 0)
+        assetCacheDir = Application::ParseWildCardFilename(CommandLineParameters("--assetCacheDir").last());
+    if (CommandLineParameters("--assetCacheDir").size() > 1)
+        LogWarning("Multiple --assetCacheDir parameters specified! Using \"" + CommandLineParameters("--assetCacheDir").last() + "\" as the asset cache directory.");
+    if (!HasCommandLineParameter("--noAssetCache"))
         asset->OpenAssetCache(assetCacheDir);
 
-    ui = new UiAPI(this);
-    audio = new AudioAPI(this, asset); // AudioAPI depends on the AssetAPI, so must be loaded after it.
-    input = new InputAPI(this);
-    console = new ConsoleAPI(this);
+    ui = new UiAPI(this); // UiAPI depends on AssetAPI.
+    audio = new AudioAPI(this, asset); // AudioAPI depends on AssetAPI.
+    input = new InputAPI(this); // InputAPI depends on UiAPI.
+    console->Initialize(); // Now that UI and Input APIs are ready, initialize Console API.
     console->RegisterCommand("exit", "Shuts down gracefully.", this, SLOT(Exit()));
     console->RegisterCommand("inputContexts", "Prints all currently registered input contexts in InputAPI.", input, SLOT(DumpInputContexts()));
     console->RegisterCommand("dynamicObjects", "Prints all currently registered dynamic objets in Framework.", this, SLOT(PrintDynamicObjects()));
@@ -842,7 +843,7 @@ void Framework::ProcessStartupOptions()
             AddCommandLineParameter(option, "");
     }
 
-    if (!HasCommandLineParameter("--config") && LoadStartupOptionsFromXML("plugins.xml"))        
+    if (!HasCommandLineParameter("--config") && LoadStartupOptionsFromXML("plugins.xml"))
         configFiles << "plugins.xml";
 }
 
