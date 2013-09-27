@@ -1043,38 +1043,43 @@ SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) 
             QDomElement comp_elem = ent_elem.firstChildElement("component");
             while(!comp_elem.isNull())
             {
-                QString type_name = comp_elem.attribute("type");
-                QString name = comp_elem.attribute("name");
-                QString sync = comp_elem.attribute("sync");
                 ComponentDesc compDesc;
-                compDesc.typeName = type_name;
-                compDesc.name = name;
-                compDesc.sync = sync;
+                compDesc.typeName = comp_elem.attribute("type");
+                compDesc.typeId = ParseUInt(comp_elem.attribute("id"), 0xffffffff);
+                /// @todo 27.09.2013 assert that typeName and typeId match
+                /// @todo 27.09.2013 If mismatch, show warning, and use SceneAPI's
+                /// ComponentTypeNameForTypeId and ComponentTypeIdForTypeName to resolve one or the other?
+                compDesc.name = comp_elem.attribute("name");
+                compDesc.sync = ParseBool(comp_elem.attribute("sync"));
+                const bool hasTypeName = !compDesc.typeName.isEmpty();
 
                 // A bit of a hack to get the name from EC_Name.
-                if (entityDesc.name.isEmpty() && type_name == EC_Name::TypeNameStatic())
+                if (entityDesc.name.isEmpty() && (compDesc.typeName == EC_Name::TypeNameStatic() || compDesc.typeId == EC_Name::ComponentTypeId))
                 {
-                    ComponentPtr comp = framework_->Scene()->CreateComponentByName(0, type_name, name);
+                    ComponentPtr comp = (hasTypeName ? framework_->Scene()->CreateComponentByName(0, compDesc.typeName, compDesc.name) :
+                        framework_->Scene()->CreateComponentById(0, compDesc.typeId, compDesc.name));
                     EC_Name *ecName = checked_static_cast<EC_Name*>(comp.get());
                     ecName->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
                     entityDesc.name = ecName->name.Get();
+                    entityDesc.group = ecName->group.Get();
                 }
 
-                // Find asset references.
-                ComponentPtr comp = framework_->Scene()->CreateComponentByName(0, type_name, name);
-                if (!comp.get()) // Move to next element if component creation fails.
+                ComponentPtr comp = (hasTypeName ? framework_->Scene()->CreateComponentByName(0, compDesc.typeName, compDesc.name) :
+                    framework_->Scene()->CreateComponentById(0, compDesc.typeId, compDesc.name));
+                if (!comp) // Move to next element if component creation fails.
                 {
                     comp_elem = comp_elem.nextSiblingElement("component");
                     continue;
                 }
 
+                // Find asset references.
                 comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
                 foreach(IAttribute *a,comp->Attributes())
                 {
                     if (!a)
                         continue;
                     
-                    QString typeName = a->TypeName();
+                    const QString typeName = a->TypeName();
                     AttributeDesc attrDesc = { typeName, a->Name(), a->ToString().c_str(), a->Id() };
                     compDesc.attributes.append(attrDesc);
 
@@ -1233,8 +1238,8 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
                 SceneAPI *sceneAPI = framework_->Scene();
 
                 ComponentDesc compDesc;
-                u32 typeId = source.Read<u32>(); ///\todo VLE this!
-                compDesc.typeName = sceneAPI->GetComponentTypeName(typeId);
+                compDesc.typeId = source.Read<u32>(); /**< @todo VLE this! */
+                compDesc.typeName = sceneAPI->ComponentTypeNameForTypeId(compDesc.typeId);
                 compDesc.name = QString::fromStdString(source.ReadString());
                 compDesc.sync = source.Read<u8>() ? true : false;
                 uint data_size = source.Read<u32>();
@@ -1248,7 +1253,7 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
 
                 try
                 {
-                    ComponentPtr comp = sceneAPI->CreateComponentById(0, typeId, compDesc.name);
+                    ComponentPtr comp = sceneAPI->CreateComponentById(0, compDesc.typeId, compDesc.name);
                     if (comp)
                     {
                         if (data_size)

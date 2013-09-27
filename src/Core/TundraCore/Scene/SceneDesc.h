@@ -41,7 +41,8 @@ struct TUNDRACORE_API SceneDesc
 struct TUNDRACORE_API EntityDesc
 {
     QString id; ///< ID (if applicable).
-    QString name; ///< Name.
+    QString name; ///< Name (EC_Name::name).
+    QString group; ///< Group (EC_Name::group).
     bool local; ///< Is entity local.
     bool temporary; ///< Is entity temporary.
     QList<ComponentDesc> components; ///< List of components the entity has.
@@ -68,10 +69,16 @@ struct TUNDRACORE_API EntityDesc
 /// Description of an entity-component (EC_*, IComponent).
 struct TUNDRACORE_API ComponentDesc
 {
-    QString typeName; ///< Type name.
+     /// Unique type name.
+    /** @note Might or might not have the "EC_"-prefix so remember to take that into account.
+        See IComponent::EnsureTypeNameWithoutPrefix, IComponent::EnsureTypeNameWithPrefix. */
+    QString typeName;
+    u32 typeId; /**< Unique type ID, if available, 0xffffffff if not. */
     QString name; ///< Name (if applicable).
-    QString sync; ///< Synchronize component.
+    bool sync; ///< Synchronize component.
     QList<AttributeDesc> attributes; ///< List of attributes the component has.
+
+    ComponentDesc() : sync(true), typeId(0xffffffff) {}
 
     /// Equality operator. Returns true if all values match, false otherwise.
     bool operator ==(const ComponentDesc &rhs) const

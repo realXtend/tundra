@@ -375,12 +375,15 @@ SceneDesc OgreSceneImporter::CreateSceneDescFromMesh(const QString &source) cons
 
     ComponentDesc meshDesc;
     meshDesc.typeName = EC_Mesh::TypeNameStatic();
+    meshDesc.typeId = EC_Mesh::TypeIdStatic();
 
     ComponentDesc placeableDesc;
     placeableDesc.typeName = EC_Placeable::TypeNameStatic();
+    placeableDesc.typeId = EC_Placeable::TypeIdStatic();
 
     ComponentDesc nameDesc;
     nameDesc.typeName = EC_Name::TypeNameStatic();
+    nameDesc.typeId = EC_Name::TypeIdStatic();
 
     if (isUrl)
     {
@@ -849,12 +852,16 @@ void OgreSceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElem
         {
             EntityDesc entityDesc;
             ComponentDesc nameDesc;
-            ComponentDesc placeableDesc;
-            ComponentDesc meshDesc;
-
             nameDesc.typeName = EC_Name::TypeNameStatic();
+            nameDesc.typeId = EC_Name::TypeIdStatic();
+
+            ComponentDesc placeableDesc;
             placeableDesc.typeName = EC_Placeable::TypeNameStatic();
+            placeableDesc.typeId = EC_Placeable::TypeIdStatic();
+
+            ComponentDesc meshDesc;
             meshDesc.typeName = EC_Mesh::TypeNameStatic();
+            meshDesc.typeId = EC_Mesh::TypeIdStatic();
 
             // Enforce uniqueness for node names, which may not be guaranteed by artists
             QString baseNodeName = nodeElement.attribute("name");
