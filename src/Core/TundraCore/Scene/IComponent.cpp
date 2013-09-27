@@ -338,7 +338,7 @@ QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_
 {
     QDomElement comp_element = doc.createElement("component");
     comp_element.setAttribute("type", EnsureTypeNameWithoutPrefix(TypeName())); /**< @todo 27.09.2013 typeName would be better here */
-    comp_element.setAttribute("typeId", TypeId());
+    comp_element.setAttribute("typeId", QString::number(TypeId()));
     if (!Name().isEmpty())
         comp_element.setAttribute("name", Name());
     comp_element.setAttribute("sync", BoolToString(replicated));
