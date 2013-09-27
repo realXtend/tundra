@@ -606,15 +606,8 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
     QDomElement ent_elem = scene_elem.firstChildElement("entity");
     while(!ent_elem.isNull())
     {
-        QString replicatedStr = ent_elem.attribute("sync");
-        bool replicated = true;
-        if (!replicatedStr.isEmpty())
-            replicated = ParseBool(replicatedStr);
-
-        QString temporaryStr = ent_elem.attribute("temporary");
-        bool temporary = false;
-        if (!temporaryStr.isEmpty())
-            temporary = ParseBool(temporaryStr);
+        const bool replicated = ParseBool(ent_elem.attribute("sync"), true);
+        const bool temporary = ParseBool(ent_elem.attribute("temporary"), false);
 
         QString id_str = ent_elem.attribute("id");
         entity_id_t id = !id_str.isEmpty() ? static_cast<entity_id_t>(id_str.toInt()) : 0;
@@ -646,29 +639,20 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
             QDomElement comp_elem = ent_elem.firstChildElement("component");
             while(!comp_elem.isNull())
             {
-                /// \todo Read component id's from file
-                
-                QString type_name = comp_elem.attribute("type");
-                QString name = comp_elem.attribute("name");
-                QString compReplicatedStr = comp_elem.attribute("sync");
-                QString temp = comp_elem.attribute("temporary");
+                const QString typeName = comp_elem.attribute("type");
+                const u32 typeId = ParseUInt(comp_elem.attribute("typeId"), 0xffffffff);
+                const QString name = comp_elem.attribute("name");
+                const bool compReplicated = ParseBool(comp_elem.attribute("sync"), true);
+                const bool temporary = ParseBool(comp_elem.attribute("temporary"), false);
 
-                bool compReplicated = true;
-                if (!compReplicatedStr.isEmpty())
-                    compReplicated = ParseBool(compReplicatedStr);
-
-                bool temporary = false;
-                if (!temp.isEmpty())
-                    temporary = ParseBool(temp);
-                
-                ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name, AttributeChange::Default, compReplicated);
+                ComponentPtr new_comp = (!typeName.isEmpty() ? entity->GetOrCreateComponent(typeName, name, AttributeChange::Default, compReplicated) :
+                    entity->GetOrCreateComponent(typeId, name, AttributeChange::Default, compReplicated));
                 if (new_comp)
                 {
                     new_comp->SetTemporary(temporary);
-                    // Trigger no signal yet when scene is in incoherent state
-                    new_comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+                    new_comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);// Trigger no signal yet when scene is in incoherent state
                 }
-                
+
                 comp_elem = comp_elem.nextSiblingElement("component");
             }
             entities.push_back(entity);
@@ -1039,6 +1023,8 @@ SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) 
         {
             EntityDesc entityDesc;
             entityDesc.id = id_str;
+            entityDesc.local = !ParseBool(ent_elem.attribute("sync"), true); /**< @todo if no "sync"* attr, deduct from the ID. */
+            entityDesc.temporary = ParseBool(ent_elem.attribute("temporary"), false);
 
             QDomElement comp_elem = ent_elem.firstChildElement("component");
             while(!comp_elem.isNull())
