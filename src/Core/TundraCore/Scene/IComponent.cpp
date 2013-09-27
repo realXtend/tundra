@@ -337,7 +337,8 @@ bool IComponent::AddAttribute(IAttribute* attr, u8 index)
 QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_element, bool serializeTemporary) const
 {
     QDomElement comp_element = doc.createElement("component");
-    comp_element.setAttribute("type", EnsureTypeNameWithoutPrefix(TypeName()));
+    comp_element.setAttribute("type", EnsureTypeNameWithoutPrefix(TypeName())); /**< @todo 27.09.2013 typeName would be better here */
+    comp_element.setAttribute("typeId", TypeId());
     if (!Name().isEmpty())
         comp_element.setAttribute("name", Name());
     comp_element.setAttribute("sync", BoolToString(replicated));
@@ -362,14 +363,16 @@ void IComponent::WriteAttribute(QDomDocument& doc, QDomElement& comp_element, co
     comp_element.appendChild(attribute_element);
 }
 
-bool IComponent::BeginDeserialization(QDomElement& comp_element)
+bool IComponent::BeginDeserialization(QDomElement& compElem)
 {
-    QString type = comp_element.attribute("type");
-    if (EnsureTypeNameWithPrefix(type) == TypeName())
+    /// @todo 27.09.2013 Make typeId take precedence over typeName when enough time has passed.
+    if (EnsureTypeNameWithPrefix(compElem.attribute("type")) == TypeName() ||
+        ParseUInt(compElem.attribute("typeId"), 0xffffffff) == TypeId())
     {
-        SetName(comp_element.attribute("name"));
+        SetName(compElem.attribute("name"));
         return true;
     }
+
     return false;
 }
 
