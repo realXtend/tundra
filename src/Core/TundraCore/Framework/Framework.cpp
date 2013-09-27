@@ -130,8 +130,6 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
 {
     // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
     instance = this;
-    // In headless mode, no main UI/rendering window is initialized.
-    headless = HasCommandLineParameter("--headless");
     // Create ConsoleAPI as early as possible in order to catch log prints.
     console = new ConsoleAPI(this); // ConsoleAPI depends on UiAPI and InputAPI and is not initialized fully until they're created.
 #ifdef ANDROID
@@ -139,6 +137,8 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
 #else
     ProcessStartupOptions();
 #endif
+    // In headless mode, no main UI/rendering window is initialized.
+    headless = HasCommandLineParameter("--headless");
     // Are we about to exit almost immediately?
     exitSignal = HasCommandLineParameter("--version") || HasCommandLineParameter("--help");
 
