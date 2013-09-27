@@ -206,11 +206,11 @@ uint ComputeHash(const std::string& str)
     return ret;
 }
 
-bool ParseBool(QString value)
+bool ParseBool(QString value, bool valueIfEmpty)
 {
     value = value.trimmed().toLower();
     if (value.isEmpty())
-        return false;
+        return valueIfEmpty;
     if (value == "1")
         return true;
     if (value == "on")
