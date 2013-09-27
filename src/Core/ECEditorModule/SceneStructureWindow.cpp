@@ -196,8 +196,8 @@ void SceneStructureWindow::ShowGroups(bool show)
 {
     PROFILE(SceneStructureWindow_ShowGroups)
 
-    if (show == showGroups)
-        return;
+//    if (show == showGroups)
+//        return;
 
     showGroups = show;
 
@@ -458,7 +458,7 @@ EntityGroupItem *SceneStructureWindow::GetOrCreateEntityGroupItem(const QString 
         groupItem = new EntityGroupItem(name);
         groupItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
         treeWidget->addTopLevelItem(groupItem);
-
+        SetTreeWidgetItemVisible(groupItem, showGroups);
         entityGroupItems[name] = groupItem;
     }
 
@@ -888,20 +888,24 @@ void SceneStructureWindow::UpdateEntityName(IAttribute * /*attr*/)
     {
         if (nameComp->group.ValueChanged())
         {
-            const QString groupName = nameComp->group.Get().trimmed();
-            if (groupName.isEmpty())
+            EntityGroupItem *oldGroup = item->Parent(), *newGroup = 0;
+            const QString newGroupName = nameComp->group.Get().trimmed();
+            if (!newGroupName.isEmpty())
+                newGroup = GetOrCreateEntityGroupItem(newGroupName);
+
+            if (oldGroup)
             {
-                EntityGroupItem *gItem = item->Parent();
-                if (gItem)
-                {
-                    gItem->RemoveEntityItem(item); // empty group -> remove from possible previous group.
-                    if (gItem->childCount() == 0)
-                        RemoveEntityGroupItem(gItem);
-                }
+                oldGroup->RemoveEntityItem(item);
+                if (oldGroup->childCount() == 0)
+                    RemoveEntityGroupItem(oldGroup);
             }
-            else
-                GetOrCreateEntityGroupItem(groupName)->AddEntityItem(item);
+
+            if (newGroup)
+                newGroup->AddEntityItem(item);
+
+            ShowGroups(showGroups); /**< @todo quick'd'dirty */
         }
+
         if (nameComp->name.ValueChanged())
             item->SetText(entity);
     }
