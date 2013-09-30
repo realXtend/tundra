@@ -25,6 +25,8 @@
     <div> @copydoc name</div>
     <li> QString: description
     <div>@copydoc description </div>
+    <li> QString: group
+    <div>@copydoc group </div>
     </ul>
 
     Does not emit any actions.
@@ -48,15 +50,21 @@ public:
 
     ~EC_Name() {}
 
-    /// Name
+    /// Specifies an arbitrary name that can be used for identification.
+    /** @note Name is not enforced to be unique in any way, and multiple entities can have the same name.
+        @sa Entity::SetName Entity::Name, Scene::EntityByName, Scene::FindEntities, Scene::FindEntitiesContaining */
     Q_PROPERTY(QString name READ getname WRITE setname);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, name);
 
-    /// Description.
+    /// Specifies an arbitrary description.
+    /** @sa Entity::SetDescription, Entity::Description */
     Q_PROPERTY(QString description READ getdescription WRITE setdescription); 
     DEFINE_QPROPERTY_ATTRIBUTE(QString, description);
 
-    /// Entity group
+    /// Specifies an arbitrary group identifier that can be used to group entities logically.
+    /** @note Grouping does not enforce any kind of behavior; it's up to the client module
+        implementations how the group information is used.
+        @sa Entity::SetGroup, Entity::Group, Scene::EntitiesOfGroup */
     Q_PROPERTY(QString group READ getgroup WRITE setgroup);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, group);
 };
