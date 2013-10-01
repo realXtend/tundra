@@ -54,16 +54,16 @@ TransformEditor::~TransformEditor()
     DeleteGizmo();
 }
 
-QList<EntityPtr> TransformEditor::Selection() const
+EntityList TransformEditor::Selection() const
 {
-    QList<EntityPtr> ret;
+    EntityList ret;
     foreach(const TransformAttributeWeakPtr &attr, targets)
         if (!attr.owner.expired() && attr.owner.lock()->ParentEntity())
-            ret.append(attr.owner.lock()->ParentEntity()->shared_from_this());
+            ret.push_back(attr.owner.lock()->ParentEntity()->shared_from_this());
     return ret;
 }
 
-void TransformEditor::SetSelection(const QList<EntityPtr> &entities)
+void TransformEditor::SetSelection(const EntityList &entities)
 {
     ClearSelection();
     AppendSelection(entities);
@@ -73,7 +73,7 @@ void TransformEditor::SetSelection(const QList<EntityPtr> &entities)
         editorSettings->show();
 }
 
-void TransformEditor::AppendSelection(const QList<EntityPtr> &entities)
+void TransformEditor::AppendSelection(const EntityList &entities)
 {
     if (!gizmo)
         CreateGizmo();
@@ -91,10 +91,12 @@ void TransformEditor::AppendSelection(const QList<EntityPtr> &entities)
 
 void TransformEditor::AppendSelection(const EntityPtr &entity)
 {
-    AppendSelection(QList<EntityPtr>(QList<EntityPtr>() << entity));
+    EntityList entities;
+    entities.push_back(entity);
+    AppendSelection(entities);
 }
 
-void TransformEditor::RemoveFromSelection(const QList<EntityPtr> &entities)
+void TransformEditor::RemoveFromSelection(const EntityList &entities)
 {
     foreach(const EntityPtr &e, entities)
     {
@@ -110,7 +112,9 @@ void TransformEditor::RemoveFromSelection(const QList<EntityPtr> &entities)
 
 void TransformEditor::RemoveFromSelection(const EntityPtr &entity)
 {
-    RemoveFromSelection(QList<EntityPtr>(QList<EntityPtr>() << entity));
+    EntityList entities;
+    entities.push_back(entity);
+    RemoveFromSelection(entities);
 }
 
 void TransformEditor::ClearSelection()
