@@ -87,7 +87,7 @@ bool ConfigAPI::HasKey(const ConfigData &data) const
 {
     if (data.file.isEmpty() || data.section.isEmpty() || data.key.isEmpty())
     {
-        LogWarning("ConfigAPI::HasKey: ConfigData does not have enough information.");
+        LogWarning("ConfigAPI::HasKey: ConfigData does not have enough information (file, section, and key).");
         return false;
     }
     return HasKey(data.file, data.section, data.key);
@@ -97,7 +97,7 @@ bool ConfigAPI::HasKey(const ConfigData &data, QString key) const
 {
     if (data.file.isEmpty() || data.section.isEmpty())
     {
-        LogWarning("ConfigAPI::HasKey: ConfigData does not have enough information.");
+        LogWarning("ConfigAPI::HasKey: ConfigData does not have enough information (file, and section).");
         return false;
     }
     return HasKey(data.file, data.section, key);
@@ -128,7 +128,7 @@ QVariant ConfigAPI::Read(const ConfigData &data) const
 {
     if (data.file.isEmpty() || data.section.isEmpty() || data.key.isEmpty())
     {
-        LogWarning("ConfigAPI::Read: ConfigData does not have enough information.");
+        LogWarning("ConfigAPI::Read: ConfigData does not have enough information (file, section, and key).");
         return data.defaultValue;
     }
     return Read(data.file, data.section, data.key, data.defaultValue);
@@ -138,7 +138,7 @@ QVariant ConfigAPI::Read(const ConfigData &data, QString key, const QVariant &de
 {
     if (data.file.isEmpty() || data.section.isEmpty())
     {
-        LogWarning("ConfigAPI::Read: ConfigData does not have enough information.");
+        LogWarning("ConfigAPI::Read: ConfigData does not have enough information (file and section).");
         return data.defaultValue;
     }
     if (defaultValue.isNull())
@@ -175,17 +175,22 @@ void ConfigAPI::Write(const ConfigData &data)
 {
     if (data.file.isEmpty() || data.section.isEmpty() || data.key.isEmpty() || data.value.isNull())
     {
-        LogWarning("ConfigAPI::Write: ConfigData does not have enough information.");
+        LogWarning("ConfigAPI::Write: ConfigData does not have enough information (file, section, key, and value).");
         return;
     }
     Write(data.file, data.section, data.key, data.value);
+}
+
+void ConfigAPI::Write(const ConfigData &data, const QVariant &value)
+{
+    Write(data, data.key, value);
 }
 
 void ConfigAPI::Write(const ConfigData &data, QString key, const QVariant &value)
 {
     if (data.file.isEmpty() || data.section.isEmpty())
     {
-        LogWarning("ConfigAPI::Write: ConfigData does not have enough information.");
+        LogWarning("ConfigAPI::Write: ConfigData does not have enough information (file and section).");
         return;
     }
     Write(data.file, data.section, key, value);
