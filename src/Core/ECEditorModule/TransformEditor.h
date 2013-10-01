@@ -49,20 +49,20 @@ public:
     ~TransformEditor();
 
     /// Returns the current selection
-    QList<EntityPtr> Selection() const;
+    EntityList Selection() const;
 
     /// Sets new selection of entities, clears possible previous selection.
     /** @param entities Entities to be added. */
-    void SetSelection(const QList<EntityPtr> &entities);
+    void SetSelection(const EntityList &entities);
 
     /// Appends selection with new entities.
     /** @param entities Entities to be added. */
-    void AppendSelection(const QList<EntityPtr> &entities);
+    void AppendSelection(const EntityList &entities);
     void AppendSelection(const EntityPtr &entity); /**< @overload */
 
     /// Removes entities from selection.
     /** @param entities Entities to be removed. */
-    void RemoveFromSelection(const QList<EntityPtr> &entities);
+    void RemoveFromSelection(const EntityList &entities);
     void RemoveFromSelection(const EntityPtr &entity); /**< @overload */
 
     /// Clears the selection.
