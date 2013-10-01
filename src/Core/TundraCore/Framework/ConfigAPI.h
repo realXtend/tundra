@@ -113,9 +113,10 @@ public slots:
         @param key Key that value gets set. For example: "username".
         @param value New value for the key.
         @note If setting value of type float, convert to double if you want the value to be human-readable in the file. */
-    void Write(QString file, QString section, QString key, const QVariant &value); /**< @overload */
-    void Write(const ConfigData &data); /**< @overload @param data Filled ConfigData object.*/
+    void Write(QString file, QString section, QString key, const QVariant &value);
     void Write(const ConfigData &data, QString key, const QVariant &value); /**< @overload @param data ConfigData object that has file and section filled. */
+    void Write(const ConfigData &data, const QVariant &value); /**< @overload @param data ConfigData object that has file, section and key filled. */
+    void Write(const ConfigData &data); /**< @overload @param data Filled ConfigData object.*/
 
     /// Returns the absolute path to the config folder where configs are stored. Guaranteed to have a trailing forward slash '/'.
     QString ConfigFolder() const { return configFolder_; }
