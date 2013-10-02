@@ -12,7 +12,7 @@ if (me.graphicsViewCanvas)
     engine.ImportExtension("qt.core");
     engine.ImportExtension("qt.gui");
 
-    uiWidget = asset.GetAsset("controlpanel.ui").Instantiate(false, 0);
+    uiWidget = asset.GetAsset("ControlPanel.ui").Instantiate(false, 0);
     var proxy = me.graphicsViewCanvas.GraphicsScene().addWidget(uiWidget);
     uiWidget.show();
 
