@@ -120,6 +120,11 @@ public:
         @param renderUi If the image should have the user interface included.
         @return The render result image. */
     Ogre::Image ToOgreImage(bool renderUi = true);
+    
+    /// Update the render texture with the current view.
+    /** @param renderUi If the image should have the user interface included.
+        @return Texture that has the current camera view. */
+    Ogre::TexturePtr UpdateRenderTexture(bool renderUi);
 
     /// Returns entity IDs of visible entities in the camera's frustum.
     const std::set<entity_id_t>& VisibleEntityIDs();
@@ -249,9 +254,6 @@ private:
 
     /// Perform a frustum query for visible entities
     void QueryVisibleEntities();
-
-    /// Update the render texture with the current view.
-    Ogre::TexturePtr UpdateRenderTexture(bool renderUi);
 
     void SetNearClipDistance(float distance);
     void SetFarClipDistance(float distance);
