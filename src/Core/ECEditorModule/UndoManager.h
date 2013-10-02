@@ -41,12 +41,12 @@ public:
     /// Pushes new command to the undo stack
     void Push(QUndoCommand * command);
 
-    /// The menu containing actions that can be undo-ed
+    /// The menu containing actions that can be undone
     /** @note Prefer not to store the raw ptr. The menu may be destroyed before
         this UndoManager is destroyed due to QWidget parenting. */
     QMenu *UndoMenu() const;
 
-    /// The menu containing actions that can be redo-ed
+    /// The menu containing actions that can be redone
     /** @note Prefer not to store the raw ptr. The menu may be destroyed before
         this UndoManager is destroyed due to QWidget parenting. */
     QMenu *RedoMenu() const;
