@@ -5,8 +5,9 @@ fnDisplayHelpAndExit()
 {
     echo " "
     echo " USAGE: $0 [--help --client-path <PATH> --qt-path <PATH> --ogre-path <PATH> --use-boost --release-with-debug-info"
-    echo "            --xcode --no-run-cmake --no-run-make --number-of-processes <NUMBER>]"
-    echo "    or: $0 [-h -c <PATH> -q <PATH> -o <PATH> -ub -rwdi -x -nc -nm -np <NUMBER>]"
+    echo "            --configuration <CONFIG> --no-xcode --no-run-cmake --no-run-make --number-of-processes <NUMBER>"
+    echo "            --version-postfix <STRING>]"
+    echo "    or: $0 [-h -c <PATH> -q <PATH> -o <PATH> -ub -rwdi -cfg <CONFIG> -nx -nc -nm -np <NUMBER> -vp <STRING>]"
     echo " "
     echo " -h | --help                          Displays this message"
     echo " "
@@ -25,8 +26,6 @@ fnDisplayHelpAndExit()
     echo " -ub | --use-boost                    Build Tundra (and its dependencies where applicable) with boost." 
     echo "                                      If this is not specified, Tundra will be built without boost"
     echo " "
-    echo " -rwdi | --release-with-debug-info    Enables debugging information to be included in compile-time"
-    echo " "
     echo " -nc | --no-run-cmake                 Do not run 'cmake .' after the dependencies are built. (The default is that  "
     echo "                                      'cmake .' is executed to generate Makefiles after all dependencies have been "
     echo "                                      built)."
@@ -38,6 +37,21 @@ fnDisplayHelpAndExit()
     echo " -np | --number-of-processes <NUMBER> The number of processes to be run simultaneously, recommended for multi-core "
     echo "                                      or processors with hyper-threading technology for a faster compile process."
     echo "                                      The default value is set according to the reports by the operating system."
+    echo " "
+    echo " -nx | --no-xcode                     By default, this script will create Xcode project. Use this to override"
+    echo "                                      creating Xcode project in favor of Makefiles"
+    echo " "
+    echo " -cfg | --configuration <CONFIG>      The build configuration for realXtend Tundra. CONFIG can have Debug,"
+    echo "                                      RelWithDebInfo or Release values"
+    echo " "
+    echo " -vp | --version-postfix <STRING>     Append version postfix <STRING> to Tundra version, which will be shown in the"
+    echo "                                      main window title. Needed when doing release candidates or nightly builds."
+    echo " "
+    echo "DEPRECATED:"
+    echo " "
+    echo " -rwdi | --release-with-debug-info    Enables debugging information to be included in compile-time. RelWithDebInfo"
+    echo "                                      is a default configuration. To override, use -cfg <CONFIG> or --configuration"
+    echo "                                      <CONFIG> option)"
     echo " "
     echo " NOTE: The properties that are in middle brackets are optional if otherwise not specified."
     echo " "
@@ -86,13 +100,14 @@ REQUIRED_ARGS_COUNT=0
 ERRORS_OCCURED="0"
 
 # Default values
-RELWITHDEBINFO="0"
+BUILD_CONFIGURATION=RelWithDebInfo
 RUN_CMAKE="1"
 RUN_MAKE="1"
 MAKE_XCODE="1"
 USE_BOOST="OFF"
 NO_BOOST="ON" # The variable used in Tundra is called TUNDRA_NO_BOOST, which is opposite of USE_BOOST. We will use this also to specify c++11 usage, since not using boost and using c++11 on Mac are mutually exclusive
 NPROCS=`sysctl -n hw.ncpu`
+TUNDRA_VERSION_POSTFIX=
 viewer=
 
 if [ $# -eq "$NO_ARGS" ]; then
@@ -108,7 +123,20 @@ while [ "$1" != "" ]; do
         -h | --help )                       fnDisplayHelpAndExit
                                             ;;
 
-        -rwdi | --release-with-debug-info ) RELWITHDEBINFO="1"
+        -rwdi | --release-with-debug-info ) BUILD_CONFIGURATION=RelWithDebInfo
+                                            ;;
+
+        -cfg | --configuration )            shift
+                                            if [ "$1" == "Debug" ]; then
+                                                BUILD_CONFIGURATION=Debug
+                                            elif [ "$1" == "RelWithDebInfo" ]; then
+                                                BUILD_CONFIGURATION=RelWithDebInfo
+                                            elif [ "$1" == "Release" ]; then
+                                                BUILD_CONFIGURATION=Release
+                                            else
+                                                echoWarn "Unavailable build configuration: \"$1\" was requested, but \"Debug\", \"RelWithDebInfo\" and \"Release\" are available only. Defaulting to RelWithDebInfo"
+                                                BUILD_CONFIGURATION=RelWithDebInfo
+                                            fi
                                             ;;
 
         -c | --client-path )                shift
@@ -141,7 +169,7 @@ while [ "$1" != "" ]; do
                                             export OGRE_HOME=$1
                                             ;;
 
-         -x | --xcode )                     MAKE_XCODE="1"
+        -nx | --no-xcode )                  MAKE_XCODE="0"
                                             ;;
 
         -nc | --no-run-cmake )              RUN_CMAKE="0"
@@ -168,6 +196,10 @@ while [ "$1" != "" ]; do
                                             fi
 
                                             NPROCS=$1
+                                            ;;
+
+        -vp | --version-postfix )           shift
+                                            TUNDRA_VERSION_POSTFIX=$1
                                             ;;
 
         * )                                 echoError "Invalid option: $1"
@@ -211,18 +243,6 @@ if [ ! -f "$QTDIR/bin/qmake" ]; then
 fi
 
 mkdir -p $tarballs $build $prefix $tags $frameworkpath
-
-if [ "$RELWITHDEBINFO" == "1" ]; then
-    export CFLAGS="-gdwarf-2 -O2"
-    export CXXFLAGS="-gdwarf-2 -O2"
-    export CMAKE_C_FLAGS="-gdwarf-2 -O2"
-    export CMAKE_CXX_FLAGS="-gdwarf-2 -O2"
-else
-    export CFLAGS="-O3"
-    export CXXFLAGS="-O3"
-    export CMAKE_C_FLAGS="-O3"
-    export CMAKE_CXX_FLAGS="-O3"
-fi
 
 export PATH=$QTDIR/bin:$PATH
 export PKG_CONFIG_PATH=$prefix/lib/pkgconfig
@@ -894,13 +914,17 @@ export ZZIPLIB_ROOT=$ZZIPLIBPREFIX
 
 # Detect Mac OS X SDKs:
 XCODE_VERSION=`xcodebuild -version | grep Xcode | sed -e 's/[^0-9]*//'`
-#XCODE_VERSION_MINOR=`$XCODE_VERSION | sed -e 's/[0-9]\.*//'`
-#XCODE_VERSION_MAJOR=`$XCODE_VERSION | sed -e 's/\.[0-9]*//'`
+XCODE_VERSION_MINOR=`echo $XCODE_VERSION | sed -e 's/[0-9]\.*//'`
+XCODE_VERSION_MAJOR=`echo $XCODE_VERSION | sed -e 's/\.[0-9]*//'`
+
+XCODE_MOUNTAIN_LION_SDK=macosx10.8
 XCODE_LION_SDK=macosx10.7  # note: Since XCode 4.2, the SDK is in /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
 XCODE_SNOW_LEOPARD_SDK=macosx10.6
 OSX_SDK_ROOT=$XCODE_LION_SDK
 
-if [[ $OSX_VERSION == 10.7.* ]] || [[ $OSX_VERSION == 10.8.* ]]; then
+if [[ $XCODE_VERSION_MAJOR == 5 ]]; then # Xcode 5 dropped MacOSX10.7 SDK
+    OSX_SDK_ROOT=$XCODE_MOUNTAIN_LION_SDK
+elif [[ $OSX_VERSION == 10.7.* ]] || [[ $OSX_VERSION == 10.8.* ]]; then
     OSX_SDK_ROOT=$XCODE_LION_SDK
 elif [[ $OSX_VERSION == 10.6.* ]]; then
     OSX_SDK_ROOT=$XCODE_SNOW_LEOPARD_SDK
@@ -909,7 +933,7 @@ else
     exit 0
 fi
 
-echoInfo "Using Mac OS X $OSX_VERSION, Xcode version $XCODE_VERSION, SDK system root: $OSX_SDK_ROOT"
+echoInfo "Using Mac OS X $OSX_VERSION, Xcode version $XCODE_VERSION, SDK system root: $OSX_SDK_ROOT, build configuration: $BUILD_CONFIGURATION"
 
 XCODE_SUFFIX=
 if [ "$MAKE_XCODE" == "1" ]; then
@@ -918,12 +942,12 @@ fi
 
 cd $viewer
 if [ "$RUN_CMAKE" == "1" ]; then
-    TUNDRA_DEP_PATH=$prefix cmake . $XCODE_SUFFIX -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_OSX_SYSROOT=$OSX_SDK_ROOT -DTUNDRA_NO_BOOST:BOOL=$NO_BOOST -DTUNDRA_CPP11_ENABLED:BOOL=$NO_BOOST
+    TUNDRA_DEP_PATH=$prefix cmake . $XCODE_SUFFIX -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION -DCMAKE_OSX_SYSROOT=$OSX_SDK_ROOT -DTUNDRA_NO_BOOST:BOOL=$NO_BOOST -DTUNDRA_CPP11_ENABLED:BOOL=$NO_BOOST -DTUNDRA_VERSION_POSTFIX="$TUNDRA_VERSION_POSTFIX"
 fi
 
 if [ "$RUN_MAKE" == "1" ]; then
     if [ "$MAKE_XCODE" == "1" ]; then
-        xcodebuild -configuration RelWithDebInfo VALID_ARCHS=x86_64 ONLY_ACTIVE_ARCH=YES
+        xcodebuild -configuration $BUILD_CONFIGURATION VALID_ARCHS=x86_64 ONLY_ACTIVE_ARCH=YES
     else
         make -j$NPROCS VERBOSE=1
     fi
