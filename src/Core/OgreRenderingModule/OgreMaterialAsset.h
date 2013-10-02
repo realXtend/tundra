@@ -60,22 +60,36 @@ public slots:
         flow in AssetAPI to listen when all dependencies are completed and the emits the 
         Loaded signals for this asset. */
     void CloneCompleted();
-    
-    /// Set a material attribute using a key-value format.
-    /** Format: key is "t<x> p<y> tu<z> paramname", to access technique, pass and texture unit specific attributes.
-        These can also be omitted to affect all techniques, passes or units as applicable. */
+
+    /// Sets a material attribute using a key-value format.
+    /** Format: @c key is "t<x> p<y> tu<z> paramname", to access technique, pass and texture unit specific attributes.
+        These can also be omitted to affect all techniques, passes or units as applicable.
+
+        The supported attributes include (as of October 2nd, 2013):
+        - Material attributes "receive_shadows", and "transparency_casts_shadows".
+        - Technique attributes "shadow_caster_material", and "shadow_receiver_material".
+        - Pass attributes "ambient", "diffuse", "specular", "emissive", "scene_blend", "separate_scene_blend",
+          "scene_blend_op", "separate_scene_blend_op", "depth_check", "depth_write", "depth_func", "depth_bias",
+          "alpha_rejection", "normalise_normals", "transparent_sorting", "cull_hardware", "lighting", "shading",
+          "polygon_mode", "colour_write", "vertex_program_ref", and "fragment_program_ref".
+        - Texture unit attributes "texture", "tex_coord_set", "tex_address_mode", "tex_border_colour", "filtering",
+           "max_anisotropy", "mipmap_bias", "env_map", "scroll", "scroll_anim", "rotate", "rotate_anim", "scale", and
+           "wave_xform". */
     void SetAttribute(const QString& key, const QString& value);
+    /// Returns the value of a material attribute, invalid QVariant if attribute not found or supported.
+    /** @copydetails SetAttribute */
+    QVariant Attribute(const QString& key) const;
 
     /// Return number of material techniques. Returns -1 if the material is unloaded
-    int GetNumTechniques();
+    int GetNumTechniques() const;
     /// Return number of passes in a technique. Returns -1 if the technique does not exist
-    int GetNumPasses(int techIndex);
+    int GetNumPasses(int techIndex) const;
     /// Return number of texture units in a pass. Returns -1 if the pass does not exist
-    int GetNumTextureUnits(int techIndex, int passIndex);
+    int GetNumTextureUnits(int techIndex, int passIndex) const;
     /// Return whether has a technique by index
-    bool HasTechnique(int techIndex);
+    bool HasTechnique(int techIndex) const;
     /// Return whether a technique has a pass by index
-    bool HasPass(int techIndex, int passIndex);
+    bool HasPass(int techIndex, int passIndex) const;
     
     /// Create a new technique. Its index number will be returned, or -1 if could not be created
     int CreateTechnique();
@@ -227,10 +241,14 @@ private:
     bool CreateOgreMaterial();
     bool CreateOgreMaterial(const std::string& materialData);
     bool SetMaterialAttribute(const QString& attr, const QString& val, const QString& origVal);
+    QVariant MaterialAttribute(const QString& attr) const;
     bool SetTechniqueAttribute(Ogre::Technique* tech, int techIndex, const QString& attr, const QString& val, const QString& origVal);
+    QVariant TechniqueAttribute(Ogre::Technique* tech, int techIndex, const QString& attr) const;
     bool SetPassAttribute(Ogre::Pass* pass, int techIndex, int passIndex, const QString& attr, const QString& val, const QString& origVal);
+    QVariant PassAttribute(Ogre::Pass* pass, int techIndex, int passIndex, const QString& attr) const;
     bool SetTextureUnitAttribute(Ogre::TextureUnitState* texUnit, int techIndex, int passIndex, int tuIndex, const QString& attr, const QString& val, const QString& origVal);
-    
+    QVariant TextureUnitAttribute(Ogre::TextureUnitState* texUnit, int techIndex, int passIndex, int tuIndex, const QString& attr) const;
+
     /// Contains the original ogre material data that was downloaded, but with all material and texture references
     /// rewritten to refer to assets loaded from the Tundra Asset system (and not Ogre resource managers).
     std::string parsedOgreMaterialAsset;
@@ -247,4 +265,3 @@ private:
     
     std::vector<PendingTextureApply> pendingApplies;
 };
-
