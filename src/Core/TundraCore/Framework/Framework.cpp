@@ -679,54 +679,178 @@ bool Framework::LoadStartupOptionsFromJSON(QString configurationFile)
         LogWarning("Config file does not seem to have any values is it: " + configurationFile);
         return false;
     }
-    
+
     foreach(const QVariant &option, startupOptions)
     {
-        QVariant::Type t = option.type();
-
-        // Command-to-parameter pair(s)
-        if (t == QVariant::Map || t == QVariant::Hash)
-        {
-            QVariantMap optionMap;
-            if (t == QVariant::Map)
-                optionMap = option.toMap();
-            else if (t == QVariant::Hash)
-            {
-                QVariantHash optionsHash = option.toHash();
-                foreach(const QString &hashKey, optionsHash.keys())
-                    optionMap[hashKey] = optionsHash[hashKey];
-            }
-            foreach(const QString &command, optionMap.keys())
-            {
-                QVariant value = optionMap[command];
-                if (command.compare("--config", Qt::CaseInsensitive) != 0)
-                {
-                    // Support giving multiple values as a list or a single value.
-                    if (value.type() == QVariant::String)
-                        AddCommandLineParameter(command, value.toString());
-                    else if (value.type() == QVariant::StringList || value.type() == QVariant::List)
-                        foreach(const QVariant &valueIter, value.toList())
-                            AddCommandLineParameter(command, valueIter.toString());
-                }
-                else
-                    LoadStartupOptionsFromFile(value.toString());
-            }
-        }
         // Command only
-        else if (t == QVariant::String)
-        {
-            AddCommandLineParameter(option.toString(), "");
-        }
-        // List of commands
-        else if (t == QVariant::StringList || t == QVariant::List)
-        {
-            foreach(const QVariant &command, option.toList())
-                AddCommandLineParameter(command.toString(), "");
-        }
+        if (option.type() == QVariant::String)
+            AddCommandLineParameter(option.toString());
+        // Command-to-parameter pair(s)
+        else if (TundraJson::IsMap(option))
+            LoadStartupOptionMap(option);
+        // List of commands strings or with various types
+        else if (TundraJson::IsList(option))
+            LoadStartupOptionList(option);
         else
-            LogError(QString("LoadStartupOptionsFromJSON: QVariant::Type %1 is not supported: %2").arg(t).arg(option.toString()));
+            LogError(QString("LoadStartupOptionsFromJSON: QVariant::Type %1 is not supported: %2").arg(option.type()).arg(option.toString()));
     }
     return true;
+}
+
+void Framework::LoadStartupOptionMap(const QVariant &options)
+{
+    // Convert hash to map
+    QVariantMap optionMap;
+    if (options.type() == QVariant::Map)
+        optionMap = options.toMap();
+    else if (options.type() == QVariant::Hash)
+    {
+        QVariantHash optionsHash = options.toHash();
+        foreach(const QString &hashKey, optionsHash.keys())
+            optionMap[hashKey] = optionsHash[hashKey];
+    }
+    else
+    {
+        LogError(QString("LoadStartupOptionMap: QVariant::Type %1 is not a supported map type").arg(options.type()));
+        return;
+    }
+
+    foreach(const QString &command, optionMap.keys())
+    {
+        QVariant value = optionMap[command];
+        if (command.compare("--config", Qt::CaseInsensitive) != 0)
+        {
+            if (value.type() == QVariant::String || TundraJson::IsNumber(value))
+                AddCommandLineParameter(command, value.toString());
+            else if (TundraJson::IsMap(value))
+                LoadStartupOptionMap(command, value);
+            else if (TundraJson::IsList(value))
+                LoadStartupOptionList(value, command);
+        }
+        else
+            LoadStartupOptionsFromFile(value.toString());
+    }
+}
+
+void Framework::LoadStartupOptionMap(const QString &command, const QVariant &option)
+{
+    if (command.isEmpty())
+    {
+        LogError("LoadStartupOptionMap: Cannot load map type options for an empty command!");
+        return;
+    }
+
+    // Convert hash to map
+    QVariantMap optionMap;
+    if (option.type() == QVariant::Map)
+        optionMap = option.toMap();
+    else if (option.type() == QVariant::Hash)
+    {
+        QVariantHash optionsHash = option.toHash();
+        foreach(const QString &hashKey, optionsHash.keys())
+            optionMap[hashKey] = optionsHash[hashKey];
+    }
+    else
+    {
+        LogError(QString("LoadStartupOptionMap: QVariant::Type %1 is not a supported map type for command %2").arg(option.type()).arg(command));
+        return;
+    }
+
+    // A few of our startup parameters support custom data to assosiated with them.
+    QString commandLower = command.trimmed().toLower();
+    if (commandLower == "--plugin" || commandLower == "--jsplugin")
+    {
+        // Name must be present
+        QString pluginName = optionMap.contains("name") ? optionMap["name"].toString() : optionMap.value("Name", "").toString();
+        if (pluginName.isEmpty())
+        {
+            LogError(QString("LoadStartupOptionMap: Mandatory parameter 'name' missing for command %1 in the options map").arg(command));
+            return;
+        }
+
+        // Check architecture directive
+        QString arch = optionMap.contains("arch") ? optionMap["arch"].toString() :
+                          optionMap.contains("Arch") ? optionMap["Arch"].toString() :
+                              optionMap.contains("architecture") ? optionMap["architecture"].toString() :
+                                  optionMap.contains("Architecture") ? optionMap["Architecture"].toString() : "";
+        if (!arch.isEmpty() && arch.trimmed().compare(Application::Architecture(), Qt::CaseInsensitive) != 0)
+        {
+            LogDebug(QString("LoadStartupOptionMap: Skipping loading of plugin %1 due to architecture directive: %2 Current run architecture: %3")
+                .arg(pluginName).arg(arch.trimmed().toLower()).arg(Application::Architecture()));
+            return;
+        }
+
+        // Check build directive
+        QString build = optionMap.contains("build") ? optionMap["build"].toString() :
+                            optionMap.contains("Build") ? optionMap["Build"].toString() : "";
+        if (!build.isEmpty())
+        {
+#ifdef _DEBUG
+            if (build.trimmed().compare("release", Qt::CaseInsensitive) == 0)
+            {
+                LogDebug(QString("LoadStartupOptionMap: Skipping loading of plugin %1 due to build directive: %2 Currently in: %3")
+                    .arg(pluginName).arg(build.trimmed().toLower()).arg("debug"));
+                return;
+            }
+#else
+            if (build.trimmed().compare("debug", Qt::CaseInsensitive) == 0)
+            {
+                LogDebug(QString("LoadStartupOptionMap: Skipping loading of plugin %1 due to build directive: %2 Currently in: %3")
+                    .arg(pluginName).arg(build.trimmed().toLower()).arg("release"));
+                return;
+            }
+#endif
+        }
+
+        // All conditions passed
+        AddCommandLineParameter(command, pluginName);
+    }
+    else
+        LogError("LoadStartupOptionMap: No special case handling implemented for value map loading of command " + command);
+}
+
+void Framework::LoadStartupOptionList(const QVariant &options, const QString &command)
+{
+    // List of commands
+    if (options.type() == QVariant::StringList)
+    {
+        foreach(const QString &option, options.toStringList())
+        {
+            // This is either a embedded string list in a sub map eg. --plugins
+            // or a root level string list of commands without parameters.
+            if (!command.isEmpty())
+                AddCommandLineParameter(command, option);
+            else
+                AddCommandLineParameter(option);
+        }
+    }
+    // List of potentially mixed items like strings, maps, lists etc.
+    else if (options.type() == QVariant::List)
+    {
+        foreach(const QVariant &option, options.toList())
+        {
+            if (option.type() == QVariant::String || TundraJson::IsNumber(option))
+            {
+                if (!command.isEmpty())
+                    AddCommandLineParameter(command, option.toString());
+                else
+                    AddCommandLineParameter(option.toString());
+            }    
+            else if (TundraJson::IsMap(option))
+            {
+                // This cannot be a root level list with a map option, as then the 'command' would be empty.
+                // Maps in lists are only supported when inside a sub maps list values.
+                if (!command.isEmpty())
+                    LoadStartupOptionMap(command, option);
+                else
+                    LogError("LoadStartupOptionList: Cannot load a map type inside a list without an command! Are you using a map inside a root level value list?!");
+            }
+            else if (TundraJson::IsList(option))
+                LoadStartupOptionList(option, command);
+        }
+    }
+    else
+        LogError(QString("LoadStartupOptionList: QVariant::Type %1 is not a supported list type %1").arg(options.type()).arg(command.isEmpty() ? "" : " for command " + command));
 }
 
 void Framework::AddCommandLineParameter(const QString &command, const QString &parameter)
@@ -814,7 +938,7 @@ void Framework::ProcessStartupOptions()
 #endif
         }
         else if (option.startsWith("--") && peekOption.isEmpty())
-            AddCommandLineParameter(option, "");
+            AddCommandLineParameter(option);
         else
         {
             LogWarning("Orphaned startup option parameter value specified: " + QString(argv[i]));
@@ -840,7 +964,7 @@ void Framework::ProcessStartupOptions()
         }
         // --key
         else
-            AddCommandLineParameter(option, "");
+            AddCommandLineParameter(option);
     }
 
     if (!HasCommandLineParameter("--config") && LoadStartupOptionsFromXML("plugins.xml"))
