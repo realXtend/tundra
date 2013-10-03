@@ -6,7 +6,6 @@
 #ifdef PCH_ENABLED
 #include "Math/MathFwd.h"
 #include "CoreDefines.h"
-#include "Framework.h"
 
 #include <QtCore>
 

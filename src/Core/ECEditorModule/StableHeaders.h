@@ -10,7 +10,6 @@
 #include "LoggingFunctions.h"
 #include "Win.h"
 #include "CoreDefines.h"
-#include "Framework.h"
 
 #include <QtCore>
 #include <QtGui>
