@@ -768,19 +768,64 @@ void Framework::LoadStartupOptionMap(const QString &command, const QVariant &opt
             return;
         }
 
-        // Check architecture directive
+        // Check platform directive.
+        // Selective loading between "win", "mac", "x11" and "android".
+        QVariant platformVariant = optionMap.contains("platform") ? optionMap["platform"] :
+                                       optionMap.contains("Platform") ? optionMap["Platform"] : QVariant();
+        if (platformVariant.isValid() && !platformVariant.isNull())
+        {
+            QString currentPlatform = Application::Platform();
+            bool shouldRun = true;
+
+            // Single platform as string
+            if (platformVariant.type() == QVariant::String)
+            {
+                shouldRun = false;
+                QString platform = platformVariant.toString();
+                if (platform.trimmed().compare(currentPlatform, Qt::CaseInsensitive) == 0)
+                    shouldRun = true;
+            }
+            // Multiple platforms as a string list
+            else if (platformVariant.type() == QVariant::StringList || platformVariant.type() == QVariant::List)
+            {
+                shouldRun = false;
+                foreach(const QString &platform, platformVariant.toStringList())
+                {
+                    if (platform.trimmed().compare(currentPlatform, Qt::CaseInsensitive) == 0)
+                        shouldRun = true;
+                    if (shouldRun)
+                        break;
+                }
+            }
+            if (!shouldRun)
+            {
+#ifdef _DEBUG
+                /// LogDebug is not functioning at this point so we use _DEBUG
+                qDebug() << qPrintable(QString("LoadStartupOptionMap: Skipping loading of plugin %1 due to platform directive. Plugin was configured not to run on current platform: %2")
+                    .arg(pluginName).arg(currentPlatform));
+#endif
+                return;
+            }
+        }
+
+        // Check architecture directive.
+        // Selective loading between "x86" and "x64".
         QString arch = optionMap.contains("arch") ? optionMap["arch"].toString() :
                           optionMap.contains("Arch") ? optionMap["Arch"].toString() :
                               optionMap.contains("architecture") ? optionMap["architecture"].toString() :
                                   optionMap.contains("Architecture") ? optionMap["Architecture"].toString() : "";
         if (!arch.isEmpty() && arch.trimmed().compare(Application::Architecture(), Qt::CaseInsensitive) != 0)
         {
-            LogDebug(QString("LoadStartupOptionMap: Skipping loading of plugin %1 due to architecture directive: %2 Current run architecture: %3")
+#ifdef _DEBUG
+            /// LogDebug is not functioning at this point so we use _DEBUG
+            qDebug() << qPrintable(QString("LoadStartupOptionMap: Skipping loading of plugin %1 due to architecture directive: %2 Current run architecture: %3")
                 .arg(pluginName).arg(arch.trimmed().toLower()).arg(Application::Architecture()));
+#endif
             return;
         }
 
-        // Check build directive
+        // Check build directive.
+        // Selective loading between "release" and "debug".
         QString build = optionMap.contains("build") ? optionMap["build"].toString() :
                             optionMap.contains("Build") ? optionMap["Build"].toString() : "";
         if (!build.isEmpty())
@@ -788,17 +833,13 @@ void Framework::LoadStartupOptionMap(const QString &command, const QVariant &opt
 #ifdef _DEBUG
             if (build.trimmed().compare("release", Qt::CaseInsensitive) == 0)
             {
-                LogDebug(QString("LoadStartupOptionMap: Skipping loading of plugin %1 due to build directive: %2 Currently in: %3")
+                qDebug() << qPrintable(QString("LoadStartupOptionMap: Skipping loading of plugin %1 due to build directive: %2 Currently in: %3")
                     .arg(pluginName).arg(build.trimmed().toLower()).arg("debug"));
                 return;
             }
 #else
             if (build.trimmed().compare("debug", Qt::CaseInsensitive) == 0)
-            {
-                LogDebug(QString("LoadStartupOptionMap: Skipping loading of plugin %1 due to build directive: %2 Currently in: %3")
-                    .arg(pluginName).arg(build.trimmed().toLower()).arg("release"));
                 return;
-            }
 #endif
         }
 
