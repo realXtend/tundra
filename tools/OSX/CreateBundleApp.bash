@@ -40,7 +40,7 @@ echo "Deploying Tundra files to app bundle in $bundledir."
 cp -R bin/* $bundledir/Contents/MacOS
 cp -R tools/OSX/Installer/* $bundledir/Contents
 cp tools/OSX/TundraLauncher.app/Contents/MacOS/applet $bundledir/Contents/MacOS
-cp tools/OSX/TundraLauncher.app/Contents/Resources/Scripts/main.scpt $bundledir/Contents/Resources/Scripts
+osacompile -o $bundledir/Contents/Resources/Scripts/main.scpt tools/OSX/Scripts/applet.applescript
 chmod a+x $bundledir/Contents/MacOS/applet
 
 echo "Deploying Qt frameworks from $qtlibdir to app bundle."
