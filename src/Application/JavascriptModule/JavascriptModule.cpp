@@ -525,6 +525,11 @@ void JavascriptModule::RemoveScriptObjects(JavascriptInstance* jsInstance)
 
 QStringList JavascriptModule::ParseStartupScriptConfig()
 {
+    /// This is the old style XML js plugin loading.
+    /// @todo Remove this function at some point. It has not been used in a while and
+    /// the core configs have been ported to json. The current xml and json configs
+    /// handle adding --jsplugin correctly for JavascriptModule to load them!
+
     QStringList pluginsToLoad;
     bool deprecationWarning = true;
     foreach(const QString &configFile, framework_->Plugins()->ConfigurationFiles())
