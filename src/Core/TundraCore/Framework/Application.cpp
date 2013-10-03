@@ -733,6 +733,20 @@ QString Application::Platform()
 #endif
 }
 
+QString Application::Architecture()
+{
+#if defined(__arm__) || defined(__thumb__) || defined(_M_ARM)
+    return "arm";
+#elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(__aarch64__) || defined(_M_AMD64) || defined(_WIN64)
+    return "x64";
+#elif defined(__i386__) || defined(__i386) || defined(_M_I86) || defined(_M_IX86)
+    return "x86";
+#else
+    LogWarning("Application::Architecture() Cannot be resolved for this build, guessing 'x86'");
+    return "x86";
+#endif
+}
+
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
 int generate_dump(EXCEPTION_POINTERS* pExceptionPointers);
 #endif
