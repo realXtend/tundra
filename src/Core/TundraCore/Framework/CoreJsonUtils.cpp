@@ -135,4 +135,12 @@ namespace TundraJson
                 t == QVariant::LongLong || t == QVariant::ULongLong ||
                 t == QVariant::Double);
     }
+
+    QVariant ValueForAnyKey(const QVariantMap &map, const QStringList &acceptedKeys, const QVariant &defaultValue)
+    {
+        foreach(const QString &key, acceptedKeys)
+            if (map.contains(key))
+                return map[key];
+        return defaultValue;
+    }
 }

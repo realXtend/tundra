@@ -148,4 +148,12 @@ namespace TundraJson
         @return True for QVariant::Int, QVariant::UInt, QVariant::LongLong,
         QVariant::ULongLong and QVariant::Double, otherwise false. */
     bool TUNDRACORE_API IsNumber(const QVariant &value);
+
+    /// Returns a value for the first found key from @c acceptedKeys.
+    /** This function is handy when you accept multiple keys to define a certain value eg. "name" or "Name".
+        @param QVariant map to search for the keys.
+        @param List of accepted keys.
+        @param Default value to return if no key was found. Default to empty QVariant(), use QVariant::isValid() to check.
+        @return QVariant value for the first found accepted key, if none is found the @c defaultValue is returned. */
+    QVariant TUNDRACORE_API ValueForAnyKey(const QVariantMap &map, const QStringList &acceptedKeys, const QVariant &defaultValue = QVariant());
 }
