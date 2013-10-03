@@ -5,11 +5,13 @@
 #include "DebugOperatorNew.h"
 
 #include "EC_Sky.h"
-#include "Scene/Scene.h"
 #include "OgreWorld.h"
-#include "LoggingFunctions.h"
 #include "TextureAsset.h"
 #include "OgreMaterialAsset.h"
+
+#include "Framework.h"
+#include "Scene/Scene.h"
+#include "LoggingFunctions.h"
 #include "IAssetTransfer.h"
 
 #include <Ogre.h>

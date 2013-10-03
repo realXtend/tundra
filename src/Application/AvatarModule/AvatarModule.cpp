@@ -1,27 +1,28 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 
 #include "AvatarModule.h"
 #include "AvatarEditor.h"
+#include "AvatarDescAsset.h"
+#include "EC_Avatar.h"
 
+#include "Framework.h"
 #include "Scene/Scene.h"
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
 #include "NullAssetFactory.h"
-#include "AvatarDescAsset.h"
 #include "ConsoleAPI.h"
 #include "IComponentFactory.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
-
-#include "EC_Avatar.h"
-
 #include "../JavascriptModule/JavascriptModule.h"
 #include "AvatarModuleScriptTypeDefines.h"
-
 #include "StaticPluginRegistry.h"
+
+#include "MemoryLeakCheck.h"
 
 AvatarModule::AvatarModule() : IModule("Avatar")
 {

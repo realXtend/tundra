@@ -18,6 +18,7 @@
 #include "UndoManager.h"
 #include "UndoCommands.h"
 
+#include "Framework.h"
 #include "Entity.h"
 #include "ConfigAPI.h"
 #include "ECEditorWindow.h"

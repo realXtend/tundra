@@ -14,8 +14,9 @@
 #include "RequestNewAssetDialog.h"
 #include "CloneAssetDialog.h"
 #include "FunctionDialog.h"
-
 #include "AssetsWindow.h"
+
+#include "Framework.h"
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "IAsset.h"

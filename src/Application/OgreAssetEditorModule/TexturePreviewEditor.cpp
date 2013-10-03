@@ -9,6 +9,8 @@
 
 #include "TexturePreviewEditor.h"
 #include "OgreAssetEditorModule.h"
+
+#include "Framework.h"
 #include "TextureAsset.h"
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"

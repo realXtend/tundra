@@ -11,6 +11,7 @@
 #include "ui_MaterialEditorTuTab.h"
 #include "ui_MaterialEditorPassTab.h"
 
+#include "Framework.h"
 #include "LoggingFunctions.h"
 #include "Application.h"
 #include "AssetAPI.h"
