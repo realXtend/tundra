@@ -84,11 +84,13 @@
 class OGRE_MODULE_API EC_Placeable : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_Placeable", 20)
+    COMPONENT_NAME("Placeable", 20)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Placeable(Scene* scene);
+    /// @endcond
     virtual ~EC_Placeable();
 
     /// Stores the position, rotation and scale of this scene node in the coordinate space of its parent.

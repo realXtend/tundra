@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   EntityActionDialog.cpp
- *  @brief  Dialog for invoking entity actions.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   EntityActionDialog.cpp
+    @brief  Dialog for invoking entity actions. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -14,7 +13,6 @@
 #include "Entity.h"
 
 #include "MemoryLeakCheck.h"
-
 
 EntityActionDialog::EntityActionDialog(const QList<EntityWeakPtr> &entities, QWidget *p) :
     QDialog(p, 0)
@@ -96,17 +94,20 @@ void EntityActionDialog::Initialize()
 
     setWindowTitle(tr("Trigger Entity Action"));
 
+    setMinimumHeight(200);
+    resize(300, 200);
+
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(6);
 
     QSet<QString> actions;
-    QString targets;
+    QString targetText, targets;
     assert(entities.size());
     if (entities.size() == 1)
-        targets.append(tr("Target: "));
+        targetText = tr("Target: ");
     else
-        targets.append(tr("Targets: "));
+        targetText = tr("Targets: ");
 
     for(int i = 0; i < entities.size(); ++i)
     {
@@ -122,7 +123,10 @@ void EntityActionDialog::Initialize()
         }
     }
 
-    QLabel *targetsLabel = new QLabel(targets);
+    QLabel *targetsLabel = new QLabel(targetText);
+    QTextEdit *targetsText = new QTextEdit(targets);
+    targetsText->setReadOnly(true);
+    targetsText->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     actionComboBox = new QComboBox;
     actionComboBox->setEditable(true);
@@ -143,6 +147,7 @@ void EntityActionDialog::Initialize()
     connect(peersComboBox, SIGNAL(toggled(bool)), SLOT(CheckExecuteAccepted()));
 
     mainLayout->addWidget(targetsLabel);
+    mainLayout->addWidget(targetsText);
     mainLayout->addWidget(actionLabel);
     mainLayout->addWidget(actionComboBox);
     mainLayout->addWidget(parametersLabel);
@@ -180,16 +185,9 @@ void EntityActionDialog::Initialize()
 void EntityActionDialog::CheckExecuteAccepted()
 {
     // If any of the execution type check boxes are not checked, disable exec buttons.
-    if (!localCheckBox->isChecked() && !serverComboBox->isChecked() && !peersComboBox->isChecked())
-    {
-        execButton->setEnabled(false);
-        execAndCloseButton->setEnabled(false);
-    }
-    else
-    {
-        execButton->setEnabled(true);
-        execAndCloseButton->setEnabled(true);
-    }
+    const bool anyChecked = (localCheckBox->isChecked() || serverComboBox->isChecked() || peersComboBox->isChecked());
+    execButton->setEnabled(anyChecked);
+    execAndCloseButton->setEnabled(anyChecked);
 }
 
 void EntityActionDialog::Execute()

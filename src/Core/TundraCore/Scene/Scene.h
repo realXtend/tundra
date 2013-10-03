@@ -221,7 +221,7 @@ public slots:
 
         To create an empty entity, omit the components parameter.
 
-        @param id Id of the new entity. Specify 0 to use the next free ID
+        @param id Id of the new entity. Specify 0 to use the next free (replicated) ID, see also NextFreeId and NextFreeIdLocal.
         @param components Optional list of component names ("EC_" prefix can be omitted) the entity will use. If omitted or the list is empty, creates an empty entity.
         @param change Notification/network replication mode
         @param replicated Whether entity is replicated. Default true.
@@ -239,20 +239,23 @@ public slots:
 
         @param components Optional list of component names ("EC_" prefix can be omitted) the entity will use. If omitted or the list is empty, creates an empty entity.
         @param change Notification/network replication mode
-        @param componentsReplicated Whether components will be replicated, true by default.
+        @param componentsReplicated Whether components will be replicated, false by default, but components of local entities are not replicated so this has no effect.
         @param temporary Will the entity be temporary i.e. it is no serialized to disk by default.
         @note Setting temporary status of an entity when it's created is currently the only way to replicate this status properly.
         @sa CreateEntity */
     EntityPtr CreateLocalEntity(const QStringList &components = QStringList(),
-        AttributeChange::Type change = AttributeChange::Default, bool componentsReplicated = true, bool temporary = false);
+        AttributeChange::Type change = AttributeChange::Default, bool componentsReplicated = false, bool temporary = false);
 
     /// Returns scene up vector. For now it is a compile-time constant
+    /** @sa RightVector,.ForwardVector */
     float3 UpVector() const;
 
     /// Returns scene right vector. For now it is a compile-time constant
+    /** @sa UpVector, ForwardVector */
     float3 RightVector() const;
 
     /// Returns scene forward vector. For now it is a compile-time constant
+    /** @sa UpVector, RightVector */
     float3 ForwardVector() const;
 
     /// Is scene view enabled (i.e. rendering-related components actually create stuff).
@@ -275,7 +278,7 @@ public slots:
         @note Returns a shared pointer, but it is preferable to use a weak pointer, EntityWeakPtr,
               to avoid dangling references that prevent entities from being properly destroyed.
         @note @note O(n)
-        @sa EntityById */
+        @sa EntityById, FindEntities, FindEntitiesContaining */
     EntityPtr EntityByName(const QString &name) const;
 
     /// Returns whether name is unique within the scene, ie. is only encountered once, or not at all.
@@ -331,7 +334,8 @@ public slots:
 
     /// Performs a regular expression matching through the entities, and returns a list of the matched entities.
     /** @param pattern Regular expression to be matched.
-        @note Wildcards can be escaped with '\' character. */
+        @note Wildcards can be escaped with '\' character.
+        @sa FindEntitiesContaining */
     EntityList FindEntities(const QRegExp &pattern) const;
     EntityList FindEntities(const QString &pattern) const; /**< @overload @param pattern String pattern with wildcards. */
 

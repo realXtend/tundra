@@ -65,11 +65,13 @@
 class OGRE_MODULE_API EC_AnimationController : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_AnimationController", 14)
+    COMPONENT_NAME("AnimationController", 14)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_AnimationController(Scene* scene);
+    /// @endcond
     ~EC_AnimationController();
 
     /// Animation state attribute. Is a "freedata" field to store the current animation state.

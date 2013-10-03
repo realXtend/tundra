@@ -1,9 +1,8 @@
 # =============================================================================
-# per-dependency configuration macros
+# Configuration macros for global dependencies.
 #
-# All per-dependency configuration (or hacks) should go here. All per-module
-# build instructions should go in <Module>/CMakeLists.txt. The rest should
-# remain generic.
+# All global dependency configurations should go here.
+# All per-module dependency configurations should go in <Module>/CMakeLists.txt.
 
 macro(configure_boost)
 
@@ -153,51 +152,6 @@ macro(configure_qjson)
     sagase_configure_report(QJSON)
 endmacro(configure_qjson)
 
-macro (configure_python)
-    sagase_configure_package (PYTHON
-        NAMES PythonLibs Python python Python26 python26 Python2.6 python2.6
-        COMPONENTS Python python Python26 python Python2.6 python2.6
-        PREFIXES ${ENV_TUNDRA_DEP_PATH})
-
-    # FindPythonLibs.cmake
-    if (PYTHONLIBS_FOUND)
-        set (PYTHON_LIBRARIES ${PYTHON_LIBRARY})
-        set (PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_PATH})
-        #unset (PYTHON_DEBUG_LIBRARIES ${PYTHON_DEBUG_LIBRARY})
-    endif ()
-    
-    # FindPythonLibs.cmake prefers the system-wide Python, which does not
-    # include debug libraries, so we force to TUNDRA_DEP_PATH.
-    if (MSVC)
-        set (PYTHON_LIBRARY_DIRS ${ENV_TUNDRA_DEP_PATH}/Python/lib)
-        set (PYTHON_INCLUDE_DIRS ${ENV_TUNDRA_DEP_PATH}/Python/include)
-        set (PYTHON_LIBRARIES python26)
-        set (PYTHON_DEBUG_LIBRARIES python26_d)
-    endif()
-    
-    sagase_configure_report (PYTHON)
-endmacro (configure_python)
-
-macro (configure_python_qt)
-    sagase_configure_package (PYTHON_QT
-        NAMES PythonQt
-        COMPONENTS PythonQt PythonQt_QtAll
-        PREFIXES ${ENV_TUNDRA_DEP_PATH})
-
-    sagase_configure_report (PYTHON_QT)
-endmacro (configure_python_qt)
-
-macro (configure_qtpropertybrowser)
-    if (NOT MSVC AND NOT APPLE)
-      sagase_configure_package (QT_PROPERTY_BROWSER
-          NAMES QtPropertyBrowser QtSolutions_PropertyBrowser-2.5 QtSolutions_PropertyBrowser-head
-          COMPONENTS QtPropertyBrowser QtSolutions_PropertyBrowser-2.5 QtSolutions_PropertyBrowser-head
-          PREFIXES ${ENV_TUNDRA_DEP_PATH})
-
-      sagase_configure_report (QT_PROPERTY_BROWSER)
-    endif()
-endmacro (configure_qtpropertybrowser)
-
 macro(configure_openal)
     if (CMAKE_CL_64)
         SET(WIN_PLATFORM Win64)
@@ -338,40 +292,6 @@ macro(link_package_vorbis)
         target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/vorbis/win32/${VS2008_OR_VS2010}/$(PlatformName)/Debug/libvorbisfile_static.lib)
     else()
         target_link_libraries(${TARGET_NAME} general vorbis general vorbisfile)
-    endif()
-endmacro()
-
-macro(use_package_theora)
-    # Using full-built deps made from fullbui
-    include_directories(${ENV_TUNDRA_DEP_PATH}/theora/include)
-    link_directories(${ENV_TUNDRA_DEP_PATH}/theora/lib)
-endmacro()
-
-macro(link_package_theora)
-    if (MSVC)
-        # Always use ENV_TUNDRA_DEP_PATH as its read from cache. $ENV{TUNDRA_DEP_PATH} is not and can be empty/incorrect.
-        # Using full-built deps.
-        target_link_libraries(${TARGET_NAME} optimized ${ENV_TUNDRA_DEP_PATH}/theora/win32/VS2008/$(PlatformName)/Release_SSE2/libtheora_static.lib)
-        target_link_libraries(${TARGET_NAME} debug ${ENV_TUNDRA_DEP_PATH}/theora/win32/VS2008/$(PlatformName)/Debug/libtheora_static.lib)
-    else()
-        target_link_libraries(${TARGET_NAME} general theora)
-    endif()
-endmacro()
-
-macro(use_package_qtpropertybrowser)
-    if (NOT APPLE)
-        include_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/src) # For full-built deps.
-        link_directories(${ENV_TUNDRA_DEP_PATH}/qt-solutions/qtpropertybrowser/lib) # For full-built deps.
-    else ()
-        include_directories(${ENV_TUNDRA_DEP_PATH}/qtpropertybrowser/include) # For full-built deps.
-        link_directories(${ENV_TUNDRA_DEP_PATH}/qtpropertybrowser/lib) # For full-built deps.
-    endif ()
-endmacro()
-
-macro(link_package_qtpropertybrowser)
-    if (MSVC)
-        target_link_libraries(${TARGET_NAME} debug QtSolutions_PropertyBrowser-headd.lib)
-        target_link_libraries(${TARGET_NAME} optimized QtSolutions_PropertyBrowser-head.lib)
     endif()
 endmacro()
 

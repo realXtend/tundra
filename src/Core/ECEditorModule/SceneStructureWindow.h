@@ -17,6 +17,7 @@ class Framework;
 class EntityItem;
 class EntityGroupItem;
 class ComponentItem;
+class AttributeItem;
 
 class QTreeWidgetItem;
 class QLineEdit;
@@ -30,7 +31,8 @@ class QToolButton;
 class SceneStructureWindow : public QWidget
 {
     Q_OBJECT
-    Q_ENUMS(AttributeMode)
+    Q_ENUMS(AttributeVisibility)
+    Q_ENUMS(SortCriteria)
 
 public:
     /// Constructs the window.
@@ -44,12 +46,11 @@ public:
     /** Populates tree view with entities.
         If scene is set to null, the tree view is cleared and previous signal connections are disconnected.
         @param newScene Scene. */
-    void SetScene(const ScenePtr &newScene);
+    void SetShownScene(const ScenePtr &newScene);
+    /// The scene that is shown in the tree view.
+    ScenePtr ShownScene() const { return scene.lock(); }
 
-    /// Event filter to catch and react to child widget events
-    virtual bool eventFilter(QObject *obj, QEvent *e);
-
-    enum AttributeMode
+    enum AttributeVisibilityType
     {
         DoNotShowAttributes, ///< Do not show attributes.
         ShowAssetReferences, ///< Show asset reference attributes (AssetReference and AssetReferenceList).
@@ -57,71 +58,111 @@ public:
         ShowAllAttributes ///< Show all attributes.
     };
 
+    enum SortCriteria
+    {
+        SortById,
+        SortByName
+    };
+
+    /// Sets the sorting criteria and sorts the contents accordingly.
+    void SortBy(SortCriteria criteria, Qt::SortOrder order);
+    /// Returns the currently used sorting criteria.
+    SortCriteria SortingCriteria() const { return sortingCriteria; }
+
 public slots:
+    /// Sets do we want to entity groups in the tree view.
+    /** @param show Visibility of entity groups in the tree view. */
+    void ShowGroups(bool show);
+
     /// Sets do we want to show components in the tree view.
     /** @param show Visibility of components in the tree view. */
     void ShowComponents(bool show);
 
-    /// Sets do we want to show attributes in the tree view.
+    /// Sets what kind of attributes we want to show in the tree view.
     /** @param type The type of attributes we want to show. */
-    void ShowAttributes(AttributeMode type);
+    void SetAttributeVisibility(AttributeVisibilityType type);
 
-    /// Decorates (bolds) or undecorates item representing @c entity.
+    /// Decorates (bolds) or undecorates item representing the @c entity.
     /** @param entity Entity in question.
         @param selected Whether to decorate (true) or undecorate (false) the item. */
     void SetEntitySelected(const EntityPtr &entity, bool selected);
+
+    /// Decorates (bolds) or undecorates items representing the @c entities.
+    /** @param entities Entities in question.
+        @param selected Whether to decorate (true) or undecorate (false) the item. */
+    void SetEntitiesSelected(const EntityList &entities, bool selected);
 
     /// Undecorates all selected entities.
     void ClearSelectedEntites();
 
 protected:
-    /// QWidget override.
-    void changeEvent(QEvent* e);
+    void changeEvent(QEvent* e); ///< QWidget override.
 
 private:
     /// Populates tree widget with all entities.
     void Populate();
 
-    /// Clears the whole tree widget.
-    void Clear();
-
     /// Creates attribute items for a single entity item.
-    void CreateAttributesForEntity(EntityItem *targetItem);
-    void CreateAttributesForComponent(ComponentItem *targetItem);
+    void CreateAttributesForItem(ComponentItem *cItem);
+    void CreateAttributesForItem(EntityItem *eItem);
 
-    /// Creates attribute items depending on the currently set mode.
-    void CreateAttributes();
-
-    /// Clears i.e. deletes all attribute items.
-    void ClearAttributes();
+    /// Shows attributes of the current visibility type or hides the all.
+    void SetAttributesVisible(bool show);
 
     /// Create asset reference item to the tree widget.
     /** @param parentItem Parent item, can be entity or component item.
         @param attr AssetReference attribute. */
     void CreateAttributeItem(QTreeWidgetItem *parentItem, IAttribute *attr);
 
-    EntityItem* EntityItemOfEntity(Entity* ent) const;
-    EntityItem* EntityItemById(entity_id_t id) const;
-    void RemoveEntityItem(EntityItem* item);
+    EntityGroupItem *GetOrCreateEntityGroupItem(const QString &name);
+    void RemoveEntityGroupItem(const QString &name);
+    /// @note gItem will be deleted and null after calling this function.
+    void RemoveEntityGroupItem(EntityGroupItem *gItem);
 
-    Framework *framework; ///< Framework.
+    EntityItem* EntityItemOfEntity(Entity* ent) const;
+    /// @note This function does lookup from a different map than EntityItemOfEntity.
+    EntityItem* EntityItemById(entity_id_t id) const ;
+    void RemoveEntityItem(EntityItem* item);
+    ComponentItem *ComponentItemOfComponent(IComponent *) const;
+    std::vector<AttributeItem *> AttributeItemOfAttribute(IAttribute *) const;
+    void SetEntityItemSelected(EntityItem *item, bool selected);
+
+    void Refresh();
+
+    Framework *framework;
     SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
     SceneTreeWidget *treeWidget; ///< Scene tree widget.
-    QHash<QString, EntityGroupItem*> entityGroupItems_; ///< Entity groups
-    bool showComponents; ///< Do we show components also in the tree view.
-    AttributeMode showAttributesMode; ///< Do we show attributes also in the tree view.
+    bool showGroups; ///< Are entity groups shown in the tree view.
+    bool showComponents; ///< Are components shown in the tree view.
+    AttributeVisibilityType attributeVisibility; ///< What types of attributes, if any, are shown in the tree view.
     QLineEdit *searchField; ///< Search field line edit.
     QPushButton *expandAndCollapseButton; ///< Expand/collapse all button.
     QToolButton * undoButton_; ///< Undo button with drop-down menu
     QToolButton * redoButton_; ///< Redo button with drop-down menu
+    SortCriteria sortingCriteria;
+
+    /// @todo 15.09.2013 Profile if unordered_(multi)map would give better performance
+    typedef std::map<entity_id_t, EntityItem *> EntityItemIdMap;
+    typedef std::map<Entity *, EntityItem *> EntityItemMap;
+    typedef std::map<IComponent *, ComponentItem *> ComponentItemMap;
+    typedef std::multimap<IAttribute *, AttributeItem *> AttributeItemMap;
+    typedef std::pair<AttributeItemMap::iterator, AttributeItemMap::iterator> AttributeItemMapRange;
+    typedef std::pair<AttributeItemMap::const_iterator, AttributeItemMap::const_iterator> AttributeItemMapConstRange;
+    typedef QHash<QString, EntityGroupItem *> EntityGroupItemMap;
+    EntityGroupItemMap entityGroupItems; ///< Entity groups
+    EntityItemIdMap entityItemsById;
+    EntityItemMap entityItems;
+    ComponentItemMap componentItems;
+    AttributeItemMap attributeItems;
 
 private slots:
-    /// Adds the entity to the tree widget.
-    /** @param entity Entity to be added. */
+    /// Clears the whole tree widget.
+    void Clear();
+
+    /// Adds the item represeting the @c entity to the tree widget.
     void AddEntity(Entity *entity);
 
-    /// Removes entity from the tree widget.
-    /** @param entity Entity to be removed. */
+    /// Removes item representing @c entity from the tree widget.
     void RemoveEntity(Entity *entity);
 
     /// Readds entity on server ack.
@@ -130,42 +171,31 @@ private slots:
     void AckEntity(Entity *entity, entity_id_t oldId);
 
     /// Updates temporary state of an entity and its components in the tree widget
-    /** @param entity The entity which temporary state was toggled */
     void UpdateEntityTemporaryState(Entity *entity);
 
-    /// Adds the entity to the tree widget.
-    /** @param entity Altered entity.
-        @param comp Component which was added. */
+    /// Adds the entity to the tree widget, performs EntityItemOfEntity lookup.
     void AddComponent(Entity *entity, IComponent *comp);
+    void AddComponent(EntityItem *eItem, Entity *entity, IComponent *comp);
 
-    /// Removes entity from the tree widget.
-    /** @param entity Altered entity.
-        @param comp Component which was removed. */
+    /// Removes entity from the tree widget, performs EntityItemOfEntity lookup.
     void RemoveComponent(Entity *entity, IComponent *comp);
+    /// @note Null entity can be passed if the entity is about to be deleted.
+    void RemoveComponent(EntityItem *eItem, Entity *entity, IComponent *comp);
 
-    /// Adds an attribute item item to the tree widget.
-    /** This is called only by EC_DynamicComponent when asset ref attribute is added to it.
-        @param attr AssetReference attribute. */
+    /// Adds an attribute item item to the tree widget, invoked only by dynamic components' currently.
     void AddDynamicAttribute(IAttribute *attr);
 
     /// Removes an attribute item from the tree widget.
-    /** This is called only by EC_DynamicComponent when asset ref attribute is removed from it.
-        @param attr AssetReference attribute. */
-    void RemoveDynamicAttribute(IAttribute *attr);
+    void RemoveAttribute(IAttribute *attr);
 
-    /// Updates an attribute item.
-    /** @param attr AssetReference attribute. */
+    /// Updates an attribute item, invoked only by dynamic components' currently.
     void UpdateDynamicAttribute(IAttribute *attr);
 
-    /// Updates entity's name in the tree widget if entity's EC_Name component's "name" attribute has changed.
-    /** EC_Name component's AttributeChanged() signal is connected to this slot.
-        @param attr EC_Name's attribute which was changed. */
+    /// Updates entity item's name or group in the tree widget if entity's Name component has changed.
     void UpdateEntityName(IAttribute *attr);
 
-    /// Updates component's name in the tree widget if components name has changed.
-    /** @param oldName Old component name.
-        @param newName New component name. */
-    void UpdateComponentName(const QString &oldName, const QString &newName);
+    /// Updates the sender component's name in the tree widget when the component's name changeds.
+    void UpdateComponentName();
 
     /// Sort items in the tree widget. The outstanding sort order is used.
     /** @param column Column that is used as the sorting criteria. */
@@ -185,7 +215,8 @@ private slots:
     /// Removes entity from the tree widget by ID
     void RemoveEntityById(entity_id_t id);
 
-    void OnUndoChanged(bool canUndo);
-    void OnRedoChanged(bool canRedo);
-    void ShowAttributesInternal(int mode) { ShowAttributes(static_cast<AttributeMode>(mode)); }
+    void SetUndoEnabled(bool canUndo);
+    void SetRedoEnabled(bool canRedo);
+    void SetAttributeVisibilityInternal(int mode) { SetAttributeVisibility(static_cast<AttributeVisibilityType>(mode)); }
+    void OnSceneRemoved(Scene *);
 };

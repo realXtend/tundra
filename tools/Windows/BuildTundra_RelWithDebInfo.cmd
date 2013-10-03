@@ -1,13 +1,21 @@
-call RunCmake.cmd
+:: TODO Almost identical file with BuildTundra_Debug.cmd
+@echo off
+call RunCMake.cmd
 
 cd ..\..
 
-cecho {0D}Building Tundra.{# #}{\n}
-msbuild tundra.sln /p:Configuration=RelWithDebInfo %1 %2 %3 %4 %5 %6 %7 %8 %9
-IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+tools\Windows\Utils\cecho {0D}Building RelWithDebInfo Tundra.{# #}{\n}
+MSBuild tundra.sln /p:Configuration=RelWithDebInfo %1 %2 %3 %4 %5 %6 %7 %8 %9
+IF NOT %ERRORLEVEL%==0 GOTO :Error
 echo.
 
-cecho {0A}Tundra build finished.{# #}{\n}
+tools\Windows\Utils\cecho {0A}RelWithDebInfo Tundra build finished.{# #}{\n}
+goto :End
 
+:Error
+echo.
+tools\Windows\Utils\cecho {0C}RelWithDebInfo Tundra build failed!{# #}{\n}
+
+:End
 :: Finish in same directory we started in.
 cd tools\Windows

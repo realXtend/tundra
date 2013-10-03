@@ -33,7 +33,7 @@
 class TUNDRACORE_API EC_Name : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_Name", 26)
+    COMPONENT_NAME("Name", 26)
 
 public:
     /// @cond PRIVATE

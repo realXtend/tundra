@@ -1,8 +1,12 @@
-// For conditions of distribution and use, see copyright notice in LICENSE
+/**
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   Transform.h
+    @brief  Importer tool for OGRE .scene and .mesh files. */
 
 #pragma once
 
-#include "TundraProtocolModuleApi.h"
+#include "OgreModuleApi.h"
 #include "SceneFwd.h"
 #include "AttributeChangeType.h"
 
@@ -12,21 +16,18 @@ class float3;
 
 class QDomElement;
 
-namespace TundraLogic
-{
-
 /// Importer tool for OGRE .scene and .mesh files.
 /** You can use SceneImporter to directly create and instantiate content from OGRE .mesh and .scene files,
     or to create scene descriptions for the aforementioned file formats. The scene descriptions can be modified
     and then instantiated using Scene::CreateContentFromSceneDesc(). */
-class TUNDRAPROTOCOL_MODULE_API SceneImporter
+class OGRE_MODULE_API OgreSceneImporter
 {
 public:
     /// Constructs the importer.
     /** @param scene Destination scene. */
-    explicit SceneImporter(const ScenePtr &scene);
+    explicit OgreSceneImporter(const ScenePtr &scene);
 
-    ~SceneImporter();
+    ~OgreSceneImporter();
 
     /// Imports a single mesh. Scans the mesh for needed skeleton & materials.
     /** @param filename Filename of mesh
@@ -73,7 +74,7 @@ public:
     SceneDesc CreateSceneDescFromScene(const QString &filename);
 
 private:
-    Q_DISABLE_COPY(SceneImporter)
+    Q_DISABLE_COPY(OgreSceneImporter)
 
     /// Process the asset references of a node, and its child nodes
     /** @param nodeElem Node element. */
@@ -110,5 +111,3 @@ private:
     /** For supporting binary duplicate detection, this is a map which maps the original names to actual assets that will be stored. */
     QMap<QString, QString> mesh_names_;
 };
-
-}

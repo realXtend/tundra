@@ -63,17 +63,20 @@
 /// @note Modify these values from the root CMakeLists.txt if you are making a custom Tundra build.
 const char *Application::organizationName = TUNDRA_ORGANIZATION_NAME;
 const char *Application::applicationName = TUNDRA_APPLICATION_NAME;
-const char *Application::version = TUNDRA_VERSION_STRING;
+const char *Application::version = TUNDRA_VERSION_STRING TUNDRA_VERSION_POSTFIX;
 
 Application::Application(int &argc, char **argv) :
     QApplication(argc, argv),
     framework(0),
     appActivated(true),
+#ifdef ENABLE_TRANSLATIONS
     nativeTranslator(new QTranslator),
     appTranslator(new QTranslator),
+#endif
     targetFpsLimit(60.0),
     splashScreen(0)
 {
+
     targetFpsLimitWhenInactive = targetFpsLimit / 2.f;
     // Reflect our versioning information to Qt internals, if something tries to obtain it straight from there.
     QApplication::setOrganizationName(organizationName);
@@ -94,7 +97,7 @@ Application::Application(int &argc, char **argv) :
         {
             // Conversion failed. Is this the last number in the string? Maybe some kind of
             // postfix is used, "-RC1" or " RC1" or similar f.ex., so handle that.
-            if (i == numberList.size() - 1)
+            if (i == numberList.size() - 1 || i == 3)
             {
                 QStringList lastNumber = numberList[i].split(QRegExp("[^0-9]"));
                 if (!lastNumber.isEmpty())
@@ -142,14 +145,17 @@ Application::Application(int &argc, char **argv) :
 Application::~Application()
 {
     SAFE_DELETE(splashScreen);
+#ifdef ENABLE_TRANSLATIONS
     SAFE_DELETE(nativeTranslator);
     SAFE_DELETE(appTranslator);
+#endif
 }
 
 void Application::Initialize(Framework *fw)
 {
     framework = fw;
 
+#ifdef ENABLE_TRANSLATIONS
     QDir dir("data/translations/qt_native_translations");
     QStringList qmFiles = FindQmFiles(dir);
 
@@ -167,8 +173,7 @@ void Application::Initialize(Framework *fw)
     QString defaultLanguage = framework->Config()->DeclareSetting(ConfigAPI::FILE_FRAMEWORK,
         ConfigAPI::SECTION_FRAMEWORK, "language", "data/translations/tundra_en").toString();
     ChangeLanguage(defaultLanguage);
-
-    ReadTargetFpsLimitFromConfig();
+#endif
 }
 
 void Application::InitializeSplash()
@@ -179,7 +184,7 @@ void Application::InitializeSplash()
     if (!splashScreen)
     {
         QString runDir = InstallationDirectory();
-        splashScreen = new QSplashScreen(QPixmap(runDir + "/data/ui/images/realxtend_tundra_splash.png"));
+        splashScreen = new QSplashScreen(QPixmap(runDir + "/data/ui/images/adminotech_tundra_splash.png"));
         splashScreen->setFont(QFont("Calibri", 9));
         splashScreen->show();
         splashScreen->activateWindow();
@@ -205,7 +210,7 @@ void Application::SetSplashMessage(const QString &message)
     {
         // Call QApplication::processEvents() to update splash painting as at this point main loop is not running yet
         QString finalMessage = "v" + QString(Application::Version()) + " - " + message.toUpper();
-        splashScreen->showMessage(finalMessage, Qt::AlignBottom|Qt::AlignLeft, QColor(240, 240, 240));
+        splashScreen->showMessage(finalMessage, Qt::AlignBottom|Qt::AlignLeft, QColor(25, 25, 25));
         processEvents();
     }
 }
@@ -511,20 +516,6 @@ QString Application::FullIdentifier()
     return QString("%1 %2 %3").arg(organizationName).arg(applicationName).arg(version).trimmed();
 }
 
-void Application::ReadTargetFpsLimitFromConfig()
-{
-    ConfigData targetFpsConfigData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
-    if (framework->Config()->HasValue(targetFpsConfigData, "fps target limit"))
-    {
-        bool ok;
-        double targetFps = framework->Config()->Get(targetFpsConfigData, "fps target limit").toDouble(&ok);
-        if (ok && targetFps >= 0.0)
-            SetTargetFpsLimit(targetFps);
-        else
-            LogWarning("Application: Invalid target FPS value " + QString::number(targetFps) + " read from config. Ignoring.");
-    }
-}
-
 bool Application::eventFilter(QObject *obj, QEvent *event)
 {
     try
@@ -557,6 +548,7 @@ bool Application::eventFilter(QObject *obj, QEvent *event)
 
 void Application::ChangeLanguage(const QString& file)
 {
+#ifdef ENABLE_TRANSLATIONS
     QString filename = file;
     if (!filename.endsWith(".qm", Qt::CaseInsensitive))
         filename.append(".qm");
@@ -600,6 +592,10 @@ void Application::ChangeLanguage(const QString& file)
     }
     
     emit LanguageChanged();
+#else
+    UNREFERENCED_PARAM(file);
+    LogError("Application::ChangeLanguage: application not build with translations enabled.");
+#endif
 }
 
 #ifdef __APPLE__
@@ -787,12 +783,6 @@ int TUNDRACORE_API run(int argc, char **argv)
     {
 #endif
         int return_value = EXIT_SUCCESS;
-
-        // Initialization prints
-        LogInfo("Starting up " + Application::FullIdentifier());
-        LogInfo("* Installation directory : " + Application::InstallationDirectory());
-        LogInfo("* Working directory      : " + Application::CurrentWorkingDirectory());
-        LogInfo("* User data directory    : " + Application::UserDataDirectory());
 
     // Create application object
 #if !defined(_DEBUG) || !defined (_MSC_VER)

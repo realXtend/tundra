@@ -84,7 +84,7 @@ Does not emit any actions.
 class SCENEWIDGET_MODULE_API EC_WebView : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_WebView", 36)
+    COMPONENT_NAME("WebView", 36)
 
 public:
     /// Webview URL.
@@ -123,10 +123,10 @@ public:
     
     friend class SceneWidgetComponents;
 
-    /// Constructor.
-    explicit EC_WebView(Scene *scene);
-
-    /// Destructor.
+     /// @cond PRIVATE
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_WebView(Scene* scene);
+    /// @endcond
     ~EC_WebView();
 
     /// Event filter for this QObject

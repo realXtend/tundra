@@ -65,7 +65,7 @@ typedef shared_ptr<ScriptAsset> ScriptAssetPtr;
 class EC_Script: public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_Script", 5)
+    COMPONENT_NAME("Script", 5)
 
 public:
     /// Run mode enumeration

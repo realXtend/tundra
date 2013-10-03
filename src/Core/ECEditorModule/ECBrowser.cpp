@@ -131,40 +131,36 @@ void ECBrowser::RemoveEntity(const EntityPtr &entity)
     }
 }
 
-QList<EntityPtr> ECBrowser::Entities() const
+EntityList ECBrowser::Entities() const
 {
-    QList<EntityPtr> ret;
+    EntityList ret;
     for(EntityMap::const_iterator it = entities_.begin(); it != entities_.end(); ++it)
         if(!it->second.expired())
             ret.push_back(it->second.lock());
     return ret;
 }
 
-QObjectList ECBrowser::SelectedComponents() const
+std::vector<ComponentPtr> ECBrowser::SelectedComponents() const
 {
-    QTreeWidgetItem *item = treeWidget_->currentItem();
-    if(!item)
-        return QObjectList();
+    std::vector<ComponentPtr> ret;
+    if (!treeWidget_ || treeWidget_->currentItem())
+        return ret;
+
     // Go back to the root node.
+    QTreeWidgetItem *item = treeWidget_->currentItem();
     while(item->parent())
         item = item->parent();
 
-    if (treeWidget_ && item)
-    {
-        TreeItemToComponentGroup::const_iterator iter = itemToComponentGroups_.find(item);
-        if (iter != itemToComponentGroups_.end())
+    TreeItemToComponentGroup::const_iterator iter = itemToComponentGroups_.find(item);
+    if (iter != itemToComponentGroups_.end())
+        for(size_t i = 0; i < (*iter)->components_.size(); ++i)
         {
-            QObjectList components;
-            for(uint i = 0; i < (*iter)->components_.size(); ++i)
-            {
-                IComponent *comp = (*iter)->components_[i].lock().get();
-                if (comp)
-                    components.push_back(comp);
-            }
-            return components;
+            ComponentPtr comp = (*iter)->components_[i].lock();
+            if (comp)
+                ret.push_back(comp);
         }
-    }
-    return QObjectList();
+
+    return ret;
 }
 
 void ECBrowser::clear()

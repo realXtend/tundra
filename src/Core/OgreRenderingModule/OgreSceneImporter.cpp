@@ -1,10 +1,13 @@
-// For conditions of distribution and use, see copyright notice in LICENSE
+/**
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   SceneImporter.cpp
+    @brief  Importer tool for OGRE .scene and .mesh files. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include "SceneImporter.h"
-#include "TundraLogicModule.h"
+#include "OgreSceneImporter.h"
 
 #include "Scene/Scene.h"
 #include "Entity.h"
@@ -32,19 +35,16 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace TundraLogic
-{
-
-SceneImporter::SceneImporter(const ScenePtr &scene) :
+OgreSceneImporter::OgreSceneImporter(const ScenePtr &scene) :
     scene_(scene)
 {
 }
 
-SceneImporter::~SceneImporter()
+OgreSceneImporter::~OgreSceneImporter()
 {
 }
 
-EntityPtr SceneImporter::ImportMesh(const QString &filename, const QString &in_asset_dir, const Transform &worldtransform,
+EntityPtr OgreSceneImporter::ImportMesh(const QString &filename, const QString &in_asset_dir, const Transform &worldtransform,
     const QString &entity_prefab_xml, const QString &prefix, AttributeChange::Type change, bool inspect,
     const QString &meshName)
 {
@@ -153,28 +153,28 @@ EntityPtr SceneImporter::ImportMesh(const QString &filename, const QString &in_a
     return newentity;
 }
 
-QList<Entity *> SceneImporter::Import(const QString &filename, const QString &in_asset_dir, const Transform &worldtransform,
+QList<Entity *> OgreSceneImporter::Import(const QString &filename, const QString &in_asset_dir, const Transform &worldtransform,
     const QString &prefix, AttributeChange::Type change, bool clearscene, bool replace)
 {
     QList<Entity *> ret;
     if (!scene_)
     {
-        LogError("SceneImporter::Import: Null scene for import");
+        LogError("OgreSceneImporter::Import: Null scene for import");
         return ret;
     }
 
     try
     {
         if (clearscene)
-            LogInfo("SceneImporter::Import: Importing scene from " + filename + " and clearing the old");
+            LogInfo("OgreSceneImporter::Import: Importing scene from " + filename + " and clearing the old");
         else
-            LogInfo("SceneImporter::Import: Importing scene from " + filename);
+            LogInfo("OgreSceneImporter::Import: Importing scene from " + filename);
 
         QFile file(filename);
         if (!file.open(QFile::ReadOnly))
         {
             file.close();
-            LogError("SceneImporter::Import: Failed to open file " + filename);
+            LogError("OgreSceneImporter::Import: Failed to open file " + filename);
             return QList<Entity *>();
         }
         
@@ -182,7 +182,7 @@ QList<Entity *> SceneImporter::Import(const QString &filename, const QString &in
         if (!dotscene.setContent(&file))
         {
             file.close();
-            LogError("SceneImporter::Import:Failed to parse XML content");
+            LogError("OgreSceneImporter::Import:Failed to parse XML content");
             return ret;
         }
         
@@ -191,13 +191,13 @@ QList<Entity *> SceneImporter::Import(const QString &filename, const QString &in
         QDomElement scene_elem = dotscene.firstChildElement("scene");
         if (scene_elem.isNull())
         {
-            LogError("SceneImporter::Import:No 'scene' element");
+            LogError("OgreSceneImporter::Import:No 'scene' element");
             return ret;
         }
         QDomElement nodes_elem = scene_elem.firstChildElement("nodes");
         if (nodes_elem.isNull())
         {
-            LogError("SceneImporter::Import No 'nodes' element");
+            LogError("OgreSceneImporter::Import No 'nodes' element");
             return ret;
         }
         
@@ -215,11 +215,11 @@ QList<Entity *> SceneImporter::Import(const QString &filename, const QString &in
         QDomElement node_elem = nodes_elem.firstChildElement("node");
         
         // First pass: get used assets
-        LogDebug("SceneImporter::Import: Processing scene for assets");
+        LogDebug("OgreSceneImporter::Import: Processing scene for assets");
         ProcessNodeForAssets(node_elem, in_asset_dir);
         
         // Write out the needed assets
-        LogDebug("SceneImporter::Import: Saving needed assets");
+        LogDebug("OgreSceneImporter::Import: Saving needed assets");
         // By default, assume the material file is scenename.material if scene is scenename.scene.
         // However, if an external reference exists, use that.
         QString matfilename = filename;
@@ -246,14 +246,14 @@ QList<Entity *> SceneImporter::Import(const QString &filename, const QString &in
 //        ProcessAssets(matfilename, in_asset_dir, out_asset_dir, localassets);
         
         // Second pass: build scene hierarchy and actually create entities. This assumes assets are available
-        LogDebug("SceneImporter::Import: Creating entities");
+        LogDebug("OgreSceneImporter::Import: Creating entities");
 
         Quat rot = worldtransform.Orientation();
         ProcessNodeForCreation(ret, node_elem, worldtransform.pos, rot, worldtransform.scale, change, prefix, flipyz, replace);
     }
     catch(Exception& e)
     {
-        LogError(QString("SceneImporter::Import: Exception while scene importing " + filename + ": ") + e.what());
+        LogError(QString("OgreSceneImporter::Import: Exception while scene importing " + filename + ": ") + e.what());
         return QList<Entity *>();
     }
     
@@ -262,24 +262,24 @@ QList<Entity *> SceneImporter::Import(const QString &filename, const QString &in
     return ret;
 }
 
-bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QStringList & material_names, QString& skeleton_name) const
+bool OgreSceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QStringList & material_names, QString& skeleton_name) const
 {
     material_names.clear();
     
     QFile mesh_in(meshname);
     if (!mesh_in.open(QFile::ReadOnly))
     {
-        LogError("SceneImporter::ParseMeshForMaterialsAndSkeleton: Could not open input mesh file " + meshname);
+        LogError("OgreSceneImporter::ParseMeshForMaterialsAndSkeleton: Could not open input mesh file " + meshname);
         return false;
     }
     else
     {
         QByteArray mesh_bytes = mesh_in.readAll();
         mesh_in.close();
-        OgreRenderer::RendererPtr renderer = scene_->GetFramework()->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+        OgreRendererPtr renderer = scene_->GetFramework()->Module<OgreRenderingModule>()->Renderer();
         if (!renderer)
         {
-            LogError("SceneImporter::ParseMeshForMaterialsAndSkeleton: Renderer does not exist");
+            LogError("OgreSceneImporter::ParseMeshForMaterialsAndSkeleton: Renderer does not exist");
             return false;
         }
         
@@ -289,7 +289,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
             Ogre::MeshPtr tempmesh = Ogre::MeshManager::getSingleton().createManual(uniquename, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
             if (tempmesh.isNull())
             {
-                LogError("SceneImporter::ParseMeshForMaterialsAndSkeleton: failed to create temp mesh");
+                LogError("OgreSceneImporter::ParseMeshForMaterialsAndSkeleton: failed to create temp mesh");
                 return false;
             }
             
@@ -319,7 +319,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
         }
         catch(...)
         {
-            LogError("SceneImporter::ParseMeshForMaterialsAndSkeleton: Exception while inspecting mesh " + meshname);
+            LogError("OgreSceneImporter::ParseMeshForMaterialsAndSkeleton: Exception while inspecting mesh " + meshname);
             return false;
         }
     }
@@ -327,13 +327,13 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
     return true;
 }
 
-SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
+SceneDesc OgreSceneImporter::CreateSceneDescFromMesh(const QString &source) const
 {
     SceneDesc sceneDesc;
 
     if (!source.endsWith(".mesh", Qt::CaseInsensitive))
     {
-        LogError("SceneImporter::CreateSceneDescFromMesh: Unsupported file type for scene description creation: " + source);
+        LogError("OgreSceneImporter::CreateSceneDescFromMesh: Unsupported file type for scene description creation: " + source);
         return sceneDesc;
     }
 
@@ -465,13 +465,13 @@ SceneDesc SceneImporter::CreateSceneDescFromMesh(const QString &source) const
     return sceneDesc;
 }
 
-SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
+SceneDesc OgreSceneImporter::CreateSceneDescFromScene(const QString &filename)
 {
     SceneDesc sceneDesc;
 
     if (!filename.endsWith(".scene", Qt::CaseInsensitive))
     {
-        LogError("SceneImporter::CreateSceneDescFromScene: Unsupported file type for scene description creation: " + filename);
+        LogError("OgreSceneImporter::CreateSceneDescFromScene: Unsupported file type for scene description creation: " + filename);
         return sceneDesc;
     }
 
@@ -481,7 +481,7 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
     if (!file.open(QFile::ReadOnly))
     {
         file.close();
-        LogError("SceneImporter::CreateSceneDescFromScene: Failed to open file " + filename);
+        LogError("OgreSceneImporter::CreateSceneDescFromScene: Failed to open file " + filename);
         return sceneDesc;
     }
 
@@ -491,7 +491,7 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
     if (!dotscene.setContent(&file, false, &errorMsg, &errorLine, &errorColumn))
     {
         file.close();
-        LogError(QString("SceneImporter::CreateSceneDescFromScene: Parsing Ogre .scene XML from %1 failed when loading Scene XML: %2 at line %3 column %4.").arg(filename).arg(errorMsg).arg(errorLine).arg(errorColumn));
+        LogError(QString("OgreSceneImporter::CreateSceneDescFromScene: Parsing Ogre .scene XML from %1 failed when loading Scene XML: %2 at line %3 column %4.").arg(filename).arg(errorMsg).arg(errorLine).arg(errorColumn));
         return sceneDesc;
     }
     
@@ -500,7 +500,7 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
     QDomElement scene_elem = dotscene.firstChildElement("scene");
     if (scene_elem.isNull())
     {
-        LogError("SceneImporter::CreateSceneDescFromScene: No 'scene' element.");
+        LogError("OgreSceneImporter::CreateSceneDescFromScene: No 'scene' element.");
         return sceneDesc;
     }
 
@@ -515,7 +515,7 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
     QDomElement nodes_elem = scene_elem.firstChildElement("nodes");
     if (nodes_elem.isNull())
     {
-        LogError("SceneImporter::CreateSceneDescFromScene: No 'nodes' element.");
+        LogError("OgreSceneImporter::CreateSceneDescFromScene: No 'nodes' element.");
         return sceneDesc;
     }
 
@@ -571,7 +571,7 @@ SceneDesc SceneImporter::CreateSceneDescFromScene(const QString &filename)
     return sceneDesc;
 }
 
-void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const QString& in_asset_dir)
+void OgreSceneImporter::ProcessNodeForAssets(QDomElement node_elem, const QString& in_asset_dir)
 {
     while(!node_elem.isNull())
     {
@@ -621,7 +621,7 @@ void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const QString& i
     }
 }
 
-void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElement node_elem, float3 pos, Quat rot, float3 scale,
+void OgreSceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElement node_elem, float3 pos, Quat rot, float3 scale,
     AttributeChange::Type change, const QString &prefix, bool flipyz, bool replace)
 {
     while(!node_elem.isNull())
@@ -798,7 +798,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomElemen
     }
 }
 
-void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElement, float3 pos, Quat rot, float3 scale, const QString &prefix, bool flipyz, 
+void OgreSceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElement, float3 pos, Quat rot, float3 scale, const QString &prefix, bool flipyz, 
     QStringList &meshFiles, QStringList &skeletonFiles, QSet<QString> &usedMaterials, const QString &parentRef)
 {
     AttributeChange::Type change = AttributeChange::Disconnected;
@@ -980,7 +980,7 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElement,
                 desc.entities << entityDesc;
             }
             else
-                LogError("SceneImporter::ProcessNodeForDesc: Could not create mesh, placeable, name components");
+                LogError("OgreSceneImporter::ProcessNodeForDesc: Could not create mesh, placeable, name components");
         }
 
         // Process child nodes
@@ -990,8 +990,7 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElement,
     }
 }
 
-
-void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &meshFiles, const QStringList &skeletons,
+void OgreSceneImporter::CreateAssetDescs(const QString &path, const QStringList &meshFiles, const QStringList &skeletons,
     const QStringList &materialFiles, const QSet<QString> &usedMaterials, SceneDesc &desc) const
 {
     foreach(QString filename, meshFiles)
@@ -1059,6 +1058,4 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
         ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(tex); // The destination name must be local to the destination asset storage.
         desc.assets[qMakePair(ad.source, ad.subname)] = ad;
     }
-}
-
 }

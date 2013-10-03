@@ -47,12 +47,13 @@ Does not emit any actions.
 class OGRE_MODULE_API EC_Material : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_Material", 31)
+    COMPONENT_NAME("Material", 31)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Material(Scene* scene);
-
+    /// @endcond
     virtual ~EC_Material();
 
     /// The parameters to apply.

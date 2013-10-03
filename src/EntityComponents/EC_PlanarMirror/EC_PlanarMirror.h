@@ -43,10 +43,13 @@
 class EC_PlanarMirror : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_PlanarMirror", 34)
+    COMPONENT_NAME("PlanarMirror", 34)
 
 public:
-    EC_PlanarMirror(Scene *scene);
+    /// @cond PRIVATE
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_PlanarMirror(Scene* scene);
+    /// @endcond
     ~EC_PlanarMirror();
 
     /// Do we want to show the mirror plane

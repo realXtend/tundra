@@ -1,11 +1,12 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   AudioPreviewEditor.h
- *  @brief  Preview window for audio assets.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   AudioPreviewEditor.h
+    @brief  Preview window for audio assets. */
 
 #pragma once
+
+#include "ui_AudioPreviewEditor.h"
 
 #include <QWidget>
 
@@ -19,7 +20,7 @@ class Framework;
 
 /// Preview window for audio assets.
 /** Window is used to play audio assets and display the infomation about that file, including the visual presentation of audio signal. */
-class AudioPreviewEditor : public QWidget
+class AudioPreviewEditor : public QWidget, public Ui::AudioPreviewEditor
 {
     Q_OBJECT
 

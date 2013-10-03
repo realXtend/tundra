@@ -13,9 +13,11 @@
 #include "Application.h"
 #include "Framework.h"
 #include "AssetAPI.h"
+#include "ConfigAPI.h"
 #include "GenericAssetFactory.h"
 #include "NullAssetFactory.h"
 #include "LoggingFunctions.h"
+#include "SceneDesc.h"
 
 #include <QMenuBar>
 #include <QEvent>
@@ -25,6 +27,7 @@
 #include <QUiLoader>
 #include <QFile>
 #include <QDir>
+#include <QLocale>
 
 #include "MemoryLeakCheck.h"
 
@@ -396,9 +399,9 @@ QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *
     return widget;
 }
 
-void UiAPI::EmitContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets)
+void UiAPI::EmitContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets, QObject *sender)
 {
-    emit ContextMenuAboutToOpen(menu,targets);
+    emit ContextMenuAboutToOpen(menu, targets, sender);
 }
 
 void UiAPI::ShowWidget(QWidget *widget) const

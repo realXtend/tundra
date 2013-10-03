@@ -46,11 +46,13 @@ class EC_TransformGizmo : public IComponent
 {
     Q_OBJECT
     Q_ENUMS(GizmoType)
-    COMPONENT_NAME("EC_TransformGizmo", 30)
+    COMPONENT_NAME("TransformGizmo", 30)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    EC_TransformGizmo(Scene* scene);
+    explicit EC_TransformGizmo(Scene* scene);
+    /// @endcond
     ~EC_TransformGizmo();
 
     /// Possible types of a gizmo.

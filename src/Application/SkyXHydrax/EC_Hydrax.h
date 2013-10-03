@@ -20,11 +20,13 @@
 class SKYX_HYDRAX_API EC_Hydrax : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_Hydrax", 39)
+    COMPONENT_NAME("Hydrax", 39)
 
 public:
+     /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Hydrax(Scene* scene);
+    /// @endcond
     ~EC_Hydrax();
 
     /// Different noise modules supported by Hydrax.

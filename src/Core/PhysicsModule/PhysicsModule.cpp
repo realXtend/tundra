@@ -11,6 +11,7 @@
 #include "EC_VolumeTrigger.h"
 #include "EC_PhysicsMotor.h"
 #include "EC_PhysicsConstraint.h"
+
 #include "OgreRenderingModule.h"
 #include "EC_Mesh.h"
 #include "EC_Placeable.h"
@@ -25,6 +26,7 @@
 #include "IComponentFactory.h"
 #include "QScriptEngineHelpers.h"
 #include "LoggingFunctions.h"
+#include "StaticPluginRegistry.h"
 
 // Disable unreferenced formal parameter coming from Bullet
 #ifdef _MSC_VER
@@ -41,16 +43,7 @@
 
 #include <Ogre.h>
 
-#include "StaticPluginRegistry.h"
-
 #include "MemoryLeakCheck.h"
-
-Q_DECLARE_METATYPE(Physics::PhysicsModule*);
-Q_DECLARE_METATYPE(Physics::PhysicsWorld*);
-Q_DECLARE_METATYPE(PhysicsRaycastResult*);
-
-namespace Physics
-{
 
 PhysicsModule::PhysicsModule()
 :IModule("Physics"),
@@ -75,8 +68,8 @@ void PhysicsModule::Initialize()
 {
     framework_->RegisterDynamicObject("physics", this);
     
-    connect(framework_->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(OnSceneAdded(const QString&)));
-    connect(framework_->Scene(), SIGNAL(SceneRemoved(const QString&)), this, SLOT(OnSceneRemoved(const QString&)));
+    connect(framework_->Scene(), SIGNAL(SceneCreated(Scene *, AttributeChange::Type)), this, SLOT(CreatePhysicsWorld(Scene *)));
+    connect(framework_->Scene(), SIGNAL(SceneAboutToBeRemoved(Scene *, AttributeChange::Type)), this, SLOT(RemovePhysicsWorld(Scene *)));
 
     framework_->Console()->RegisterCommand("physicsDebug",
         "Toggles drawing of physics debug geometry.",
@@ -150,7 +143,7 @@ void PhysicsModule::AutoCollisionMesh()
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
     if (!scene)
     {
-        LogError("No active scene!");
+        LogError("PhysicsModule::AutoCollisionMesh: No active scene!");
         return;
     }
     
@@ -158,13 +151,13 @@ void PhysicsModule::AutoCollisionMesh()
     {
         EntityPtr entity = iter->second;
         // Only assign to entities that don't have a rigidbody yet, but have a mesh and a placeable
-        if (!entity->GetComponent<EC_RigidBody>() && entity->GetComponent<EC_Placeable>() && entity->GetComponent<EC_Mesh>())
+        if (!entity->Component<EC_RigidBody>() && entity->Component<EC_Placeable>() && entity->Component<EC_Mesh>())
         {
             shared_ptr<EC_RigidBody> body = entity->GetOrCreateComponent<EC_RigidBody>();
             body->SetShapeFromVisibleMesh();
         }
         // Terrain mode: assign if no rigid body, but there is a terrain component
-        if (!entity->GetComponent<EC_RigidBody>() && entity->GetComponent<EC_Terrain>())
+        if (!entity->Component<EC_RigidBody>() && entity->Component<EC_Terrain>())
         {
             shared_ptr<EC_RigidBody> body = entity->GetOrCreateComponent<EC_RigidBody>();
             body->shapeType.Set(EC_RigidBody::Shape_HeightField, AttributeChange::Default);
@@ -184,38 +177,23 @@ void PhysicsModule::Update(f64 frametime)
     }
 }
 
-void PhysicsModule::OnSceneAdded(const QString& name)
+void PhysicsModule::CreatePhysicsWorld(Scene *scene)
 {
-    ScenePtr scene = GetFramework()->Scene()->GetScene(name);
-    if (!scene)
-    {
-        LogError("Could not find created scene");
-        return;
-    }
-    
-    shared_ptr<PhysicsWorld> newWorld = MAKE_SHARED(PhysicsWorld, scene, !scene->IsAuthority());
+    shared_ptr<PhysicsWorld> newWorld = MAKE_SHARED(PhysicsWorld, scene->shared_from_this(), !scene->IsAuthority());
     newWorld->SetGravity(scene->UpVector() * -9.81f);
     newWorld->SetPhysicsUpdatePeriod(defaultPhysicsUpdatePeriod_);
     newWorld->SetMaxSubSteps(defaultMaxSubSteps_);
-    physicsWorlds_[scene.get()] = newWorld;
+    physicsWorlds_[scene] = newWorld;
     scene->setProperty(PhysicsWorld::PropertyName(), QVariant::fromValue<QObject*>(newWorld.get()));
 }
 
-void PhysicsModule::OnSceneRemoved(const QString& name)
+void PhysicsModule::RemovePhysicsWorld(Scene *scene)
 {
-    // Remove the PhysicsWorld from the scene
-    ScenePtr scene = GetFramework()->Scene()->GetScene(name);
-    if (!scene)
-    {
-        LogError("Could not find scene about to be removed");
-        return;
-    }
-    
-    PhysicsWorld* worldPtr = scene->GetWorld<PhysicsWorld>().get();
+    PhysicsWorldPtr worldPtr = scene->Subsystem<PhysicsWorld>();
     if (worldPtr)
     {
         scene->setProperty(PhysicsWorld::PropertyName(), QVariant());
-        physicsWorlds_.erase(scene.get());
+        physicsWorlds_.erase(scene);
     }
 }
 
@@ -227,8 +205,8 @@ void PhysicsModule::SetRunPhysics(bool enable)
 
 void PhysicsModule::OnScriptEngineCreated(QScriptEngine* engine)
 {
-    qScriptRegisterQObjectMetaType<Physics::PhysicsModule*>(engine);
-    qScriptRegisterQObjectMetaType<Physics::PhysicsWorld*>(engine);
+    qScriptRegisterQObjectMetaType<PhysicsModule*>(engine);
+    qScriptRegisterQObjectMetaType<PhysicsWorld*>(engine);
     qScriptRegisterQObjectMetaType<PhysicsRaycastResult*>(engine);
 }
 
@@ -291,29 +269,29 @@ static QTreeWidgetItem *FindItemByName(QTreeWidgetItem *parent, const char *name
 
 void UpdateBulletProfilingData(CProfileIterator* profileIterator, QTreeWidgetItem *parentItem, int numFrames)
 {
-	profileIterator->First();
-	if (profileIterator->Is_Done())
-		return;
+    profileIterator->First();
+    if (profileIterator->Is_Done())
+        return;
 
-//	float accumulated_time=0;
+//    float accumulated_time=0;
 //    float parent_time = profileIterator->Is_Root() ? CProfileManager::Get_Time_Since_Reset() : profileIterator->Get_Current_Parent_Total_Time();
-	int i;
-	int frames_since_reset = CProfileManager::Get_Frame_Count_Since_Reset();
+    int i;
+    int frames_since_reset = CProfileManager::Get_Frame_Count_Since_Reset();
 
 //    const char *bulletParentNodeName = profileIterator->Get_Current_Parent_Name();
-//	printf("Profiling: %s (total running time: %.3f ms) ---\n",	profileIterator->Get_Current_Parent_Name(), parent_time );
+//    printf("Profiling: %s (total running time: %.3f ms) ---\n",    profileIterator->Get_Current_Parent_Name(), parent_time );
 
     std::vector<QTreeWidgetItem*> itemsThisLevel; // Cache items at this level to a vector, since bullet profiling iterator requires us to do two passes.
-	int numChildren = 0;
+    int numChildren = 0;
     for(int i = 0; !profileIterator->Is_Done(); i++,profileIterator->Next())
-	{
+    {
         ++numChildren;
-		float current_total_time = profileIterator->Get_Current_Total_Time();
-//		accumulated_time += current_total_time;
-//		float fraction = parent_time > SIMD_EPSILON ? (current_total_time / parent_time) * 100 : 0.f;
-		//printf("%d -- %s (%.2f %%) :: %.3f ms / frame (%d calls)\n",i, profileIterator->Get_Current_Name(), fraction,(current_total_time / (double)frames_since_reset),profileIterator->Get_Current_Total_Calls());
-//		totalTime += current_total_time;
-		//recurse into children
+        float current_total_time = profileIterator->Get_Current_Total_Time();
+//        accumulated_time += current_total_time;
+//        float fraction = parent_time > SIMD_EPSILON ? (current_total_time / parent_time) * 100 : 0.f;
+        //printf("%d -- %s (%.2f %%) :: %.3f ms / frame (%d calls)\n",i, profileIterator->Get_Current_Name(), fraction,(current_total_time / (double)frames_since_reset),profileIterator->Get_Current_Total_Calls());
+//        totalTime += current_total_time;
+        //recurse into children
 
         QTreeWidgetItem *item = FindItemByName(parentItem, profileIterator->Get_Current_Name());
         if (!item)
@@ -334,12 +312,12 @@ void UpdateBulletProfilingData(CProfileIterator* profileIterator, QTreeWidgetIte
         item->setText(6, "?");
     }
 
-	for (i=0;i<numChildren;i++)
+    for (i=0;i<numChildren;i++)
     {
-		profileIterator->Enter_Child(i);
-		UpdateBulletProfilingData(profileIterator, itemsThisLevel[i], numFrames);
-		profileIterator->Enter_Parent();
-	}
+        profileIterator->Enter_Child(i);
+        UpdateBulletProfilingData(profileIterator, itemsThisLevel[i], numFrames);
+        profileIterator->Enter_Parent();
+    }
 }
 
 void UpdateBulletProfilingData(QTreeWidgetItem *treeRoot, int numFrames)
@@ -348,18 +326,14 @@ void UpdateBulletProfilingData(QTreeWidgetItem *treeRoot, int numFrames)
     if (!bulletRootNode)
         return; // We've lost the physics world update node, or no physics occurring, skip bullet profiling altogether.
 
-	CProfileIterator* profileIterator = 0;
-	profileIterator = CProfileManager::Get_Iterator();
+    CProfileIterator* profileIterator = 0;
+    profileIterator = CProfileManager::Get_Iterator();
 
     UpdateBulletProfilingData(profileIterator, bulletRootNode, numFrames);
 
-	CProfileManager::Release_Iterator(profileIterator);
+    CProfileManager::Release_Iterator(profileIterator);
 }
 #endif
-
-}
-
-using namespace Physics;
 
 extern "C"
 {
@@ -370,7 +344,6 @@ DEFINE_STATIC_PLUGIN_MAIN(PhysicsModule)
 #endif
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
-    IModule *module = new Physics::PhysicsModule();
-    fw->RegisterModule(module);
+    fw->RegisterModule(new PhysicsModule());
 }
 }

@@ -61,15 +61,12 @@ struct ObbCallback : public btCollisionWorld::ContactResultCallback
     std::set<btCollisionObjectWrapper*>& result_;
 };
 
-} // ~unnamed namespace
-
-namespace Physics
-{
-
 void TickCallback(btDynamicsWorld *world, btScalar timeStep)
 {
-    static_cast<Physics::PhysicsWorld*>(world->getWorldUserInfo())->ProcessPostTick(timeStep);
+    static_cast<PhysicsWorld*>(world->getWorldUserInfo())->ProcessPostTick(timeStep);
 }
+
+} // ~unnamed namespace
 
 struct PhysicsWorld::Impl : public btIDebugDraw
 {
@@ -429,5 +426,3 @@ void PhysicsWorld::DrawDebugGeometry()
     // Get all lines of the physics world
     impl->world->debugDrawWorld();
 }
-
-} // ~Physics

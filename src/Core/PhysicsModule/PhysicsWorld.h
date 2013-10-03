@@ -11,12 +11,13 @@
 
 #include <set>
 #include <QObject>
+#include <QMetaType>
 
 class OgreWorld;
 
 /// Result of a raycast to the physical representation of a scene.
 /** Other fields are valid only if entity is non-null
-    @sa Physics::PhysicsWorld
+    @sa PhysicsWorld
     @todo Remove the QObject inheritance here, and expose as a struct to scripts. */
 class PhysicsRaycastResult : public QObject
 {
@@ -37,9 +38,8 @@ public:
     float3 normal; ///< World face normal of hit.
     float distance; ///< Distance from ray origin to the hit point.
 };
+Q_DECLARE_METATYPE(PhysicsRaycastResult*);
 
-namespace Physics
-{
 /// A physics world that encapsulates a Bullet physics world
 class PHYSICS_MODULE_API PhysicsWorld : public QObject, public enable_shared_from_this<PhysicsWorld>
 {
@@ -176,5 +176,4 @@ private:
     /// Debug draw-enabled rigidbodies. Note: these pointers are never dereferenced, it is just used for counting
     std::set<EC_RigidBody*> debugRigidBodies_;
 };
-
-}
+Q_DECLARE_METATYPE(PhysicsWorld*);

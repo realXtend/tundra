@@ -60,12 +60,13 @@ struct DeserializeData;
 class TUNDRACORE_API EC_DynamicComponent : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_DynamicComponent", 25)
+    COMPONENT_NAME("DynamicComponent", 25)
 
 public:
+     /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_DynamicComponent(Scene* scene);
-
+    /// @endcond
     ~EC_DynamicComponent();
 
     /// IComponent override.

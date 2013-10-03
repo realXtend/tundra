@@ -24,6 +24,7 @@
 #include "LoggingFunctions.h"
 
 #include <btBulletDynamicsCommon.h>
+#include <LinearMath/btMotionState.h>
 #include <BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.h>
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 #include <BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.h>
@@ -36,6 +37,165 @@ using namespace Physics;
 static const float cForceThresholdSq = 0.0005f * 0.0005f;
 static const float cImpulseThresholdSq = 0.0005f * 0.0005f;
 static const float cTorqueThresholdSq = 0.0005f * 0.0005f;
+
+struct EC_RigidBody::Impl : public btMotionState
+{
+    Impl(EC_RigidBody *rb) :
+        body(0),
+        world(0),
+        shape(0),
+        childShape(0),
+        heightField(0),
+        disconnected(false),
+        cachedShapeType(-1),
+        cachedSize(float3::zero),
+        clientExtrapolating(false),
+        rigidBody(rb)
+    {
+    }
+
+    /// btMotionState override. Called when Bullet wants us to tell the body's initial transform
+    void getWorldTransform(btTransform &worldTrans) const
+    {
+        if (placeable.expired())
+            return;
+
+        float3 position = placeable.lock()->WorldPosition();
+        Quat orientation = placeable.lock()->WorldOrientation();
+    
+        worldTrans.setOrigin(position);
+        worldTrans.setRotation(orientation);
+    }
+
+    /// btMotionState override. Called when Bullet wants to tell us the body's current transform
+    void setWorldTransform(const btTransform &worldTrans)
+    {
+        /// \todo For a large scene, applying the changed transforms of rigid bodies is slow (slower than the physics simulation itself,
+        /// or handling collisions) due to the large number of Qt signals being fired.
+    
+        PROFILE(EC_RigidBody_SetWorldTransform);
+    
+        // Cannot modify server-authoritative physics object, rather get the transform changes through placeable attributes
+        const bool hasAuthority = rigidBody->HasAuthority();
+        if (!hasAuthority && !clientExtrapolating)
+            return;
+    
+        if (placeable.expired())
+            return;
+        shared_ptr<EC_Placeable> p = placeable.lock();
+        // Important: disconnect our own response to attribute changes to not create an endless loop!
+        disconnected = true;
+    
+        AttributeChange::Type changeType = hasAuthority ? AttributeChange::Default : AttributeChange::LocalOnly;
+
+        // Set transform
+        float3 position = worldTrans.getOrigin();
+        Quat orientation = worldTrans.getRotation();
+    
+        // Non-parented case
+        if (p->parentRef.Get().IsEmpty())
+        {
+            Transform newTrans = p->transform.Get();
+            newTrans.SetPos(position.x, position.y, position.z);
+            newTrans.SetOrientation(orientation);
+            p->transform.Set(newTrans, changeType);
+        }
+        else
+        // The placeable has a parent itself
+        {
+            if (p->IsAttached())
+            {
+                position = p->OgreSceneNode()->convertWorldToLocalPosition(position);
+                orientation = p->OgreSceneNode()->convertWorldToLocalOrientation(orientation);
+            
+                Transform newTrans = p->transform.Get();
+                newTrans.SetPos(position);
+                newTrans.SetOrientation(orientation);
+                p->transform.Set(newTrans, changeType);
+            }
+        }
+        // Set linear & angular velocity
+        if (body)
+        {
+            // Performance optimization: because applying each attribute causes signals to be fired, which is slow in a large scene
+            // (and furthermore, on a server, causes each connection's sync state to be accessed), do not set the linear/angular
+            // velocities if they haven't changed
+            float3 linearVel = body->getLinearVelocity();
+            float3 angularVel = RadToDeg(body->getAngularVelocity());
+            if (!linearVel.Equals(rigidBody->linearVelocity.Get()))
+                rigidBody->linearVelocity.Set(linearVel, changeType);
+            if (!angularVel.Equals(rigidBody->angularVelocity.Get()))
+                rigidBody->angularVelocity.Set(angularVel, changeType);
+        }
+    
+        disconnected = false;
+    }
+
+    /// Calculate mass, shape & static/dynamic-classification dependant properties
+    void GetProperties(btVector3& localInertia, float& m, int& collisionFlags)
+    {
+        localInertia = btVector3(0.0f, 0.0f, 0.0f);
+        m = rigidBody->mass.Get();
+        if (m < 0.0f)
+            m = 0.0f;
+        // Trimesh shape can not move
+        if (rigidBody->shapeType.Get() == Shape_TriMesh)
+            m = 0.0f;
+        // On client, all server-side entities become static to not desync or try to send updates we should not
+        //if (!HasAuthority())
+        //   m = 0.0f;
+    
+        if (shape && m > 0.0f)
+            shape->calculateLocalInertia(m, localInertia);
+    
+        bool isDynamic = m > 0.0f;
+        bool isPhantom = rigidBody->phantom.Get();
+        bool isKinematic = rigidBody->kinematic.Get();
+        collisionFlags = 0;
+        if (!isDynamic)
+            collisionFlags |= btCollisionObject::CF_STATIC_OBJECT;
+        if (isKinematic)
+            collisionFlags |= btCollisionObject::CF_KINEMATIC_OBJECT;
+        if (isPhantom)
+            collisionFlags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
+        if (!rigidBody->drawDebug.Get())
+            collisionFlags |= btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT;
+    }
+
+    EC_RigidBody *rigidBody;
+    /// Placeable pointer
+    weak_ptr<EC_Placeable> placeable;
+    /// Terrain pointer
+    weak_ptr<EC_Terrain> terrain;
+    /// Internal disconnection of attribute changes. True during the time we're setting attributes ourselves due to Bullet update, to prevent endless loop
+    bool disconnected;
+    /// On the client side, this field is used to track whether the rigid body is being interpolated from network input events (false), or extrapolated
+    /// using local physics computations (true).
+    /// On the server side, this flag is not used.
+    bool clientExtrapolating;
+    /// Bullet body
+    btRigidBody* body;
+    /// Bullet collision shape
+    btCollisionShape* shape;
+    /// Bullet collision child shape. This is needed to use btScaledBvhTriangleMeshShape
+    btCollisionShape* childShape;
+    /// Physics world. May be 0 if the scene does not have a physics world. In that case most of EC_RigidBody's functionality is a no-op
+    PhysicsWorld* world;
+    /// PhysicsModule pointer
+    PhysicsModule* owner;
+    /// Cached shapetype (last created)
+    int cachedShapeType;
+    /// Cached shapesize (last created)
+    float3 cachedSize;
+    /// Bullet triangle mesh
+    shared_ptr<btTriangleMesh> triangleMesh;
+    /// Convex hull set
+    shared_ptr<ConvexHullSet> convexHullSet;
+    /// Bullet heightfield shape. Note: this is always put inside a compound shape (impl->shape)
+    btHeightfieldTerrainShape* heightField;
+    /// Heightfield values, for the case the shape is a heightfield.
+    std::vector<float> heightValues;
+};
 
 EC_RigidBody::EC_RigidBody(Scene* scene) :
     IComponent(scene),
@@ -58,15 +218,7 @@ EC_RigidBody::EC_RigidBody(Scene* scene) :
     INIT_ATTRIBUTE_VALUE(collisionMask, "Collision Mask", -1),
     INIT_ATTRIBUTE_VALUE(rollingFriction, "Rolling friction", 0.5f),
     INIT_ATTRIBUTE_VALUE(useGravity, "Use gravity", true),
-    body_(0),
-    world_(0),
-    shape_(0),
-    childShape_(0),
-    heightField_(0),
-    disconnected_(false),
-    cachedShapeType_(-1),
-    cachedSize_(float3::zero),
-    clientExtrapolating(false)
+    impl(new Impl(this))
 {
     static AttributeMetadata shapemetadata;
     static bool metadataInitialized = false;
@@ -91,8 +243,9 @@ EC_RigidBody::~EC_RigidBody()
 {
     RemoveBody();
     RemoveCollisionShape();
-    if (world_)
-        world_->debugRigidBodies_.erase(this);
+    if (impl->world)
+        impl->world->debugRigidBodies_.erase(this);
+    delete impl;
 }
 
 bool EC_RigidBody::SetShapeFromVisibleMesh()
@@ -137,15 +290,15 @@ void EC_RigidBody::ApplyForce(const float3& force, const float3& position)
     if (force.LengthSq() < cForceThresholdSq)
         return;
     
-    if (!body_)
+    if (!impl->body)
         CreateBody();
-    if (body_)
+    if (impl->body)
     {
         Activate();
         if (position == float3::zero)
-            body_->applyCentralForce(force);
+            impl->body->applyCentralForce(force);
         else
-            body_->applyForce(force, position);
+            impl->body->applyForce(force, position);
     }
 }
 
@@ -159,12 +312,12 @@ void EC_RigidBody::ApplyTorque(const float3& torque)
     if (torque.LengthSq() < cTorqueThresholdSq)
         return;
         
-    if (!body_)
+    if (!impl->body)
         CreateBody();
-    if (body_)
+    if (impl->body)
     {
         Activate();
-        body_->applyTorque(torque);
+        impl->body->applyTorque(torque);
     }
 }
 
@@ -178,15 +331,15 @@ void EC_RigidBody::ApplyImpulse(const float3& impulse, const float3& position)
     if (impulse.LengthSq() < cImpulseThresholdSq)
         return;
     
-    if (!body_)
+    if (!impl->body)
         CreateBody();
-    if (body_)
+    if (impl->body)
     {
         Activate();
         if (position == float3::zero)
-            body_->applyCentralImpulse(impulse);
+            impl->body->applyCentralImpulse(impulse);
         else
-            body_->applyImpulse(impulse, position);
+            impl->body->applyImpulse(impulse, position);
     }
 }
 
@@ -200,12 +353,12 @@ void EC_RigidBody::ApplyTorqueImpulse(const float3& torqueImpulse)
     if (torqueImpulse.LengthSq() < cTorqueThresholdSq)
         return;
         
-    if (!body_)
+    if (!impl->body)
         CreateBody();
-    if (body_)
+    if (impl->body)
     {
         Activate();
-        body_->applyTorqueImpulse(torqueImpulse);
+        impl->body->applyTorqueImpulse(torqueImpulse);
     }
 }
 
@@ -215,22 +368,22 @@ void EC_RigidBody::Activate()
     if (!HasAuthority())
         return;
     
-    if (!body_)
+    if (!impl->body)
         CreateBody();
-    if (body_)
-        body_->activate();
+    if (impl->body)
+        impl->body->activate();
 }
 
 void EC_RigidBody::KeepActive()
 {
-    if (body_)
-        body_->activate(true);
+    if (impl->body)
+        impl->body->activate(true);
 }
 
 bool EC_RigidBody::IsActive()
 {
-    if (body_)
-        return body_->isActive();
+    if (impl->body)
+        return impl->body->isActive();
     else
         return false;
 }
@@ -241,10 +394,10 @@ void EC_RigidBody::ResetForces()
     if (!HasAuthority())
         return;
     
-    if (!body_)
+    if (!impl->body)
         CreateBody();
-    if (body_)
-        body_->clearForces();
+    if (impl->body)
+        impl->body->clearForces();
 }
 
 void EC_RigidBody::UpdateSignals()
@@ -255,11 +408,11 @@ void EC_RigidBody::UpdateSignals()
 
     connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForPlaceableAndTerrain()));
 
-    owner_ = framework->Module<PhysicsModule>();
+    impl->owner = framework->Module<PhysicsModule>();
     Scene* scene = parent->ParentScene();
-    world_ = scene->Subsystem<PhysicsWorld>().get();
-    if (world_)
-        connect(world_, SIGNAL(AboutToUpdate(float)), this, SLOT(OnAboutToUpdate()));
+    impl->world = scene->Subsystem<PhysicsWorld>().get();
+    if (impl->world)
+        connect(impl->world, SIGNAL(AboutToUpdate(float)), this, SLOT(OnAboutToUpdate()));
 }
 
 void EC_RigidBody::CheckForPlaceableAndTerrain()
@@ -268,21 +421,21 @@ void EC_RigidBody::CheckForPlaceableAndTerrain()
     if (!parent)
         return;
     
-    if (!placeable_.lock())
+    if (!impl->placeable.lock())
     {
         shared_ptr<EC_Placeable> placeable = parent->Component<EC_Placeable>();
         if (placeable)
         {
-            placeable_ = placeable;
+            impl->placeable = placeable;
             connect(placeable.get(), SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(PlaceableUpdated(IAttribute*)));
         }
     }
-    if (!terrain_.lock())
+    if (!impl->terrain.lock())
     {
         shared_ptr<EC_Terrain> terrain = parent->Component<EC_Terrain>();
         if (terrain)
         {
-            terrain_ = terrain;
+            impl->terrain = terrain;
             connect(terrain.get(), SIGNAL(TerrainRegenerated()), this, SLOT(OnTerrainRegenerated()));
             connect(terrain.get(), SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(TerrainUpdated(IAttribute*)));
         }
@@ -306,23 +459,23 @@ void EC_RigidBody::CreateCollisionShape()
     {
     case Shape_Box:
         // Note: Bullet uses box halfsize
-        shape_ = new btBoxShape(btVector3(sizeVec.x * 0.5f, sizeVec.y * 0.5f, sizeVec.z * 0.5f));
+        impl->shape = new btBoxShape(btVector3(sizeVec.x * 0.5f, sizeVec.y * 0.5f, sizeVec.z * 0.5f));
         break;
     case Shape_Sphere:
-        shape_ = new btSphereShape(sizeVec.x * 0.5f);
+        impl->shape = new btSphereShape(sizeVec.x * 0.5f);
         break;
     case Shape_Cylinder:
-        shape_ = new btCylinderShape(btVector3(sizeVec.x * 0.5f, sizeVec.y * 0.5f, sizeVec.z * 0.5f));
+        impl->shape = new btCylinderShape(btVector3(sizeVec.x * 0.5f, sizeVec.y * 0.5f, sizeVec.z * 0.5f));
         break;
     case Shape_Capsule:
-        shape_ = new btCapsuleShape(sizeVec.x * 0.5f, sizeVec.y * 0.5f);
+        impl->shape = new btCapsuleShape(sizeVec.x * 0.5f, sizeVec.y * 0.5f);
         break;
     case Shape_TriMesh:
-        if (triangleMesh_)
+        if (impl->triangleMesh)
         {
             // Need to first create a bvhTriangleMeshShape, then a scaled version of it to allow for individual scaling.
-            childShape_ = new btBvhTriangleMeshShape(triangleMesh_.get(), true, true);
-            shape_ = new btScaledBvhTriangleMeshShape(static_cast<btBvhTriangleMeshShape*>(childShape_), btVector3(1.0f, 1.0f, 1.0f));
+            impl->childShape = new btBvhTriangleMeshShape(impl->triangleMesh.get(), true, true);
+            impl->shape = new btScaledBvhTriangleMeshShape(static_cast<btBvhTriangleMeshShape*>(impl->childShape), btVector3(1.0f, 1.0f, 1.0f));
         }
         break;
     case Shape_HeightField:
@@ -332,7 +485,7 @@ void EC_RigidBody::CreateCollisionShape()
         CreateConvexHullSetShape();
         break;
     case Shape_Cone:
-        shape_ = new btConeShape(sizeVec.x * 0.5f, sizeVec.y);
+        impl->shape = new btConeShape(sizeVec.x * 0.5f, sizeVec.y);
         break;
     }
     
@@ -344,28 +497,19 @@ void EC_RigidBody::CreateCollisionShape()
 
 void EC_RigidBody::RemoveCollisionShape()
 {
-    if (shape_)
+    if (impl->shape)
     {
-        if (body_)
-            body_->setCollisionShape(0);
-        delete shape_;
-        shape_ = 0;
+        if (impl->body)
+            impl->body->setCollisionShape(0);
+        SAFE_DELETE(impl->shape);
     }
-    if (childShape_)
-    {
-        delete childShape_;
-        childShape_ = 0;
-    }
-    if (heightField_)
-    {
-        delete heightField_;
-        heightField_ = 0;
-    }
+    SAFE_DELETE(impl->childShape);
+    SAFE_DELETE(impl->heightField);
 }
 
 void EC_RigidBody::CreateBody()
 {
-    if (!world_ || !ParentEntity() || body_)
+    if (!impl->world || !ParentEntity() || impl->body)
         return;
     
     CheckForPlaceableAndTerrain();
@@ -376,136 +520,63 @@ void EC_RigidBody::CreateBody()
     float m;
     int collisionFlags;
     
-    GetProperties(localInertia, m, collisionFlags);
+    impl->GetProperties(localInertia, m, collisionFlags);
     
-    body_ = new btRigidBody(m, this, shape_, localInertia);
+    impl->body = new btRigidBody(m, impl, impl->shape, localInertia);
     // TEST: Adjust the threshold of when to sleep the object - for reducing network bandwidth.
-//    body_->setSleepingThresholds(0.2f, 0.5f); // Bullet defaults are 0.8 and 1.0.
-    body_->setUserPointer(this);
-    body_->setCollisionFlags(collisionFlags);
-    world_->BulletWorld()->addRigidBody(body_, collisionLayer.Get(), collisionMask.Get());
-    body_->activate();
+//    impl->body->setSleepingThresholds(0.2f, 0.5f); // Bullet defaults are 0.8 and 1.0.
+    impl->body->setUserPointer(this);
+    impl->body->setCollisionFlags(collisionFlags);
+    impl->world->BulletWorld()->addRigidBody(impl->body, collisionLayer.Get(), collisionMask.Get());
+    impl->body->activate();
     
     UpdateGravity();
 }
 
 void EC_RigidBody::ReaddBody()
 {
-    if (!world_ || !ParentEntity() || !body_)
+    if (!impl->world || !ParentEntity() || !impl->body)
         return;
 
     btVector3 localInertia;
     float m;
     int collisionFlags;
-    GetProperties(localInertia, m, collisionFlags);
+    impl->GetProperties(localInertia, m, collisionFlags);
 
-    world_->BulletWorld()->removeRigidBody(body_);
+    impl->world->BulletWorld()->removeRigidBody(impl->body);
 
-    body_->setCollisionShape(shape_);
-    body_->setMassProps(m, localInertia);
-    body_->setCollisionFlags(collisionFlags);
+    impl->body->setCollisionShape(impl->shape);
+    impl->body->setMassProps(m, localInertia);
+    impl->body->setCollisionFlags(collisionFlags);
 
     // We have changed the inertia tensor properties of the object, so recompute it.
     // http://www.bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=9&t=5194&hilit=inertia+tensor#p18820
-    body_->updateInertiaTensor();
+    impl->body->updateInertiaTensor();
 
-    world_->BulletWorld()->addRigidBody(body_, collisionLayer.Get(), collisionMask.Get());
-    body_->clearForces();
-    body_->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
-    body_->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f));
-    body_->activate();
+    impl->world->BulletWorld()->addRigidBody(impl->body, collisionLayer.Get(), collisionMask.Get());
+    impl->body->clearForces();
+    impl->body->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
+    impl->body->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f));
+    impl->body->activate();
 }
 
 void EC_RigidBody::RemoveBody()
 {
-    if (body_ && world_)
+    if (impl->body && impl->world)
     {
-        world_->BulletWorld()->removeRigidBody(body_);
-        delete body_;
-        body_ = 0;
+        impl->world->BulletWorld()->removeRigidBody(impl->body);
+        SAFE_DELETE(impl->body);
     }
-}
-
-void EC_RigidBody::getWorldTransform(btTransform &worldTrans) const
-{
-    EC_Placeable* placeable = placeable_.lock().get();
-    if (!placeable)
-        return;
-        
-    float3 position = placeable->WorldPosition();
-    Quat orientation = placeable->WorldOrientation();
-    
-    worldTrans.setOrigin(position);
-    worldTrans.setRotation(orientation);
-}
-
-void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
-{
-    /// \todo For a large scene, applying the changed transforms of rigid bodies is slow (slower than the physics simulation itself,
-    /// or handling collisions) due to the large number of Qt signals being fired.
-    
-    PROFILE(EC_RigidBody_SetWorldTransform);
-    
-    // Cannot modify server-authoritative physics object, rather get the transform changes through placeable attributes
-    const bool hasAuthority = HasAuthority();
-    if (!hasAuthority && !clientExtrapolating)
-        return;
-    
-    EC_Placeable* placeable = placeable_.lock().get();
-    if (!placeable)
-        return;
-    
-    // Important: disconnect our own response to attribute changes to not create an endless loop!
-    disconnected_ = true;
-    
-    AttributeChange::Type changeType = hasAuthority ? AttributeChange::Default : AttributeChange::LocalOnly;
-
-    // Set transform
-    float3 position = worldTrans.getOrigin();
-    Quat orientation = worldTrans.getRotation();
-    
-    // Non-parented case
-    if (placeable->parentRef.Get().IsEmpty())
-    {
-        Transform newTrans = placeable->transform.Get();
-        newTrans.SetPos(position.x, position.y, position.z);
-        newTrans.SetOrientation(orientation);
-        placeable->transform.Set(newTrans, changeType);
-    }
-    else
-    // The placeable has a parent itself
-    {
-        if (placeable->IsAttached())
-        {
-            position = placeable->OgreSceneNode()->convertWorldToLocalPosition(position);
-            orientation = placeable->OgreSceneNode()->convertWorldToLocalOrientation(orientation);
-            
-            Transform newTrans = placeable->transform.Get();
-            newTrans.SetPos(position);
-            newTrans.SetOrientation(orientation);
-            placeable->transform.Set(newTrans, changeType);
-        }
-    }
-    // Set linear & angular velocity
-    if (body_)
-    {
-        // Performance optimization: because applying each attribute causes signals to be fired, which is slow in a large scene
-        // (and furthermore, on a server, causes each connection's sync state to be accessed), do not set the linear/angular
-        // velocities if they haven't changed
-        float3 linearVel = body_->getLinearVelocity();
-        float3 angularVel = RadToDeg(body_->getAngularVelocity());
-        if (!linearVel.Equals(linearVelocity.Get()))
-            linearVelocity.Set(linearVel, changeType);
-        if (!angularVel.Equals(angularVelocity.Get()))
-            angularVelocity.Set(angularVel, changeType);
-    }
-    
-    disconnected_ = false;
 }
 
 void EC_RigidBody::SetClientExtrapolating(bool isClientExtrapolating)
 {
-    clientExtrapolating = isClientExtrapolating;
+    impl->clientExtrapolating = isClientExtrapolating;
+}
+
+btRigidBody* EC_RigidBody::BulletRigidBody() const
+{
+    return impl->body;
 }
 
 void EC_RigidBody::OnTerrainRegenerated()
@@ -527,30 +598,30 @@ void EC_RigidBody::OnCollisionMeshAssetLoaded(AssetPtr asset)
     {
         if (shapeType.Get() == Shape_TriMesh)
         {
-            triangleMesh_ = owner_->GetTriangleMeshFromOgreMesh(mesh);
+            impl->triangleMesh = impl->owner->GetTriangleMeshFromOgreMesh(mesh);
             CreateCollisionShape();
         }
         if (shapeType.Get() == Shape_ConvexHull)
         {
-            convexHullSet_ = owner_->GetConvexHullSetFromOgreMesh(mesh);
+            impl->convexHullSet = impl->owner->GetConvexHullSetFromOgreMesh(mesh);
             CreateCollisionShape();
         }
 
-        cachedShapeType_ = shapeType.Get();
-        cachedSize_ = size.Get();
+        impl->cachedShapeType = shapeType.Get();
+        impl->cachedSize = size.Get();
     }
 }
 
 void EC_RigidBody::AttributesChanged()
 {
-    if (disconnected_)
+    if (impl->disconnected)
         return;
     
     // Create body now if does not exist yet
-    if (!body_)
+    if (!impl->body)
         CreateBody();
     // If body was not created (we do not actually have a physics world), exit
-    if (!body_)
+    if (!impl->body)
         return;
     
     if (mass.ValueChanged() || collisionLayer.ValueChanged() || collisionMask.ValueChanged())
@@ -558,33 +629,33 @@ void EC_RigidBody::AttributesChanged()
         ReaddBody();
     
     if (friction.ValueChanged())
-        body_->setFriction(friction.Get());
+        impl->body->setFriction(friction.Get());
     
     if (rollingFriction.ValueChanged())
-        body_->setRollingFriction(rollingFriction.Get());
+        impl->body->setRollingFriction(rollingFriction.Get());
     
     if (restitution.ValueChanged())
-        body_->setRestitution(friction.Get());
+        impl->body->setRestitution(friction.Get());
     
     if (linearDamping.ValueChanged() || angularDamping.ValueChanged())
-         body_->setDamping(linearDamping.Get(), angularDamping.Get());
+         impl->body->setDamping(linearDamping.Get(), angularDamping.Get());
     
     if (linearFactor.ValueChanged())
-        body_->setLinearFactor(linearFactor.Get());
+        impl->body->setLinearFactor(linearFactor.Get());
     
     if (angularFactor.ValueChanged())
-        body_->setAngularFactor(angularFactor.Get());
+        impl->body->setAngularFactor(angularFactor.Get());
     
     if (shapeType.ValueChanged() || size.ValueChanged())
     {
-        if (shapeType.Get() != cachedShapeType_ || size.Get() != cachedSize_)
+        if (shapeType.Get() != impl->cachedShapeType || size.Get() != impl->cachedSize)
         {
             // If shape does not involve mesh, can create it directly. Otherwise request the mesh
             if (shapeType.Get() != Shape_TriMesh && shapeType.Get() != Shape_ConvexHull)
             {
                 CreateCollisionShape();
-                cachedShapeType_ = shapeType.Get();
-                cachedSize_ = size.Get();
+                impl->cachedShapeType = shapeType.Get();
+                impl->cachedSize = size.Get();
             }
             else
                 RequestMesh();
@@ -605,36 +676,36 @@ void EC_RigidBody::AttributesChanged()
     if (drawDebug.ValueChanged())
     {
         bool enable = drawDebug.Get();
-        if (body_)
+        if (impl->body)
         {
-            int collisionFlags = body_->getCollisionFlags();
+            int collisionFlags = impl->body->getCollisionFlags();
             if (enable)
                 collisionFlags &= ~btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT;
             else
                 collisionFlags |= btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT;
-            body_->setCollisionFlags(collisionFlags);
+            impl->body->setCollisionFlags(collisionFlags);
         }
         
         // Refresh PhysicsWorld's knowledge of debug-enabled rigidbodies
-        if (world_)
+        if (impl->world)
         {
             if (enable)
-                world_->debugRigidBodies_.insert(this);
+                impl->world->debugRigidBodies_.insert(this);
             else
-                world_->debugRigidBodies_.erase(this);
+                impl->world->debugRigidBodies_.erase(this);
         }
     }
     
     if (linearVelocity.ValueChanged())
     {
-        body_->setLinearVelocity(linearVelocity.Get());
-        body_->activate();
+        impl->body->setLinearVelocity(linearVelocity.Get());
+        impl->body->activate();
     }
     
     if (angularVelocity.ValueChanged())
     {
-        body_->setAngularVelocity(DegToRad(angularVelocity.Get()));
-        body_->activate();
+        impl->body->setAngularVelocity(DegToRad(angularVelocity.Get()));
+        impl->body->activate();
     }
     
     if (useGravity.ValueChanged())
@@ -644,10 +715,10 @@ void EC_RigidBody::AttributesChanged()
 void EC_RigidBody::PlaceableUpdated(IAttribute* attribute)
 {
     // Do not respond to our own change
-    if (disconnected_ || !body_)
+    if (impl->disconnected || !impl->body)
         return;
     
-    EC_Placeable* placeable = placeable_.lock().get();
+    EC_Placeable* placeable = impl->placeable.lock().get();
     if (!placeable)
         return;
         
@@ -661,7 +732,7 @@ void EC_RigidBody::PlaceableUpdated(IAttribute* attribute)
 
         // Since we programmatically changed the orientation of the object outside the simulation, we must recompute the 
         // inertia tensor matrix of the object manually (it's dependent on the world space orientation of the object)
-        body_->updateInertiaTensor();
+        impl->body->updateInertiaTensor();
     }
 }
 
@@ -671,7 +742,7 @@ void EC_RigidBody::OnAboutToUpdate()
     
     // If the placeable is parented, we forcibly update world transform from it before each simulation step
     // However, we do not update scale, as that is expensive
-    EC_Placeable* placeable = placeable_.lock().get();
+    EC_Placeable* placeable = impl->placeable.lock().get();
     if (placeable && !placeable->parentRef.Get().IsEmpty() && placeable->IsAttached())
         UpdatePosRotFromPlaceable();
 }
@@ -682,26 +753,26 @@ void EC_RigidBody::SetRotation(const float3& rotation)
     if (!HasAuthority())
         return;
     
-    disconnected_ = true;
+    impl->disconnected = true;
     
-    EC_Placeable* placeable = placeable_.lock().get();
+    EC_Placeable* placeable = impl->placeable.lock().get();
     if (placeable)
     {
         Transform trans = placeable->transform.Get();
         trans.rot = rotation;
         placeable->transform.Set(trans, AttributeChange::Default);
         
-        if (body_)
+        if (impl->body)
         {
-            btTransform& worldTrans = body_->getWorldTransform();
-            btTransform interpTrans = body_->getInterpolationWorldTransform();
+            btTransform& worldTrans = impl->body->getWorldTransform();
+            btTransform interpTrans = impl->body->getInterpolationWorldTransform();
             worldTrans.setRotation(trans.Orientation());
             interpTrans.setRotation(worldTrans.getRotation());
-            body_->setInterpolationWorldTransform(interpTrans);
+            impl->body->setInterpolationWorldTransform(interpTrans);
         }
     }
     
-    disconnected_ = false;
+    impl->disconnected = false;
 }
 
 void EC_RigidBody::Rotate(const float3& rotation)
@@ -710,40 +781,45 @@ void EC_RigidBody::Rotate(const float3& rotation)
     if (!HasAuthority())
         return;
     
-    disconnected_ = true;
+    impl->disconnected = true;
     
-    EC_Placeable* placeable = placeable_.lock().get();
+    EC_Placeable* placeable = impl->placeable.lock().get();
     if (placeable)
     {
         Transform trans = placeable->transform.Get();
         trans.rot += rotation;
         placeable->transform.Set(trans, AttributeChange::Default);
         
-        if (body_)
+        if (impl->body)
         {
-            btTransform& worldTrans = body_->getWorldTransform();
-            btTransform interpTrans = body_->getInterpolationWorldTransform();
+            btTransform& worldTrans = impl->body->getWorldTransform();
+            btTransform interpTrans = impl->body->getInterpolationWorldTransform();
             worldTrans.setRotation(trans.Orientation());
             interpTrans.setRotation(worldTrans.getRotation());
-            body_->setInterpolationWorldTransform(interpTrans);
+            impl->body->setInterpolationWorldTransform(interpTrans);
         }
     }
     
-    disconnected_ = false;
+    impl->disconnected = false;
+}
+
+PhysicsWorld* EC_RigidBody::World() const
+{
+    return impl->world;
 }
 
 float3 EC_RigidBody::GetLinearVelocity()
 {
-    if (body_)
-        return body_->getLinearVelocity();
+    if (impl->body)
+        return impl->body->getLinearVelocity();
     else 
         return linearVelocity.Get();
 }
 
 float3 EC_RigidBody::GetAngularVelocity()
 {
-    if (body_)
-        return RadToDeg(body_->getAngularVelocity());
+    if (impl->body)
+        return RadToDeg(impl->body->getAngularVelocity());
     else
         return angularVelocity.Get();
 }
@@ -751,14 +827,14 @@ float3 EC_RigidBody::GetAngularVelocity()
 void EC_RigidBody::GetAabbox(float3 &outAabbMin, float3 &outAabbMax)
 {
     btVector3 aabbMin, aabbMax;
-    body_->getAabb(aabbMin, aabbMax);
+    impl->body->getAabb(aabbMin, aabbMax);
     outAabbMin.Set(aabbMin.x(), aabbMin.y(), aabbMin.z());
     outAabbMax.Set(aabbMax.x(), aabbMax.y(), aabbMax.z());
 }
 
 bool EC_RigidBody::HasAuthority() const
 {
-    if (!world_ || (world_->IsClient() && !ParentEntity()->IsLocal()))
+    if (!impl->world || (impl->world->IsClient() && !ParentEntity()->IsLocal()))
         return false;
     
     return true;
@@ -767,7 +843,7 @@ bool EC_RigidBody::HasAuthority() const
 AABB EC_RigidBody::ShapeAABB() const
 {
     btVector3 aabbMin, aabbMax;
-    body_->getAabb(aabbMin, aabbMax);
+    impl->body->getAabb(aabbMin, aabbMax);
     return AABB(aabbMin, aabbMax);
 }
 
@@ -784,9 +860,15 @@ bool EC_RigidBody::IsPrimitiveShape() const
     }
 }
 
+PhysicsWorld* EC_RigidBody::GetPhysicsWorld() const
+{
+    LogWarning("EC_RigidBody:GetPhysicsWorld: this functions is deprecated and will be removed. Use World() instead.");
+    return World();
+}
+
 void EC_RigidBody::TerrainUpdated(IAttribute* attribute)
 {
-    EC_Terrain* terrain = terrain_.lock().get();
+    EC_Terrain* terrain = impl->terrain.lock().get();
     if (!terrain)
         return;
     /// \todo It is suboptimal to regenerate the whole heightfield when just the terrain's transform changes
@@ -830,67 +912,67 @@ void EC_RigidBody::UpdateScale()
         sizeVec.z = 0;
     
     // If placeable exists, set local scaling from its scale
-    EC_Placeable* placeable = placeable_.lock().get();
-    if (placeable && shape_)
+    EC_Placeable* placeable = impl->placeable.lock().get();
+    if (placeable && impl->shape)
     {
         // Note: for now, world scale is purposefully NOT used, because it would be problematic to change the scale when a parenting change occurs
         const float3& scale = placeable->transform.Get().scale;
         // Trianglemesh or convexhull does not have scaling of its own in the shape, so multiply with the size
         if (shapeType.Get() != Shape_TriMesh && shapeType.Get() != Shape_ConvexHull)
-            shape_->setLocalScaling(btVector3(scale.x, scale.y, scale.z));
+            impl->shape->setLocalScaling(btVector3(scale.x, scale.y, scale.z));
         else
-            shape_->setLocalScaling(btVector3(sizeVec.x * scale.x, sizeVec.y * scale.y, sizeVec.z * scale.z));
+            impl->shape->setLocalScaling(btVector3(sizeVec.x * scale.x, sizeVec.y * scale.y, sizeVec.z * scale.z));
     }
 }
 
 void EC_RigidBody::UpdateGravity()
 {
-    if (!body_ || !world_)
+    if (!impl->body || !impl->world)
         return;
     
-    int flags = body_->getFlags();
+    int flags = impl->body->getFlags();
     if (useGravity.Get())
     {
-        body_->setGravity(world_->BulletWorld()->getGravity());
-        body_->activate(); // Activate in case body was sleeping
+        impl->body->setGravity(impl->world->BulletWorld()->getGravity());
+        impl->body->activate(); // Activate in case body was sleeping
         flags &= ~BT_DISABLE_WORLD_GRAVITY;
     }
     else
     {
-        body_->setGravity(btVector3(0.0f, 0.0f, 0.0f));
+        impl->body->setGravity(btVector3(0.0f, 0.0f, 0.0f));
         flags |= BT_DISABLE_WORLD_GRAVITY;
     }
-    body_->setFlags(flags);
+    impl->body->setFlags(flags);
 }
 
 void EC_RigidBody::CreateHeightFieldFromTerrain()
 {
     CheckForPlaceableAndTerrain();
     
-    EC_Terrain* terrain = terrain_.lock().get();
+    EC_Terrain* terrain = impl->terrain.lock().get();
     if (!terrain)
         return;
     
-    int width = terrain->PatchWidth() * EC_Terrain::cPatchSize;
-    int height = terrain->PatchHeight() * EC_Terrain::cPatchSize;
+    uint width = terrain->PatchWidth() * EC_Terrain::cPatchSize;
+    uint height = terrain->PatchHeight() * EC_Terrain::cPatchSize;
     if (!width || !height)
         return;
     
-    heightValues_.resize(width * height);
+    impl->heightValues.resize(width * height);
     
     float xzSpacing = 1.0f;
     float ySpacing = 1.0f;
     float minY = 1000000000;
     float maxY = -1000000000;
-    for(uint z = 0; z < (uint)height; ++z)
-        for(uint x = 0; x < (uint)width; ++x)
+    for(uint z = 0; z < height; ++z)
+        for(uint x = 0; x < width; ++x)
         {
             float value = terrain->GetPoint(x, z);
             if (value < minY)
                 minY = value;
             if (value > maxY)
                 maxY = value;
-            heightValues_[z * width + x] = value;
+            impl->heightValues[z * width + x] = value;
         }
 
     float3 scale = terrain->nodeTransformation.Get().scale;
@@ -898,94 +980,64 @@ void EC_RigidBody::CreateHeightFieldFromTerrain()
     float3 bbMax(xzSpacing * (width - 1), maxY, xzSpacing * (height - 1));
     float3 bbCenter = scale.Mul((bbMin + bbMax) * 0.5f);
     
-    heightField_ = new btHeightfieldTerrainShape(width, height, &heightValues_[0], ySpacing, minY, maxY, 1, PHY_FLOAT, false);
+    impl->heightField = new btHeightfieldTerrainShape(width, height, &impl->heightValues[0], ySpacing, minY, maxY, 1, PHY_FLOAT, false);
     
     /** \todo EC_Terrain uses its own transform that is independent of the placeable. It is not nice to support, since rest of EC_RigidBody assumes
         the transform is in the placeable. Right now, we only support position & scaling. Here, we also counteract Bullet's nasty habit to center 
         the heightfield on its own. Also, Bullet's collisionshapes generally do not support arbitrary transforms, so we must construct a "compound shape"
         and add the heightfield as its child, to be able to specify the transform.
      */
-    heightField_->setLocalScaling(scale);
+    impl->heightField->setLocalScaling(scale);
     
     float3 positionAdjust = terrain->nodeTransformation.Get().pos;
     positionAdjust += bbCenter;
     
     btCompoundShape* compound = new btCompoundShape();
-    shape_ = compound;
-    compound->addChildShape(btTransform(btQuaternion(0,0,0,1), positionAdjust), heightField_);
+    impl->shape = compound;
+    compound->addChildShape(btTransform(btQuaternion(0,0,0,1), positionAdjust), impl->heightField);
 }
 
 void EC_RigidBody::CreateConvexHullSetShape()
 {
-    if (!convexHullSet_)
+    if (!impl->convexHullSet)
         return;
     
     // Avoid creating a compound shape if only 1 hull in the set
-    if (convexHullSet_->hulls_.size() > 1)
+    if (impl->convexHullSet->hulls_.size() > 1)
     {
         btCompoundShape* compound = new btCompoundShape();
-        shape_ = compound;
-        for (uint i = 0; i < convexHullSet_->hulls_.size(); ++i)
-            compound->addChildShape(btTransform(btQuaternion(0,0,0,1), convexHullSet_->hulls_[i].position_), convexHullSet_->hulls_[i].hull_.get());
+        impl->shape = compound;
+        for (uint i = 0; i < impl->convexHullSet->hulls_.size(); ++i)
+            compound->addChildShape(btTransform(btQuaternion(0,0,0,1), impl->convexHullSet->hulls_[i].position_), impl->convexHullSet->hulls_[i].hull_.get());
     }
-    else if (convexHullSet_->hulls_.size() == 1)
+    else if (impl->convexHullSet->hulls_.size() == 1)
     {
-        btConvexHullShape* original = convexHullSet_->hulls_[0].hull_.get();
+        btConvexHullShape* original = impl->convexHullSet->hulls_[0].hull_.get();
         btConvexHullShape* convex = new btConvexHullShape(reinterpret_cast<const btScalar*>(original->getUnscaledPoints()), original->getNumVertices());
-        shape_ = convex;
+        impl->shape = convex;
     }
-}
-
-void EC_RigidBody::GetProperties(btVector3& localInertia, float& m, int& collisionFlags)
-{
-    localInertia = btVector3(0.0f, 0.0f, 0.0f);
-    m = mass.Get();
-    if (m < 0.0f)
-        m = 0.0f;
-    // Trimesh shape can not move
-    if (shapeType.Get() == Shape_TriMesh)
-        m = 0.0f;
-    // On client, all server-side entities become static to not desync or try to send updates we should not
-    //if (!HasAuthority())
-    //   m = 0.0f;
-    
-    if (shape_ && m > 0.0f)
-        shape_->calculateLocalInertia(m, localInertia);
-    
-    bool isDynamic = m > 0.0f;
-    bool isPhantom = phantom.Get();
-    bool isKinematic = kinematic.Get();
-    collisionFlags = 0;
-    if (!isDynamic)
-        collisionFlags |= btCollisionObject::CF_STATIC_OBJECT;
-    if (isKinematic)
-        collisionFlags |= btCollisionObject::CF_KINEMATIC_OBJECT;
-    if (isPhantom)
-        collisionFlags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
-    if (!drawDebug.Get())
-        collisionFlags |= btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT;
 }
 
 void EC_RigidBody::UpdatePosRotFromPlaceable()
 {
     PROFILE(EC_RigidBody_UpdatePosRotFromPlaceable);
     
-    EC_Placeable* placeable = placeable_.lock().get();
-    if (!placeable || !body_)
+    EC_Placeable* placeable = impl->placeable.lock().get();
+    if (!placeable || !impl->body)
         return;
     
     float3 position = placeable->WorldPosition();
     Quat orientation = placeable->WorldOrientation();
 
-    btTransform& worldTrans = body_->getWorldTransform();
+    btTransform& worldTrans = impl->body->getWorldTransform();
     worldTrans.setOrigin(position);
     worldTrans.setRotation(orientation);
     
     // When we forcibly set the physics transform, also set the interpolation transform to prevent jerky motion
-    btTransform interpTrans = body_->getInterpolationWorldTransform();
+    btTransform interpTrans = impl->body->getInterpolationWorldTransform();
     interpTrans.setOrigin(worldTrans.getOrigin());
     interpTrans.setRotation(worldTrans.getRotation());
-    body_->setInterpolationWorldTransform(interpTrans);
+    impl->body->setInterpolationWorldTransform(interpTrans);
     
     KeepActive();
 }

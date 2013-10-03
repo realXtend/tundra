@@ -29,12 +29,15 @@ class EC_Billboard;
 class SCENEWIDGET_MODULE_API EC_WidgetBillboard : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_WidgetBillboard", 42)
+    COMPONENT_NAME("WidgetBillboard", 42)
 
     friend class SceneWidgetComponents;
 
 public:
+     /// @cond PRIVATE
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_WidgetBillboard(Scene* scene);
+    /// @endcond
     ~EC_WidgetBillboard();
 
     /// Asset reference to the UI file where the source widget will be instantiated.

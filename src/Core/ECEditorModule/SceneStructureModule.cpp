@@ -24,7 +24,7 @@
 #include "InputAPI.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
-#include "SceneImporter.h"
+#include "OgreSceneImporter.h"
 #include "EC_Camera.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
@@ -42,7 +42,7 @@
 
 #include <QToolTip>
 #include <QCursor>
-/* // Regression: TODO: reimplement! Preferably in some nicer manner that doesn't require compiling OpenAssetImport support into ECEditorModule!
+/* /// @todo Regression: TODO: reimplement! Preferably in some nicer manner that doesn't require compiling OpenAssetImport support into ECEditorModule!
 #ifdef ASSIMP_ENABLED
 #include <OpenAssetImport.h>
 #endif
@@ -50,9 +50,9 @@
 #include "MemoryLeakCheck.h"
 
 // Shortcuts for config keys.
-static const char *cSceneWindowPos = "scene window pos";
-static const char *cAssetWindowPos = "asset window pos";
-static const char *cKeyBindingsWindowPos = "key bindings window pos";
+static const char * const cSceneWindowPos = "scene window pos";
+static const char * const cAssetWindowPos = "asset window pos";
+static const char * const cKeyBindingsWindowPos = "key bindings window pos";
 
 SceneStructureModule::SceneStructureModule() :
     IModule("SceneStructure"),
@@ -78,8 +78,6 @@ void SceneStructureModule::Initialize()
     // No headless checks for these as they are useful in headless mode too.
     framework_->Console()->RegisterCommand("scene", "Shows the Scene Structure window, hides it if it's visible.", 
         this, SLOT(ToggleSceneStructureWindow()));
-    framework_->Console()->RegisterCommand("scenestruct", "Deprecated use 'scene' instead.", 
-        this, SLOT(ToggleSceneStructureWindowDeprecated()));
     framework_->Console()->RegisterCommand("assets", "Shows the Assets window, hides it if it's visible.", 
         this, SLOT(ToggleAssetsWindow()));
 
@@ -89,7 +87,7 @@ void SceneStructureModule::Initialize()
         connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
         
         // Stay in sync with EC editors' selection.
-        connect(framework_->GetModule<ECEditorModule>(), SIGNAL(ActiveEditorChanged(ECEditorWindow *)),
+        connect(framework_->Module<ECEditorModule>(), SIGNAL(ActiveEditorChanged(ECEditorWindow *)),
             this, SLOT(SyncSelectionWithEcEditor(ECEditorWindow *)), Qt::UniqueConnection);
 
         // Drag and drop tooltip widget
@@ -141,12 +139,12 @@ void SceneStructureModule::InstantiateContent(const QStringList &filenames, cons
         if (filename.endsWith(cOgreSceneFileExtension, Qt::CaseInsensitive))
         {
             ///\todo Implement ogre.scene url drops at some point?
-            TundraLogic::SceneImporter importer(scene->shared_from_this());
+            OgreSceneImporter importer(scene->shared_from_this());
             sceneDescs.append(importer.CreateSceneDescFromScene(filename));
         }
         else if (filename.endsWith(cOgreMeshFileExtension, Qt::CaseInsensitive))
         {
-            TundraLogic::SceneImporter importer(scene->shared_from_this());
+            OgreSceneImporter importer(scene->shared_from_this());
             ///\todo Perhaps download the mesh before instantiating so we could inspect the mesh binary for materials and skeleton?
             /// The path is already there for tundra scene file web drops
             //if (IsUrl(filename)) ...
@@ -199,7 +197,7 @@ void SceneStructureModule::InstantiateContent(const QStringList &filenames, cons
                 std::vector<AssImp::MeshData> meshNames;
                 assimporter.GetMeshData(filename, meshNames);
 
-                TundraLogic::SceneImporter sceneImporter(scene->shared_from_this());
+                OgreSceneImporter sceneImporter(scene->shared_from_this());
                 for(size_t i=0 ; i<meshNames.size() ; ++i)
                     sceneImporter.ImportMesh(meshNames[i].file_, dirname, meshNames[i].transform_,
                         "", "local://", AttributeChange::Default, false, meshNames[i].name_);
@@ -320,12 +318,6 @@ void SceneStructureModule::CleanReference(QString &fileRef)
     }
 }
 
-void SceneStructureModule::ToggleSceneStructureWindowDeprecated()
-{
-    LogWarning("SceneStructureModule: 'scenestruct' console command is deprecated, use 'scene' instead.");
-    ToggleSceneStructureWindow();
-}
-
 void SceneStructureModule::ToggleSceneStructureWindow()
 {
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
@@ -349,12 +341,12 @@ void SceneStructureModule::ToggleSceneStructureWindow()
         sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
         sceneWindow->setAttribute(Qt::WA_DeleteOnClose);
         sceneWindow->setWindowFlags(Qt::Tool);
-        sceneWindow->SetScene(scene->shared_from_this());
+        sceneWindow->SetShownScene(scene->shared_from_this());
         LoadWindowPosition(sceneWindow.data(), cSceneWindowPos);
         sceneWindow->show();
 
         // Reflect possible current selection of EC editor to Scene Structure window right away.
-        SyncSelectionWithEcEditor(framework_->GetModule<ECEditorModule>()->ActiveEditor());
+        SyncSelectionWithEcEditor(framework_->Module<ECEditorModule>()->ActiveEditor());
     }
 }
 
@@ -442,7 +434,7 @@ void SceneStructureModule::SaveWindowPosition(QWidget *widget, const QString &se
     if (widget)
     {
         ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name(), settingName, widget->pos());
-        framework_->Config()->Set(configData);
+        framework_->Config()->Write(configData);
     }
 }
 
@@ -451,7 +443,7 @@ void SceneStructureModule::LoadWindowPosition(QWidget *widget, const QString &se
     if (framework_->Ui()->MainWindow() && widget)
     {
         ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name(), settingName);
-        QPoint pos = framework_->Config()->Get(configData).toPoint();
+        QPoint pos = framework_->Config()->Read(configData).toPoint();
         UiMainWindow::EnsurePositionWithinDesktop(widget, pos);
     }
 }
@@ -574,7 +566,7 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e, QGraphicsItem 
             e->setAccepted(false);
             currentToolTipDestination = "<br><span style='font-weight:bold;'>Destination:</span> ";
             // Raycast to see if there is a submesh under the material drop
-            OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+            OgreRendererPtr renderer = framework_->Module<OgreRenderingModule>()->Renderer();
             if (renderer)
             {
                 RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
@@ -603,7 +595,7 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e, QGraphicsItem 
 
     if (e->isAccepted() && currentToolTipDestination.isEmpty())
     {
-        OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+        OgreRendererPtr renderer = framework_->Module<OgreRenderingModule>()->Renderer();
         if (renderer)
         {
             RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
@@ -718,7 +710,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e, QGraphicsItem *widget)
 void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString &materialRef)
 {
     // Raycast to see if there is a submesh under the material drop
-    OgreRenderer::RendererPtr renderer = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
+    OgreRendererPtr renderer = framework_->Module<OgreRenderingModule>()->Renderer();
     if (renderer)
     {
         RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
@@ -949,6 +941,7 @@ void SceneStructureModule::SyncSelectionWithEcEditor(ECEditorWindow *editor)
     {
         if (qobject_cast<ECEditorModule *>(sender()) && syncedECEditor == editor)
             return;
+
         // Store a ref to the active editor. We don't want to do this selection
         // logic multiple times for the same editor as its quite expensive for
         // large number of selected entities. This slot will be called upon show() and setFocus()
@@ -956,9 +949,11 @@ void SceneStructureModule::SyncSelectionWithEcEditor(ECEditorWindow *editor)
         syncedECEditor = editor;
 
         sceneWindow->ClearSelectedEntites();
-        foreach(const EntityPtr &entity, editor->SelectedEntities())
-            sceneWindow->SetEntitySelected(entity, true);
+        sceneWindow->SetEntitiesSelected(editor->SelectedEntities(), true);
+
         connect(editor, SIGNAL(EntitySelected(const EntityPtr &, bool)),
             sceneWindow, SLOT(SetEntitySelected(const EntityPtr &, bool)), Qt::UniqueConnection);
+        connect(editor, SIGNAL(EntitiesSelected(const EntityList &, bool)),
+            sceneWindow, SLOT(SetEntitiesSelected(const EntityList &, bool)), Qt::UniqueConnection);
     }
 }

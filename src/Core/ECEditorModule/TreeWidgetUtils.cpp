@@ -1,26 +1,29 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   TreeWidgetUtils.cpp
- *  @brief  Tree widget utility functions.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   TreeWidgetUtils.cpp
+    @brief  Tree widget utility functions. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 
 #include "TreeWidgetUtils.h"
 
+#include "MemoryLeakCheck.h"
+
 namespace
 {
-    void TreeWidgetSearchHelper(QTreeWidgetItem *root, QSet<QTreeWidgetItem*> &handled, QSet<QTreeWidgetItem*> &matched, bool negation, int column, const QString &filter, bool exactMatch, Qt::CaseSensitivity sensitivity, bool expandItems)
+    void TreeWidgetSearchHelper(QTreeWidgetItem *root, QSet<QTreeWidgetItem*> &handled, QSet<QTreeWidgetItem*> &matched,
+        bool negation, int column, const QString &filter, bool exactMatch, Qt::CaseSensitivity sensitivity, bool expandItems)
     {
         for (int i=0; i<root->childCount(); ++i)
         {
             QTreeWidgetItem *item = root->child(i);
-            if (item && (!exactMatch && item->text(column).contains(filter, sensitivity)) || (exactMatch && item->text(column).compare(filter, sensitivity) == 0))
+            if (item && (!exactMatch && item->text(column).contains(filter, sensitivity)) ||
+                (exactMatch && item->text(column).compare(filter, sensitivity) == 0))
             {
-                item->setHidden(negation ? true : false);
+                if (!item->isDisabled())
+                    item->setHidden(negation);
                 matched << item;
 
                 if (expandItems && !item->isHidden())
@@ -30,7 +33,8 @@ namespace
                 QTreeWidgetItem *parent = 0, *child = item;
                 while((parent = child->parent()) != 0)
                 {
-                    parent->setHidden(negation ? true : false);
+                    if (!item->isDisabled())
+                        parent->setHidden(negation);
                     handled << parent;
                     if (expandItems && !parent->isHidden())
                         parent->setExpanded(true);
@@ -43,12 +47,14 @@ namespace
     }
 }
 
-QSet<QTreeWidgetItem*> TreeWidgetSearch(QTreeWidget *treeWidget, int column, const QString &filter, bool exactMatch, Qt::CaseSensitivity sensitivity, bool expandItems)
+QSet<QTreeWidgetItem*> TreeWidgetSearch(QTreeWidget *treeWidget, int column, const QString &filter,
+    bool exactMatch, Qt::CaseSensitivity sensitivity, bool expandItems)
 {
     return TreeWidgetSearch(treeWidget, column, QStringList() << filter, exactMatch, sensitivity, expandItems);
 }
 
-QSet<QTreeWidgetItem*> TreeWidgetSearch(QTreeWidget *treeWidget, int column, const QStringList &filters, bool exactMatch, Qt::CaseSensitivity sensitivity, bool expandItems)
+QSet<QTreeWidgetItem*> TreeWidgetSearch(QTreeWidget *treeWidget, int column, const QStringList &filters,
+    bool exactMatch, Qt::CaseSensitivity sensitivity, bool expandItems)
 {
     QSet<QTreeWidgetItem *> handled;
     QSet<QTreeWidgetItem *> matched;
@@ -58,15 +64,15 @@ QSet<QTreeWidgetItem*> TreeWidgetSearch(QTreeWidget *treeWidget, int column, con
         filter = filter.trimmed();
 
         // Negation search?
-        bool negation = (!filter.isEmpty() && filter[0] == '!');
+        const bool negation = (!filter.isEmpty() && filter[0] == '!');
         if (negation)
             filter = filter.mid(1);
 
         QTreeWidgetItemIterator it(treeWidget);
         while(*it)
         {
-            QTreeWidgetItem *item = *it; ++it;
-            
+            QTreeWidgetItem *item = *it;
+
             // This item has been already handled with a previous filter
             // but we need to check its children matching this filter.
             if (handled.contains(item))
@@ -75,14 +81,18 @@ QSet<QTreeWidgetItem*> TreeWidgetSearch(QTreeWidget *treeWidget, int column, con
                     TreeWidgetSearchHelper(item, handled, matched, negation, column, filter, exactMatch, sensitivity, expandItems);
                 continue;
             }
-            
-            // No filter, show everything.
+
             if (filter.isEmpty())
-                item->setHidden(false);
-            // Hit with filter to column text
-            else if ((!exactMatch && item->text(column).contains(filter, sensitivity)) || (exactMatch && item->text(column).compare(filter, sensitivity) == 0))
             {
-                item->setHidden(negation ? true : false);
+                if (!item->isDisabled())
+                    item->setHidden(false); // No filter, show everything.
+            }
+            else if ((!exactMatch && item->text(column).contains(filter, sensitivity)) ||
+                (exactMatch && item->text(column).compare(filter, sensitivity) == 0))
+            {
+                // Hit with filter to column text
+                if (!item->isDisabled())
+                    item->setHidden(negation);
                 handled << item;
                 matched << item;
 
@@ -93,16 +103,21 @@ QSet<QTreeWidgetItem*> TreeWidgetSearch(QTreeWidget *treeWidget, int column, con
                 QTreeWidgetItem *parent = 0, *child = item;
                 while((parent = child->parent()) != 0)
                 {
-                    parent->setHidden(negation ? true : false);
+                    if (!item->isDisabled())
+                        parent->setHidden(negation);
                     handled << parent;
                     if (expandItems && !parent->isHidden())
                         parent->setExpanded(true);
                     child = parent;
                 }
             }
-            // No hit
-            else
-                item->setHidden(negation ? false : true);     
+            else // No hit
+            {
+                if (!item->isDisabled())
+                    item->setHidden(!negation);
+            }
+
+            ++it;
         }
     }
     
