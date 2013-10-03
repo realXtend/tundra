@@ -7,7 +7,6 @@
 #include "CoreTypes.h"
 #include "LoggingFunctions.h"
 #include "Win.h"
-#include "Framework.h"
 #include "CoreDefines.h"
 
 #include <Ogre.h>
