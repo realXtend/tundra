@@ -179,8 +179,8 @@ public slots:
     IModule *GetModuleByName(const QString &name) const { return ModuleByName(name); } /**< @deprecated Use ModuleByName instead. @todo Add deprecation warning print. @todo Remove. */
 
 private:
-    /// Adds new command line parameter (option | value pair) to the unordered multimap
-    void AddCommandLineParameter(const QString &command, const QString &parameter);
+    /// Adds new command line parameter (option | value pair) to the unordered multimap.
+    void AddCommandLineParameter(const QString &command, const QString &parameter = "");
 
     /// Directs to XML of JSON parsing function depending on file suffix.
     bool LoadStartupOptionsFromFile(const QString &configurationFile);
@@ -190,6 +190,16 @@ private:
     
     /// Appends all found startup options from the given file to the startupOptions member.
     bool LoadStartupOptionsFromJSON(QString configurationFile);
+
+    /// Load a QVariant map type to startup options.
+    void LoadStartupOptionMap(const QVariant &options);
+
+    /// Load a single command of QVariant map type. This function is only used for
+    /// special types eg. --plugin that can have more data than just a single string.
+    void LoadStartupOptionMap(const QString &command, const QVariant &option);
+
+    /// Load a QVariant list type to startup options.
+    void LoadStartupOptionList(const QVariant &options, const QString &command = "");
 
     /// Appends startup options from a commandline file, Android only
 #ifdef ANDROID
