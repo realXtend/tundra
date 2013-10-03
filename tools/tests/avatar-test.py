@@ -117,7 +117,7 @@ def ntRunTshark(i,j):
     subprocess.call([tsharkLocation + 'tshark.exe','-i','any','-f','port 2345','-w', wiresTempDir + '/captured' + str(i) + '.' + str(j) + '.pcap'])
 
 def ntRunViewer(i,j):
-    x = rexbinDir + "/Tundra.exe --config viewer.xml --headless --run " + js + " 2>&1 | tee " + avatarLogs + "/naaliLog" + str(i) + "." + str(j) + ".log"
+    x = rexbinDir + "/Tundra.exe --config tundra-client.json --headless --run " + js + " 2>&1 | tee " + avatarLogs + "/naaliLog" + str(i) + "." + str(j) + ".log"
     subprocess.call(x, shell = True)
 
 def movePcapFiles():
