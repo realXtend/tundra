@@ -115,4 +115,24 @@ namespace TundraJson
             return QJson::QObjectHelper::qobject2qvariant(object, ignoredPropertyNames);
         return QVariantMap();
     }
+
+    bool IsList(const QVariant &value)
+    {
+        QVariant::Type t = value.type();
+        return (t == QVariant::StringList || t == QVariant::List);
+    }
+
+    bool IsMap(const QVariant &value)
+    {
+        QVariant::Type t = value.type();
+        return (t == QVariant::Map || t == QVariant::Hash);
+    }
+
+    bool IsNumber(const QVariant &value)
+    {
+        QVariant::Type t = value.type();
+        return (t == QVariant::Int || t == QVariant::UInt ||
+                t == QVariant::LongLong || t == QVariant::ULongLong ||
+                t == QVariant::Double);
+    }
 }
