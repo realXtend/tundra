@@ -770,11 +770,9 @@ void Framework::LoadStartupOptionMap(const QString &command, const QVariant &opt
 
         // Check platform directive.
         // Selective loading between "win", "mac", "x11" and "android".
-        QVariant platformVariant = optionMap.contains("platform") ? optionMap["platform"] :
-                                       optionMap.contains("Platform") ? optionMap["Platform"] : QVariant();
+        QVariant platformVariant = TundraJson::ValueForAnyKey(optionMap, QStringList() << "platform" << "Platform");
         if (platformVariant.isValid() && !platformVariant.isNull())
         {
-            QString currentPlatform = Application::Platform();
             bool shouldRun = true;
 
             // Single platform as string
@@ -782,7 +780,7 @@ void Framework::LoadStartupOptionMap(const QString &command, const QVariant &opt
             {
                 shouldRun = false;
                 QString platform = platformVariant.toString();
-                if (platform.trimmed().compare(currentPlatform, Qt::CaseInsensitive) == 0)
+                if (platform.trimmed().compare(Application::Platform(), Qt::CaseInsensitive) == 0)
                     shouldRun = true;
             }
             // Multiple platforms as a string list
@@ -791,7 +789,7 @@ void Framework::LoadStartupOptionMap(const QString &command, const QVariant &opt
                 shouldRun = false;
                 foreach(const QString &platform, platformVariant.toStringList())
                 {
-                    if (platform.trimmed().compare(currentPlatform, Qt::CaseInsensitive) == 0)
+                    if (platform.trimmed().compare(Application::Platform(), Qt::CaseInsensitive) == 0)
                         shouldRun = true;
                     if (shouldRun)
                         break;
@@ -802,7 +800,7 @@ void Framework::LoadStartupOptionMap(const QString &command, const QVariant &opt
 #ifdef _DEBUG
                 /// LogDebug is not functioning at this point so we use _DEBUG
                 qDebug() << qPrintable(QString("LoadStartupOptionMap: Skipping loading of plugin %1 due to platform directive. Plugin was configured not to run on current platform: %2")
-                    .arg(pluginName).arg(currentPlatform));
+                    .arg(pluginName).arg(Application::Platform()));
 #endif
                 return;
             }
@@ -810,10 +808,7 @@ void Framework::LoadStartupOptionMap(const QString &command, const QVariant &opt
 
         // Check architecture directive.
         // Selective loading between "x86" and "x64".
-        QString arch = optionMap.contains("arch") ? optionMap["arch"].toString() :
-                          optionMap.contains("Arch") ? optionMap["Arch"].toString() :
-                              optionMap.contains("architecture") ? optionMap["architecture"].toString() :
-                                  optionMap.contains("Architecture") ? optionMap["Architecture"].toString() : "";
+        QString arch = TundraJson::ValueForAnyKey(optionMap, QStringList() << "arch" << "Arch" << "architecture" << "Architecture", "").toString();
         if (!arch.isEmpty() && arch.trimmed().compare(Application::Architecture(), Qt::CaseInsensitive) != 0)
         {
 #ifdef _DEBUG
@@ -826,8 +821,7 @@ void Framework::LoadStartupOptionMap(const QString &command, const QVariant &opt
 
         // Check build directive.
         // Selective loading between "release" and "debug".
-        QString build = optionMap.contains("build") ? optionMap["build"].toString() :
-                            optionMap.contains("Build") ? optionMap["Build"].toString() : "";
+        QString build = TundraJson::ValueForAnyKey(optionMap, QStringList() << "build" << "Build", "").toString();
         if (!build.isEmpty())
         {
 #ifdef _DEBUG
@@ -841,6 +835,48 @@ void Framework::LoadStartupOptionMap(const QString &command, const QVariant &opt
             if (build.trimmed().compare("debug", Qt::CaseInsensitive) == 0)
                 return;
 #endif
+        }
+
+        // All inclusion directives have passed, now check for exclude rules.
+        // These are assumed to be a map of 'platform'/'arch' defines.
+        // You can make the value a single map or a list of maps.
+        QVariant excludeVariant = TundraJson::ValueForAnyKey(optionMap, QStringList() << "exclude" << "Exclude");
+        if (excludeVariant.isValid() && !excludeVariant.isNull())
+        {
+            QVariantList excludeRules;
+            if (TundraJson::IsMap(excludeVariant))
+                excludeRules << excludeVariant;
+            else if (TundraJson::IsList(excludeVariant))
+                excludeRules = excludeVariant.toList();
+            foreach(const QVariant &excludeRule, excludeRules)
+            {
+                if (TundraJson::IsMap(excludeRule))
+                {
+                    /** @note For exclude rules we don't support the platform to be list of platforms,
+                        if you want to accomplish multiple platform excludes just simply define
+                        multiple as a list of rules to the 'exclude' value. 'build' excludes are
+                        not supported in the exclude rules, inclusion rule should be enough there.
+                        If 'platform' or 'arch' not present it will default to the current ones from Application.
+                        This makes it possible to define only "win" which has the effect of not loading
+                        on any 'arch' on Windows. Or only defining "x64" will not load on any operating
+                        system when on a x64 build. */
+                    QVariantMap excludeRuleMap = excludeRule.toMap();
+                    QString excludePlatform = TundraJson::ValueForAnyKey(excludeRuleMap, QStringList() << "platform" << "Platform", Application::Platform()).toString();
+                    QString excludeArch = TundraJson::ValueForAnyKey(excludeRuleMap, QStringList() << "arch" << "Arch" << "architecture" << "Architecture", Application::Architecture()).toString();
+                    if (excludePlatform.trimmed().compare(Application::Platform(), Qt::CaseInsensitive) == 0 &&
+                        excludeArch.trimmed().compare(Application::Architecture(), Qt::CaseInsensitive) == 0)
+                    {
+#ifdef _DEBUG
+                        /// LogDebug is not functioning at this point so we use _DEBUG
+                        qDebug() << qPrintable(QString("LoadStartupOptionMap: Skipping loading of plugin %1 due to exclude rule: platform = %2 architecture = %3")
+                            .arg(pluginName).arg(excludePlatform.trimmed().toLower()).arg(excludeArch.trimmed().toLower()));
+#endif
+                        return;
+                    }
+                }
+                else
+                    LogError("LoadStartupOptionMap: Exclude rule is not type of QVariant::Map or QVariant::Hash, ignoring the rule.");
+            }
         }
 
         // All conditions passed
