@@ -9,6 +9,7 @@
 
 #include "ScriptMetaTypeDefines.h"
 
+#include "Framework.h"
 #include "SceneAPI.h"
 #include "ChangeRequest.h"
 #include "Entity.h"

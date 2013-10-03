@@ -9,6 +9,7 @@
 #include "DoxygenDocReader.h"
 #include "TreeWidgetItemExpandMemory.h"
 
+#include "Framework.h"
 #include "SceneAPI.h"
 #include "Scene/Scene.h"
 #include "Entity.h"

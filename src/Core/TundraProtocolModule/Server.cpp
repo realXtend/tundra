@@ -14,6 +14,7 @@
 #include "MsgClientLeft.h"
 #include "UserConnectedResponseData.h"
 
+#include "Framework.h"
 #include "CoreStringUtils.h"
 #include "SceneAPI.h"
 #include "ConfigAPI.h"

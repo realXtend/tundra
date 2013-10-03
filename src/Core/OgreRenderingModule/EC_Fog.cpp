@@ -2,11 +2,11 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-
 #define MATH_OGRE_INTEROP
 
 #include "EC_Fog.h"
 
+#include "Framework.h"
 #include "Scene/Scene.h"
 #include "AttributeMetadata.h"
 #include "LoggingFunctions.h"

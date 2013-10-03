@@ -8,20 +8,22 @@
 #include "EC_PhysicsConstraint.h"
 #include "EC_RigidBody.h"
 
+#include "Framework.h"
 #include "FrameAPI.h"
 #include "Scene.h"
 #include "Entity.h"
 #include "Math/MathFunc.h"
 #include "EC_Placeable.h"
-
-#include "BulletDynamics/ConstraintSolver/btTypedConstraint.h"
-#include "BulletDynamics/ConstraintSolver/btHingeConstraint.h"
-#include "BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h"
-#include "BulletDynamics/ConstraintSolver/btSliderConstraint.h"
-#include "BulletDynamics/ConstraintSolver/btConeTwistConstraint.h"
-#include "BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h"
-
 #include "AttributeMetadata.h"
+
+#include <BulletDynamics/ConstraintSolver/btTypedConstraint.h>
+#include <BulletDynamics/ConstraintSolver/btHingeConstraint.h>
+#include <BulletDynamics/ConstraintSolver/btPoint2PointConstraint.h>
+#include <BulletDynamics/ConstraintSolver/btSliderConstraint.h>
+#include <BulletDynamics/ConstraintSolver/btConeTwistConstraint.h>
+#include <BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
+
+#include "MemoryLeakCheck.h"
 
 using namespace Physics;
 
@@ -73,7 +75,7 @@ void EC_PhysicsConstraint::UpdateSignals()
         return;
 
     Scene* scene = parentEntity->ParentScene();
-    physicsWorld_ = scene->GetWorld<PhysicsWorld>();
+    physicsWorld_ = scene->Subsystem<PhysicsWorld>();
 
     connect(GetFramework()->Frame(), SIGNAL(Updated(float)), SLOT(CheckForBulletRigidBody()), Qt::UniqueConnection);
     connect(parentEntity, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), SLOT(OnComponentAdded(IComponent*)), Qt::UniqueConnection);
@@ -99,9 +101,8 @@ void EC_PhysicsConstraint::CheckForBulletRigidBody()
 
     EC_RigidBody *rigidBody = rigidBody_.lock().get();
     EC_RigidBody *otherRigidBody = otherRigidBody_.lock().get();
-    bool rigidBodyCreated = rigidBody && rigidBody->GetRigidBody();
-    bool otherBodyCreated = otherRigidBody && otherRigidBody->GetRigidBody();
-
+    const bool rigidBodyCreated = rigidBody && rigidBody->BulletRigidBody();
+    const bool otherBodyCreated = otherRigidBody && otherRigidBody->BulletRigidBody();
     if (rigidBodyCreated || otherBodyCreated)
     {
         Create();
@@ -119,7 +120,7 @@ void EC_PhysicsConstraint::AttributesChanged()
     if (enabled.ValueChanged())
     {
         if (constraint_)
-            constraint_->setEnabled(getenabled());
+            constraint_->setEnabled(enabled.Get());
         else
             recreate = true;
     }
@@ -158,21 +159,21 @@ void EC_PhysicsConstraint::Create()
 
     Remove();
 
-    rigidBody_ = ParentEntity()->GetComponent<EC_RigidBody>();
+    rigidBody_ = ParentEntity()->Component<EC_RigidBody>();
 
     /// \todo If the other entity is not yet loaded, the constraint will be mistakenly created as a static one
     /// \todo Add warning logging if the other entity is not found, or for other error situations
-    Entity *otherEntity = 0;
-    if (!getotherEntity().IsEmpty())
+    Entity *otherEnt = 0;
+    if (!otherEntity.Get().IsEmpty())
     {
-        otherEntity = getotherEntity().Lookup(ParentScene()).get();
-        if (otherEntity)
+        otherEnt = otherEntity.Get().Lookup(ParentScene()).get();
+        if (otherEnt)
         {
-            otherRigidBody_ = otherEntity->GetComponent<EC_RigidBody>();
+            otherRigidBody_ = otherEnt->Component<EC_RigidBody>();
             /// \todo Disconnect these signals at constraint removal time, in case the other entity ID is changed at runtime
-            connect(otherEntity, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), SLOT(Remove()), Qt::UniqueConnection);
-            connect(otherEntity, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), SLOT(OnComponentAdded(IComponent*)), Qt::UniqueConnection);
-            connect(otherEntity, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), SLOT(OnComponentRemoved(IComponent*)), Qt::UniqueConnection);
+            connect(otherEnt, SIGNAL(EntityRemoved(Entity*, AttributeChange::Type)), SLOT(Remove()), Qt::UniqueConnection);
+            connect(otherEnt, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), SLOT(OnComponentAdded(IComponent*)), Qt::UniqueConnection);
+            connect(otherEnt, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), SLOT(OnComponentRemoved(IComponent*)), Qt::UniqueConnection);
         }
         else
             otherRigidBody_.reset();
@@ -182,8 +183,8 @@ void EC_PhysicsConstraint::Create()
 
     EC_RigidBody *rigidBodyComp = rigidBody_.lock().get();
     EC_RigidBody *otherRigidBodyComp = otherRigidBody_.lock().get();
-    btRigidBody *ownBody = rigidBodyComp ? rigidBodyComp->GetRigidBody() : 0;
-    btRigidBody *otherBody = otherRigidBodyComp ? otherRigidBodyComp->GetRigidBody() : 0;
+    btRigidBody *ownBody = rigidBodyComp ? rigidBodyComp->BulletRigidBody() : 0;
+    btRigidBody *otherBody = otherRigidBodyComp ? otherRigidBodyComp->BulletRigidBody() : 0;
 
     if (!ownBody && !rigidBodyComp)
         return;
@@ -205,23 +206,23 @@ void EC_PhysicsConstraint::Create()
     float3 worldScale(1,1,1);
     float3 otherWorldScale(1,1,1);
     
-    EC_Placeable *placeable = ParentEntity()->GetComponent<EC_Placeable>().get();
+    EC_Placeable *placeable = ParentEntity()->Component<EC_Placeable>().get();
     EC_Placeable *otherPlaceable = 0;
-    if (otherEntity)
-        otherPlaceable = otherEntity->GetComponent<EC_Placeable>().get();
+    if (otherEnt)
+        otherPlaceable = otherEnt->Component<EC_Placeable>().get();
     
     if (placeable)
         worldScale = placeable->WorldScale();
     if (otherPlaceable)
         otherWorldScale = otherPlaceable->WorldScale();
 
-    btTransform ownTransform(FromEulerDegToQuat(getrotation()), getposition().Mul(worldScale));
-    btTransform otherTransform(FromEulerDegToQuat(getotherRotation()), getotherPosition().Mul(otherWorldScale));
+    btTransform ownTransform(FromEulerDegToQuat(rotation.Get()), position.Get().Mul(worldScale));
+    btTransform otherTransform(FromEulerDegToQuat(otherRotation.Get()), otherPosition.Get().Mul(otherWorldScale));
 
-    switch(gettype())
+    switch(type.Get())
     {
         case PointToPoint:
-            constraint_ = new btPoint2PointConstraint(*ownBody, *otherBody, getposition().Mul(worldScale), getotherPosition().Mul(otherWorldScale));
+            constraint_ = new btPoint2PointConstraint(*ownBody, *otherBody, position.Get().Mul(worldScale), otherPosition.Get().Mul(otherWorldScale));
             break;
 
         case Hinge:
@@ -243,11 +244,11 @@ void EC_PhysicsConstraint::Create()
     if (constraint_)
     {
         constraint_->setUserConstraintPtr(this);
-        constraint_->setEnabled(getenabled());
+        constraint_->setEnabled(enabled.Get());
         ApplyLimits();
 
         PhysicsWorld *world = physicsWorld_.lock().get();
-        world->BulletWorld()->addConstraint(constraint_, getdisableCollision());
+        world->BulletWorld()->addConstraint(constraint_, disableCollision.Get());
         world->BulletWorld()->debugDrawConstraint(constraint_);
     }
 }
@@ -258,10 +259,10 @@ void EC_PhysicsConstraint::Remove()
     {
         EC_RigidBody *ownRigidComp = rigidBody_.lock().get();
         EC_RigidBody *otherRigidComp = otherRigidBody_.lock().get();
-        if (otherRigidComp && otherRigidComp->GetRigidBody())
+        if (otherRigidComp && otherRigidComp->BulletRigidBody())
             otherRigidComp->GetRigidBody()->removeConstraintRef(constraint_);
-        if (ownRigidComp && ownRigidComp->GetRigidBody())
-            ownRigidComp->GetRigidBody()->removeConstraintRef(constraint_);
+        if (ownRigidComp && ownRigidComp->BulletRigidBody())
+            ownRigidComp->BulletRigidBody()->removeConstraintRef(constraint_);
 
         PhysicsWorld *world = physicsWorld_.lock().get();
         if (world && world->BulletWorld())
@@ -282,27 +283,27 @@ void EC_PhysicsConstraint::ApplyAttributes()
     float3 worldScale(1,1,1);
     float3 otherWorldScale(1,1,1);
 
-    EC_Placeable *placeable = ParentEntity()->GetComponent<EC_Placeable>().get();
-    Entity *entity = getotherEntity().Lookup(ParentScene()).get();
+    EC_Placeable *placeable = ParentEntity()->Component<EC_Placeable>().get();
+    Entity *entity = otherEntity.Get().Lookup(ParentScene()).get();
     EC_Placeable *otherPlaceable = 0;
     if (entity)
-        otherPlaceable = entity->GetComponent<EC_Placeable>().get();
+        otherPlaceable = entity->Component<EC_Placeable>().get();
 
     if (placeable)
         worldScale = placeable->WorldScale();
     if (otherPlaceable)
         otherWorldScale = otherPlaceable->WorldScale();
 
-    btTransform ownTransform(FromEulerDegToQuat(getrotation()), getposition().Mul(worldScale));
-    btTransform otherTransform(FromEulerDegToQuat(getotherRotation()), getotherPosition().Mul(otherWorldScale));
+    btTransform ownTransform(FromEulerDegToQuat(rotation.Get()), position.Get().Mul(worldScale));
+    btTransform otherTransform(FromEulerDegToQuat(otherRotation.Get()), otherPosition.Get().Mul(otherWorldScale));
 
     switch (constraint_->getConstraintType())
     {
         case POINT2POINT_CONSTRAINT_TYPE:
         {
             btPoint2PointConstraint* pointConstraint = static_cast<btPoint2PointConstraint*>(constraint_);
-            pointConstraint->setPivotA(getposition().Mul(worldScale));
-            pointConstraint->setPivotB(getotherPosition().Mul(otherWorldScale));
+            pointConstraint->setPivotA(position.Get().Mul(worldScale));
+            pointConstraint->setPivotB(otherPosition.Get().Mul(otherWorldScale));
         }
             break;
             
@@ -342,7 +343,7 @@ void EC_PhysicsConstraint::ApplyLimits()
         case HINGE_CONSTRAINT_TYPE:
         {
             btHingeConstraint* hingeConstraint = static_cast<btHingeConstraint*>(constraint_);
-            hingeConstraint->setLimit(DegToRad(getangularLimit().x), DegToRad(getangularLimit().y));
+            hingeConstraint->setLimit(DegToRad(angularLimit.Get().x), DegToRad(angularLimit.Get().y));
         }
             break;
             
@@ -350,18 +351,18 @@ void EC_PhysicsConstraint::ApplyLimits()
         {
             btSliderConstraint* sliderConstraint = static_cast<btSliderConstraint*>(constraint_);
             
-            sliderConstraint->setLowerLinLimit(getlinearLimit().x);
-            sliderConstraint->setUpperLinLimit(getlinearLimit().y);
+            sliderConstraint->setLowerLinLimit(linearLimit.Get().x);
+            sliderConstraint->setUpperLinLimit(linearLimit.Get().y);
 
-            sliderConstraint->setLowerAngLimit(DegToRad(getangularLimit().x));
-            sliderConstraint->setUpperAngLimit(DegToRad(getangularLimit().y));
+            sliderConstraint->setLowerAngLimit(DegToRad(angularLimit.Get().x));
+            sliderConstraint->setUpperAngLimit(DegToRad(angularLimit.Get().y));
         }
             break;
             
         case CONETWIST_CONSTRAINT_TYPE:
         {
             btConeTwistConstraint* coneTwistConstraint = static_cast<btConeTwistConstraint*>(constraint_);
-            coneTwistConstraint->setLimit(DegToRad(getangularLimit().y), DegToRad(getangularLimit().y), DegToRad(getlinearLimit().y));
+            coneTwistConstraint->setLimit(DegToRad(angularLimit.Get().y), DegToRad(angularLimit.Get().y), DegToRad(linearLimit.Get().y));
         }
             break;
             

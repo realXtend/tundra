@@ -7,7 +7,6 @@
 #include "CoreDefines.h"
 #include "Win.h"
 #include "CoreDefines.h"
-#include "Framework.h"
 
 #include <Ogre.h>
 

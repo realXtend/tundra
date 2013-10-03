@@ -14,6 +14,7 @@
 #include "AddContentWindow.h"
 #include "KeyBindingsConfigWindow.h"
 
+#include "Framework.h"
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "IAsset.h"

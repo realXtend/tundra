@@ -5,10 +5,11 @@
 
 #include "EC_OgreCompositor.h"
 #include "Renderer.h"
-#include "FrameAPI.h"
 #include "OgreRenderingModule.h"
 #include "OgreCompositionHandler.h"
 
+#include "Framework.h"
+#include "FrameAPI.h"
 #include "LoggingFunctions.h"
 
 #include "MemoryLeakCheck.h"
@@ -21,7 +22,7 @@ EC_OgreCompositor::EC_OgreCompositor(Scene* scene) :
     INIT_ATTRIBUTE(parameters, "Parameters"),
     previousPriority(-1),
     compositionHandler(0)
-{   
+{
     connect(this, SIGNAL(ParentEntitySet()), SLOT(OnParentEntitySet()));
 }
 
@@ -36,8 +37,8 @@ void EC_OgreCompositor::OnParentEntitySet()
     if (!framework)
         return;
 
-    OgreRenderer::OgreRenderingModule *owner = framework->GetModule<OgreRenderer::OgreRenderingModule>();
-    compositionHandler = owner != 0 ?owner->GetRenderer()->CompositionHandler() : 0;
+    OgreRenderingModule *owner = framework->Module<OgreRenderingModule>();
+    compositionHandler = owner != 0 ?owner->Renderer()->CompositionHandler() : 0;
     if (!compositionHandler)
         return;
 

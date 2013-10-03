@@ -12,6 +12,7 @@
 #include "PropertyTableWidget.h"
 #include "OgreScriptHighlighter.h"
 
+#include "Framework.h"
 #include "LoggingFunctions.h"
 #include "Application.h"
 #include "AssetAPI.h"

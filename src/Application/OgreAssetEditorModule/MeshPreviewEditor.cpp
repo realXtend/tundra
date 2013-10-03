@@ -5,6 +5,8 @@
 
 #include "MeshPreviewEditor.h"
 #include "OgreAssetEditorModule.h"
+
+#include "Framework.h"
 #include "LoggingFunctions.h"
 #include "Application.h"
 #include "Renderer.h"
