@@ -1,6 +1,5 @@
 @echo off
 echo.
-
 :: Enable the delayed environment variable expansion needed in VSConfig.cmd.
 setlocal EnableDelayedExpansion
 
@@ -59,6 +58,14 @@ set USE_JOM=TRUE
 set BUILD_THREADS=%NUMBER_OF_PROCESSORS%
 set	JOM_THREADS=-j %BUILD_THREADS%
 set USE_BOOST=FALSE
+
+:: Special case: if we build for x64 with vs2008, clear /m:N for certain
+:: projects, otherwise they abort with
+:: 'error MSB4018: The "ResolveVCProjectOutput" task failed unexpectedly.'
+SET MSB_THREADS=/m:%BUILD_THREADS%
+IF %GENERATOR%=="Visual Studio 9 2008 Win64" (
+	SET MSB_THREADS=
+)
 
 :: Validate user-defined variables
 IF NOT %BUILD_OPENSSL%==FALSE IF NOT %BUILD_OPENSSL%==TRUE (
@@ -913,7 +920,7 @@ IF NOT EXIST "%DEPS%\vorbis". (
 IF NOT EXIST "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%\%VS_PLATFORM%\%DEBUG_OR_RELEASE%\libvorbis_static.lib". (
     cd "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%"
     cecho {0D}Building %DEBUG_OR_RELEASE% Vorbis. Please be patient, this will take a while.{# #}{\n}
-    MSBuild vorbis_static.sln /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%BUILD_THREADS%
+    MSBuild vorbis_static.sln /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo %MSB_THREADS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
     cecho {0D}%DEBUG_OR_RELEASE% Vorbis already built. Skipping.{# #}{\n}
@@ -1011,7 +1018,7 @@ IF NOT EXIST "%DEPS%\protobuf\vsprojects\%DEBUG_OR_RELEASE%\libprotobuf.lib". (
     echo.
 
     cecho {0D}Building %DEBUG_OR_RELEASE% Google Protobuf. Please be patient, this will take a while.{# #}{\n}
-    MSBuild protobuf.sln /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo /m:%BUILD_THREADS%
+    MSBuild protobuf.sln /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo %MSB_THREADS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}%DEBUG_OR_RELEASE% Google Protobuf already built. Skipping.{# #}{\n}
