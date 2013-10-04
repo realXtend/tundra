@@ -33,7 +33,7 @@ endif()
 # On Linux TUNDRA_NO_BOOST can not yet be used
 option(TUNDRA_NO_BOOST "Specifies whether Tundra is built without Boost." ON)
 # TODO No-Boost support for Linux.
-if (NOT WIN32 OR APPLE)
+if (NOT WIN32 AND NOT APPLE)
     set(TUNDRA_NO_BOOST OFF)
 endif()
 
