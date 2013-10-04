@@ -171,7 +171,7 @@ unsigned GetEnumValue(const QString& name, const EnumStr* enums)
 
 void ParseMaterialIndices(const QStringList &keyParts, int &techNum, int &passNum, int &tuNum)
 {
-    techNum = passNum = tuNum -1; // -1 = any
+    techNum = passNum = tuNum = -1; // -1 = any
     for(int i = 0; i < keyParts.size() - 1; ++i)
     {
         if (keyParts[i].size() > 1)
