@@ -55,6 +55,8 @@ IF NOT EXIST "%DEPS%". mkdir "%DEPS%"
 :: User-defined variables
 set BUILD_OPENSSL=TRUE
 set USE_JOM=TRUE
+:: Set to -j N where N the wanted number of build processes
+set	JOM_THREADS=
 set USE_BOOST=FALSE
 
 :: Validate user-defined variables
@@ -100,6 +102,7 @@ echo    - Build OpenSSL, requires Active Perl.
 cecho {0D}  Build Qt with JOM    = %USE_JOM%{# #}{\n}
 echo    - Use jom.exe instead of nmake.exe to build qmake projects.
 echo      Default enabled as jom is significantly faster by usin all CPUs.
+IF NOT "%JOM_THREADS%"=="" cecho {0D}  JOM: Using -j parameter: %JOM_THREADS%{# #}{\n}
 echo.
 
 :: Print scripts usage information
@@ -306,7 +309,7 @@ IF NOT EXIST %QT_INSTALL_WEBKIT_DLL_FILENAME%. (
 
     IF %USE_JOM%==TRUE (
         cecho {0D}Building %DEBUG_OR_RELEASE% Qt with jom. Please be patient, this will take a while.{# #}{\n}
-        "%DEPS%\qt\jom\jom.exe"
+        "%DEPS%\qt\jom\jom.exe" %JOM_THREADS%
     ) ELSE (
         cecho {0D}Building %DEBUG_OR_RELEASE% Qt with nmake. Please be patient, this will take a while.{# #}{\n}
         nmake /nologo
@@ -563,7 +566,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\generator\release\generator.exe". (
         cecho {0D}Building QtScriptGenerator.{# #}{\n}
         IF %USE_JOM%==TRUE (
             cecho {0D}- Building QtScriptGenerator with jom. Please be patient, this will take a while.{# #}{\n}
-            "%DEPS%\qt\jom\jom.exe"
+            "%DEPS%\qt\jom\jom.exe" %JOM_THREADS%
         ) ELSE (
             cecho {0D}- Building QtScriptGenerator with nmake. Please be patient, this will take a while.{# #}{\n}
             nmake /nologo
@@ -603,7 +606,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_webkit%POSTFIX_D%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     IF %USE_JOM%==TRUE (
         cecho {0D}- Building %DEBUG_OR_RELEASE% QtBindings with jom. Please be patient, this will take a while.{# #}{\n}
-        "%DEPS%\qt\jom\jom.exe" %DEBUG_OR_RELEASE_LOWERCASE%
+        "%DEPS%\qt\jom\jom.exe" %JOM_THREADS% %DEBUG_OR_RELEASE_LOWERCASE%
     ) ELSE (
         cecho {0D}- Building %DEBUG_OR_RELEASE% QtBindings with nmake. Please be patient, this will take a while.{# #}{\n}
         nmake /nologo %DEBUG_OR_RELEASE_LOWERCASE%
@@ -858,7 +861,7 @@ IF NOT EXIST "%DEPS%\qt-solutions\qtpropertybrowser\lib\QtSolutions_PropertyBrow
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     IF %USE_JOM%==TRUE (
         cecho {0D}- Building %DEBUG_OR_RELEASE% QtPropertyBrowser with jom{# #}{\n}
-        "%DEPS%\qt\jom\jom.exe" %DEBUG_OR_RELEASE_LOWERCASE%
+        "%DEPS%\qt\jom\jom.exe" %JOM_THREADS% %DEBUG_OR_RELEASE_LOWERCASE%
     ) ELSE (
         cecho {0D}- Building %DEBUG_OR_RELEASE% QtPropertyBrowser with nmake{# #}{\n}
         nmake /nologo %DEBUG_OR_RELEASE_LOWERCASE%
@@ -1127,7 +1130,7 @@ IF NOT EXIST "%DEPS%\qxmpp\". (
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     IF %USE_JOM%==TRUE (
         cecho {0D}Building %DEBUG_OR_RELEASE% Qxmpp with jom{# #}{\n}
-        "%DEPS%\qt\jom\jom.exe" sub-src-all-ordered %DEBUG_OR_RELEASE_LOWERCASE%
+        "%DEPS%\qt\jom\jom.exe" %JOM_THREADS% sub-src-all-ordered %DEBUG_OR_RELEASE_LOWERCASE%
     ) ELSE (
         cecho {0D}Building %DEBUG_OR_RELEASE% Qxmpp with nmake{# #}{\n}
         nmake /nologo sub-src-all-ordered  %DEBUG_OR_RELEASE_LOWERCASE%
