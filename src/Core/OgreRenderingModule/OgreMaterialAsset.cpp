@@ -1968,15 +1968,15 @@ bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int pa
 
 QVariant OgreMaterialAsset::PassAttribute(Ogre::Pass* pass, int techIndex, int passIndex, const QString& attr) const
 {
-    if (attr == "ambient") return AmbientColor(techIndex, passIndex);
-    else if (attr == "diffuse") return DiffuseColor(techIndex, passIndex);
-    else if (attr == "specular") return SpecularColor(techIndex, passIndex);
-    else if (attr == "emissive") return EmissiveColor(techIndex, passIndex);
+    if (attr == "ambient") return QVariant(AmbientColor(techIndex, passIndex));
+    else if (attr == "diffuse") return QVariant(DiffuseColor(techIndex, passIndex));
+    else if (attr == "specular") return QVariant(SpecularColor(techIndex, passIndex));
+    else if (attr == "emissive") return QVariant(EmissiveColor(techIndex, passIndex));
     else if (attr == "scene_blend") return pass->getSceneBlendingOperation();
     else if (attr == "separate_scene_blend")
-        return float4(pass->getSourceBlendFactor(), pass->getDestBlendFactor(), pass->getSourceBlendFactorAlpha(), pass->getDestBlendFactorAlpha());
+        return QVariant(float4(pass->getSourceBlendFactor(), pass->getDestBlendFactor(), pass->getSourceBlendFactorAlpha(), pass->getDestBlendFactorAlpha()));
     else if (attr == "scene_blend_op") return pass->getSceneBlendingOperation();
-    else if (attr == "separate_scene_blend_op") return float2(pass->getSceneBlendingOperation(), pass->getSceneBlendingOperationAlpha());
+    else if (attr == "separate_scene_blend_op") return QVariant(float2(pass->getSceneBlendingOperation(), pass->getSceneBlendingOperationAlpha()));
     else if (attr == "depth_check") return IsDepthCheckEnabled(techIndex, passIndex);
     else if (attr == "depth_write") return IsDepthWriteEnabled(techIndex, passIndex);
     else if (attr == "depth_func") return  pass->getDepthFunction();
@@ -2104,13 +2104,13 @@ bool OgreMaterialAsset::SetTextureUnitAttribute(Ogre::TextureUnitState* texUnit,
 QVariant OgreMaterialAsset::TextureUnitAttribute(Ogre::TextureUnitState* texUnit, int techIndex, int passIndex, int tuIndex, const QString& attr) const
 {
     if (attr == "texture") return Texture(techIndex, passIndex, tuIndex);
-    else if (attr == "tex_coord_set") return texUnit->getTextureCoordSet();
+    else if (attr == "tex_coord_set") return QVariant(texUnit->getTextureCoordSet());
     else if (attr == "tex_address_mode")
     {
         const Ogre::TextureUnitState::UVWAddressingMode &mode = texUnit->getTextureAddressingMode();
-        return float3(mode.u, mode.v, mode.w);
+        return QVariant(float3(mode.u, mode.v, mode.w));
     }
-    else if (attr == "tex_border_colour") return Color(texUnit->getTextureBorderColour());
+    else if (attr == "tex_border_colour") return QVariant(Color(texUnit->getTextureBorderColour()));
     else if (attr == "filtering")
     {
         using namespace Ogre;
@@ -2127,7 +2127,7 @@ QVariant OgreMaterialAsset::TextureUnitAttribute(Ogre::TextureUnitState* texUnit
     else if (attr == "max_anisotropy") return texUnit->getTextureAnisotropy();
     else if (attr == "mipmap_bias") return texUnit->getTextureMipmapBias();
     else if (attr == "env_map") return texUnit->getEffects().find(Ogre::TextureUnitState::ET_ENVIRONMENT_MAP) != texUnit->getEffects().end();
-    else if (attr == "scroll") return float2(texUnit->getTextureUScroll(), texUnit->getTextureVScroll());
+    else if (attr == "scroll") return QVariant(float2(texUnit->getTextureUScroll(), texUnit->getTextureVScroll()));
     else if (attr == "scroll_anim")
     {
         float2 ret(0,0);
@@ -2141,7 +2141,7 @@ QVariant OgreMaterialAsset::TextureUnitAttribute(Ogre::TextureUnitState* texUnit
         it = effects.find(Ogre::TextureUnitState::ET_VSCROLL);
         if (it != effects.end())
             ret.y = it->second.arg1;
-        return ret;
+        return QVariant(ret);
     }
     else if (attr == "rotate") return texUnit->getTextureRotate().valueRadians();
     else if (attr == "rotate_anim")
@@ -2149,7 +2149,7 @@ QVariant OgreMaterialAsset::TextureUnitAttribute(Ogre::TextureUnitState* texUnit
         Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find(Ogre::TextureUnitState::ET_ROTATE);
         return (it != texUnit->getEffects().end() ? it->second.arg1 : 0.f);
     }
-    else if (attr == "scale") return float2(texUnit->getTextureUScale(), texUnit->getTextureVScale());
+    else if (attr == "scale") return QVariant(float2(texUnit->getTextureUScale(), texUnit->getTextureVScale()));
     else if (attr == "wave_xform")
     {
         Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find(Ogre::TextureUnitState::ET_TRANSFORM);
