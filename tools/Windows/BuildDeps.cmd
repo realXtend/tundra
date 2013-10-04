@@ -55,8 +55,9 @@ IF NOT EXIST "%DEPS%". mkdir "%DEPS%"
 :: User-defined variables
 set BUILD_OPENSSL=TRUE
 set USE_JOM=TRUE
-:: Set to -j N where N the wanted number of build processes
-set	JOM_THREADS=
+:: Set to the number of build processes to use
+set BUILD_THREADS=%NUMBER_OF_PROCESSORS%
+set	JOM_THREADS=-j %BUILD_THREADS%
 set USE_BOOST=FALSE
 
 :: Validate user-defined variables
@@ -102,7 +103,7 @@ echo    - Build OpenSSL, requires Active Perl.
 cecho {0D}  Build Qt with JOM    = %USE_JOM%{# #}{\n}
 echo    - Use jom.exe instead of nmake.exe to build qmake projects.
 echo      Default enabled as jom is significantly faster by usin all CPUs.
-IF NOT "%JOM_THREADS%"=="" cecho {0D}  JOM: Using -j parameter: %JOM_THREADS%{# #}{\n}
+cecho {0D}  Using %BUILD_THREADS% build processes.{# #}{\n}
 echo.
 
 :: Print scripts usage information
@@ -374,14 +375,14 @@ IF NOT EXIST "%DEPS%\qjson\lib\%BUILD_TYPE%\qjson.dll". (
         IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     )
     cecho {0D}Building %BUILD_TYPE% QJson.{# #}{\n}
-    MSBuild qjson.sln /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild qjson.sln /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%BUILD_THREADS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 
 :: Install the correct build type into qjson/build
 cecho {0D}Deploying %BUILD_TYPE% QJson DLL to Tundra bin\ directory.{# #}{\n}
 cd "%DEPS%\qjson\"
-MSBuild INSTALL.%VCPROJ_FILE_EXT% /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+MSBuild INSTALL.%VCPROJ_FILE_EXT% /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%BUILD_THREADS%
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 copy /Y "%DEPS%\qjson\build\bin\qjson.dll" "%TUNDRA_BIN%"
 
@@ -413,7 +414,7 @@ IF NOT EXIST "%DEPS%\bullet\lib\%BUILD_TYPE%\BulletCollision.lib". (
     )
 
     cecho {0D}Building %BUILD_TYPE% Bullet. Please be patient, this will take a while.{# #}{\n}
-    MSBuild BULLET_PHYSICS.sln /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild BULLET_PHYSICS.sln /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%BUILD_THREADS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
     cecho {0D}%BUILD_TYPE% Bullet already built. Skipping.{# #}{\n}
@@ -445,7 +446,7 @@ IF NOT EXIST "%DEPS%\boost". (
     cd "%DEPS%\boost"
     cecho {0D}Building Boost. Please be patient, this will take a while.{# #}{\n}
     :: Building boost with single core takes ages, so utilize all cores for the build process
-    call .\b2 -j %NUMBER_OF_PROCESSORS% --without-mpi thread regex stage
+    call .\b2 -j %BUILD_THREADS% --without-mpi thread regex stage
 ) ELSE (
     ::TODO Even if %DEPS%\boost exists, we have no guarantee that boost is built successfully for real
     cecho {0D}Boost already built. Skipping.{# #}{\n}
@@ -485,7 +486,7 @@ IF NOT EXIST "%DEPS%\assimp\bin\%BUILD_TYPE%\assimp%POSTFIX_D%.dll". (
     )
 
     cecho {0D}Building %BUILD_TYPE% OpenAssetImport. Please be patient, this will take a while.{# #}{\n}
-    MSBuild Assimp.sln /p:configuration=%BUILD_TYPE% /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild Assimp.sln /p:configuration=%BUILD_TYPE% /nologo /m:%BUILD_THREADS%
 ) ELSE (
     cecho {0D}%BUILD_TYPE% OpenAssetImport already built. Skipping.{# #}{\n}
 )
@@ -531,7 +532,7 @@ IF NOT EXIST "%DEPS%\kNet\lib\%BUILD_TYPE%\kNet.lib". set BUILD_KNET=TRUE
 
 IF %BUILD_KNET%==TRUE (
     cecho {0D}Building %BUILD_TYPE% kNet. Please be patient, this will take a while.{# #}{\n}
-    MSBuild kNet.sln /p:configuration=%BUILD_TYPE% /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild kNet.sln /p:configuration=%BUILD_TYPE% /nologo /m:%BUILD_THREADS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
     cecho {0D}%BUILD_TYPE% kNet already built and up to date. Skipping.{# #}{\n}
@@ -559,7 +560,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\generator\release\generator.exe". (
         copy /Y "%TOOLS%\Mods\QtScriptGenerator_pp-iterator.h" "%DEPS%\qtscriptgenerator\generator\parser\rpp\pp-iterator.h"
         qmake -tp vc
         cecho {0D}Building QtScriptGenerator. Please be patient, this will take a while.{# #}{\n}
-        MSBuild generator.vcxproj /p:configuration=Release /nologo /m:%NUMBER_OF_PROCESSORS%
+        MSBuild generator.vcxproj /p:configuration=Release /nologo /m:%BUILD_THREADS%
     ) ELSE (
         qmake
         IF NOT %ERRORLEVEL%==0 GOTO :ERROR
@@ -701,7 +702,7 @@ IF NOT EXIST OGREDEPS.sln. (
 )
 
 cecho {0D}Building %BUILD_TYPE% Ogre dependencies. Please be patient, this will take a while.{# #}{\n}
-MSBuild OGREDEPS.sln /p:configuration=%BUILD_TYPE% /nologo /m:%NUMBER_OF_PROCESSORS% /clp:ErrorsOnly
+MSBuild OGREDEPS.sln /p:configuration=%BUILD_TYPE% /nologo /m:%BUILD_THREADS% /clp:ErrorsOnly
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 MSBuild INSTALL.%VCPROJ_FILE_EXT% /p:configuration=%BUILD_TYPE% /nologo /clp:ErrorsOnly
@@ -764,7 +765,7 @@ cmake -G %GENERATOR% -DTBB_HOME=%TBB_HOME% -DOGRE_USE_BOOST:BOOL=%USE_BOOST% -DO
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Building %BUILD_TYPE% ogre-safe-nocrashes. Please be patient, this will take a while.{# #}{\n}
-MSBuild OGRE.sln /p:configuration=%BUILD_TYPE% /nologo /m:%NUMBER_OF_PROCESSORS%
+MSBuild OGRE.sln /p:configuration=%BUILD_TYPE% /nologo /m:%BUILD_THREADS%
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying %BUILD_TYPE% ogre-safe-nocrashes SDK directory.{# #}{\n}
@@ -809,7 +810,7 @@ IF NOT EXIST SKYX.sln. (
 )
 
 cecho {0D}Building %BUILD_TYPE% SkyX. Please be patient, this will take a while.{# #}{\n}
-MSBuild SKYX.sln /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+MSBuild SKYX.sln /p:configuration=%BUILD_TYPE% /clp:ErrorsOnly /nologo /m:%BUILD_THREADS%
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying %BUILD_TYPE% SkyX DLL to Tundra bin\.{# #}{\n}
@@ -833,7 +834,7 @@ IF NOT EXIST Hydrax.sln. (
 )
 
 cecho {0D}Building %BUILD_TYPE% Hydrax. Please be patient, this will take a while.{# #}{\n}
-MSBuild Hydrax.sln /p:configuration=%BUILD_TYPE% /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+MSBuild Hydrax.sln /p:configuration=%BUILD_TYPE% /nologo /clp:ErrorsOnly /m:%BUILD_THREADS%
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Deploying %BUILD_TYPE% Hydrax DLL to Tundra bin\.{# #}{\n}
@@ -897,7 +898,7 @@ IF NOT EXIST "%DEPS%\ogg\win32\%VS2008_OR_VS2010%\%VS_PLATFORM%\%DEBUG_OR_RELEAS
     cd "%DEPS%\ogg\win32\%VS2008_OR_VS2010%"
 
     cecho {0D}Building %DEBUG_OR_RELEASE% Ogg. Please be patient, this will take a while.{# #}{\n}
-    MSBuild libogg_static.sln /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libogg_static.sln /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%BUILD_THREADS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
     cecho {0D}%DEBUG_OR_RELEASE% Ogg already built. Skipping.{# #}{\n}
@@ -912,7 +913,7 @@ IF NOT EXIST "%DEPS%\vorbis". (
 IF NOT EXIST "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%\%VS_PLATFORM%\%DEBUG_OR_RELEASE%\libvorbis_static.lib". (
     cd "%DEPS%\vorbis\win32\%VS2008_OR_VS2010%"
     cecho {0D}Building %DEBUG_OR_RELEASE% Vorbis. Please be patient, this will take a while.{# #}{\n}
-    MSBuild vorbis_static.sln /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild vorbis_static.sln /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%BUILD_THREADS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
     cecho {0D}%DEBUG_OR_RELEASE% Vorbis already built. Skipping.{# #}{\n}
@@ -936,7 +937,7 @@ IF NOT EXIST "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%\libth
     copy /Y "%TOOLS%\Mods\vs2008-%VS_PLATFORM%-libtheora_static.vcproj" libtheora_static.vcproj
     IF NOT %VS_VER%==vs2008 VCUpgrade /nologo /overwrite libtheora_static.vcproj
 
-    MSBuild libtheora_static.%VCPROJ_FILE_EXT% /p:configuration=%THEORA_BUILD_TYPE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%   
+    MSBuild libtheora_static.%VCPROJ_FILE_EXT% /p:configuration=%THEORA_BUILD_TYPE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%BUILD_THREADS%   
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     IF NOT EXIST "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%". mkdir "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%"
     copy /Y "%VS_PLATFORM%\%THEORA_BUILD_TYPE%\libtheora_static.lib" "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%\libtheora_static.lib"
@@ -962,7 +963,7 @@ IF NOT EXIST "%DEPS%\speex\lib\%DEBUG_OR_RELEASE%\libspeexdsp.lib". (
     copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-libspeex.%VCPROJ_FILE_EXT%" libspeex\libspeex.%VCPROJ_FILE_EXT%
     copy /Y "%TOOLS%\Mods\%VS2008_OR_VS2010%-libspeexdsp.%VCPROJ_FILE_EXT%" libspeexdsp\libspeexdsp.%VCPROJ_FILE_EXT%
 
-    MSBuild libspeex.sln /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /t:libspeex;libspeexdsp /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libspeex.sln /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /t:libspeex;libspeexdsp /nologo /m:%BUILD_THREADS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
     :: Speex only builds Release or Debug, to make things easier in cmake dublicate Release as RelWithDebInfo.
@@ -1010,7 +1011,7 @@ IF NOT EXIST "%DEPS%\protobuf\vsprojects\%DEBUG_OR_RELEASE%\libprotobuf.lib". (
     echo.
 
     cecho {0D}Building %DEBUG_OR_RELEASE% Google Protobuf. Please be patient, this will take a while.{# #}{\n}
-    MSBuild protobuf.sln /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild protobuf.sln /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /t:libprotobuf;libprotoc;protoc /clp:ErrorsOnly /nologo /m:%BUILD_THREADS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 ) ELSE (
    cecho {0D}%DEBUG_OR_RELEASE% Google Protobuf already built. Skipping.{# #}{\n}
@@ -1042,7 +1043,7 @@ IF NOT EXIST "%DEPS%\celt\lib\%DEBUG_OR_RELEASE%\libcelt.lib" (
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
     cecho {0D}Building %DEBUG_OR_RELEASE% Celt 0.11.1.{# #}{\n}
-    MSBuild libcelt.%VCPROJ_FILE_EXT% /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
+    MSBuild libcelt.%VCPROJ_FILE_EXT% /p:configuration=%DEBUG_OR_RELEASE%  /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%BUILD_THREADS%
 
     :: Celt only build release or debug, to make things easier in cmake copy Release as RelWithDebInfo
     IF "!BUILD_TYPE!"=="%BUILD_TYPE_RELWITHDEBINFO%" (
@@ -1183,7 +1184,7 @@ IF NOT EXIST "%DEPS%\zlib\lib\%DEBUG_OR_RELEASE%\zlibstat.lib". (
     cd ..\..
     cd contrib\vstudio\%VC_VER%
     cecho {0D}Building %DEBUG_OR_RELEASE% zlib %ZLIB_VERSION%{# #}{\n}
-    MSBuild zlibvc.sln /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+    MSBuild zlibvc.sln /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /nologo /clp:ErrorsOnly /m:%BUILD_THREADS%
 
     cd ..\..\..
     copy /Y contrib\vstudio\%VC_VER%\%TARGET_ARCH%\ZlibStat%DEBUG_OR_RELEASE%\zlibstat.lib ..\lib\%DEBUG_OR_RELEASE%
@@ -1225,7 +1226,7 @@ IF NOT EXIST "%DEPS%\zziplib\lib\zziplib%POSTFIX_D%.lib". (
     cecho {0D}Building %DEBUG_OR_RELEASE% zziplib from premade project %TOOLS%\Mods\vs2008-%VS_PLATFORM%-zziplib.vcproj{# #}{\n}
     copy /Y "%TOOLS%\Mods\vs2008-%VS_PLATFORM%-zziplib.vcproj" zziplib.vcproj
     IF NOT %VS_VER%==vs2008 VCUpgrade /nologo /overwrite zziplib.vcproj
-    MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /nologo /clp:ErrorsOnly /m:%NUMBER_OF_PROCESSORS%
+    MSBuild zziplib.%VCPROJ_FILE_EXT% /p:configuration=%DEBUG_OR_RELEASE% /p:platform="%VS_PLATFORM%" /nologo /clp:ErrorsOnly /m:%BUILD_THREADS%
 
     :: Copy results to lib/include
     copy /Y zziplib%POSTFIX_D%.lib ..\..\lib
