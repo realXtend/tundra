@@ -8,22 +8,23 @@
 #include "DebugOperatorNew.h"
 
 #include "OgreSceneImporter.h"
+#include "OgreMaterialUtils.h"
+#include "EC_Placeable.h"
+#include "EC_Mesh.h"
+#include "Renderer.h"
+#include "OgreRenderingModule.h"
 
+#include "Framework.h"
 #include "Scene/Scene.h"
 #include "Entity.h"
 #include "SceneDesc.h"
-#include "OgreMaterialUtils.h"
 #include "CoreStringUtils.h"
 #include "Math/float3.h"
 #include "Math/Quat.h"
-#include "EC_Placeable.h"
-#include "EC_Mesh.h"
 #include "EC_Name.h"
-#include "Renderer.h"
 #include "AssetAPI.h"
 #include "LoggingFunctions.h"
 #include "SceneAPI.h"
-#include "OgreRenderingModule.h"
 #include "CoreException.h"
 #include "FileUtils.h"
 
@@ -375,12 +376,15 @@ SceneDesc OgreSceneImporter::CreateSceneDescFromMesh(const QString &source) cons
 
     ComponentDesc meshDesc;
     meshDesc.typeName = EC_Mesh::TypeNameStatic();
+    meshDesc.typeId = EC_Mesh::TypeIdStatic();
 
     ComponentDesc placeableDesc;
     placeableDesc.typeName = EC_Placeable::TypeNameStatic();
+    placeableDesc.typeId = EC_Placeable::TypeIdStatic();
 
     ComponentDesc nameDesc;
     nameDesc.typeName = EC_Name::TypeNameStatic();
+    nameDesc.typeId = EC_Name::TypeIdStatic();
 
     if (isUrl)
     {
@@ -849,12 +853,16 @@ void OgreSceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElem
         {
             EntityDesc entityDesc;
             ComponentDesc nameDesc;
-            ComponentDesc placeableDesc;
-            ComponentDesc meshDesc;
-
             nameDesc.typeName = EC_Name::TypeNameStatic();
+            nameDesc.typeId = EC_Name::TypeIdStatic();
+
+            ComponentDesc placeableDesc;
             placeableDesc.typeName = EC_Placeable::TypeNameStatic();
+            placeableDesc.typeId = EC_Placeable::TypeIdStatic();
+
+            ComponentDesc meshDesc;
             meshDesc.typeName = EC_Mesh::TypeNameStatic();
+            meshDesc.typeId = EC_Mesh::TypeIdStatic();
 
             // Enforce uniqueness for node names, which may not be guaranteed by artists
             QString baseNodeName = nodeElement.attribute("name");

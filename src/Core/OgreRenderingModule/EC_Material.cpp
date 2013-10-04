@@ -8,6 +8,7 @@
 #include "OgreMaterialAsset.h"
 #include "OgreRenderingModule.h"
 
+#include "Framework.h"
 #include "FrameAPI.h"
 #include "Scene/Scene.h"
 #include "Entity.h"

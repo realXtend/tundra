@@ -2304,16 +2304,18 @@ bool LoadFileToVector(const QString &filename, std::vector<u8> &dst)
     qint64 fileSize = file.size();
     if (fileSize <= 0)
     {
-        LogError("AssetAPI::LoadFileToVector: Failed to read file '" + filename + "' of " + fileSize + " bytes in size.");
+        // If the file size is 0 this is still considered a success.
+        // Log out a warning for it either way as this is an unusual case.
+        LogWarning(QString("AssetAPI::LoadFileToVector: Source file '%1' exists but size is 0. Reading is reported to be successfull but read data is empty!").arg(filename));
         file.close();
-        return false;
+        return true;
     }
     dst.resize(fileSize);
     qint64 numRead = file.read((char*)&dst[0], fileSize);
     file.close();
     if (numRead < fileSize)
     {
-        LogError("AssetAPI::LoadFileToVector: Failed to read " + QString::number(numRead) + " bytes from file '" + filename + "'.");
+        LogError(QString("AssetAPI::LoadFileToVector: Failed to read full %1 bytes from file '%2', instead read %3 bytes.").arg(fileSize).arg(filename).arg(numRead));
         return false;
     }
     return true;

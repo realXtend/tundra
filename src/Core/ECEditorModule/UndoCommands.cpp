@@ -6,6 +6,7 @@
 #include "EntityIdChangeTracker.h"
 #include "TransformEditor.h"
 
+#include "Framework.h"
 #include "Scene.h"
 #include "SceneAPI.h"
 #include "IComponent.h"

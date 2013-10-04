@@ -11,13 +11,14 @@
 #include "AssetReference.h"
 #include "EntityReference.h"
 #include "LoggingFunctions.h"
-
+#include "Framework.h"
 #include "Color.h"
 #include "Math/Quat.h"
 #include "Math/float2.h"
 #include "Math/float3.h"
 #include "Math/float4.h"
 #include "Transform.h"
+
 #include "MemoryLeakCheck.h"
 
 const QStringList SceneAPI::attributeTypeNames(

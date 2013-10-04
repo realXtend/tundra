@@ -37,17 +37,6 @@ ConsoleAPI::ConsoleAPI(Framework *fw) :
     logFile(0),
     logFileText(0)
 {
-    const QStringList logLevel = fw->CommandLineParameters("--logLevel");
-    if (logLevel.size() >= 1)
-        SetLogLevel(logLevel[logLevel.size()-1]);
-    if (logLevel.size() > 1)
-        LogWarning("Ignoring multiple --logLevel command line parameters!");
-
-    const QStringList logFile = fw->CommandLineParameters("--logFile");
-    if (logFile.size() >= 1)
-        SetLogFile(logFile[logFile.size()-1]);
-    if (logFile.size() > 1)
-        LogWarning("Ignoring multiple --logFile command line parameters!");
 }
 
 ConsoleAPI::~ConsoleAPI()
@@ -311,6 +300,18 @@ void ConsoleAPI::ToggleConsole()
 
 void ConsoleAPI::Initialize()
 {
+    const QStringList logLevel = framework->CommandLineParameters("--logLevel");
+    if (logLevel.size() >= 1)
+        SetLogLevel(logLevel[logLevel.size()-1]);
+    if (logLevel.size() > 1)
+        LogWarning("Ignoring multiple --logLevel command line parameters!");
+
+    const QStringList logFile = framework->CommandLineParameters("--logFile");
+    if (logFile.size() >= 1)
+        SetLogFile(logFile[logFile.size()-1]);
+    if (logFile.size() > 1)
+        LogWarning("Ignoring multiple --logFile command line parameters!");
+
     if (!framework->IsHeadless())
     {
        consoleWidget = new ConsoleWidget(framework);

@@ -7,7 +7,6 @@
 // If PCH is disabled, leave the contents of this whole file empty to avoid any compilation unit getting any unnecessary headers.
 #ifdef PCH_ENABLED
 #include "CoreDefines.h"
-#include "Framework.h"
 
 // Disable unreferenced formal parameter coming from Bullet
 #ifdef _MSC_VER

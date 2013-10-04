@@ -47,7 +47,7 @@ void EntityGroupItem::AddEntityItem(EntityItem *eItem)
     if (entityItems.contains(eItem))
         return;
     EntityGroupItem *parentItem = eItem->Parent();
-    if (!parentItem)
+    if (!parentItem && treeWidget())
         treeWidget()->takeTopLevelItem(treeWidget()->indexOfTopLevelItem(eItem)); // currently a top-level item, remove from top-level.
 
     if (parentItem && parentItem != this)

@@ -16,6 +16,7 @@
 #include "AddContentWindow.h"
 #include "SupportedFileTypes.h"
 
+#include "Framework.h"
 #include "UiAPI.h"
 #include "AssetAPI.h"
 #include "SceneAPI.h"

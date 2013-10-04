@@ -90,9 +90,10 @@ inline uint GetHash(const QString &str) { return ComputeHash(str); } /**< @depre
 
 /// Parses boolean value from string, case-insensitive.
 /** Accepted variations are on/off, true/false & 0/1* /
-    @param value String to be inspected. */
-bool TUNDRACORE_API ParseBool(QString value);
-inline bool ParseBool(const std::string &value) { return ParseBool(QString::fromStdString(value)); } /**< @overload */
+    @param value String to be inspected.
+    @param valueIfEmpty Value that is returned if the string is empty. */
+bool TUNDRACORE_API ParseBool(QString value, bool valueIfEmpty = false);
+inline bool ParseBool(const std::string &value, bool valueIfEmpty = false) { return ParseBool(QString::fromStdString(value), valueIfEmpty); } /**< @overload */
 
 /// Converts boolean to "true" or "false".
 inline QString BoolToString(bool value) { return value ? "true" : "false"; }

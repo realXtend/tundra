@@ -591,7 +591,7 @@ void ECEditorWindow::Refresh()
     if (entities.empty()) // If any of entities was not selected clear the browser window.
     {
         ecBrowser->clear();
-        transformEditor->SetSelection(QList<EntityPtr>());
+        transformEditor->SetSelection(entities);
         transformEditor->SetGizmoVisible(false);
         return;
     }
@@ -642,12 +642,14 @@ void ECEditorWindow::Refresh()
     ecBrowser->UpdateBrowser();
 
     // Show/set only entities with placeable to transform editor
-    QList<EntityPtr> entitiesWithPlaceable;
-    foreach(const EntityPtr &e, SelectedEntities())
-        if (e->Component<EC_Placeable>())
-            entitiesWithPlaceable.append(e);
+    EntityList entitiesWithPlaceable = SelectedEntities();
+    for(EntityList::iterator it = entitiesWithPlaceable.begin(); it != entitiesWithPlaceable.end(); )
+        if ((*it)->Component<EC_Placeable>())
+            ++it;
+        else
+            it = entitiesWithPlaceable.erase(it);
 
-    if (!entitiesWithPlaceable.isEmpty())
+    if (!entitiesWithPlaceable.empty())
     {
         transformEditor->SetSelection(entitiesWithPlaceable);
         transformEditor->FocusGizmoPivotToAabbCenter();
