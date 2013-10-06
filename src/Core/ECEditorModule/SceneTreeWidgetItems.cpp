@@ -273,7 +273,7 @@ void AttributeItem::Update(IAttribute *attr)
     type = attr->TypeName();
     name = attr->Name();
     id = attr->Id();
-    value = attr->ToString().c_str();
+    value = attr->ToString();
 
     if (index > -1 && attr->TypeId() == cAttributeAssetReferenceList)
     {

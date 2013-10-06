@@ -165,7 +165,7 @@ void ECAttributeEditorBase::MultiEditValueSelected(const QString &value)
         {
             IAttribute *attribute = FindAttribute(comp.lock());
             if(attribute)
-                attribute->FromString(value.toStdString(), AttributeChange::Default);
+                attribute->FromString(value, AttributeChange::Default);
         }
 }
 

@@ -437,7 +437,7 @@ SceneDesc OgreSceneImporter::CreateSceneDescFromMesh(const QString &source) cons
 
         foreach(IAttribute *a, mesh->Attributes())
         {
-            AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString().c_str(), a->Id() };
+            AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString(), a->Id() };
             meshDesc.attributes.append(attrDesc);
         }
     }
@@ -447,7 +447,7 @@ SceneDesc OgreSceneImporter::CreateSceneDescFromMesh(const QString &source) cons
     if (placeable)
         foreach(IAttribute *a, placeable->Attributes())
         {
-            AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString().c_str(), a->Id() };
+            AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString(), a->Id() };
             placeableDesc.attributes.append(attrDesc);
         }
 
@@ -458,7 +458,7 @@ SceneDesc OgreSceneImporter::CreateSceneDescFromMesh(const QString &source) cons
         name->name.Set(meshEntityName, AttributeChange::Disconnected);
         foreach(IAttribute *a, name->Attributes())
         {
-            AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString().c_str(), a->Id() };
+            AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString(), a->Id() };
             nameDesc.attributes.append(attrDesc);
         }
     }
@@ -970,17 +970,17 @@ void OgreSceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElem
                 // Create attribute descriptions for each component
                 foreach(IAttribute *a, namePtr->Attributes())
                 {
-                    AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString().c_str(), a->Id() };
+                    AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString(), a->Id() };
                     nameDesc.attributes.append(attrDesc);
                 }
                 foreach(IAttribute *a, meshPtr->Attributes())
                 {
-                    AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString().c_str(), a->Id() };
+                    AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString(), a->Id() };
                     meshDesc.attributes.append(attrDesc);
                 }
                 foreach(IAttribute *a, placeablePtr->Attributes())
                 {
-                    AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString().c_str(), a->Id() };
+                    AttributeDesc attrDesc = { a->TypeName(), a->Name(), a->ToString(), a->Id() };
                     placeableDesc.attributes.append(attrDesc);
                 }
 
