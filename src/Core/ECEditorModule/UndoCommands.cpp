@@ -27,7 +27,7 @@ EditIAttributeCommand::EditIAttributeCommand(IAttribute *attr, QUndoCommand *par
     Initialize(attr, true);
 }
 
-EditIAttributeCommand::EditIAttributeCommand(IAttribute *attr, const std::string &valueToApply, QUndoCommand *parent) :
+EditIAttributeCommand::EditIAttributeCommand(IAttribute *attr, const QString &valueToApply, QUndoCommand *parent) :
     IEditAttributeCommand(parent),
     undoValue(attr->ToString()),
     redoValue(valueToApply)
@@ -91,7 +91,7 @@ RemoveAttributeCommand::RemoveAttributeCommand(IAttribute *attr, QUndoCommand *p
     owner(static_pointer_cast<EC_DynamicComponent>(attr->Owner()->shared_from_this())),
     attributeTypeName_(attr->TypeName()),
     attributeName_(attr->Name()),
-    value_(QString::fromStdString(attr->ToString())),
+    value_(attr->ToString()),
     QUndoCommand(parent)
 {
     setText("- Removed " + attributeTypeName_ + " Attribute");
@@ -108,7 +108,7 @@ void RemoveAttributeCommand::undo()
     if (dynComp)
     {
         IAttribute * attr = dynComp->CreateAttribute(attributeTypeName_, attributeName_);
-        attr->FromString(value_.toStdString(), AttributeChange::Default);
+        attr->FromString(value_, AttributeChange::Default);
     }
 }
 

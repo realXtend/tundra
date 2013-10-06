@@ -49,13 +49,10 @@ public:
     const QString &Name() const { return name; }
 
     /// Writes attribute to string for XML serialization
-    virtual std::string ToString() const = 0;
+    virtual QString ToString() const = 0;
 
     /// Reads attribute from string for XML deserialization
-    virtual void FromString(const std::string& str, AttributeChange::Type change) = 0;
-
-    /// Reads attribute from string for XML deserialization
-    void FromString(const QString& str, AttributeChange::Type change);
+    virtual void FromString(const QString &str, AttributeChange::Type change) = 0;
 
     /// Returns the type name of the data stored in this attribute.
     /** @note As attribute type names are handled case-insensitively internally by the SceneAPI,
@@ -234,8 +231,8 @@ public:
             Set(source_attr->Get(), change);
     }
 
-    virtual std::string ToString() const; ///< IAttribute override
-    virtual void FromString(const std::string& str, AttributeChange::Type change); ///< IAttribute override
+    virtual QString ToString() const; ///< IAttribute override
+    virtual void FromString(const QString& str, AttributeChange::Type change); ///< IAttribute override
     virtual void ToBinary(kNet::DataSerializer& dest) const; ///< IAttribute override
     virtual void FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change); ///< IAttribute override
     virtual void Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change); ///< IAttribute override

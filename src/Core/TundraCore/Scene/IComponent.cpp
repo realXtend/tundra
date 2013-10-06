@@ -442,7 +442,7 @@ void IComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element, bool 
 
     for(uint i = 0; i < attributes.size(); ++i)
         if (attributes[i])
-            WriteAttribute(doc, comp_element, attributes[i]->Name(), attributes[i]->Id(), attributes[i]->ToString().c_str(), attributes[i]->TypeName());
+            WriteAttribute(doc, comp_element, attributes[i]->Name(), attributes[i]->Id(), attributes[i]->ToString(), attributes[i]->TypeName());
 }
 
 void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type change)

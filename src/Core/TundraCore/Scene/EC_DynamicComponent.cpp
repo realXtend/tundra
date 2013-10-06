@@ -117,7 +117,7 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
             //SetAttribute(QString::fromStdString(iter2->name_), QString::fromStdString(iter2->value_), change);
             for(AttributeVector::const_iterator attr_iter = attributes.begin(); attr_iter != attributes.end(); ++attr_iter)
                 if((*attr_iter)->Id() == iter2->id_)
-                    (*attr_iter)->FromString(iter2->value_.toStdString(), change);
+                    (*attr_iter)->FromString(iter2->value_, change);
 
             ++iter2;
             ++iter1;
@@ -141,7 +141,7 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
         DeserializeData attributeData = addAttributes.back();
         IAttribute *attribute = CreateAttribute(attributeData.type_, attributeData.id_);
         if (attribute)
-            attribute->FromString(attributeData.value_.toStdString(), change);
+            attribute->FromString(attributeData.value_, change);
         addAttributes.pop_back();
     }
     while(!remAttributes.empty())
@@ -358,7 +358,7 @@ void EC_DynamicComponent::SerializeToBinary(kNet::DataSerializer& dest) const
         {
             dest.AddString((*iter)->Id().toStdString());
             dest.AddString((*iter)->TypeName().toStdString());
-            dest.AddString((*iter)->ToString());
+            dest.AddString((*iter)->ToString().toStdString()); /**< @todo Use UTF-8, see Attribute<QString>::ToBinary */
         }
         ++iter;
     }
