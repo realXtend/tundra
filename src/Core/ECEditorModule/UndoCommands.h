@@ -56,7 +56,7 @@ public:
         @param attr The attribute that is being edited.
         @param valueToApply The new attribute value. Gets applied immediately when this actions redo() it triggered.
         @param parent The parent command of this command (optional). */
-    EditIAttributeCommand(IAttribute *attr, const std::string &valueToApply, QUndoCommand *parent = 0);
+    EditIAttributeCommand(IAttribute *attr, const QString &valueToApply, QUndoCommand *parent = 0);
 
     /// Returns this command's ID
     int id() const { return Id; }
@@ -113,8 +113,8 @@ private:
         setText("* Edited " + attr->Name() + " Attribute");
     }
 
-    std::string redoValue;
-    std::string undoValue;
+    QString redoValue;
+    QString undoValue;
     bool noAutoRedo;
 };
 

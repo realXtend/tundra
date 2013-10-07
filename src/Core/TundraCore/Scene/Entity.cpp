@@ -162,22 +162,22 @@ void Entity::RemoveComponent(ComponentMap::iterator iter, AttributeChange::Type 
     // Unregister/invalidate dynamic property accessor
     QString componentTypeName = IComponent::EnsureTypeNameWithoutPrefix(component->TypeName());
     componentTypeName.replace(0, 1, componentTypeName[0].toLower());
-    const char *propertyName = componentTypeName.toStdString().c_str();
+    std::string propertyName = componentTypeName.toStdString();
    // 'lowerCamelCaseVersion'
-    if (property(propertyName).isValid())
+    if (property(propertyName.c_str()).isValid())
     {
         //Make sure that QObject is inherited by the IComponent and that the name is matching in case there are many of same type of components in entity.
-        QObject *obj = property(propertyName).value<QObject*>();
+        QObject *obj = property(propertyName.c_str()).value<QObject*>();
         if (qobject_cast<IComponent*>(obj) && static_cast<IComponent*>(obj)->Name() == component->Name())
-            setProperty(propertyName, QVariant());
+            setProperty(propertyName.c_str(), QVariant());
     }
     // old and ugly 'alllowercaseversion'
-    propertyName = componentTypeName.toLower().toStdString().c_str();
-    if (property(propertyName).isValid())
+    propertyName = componentTypeName.toLower().toStdString();
+    if (property(propertyName.c_str()).isValid())
     {
-        QObject *obj = property(propertyName).value<QObject*>();
+        QObject *obj = property(propertyName.c_str()).value<QObject*>();
         if (qobject_cast<IComponent*>(obj) && static_cast<IComponent*>(obj)->Name() == component->Name())
-            setProperty(propertyName, QVariant());
+            setProperty(propertyName.c_str(), QVariant());
     }
 
     if (change != AttributeChange::Disconnected)

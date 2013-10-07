@@ -929,7 +929,7 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
                         if (attr)
                             foreach(const AttributeDesc &a, c.attributes)
                                 if (attr->TypeName() == a.typeName && attr->Name() == a.name)
-                                    attr->FromString(a.value.toStdString(), AttributeChange::Disconnected); // Trigger no signal yet when scene is in incoherent state
+                                    attr->FromString(a.value, AttributeChange::Disconnected); // Trigger no signal yet when scene is in incoherent state
                 }
             }
 
@@ -1066,10 +1066,10 @@ SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) 
                         continue;
                     
                     const QString typeName = a->TypeName();
-                    AttributeDesc attrDesc = { typeName, a->Name(), a->ToString().c_str(), a->Id() };
+                    AttributeDesc attrDesc = { typeName, a->Name(), a->ToString(), a->Id() };
                     compDesc.attributes.append(attrDesc);
 
-                    QString attrValue = QString(a->ToString().c_str()).trimmed();
+                    QString attrValue = a->ToString();
                     if ((typeName.compare("AssetReference", Qt::CaseInsensitive) == 0 || typeName.compare("AssetReferenceList", Qt::CaseInsensitive) == 0|| 
                         (a->Metadata() && a->Metadata()->elementType.compare("AssetReference", Qt::CaseInsensitive) == 0)) &&
                         !attrValue.isEmpty())
@@ -1253,10 +1253,10 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
                                     continue;
                                 
                                 QString typeName = a->TypeName();
-                                AttributeDesc attrDesc = { typeName, a->Name(), a->ToString().c_str(), a->Id() };
+                                AttributeDesc attrDesc = { typeName, a->Name(), a->ToString(), a->Id() };
                                 compDesc.attributes.append(attrDesc);
 
-                                QString attrValue = QString(a->ToString().c_str()).trimmed();
+                                QString attrValue = a->ToString();
                                 if ((typeName.compare("AssetReference", Qt::CaseInsensitive) == 0 || typeName.compare("AssetReferenceList", Qt::CaseInsensitive) == 0 || 
                                     (a->Metadata() && a->Metadata()->elementType.compare("AssetReference", Qt::CaseInsensitive) == 0)) &&
                                     !attrValue.isEmpty())
