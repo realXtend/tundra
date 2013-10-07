@@ -45,6 +45,8 @@
 
 #include "MemoryLeakCheck.h"
 
+using namespace Physics;
+
 PhysicsModule::PhysicsModule()
 :IModule("Physics"),
 defaultPhysicsUpdatePeriod_(1.0f / 60.0f),
