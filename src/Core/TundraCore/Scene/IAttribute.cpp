@@ -690,10 +690,7 @@ template<> void TUNDRACORE_API Attribute<QPoint>::FromScriptValue(const QScriptV
 
 template<> void TUNDRACORE_API Attribute<QString>::ToBinary(kNet::DataSerializer& dest) const
 {
-    QByteArray utf8bytes = value.toUtf8();
-    dest.Add<u16>(utf8bytes.size());
-    if (utf8bytes.size())
-        dest.AddArray<u8>((const u8*)utf8bytes.data(), utf8bytes.size());
+    WriteUtf8String(dest, value);
 }
 
 template<> void TUNDRACORE_API Attribute<bool>::ToBinary(kNet::DataSerializer& dest) const
@@ -809,11 +806,7 @@ template<> void TUNDRACORE_API Attribute<QPoint>::ToBinary(kNet::DataSerializer&
 
 template<> void TUNDRACORE_API Attribute<QString>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
-    QByteArray utf8bytes;
-    utf8bytes.resize(source.Read<u16>());
-    if (utf8bytes.size())
-        source.ReadArray<u8>((u8*)utf8bytes.data(), utf8bytes.size());
-    Set(QString::fromUtf8(utf8bytes.data(), utf8bytes.size()), change);
+    Set(ReadUtf8String(source), change);
 }
 
 template<> void TUNDRACORE_API Attribute<bool>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
@@ -887,7 +880,7 @@ template<> void TUNDRACORE_API Attribute<float4>::FromBinary(kNet::DataDeseriali
 template<> void TUNDRACORE_API Attribute<AssetReference>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
     AssetReference value;
-    value.ref = source.ReadString().c_str();
+    value.ref = source.ReadString().c_str(); /**< @todo Use UTF-8, see Attribute<QString>::FromBinary */
     Set(value, change);
 }
 
@@ -896,7 +889,7 @@ template<> void TUNDRACORE_API Attribute<AssetReferenceList>::FromBinary(kNet::D
     AssetReferenceList value;
     u8 numValues = source.Read<u8>();
     for(u32 i = 0; i < numValues; ++i)
-        value.Append(AssetReference(source.ReadString().c_str()));
+        value.Append(AssetReference(source.ReadString().c_str())); /**< @todo Use UTF-8, see Attribute<QString>::FromBinary */
 
     Set(value, change);
 }
@@ -904,13 +897,13 @@ template<> void TUNDRACORE_API Attribute<AssetReferenceList>::FromBinary(kNet::D
 template<> void TUNDRACORE_API Attribute<EntityReference>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
     EntityReference value;
-    value.ref = source.ReadString().c_str();
+    value.ref = source.ReadString().c_str(); /**< @todo Use UTF-8, see Attribute<QString>::FromBinary */
     Set(value, change);
 }
 
 template<> void TUNDRACORE_API Attribute<QVariant>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
-    std::string str = source.ReadString();
+    std::string str = source.ReadString(); /**< @todo Use UTF-8, see Attribute<QString>::FromBinary */
     QVariant value(QString(str.c_str()));
     Set(value, change);
 }
@@ -922,7 +915,7 @@ template<> void TUNDRACORE_API Attribute<QVariantList>::FromBinary(kNet::DataDes
     u8 numValues = source.Read<u8>();
     for(u32 i = 0; i < numValues; ++i)
     {
-        std::string str = source.ReadString();
+        std::string str = source.ReadString(); /**< @todo Use UTF-8, see Attribute<QString>::FromBinary */
         value.append(QVariant(QString(str.c_str())));
     }
     
