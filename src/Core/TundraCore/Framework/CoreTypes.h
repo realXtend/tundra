@@ -45,11 +45,7 @@ typedef unsigned int component_id_t;
 #else
 #include <memory>
 #include <regex>
-#if defined(_MSC_VER) && (_MSC_VER == 1500) || (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 2 && !defined(__APPLE__))
-    #include <tr1/unordered_map>
-#else
-    #include <unordered_map>
-#endif
+#include <unordered_map>
 #endif
 
 /** @def CORETYPES_NAMESPACE
