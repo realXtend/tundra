@@ -3,24 +3,21 @@
 #include "StableHeaders.h"
 #define MATH_OGRE_INTEROP
 #include "DebugOperatorNew.h"
-#include "EC_Mesh.h"
+
 #include "EC_AnimationController.h"
+#include "EC_Mesh.h"
+#include "OgreWorld.h"
+
 #include "Entity.h"
 #include "FrameAPI.h"
-#include "OgreRenderingModule.h"
 #include "CoreStringUtils.h"
 #include "Profiler.h"
 #include "Scene/Scene.h"
-#include "OgreWorld.h"
+#include "LoggingFunctions.h"
 
 #include <Ogre.h>
 
-#include "LoggingFunctions.h"
-
 #include "MemoryLeakCheck.h"
-
-
-using namespace OgreRenderer;
 
 EC_AnimationController::EC_AnimationController(Scene* scene) :
     IComponent(scene),
@@ -28,10 +25,7 @@ EC_AnimationController::EC_AnimationController(Scene* scene) :
     INIT_ATTRIBUTE_VALUE(drawDebug, "Draw debug", false),
     mesh(0)
 {
-    ResetState();
-    
-    QObject::connect(framework->Frame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
-    QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
 }
 
 EC_AnimationController::~EC_AnimationController()
@@ -650,6 +644,8 @@ float EC_AnimationController::GetAnimationRelativeTimePosition(const QString& na
 
 void EC_AnimationController::UpdateSignals()
 {
+    connect(framework->Frame(), SIGNAL(Updated(float)), SLOT(Update(float)), Qt::UniqueConnection);
+
     Entity* parent = ParentEntity();
     if (parent)
     {
@@ -873,4 +869,3 @@ void EC_AnimationController::SetAnimWeight(const QString &name, const QString &a
     float weight = animweight.toFloat();
     SetAnimationWeight(name, weight);
 }
-
