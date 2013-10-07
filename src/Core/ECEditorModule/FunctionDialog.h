@@ -18,6 +18,7 @@ class QGridLayout;
 class QLabel;
 class QTextEdit;
 class QCheckBox;
+class QTextEdit;
 
 class IArgumentType;
 struct InvokeItem;
@@ -95,7 +96,6 @@ public:
         @param parent Parent widget. */
     FunctionDialog(const QObjectWeakPtrList &objs, const InvokeItem &invokeItem, QWidget *parent = 0);
 
-    /// Destructor.
     ~FunctionDialog();
 
     /// Returns list of entities for which the action is triggered.
@@ -123,7 +123,8 @@ private:
     void Initialize();
     void Populate(const QMetaObject *mo, std::set<FunctionMetadata> &fmds);
 
-    QLabel *targetsLabel; ///< Label showing the target objects.
+    QLabel *targetsLabel;
+    QTextEdit *targetsText; ///< Text area showing the target objects.
     FunctionComboBox *functionComboBox; ///< Function combo box
     QTextEdit *doxygenView; ///< View for doxygen documentation.
     QGridLayout *editorLayout; ///< Layout for dynamically created parameter editors.

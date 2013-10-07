@@ -69,12 +69,17 @@ macro (final_target)
                 # which results already built libs to be deleted and thus causing build errors in further modules.
                 # See  http://public.kitware.com/Bug/view.php?id=11844 for more info
 
-                #set_target_properties (${TARGET_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG ${TARGET_DIR})
-                #set_target_properties (${TARGET_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${TARGET_DIR})
-                set_target_properties (${TARGET_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${TARGET_DIR})
-                #set_target_properties (${TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${TARGET_DIR})
-                #set_target_properties (${TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${TARGET_DIR})
-                set_target_properties (${TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${TARGET_DIR})
+                if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+                    set_target_properties (${TARGET_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG ${TARGET_DIR})
+                    set_target_properties (${TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${TARGET_DIR})
+                elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
+                    set_target_properties (${TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${TARGET_DIR})
+                    set_target_properties (${TARGET_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${TARGET_DIR})
+                elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+                    set_target_properties (${TARGET_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${TARGET_DIR})
+                    set_target_properties (${TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${TARGET_DIR})
+                endif()
+
                 set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flat_namespace")
             endif()
         endif ()

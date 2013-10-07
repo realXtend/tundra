@@ -130,100 +130,111 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
 {
     // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
     instance = this;
-
+    // Create ConsoleAPI as early as possible in order to catch log prints.
+    console = new ConsoleAPI(this); // ConsoleAPI depends on UiAPI and InputAPI and is not initialized fully until they're created.
 #ifdef ANDROID
     LoadCommandLineFromFile();
 #else
     ProcessStartupOptions();
 #endif
+    // In headless mode, no main UI/rendering window is initialized.
+    headless = HasCommandLineParameter("--headless");
+    // Are we about to exit almost immediately?
+    exitSignal = HasCommandLineParameter("--version") || HasCommandLineParameter("--help");
 
     // Make sure we spawn a console window in each case we might need one.
     if (HasCommandLineParameter("--version") || HasCommandLineParameter("--help") ||
-        HasCommandLineParameter("--sharedconsole") || HasCommandLineParameter("--console") ||
+        HasCommandLineParameter("--sharedConsole") || HasCommandLineParameter("--console") ||
         HasCommandLineParameter("--headless"))
     {
-        Application::ShowConsoleWindow(HasCommandLineParameter("--sharedconsole"));
+        Application::ShowConsoleWindow(HasCommandLineParameter("--sharedConsole"));
     }
 
-    ///\todo Delete the CommandLineParameterMap mechanism altogether.
-    /// Instead, provide the command line parameter help from a help file, where all the various command line parameters can be assembled.
-    CommandLineParameterMap cmdLineDescs;
-#ifdef WIN32
-    cmdLineDescs.commands["--console"] = "Shows a text-based console along with the main UI window.";
-    cmdLineDescs.commands["--sharedConsole"] = "Same as '--console' but attaches the Tundra console to the parent process, without creating new command prompt for the console.";
-    cmdLineDescs.commands["--perfHud"] = "Use Ogre with NVIDIA PerfHUD enabled, if applicable.";
-    cmdLineDescs.commands["--d3d9"] = "Use Ogre with \"Direct3D9 Rendering Subsystem\", overrides the option that was set in config.";
-    cmdLineDescs.commands["--direct3d9"] = "Same as --d3d9.";
-#endif
-    cmdLineDescs.commands["--help"] = "Produces help message."; // Framework
-    cmdLineDescs.commands["--version"] = "Produces version information."; // Framework
-    cmdLineDescs.commands["--headless"] = "Runs Tundra in headless mode without any windows or rendering."; // Framework
-    cmdLineDescs.commands["--disableRunOnLoad"] = "Prevents script applications (EC_Script's with applicationName defined) starting automatically."; //JavascriptModule
-    cmdLineDescs.commands["--server"] = "Starts Tundra as server."; // TundraLogicModule
-    cmdLineDescs.commands["--port"] = "Specifies the Tundra server port."; // TundraLogicModule
-    cmdLineDescs.commands["--protocol"] = "Specifies the Tundra server protocol. Options: '--protocol tcp' and '--protocol udp'. Defaults to udp if no protocol is specified."; // KristalliProtocolModule
-    cmdLineDescs.commands["--fpsLimit"] = "Specifies the FPS cap to use in rendering. Default: 60. Pass in 0 to disable."; // Framework
-    cmdLineDescs.commands["--fpsLimitWhenInactive"] = "Specifies the FPS cap to use when the window is not active. Default: 30 (half of the FPS). Pass 0 to disable."; // Framework
-    cmdLineDescs.commands["--run"] = "Runs script on startup"; // JavaScriptModule
-    cmdLineDescs.commands["--plugin"] = "Specifies a shared library (a 'plugin') to be loaded, relative to 'TUNDRA_DIRECTORY/plugins' path. Multiple plugin parameters are supported, f.ex. '--plugin MyPlugin --plugin MyOtherPlugin', or multiple parameters per --plugin, separated with semicolon (;) and enclosed in quotation marks, f.ex. --plugin \"MyPlugin;OtherPlugin;Etc\""; // Framework
-    cmdLineDescs.commands["--jsplugin"] = "Specifies a javascript file to be loaded at startup, relative to 'TUNDRA_DIRECTORY/jsplugins' path. Multiple jsplugin parameters are supported, f.ex. '--jsplugin MyPlugin.js --jsplugin MyOtherPlugin.js', or multiple parameters per --jsplugin, separated with semicolon (;) and enclosed in quotation marks, f.ex. --jsplugin \"MyPlugin.js;MyOtherPlugin.js;Etc.js\". If JavascriptModule is not loaded, this parameter has no effect."; // JavascriptModule
-    cmdLineDescs.commands["--file"] = "Specifies a startup scene file. Multiple files supported. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI."; // TundraLogicModule & AssetModule
-    cmdLineDescs.commands["--storage"] = "Adds the given directory as a local storage directory on startup."; // AssetModule
-    cmdLineDescs.commands["--config"] = "Specifies a startup configuration file to use. Multiple config files are supported, f.ex. '--config plugins.xml --config MyCustomAddons.xml'."; // Framework & PluginAPI
-    cmdLineDescs.commands["--connect"] = "Connects to a Tundra server automatically. Syntax: '--connect serverIp;port;protocol;name;password'. Password is optional."; // TundraLogicModule & AssetModule
-    cmdLineDescs.commands["--login"] = "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username."; // TundraLogicModule & AssetModule
-    cmdLineDescs.commands["--netRate"] = "Specifies the number of network updates per second. Default: 30."; // TundraLogicModule
-    cmdLineDescs.commands["--noAssetCache"] = "Disable asset cache."; // Framework
-    cmdLineDescs.commands["--assetCacheDir"] = "Specify asset cache directory to use."; // Framework
-    cmdLineDescs.commands["--clearAssetCache"] = "At the start of Tundra, remove all data and metadata files from asset cache."; // AssetCache
-    cmdLineDescs.commands["--logLevel"] = "Sets the current log level: 'error', 'warning', 'info', 'debug'."; // ConsoleAPI
-    cmdLineDescs.commands["--logFile"] = "Sets logging file. Usage example: '--logfile TundraLogFile.txt'."; // ConsoleAPI
-    cmdLineDescs.commands["--physicsRate"] = "Specifies the number of physics simulation steps per second. Default: 60."; // PhysicsModule
-    cmdLineDescs.commands["--physicsMaxSteps"] = "Specifies the maximum number of physics simulation steps in one frame to limit CPU usage. If the limit would be exceeded, physics will appear to slow down. Default: 6."; // PhysicsModule
-    cmdLineDescs.commands["--splash"] = "Shows splash screen during the startup."; // Framework
-    cmdLineDescs.commands["--fullscreen"] = "Starts application in fullscreen mode."; // OgreRenderingModule
-    cmdLineDescs.commands["--vsync"] = "Synchronizes buffer swaps to monitor vsync, eliminating tearing at the expense of a fixed frame rate."; // OgreRenderingModule
-    cmdLineDescs.commands["--vsyncFrequency"] = "Sets display frequency rate for vsync, applicable only if fullscreen is set. Usage: '--vsyncFrequency <number>'."; // OgreRenderingModule
-    cmdLineDescs.commands["--antialias"] = "Sets full screen antialiasing factor. Usage '--antialias <number>'."; // OgreRenderingModule
-    cmdLineDescs.commands["--hideBenignOgreMessages"] = "Sets some uninformative Ogre log messages to be ignored from the log output."; // OgreRenderingModule
-    cmdLineDescs.commands["--noAsyncAssetLoad"] = "Disables threaded loading of Ogre assets."; // OgreRenderingModule
-    cmdLineDescs.commands["--autoDxtCompress"] = "Compress uncompressed texture assets to DXT1/DXT5 format on load to save memory."; // OgreRenderingModule
-    cmdLineDescs.commands["--maxTextureSize"] = "Resize texture assets that are larger than this. Default: no resizing."; // OgreRenderingModule
-    cmdLineDescs.commands["--variablePhysicsStep"] = "Use variable physics timestep to avoid taking multiple physics substeps during one frame."; // PhysicsModule
-    cmdLineDescs.commands["--opengl"] = "Use Ogre with \"OpenGL Rendering Subsystem\" for rendering, overrides the option that was set in config.";
-    cmdLineDescs.commands["--nullRenderer"] = "Disables all Ogre rendering operations."; // OgreRenderingModule
-    cmdLineDescs.commands["--ogreCaptureTopWindow"] = "On some systems, the Ogre rendering output is overdrawn by the desktop compositing manager, "
-        "but the actual cause of this is uncertain. As a workaround, try this switch to make Ogre output directly on the main window handle of the UI chain. "
-        "However, this might introduce graphical issues."; // OgreRenderingModule
-    cmdLineDescs.commands["--noUiCompositing"] = "Disables the UI compositing, use for debugging purposes only."; // Framework & OgreRenderingModule
-    cmdLineDescs.commands["--noCentralWidget"] = "Disables the usage of QMainWindow's central widget."; // Framework
-    cmdLineDescs.commands["--noMenuBar"] = "Disables showing of the application menu bar automatically."; // Framework
-    cmdLineDescs.commands["--clientExtrapolationTime"] = "Rigid body extrapolation time on client in milliseconds. Default 66."; // TundraProtocolModule
-    cmdLineDescs.commands["--noClientPhysics"] = "Disables rigid body handoff to client simulation after no movement packets received from server."; // TundraProtocolModule
-    cmdLineDescs.commands["--dumpProfiler"] = "Dump profiling blocks to console every 5 seconds."; // DebugStatsModule
-    cmdLineDescs.commands["--acceptUnknownLocalSources"] = "If specified, assets outside any known local storages are allowed. Otherwise, requests to them will fail."; // AssetModule
-    cmdLineDescs.commands["--acceptUnknownHttpSources"] = "If specified, asset requests outside any registered HTTP storages are also accepted, and will appear as assets with no storage. "
-        "Otherwise, all requests to assets outside any registered storage will fail."; // AssetModule
+    if (HasCommandLineParameter("--version"))
+        LogInfo(Application::FullIdentifier());
 
     if (HasCommandLineParameter("--help"))
     {
+        ///\todo Delete the CommandLineParameterMap mechanism altogether.
+        /// Instead, provide the command line parameter help from a help file, where all the various command line parameters can be assembled.
+        CommandLineParameterMap cmdLineDescs;
+#ifdef WIN32
+        cmdLineDescs.commands["--console"] = "Shows a text-based console along with the main UI window.";
+        cmdLineDescs.commands["--sharedConsole"] = "Same as '--console' but attaches the Tundra console to the parent process, without creating new command prompt for the console.";
+        cmdLineDescs.commands["--perfHud"] = "Use Ogre with NVIDIA PerfHUD enabled, if applicable.";
+        cmdLineDescs.commands["--d3d9"] = "Use Ogre with \"Direct3D9 Rendering Subsystem\", overrides the option that was set in config.";
+        cmdLineDescs.commands["--direct3d9"] = "Same as --d3d9.";
+#endif
+        cmdLineDescs.commands["--help"] = "Produces help message and exits."; // Framework
+        cmdLineDescs.commands["--version"] = "Produces version information and exits."; // Framework
+        cmdLineDescs.commands["--headless"] = "Runs Tundra in headless mode without any windows or rendering."; // Framework
+        cmdLineDescs.commands["--disableRunOnLoad"] = "Prevents script applications (EC_Script's with applicationName defined) starting automatically."; //JavascriptModule
+        cmdLineDescs.commands["--server"] = "Starts Tundra as server."; // TundraLogicModule
+        cmdLineDescs.commands["--port"] = "Specifies the Tundra server port."; // TundraLogicModule
+        cmdLineDescs.commands["--protocol"] = "Specifies the Tundra server protocol. Options: '--protocol tcp' and '--protocol udp'. Defaults to udp if no protocol is specified."; // KristalliProtocolModule
+        cmdLineDescs.commands["--fpsLimit"] = "Specifies the FPS cap to use in rendering. Default: 60. Pass in 0 to disable."; // Framework
+        cmdLineDescs.commands["--fpsLimitWhenInactive"] = "Specifies the FPS cap to use when the window is not active. Default: 30 (half of the FPS). Pass 0 to disable."; // Framework
+        cmdLineDescs.commands["--run"] = "Runs script on startup"; // JavaScriptModule
+        cmdLineDescs.commands["--plugin"] = "Specifies a shared library (a 'plugin') to be loaded, relative to 'TUNDRA_DIRECTORY/plugins' path. Multiple plugin parameters are supported, f.ex. '--plugin MyPlugin --plugin MyOtherPlugin', or multiple parameters per --plugin, separated with semicolon (;) and enclosed in quotation marks, f.ex. --plugin \"MyPlugin;OtherPlugin;Etc\""; // Framework
+        cmdLineDescs.commands["--jsplugin"] = "Specifies a javascript file to be loaded at startup, relative to 'TUNDRA_DIRECTORY/jsplugins' path. Multiple jsplugin parameters are supported, f.ex. '--jsplugin MyPlugin.js --jsplugin MyOtherPlugin.js', or multiple parameters per --jsplugin, separated with semicolon (;) and enclosed in quotation marks, f.ex. --jsplugin \"MyPlugin.js;MyOtherPlugin.js;Etc.js\". If JavascriptModule is not loaded, this parameter has no effect."; // JavascriptModule
+        cmdLineDescs.commands["--file"] = "Specifies a startup scene file. Multiple files supported. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI."; // TundraLogicModule & AssetModule
+        cmdLineDescs.commands["--storage"] = "Adds the given directory as a local storage directory on startup."; // AssetModule
+        cmdLineDescs.commands["--config"] = "Specifies a startup configuration file to use. Multiple config files are supported, f.ex. '--config tundra.json --config MyCustomAddons.xml'. XML and JSON Tundra startup configs are supported."; // Framework & PluginAPI
+        cmdLineDescs.commands["--connect"] = "Connects to a Tundra server automatically. Syntax: '--connect serverIp;port;protocol;name;password'. Password is optional."; // TundraLogicModule & AssetModule
+        cmdLineDescs.commands["--login"] = "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username."; // TundraLogicModule & AssetModule
+        cmdLineDescs.commands["--netRate"] = "Specifies the number of network updates per second. Default: 30."; // TundraLogicModule
+        cmdLineDescs.commands["--noAssetCache"] = "Disable asset cache."; // Framework
+        cmdLineDescs.commands["--assetCacheDir"] = "Specify asset cache directory to use."; // Framework
+        cmdLineDescs.commands["--clearAssetCache"] = "At the start of Tundra, remove all data and metadata files from asset cache."; // AssetCache
+        cmdLineDescs.commands["--logLevel"] = "Sets the current log level: 'error', 'warning', 'info', 'debug'."; // ConsoleAPI
+        cmdLineDescs.commands["--logFile"] = "Sets logging file. Usage example: '--logfile TundraLogFile.txt'."; // ConsoleAPI
+        cmdLineDescs.commands["--physicsRate"] = "Specifies the number of physics simulation steps per second. Default: 60."; // PhysicsModule
+        cmdLineDescs.commands["--physicsMaxSteps"] = "Specifies the maximum number of physics simulation steps in one frame to limit CPU usage. If the limit would be exceeded, physics will appear to slow down. Default: 6."; // PhysicsModule
+        cmdLineDescs.commands["--splash"] = "Shows splash screen during the startup."; // Framework
+        cmdLineDescs.commands["--fullscreen"] = "Starts application in fullscreen mode."; // OgreRenderingModule
+        cmdLineDescs.commands["--vsync"] = "Synchronizes buffer swaps to monitor vsync, eliminating tearing at the expense of a fixed frame rate."; // OgreRenderingModule
+        cmdLineDescs.commands["--vsyncFrequency"] = "Sets display frequency rate for vsync, applicable only if fullscreen is set. Usage: '--vsyncFrequency <number>'."; // OgreRenderingModule
+        cmdLineDescs.commands["--antialias"] = "Sets full screen antialiasing factor. Usage '--antialias <number>'."; // OgreRenderingModule
+        cmdLineDescs.commands["--hideBenignOgreMessages"] = "Sets some uninformative Ogre log messages to be ignored from the log output."; // OgreRenderingModule
+        cmdLineDescs.commands["--noAsyncAssetLoad"] = "Disables threaded loading of Ogre assets."; // OgreRenderingModule
+        cmdLineDescs.commands["--autoDxtCompress"] = "Compress uncompressed texture assets to DXT1/DXT5 format on load to save memory."; // OgreRenderingModule
+        cmdLineDescs.commands["--maxTextureSize"] = "Resize texture assets that are larger than this. Default: no resizing."; // OgreRenderingModule
+        cmdLineDescs.commands["--variablePhysicsStep"] = "Use variable physics timestep to avoid taking multiple physics substeps during one frame."; // PhysicsModule
+        cmdLineDescs.commands["--opengl"] = "Use Ogre with \"OpenGL Rendering Subsystem\" for rendering, overrides the option that was set in config.";
+        cmdLineDescs.commands["--nullRenderer"] = "Disables all Ogre rendering operations."; // OgreRenderingModule
+        cmdLineDescs.commands["--ogreCaptureTopWindow"] = "On some systems, the Ogre rendering output is overdrawn by the desktop compositing manager, "
+            "but the actual cause of this is uncertain. As a workaround, try this switch to make Ogre output directly on the main window handle of the UI chain. "
+            "However, this might introduce graphical issues."; // OgreRenderingModule
+        cmdLineDescs.commands["--noUiCompositing"] = "Disables the UI compositing, use for debugging purposes only."; // Framework & OgreRenderingModule
+        cmdLineDescs.commands["--noCentralWidget"] = "Disables the usage of QMainWindow's central widget."; // Framework
+        cmdLineDescs.commands["--noMenuBar"] = "Disables showing of the application menu bar automatically."; // Framework
+        cmdLineDescs.commands["--clientExtrapolationTime"] = "Rigid body extrapolation time on client in milliseconds. Default 66."; // TundraProtocolModule
+        cmdLineDescs.commands["--noClientPhysics"] = "Disables rigid body handoff to client simulation after no movement packets received from server."; // TundraProtocolModule
+        cmdLineDescs.commands["--dumpProfiler"] = "Dump profiling blocks to console every 5 seconds."; // DebugStatsModule
+        cmdLineDescs.commands["--acceptUnknownLocalSources"] = "If specified, assets outside any known local storages are allowed. Otherwise, requests to them will fail."; // AssetModule
+        cmdLineDescs.commands["--acceptUnknownHttpSources"] = "If specified, asset requests outside any registered HTTP storages are also accepted, and will appear as assets with no storage. "
+            "Otherwise, all requests to assets outside any registered storage will fail."; // AssetModule
+
         LogInfo("Supported command line arguments (case-insensitive):");
         std::cout << cmdLineDescs.ToString();
     }
 
-    if (HasCommandLineParameter("--version") || HasCommandLineParameter("--help"))
+    if (exitSignal)
     {
 #ifdef WIN32
         std::cout << std::endl;
         system("pause");
 #endif
-        Exit();
+        // Use ForceExit as we can't let anything to cancel exiting and leave Application and Framework in uninitialized state.
+        ForceExit();
         return;
     }
 
-    // In headless mode, no main UI/rendering window is initialized.
-    if (HasCommandLineParameter("--headless"))
-        headless = true;
+    // Initialization prints
+    LogInfo("Starting up " + Application::FullIdentifier());
+    LogInfo("* Installation directory : " + Application::InstallationDirectory());
+    LogInfo("* Working directory      : " + Application::CurrentWorkingDirectory());
+    LogInfo("* User data directory    : " + Application::UserDataDirectory());
 
 #ifdef PROFILING
     profiler = new Profiler();
@@ -233,16 +244,27 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
 
     // Create ConfigAPI, pass application data and prepare data folder.
     config = new ConfigAPI(this);
-    QStringList configDirs = CommandLineParameters("--configdir");
+    QStringList configDirs = CommandLineParameters("--configDir");
     QString configDir = "$(USERDATA)/configuration"; // The default configuration goes to "C:\Users\username\AppData\Roaming\Tundra\configuration"
     if (configDirs.size() >= 1)
         configDir = configDirs.last();
     if (configDirs.size() > 1)
-        LogWarning("Multiple --configdir parameters specified! Using \"" + configDir + "\" as the configuration directory.");
+        LogWarning("Multiple --configDir parameters specified! Using \"" + configDir + "\" as the configuration directory.");
     config->PrepareDataFolder(configDir);
 
     // Set target FPS limits, if specified.
-    QStringList fpsLimitParam = CommandLineParameters("--fpslimit");
+    ConfigData targetFpsConfigData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
+    if (config->HasKey(targetFpsConfigData, "fps target limit"))
+    {
+        bool ok;
+        double targetFps = config->Read(targetFpsConfigData, "fps target limit").toDouble(&ok);
+        if (ok && targetFps >= 0.0)
+            application->SetTargetFpsLimit(targetFps);
+        else
+            LogWarning("Invalid target FPS value " + QString::number(targetFps) + " read from config. Ignoring.");
+    }
+
+    const QStringList fpsLimitParam = CommandLineParameters("--fpsLimit");
     if (fpsLimitParam.size() > 1)
         LogWarning("Multiple --fpslimit parameters specified! Using " + fpsLimitParam.first() + " as the value.");
     if (fpsLimitParam.size() > 0)
@@ -252,12 +274,12 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
         if (ok)
             application->SetTargetFpsLimit(targetFpsLimit);
         else
-            LogWarning("Erroneous FPS limit given with --fpslimit: " + fpsLimitParam.first() + ". Ignoring.");
+            LogWarning("Erroneous FPS limit given with --fpsLimit: " + fpsLimitParam.first() + ". Ignoring.");
     }
 
-    QStringList fpsLimitWhenInactive = CommandLineParameters("--fpslimitwheninactive");
+    const QStringList fpsLimitWhenInactive = CommandLineParameters("--fpsLimitWhenInactive");
     if (fpsLimitWhenInactive.size() > 1)
-        LogWarning("Multiple --fpslimitwheninactive parameters specified! Using " + fpsLimitWhenInactive.first() + " as the value.");
+        LogWarning("Multiple --fpsLimitWhenInactive parameters specified! Using " + fpsLimitWhenInactive.first() + " as the value.");
     if (fpsLimitWhenInactive.size() > 0)
     {
         bool ok;
@@ -265,7 +287,7 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
         if (ok)
             application->SetTargetFpsLimitWhenInactive(targetFpsWhenInactive);
         else
-            LogWarning("Erroneous FPS limit given with --fpslimitwheninactive: " + fpsLimitWhenInactive.first() + ". Ignoring.");
+            LogWarning("Erroneous FPS limit given with --fpsLimitWhenInactive: " + fpsLimitWhenInactive.first() + ". Ignoring.");
     }
 
     // Create core APIs
@@ -276,17 +298,17 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
 
     // Prepare asset cache, if used.
     QString assetCacheDir = Application::UserDataDirectory() + "assetcache";
-    if (CommandLineParameters("--assetcachedir").size() > 0)
-        assetCacheDir = Application::ParseWildCardFilename(CommandLineParameters("--assetcachedir").last());
-    if (CommandLineParameters("--assetcachedir").size() > 1)
-        LogWarning("Multiple --assetcachedir parameters specified! Using \"" + CommandLineParameters("--assetcachedir").last() + "\" as the assetcache directory.");
-    if (!HasCommandLineParameter("--noassetcache"))
+    if (CommandLineParameters("--assetCacheDir").size() > 0)
+        assetCacheDir = Application::ParseWildCardFilename(CommandLineParameters("--assetCacheDir").last());
+    if (CommandLineParameters("--assetCacheDir").size() > 1)
+        LogWarning("Multiple --assetCacheDir parameters specified! Using \"" + CommandLineParameters("--assetCacheDir").last() + "\" as the asset cache directory.");
+    if (!HasCommandLineParameter("--noAssetCache"))
         asset->OpenAssetCache(assetCacheDir);
 
-    ui = new UiAPI(this);
-    audio = new AudioAPI(this, asset); // AudioAPI depends on the AssetAPI, so must be loaded after it.
-    input = new InputAPI(this);
-    console = new ConsoleAPI(this);
+    ui = new UiAPI(this); // UiAPI depends on AssetAPI.
+    audio = new AudioAPI(this, asset); // AudioAPI depends on AssetAPI.
+    input = new InputAPI(this); // InputAPI depends on UiAPI.
+    console->Initialize(); // Now that UI and Input APIs are ready, initialize Console API.
     console->RegisterCommand("exit", "Shuts down gracefully.", this, SLOT(Exit()));
     console->RegisterCommand("inputContexts", "Prints all currently registered input contexts in InputAPI.", input, SLOT(DumpInputContexts()));
     console->RegisterCommand("dynamicObjects", "Prints all currently registered dynamic objets in Framework.", this, SLOT(PrintDynamicObjects()));
@@ -657,59 +679,260 @@ bool Framework::LoadStartupOptionsFromJSON(QString configurationFile)
         LogWarning("Config file does not seem to have any values is it: " + configurationFile);
         return false;
     }
-    
+
     foreach(const QVariant &option, startupOptions)
     {
-        QVariant::Type t = option.type();
-
-        // Command-to-parameter pair(s)
-        if (t == QVariant::Map || t == QVariant::Hash)
-        {
-            QVariantMap optionMap;
-            if (t == QVariant::Map)
-                optionMap = option.toMap();
-            else if (t == QVariant::Hash)
-            {
-                QVariantHash optionsHash = option.toHash();
-                foreach(const QString &hashKey, optionsHash.keys())
-                    optionMap[hashKey] = optionsHash[hashKey];
-            }
-            foreach(const QString command, optionMap.keys())
-            {
-                QVariant value = optionMap[command];
-                if (command.compare("--config", Qt::CaseInsensitive) != 0)
-                {
-                    // Support giving multiple values as a list or a single value.
-                    if (value.type() == QVariant::String)
-                        AddCommandLineParameter(command, value.toString());
-                    else if (value.type() == QVariant::StringList || value.type() == QVariant::List)
-                        foreach(const QVariant &valueIter, value.toList())
-                            AddCommandLineParameter(command, valueIter.toString());
-                }
-                else
-                    LoadStartupOptionsFromFile(value.toString());
-            }
-        }
         // Command only
-        else if (t == QVariant::String)
-        {
-            AddCommandLineParameter(option.toString(), "");
-        }
-        // List of commands
-        else if (t == QVariant::StringList || t == QVariant::List)
-        {
-            foreach(const QVariant &command, option.toList())
-                AddCommandLineParameter(command.toString(), "");
-        }
+        if (option.type() == QVariant::String)
+            AddCommandLineParameter(option.toString());
+        // Command-to-parameter pair(s)
+        else if (TundraJson::IsMap(option))
+            LoadStartupOptionMap(option);
+        // List of commands strings or with various types
+        else if (TundraJson::IsList(option))
+            LoadStartupOptionList(option);
         else
-            LogError(QString("LoadStartupOptionsFromJSON: QVariant::Type %1 is not supported: %2").arg(t).arg(option.toString()));
+            LogError(QString("LoadStartupOptionsFromJSON: QVariant::Type %1 is not supported: %2").arg(option.type()).arg(option.toString()));
     }
     return true;
 }
 
+void Framework::LoadStartupOptionMap(const QVariant &options)
+{
+    // Convert hash to map
+    QVariantMap optionMap;
+    if (options.type() == QVariant::Map)
+        optionMap = options.toMap();
+    else if (options.type() == QVariant::Hash)
+    {
+        QVariantHash optionsHash = options.toHash();
+        foreach(const QString &hashKey, optionsHash.keys())
+            optionMap[hashKey] = optionsHash[hashKey];
+    }
+    else
+    {
+        LogError(QString("LoadStartupOptionMap: QVariant::Type %1 is not a supported map type").arg(options.type()));
+        return;
+    }
+
+    foreach(const QString &command, optionMap.keys())
+    {
+        QVariant value = optionMap[command];
+        if (command.compare("--config", Qt::CaseInsensitive) != 0)
+        {
+            if (value.type() == QVariant::String || TundraJson::IsNumber(value))
+                AddCommandLineParameter(command, value.toString());
+            else if (TundraJson::IsMap(value))
+                LoadStartupOptionMap(command, value);
+            else if (TundraJson::IsList(value))
+                LoadStartupOptionList(value, command);
+        }
+        else
+            LoadStartupOptionsFromFile(value.toString());
+    }
+}
+
+void Framework::LoadStartupOptionMap(const QString &command, const QVariant &option)
+{
+    if (command.isEmpty())
+    {
+        LogError("LoadStartupOptionMap: Cannot load map type options for an empty command!");
+        return;
+    }
+
+    // Convert hash to map
+    QVariantMap optionMap;
+    if (option.type() == QVariant::Map)
+        optionMap = option.toMap();
+    else if (option.type() == QVariant::Hash)
+    {
+        QVariantHash optionsHash = option.toHash();
+        foreach(const QString &hashKey, optionsHash.keys())
+            optionMap[hashKey] = optionsHash[hashKey];
+    }
+    else
+    {
+        LogError(QString("LoadStartupOptionMap: QVariant::Type %1 is not a supported map type for command %2").arg(option.type()).arg(command));
+        return;
+    }
+
+    // A few of our startup parameters support custom data to assosiated with them.
+    QString commandLower = command.trimmed().toLower();
+    if (commandLower == "--plugin" || commandLower == "--jsplugin")
+    {
+        // Name must be present
+        QString pluginName = optionMap.contains("name") ? optionMap["name"].toString() : optionMap.value("Name", "").toString();
+        if (pluginName.isEmpty())
+        {
+            LogError(QString("LoadStartupOptionMap: Mandatory parameter 'name' missing for command %1 in the options map").arg(command));
+            return;
+        }
+
+        // Check platform directive.
+        // Selective loading between "win", "mac", "x11" and "android".
+        QVariant platformVariant = TundraJson::ValueForAnyKey(optionMap, QStringList() << "platform" << "Platform");
+        if (platformVariant.isValid() && !platformVariant.isNull())
+        {
+            bool shouldRun = true;
+
+            // Single platform as string
+            if (platformVariant.type() == QVariant::String)
+            {
+                shouldRun = false;
+                QString platform = platformVariant.toString();
+                if (platform.trimmed().compare(Application::Platform(), Qt::CaseInsensitive) == 0)
+                    shouldRun = true;
+            }
+            // Multiple platforms as a string list
+            else if (platformVariant.type() == QVariant::StringList || platformVariant.type() == QVariant::List)
+            {
+                shouldRun = false;
+                foreach(const QString &platform, platformVariant.toStringList())
+                {
+                    if (platform.trimmed().compare(Application::Platform(), Qt::CaseInsensitive) == 0)
+                        shouldRun = true;
+                    if (shouldRun)
+                        break;
+                }
+            }
+            if (!shouldRun)
+            {
+#ifdef _DEBUG
+                /// LogDebug is not functioning at this point so we use _DEBUG
+                qDebug() << qPrintable(QString("LoadStartupOptionMap: Skipping loading of plugin %1 due to platform directive. Plugin was configured not to run on current platform: %2")
+                    .arg(pluginName).arg(Application::Platform()));
+#endif
+                return;
+            }
+        }
+
+        // Check architecture directive.
+        // Selective loading between "x86" and "x64".
+        QString arch = TundraJson::ValueForAnyKey(optionMap, QStringList() << "arch" << "Arch" << "architecture" << "Architecture", "").toString();
+        if (!arch.isEmpty() && arch.trimmed().compare(Application::Architecture(), Qt::CaseInsensitive) != 0)
+        {
+#ifdef _DEBUG
+            /// LogDebug is not functioning at this point so we use _DEBUG
+            qDebug() << qPrintable(QString("LoadStartupOptionMap: Skipping loading of plugin %1 due to architecture directive: %2 Current run architecture: %3")
+                .arg(pluginName).arg(arch.trimmed().toLower()).arg(Application::Architecture()));
+#endif
+            return;
+        }
+
+        // Check build directive.
+        // Selective loading between "release" and "debug".
+        QString build = TundraJson::ValueForAnyKey(optionMap, QStringList() << "build" << "Build", "").toString();
+        if (!build.isEmpty())
+        {
+#ifdef _DEBUG
+            if (build.trimmed().compare("release", Qt::CaseInsensitive) == 0)
+            {
+                qDebug() << qPrintable(QString("LoadStartupOptionMap: Skipping loading of plugin %1 due to build directive: %2 Currently in: %3")
+                    .arg(pluginName).arg(build.trimmed().toLower()).arg("debug"));
+                return;
+            }
+#else
+            if (build.trimmed().compare("debug", Qt::CaseInsensitive) == 0)
+                return;
+#endif
+        }
+
+        // All inclusion directives have passed, now check for exclude rules.
+        // These are assumed to be a map of 'platform'/'arch' defines.
+        // You can make the value a single map or a list of maps.
+        QVariant excludeVariant = TundraJson::ValueForAnyKey(optionMap, QStringList() << "exclude" << "Exclude");
+        if (excludeVariant.isValid() && !excludeVariant.isNull())
+        {
+            QVariantList excludeRules;
+            if (TundraJson::IsMap(excludeVariant))
+                excludeRules << excludeVariant;
+            else if (TundraJson::IsList(excludeVariant))
+                excludeRules = excludeVariant.toList();
+            foreach(const QVariant &excludeRule, excludeRules)
+            {
+                if (TundraJson::IsMap(excludeRule))
+                {
+                    /** @note For exclude rules we don't support the platform to be list of platforms,
+                        if you want to accomplish multiple platform excludes just simply define
+                        multiple as a list of rules to the 'exclude' value. 'build' excludes are
+                        not supported in the exclude rules, inclusion rule should be enough there.
+                        If 'platform' or 'arch' not present it will default to the current ones from Application.
+                        This makes it possible to define only "win" which has the effect of not loading
+                        on any 'arch' on Windows. Or only defining "x64" will not load on any operating
+                        system when on a x64 build. */
+                    QVariantMap excludeRuleMap = excludeRule.toMap();
+                    QString excludePlatform = TundraJson::ValueForAnyKey(excludeRuleMap, QStringList() << "platform" << "Platform", Application::Platform()).toString();
+                    QString excludeArch = TundraJson::ValueForAnyKey(excludeRuleMap, QStringList() << "arch" << "Arch" << "architecture" << "Architecture", Application::Architecture()).toString();
+                    if (excludePlatform.trimmed().compare(Application::Platform(), Qt::CaseInsensitive) == 0 &&
+                        excludeArch.trimmed().compare(Application::Architecture(), Qt::CaseInsensitive) == 0)
+                    {
+#ifdef _DEBUG
+                        /// LogDebug is not functioning at this point so we use _DEBUG
+                        qDebug() << qPrintable(QString("LoadStartupOptionMap: Skipping loading of plugin %1 due to exclude rule: platform = %2 architecture = %3")
+                            .arg(pluginName).arg(excludePlatform.trimmed().toLower()).arg(excludeArch.trimmed().toLower()));
+#endif
+                        return;
+                    }
+                }
+                else
+                    LogError("LoadStartupOptionMap: Exclude rule is not type of QVariant::Map or QVariant::Hash, ignoring the rule.");
+            }
+        }
+
+        // All conditions passed
+        AddCommandLineParameter(command, pluginName);
+    }
+    else
+        LogError("LoadStartupOptionMap: No special case handling implemented for value map loading of command " + command);
+}
+
+void Framework::LoadStartupOptionList(const QVariant &options, const QString &command)
+{
+    // List of commands
+    if (options.type() == QVariant::StringList)
+    {
+        foreach(const QString &option, options.toStringList())
+        {
+            // This is either a embedded string list in a sub map eg. --plugins
+            // or a root level string list of commands without parameters.
+            if (!command.isEmpty())
+                AddCommandLineParameter(command, option);
+            else
+                AddCommandLineParameter(option);
+        }
+    }
+    // List of potentially mixed items like strings, maps, lists etc.
+    else if (options.type() == QVariant::List)
+    {
+        foreach(const QVariant &option, options.toList())
+        {
+            if (option.type() == QVariant::String || TundraJson::IsNumber(option))
+            {
+                if (!command.isEmpty())
+                    AddCommandLineParameter(command, option.toString());
+                else
+                    AddCommandLineParameter(option.toString());
+            }    
+            else if (TundraJson::IsMap(option))
+            {
+                // This cannot be a root level list with a map option, as then the 'command' would be empty.
+                // Maps in lists are only supported when inside a sub maps list values.
+                if (!command.isEmpty())
+                    LoadStartupOptionMap(command, option);
+                else
+                    LogError("LoadStartupOptionList: Cannot load a map type inside a list without an command! Are you using a map inside a root level value list?!");
+            }
+            else if (TundraJson::IsList(option))
+                LoadStartupOptionList(option, command);
+        }
+    }
+    else
+        LogError(QString("LoadStartupOptionList: QVariant::Type %1 is not a supported list type %1").arg(options.type()).arg(command.isEmpty() ? "" : " for command " + command));
+}
+
 void Framework::AddCommandLineParameter(const QString &command, const QString &parameter)
 {
-    startupOptions.insert(std::make_pair(command, std::make_pair(startupOptions.size() + 1, parameter)));
+    startupOptions.insert(std::make_pair(command, std::make_pair((int)startupOptions.size() + 1, parameter)));
 }
 
 bool Framework::HasCommandLineParameter(const QString &value) const
@@ -744,7 +967,7 @@ void Framework::ProcessStartupOptions()
     for(int i = 1; i < argc; ++i)
     {
         QString option(argv[i]);
-        QString peekOption = (argv[i+1] ? QString(argv[i+1]) : "");
+        QString peekOption = (i+1 < argc ? QString(argv[i+1]) : "");
         if (option.startsWith("--") && !peekOption.isEmpty())
         {
 #ifdef WIN32
@@ -792,7 +1015,7 @@ void Framework::ProcessStartupOptions()
 #endif
         }
         else if (option.startsWith("--") && peekOption.isEmpty())
-            AddCommandLineParameter(option, "");
+            AddCommandLineParameter(option);
         else
         {
             LogWarning("Orphaned startup option parameter value specified: " + QString(argv[i]));
@@ -818,11 +1041,11 @@ void Framework::ProcessStartupOptions()
         }
         // --key
         else
-            AddCommandLineParameter(option, "");
+            AddCommandLineParameter(option);
     }
 
-    if (!HasCommandLineParameter("--config") && LoadStartupOptionsFromXML("plugins.xml"))        
-        configFiles << "plugins.xml";
+    if (!HasCommandLineParameter("--config"))
+        LoadStartupOptionsFromFile("tundra.json");
 }
 
 void Framework::PrintStartupOptions()

@@ -39,14 +39,15 @@ OgreAssetEditorModule::~OgreAssetEditorModule()
 
 void OgreAssetEditorModule::Initialize()
 {
-    connect(framework_->Ui(), SIGNAL(ContextMenuAboutToOpen(QMenu *, QList<QObject *>)), SLOT(OnContextMenuAboutToOpen(QMenu *, QList<QObject *>)));
+    connect(framework_->Ui(), SIGNAL(ContextMenuAboutToOpen(QMenu *, QList<QObject *>, QObject *)),
+        SLOT(OnContextMenuAboutToOpen(QMenu *, QList<QObject *>)));
 }
 
 void OgreAssetEditorModule::Uninitialize()
 {
 }
 
-bool OgreAssetEditorModule::IsSupportedAssetType(const QString &type) const
+bool OgreAssetEditorModule::IsSupportedAssetType(const QString &type)
 {
     return (/*type == "OgreMesh" || */type == "OgreMaterial" || type == "OgreParticle" || type == "Audio" || type == "Texture");
 }
@@ -56,10 +57,10 @@ void OgreAssetEditorModule::OnContextMenuAboutToOpen(QMenu *menu, QList<QObject 
     if (targets.size())
     {
         foreach(QObject *target, targets)
-            if (!dynamic_cast<IAsset *>(target))
+            if (!qobject_cast<IAsset *>(target))
                 return;
 
-        AssetPtr asset = dynamic_cast<IAsset *>(targets[0])->shared_from_this();
+        AssetPtr asset = qobject_cast<IAsset *>(targets[0])->shared_from_this();
         if (IsSupportedAssetType(asset->Type()))
         {
             EditorAction *openAction = new EditorAction(asset, tr("Open"), menu);
@@ -86,7 +87,7 @@ void OgreAssetEditorModule::OnContextMenuAboutToOpen(QMenu *menu, QList<QObject 
 
 void OgreAssetEditorModule::OpenAssetInEditor()
 {
-    EditorAction *action = dynamic_cast<EditorAction *>(sender());
+    EditorAction *action = qobject_cast<EditorAction *>(sender());
     if (!action)
         return;
     if (action->asset.expired())

@@ -8,7 +8,7 @@ QtXmlTest();
 // Loads the plugin.xml from Tundra/bin twice, first by using both plain QFile, and the second time using QFile and QXmlInputSource.
 function QtXmlTest()
 {
-    var file = new QFile("plugins.xml");
+    var file = new QFile("scenes/Avatar/scene.txml");
     var errorMsg;
     var errorLine;
     var errorColumn;
@@ -47,7 +47,7 @@ function QtXmlTest()
     // bool setContent(QIODevice * dev) - which we usesd previously
     // bool setContent(QXmlInputSource * source, QXmlReader * reader)
  
-    var file2 = new QFile("plugins.xml");
+    var file2 = new QFile("scenes/Avatar/scene.txml");
     var source = new QXmlInputSource(file2);
     var domDocFromInputSource = new QDomDocument();
  
@@ -72,7 +72,7 @@ print("< JS qt.xml example:");
 var doc = new QDomDocument("mydocument");
 
 //works when running from Tundra bin: ./Tundra --headless --run jsmodules/apitest/qtxml.js
-var file = new QFile("plugins.xml"); 
+var file = new QFile("scenes/Avatar/scene.txml"); 
 
 //if (!file.open(QIODevice::ReadOnly))
 //     return;

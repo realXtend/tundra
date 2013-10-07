@@ -19,12 +19,11 @@
 #include "Profiler.h"
 #include "Math/float2.h"
 #include "Geometry/Ray.h"
+#include "LoggingFunctions.h"
 
 #include <Ogre.h>
 #include <OgreTagPoint.h>
 #include <OgreInstancedEntity.h>
-
-#include "LoggingFunctions.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -213,14 +212,14 @@ float3x4 EC_Mesh::LocalToParent() const
 {
     if (!entity_ && !instancedEntity_)
     {
-        LogError(QString("EC_Mesh::LocalToParent failed! No entity exists in mesh \"%1\" (entity: \"%2\")!").arg(meshRef.Get().ref).arg(ParentEntity() ? ParentEntity()->Name() : "(EC_Mesh with no parent entity)"));
+        LogError(QString("EC_Mesh::LocalToParent failed! No Ogre::Entity exists in mesh \"%1\" (entity: \"%2\")!").arg(meshRef.Get().ref).arg(ParentEntity() ? ParentEntity()->ToString() : "(EC_Mesh with no parent entity)"));
         return float3x4::identity;
     }
 
     Ogre::SceneNode *node = (entity_ != 0 ? entity_->getParentSceneNode() : instancedEntity_->getParentSceneNode());
     if (!node)
     {
-        LogError(QString("EC_Mesh::LocalToParent failed! Ogre::Entity is not attached to a Ogre::SceneNode! Mesh \"%1\" (entity: \"%2\")!").arg(meshRef.Get().ref).arg(ParentEntity() ? ParentEntity()->Name() : "(EC_Mesh with no parent entity)"));
+        LogError(QString("EC_Mesh::LocalToParent failed! Ogre::Entity is not attached to a Ogre::SceneNode! Mesh \"%1\" (entity: \"%2\")!").arg(meshRef.Get().ref).arg(ParentEntity() ? ParentEntity()->ToString() : "(EC_Mesh with no parent entity)"));
         return float3x4::identity;
     }
 
@@ -231,7 +230,7 @@ float3x4 EC_Mesh::LocalToWorld() const
 {
     if (!entity_ && !instancedEntity_)
     {
-        LogError(QString("EC_Mesh::LocalToWorld failed! No entity exists in mesh \"%1\" (entity: \"%2\")!").arg(meshRef.Get().ref).arg(ParentEntity() ? ParentEntity()->Name() : "(EC_Mesh with no parent entity)"));
+        LogError(QString("EC_Mesh::LocalToWorld failed! No Ogre::Entity exists in mesh \"%1\" (entity: \"%2\")!").arg(meshRef.Get().ref).arg(ParentEntity() ? ParentEntity()->ToString() : "(EC_Mesh with no parent entity)"));
         return float3x4::identity;
     }
 
@@ -1410,7 +1409,10 @@ OBB EC_Mesh::WorldOBB() const
 
 OBB EC_Mesh::LocalOBB() const
 {
-    return OBB(LocalAABB());
+    OBB obb(LocalAABB());
+    if (obb.IsDegenerate() || !obb.IsFinite())
+        obb.SetNegativeInfinity();
+    return obb;
 }
 
 AABB EC_Mesh::WorldAABB() const
@@ -1423,11 +1425,11 @@ AABB EC_Mesh::WorldAABB() const
 AABB EC_Mesh::LocalAABB() const
 {
     if (!entity_)
-        return AABB();
+        return AABB(float3::inf, -float3::inf); // AABB::SetNegativeInfinity as one-liner
 
     Ogre::MeshPtr mesh = entity_->getMesh();
     if (mesh.isNull())
-        return AABB();
+        return AABB(float3::inf, -float3::inf); // AABB::SetNegativeInfinity as one-liner
 
     return AABB(mesh->getBounds());
 }

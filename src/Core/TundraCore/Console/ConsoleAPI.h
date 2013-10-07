@@ -129,6 +129,9 @@ public slots:
     void ToggleConsole();
 
 private:
+    friend class Framework;
+    void Initialize(); ///< Called by Framework when Input and UI APIs are initialized.
+
     Framework *framework;
     CommandMap commands; ///< Stores all the registered console commands.
     InputContextPtr inputContext;
@@ -137,6 +140,7 @@ private:
     u32 enabledLogChannels; ///< Stores the set of currently active log channels.
     QFile *logFile; ///< Points to the currently open text file for logging.
     QTextStream *logFileText;
+    QStringList backBuffer; ///< Back buffer of unprinted log prints before ConsoleWidget is created.
 
 private slots:
     void HandleKeyEvent(KeyEvent *e);

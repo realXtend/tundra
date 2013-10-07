@@ -12,7 +12,7 @@
 
     Running the scene:
       1. Tundra --server --headless --file scenes/SyncStatePriority/scene.txml --file scenes/Avatar/scene.txml
-      2. Open a client by running: Tundra --config viewer.xml
+      2. Open a client by running: Tundra --config tundra-client.json
       3. Server address: localhost,  Username: <your_name>, Password: <no_password_needed>, Protocol: udp and hit Connect button!
 
     Note: Even if you don't accept entities with EC_RigidBody to the state, 

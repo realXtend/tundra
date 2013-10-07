@@ -58,7 +58,7 @@
 class OGRE_MODULE_API EC_Billboard : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_Billboard", 2)
+    COMPONENT_NAME("Billboard", 2)
 
 public:
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.

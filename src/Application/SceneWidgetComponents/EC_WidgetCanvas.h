@@ -59,10 +59,13 @@ Does not emit any actions.
 class SCENEWIDGET_MODULE_API EC_WidgetCanvas : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_WidgetCanvas", 35)
+    COMPONENT_NAME("WidgetCanvas", 35)
 
 public:
-    explicit EC_WidgetCanvas(Scene *scene);
+     /// @cond PRIVATE
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
+    explicit EC_WidgetCanvas(Scene* scene);
+    /// @endcond
     ~EC_WidgetCanvas();
 
 public slots:

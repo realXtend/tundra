@@ -54,11 +54,11 @@ final_target ()
 
 # Install files
 setup_install_files (${TUNDRA_BIN}/plugins/TundraInstallationDirectory.txt "plugins")   # C++ plugins
-setup_install_files (${TUNDRA_BIN}/../README.md)      # Readme
-setup_install_files (${TUNDRA_BIN}/../LICENSE)        # Licence
-setup_install_files (${TUNDRA_BIN}/../WhatsNew.txt)   # Whats new
-setup_install_files (${TUNDRA_BIN}/plugins.xml)       # Default startup config
-setup_install_files (${TUNDRA_BIN}/viewer.xml)        # Viewer startup config
+setup_install_files (${TUNDRA_BIN}/../README.md)       # Readme
+setup_install_files (${TUNDRA_BIN}/../LICENSE)         # Licence
+setup_install_files (${TUNDRA_BIN}/../WhatsNew.txt)    # Whats new
+setup_install_files (${TUNDRA_BIN}/tundra.json)        # Default startup config
+setup_install_files (${TUNDRA_BIN}/tundra-client.json) # Client startup config
 setup_install_files_find (${TUNDRA_BIN}/dox "*.txt" Release|Debug|RelWithDebInfo "dox") # Doc files used in installer
 
 # Example application scenes if wanted.
@@ -68,6 +68,10 @@ endif()
 
 setup_install_directory(${TUNDRA_BIN}/data)        # Data: ui, assets, etc
 setup_remove_file("data/assets/dummy.txt")         # Remove git dummy file from data/assets
+
+if (NOT ENABLE_TRANSLATIONS)
+    setup_remove_directory("data/translations/")
+endif()
 
 # Install deps for Windows
 setup_install_windows_deps_regexp ("" qt/bin/ "[/][Q][t][A-Z].*[^d][4][.]dll$" Release|RelWithDebInfo qt/bin/ "[/][Q][t][A-Z].*[d][4][.]dll$" Debug)

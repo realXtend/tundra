@@ -16,7 +16,7 @@
     <h2>VolumeTrigger</h2>
     Physics volume trigger component
 
-    Registered by Physics::PhysicsModule.
+    Registered by PhysicsModule.
 
     <b>Attributes</b>:
     <ul>
@@ -59,10 +59,10 @@
     </table> */
 class EC_VolumeTrigger : public IComponent
 {
-    friend class Physics::PhysicsWorld;
+    friend class PhysicsWorld;
     
     Q_OBJECT
-    COMPONENT_NAME("EC_VolumeTrigger", 24)
+    COMPONENT_NAME("VolumeTrigger", 24)
 
 public:
     /// @cond PRIVATE

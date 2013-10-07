@@ -23,7 +23,7 @@ class TUNDRACORE_API KeyEvent : public QObject
 
 public:
     KeyEvent()
-    :keyCode((Qt::Key)0),
+    :keyCode(Qt::Key_unknown),
     keyPressCount(0),
     modifiers(0),
     eventType(KeyEventInvalid),
@@ -34,8 +34,9 @@ public:
     virtual ~KeyEvent() {}
 
     /// The key code associated with this key event.
-    /// See Qt::Key from http://doc.trolltech.com/4.6/qt.html#Key-enum
+    /// See Qt::Key from http://qt-project.org/doc/qt-4.8/qt.html#Key-enum
     /// @note This member stores the pressed key without keyboard modifiers attached.
+    /// @note Due to QtScript incompatibility, all unicode values are presented as Qt::Key_unknown. Use KeyEvent::text to retrieve the unicode value for this key
     Qt::Key keyCode;
 
     /// How many times this key event has been pressed during the time the key has been held down. If 1, this means a new 
@@ -45,7 +46,7 @@ public:
     int keyPressCount;
 
     /// A bitfield of the keyboard modifiers (Ctrl, Shift, ...) associated with this key event.
-    /// Use Qt::KeyboardModifier, http://doc.trolltech.com/4.6/qt.html#KeyboardModifier-enum to access these.
+    /// Use Qt::KeyboardModifier, http://qt-project.org/doc/qt-4.8/qt.html#KeyboardModifier-enum to access these.
     /// Also see \see KeyEvent::HasShiftModifier.
     unsigned long modifiers;
 
@@ -68,7 +69,7 @@ public:
     QKeySequence sequence;
 
     /// Contains Qt's keycodes for all other keys that are being pressed when this key was pressed.
-    /// See Qt::Key, http://doc.trolltech.com/4.6/qt.html#Key-enum
+    /// See Qt::Key, http://qt-project.org/doc/qt-4.8/qt.html#Key-enum
     /// This member is only valid when eventType==KeyPressed.
     std::vector<Qt::Key> otherHeldKeys;
 

@@ -14,11 +14,12 @@
 #include "MsgClientLeft.h"
 #include "MsgCameraOrientationRequest.h"
 #include "UserConnectedResponseData.h"
+
+#include "Framework.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
 #include "Renderer.h"
 #include "OgreRenderingModule.h"
-
 #include "LoggingFunctions.h"
 #include "CoreStringUtils.h"
 #include "SceneAPI.h"
@@ -503,4 +504,3 @@ void Client::HandleClientLeft(MessageConnection* /*source*/, const MsgClientLeft
 }
 
 }
-

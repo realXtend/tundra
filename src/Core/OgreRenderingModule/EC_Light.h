@@ -62,12 +62,13 @@
 class EC_Light : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_Light", 16)
+    COMPONENT_NAME("Light", 16)
     
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Light(Scene* scene);
-
+    /// @endcond
     virtual ~EC_Light();
 
     /// light type enumeration

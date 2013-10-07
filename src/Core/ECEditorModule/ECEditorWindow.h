@@ -7,22 +7,18 @@
 #pragma once
 
 #include "ECEditorModuleApi.h"
+#include "ui_ECEditor.h"
+
 #include "CoreTypes.h"
 #include "SceneFwd.h"
 #include "InputFwd.h"
 
-#include <QMap>
 #include <QSet>
 #include <QListWidgetItem>
 #include <QPointer>
-#include <QWidget>
 
-class QPushButton;
-class QListWidget;
-class QTreeWidget;
 class QPoint;
 class QUndoStack;
-class QToolButton;
 
 class Framework;
 class ECBrowser;
@@ -49,7 +45,7 @@ private:
 /** @ingroup ECEditorModuleClient.
     @todo Currently EC Editor is hardcoded to edit the main camera scene.
           Enhance the API so that the scene can be set by the user. */
-class ECEDITOR_MODULE_API ECEditorWindow : public QWidget
+class ECEDITOR_MODULE_API ECEditorWindow : public QWidget, public Ui::ECEditor
 {
     Q_OBJECT
 
@@ -58,20 +54,21 @@ public:
     /** @param fw Framework. */
     explicit ECEditorWindow(Framework* fw, QWidget *parent = 0);
 
-    /// Destructor.
     ~ECEditorWindow();
 
     /// Adds new entity to the entity list.
-    /** @param id Entity ID.
+    /** @param entity Entity.
         @param updateUi Do we want to update the UI.
         @return The created list item. */
-    EntityListWidgetItem *AddEntity(entity_id_t id, bool updateUi = true);
+    EntityListWidgetItem *AddEntity(const EntityPtr &entity, bool updateUi = true);
+    EntityListWidgetItem *AddEntity(entity_id_t id, bool updateUi = true); /**< @overload @param id Entity ID. */
 
     /// Sets new list of entities to be shown in the editor.
     /** Calling this method will clear previously selected entities from the editor.
         @param entities a new list of entities that we want to add into the editor.
         @param selectAll Do we want to select all entities from the list. */
-    void AddEntities(const QList<entity_id_t> &entities, bool selectAll = false);
+    void AddEntities(const EntityList &entities, bool selectAll = false);
+    void AddEntities(const QList<entity_id_t> &entities, bool selectAll = false); /**< @overload @param entities IDs of the entities. */
 
     /// Removes entity from the entity list.
     /** @param id Entity ID.
@@ -82,20 +79,20 @@ public:
     /** @param ids List of entity ID's. */
     void SetSelectedEntities(const QList<entity_id_t> &ids);
 
-    /// Clears entity list.
+    /// Clears the entity list.
     void ClearEntities();
 
     /// Returns components that are currently selected.
     /** @return If any components aren't selected return empty list. */
-    QObjectList SelectedComponents() const;
+    std::vector<ComponentPtr> SelectedComponents() const;
 
     /// Returns list of selected entities.
-    QList<EntityPtr> SelectedEntities() const;
+    EntityList SelectedEntities() const;
 
     /// Sets item active in the entity list. Also adds/removes EC_Highlight for the entity, if applicable.
     /** @param item Item to be select or deselect
         @param select Do we want to select or deselect. */
-    void SetEntitySelected(EntityListWidgetItem *item, bool select);
+    void SetEntitySelected(EntityListWidgetItem *item, bool select, bool signal = true);
 
     /// Returns list item for specific entity.
     /** @param id Entity ID. */
@@ -111,41 +108,11 @@ public:
     void SetGizmoVisible(bool show);
 
     /// Returns undo manager for this editor.
-    UndoManager *GetUndoManager();
+    UndoManager *GetUndoManager() const { return undoManager_; }
 
 public slots:
-    /// Deletes selected entity entries from the list (does not delete the entity itself).
-    void DeleteEntitiesFromList();
-
-    /// Remove component from entity and refresh property browser.
-    void DeleteComponent(const QString &componentType, const QString &name);
-
-    /// Opens a dialog that will handle new entity creation.
-    /** After the dialog is done, ComponentDialogFinished method is called. */
-    void CreateComponent();
-
-    /// Shows dialog for invoking entity actions for currently selected entities.
-    void OpenEntityActionDialog();
-
-    /// Shows dialog for invoking functions for currently selected entities.
-    void OpenFunctionDialog();
-
-    /// If entity selection different from previous update change browser to fit those changes.
-    ///\todo Rename or split into pieces; does more just than the aforementioned.
-    void RefreshPropertyBrowser();
-
-    /// Shows context menu for entities.
-    /** @param pos Mouse position of right-click event. */
-    void ShowEntityContextMenu(const QPoint &pos);
-
-    /// Shows EC XML editor. or entity's all components.
-    void ShowXmlEditorForEntity();
-
-    /// Shows EC XML editor for each components.
-    void ShowXmlEditorForComponent(const QList<ComponentPtr> &components);
-
-    /// Shows EC XML editor for a single component.
-    void ShowXmlEditorForComponent(const QString &componentType);
+    /// Refreshes the component view to match the selected entities.
+    void Refresh();
 
     /// Show/Hide entity list.
     void ToggleEntityList();
@@ -162,23 +129,18 @@ public slots:
     void setVisible(bool visible);
 
     /// Deselects all entities in the list.
+    /** @note Emits EntitiesSelected only, not EntitySelected. */
     void DeselectAllEntities();
-
-    /// Highlights an entity.
-    /** @note No-op if EC_Highlight is not included in the build.
-        @param entity Entity to be highlighted.
-        @param highlight Do we want to show highlight or hide it. */
-    void HighlightEntity(const EntityPtr &entity, bool highlight);
-
-    void OnAboutToEditAttribute(IAttribute *attr);
 
 signals:
     /// Emitted user wants to edit entity's EC attributes in XML editor.
-    /** @param entities list of entities */
+    /** @param entities list of entities.
+        @todo Use EntityList instead. */
     void EditEntityXml(const QList<EntityPtr> &entities);
 
     /// Emitted user wants to edit EC attributes in XML editor.
-    /** @param list of components */
+    /** @param list of components.
+        @todo Use std::vector<ComponentPtr> instead. */
     void EditComponentXml(const QList<ComponentPtr> & components);
 
     /// Signal is emitted when this window has gained a focus.
@@ -192,20 +154,46 @@ signals:
         @param selected Was the entity selected (true) or deselected (false). */
     void EntitySelected(const EntityPtr &entity, bool selected);
 
+    /// Same as EntitySelected but used for batch selections.
+    void EntitiesSelected(const EntityList &entity, bool selected);
+
 protected:
-    /// QWidget override.
-    void hideEvent(QHideEvent *e);
-
-    /// QWidget override.
-    void changeEvent(QEvent *e);
-
-    /// QWidget override.
-    bool eventFilter(QObject *obj, QEvent *event);
+    void hideEvent(QHideEvent *e); ///< QWidget override.
+    void changeEvent(QEvent *e); ///< QWidget override.
+    bool eventFilter(QObject *obj, QEvent *event); ///< QWidget override.
 
 private slots:
-    /// Key event handler.
+    /// Opens a dialog that will handle new entity creation.
+    /** After the dialog is done, ComponentDialogFinished method is called. */
+    void CreateComponent();
+
+    /// Shows dialog for invoking entity actions for currently selected entities.
+    void OpenEntityActionDialog();
+
+    /// Shows dialog for invoking functions for currently selected entities.
+    void OpenFunctionDialog();
+
+    /// Shows context menu for entities.
+    /** @param pos Mouse position of right-click event. */
+    void ShowEntityContextMenu(const QPoint &pos);
+
+    /// Shows EC XML editor for entity's all components.
+    void ShowXmlEditorForEntity();
+
+    /// Shows EC XML editor for specific components.
+    void ShowXmlEditorForComponent(const QList<ComponentPtr> &components);
+
+    /// Shows EC XML editor for a single component.
+    void ShowXmlEditorForComponent(const QString &componentType);
+
+    /// Highlights an entity.
+    /** @note No-op if EC_Highlight is not included in the build.
+        @param entity Entity to be highlighted.
+        @param highlight Do we want to show highlight or hide it. */
+    void HighlightEntity(const EntityPtr &entity, bool highlight);
+
     void OnKeyEvent(KeyEvent *keyEvent);
-    
+
     /// Called by entity action dialog when it's finished.
     /** @param result Result of finished. Close is 0, Execute and Close is 1, Execute is 2. */
     void EntityActionDialogFinished(int result);
@@ -232,8 +220,11 @@ private slots:
     /// Called by add component dialog when it's finished.
     void AddComponentDialogFinished(int result);
 
+    void OnAboutToEditAttribute(IAttribute *attr);
     void OnUndoChanged(bool canUndo);
     void OnRedoChanged(bool canRedo);
+    /// Clears the window if the scene of which entities are shown is cleared or removed.
+    void OnSceneRemoved(Scene *);
 
 private:
     struct EntityComponentSelection
@@ -247,13 +238,8 @@ private:
     void BoldEntityListItems(const QSet<entity_id_t> &bolded_entities);
 
     Framework *framework;
-    QPushButton* toggleEntitiesButton;
-    QListWidget* entityList;
     ECBrowser *ecBrowser;
     bool hasFocus; ///< To track if this editor has a focus.
     TransformEditor *transformEditor;
-
-    QToolButton *undoButton_;
-    QToolButton *redoButton_;
     UndoManager * undoManager_;
 };

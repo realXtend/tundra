@@ -171,14 +171,10 @@ QString LookupRelativePath(QString path)
 QStringList PluginAPI::ConfigurationFiles() const
 {
     QStringList configs;
-    QString defaultConfigFilename = "plugins.xml";
     QStringList cmdLineParams = owner->CommandLineParameters("--config");
     if (cmdLineParams.size() > 0)
         foreach(const QString &config, cmdLineParams)
             configs.append(LookupRelativePath(config));
-    else
-        configs.append(LookupRelativePath(defaultConfigFilename));
-
     return configs;
 }
 

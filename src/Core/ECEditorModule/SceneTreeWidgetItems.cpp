@@ -8,6 +8,7 @@
 #include "DebugOperatorNew.h"
 
 #include "SceneTreeWidgetItems.h"
+#include "SceneStructureWindow.h"
 
 #include "Entity.h"
 #include "AssetReference.h"
@@ -16,30 +17,80 @@
 #include "IAssetStorage.h"
 #include "AssetAPI.h"
 #include "LoggingFunctions.h"
+#include "Profiler.h"
 
 #include "MemoryLeakCheck.h"
 
+// EntityGroupItem
+
+EntityGroupItem::EntityGroupItem(const QString &groupName) :
+    name(groupName)
+{
+    UpdateText();
+}
+
+EntityGroupItem::~EntityGroupItem()
+{
+    // Don't leave children free-floating.
+    if (treeWidget())
+        foreach(QTreeWidgetItem *child, takeChildren())
+            treeWidget()->addTopLevelItem(child);
+}
+
+void EntityGroupItem::UpdateText()
+{
+    setText(0, QString("Group: %1 (%2 item(s))").arg(name).arg(entityItems.size()));
+}
+
+void EntityGroupItem::AddEntityItem(EntityItem *eItem)
+{
+    if (entityItems.contains(eItem))
+        return;
+    EntityGroupItem *parentItem = eItem->Parent();
+    if (!parentItem && treeWidget())
+        treeWidget()->takeTopLevelItem(treeWidget()->indexOfTopLevelItem(eItem)); // currently a top-level item, remove from top-level.
+
+    if (parentItem && parentItem != this)
+        eItem->Parent()->RemoveEntityItem(eItem);
+
+    addChild(eItem);
+
+    entityItems << eItem;
+    UpdateText();
+}
+
+void EntityGroupItem::RemoveEntityItem(EntityItem *eItem)
+{
+    if (!entityItems.contains(eItem))
+        return;
+
+    EntityGroupItem *parentItem = eItem->Parent();
+    removeChild(eItem);
+
+    if (parentItem == this)
+        treeWidget()->addTopLevelItem(eItem);
+
+    entityItems.removeAll(eItem);
+    UpdateText();
+}
+
 // EntityItem
 
-EntityItem::EntityItem(const EntityPtr &entity, EntityGroupItem *parent) :
-    ptr(entity), id(entity->Id()), parentItem(parent)
+EntityItem::EntityItem(const EntityPtr &entity, EntityGroupItem *parentItem) :
+    QTreeWidgetItem(parentItem),
+    ptr(entity),
+    id(entity->Id())
 {
     if (parentItem)
-    {
-        parentItem->numberOfEntities++;
-        parentItem->UpdateText();
-    }
+        parentItem->AddEntityItem(this);
 
     SetText(entity.get());
 }
 
 EntityItem::~EntityItem()
 {
-    if (parentItem)
-    {
-        parentItem->numberOfEntities--;
-        parentItem->UpdateText();
-    }
+    if (Parent())
+        Parent()->RemoveEntityItem(this);
 }
 
 void EntityItem::SetText(::Entity *entity)
@@ -81,7 +132,7 @@ void EntityItem::SetText(::Entity *entity)
 
 EntityGroupItem *EntityItem::Parent() const
 {
-    return parentItem;
+    return dynamic_cast<EntityGroupItem *>(parent());
 }
 
 EntityPtr EntityItem::Entity() const
@@ -96,33 +147,29 @@ entity_id_t EntityItem::Id() const
 
 bool EntityItem::operator <(const QTreeWidgetItem &rhs) const
 {
-    int c = treeWidget()->sortColumn();
-    if (c == 0)
-        return (entity_id_t)text(0).split(" ")[0].toInt() < (entity_id_t)rhs.text(0).split(" ")[0].toInt();
-    else if (c == 1)
+    PROFILE(EntityItem_OperatorLessThan)
+
+    // Cannot trust to treeWidget()->sortColumn() here due to our hackish approach:
+    // no separate tree widget columns for ID and Name, sort column is only considered
+    // as metadata.
+    SceneStructureWindow *w = qobject_cast<SceneStructureWindow *>(treeWidget()->parent());
+    const int criteria = w ? (int)w->SortingCriteria() : treeWidget()->sortColumn();
+    switch(criteria)
     {
-        QStringList lhsText = text(0).split(" ");
-        QStringList rhsText = rhs.text(0).split(" ");
+    case 0: // ID
+        return text(0).split(" ")[0].toUInt() < rhs.text(0).split(" ")[0].toUInt();
+    case 1: // Name
+    {
+        const QStringList lhsText = text(0).split(" ");
+        const QStringList rhsText = rhs.text(0).split(" ");
         if (lhsText.size() > 1 && rhsText.size() > 1)
-            return lhsText[1].toLower() < rhsText[1].toLower();
+            return lhsText[1].localeAwareCompare(rhsText[1]) < 0;
         else
             return false;
     }
-    else
+    default:
         return QTreeWidgetItem::operator <(rhs);
-}
-
-EntityGroupItem::EntityGroupItem(const QString &groupName) :
-    name(groupName),
-    numberOfEntities(0)
-{
-    UpdateText();
-}
-
-void EntityGroupItem::UpdateText()
-{
-    QString text = QString("[ group: %1 (%2 item%3) ]").arg(name).arg(numberOfEntities).arg(numberOfEntities > 1 ? "s" : "");
-    setText(0, text);
+    }
 }
 
 // ComponentItem
@@ -209,7 +256,8 @@ EntityItem *ComponentItem::Parent() const
 
 AttributeItem::AttributeItem(IAttribute *attr, QTreeWidgetItem *parent) :
     QTreeWidgetItem(parent),
-    ptr(attr->Owner()->shared_from_this(), attr)
+    ptr(attr->Owner()->shared_from_this(), attr),
+    index(-1)
 {
     Update(attr);
 }
@@ -225,7 +273,15 @@ void AttributeItem::Update(IAttribute *attr)
     type = attr->TypeName();
     name = attr->Name();
     id = attr->Id();
-    value = attr->ToString().c_str();
+    value = attr->ToString();
+
+    if (index > -1 && attr->TypeId() == cAttributeAssetReferenceList)
+    {
+        const AssetReferenceList &refs = static_cast<Attribute<AssetReferenceList> *>(attr)->Get();
+        if (index < refs.Size())
+            value = refs[index].ref;
+        id = id + "[" + QString::number(index) + "]";
+    }
 
     setText(0, QString("%1: %2").arg(id).arg(value));
 }
@@ -237,12 +293,12 @@ AssetRefItem::AssetRefItem(IAttribute *attr, QTreeWidgetItem *parent) :
 {
 }
 
-AssetRefItem::AssetRefItem(IAttribute *attr, const QString &assetRef, QTreeWidgetItem *parent) :
+AssetRefItem::AssetRefItem(IAttribute *attr, int assetRefIndex, QTreeWidgetItem *parent) :
     AttributeItem(attr, parent)
 {
     // Override the regular AssetReferenceList value "ref1;ref2;etc." with a single ref.
-    value = assetRef;
-    setText(0, QString("%1: %2").arg(id).arg(value));
+    index = assetRefIndex;
+    Update(attr);
 }
 
 // SceneTreeWidgetSelection
@@ -295,6 +351,9 @@ bool SceneTreeWidgetSelection::HasAssetsOnly() const
 QList<entity_id_t> SceneTreeWidgetSelection::EntityIds() const
 {
     QSet<entity_id_t> ids;
+    foreach(EntityGroupItem *g, groups)
+        foreach(EntityItem *e, g->entityItems)
+            ids.insert(e->Id());
     foreach(EntityItem *e, entities)
         ids.insert(e->Id());
     foreach(ComponentItem *c, components)

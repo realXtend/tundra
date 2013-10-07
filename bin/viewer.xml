@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<Tundra>
-  <option name="--config" value="plugins.xml" />
-  <option name="--jsplugin" value="LoginScreen.js" />
-  <option name="--splash" />
-</Tundra>

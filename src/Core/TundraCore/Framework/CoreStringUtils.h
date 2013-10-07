@@ -5,6 +5,8 @@
 #include "TundraCoreApi.h"
 #include "CoreTypes.h"
 
+namespace kNet { class DataSerializer; class DataDeserializer; }
+
 /// @cond PRIVATE
 class TUNDRACORE_API QStringLessThanNoCase
 {
@@ -90,9 +92,16 @@ inline uint GetHash(const QString &str) { return ComputeHash(str); } /**< @depre
 
 /// Parses boolean value from string, case-insensitive.
 /** Accepted variations are on/off, true/false & 0/1* /
-    @param value String to be inspected. */
-bool TUNDRACORE_API ParseBool(QString value);
-inline bool ParseBool(const std::string &value) { return ParseBool(QString::fromStdString(value)); } /**< @overload */
+    @param value String to be inspected.
+    @param valueIfEmpty Value that is returned if the string is empty. */
+bool TUNDRACORE_API ParseBool(QString value, bool valueIfEmpty = false);
+inline bool ParseBool(const std::string &value, bool valueIfEmpty = false) { return ParseBool(QString::fromStdString(value), valueIfEmpty); } /**< @overload */
 
 /// Converts boolean to "true" or "false".
 inline QString BoolToString(bool value) { return value ? "true" : "false"; }
+
+/// Reads an UTF-8 encoded QString from a data stream
+QString TUNDRACORE_API ReadUtf8String(kNet::DataDeserializer &dd);
+
+/// Writes QString to a data stream using UTF-8 encoding.
+void TUNDRACORE_API WriteUtf8String(kNet::DataSerializer &ds, const QString &str);

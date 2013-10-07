@@ -12,13 +12,13 @@
 #include "PropertyTableWidget.h"
 #include "OgreScriptHighlighter.h"
 
+#include "Framework.h"
 #include "LoggingFunctions.h"
 #include "Application.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
 
-#include <QUiLoader>
 #include <QFile>
 #include <QPushButton>
 #include <QLineEdit>
@@ -35,32 +35,11 @@ OgreScriptEditor::OgreScriptEditor(const AssetPtr &scriptAsset, Framework *fw, Q
     QWidget(parent),
     framework(fw),
     asset(scriptAsset),
-    lineEditName(0),
-    buttonSaveAs(0),
     textEdit(0)
 //    propertyTable(0),
 //    materialProperties(0)
 {
-    QUiLoader loader;
-    QFile file(Application::InstallationDirectory() + "data/ui/ogrescripteditor.ui");
-    if (!file.exists())
-    {
-        LogError("Cannot find OGRE Script Editor .ui file.");
-        return;
-    }
-
-    QWidget *mainWidget = loader.load(&file, this);
-    file.close();
-
-    QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->addWidget(mainWidget);
-    layout->setContentsMargins(0, 0, 0, 0);
-    setLayout(layout);
-
-    lineEditName = mainWidget->findChild<QLineEdit *>("lineEditName");
-    buttonSaveAs = mainWidget->findChild<QPushButton *>("buttonSaveAs");
-    QPushButton *buttonSave = mainWidget->findChild<QPushButton *>("buttonSave");
-    QPushButton *buttonCancel = mainWidget->findChild<QPushButton *>("buttonCancel");
+    setupUi(this);
 
     ///\todo Save as -functionality disabled for now.
     lineEditName->setDisabled(true);
@@ -274,9 +253,7 @@ void OgreScriptEditor::CreateTextEdit()
     textEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     textEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     textEdit->setLineWrapMode(QTextEdit::NoWrap);
-
-    QVBoxLayout *layout  = findChild<QWidget *>("OgreScriptEditor")->findChild<QVBoxLayout *>("verticalLayoutEditor");
-    layout->addWidget(textEdit);
+    verticalLayoutEditor->addWidget(textEdit);
     textEdit->show();
 }
 

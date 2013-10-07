@@ -11,11 +11,11 @@ Getting Started
 Tundra uses the traditional client-server architecture for networking. After installing you will find the `Tundra` (and `TundraConsole` on Windows) executable from the install directory, run `Tundra --help` for available command line parameters. This executable can be configured to run a set of C++ and JavaScript plugins and act either as a client or a server. You can create your own configuration file, or use the ones provided.
 
 ### Tundra Startup Examples  
-- `Tundra --config viewer.xml` - Starts Tundra with a client configuration which provides an user interface for connecting to Tundra servers.  
+- `Tundra --config tundra-client.json` - Starts Tundra with a client configuration which provides an user interface for connecting to Tundra servers.  
 - `Tundra --connect localhost:2345;udp;TestUser` - Starts Tundra and automatically connects to a localhost server using port 2345 and UDP protocol (the Tundra server's defaults).   
 - `Tundra --server --headless --port 6565 --protocol tcp` - Starts Tundra with the default plugin set in server mode serving TCP connections at port 6565.
 
-The Tundra server defaults are port 2345 and UDP protocol, for it you can simply run `Tundra --server --headless`. If no `--config` parameter is provided, the default `plugins.xml` is used.  
+The Tundra server defaults are port 2345 and UDP protocol, for it you can simply run `Tundra --server --headless`. If no `--config` parameter is provided, the default `tundra.json` is used.  
 
 The Tundra server mode is used for standalone-mode editing and viewing Tundra documents. To host a 3D scene, run Tundra in dedicated mode using the `--server` and `--headless` command line parameters. The Tundra client mode is used to connect to a server.
 
@@ -34,7 +34,7 @@ Tundra uses [CMake] as its build system and depends on various other open source
 
 ### Windows
 
-Visual Studio 2008 and 2010 build environments are currently supported. Make sure that you have the latest Visual Studio Service Packs installed.
+Visual Studio 2008 and 2010 build environments are currently supported. Make sure that you have the latest Visual Studio Service Packs installed. Visual Studio 2012 and newer can be used to open and build the VS2010-generated Tundra solution as long as the solution is not upgraded to the newer format.
 
 The Tundra dependencies are acquired and built using an automated build script:  
 1. Open up the Visual Studio (x64 Win64) Command Prompt which is required in order to have the required build tools and several other utilities in your PATH.  

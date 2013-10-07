@@ -1,11 +1,13 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
-
 #include "DebugOperatorNew.h"
+
 #include "AvatarEditor.h"
 #include "AvatarDescAsset.h"
 #include "EC_Avatar.h"
+
+#include "Framework.h"
 #include "AssetAPI.h"
 #include "SceneAPI.h"
 #include "Scene/Scene.h"
@@ -26,7 +28,6 @@
 #include "Entity.h"
 
 #include "ConfigAPI.h"
-#include <QUiLoader>
 #include <QFile>
 #include <QLineEdit>
 #include <QPushButton>

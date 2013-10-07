@@ -5,6 +5,7 @@
 #include "IModule.h"
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
+#include "SceneFwd.h"
 
 namespace OgreRenderer
 {
@@ -35,7 +36,9 @@ namespace OgreRenderer
         static std::string CACHE_RESOURCE_GROUP;
 
         // DEPRECATED
+        /// @cond PRIVATE
         const RendererPtr &GetRenderer() const { return Renderer(); } /**< @deprecated Use Renderer() instead. @todo Remove. */
+        /// @endcond
 
     public slots:
         /// Prints renderer stats to console.
@@ -49,11 +52,10 @@ namespace OgreRenderer
         void SetMaterialAttribute(const QStringList &params);
 
     private slots:
-        /// New scene has been created
-        void OnSceneAdded(const QString &name);
-
-        /// Scene is about to be removed
-        void OnSceneRemoved(const QString &name);
+        /// Creates OgreWorld for a Scene.
+        void CreateOgreWorld(Scene *scene);
+        /// Removes OgreWorld from a Scene.
+        void RemoveOgreWorld(Scene *scene);
 
     private:
         RendererPtr renderer;  ///< Renderer

@@ -18,60 +18,8 @@ template <class T> inline bool _finite(const T &f) { return f != std::numeric_li
 template <class T> inline bool _isnan(const T &f) { return f != f; }
 #endif
 
-// If we have C99, take the types from there.
-#if (__STDC_VERSION__ >= 199901L) || (_MSC_VER >= 1600)
-
-#include <cstdint>
-
-typedef uint8_t u8; ///< a single byte: 0-255.
-typedef uint16_t u16; ///< 2 bytes: 0 - 65535.
-typedef uint32_t u32; ///< 4 bytes: 0 - 4,294,967,295 ~ 4000 million or 4e9.
-typedef uint64_t u64; ///< 8 bytes: 18,446,744,073,709,551,615 ~1.8e19.
-
-typedef int8_t s8; ///< a single byte: -128 - 127.
-typedef int16_t s16; ///< 2 bytes: -32768 - 32767.
-typedef int32_t s32; ///< 4 bytes signed: max 2,147,483,647 ~ 2000 million or 2e9.
-typedef int64_t s64; ///< 8 bytes signed. 9,223,372,036,854,775,807 ~ 9e18.
-
-// Otherwise, if we have Boost and its usage is not disabled, we can also pull the types from there.
-#elif !defined(TUNDRA_NO_BOOST)
-
-#include <boost/cstdint.hpp>
-
-typedef boost::uint8_t u8; ///< a single byte: 0-255.
-typedef boost::uint16_t u16; ///< 2 bytes: 0 - 65535.
-typedef boost::uint32_t u32; ///< 4 bytes: 0 - 4,294,967,295 ~ 4000 million or 4e9.
-typedef boost::uint64_t u64; ///< 8 bytes: 18,446,744,073,709,551,615 ~1.8e19.
-
-typedef boost::int8_t s8; ///< a single byte: -128 - 127.
-typedef boost::int16_t s16; ///< 2 bytes: -32768 - 32767.
-typedef boost::int32_t s32; ///< 4 bytes signed: max 2,147,483,647 ~ 2000 million or 2e9.
-typedef boost::int64_t s64; ///< 8 bytes signed. 9,223,372,036,854,775,807 ~ 9e18.
-
-#else // No Boost or unknown if we have C99. Have to guess the following are correct.
-
-#include <limits.h>
-
-//#pragma warning "Not using Boost and C99 not defined. Guessing the built-ins for fixed-width types!"
-
-typedef unsigned char u8; ///< a single byte: 0-255.
-typedef unsigned short u16; ///< 2 bytes: 0 - 65535.
-typedef unsigned long long u64; ///< 8 bytes: 18,446,744,073,709,551,615 ~1.8e19.
-
-typedef signed char s8; ///< a single byte: -128 - 127.
-typedef signed short s16; ///< 2 bytes: -32768 - 32767.
-
-#if ULONG_MAX == 0xffffffff
-typedef unsigned long u32; ///< 4 bytes: 0 - 4,294,967,295 ~ 4000 million or 4e9.
-typedef long s32; ///< 4 bytes signed: max 2,147,483,647 ~ 2000 million or 2e9.
-#elif UINT_MAX == 0xffffffff
-typedef unsigned int u32; ///< 4 bytes: 0 - 4,294,967,295 ~ 4000 million or 4e9.
-typedef int s32; ///< 4 bytes signed: max 2,147,483,647 ~ 2000 million or 2e9.
-#endif
-
-typedef signed long long s64; ///< 8 bytes signed. 9,223,372,036,854,775,807 ~ 9e18.
-
-#endif
+// Use kNet/Types.h for fixed-width types instead of duplicating the code here.
+#include <kNet/Types.h>
 
 // Floating-point types
 typedef float f32;
@@ -93,13 +41,32 @@ typedef unsigned int component_id_t;
 #include <boost/make_shared.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/regex.hpp>
+#include <boost/unordered_map.hpp>
 #else
 #include <memory>
 #include <regex>
+// <unordered_map> is a bit trickier to include.
+// __has_include is a Clang-only define.
+#ifndef __has_include
+#define __has_include(x) 0
+#endif
+/// @todo Verify the Clang and GCC parts! The GCC part is probably wrong, but that's ok for now
+/// as TUNDRA_NO_BOOST cannot be used yet on GCC+Linux. For now assuming that if __APPLE__ is
+/// defined it means the we're using Clang (and __has_include is available).
+#if (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 2) || (defined(__APPLE__) && __has_include(<tr1/unordered_map>))
+#include <tr1/unordered_map>
+#elif defined(_MSC_VER) || /** @todo check for GCC defines */ (defined(__APPLE__) && __has_include(<unordered_map>))
+#include <unordered_map>
+#endif
 #endif
 
 /** @def CORETYPES_NAMESPACE
-    The namespace from which C++ TR1 functionalities are used (boost, std::tr1 or std). 
+    The namespace from which C++ TR1 functionalities are used (boost, std::tr1 or std).
+    The following symbols must be used without the namespace:
+    -shared_ptr, weak_ptr, dynamic_pointer_cast, static_pointer_cast, enable_shared_from_this,
+    -regex, wregex, sregex_iterator, regex_search, smatch, wsmatch,
+    -unordered_map and unordered_multimap.
+
     @note As of Xcode 4.X Apple has dropped GCC in favor of clang, which means that
           a 'stock GCC' in Xcode is very unlikely in the future. Last used GCC version in
           Macs was 4.2 which has initial TR1 implementations. For now, we assume that 
@@ -127,6 +94,9 @@ using CORETYPES_NAMESPACE::sregex_iterator;
 using CORETYPES_NAMESPACE::regex_search;
 using CORETYPES_NAMESPACE::smatch;
 using CORETYPES_NAMESPACE::wsmatch;
+// From <unordered_map>:
+using CORETYPES_NAMESPACE::unordered_map;
+using CORETYPES_NAMESPACE::unordered_multimap;
 
 /** @def MAKE_SHARED(type, ...)
     Workaround for the fact that make_shared is not a C++ TR1 feature, but a C++11 feature.

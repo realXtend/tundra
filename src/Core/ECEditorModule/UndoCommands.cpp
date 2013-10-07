@@ -6,6 +6,7 @@
 #include "EntityIdChangeTracker.h"
 #include "TransformEditor.h"
 
+#include "Framework.h"
 #include "Scene.h"
 #include "SceneAPI.h"
 #include "IComponent.h"
@@ -26,7 +27,7 @@ EditIAttributeCommand::EditIAttributeCommand(IAttribute *attr, QUndoCommand *par
     Initialize(attr, true);
 }
 
-EditIAttributeCommand::EditIAttributeCommand(IAttribute *attr, const std::string &valueToApply, QUndoCommand *parent) :
+EditIAttributeCommand::EditIAttributeCommand(IAttribute *attr, const QString &valueToApply, QUndoCommand *parent) :
     IEditAttributeCommand(parent),
     undoValue(attr->ToString()),
     redoValue(valueToApply)
@@ -90,7 +91,7 @@ RemoveAttributeCommand::RemoveAttributeCommand(IAttribute *attr, QUndoCommand *p
     owner(static_pointer_cast<EC_DynamicComponent>(attr->Owner()->shared_from_this())),
     attributeTypeName_(attr->TypeName()),
     attributeName_(attr->Name()),
-    value_(QString::fromStdString(attr->ToString())),
+    value_(attr->ToString()),
     QUndoCommand(parent)
 {
     setText("- Removed " + attributeTypeName_ + " Attribute");
@@ -107,7 +108,7 @@ void RemoveAttributeCommand::undo()
     if (dynComp)
     {
         IAttribute * attr = dynComp->CreateAttribute(attributeTypeName_, attributeName_);
-        attr->FromString(value_.toStdString(), AttributeChange::Default);
+        attr->FromString(value_, AttributeChange::Default);
     }
 }
 
@@ -290,9 +291,9 @@ void EditXMLCommand::Deserialize(const QDomDocument docState)
 
     while(!entityElement.isNull())
     {
-        entity_id_t id = (entity_id_t)entityElement.attribute("id").toInt();
+        entity_id_t id = entityElement.attribute("id").toUInt();
 
-        EntityPtr entity = scene->GetEntity(id);
+        EntityPtr entity = scene->EntityById(id);
         if (entity)
         {
             QDomElement componentElement = entityElement.firstChildElement("component");
@@ -300,7 +301,7 @@ void EditXMLCommand::Deserialize(const QDomDocument docState)
             {
                 QString typeName = componentElement.attribute("type");
                 QString name = componentElement.attribute("name");
-                ComponentPtr comp = entity->GetComponent(typeName, name);
+                ComponentPtr comp = entity->Component(typeName, name);
                 if (comp)
                     comp->DeserializeFrom(componentElement, AttributeChange::Default);
 
@@ -427,7 +428,7 @@ void RemoveCommand::undo()
         QDomElement entityElement = sceneElement.firstChildElement("entity");
         while (!entityElement.isNull())
         {
-            entity_id_t id = entityElement.attribute("id").toInt();
+            entity_id_t id = entityElement.attribute("id").toUInt();
             bool sync = ParseBool(entityElement.attribute("sync"));
 
             entity_id_t newId = sync ? scene->NextFreeId() : scene->NextFreeIdLocal();
@@ -446,7 +447,7 @@ void RemoveCommand::undo()
         QDomElement entityElement = componentsDocument_.firstChildElement("entity");
         while (!entityElement.isNull())
         {
-            entity_id_t entityId = entityElement.attribute("id").toInt();
+            entity_id_t entityId = entityElement.attribute("id").toUInt();
             EntityPtr ent = scene->EntityById(tracker_->RetrieveId(entityId));
             if (ent.get())
             {
@@ -501,7 +502,7 @@ void RemoveCommand::redo()
 
                 for (ComponentList::iterator i = componentMap_[key].begin(); i != componentMap_[key].end(); ++i)
                 {
-                    ComponentPtr comp = ent->GetComponent((*i).first, (*i).second);
+                    ComponentPtr comp = ent->Component((*i).first, (*i).second);
                     if (comp.get())
                     {
                         comp->SerializeTo(componentsDocument_, entityElem, true);

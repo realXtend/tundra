@@ -8,7 +8,10 @@
 #include "DebugOperatorNew.h"
 
 #include "OgreMaterialEditor.h"
+#include "ui_MaterialEditorTuTab.h"
+#include "ui_MaterialEditorPassTab.h"
 
+#include "Framework.h"
 #include "LoggingFunctions.h"
 #include "Application.h"
 #include "AssetAPI.h"
@@ -19,11 +22,21 @@
 #include "PropertyTableWidget.h"
 #include "Math/MathFunc.h"
 
-#include <QUiLoader>
-
 #include "MemoryLeakCheck.h"
 
-static const char *cNoShader = "NoShader/Unknown";
+class OgreMaterialEditorTuWidget : public QWidget, public Ui::OgreMaterialEditorTextureUnitTab
+{
+public:
+    OgreMaterialEditorTuWidget(QWidget *parent) : QWidget(parent) { setupUi(this); }
+};
+
+class OgreMaterialEditorPassWidget : public QWidget, public Ui::OgreMaterialEditorPassTab
+{
+public:
+    OgreMaterialEditorPassWidget(QWidget *parent) : QWidget(parent) { setupUi(this); }
+};
+
+static const char * const cNoShader = "NoShader/Unknown";
 
 OgreMaterialEditor::OgreMaterialEditor(const AssetPtr &materialAsset, Framework *fw, QWidget *parent) :
     QWidget(parent),
@@ -46,8 +59,8 @@ OgreMaterialEditor::~OgreMaterialEditor()
 void OgreMaterialEditor::SetMaterialAsset(const AssetPtr &scriptAsset)
 {
     asset = scriptAsset;
-    assert(asset.lock());
     AssetPtr assetPtr = asset.lock();
+    assert(assetPtr);
     if (!assetPtr)
     {
         LogError("OgreMaterialEditor: null asset given.");
@@ -108,21 +121,6 @@ void OgreMaterialEditor::Populate()
 
 //    techniqueTabWidget->addWidget(passTabWidget);
 
-    QUiLoader loader;
-    loader.setLanguageChangeEnabled(true);
-    QFile passFile(Application::InstallationDirectory() + "data/ui/MaterialEditorPassTab.ui");
-    if (!passFile.exists())
-    {
-        LogError("OgreMaterialEditor: Cannot find material editor pass ui file!");
-        return;
-    }
-    QFile tuFile(Application::InstallationDirectory() + "data/ui/MaterialEditorTuTab.ui");
-    if (!tuFile.exists())
-    {
-        LogError("OgreMaterialEditor: Cannot find material editor texture unit ui file!");
-        return;
-    }
-
     for(int techIndex = 0; techIndex < numTechniques; ++techIndex)
     {
         QTabWidget *passTabWidget = 0;
@@ -136,9 +134,7 @@ void OgreMaterialEditor::Populate()
         }
         for(int passIndex = 0; passIndex < numPasses; ++passIndex)
         {
-            QFile passFile(Application::InstallationDirectory() + "data/ui/MaterialEditorPassTab.ui");
-            QWidget *passWidget = loader.load(&passFile, passTabWidget);
-            passFile.close();
+            QWidget *passWidget = new OgreMaterialEditorPassWidget(passTabWidget);
 
             techniqueTabWidget->addTab(passTabWidget, "Technique" + QString::number(techIndex));
             passTabWidget->addTab(passWidget, "Pass" + QString::number(passIndex));
@@ -1019,12 +1015,7 @@ void OgreMaterialEditor::PopulateTextureUnits(int techIndex, int passIndex)
         if (!tu)
             continue;
 
-        QFile tuFile(Application::InstallationDirectory() + "data/ui/MaterialEditorTuTab.ui");
-        QUiLoader loader;
-        loader.setLanguageChangeEnabled(true);
-        QWidget *tuWidget = loader.load(&tuFile, tuTabWidget);
-        tuFile.close();
-        assert(tuWidget);
+        QWidget *tuWidget = new OgreMaterialEditorTuWidget(tuTabWidget);
         //tuWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
         const QString techniquePassTuId = QString(";%1;%2;%3").arg(techIndex).arg(passIndex).arg(tuIndex);

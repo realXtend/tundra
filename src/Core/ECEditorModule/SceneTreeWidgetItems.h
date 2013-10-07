@@ -10,16 +10,26 @@
 #include "AssetFwd.h"
 #include "IAttribute.h"
 
+class EntityItem;
+
+/// Tree widget item representing an entity group.
 class EntityGroupItem : public QTreeWidgetItem
 {
 public:
     explicit EntityGroupItem(const QString &groupName);
-    QString GroupName() const { return name; }
+    virtual ~EntityGroupItem();
+
+    const QString &GroupName() const { return name; }
     void UpdateText();
-    
-    int numberOfEntities;
+    /// If @c eItem is attached to another group, it will be removed from that group.
+    void AddEntityItem(EntityItem *eItem);
+    void RemoveEntityItem(EntityItem *eItem);
+
+    QList<EntityItem *> entityItems;
+
 private:
-    QString name;
+    Q_DISABLE_COPY(EntityGroupItem)
+    const QString name;
 };
 
 /// Tree widget item representing an entity.
@@ -29,9 +39,7 @@ public:
     /// Constructor.
     /** @param entity Entity which the item represents. */
     explicit EntityItem(const EntityPtr &entity, EntityGroupItem *parent = 0);
-
-    /// Destructor
-    ~EntityItem();
+    virtual ~EntityItem();
 
     /// Decorates the item (text + color) accordingly to the entity information.
     /** @param entity Entity which the item represents. */
@@ -47,10 +55,11 @@ public:
     entity_id_t Id() const;
 
     /// QTreeWidgetItem override.
-    /** If treeWidget::sortColumn() is 0, items are sorted by ID, or if it's 1, items are sorted by name (if applicable). */
+    /** Uses SceneStructureWindow::SortingCriteria for the criteria, if applicable, otherwise treeWidget::sortColumn(). */
     bool operator <(const QTreeWidgetItem &rhs) const;
 
 private:
+    Q_DISABLE_COPY(EntityItem)
     entity_id_t id; ///< Entity ID associated with this tree widget item.
     EntityWeakPtr ptr; ///< Weak pointer to the component this item represents.
     EntityGroupItem *parentItem;
@@ -80,6 +89,7 @@ public:
     QString name; ///< Name, if applicable.
 
 private:
+    Q_DISABLE_COPY(ComponentItem)
     ComponentWeakPtr ptr; ///< Weak pointer to the component this item represents.
     EntityItem *parentItem; ///< Parent entity item.
 };
@@ -101,6 +111,10 @@ public:
     QString id; ///< ID.
     QString name; ///< Name.
     QString value; ///< Value.
+    int index; ///< AssetReference index in the AssetReferenceList. -1 if not initialized. @todo Maybe to this other list types too?
+
+private:
+    Q_DISABLE_COPY(AttributeItem)
 };
 
 /// Tree widget item representing an asset reference attribute.
@@ -114,7 +128,7 @@ public:
 
     /// Constructor for creating individual items for AssetReferenceList.
     /** @param assetRef Asset reference. */
-    AssetRefItem(IAttribute *attr, const QString &assetRef, QTreeWidgetItem *parent = 0);
+    AssetRefItem(IAttribute *attr, int assetRefIndex, QTreeWidgetItem *parent = 0);
 };
 
 /// Represents selection of SceneTreeWidget items.
@@ -147,7 +161,7 @@ struct SceneTreeWidgetSelection
     /// Returns true if selection contains assets only.
     bool HasAssetsOnly() const;
 
-    /// Returns list containing unique entity IDs of both selected entities and parent entities of selected components
+    /// Returns list containing unique entity IDs of selected groups, entities and parent entities of components.
     QList<entity_id_t> EntityIds() const;
 
     QList<EntityGroupItem *> groups; ///< List of selected entity groups.
@@ -177,6 +191,7 @@ public:
     void SetText(IAsset *asset);
 
 private:
+    Q_DISABLE_COPY(AssetItem)
     AssetWeakPtr assetPtr; ///< Weak pointer to the asset.
 };
 
@@ -193,6 +208,7 @@ public:
     AssetStoragePtr Storage() const;
 
 private:
+    Q_DISABLE_COPY(AssetStorageItem)
     AssetStorageWeakPtr assetStorage; ///< Weak pointer to the asset storage.
 };
 
@@ -214,6 +230,7 @@ public:
     AssetStoragePtr Storage() const;
 
 private:
+    Q_DISABLE_COPY(AssetBundleItem)
     AssetBundleWeakPtr assetBundle; ///< Weak pointer to the asset bundle.
 };
 

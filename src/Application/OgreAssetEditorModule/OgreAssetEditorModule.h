@@ -30,7 +30,8 @@ public:
 
 public slots:
     /// Returns if asset of @type is supported for editing/previewing.
-    bool IsSupportedAssetType(const QString &type) const;
+    /** Currently functionality is provided for assets of type "OgreMaterial", "OgreParticle", "Audio", and "Texture". */
+    static bool IsSupportedAssetType(const QString &type);
 
 private slots:
     void OnContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);

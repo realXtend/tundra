@@ -8,16 +8,22 @@ cmake_minimum_required(VERSION 2.6.0)
 if (COMMAND cmake_policy)
     cmake_policy(SET CMP0005 NEW)
 endif()
-# If the following are undefined, the default values in TundraVersionInfo.h are used.
-#add_definitions(-DTUNDRA_VERSION_MAJOR=1)
-#add_definitions(-DTUNDRA_VERSION_MINOR=2)
-#add_definitions(-DTUNDRA_VERSION_MAJOR_PATCH=3)
-#add_definitions(-DTUNDRA_VERSION_MINOR_PATCH=4)
-#add_definitions(-DTUNDRA_ORGANIZATION_NAME="\\"MyOrganization\\"")
-#add_definitions(-DTUNDRA_APPLICATION_NAME="\\"MyApplication\\"")
-#add_definitions(-DTUNDRA_VERSION_STRING="\\"1.2.3.4\\"")
 
-# TUNDRA_NO_BOOST defines whether we want to replace usage of Boost with the C++ (TR1) standard equivalents.
+# If the following are undefined, the default values in TundraVersionInfo.h are used.
+#add_definitions(-DTUNDRA_VERSION_MAJOR=1) 
+#add_definitions(-DTUNDRA_VERSION_MINOR=2) 
+#add_definitions(-DTUNDRA_VERSION_MAJOR_PATCH=3) 
+#add_definitions(-DTUNDRA_VERSION_MINOR_PATCH=4) 
+#add_definitions(-DTUNDRA_ORGANIZATION_NAME="\\"MyOrganization\\"") 
+#add_definitions(-DTUNDRA_APPLICATION_NAME="\\"MyApplication\\"") 
+#add_definitions(-DTUNDRA_VERSION_STRING="\\"1.2.3.4\\"")
+# TUNDRA_VERSION_POSTFIX can be used to append information to the version string f.ex.
+# when doing automated nightly builds or release candidates.
+if (DEFINED TUNDRA_VERSION_POSTFIX)
+    add_definitions(-DTUNDRA_VERSION_POSTFIX="${TUNDRA_VERSION_POSTFIX}")
+endif()
+
+# TUNDRA_NO_BOOST defines whether we want to replace usage of Boost with the C++ TR1/11 standard equivalents.
 # Setting TUNDRA_NO_BOOST to TRUE, i.e. disabling usage of Boost in the Tundra codebase, requires compiler
 # with up-to-date C++ TR1 and preferably the C99 standard cstdint header. Also if the used compiler has C++11 
 # make_shared function available, it is used.
@@ -25,11 +31,11 @@ endif()
 # Tundra build fully free of Boost, you must also build Ogre and AssImp, which depend on Boost by default,
 # with Boost disabled. See the dependencies scripts for instructions how to control this.
 # On Linux TUNDRA_NO_BOOST can not yet be used
-if (WIN32 OR APPLE)
-    option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." TRUE)
-else ()
-    option(TUNDRA_NO_BOOST "Specifies whether Tundra is build without Boost." FALSE)
-endif ()
+option(TUNDRA_NO_BOOST "Specifies whether Tundra is built without Boost." ON)
+# TODO No-Boost support for Linux.
+if (NOT WIN32 OR APPLE)
+    set(TUNDRA_NO_BOOST OFF)
+endif()
 
 option(TUNDRA_CPP11_ENABLED "Enables usage of certain C++11 features on Tundra." FALSE)
 
@@ -71,7 +77,7 @@ elseif (MSVC AND TUNDRA_CPP11_ENABLED)
     endif()
 endif()
 
-option(TUNDRA_NO_AUDIO "Specifies whether Tundra is without OpenAL audio playback capabilities." OFF)
+option(TUNDRA_NO_AUDIO "Specifies whether Tundra is built without OpenAL audio playback capabilities." OFF)
 
 if (ANDROID)
     add_definitions(-DANDROID)
@@ -81,7 +87,7 @@ endif()
 
 macro(PrintUsedEnvVariables)
     # Print out the resolved variables. Note that this does not print the env variables
-    # in most cases as they should be resolved to our cmake variables and get cached.
+    # in most cases as they should be resolved to our CMake variables and get cached.
     # This way this printed list wont lie if ran without env variables and we are still
     # successfully finding all the deps from our cacher (or in bad cases assumed) dirs.
     message("\n=========== Used Environment Variables ===========\n")
@@ -105,7 +111,8 @@ macro(PrintUsedBuildConfig)
     message(STATUS "TUNDRACORE_SHARED          = " ${TUNDRACORE_SHARED})
     message(STATUS "BUILD_SDK_ONLY             = " ${BUILD_SDK_ONLY})
     message(STATUS "INSTALL_BINARIES_ONLY      = " ${INSTALL_BINARIES_ONLY})
-    message(STATUS "INSTALL_EXAMPLE_SCENES     = " ${INSTALL_EXAMPLE_SCENES})    
+    message(STATUS "INSTALL_EXAMPLE_SCENES     = " ${INSTALL_EXAMPLE_SCENES})
+    message(STATUS "ENABLE_TRANSLATIONS        = " ${ENABLE_TRANSLATIONS})
     message(STATUS "ENABLE_BUILD_OPTIMIZATIONS = " ${ENABLE_BUILD_OPTIMIZATIONS})
     message(STATUS "ENABLE_HYDRAX              = " ${ENABLE_HYDRAX})
     message(STATUS "ENABLE_SKYX                = " ${ENABLE_SKYX})
@@ -172,7 +179,7 @@ endmacro()
 # - Two params : argv0 == 'Core'|'Application'. argv1 folder name of the project in the src/argv0/
 # More useful for building the Tundra project when including platform provided projects.
 # Note: One param projects or two param "Application" type plugins will always be omitted if BUILD_SDK_ONLY is true!
-# Note: Due to the cmake add_subdirectory restrictions, the directory cannot be outside the Tundra source tree, hopefully we can go around this one day.
+# Note: Due to the CMake's add_subdirectory restrictions, the directory cannot be outside the Tundra source tree, hopefully we can go around this one day.
 # Examples:     AddProject(Core Input)
 #               AddProject(Application JavascriptModule)
 #               AddProject(mysubdir/MyPlugin)
@@ -215,9 +222,9 @@ macro(AddSourceFolder folder_name)
     set(CPP_FILES ${CPP_FILES} ${CPP_FILES_IN_FOLDER_${folder_name}})
 endmacro()
 
-# Moves all Qt moc-compiler generated files into their own folder in the Visual Studio project. Call this once after having added all source files in the build in your module,
+# Moves all Qt's MOC-generated files into their own folder in the Visual Studio project. Call this once after having added all source files in the build in your module,
 # but before the call to 'set (SOURCE_FILES ...)' directive.
-# This macro is optional and for "conveniency" only. If you omit this call, you will have all the generated moc files in the Visual Studio project root.
+# This macro is optional and for "convenience" only. If you omit this call, you will have all the generated moc files in the Visual Studio project root.
 # TODO: Add support for more deep folder structures. Current
 #       implementation only support folders directly under project folder
 macro(MocFolder)
@@ -225,8 +232,8 @@ macro(MocFolder)
     source_group("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
 endmacro()
 
-# Moves all Qt ui copmiler-generated .h files into their own folder in the Visual Studio project. Call this once after having added all source files in the build in your module.
-# This macro is optional and for "conveniency" only. If you omit this call, you will have all the generated moc files in the Visual Studio project root.
+# Moves all Qt's UI compiler -generated .h files into their own folder in the Visual Studio project. Call this once after having added all source files in the build in your module.
+# This macro is optional and for "convenience" only. If you omit this call, you will have all the generated moc files in the Visual Studio project root.
 macro(UiFolder)
     file(GLOB GENERATED_UI_H ui_*.h)
     source_group("Generated UI" FILES ${GENERATED_UI_H})
@@ -322,7 +329,7 @@ include (FindDirectX)
 set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
 
 if (MSVC)
-    # In Visual Studio, use unicode character set
+    # In Visual Studio, use Unicode character set
     add_definitions(-DUNICODE -D_UNICODE)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 else()
@@ -333,7 +340,7 @@ endif()
 add_definitions (-DPCH_ENABLED)
 SET(PCH_ENABLED 1)
 
-# This setting affects only windows. Possibility to opt out of linking agains DirecX spesific libs.
+# Windows-only: Possibility to opt out of linking against DirectX-specific libs.
 # Enabled more efficient texture blitting to Ogre using DirectX. This makes RenderSystem_Direct3D9 mandatory.
 set (ENABLE_DIRECTX 1)
 
@@ -357,10 +364,10 @@ file (TO_CMAKE_PATH "$ENV{KNET_DIR}" ENV_KNET_DIR)
 file (TO_CMAKE_PATH "$ENV{BULLET_DIR}" ENV_BULLET_DIR)
 file (TO_CMAKE_PATH "$ENV{ASSIMP_DIR}" ENV_ASSIMP_DIR)
 
-# Utilize cmakes cache for the environment variables. This is needed if eg. TUNDRA_DEP_PATH
-# was set on the first run of cmake, but once eg. Visual Studio auto runs cmake (after changes to any CMakeLists.txt)
+# Utilize CMake's cache for the environment variables. This is needed if e.g.. TUNDRA_DEP_PATH
+# was set on the first run of CMake, but once e.g.. Visual Studio auto runs CMake (after changes to any CMakeLists.txt)
 # it is no longer set. This will result us in losing all the acquired dependency information that was not found with
-# cmake macros find_packade, find_library etc. that automatically cache. This is more flexible for many use cases to remember
+# CMake macros find_packade, find_library etc. that automatically cache. This is more flexible for many use cases to remember
 # if we once got a valid TUNDRA_DEP_PATH. If env variable TUNDRA_DEP_PATH is present, the cache is never read but instead updated.
 if (NOT ENV_TUNDRA_DEP_PATH)
     set (ENV_TUNDRA_DEP_PATH ${CACHED_ENV_TUNDRA_DEP_PATH})
@@ -378,7 +385,7 @@ else ()
     set (CACHED_ENV_OGRE_HOME ${ENV_OGRE_HOME} CACHE PATH "Tundra build Ogre path" FORCE)
 endif ()
 
-# If we still havent resolved TUNDRA_DEP_PATH report a fatal error.
+# If we still haven't resolved TUNDRA_DEP_PATH report a fatal error.
 # ENV_QT_DIR and ENV_OGRE_HOME are not fatal if missing.
 if (NOT ENV_TUNDRA_DEP_PATH)
     message(FATAL_ERROR "TUNDRA_DEP_PATH could not be resolved from a environment variable or from cmake cache!")
@@ -392,16 +399,7 @@ if (NOT TUNDRA_NO_BOOST)
 endif()
 configure_qt4()
 configure_qjson()
-if (NOT APPLE) # Python and PythonQt are not available currently on Mac.
-    if ("$ENV{TUNDRA_PYTHON_ENABLED}" STREQUAL "TRUE") 
-        configure_python()
-        configure_python_qt()
-    endif()
-endif()
 configure_ogre()
-if (NOT ANDROID)
-    configure_qtpropertybrowser()
-endif()
 if (NOT TUNDRA_NO_AUDIO)
     configure_openal()
 endif()
@@ -461,20 +459,22 @@ endif()
 include(CMakeBuildConfig.txt)
 
 # Collect translation files.
-file(GLOB TRANSLATIONS_FILES bin/data/translations/*.ts)
+if (ENABLE_TRANSLATIONS)
+    file(GLOB TRANSLATIONS_FILES bin/data/translations/*.ts)
 
-# Collect ui-files which are stored into data/
-file(GLOB ui_src bin/data/ui/*.ui)
+    # Collect ui-files which are stored into data/
+    file(GLOB ui_src bin/data/ui/*.ui)
 
-set(FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${ui_src})
+    set(FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${ui_src})
 
-if (UPDATE_LANGUAGE_TRANSLATIONS)
-   message (STATUS "Update .ts files with new translation data.")
-   update_translation_files(TRANSLATIONS_FILES)
+    if (UPDATE_LANGUAGE_TRANSLATIONS) # TODO UPDATE_LANGUAGE_TRANSLATIONS is not specified currently anywhere.
+        message(STATUS "Update .ts files with new translation data.")
+        update_translation_files(TRANSLATIONS_FILES)
+    endif()
+
+    update_qm_files(TRANSLATIONS_FILES)
+    message (STATUS "Language translations generated")
 endif()
-
-update_qm_files(TRANSLATIONS_FILES)
-message (STATUS "Language translations generated")
 
 PrintUsedEnvVariables ()
 PrintUsedBuildConfig ()

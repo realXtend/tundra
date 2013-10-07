@@ -1,4 +1,4 @@
-@echo on
+@echo off
 echo.
 
 :: Enable the delayed environment variable expansion needed in VSConfig.cmd.

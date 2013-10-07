@@ -154,7 +154,7 @@ function (setup_install_windows_deps DLL_FILES DLL_CONFIGURATION) # Optional par
 endfunction ()
 
 # Macro removes file from install <prefix>
-# Handy for removing files you dont want in the installation after setup_install_directory() or setup_install_files_find().
+# Handy for removing files you don't want in the installation after setup_install_directory() or setup_install_files_find().
 #
 # Example: setup_remove_file ("data/assets/dummy.txt")
 #
@@ -163,6 +163,17 @@ function (setup_remove_file FILE_PATH)
     install (CODE "file (REMOVE ${CMAKE_INSTALL_PREFIX}/bin/${FILE_PATH})")
     install (CODE "message(\" \")")
 endfunction ()
+
+# Removes directory and its content recursively from install <prefix>
+# Handy for removing directories you don't want in the installation after setup_install_directory() or setup_install_files_find().
+#
+# Example: setup_remove_directory("data/assets/translations")
+#
+function(setup_remove_directory FILE_PATH)
+    install(CODE "message(\"\nRemoving directory ${CMAKE_INSTALL_PREFIX}/bin/${FILE_PATH}\")")
+    install(CODE "file (REMOVE_RECURSE ${CMAKE_INSTALL_PREFIX}/bin/${FILE_PATH})")
+    install(CODE "message(\" \")")
+endfunction()
 
 # Macro for installing the target build results into the install prefix.
 # This macro gets called automatically in final_target() for all projects.

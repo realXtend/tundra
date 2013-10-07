@@ -2,7 +2,7 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   AssetItemMenuHandler.cpp
-    @brief  Handles populating of assets and asset storages context menus and their chosen actions. */
+    @brief  AssetItemMenuHandler handles populating of assets and asset storages context menus and their chosen actions. */
 
 #include "StableHeaders.h"
 
@@ -16,6 +16,7 @@
 #include "AddContentWindow.h"
 #include "SupportedFileTypes.h"
 
+#include "Framework.h"
 #include "UiAPI.h"
 #include "AssetAPI.h"
 #include "SceneAPI.h"
@@ -32,27 +33,28 @@ AssetItemMenuHandler::AssetItemMenuHandler(Framework *fw) :
     framework_(fw),
     sender_(0)
 {
-    connect(framework_->Ui(), SIGNAL(ContextMenuAboutToOpen(QMenu *, QList<QObject *>)), this, SLOT(AddAssetMenuItems(QMenu *, QList<QObject *>)), Qt::UniqueConnection);
+    connect(framework_->Ui(), SIGNAL(ContextMenuAboutToOpen(QMenu *, QList<QObject *>, QObject *)),
+        SLOT(AddAssetMenuItems(QMenu *, QList<QObject *>, QObject *)), Qt::UniqueConnection);
 }
 
-void AssetItemMenuHandler::AddAssetMenuItems(QMenu * menu, QList<QObject *> targets)
+void AssetItemMenuHandler::AddAssetMenuItems(QMenu * menu, QList<QObject *> targets, QObject *sender)
 {
+    sender_ = sender;
+
     AssetAndStorageItems items;
 
-    foreach (QObject *target, targets)
+    foreach(QObject *target, targets)
     {
-        IAsset * asset = dynamic_cast<IAsset*>(target);
+        IAsset * asset = qobject_cast<IAsset*>(target);
         if (asset)
-            items.assets << asset;
-        else
         {
-            IAssetStorage* storage = dynamic_cast<IAssetStorage*>(target);
-            if (storage)
-                items.storages << storage;
-            else
-                if (dynamic_cast<AssetsWindow*> (target))
-                    sender_ = target;
+            items.assets << asset;
+            continue;
         }
+
+        IAssetStorage* storage = qobject_cast<IAssetStorage*>(target);
+        if (storage)
+            items.storages << storage;
     }
 
     if (items.assets.isEmpty() && items.storages.isEmpty())
@@ -85,7 +87,7 @@ void AssetItemMenuHandler::AddAssetMenuItems(QMenu * menu, QList<QObject *> targ
         // Even if the asset is an HTTP asset, these options are disable if there does not exist a cached version of that asset in the cache.
         foreach(IAsset *item, targets_.assets)
         {
-            if (item && framework_->Asset()->GetAssetCache()->FindInCache(item->Name()).isEmpty())
+            if (item && framework_->Asset()->Cache()->FindInCache(item->Name()).isEmpty())
             {
                 reloadFromCacheAction->setDisabled(true);
                 deleteCacheAction->setDisabled(true);
@@ -166,7 +168,7 @@ void AssetItemMenuHandler::AddAssetMenuItems(QMenu * menu, QList<QObject *> targ
 
     QMenu *createMenu = new QMenu(tr("Create"), menu);
     menu->addMenu(createMenu);
-    foreach(const AssetTypeFactoryPtr &factory, framework_->Asset()->GetAssetTypeFactories())
+    foreach(const AssetTypeFactoryPtr &factory, framework_->Asset()->AssetTypeFactories())
     {
         QAction *createAsset = new QAction(factory->Type(), createMenu);
         createAsset->setObjectName(factory->Type());
@@ -300,7 +302,7 @@ void AssetItemMenuHandler::Import()
 
 void AssetItemMenuHandler::OpenFileDialogClosed(int result)
 {
-    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    QFileDialog *dialog = qobject_cast<QFileDialog *>(sender());
     assert(dialog);
     if (!dialog)
         return;
@@ -338,7 +340,7 @@ void AssetItemMenuHandler::Export()
 
 void AssetItemMenuHandler::SaveAssetDialogClosed(int result)
 {
-    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    QFileDialog *dialog = qobject_cast<QFileDialog *>(sender());
 
     if (!dialog || result != QDialog::Accepted || dialog->selectedFiles().isEmpty())
         return;
@@ -438,14 +440,14 @@ void AssetItemMenuHandler::DeleteFromSource()
 
 void AssetItemMenuHandler::DeleteFromCache()
 {
-    if (!framework_->Asset()->GetAssetCache())
+    if (!framework_->Asset()->Cache())
     {
         LogError("Cannot delete asset from cache: Not running Tundra with an asset cache!");
         return;
     }
     foreach(IAsset *item, targets_.assets)
     if (item)
-        framework_->Asset()->GetAssetCache()->DeleteAsset(item->Name());
+        framework_->Asset()->Cache()->DeleteAsset(item->Name());
 }
 
 void AssetItemMenuHandler::OpenFunctionDialog()
@@ -456,10 +458,10 @@ void AssetItemMenuHandler::OpenFunctionDialog()
     QObjectWeakPtrList objs;
     if (!targets_.assets.isEmpty())
         foreach(IAsset *item, targets_.assets)
-            objs << dynamic_pointer_cast<QObject>(item->shared_from_this());
+            objs << item->shared_from_this();
     else if (!targets_.storages.isEmpty())
         foreach(IAssetStorage *item, targets_.storages)
-            objs << dynamic_pointer_cast<QObject>(item->shared_from_this());
+            objs << item->shared_from_this();
     
     if (objs.size())
     {
@@ -497,7 +499,7 @@ void AssetItemMenuHandler::FunctionDialogFinished(int result)
         
         QString objName = obj->metaObject()->className();
         QString objNameWithId = objName;
-        IAsset *asset = dynamic_cast<IAsset *>(obj);
+        IAsset *asset = qobject_cast<IAsset *>(obj);
         if (asset)
             objNameWithId.append('(' + asset->Name() + ')');
         
@@ -531,7 +533,7 @@ void AssetItemMenuHandler::MakeDefaultStorage()
         //framework_->Asset()->SetDefaultAssetStorage(framework_->Asset()->GetAssetStorageByName(storageName));
     }
     
-    AssetsWindow *parent = dynamic_cast<AssetsWindow*>(sender_);
+    AssetsWindow *parent = qobject_cast<AssetsWindow*>(sender_);
     if (parent)
         parent->PopulateTreeWidget();
 }
@@ -546,6 +548,6 @@ void AssetItemMenuHandler::RemoveStorage()
             framework_->Asset()->RemoveAssetStorage(item->Name());
     }
     
-    AssetsWindow *parent = dynamic_cast<AssetsWindow*>(sender_);
+    AssetsWindow *parent = qobject_cast<AssetsWindow*>(sender_);
         parent->PopulateTreeWidget();
 }

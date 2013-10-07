@@ -65,11 +65,6 @@ void IAttribute::Changed(AttributeChange::Type change)
         owner->EmitAttributeChanged(this, change);
 }
 
-void IAttribute::FromString(const QString& str, AttributeChange::Type change)
-{
-    FromString(str.toStdString(), change);
-}
-
 void IAttribute::SetMetadata(AttributeMetadata *meta)
 {
     metadata = meta;
@@ -130,75 +125,75 @@ template<> QPoint TUNDRACORE_API Attribute<QPoint>::DefaultValue() const { retur
 
 // TOSTRING TEMPLATE IMPLEMENTATIONS.
 
-template<> std::string TUNDRACORE_API Attribute<QString>::ToString() const
+template<> QString TUNDRACORE_API Attribute<QString>::ToString() const
 {
     ///\todo decode/encode XML-risky characters
-    return Get().toStdString();
+    return Get();
 }
 
-template<> std::string TUNDRACORE_API Attribute<bool>::ToString() const
+template<> QString TUNDRACORE_API Attribute<bool>::ToString() const
 {
     return Get() ? "true" : "false";
 }
 
-template<> std::string TUNDRACORE_API Attribute<int>::ToString() const
+template<> QString TUNDRACORE_API Attribute<int>::ToString() const
 {
     char str[256];
     sprintf(str, "%i", Get());
     return str;
 }
 
-template<> std::string TUNDRACORE_API Attribute<uint>::ToString() const
+template<> QString TUNDRACORE_API Attribute<uint>::ToString() const
 {
     char str[256];
     sprintf(str, "%u", Get());
     return str;
 }
 
-template<> std::string TUNDRACORE_API Attribute<float>::ToString() const
+template<> QString TUNDRACORE_API Attribute<float>::ToString() const
 {
     char str[256];
     sprintf(str, "%f", Get());
     return str;
 }
 
-template<> std::string TUNDRACORE_API Attribute<Quat>::ToString() const
+template<> QString TUNDRACORE_API Attribute<Quat>::ToString() const
+{
+    return QString::fromStdString(Get().SerializeToString());
+}
+
+template<> QString TUNDRACORE_API Attribute<float2>::ToString() const
+{
+    return QString::fromStdString(Get().SerializeToString());
+}
+
+template<> QString TUNDRACORE_API Attribute<float3>::ToString() const
+{
+    return QString::fromStdString(Get().SerializeToString());
+}
+
+template<> QString TUNDRACORE_API Attribute<float4>::ToString() const
+{
+    return QString::fromStdString(Get().SerializeToString());
+}
+
+template<> QString TUNDRACORE_API Attribute<Color>::ToString() const
 {
     return Get().SerializeToString();
 }
 
-template<> std::string TUNDRACORE_API Attribute<float2>::ToString() const
+template<> QString TUNDRACORE_API Attribute<AssetReference>::ToString() const
 {
-    return Get().SerializeToString();
+    return Get().ref;
 }
 
-template<> std::string TUNDRACORE_API Attribute<float3>::ToString() const
+template<> QString TUNDRACORE_API Attribute<AssetReferenceList>::ToString() const
 {
-    return Get().SerializeToString();
-}
-
-template<> std::string TUNDRACORE_API Attribute<float4>::ToString() const
-{
-    return Get().SerializeToString();
-}
-
-template<> std::string TUNDRACORE_API Attribute<Color>::ToString() const
-{
-    return Get().SerializeToString().toStdString();
-}
-
-template<> std::string TUNDRACORE_API Attribute<AssetReference>::ToString() const
-{
-    return Get().ref.toStdString();
-}
-
-template<> std::string TUNDRACORE_API Attribute<AssetReferenceList>::ToString() const
-{
-    std::string stringValue = "";
+    QString stringValue;
     const AssetReferenceList &values = Get();
     for(int i = 0; i < values.Size(); ++i)
     {
-        stringValue += values[i].ref.toStdString();
+        stringValue += values[i].ref;
         if (i < values.Size() - 1)
             stringValue += ";";
     }
@@ -206,38 +201,38 @@ template<> std::string TUNDRACORE_API Attribute<AssetReferenceList>::ToString() 
     return stringValue;
 }
 
-template<> std::string TUNDRACORE_API Attribute<EntityReference>::ToString() const
+template<> QString TUNDRACORE_API Attribute<EntityReference>::ToString() const
 {
-    return Get().ref.toStdString();
+    return Get().ref;
 }
 
-template<> std::string TUNDRACORE_API Attribute<QVariant>::ToString() const
+template<> QString TUNDRACORE_API Attribute<QVariant>::ToString() const
 {
-    return Get().toString().toStdString();
+    return Get().toString();
 }
 
-template<> std::string TUNDRACORE_API Attribute<QVariantList>::ToString() const
+template<> QString TUNDRACORE_API Attribute<QVariantList>::ToString() const
 {
     const QVariantList &values = Get();
 
-    std::string stringValue = "";
+    QString stringValue;
     for(int i = 0; i < values.size(); i++)
     {
-        stringValue += values[i].toString().toStdString();
+        stringValue += values[i].toString();
         if(i < values.size() - 1)
             stringValue += ";";
     }
     return stringValue;
 }
 
-template<> std::string TUNDRACORE_API Attribute<Transform>::ToString() const
+template<> QString TUNDRACORE_API Attribute<Transform>::ToString() const
 {
-    return Get().SerializeToString().toStdString();
+    return Get().SerializeToString();
 }
 
-template<> std::string TUNDRACORE_API Attribute<QPoint>::ToString() const
+template<> QString TUNDRACORE_API Attribute<QPoint>::ToString() const
 {
-    return QString("%1 %2").arg(Get().x()).arg(Get().y()).toStdString(); /**< @todo Maybe should use ';' instead of ' ' here as a delimeter as it's used for all other attributes. */
+    return QString("%1 %2").arg(Get().x()).arg(Get().y()); /**< @todo Maybe should use ';' instead of ' ' here as a delimeter as it's used for all other attributes. */
 }
 
 // TYPENAMETOSTRING TEMPLATE IMPLEMENTATIONS.
@@ -329,67 +324,66 @@ template<> const QString TUNDRACORE_API & Attribute<QPoint>::TypeName() const
 
 // FROMSTRING TEMPLATE IMPLEMENTATIONS.
 
-template<> void TUNDRACORE_API Attribute<QString>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<QString>::FromString(const QString& str, AttributeChange::Type change)
 {
     ///\todo decode/encode XML-risky characters
-    Set(QString::fromStdString(str), change);
+    Set(str, change);
 }
 
-template<> void TUNDRACORE_API Attribute<bool>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<bool>::FromString(const QString& str, AttributeChange::Type change)
 {
     Set(ParseBool(str), change);
 }
 
-template<> void TUNDRACORE_API Attribute<int>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<int>::FromString(const QString& str, AttributeChange::Type change)
 {
     Set(ParseInt(str, DefaultValue()), change);
 }
 
-template<> void TUNDRACORE_API Attribute<uint>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<uint>::FromString(const QString& str, AttributeChange::Type change)
 {
     Set(ParseUInt(str, DefaultValue()), change);
 }
 
-template<> void TUNDRACORE_API Attribute<float>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<float>::FromString(const QString& str, AttributeChange::Type change)
 {
     Set(ParseFloat(str, DefaultValue()), change);
 }
 
-template<> void TUNDRACORE_API Attribute<Color>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<Color>::FromString(const QString& str, AttributeChange::Type change)
 {
-    Set(Color::FromString(str.c_str()), change);
+    Set(Color::FromString(str), change);
 }
 
-template<> void TUNDRACORE_API Attribute<Quat>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<Quat>::FromString(const QString& str, AttributeChange::Type change)
 {
     Set(Quat::FromString(str), change);
 }
 
-template<> void TUNDRACORE_API Attribute<float2>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<float2>::FromString(const QString& str, AttributeChange::Type change)
 {
     Set(float2::FromString(str), change);
 }
 
-template<> void TUNDRACORE_API Attribute<float3>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<float3>::FromString(const QString& str, AttributeChange::Type change)
 {
     Set(float3::FromString(str), change);
 }
 
-template<> void TUNDRACORE_API Attribute<float4>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<float4>::FromString(const QString& str, AttributeChange::Type change)
 {
     Set(float4::FromString(str), change);
 }
 
-template<> void TUNDRACORE_API Attribute<AssetReference>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<AssetReference>::FromString(const QString& str, AttributeChange::Type change)
 {
-    Set(AssetReference(str.c_str()), change);
+    Set(AssetReference(str), change);
 }
 
-template<> void TUNDRACORE_API Attribute<AssetReferenceList>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<AssetReferenceList>::FromString(const QString& str, AttributeChange::Type change)
 {
     AssetReferenceList value;
-    QString strValue = QString::fromStdString(str);
-    QStringList components = strValue.split(';');
+    const QStringList components = str.split(';');
     for(int i = 0; i < components.size(); i++)
         value.Append(AssetReference(components[i]));
     if (value.Size() == 1 && value[0].ref.trimmed().isEmpty())
@@ -398,21 +392,20 @@ template<> void TUNDRACORE_API Attribute<AssetReferenceList>::FromString(const s
     Set(value, change);
 }
 
-template<> void TUNDRACORE_API Attribute<EntityReference>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<EntityReference>::FromString(const QString& str, AttributeChange::Type change)
 {
-    Set(EntityReference(str.c_str()), change);
+    Set(EntityReference(str), change);
 }
 
-template<> void TUNDRACORE_API Attribute<QVariant>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<QVariant>::FromString(const QString& str, AttributeChange::Type change)
 {
-    Set(str.c_str(), change);
+    Set(str, change);
 }
 
-template<> void TUNDRACORE_API Attribute<QVariantList >::FromString(const std::string& str, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<QVariantList >::FromString(const QString& str, AttributeChange::Type change)
 {
     QVariantList value;
-    QString strValue = QString::fromStdString(str);
-    QStringList components = strValue.split(';');
+    const QStringList components = str.split(';');
     for(int i = 0; i < components.size(); i++)
         value.push_back(QVariant(components[i]));
     if(value.size() == 1 && value[0] == "")
@@ -421,12 +414,12 @@ template<> void TUNDRACORE_API Attribute<QVariantList >::FromString(const std::s
     Set(value, change);
 }
 
-template<> void TUNDRACORE_API Attribute<Transform>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<Transform>::FromString(const QString& str, AttributeChange::Type change)
 {
-    Set(Transform::FromString(str.c_str()), change);
+    Set(Transform::FromString(str), change);
 }
 
-template<> void TUNDRACORE_API Attribute<QPoint>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void TUNDRACORE_API Attribute<QPoint>::FromString(const QString& str, AttributeChange::Type change)
 {
     const float2 value = float2::FromString(str);
     Set(QPoint(value.x, value.y), change);
@@ -697,10 +690,7 @@ template<> void TUNDRACORE_API Attribute<QPoint>::FromScriptValue(const QScriptV
 
 template<> void TUNDRACORE_API Attribute<QString>::ToBinary(kNet::DataSerializer& dest) const
 {
-    QByteArray utf8bytes = value.toUtf8();
-    dest.Add<u16>(utf8bytes.size());
-    if (utf8bytes.size())
-        dest.AddArray<u8>((const u8*)utf8bytes.data(), utf8bytes.size());
+    WriteUtf8String(dest, value);
 }
 
 template<> void TUNDRACORE_API Attribute<bool>::ToBinary(kNet::DataSerializer& dest) const
@@ -766,32 +756,31 @@ template<> void TUNDRACORE_API Attribute<Color>::ToBinary(kNet::DataSerializer& 
 
 template<> void TUNDRACORE_API Attribute<AssetReference>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.AddString(value.ref.toStdString());
+    dest.AddString(value.ref.toStdString()); /**< @todo Use UTF-8, see Attribute<QString>::ToBinary */
 }
 
 template<> void TUNDRACORE_API Attribute<AssetReferenceList>::ToBinary(kNet::DataSerializer& dest) const
 {
     dest.Add<u8>(value.Size());
     for(int i = 0; i < value.Size(); ++i)
-        dest.AddString(value[i].ref.toStdString());
+        dest.AddString(value[i].ref.toStdString()); /**< @todo Use UTF-8, see Attribute<QString>::ToBinary */
 }
 
 template<> void TUNDRACORE_API Attribute<EntityReference>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.AddString(value.ref.toStdString());
+    dest.AddString(value.ref.toStdString()); /**< @todo Use UTF-8, see Attribute<QString>::ToBinary */
 }
 
 template<> void TUNDRACORE_API Attribute<QVariant>::ToBinary(kNet::DataSerializer& dest) const
 {
-    std::string str = value.toString().toStdString();
-    dest.AddString(str);
+    dest.AddString(value.toString().toStdString()); /**< @todo Use UTF-8, see Attribute<QString>::ToBinary */
 }
 
 template<> void TUNDRACORE_API Attribute<QVariantList>::ToBinary(kNet::DataSerializer& dest) const
 {
     dest.Add<u8>(value.size());
-    for(uint i = 0; i < (uint)value.size(); ++i)
-        dest.AddString(value[i].toString().toStdString());
+    for(int i = 0; i < value.size(); ++i)
+        dest.AddString(value[i].toString().toStdString()); /**< @todo Use UTF-8, see Attribute<QString>::ToBinary */
 }
 
 template<> void TUNDRACORE_API Attribute<Transform>::ToBinary(kNet::DataSerializer& dest) const
@@ -817,11 +806,7 @@ template<> void TUNDRACORE_API Attribute<QPoint>::ToBinary(kNet::DataSerializer&
 
 template<> void TUNDRACORE_API Attribute<QString>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
-    QByteArray utf8bytes;
-    utf8bytes.resize(source.Read<u16>());
-    if (utf8bytes.size())
-        source.ReadArray<u8>((u8*)utf8bytes.data(), utf8bytes.size());
-    Set(QString::fromUtf8(utf8bytes.data(), utf8bytes.size()), change);
+    Set(ReadUtf8String(source), change);
 }
 
 template<> void TUNDRACORE_API Attribute<bool>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
@@ -895,7 +880,7 @@ template<> void TUNDRACORE_API Attribute<float4>::FromBinary(kNet::DataDeseriali
 template<> void TUNDRACORE_API Attribute<AssetReference>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
     AssetReference value;
-    value.ref = source.ReadString().c_str();
+    value.ref = source.ReadString().c_str(); /**< @todo Use UTF-8, see Attribute<QString>::FromBinary */
     Set(value, change);
 }
 
@@ -904,7 +889,7 @@ template<> void TUNDRACORE_API Attribute<AssetReferenceList>::FromBinary(kNet::D
     AssetReferenceList value;
     u8 numValues = source.Read<u8>();
     for(u32 i = 0; i < numValues; ++i)
-        value.Append(AssetReference(source.ReadString().c_str()));
+        value.Append(AssetReference(source.ReadString().c_str())); /**< @todo Use UTF-8, see Attribute<QString>::FromBinary */
 
     Set(value, change);
 }
@@ -912,13 +897,13 @@ template<> void TUNDRACORE_API Attribute<AssetReferenceList>::FromBinary(kNet::D
 template<> void TUNDRACORE_API Attribute<EntityReference>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
     EntityReference value;
-    value.ref = source.ReadString().c_str();
+    value.ref = source.ReadString().c_str(); /**< @todo Use UTF-8, see Attribute<QString>::FromBinary */
     Set(value, change);
 }
 
 template<> void TUNDRACORE_API Attribute<QVariant>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
-    std::string str = source.ReadString();
+    std::string str = source.ReadString(); /**< @todo Use UTF-8, see Attribute<QString>::FromBinary */
     QVariant value(QString(str.c_str()));
     Set(value, change);
 }
@@ -930,7 +915,7 @@ template<> void TUNDRACORE_API Attribute<QVariantList>::FromBinary(kNet::DataDes
     u8 numValues = source.Read<u8>();
     for(u32 i = 0; i < numValues; ++i)
     {
-        std::string str = source.ReadString();
+        std::string str = source.ReadString(); /**< @todo Use UTF-8, see Attribute<QString>::FromBinary */
         value.append(QVariant(QString(str.c_str())));
     }
     

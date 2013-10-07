@@ -132,4 +132,28 @@ namespace TundraJson
         @param QObject property names that should be ignored in serialization. eg. "objectName".
         @return Data map. */
     QVariantMap TUNDRACORE_API ToVariant(const QObject *object, const QStringList &ignoredPropertyNames);
+
+    /// Returns if the given QVariant is a list type.
+    /** @param QVariant to resolve the type from.
+        @return True for QVariant::List and QVariant::StringList, otherwise false. */
+    bool TUNDRACORE_API IsList(const QVariant &value);
+
+    /// Returns if the given QVariant is a map type.
+    /** @param QVariant to resolve the type from.
+        @return True for QVariant::Map and QVariant::Hash, otherwise false. */
+    bool TUNDRACORE_API IsMap(const QVariant &value);
+
+    /// Returns if the given QVariant is a number type.
+    /** @param QVariant to resolve the type from.
+        @return True for QVariant::Int, QVariant::UInt, QVariant::LongLong,
+        QVariant::ULongLong and QVariant::Double, otherwise false. */
+    bool TUNDRACORE_API IsNumber(const QVariant &value);
+
+    /// Returns a value for the first found key from @c acceptedKeys.
+    /** This function is handy when you accept multiple keys to define a certain value eg. "name" or "Name".
+        @param QVariant map to search for the keys.
+        @param List of accepted keys.
+        @param Default value to return if no key was found. Default to empty QVariant(), use QVariant::isValid() to check.
+        @return QVariant value for the first found accepted key, if none is found the @c defaultValue is returned. */
+    QVariant TUNDRACORE_API ValueForAnyKey(const QVariantMap &map, const QStringList &acceptedKeys, const QVariant &defaultValue = QVariant());
 }

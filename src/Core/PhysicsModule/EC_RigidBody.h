@@ -10,11 +10,6 @@
 #include "PhysicsModuleApi.h"
 #include "PhysicsModuleFwd.h"
 
-#include <LinearMath/btMotionState.h>
-
-class EC_Placeable;
-class EC_Terrain;
-
 /// Physics rigid body entity-component
 /** <table class="header">
     <tr>
@@ -22,7 +17,7 @@ class EC_Terrain;
     <h2>RigidBody</h2>
     Physics rigid body entity-component
 
-    Registered by Physics::PhysicsModule.
+    Registered by PhysicsModule.
 
     <b>Attributes</b>:
     <ul>
@@ -100,17 +95,19 @@ class EC_Terrain;
     <b>Depends on the component @ref EC_Placeable "Placeable", and optionally on @ref EC_Mesh "Mesh" 
     and @ref EC_Terrain "Terrain" to copy the collision shape from them</b>.
     </table> */
-class PHYSICS_MODULE_API EC_RigidBody : public IComponent, public btMotionState /**< @todo pimpl */
+class PHYSICS_MODULE_API EC_RigidBody : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_RigidBody", 23)
+    COMPONENT_NAME("RigidBody", 23)
     Q_ENUMS(ShapeType)
 
-    friend class Physics::PhysicsWorld;
+    friend class PhysicsWorld;
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_RigidBody(Scene* scene);
+    /// @endcond
     virtual ~EC_RigidBody();
 
     enum ShapeType
@@ -204,20 +201,17 @@ public:
     Q_PROPERTY(bool useGravity READ getuseGravity WRITE setuseGravity)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, useGravity)
 
-    /// btMotionState override. Called when Bullet wants us to tell the body's initial transform
-    virtual void getWorldTransform(btTransform &worldTrans) const;
-
-    /// btMotionState override. Called when Bullet wants to tell us the body's current transform
-    virtual void setWorldTransform(const btTransform &worldTrans);
-
     void SetClientExtrapolating(bool isClientExtrapolating);
 
-    btRigidBody* GetRigidBody() const { return body_; }
+    btRigidBody* BulletRigidBody() const;
 
     /// Constructs axis-aligned bounding box from bullet collision shape
     /** @param outMin The minimum corner of the box
         @param outMax The maximum corner of the box */
     void GetAabbox(float3 &outAabbMin, float3 &outAabbMax);
+
+    // DEPRECATED
+    btRigidBody* GetRigidBody() const { return BulletRigidBody(); } /**< @deprecated use BulletRigidBody instead. @todo Remove. */
 
 signals:
     /// A physics collision has happened between this rigid body and another entity
@@ -297,7 +291,7 @@ public slots:
     void Rotate(const float3& rotation);
 
     /// Return physics world
-    Physics::PhysicsWorld* GetPhysicsWorld() const { return world_; }
+    PhysicsWorld* World() const;
 
     /// Return whether have authority. On the client, returns false for non-local objects.
     bool HasAuthority() const;
@@ -308,6 +302,9 @@ public slots:
 
     /// Returns true if the currently used shape is a primitive shape (box et al.), false otherwise.
     bool IsPrimitiveShape() const;
+
+    // DEPRECATED
+    PhysicsWorld* GetPhysicsWorld() const; /**< @deprecated use World instead. @todo Remove at some point. */
 
 private slots:
     /// Called when the parent entity has been set.
@@ -368,56 +365,10 @@ private:
     
     /// Request mesh resource (for trimesh & convexhull shapes)
     void RequestMesh();
-    
-    /// Calculate mass, shape & static/dynamic-classification dependant properties
-    void GetProperties(btVector3& localInertia, float& m, int& collisionFlags);
-    
+
     /// Emit a physics collision. Called from PhysicsWorld
     void EmitPhysicsCollision(Entity* otherEntity, const float3& position, const float3& normal, float distance, float impulse, bool newCollision);
-    
-    /// Placeable pointer
-    weak_ptr<EC_Placeable> placeable_;
-    
-    /// Terrain pointer
-    weak_ptr<EC_Terrain> terrain_;
-    
-    /// Internal disconnection of attribute changes. True during the time we're setting attributes ourselves due to Bullet update, to prevent endless loop
-    bool disconnected_;
-    
-    /// On the client side, this field is used to track whether the rigid body is being interpolated from network input events (false), or extrapolated
-    /// using local physics computations (true).
-    /// On the server side, this flag is not used.
-    bool clientExtrapolating;
 
-    /// Bullet body
-    btRigidBody* body_;
-    
-    /// Bullet collision shape
-    btCollisionShape* shape_;
-    /// Bullet collision child shape. This is needed to use btScaledBvhTriangleMeshShape
-    btCollisionShape* childShape_;
-    
-    /// Physics world. May be 0 if the scene does not have a physics world. In that case most of EC_RigidBody's functionality is a no-op
-    Physics::PhysicsWorld* world_;
-    
-    /// PhysicsModule pointer
-    Physics::PhysicsModule* owner_;
-    
-    /// Cached shapetype (last created)
-    int cachedShapeType_;
-
-    /// Cached shapesize (last created)
-    float3 cachedSize_;
-
-    /// Bullet triangle mesh
-    shared_ptr<btTriangleMesh> triangleMesh_;
-    
-    /// Convex hull set
-    shared_ptr<Physics::ConvexHullSet> convexHullSet_;
-    
-    /// Bullet heightfield shape. Note: this is always put inside a compound shape (shape_)
-    btHeightfieldTerrainShape* heightField_;
-    
-    /// Heightfield values, for the case the shape is a heightfield.
-    std::vector<float> heightValues_;
+    struct Impl;
+    Impl *impl;
 };

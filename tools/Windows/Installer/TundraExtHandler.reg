@@ -38,7 +38,7 @@ Windows Registry Editor Version 5.00
 @="Launch Tundra Client"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\icon\\TundraLogo32px.ico\",0"
 [HKEY_CLASSES_ROOT\Applications\Tundra.exe\Shell\OpenClient\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --config viewer.xml"
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --config tundra-client.json"
 
 [HKEY_CLASSES_ROOT\Tundra_File_Type]
 @="Tundra Scene File"
@@ -63,4 +63,4 @@ Windows Registry Editor Version 5.00
 @="Launch Tundra Client"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\icon\\TundraLogo32px.ico\",0"
 [HKEY_CLASSES_ROOT\Tundra_File_Type\shell\OpenClient\Command]
-@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --config viewer.xml"
+@="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\tundra.exe\" --config tundra-client.json"

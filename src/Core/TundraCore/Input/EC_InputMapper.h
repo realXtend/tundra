@@ -72,7 +72,7 @@
 class TUNDRACORE_API EC_InputMapper : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_InputMapper", 13)
+    COMPONENT_NAME("InputMapper", 13)
 
 public:
     /// @cond PRIVATE

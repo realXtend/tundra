@@ -46,7 +46,7 @@ class EC_Placeable;
 class EC_SoundListener : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_SoundListener", 7)
+    COMPONENT_NAME("SoundListener", 7)
 
 public:
     /// @cond PRIVATE
@@ -54,7 +54,6 @@ public:
     explicit EC_SoundListener(Scene* scene);
     /// @endcond
 
-    /// Detaches placeable component from this entity.
     ~EC_SoundListener();
 
     /// Is this listener active or not

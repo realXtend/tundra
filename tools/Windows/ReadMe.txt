@@ -5,6 +5,9 @@ For build scripts specific to certain Visual Studio versions, see the VS<XXXX> f
 For the typical development work it's recommended to build the dependencies using both
 RelWithDebInfo and Debug build configurations.
 
+As a general guideline, .cmd files must be run from the Visual Studio Command Prompt, but
+.bat files can be run from the regular Command Prompt or from the File Explorer.
+
 == Directory Structure ==
 
 Installer\                      Tools for creating an NSIS installer for Tundra.

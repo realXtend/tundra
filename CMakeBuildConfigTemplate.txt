@@ -26,10 +26,11 @@ set(BUILD_SDK_ONLY 0)
 option(INSTALL_BINARIES_ONLY "Do we want to deploy only the binaries (contents of bin) when running the INSTALL project." TRUE)
 # Do we want to deploy the example scenes (bin/scenes) when running the INSTALL project.
 option(INSTALL_EXAMPLE_SCENES "Do we want to deploy the example scenes (bin/scenes) when running the INSTALL project." TRUE)
+# Do we want to enable usage of language translations. Currently bitrot/deprecated and off by default.
+option(ENABLE_TRANSLATIONS "Do we want to enable usage of language translations. Currently bitrot/deprecated and off by default." OFF)
 # Enables certain build optimizations on the release builds, f.ex. disables math correctness checks and error prints.
-# On Windows also enables some of the more aggressive compiler and linker optimizations, so do not enable this if you are
-# planning to retain usable debug information. Warning: increasing the build time significantly.
-set(ENABLE_BUILD_OPTIMIZATIONS 0)
+# On Windows also enables some of the more aggressive linker optimizations. Do not enable if you are planning to retain reusable symbol information.
+option(ENABLE_BUILD_OPTIMIZATIONS "Enables certain build optimizations on the release builds." OFF)
 # 3rd party dependencies:
 if (NOT ANDROID)
     set(ENABLE_HYDRAX 1)            # Configure the use of Hydrax, http://www.ogre3d.org/tikiwiki/Hydrax
@@ -84,26 +85,31 @@ endif()
 if (ENABLE_BUILD_OPTIMIZATIONS)
     add_definitions (-DOPTIMIZED_RELEASE) # Disable MathGeoLib assume() prints in an optimized build
 endif ()
+if (ENABLE_TRANSLATIONS)
+    add_definitions (-DENABLE_TRANSLATIONS)
+endif()
 
 if (MSVC)
     if (ENABLE_MEMORY_LEAK_CHECKS)
         add_definitions(-DMEMORY_LEAK_CHECK)
     endif()
 
-    # Common flags for all configurations.
-    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MP /Zm1000")
-    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MP /Zm1000")
-    set (CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MP /Zm1000")
+    # Common flags for all configurations: build with multiple processes and increase PCH size in order to overcome occasional errors.
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MP /Zm1000")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MP /Zm1000")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MP /Zm1000")
 
+    # NOTE: RelWithDebInfo and Release use O2 (= /Ox /Gl /Gy/ = Og /Oi /Ot /Oy /Ob2 /Gs /GF /Gy) by default,
+    # with the exception with RelWithDebInfo has /Ob1 instead.
     if (ENABLE_BUILD_OPTIMIZATIONS)
-        set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL /Gy /GF /Ox /Ob2 /Ot")
-        set (CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELEASE})
-        set (CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF /OPT:ICF")
-        set (CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO ${CMAKE_SHARED_LINKER_FLAGS_RELEASE})
-        set (CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF /OPT:ICF")
-        set (CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO ${CMAKE_EXE_LINKER_FLAGS_RELEASE})
-    endif ()
-endif ()
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Ob2 /GL")
+        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELEASE})
+        set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF") # /OPT:REF enables also /OPT:ICF
+        set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO ${CMAKE_SHARED_LINKER_FLAGS_RELEASE})
+        set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF")
+        set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO ${CMAKE_EXE_LINKER_FLAGS_RELEASE})
+    endif()
+endif()
 
 ###### ENTITY-COMPONENTS ######
 message("\n=========== Configuring Optional Entity-Components ===========\n")

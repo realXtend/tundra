@@ -37,36 +37,6 @@ ConsoleAPI::ConsoleAPI(Framework *fw) :
     logFile(0),
     logFileText(0)
 {
-    if (!fw->IsHeadless())
-        consoleWidget = new ConsoleWidget(framework);
-
-    inputContext = framework->Input()->RegisterInputContext("Console", 100);
-    inputContext->SetTakeKeyboardEventsOverQt(true);
-    connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
-
-    RegisterCommand("help", "Lists all registered commands.", this, SLOT(ListCommands()));
-    RegisterCommand("clear", "Clears the console log.", this, SLOT(ClearLog()));
-    RegisterCommand("setLogLevel", "Sets the current log level. Call with one of the parameters \"error\", \"warning\", \"info\", or \"debug\".",
-        this, SLOT(SetLogLevel(const QString &)));
-#ifdef WIN32
-    RegisterCommand("createConsole", "Creates the native Windows console if Tundra was started without such.", this, SLOT(CreateNativeConsole()));
-    RegisterCommand("removeConsole", "Removes the native Windows console if applicable.", this, SLOT(RemoveNativeConsole()));
-#endif
-
-    /// \todo Visual Leak Detector shows a memory leak originating from this allocation although the shellInputThread is released in the destructor. Perhaps a shared pointer is held elsewhere.
-    shellInputThread = MAKE_SHARED(ShellInputThread);
-
-    QStringList logLevel = fw->CommandLineParameters("--loglevel");
-    if (logLevel.size() >= 1)
-        SetLogLevel(logLevel[logLevel.size()-1]);
-    if (logLevel.size() > 1)
-        LogWarning("Ignoring multiple --loglevel command line parameters!");
-
-    QStringList logFile = fw->CommandLineParameters("--logfile");
-    if (logFile.size() >= 1)
-        SetLogFile(logFile[logFile.size()-1]);
-    if (logFile.size() > 1)
-        LogWarning("Ignoring multiple --logfile command line parameters!");
 }
 
 ConsoleAPI::~ConsoleAPI()
@@ -216,6 +186,9 @@ void ConsoleAPI::Print(const QString &message)
 {
     if (consoleWidget)
         consoleWidget->PrintToConsole(message);
+    else if (!framework->IsHeadless())
+        backBuffer << message; // ConsoleWidget not created yet, but will be - store message to back buffer.
+
     ///\todo Temporary hack which appends line ending in case it's not there (output of console commands in headless mode)
     if (!message.endsWith("\n"))
     {
@@ -323,6 +296,45 @@ void ConsoleAPI::ToggleConsole()
 {
     if (consoleWidget)
         consoleWidget->ToggleConsole();
+}
+
+void ConsoleAPI::Initialize()
+{
+    const QStringList logLevel = framework->CommandLineParameters("--logLevel");
+    if (logLevel.size() >= 1)
+        SetLogLevel(logLevel[logLevel.size()-1]);
+    if (logLevel.size() > 1)
+        LogWarning("Ignoring multiple --logLevel command line parameters!");
+
+    const QStringList logFile = framework->CommandLineParameters("--logFile");
+    if (logFile.size() >= 1)
+        SetLogFile(logFile[logFile.size()-1]);
+    if (logFile.size() > 1)
+        LogWarning("Ignoring multiple --logFile command line parameters!");
+
+    if (!framework->IsHeadless())
+    {
+       consoleWidget = new ConsoleWidget(framework);
+       foreach(const QString &msg, backBuffer)
+            consoleWidget->PrintToConsole(msg);
+       backBuffer.clear();
+    }
+
+    inputContext = framework->Input()->RegisterInputContext("Console", 100);
+    inputContext->SetTakeKeyboardEventsOverQt(true);
+    connect(inputContext.get(), SIGNAL(KeyEventReceived(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+
+    RegisterCommand("help", "Lists all registered commands.", this, SLOT(ListCommands()));
+    RegisterCommand("clear", "Clears the console log.", this, SLOT(ClearLog()));
+    RegisterCommand("setLogLevel", "Sets the current log level. Call with one of the parameters \"error\", \"warning\", \"info\", or \"debug\".",
+        this, SLOT(SetLogLevel(const QString &)));
+#ifdef WIN32
+    RegisterCommand("createConsole", "Creates the native Windows console if Tundra was started without such.", this, SLOT(CreateNativeConsole()));
+    RegisterCommand("removeConsole", "Removes the native Windows console if applicable.", this, SLOT(RemoveNativeConsole()));
+#endif
+
+    /// \todo Visual Leak Detector shows a memory leak originating from this allocation although the shellInputThread is released in the destructor. Perhaps a shared pointer is held elsewhere.
+    shellInputThread = MAKE_SHARED(ShellInputThread);
 }
 
 void ConsoleAPI::HandleKeyEvent(KeyEvent *e)

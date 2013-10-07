@@ -181,7 +181,8 @@ void FunctionDialog::hideEvent(QHideEvent *)
 void FunctionDialog::Initialize()
 {
     setAttribute(Qt::WA_DeleteOnClose);
-    resize(500, 200);
+    setMinimumHeight(200);
+    resize(450, 300);
 
     if (graphicsProxyWidget())
         graphicsProxyWidget()->setWindowTitle(tr("Trigger Function"));
@@ -193,7 +194,9 @@ void FunctionDialog::Initialize()
     mainLayout->setSpacing(6);
 
     targetsLabel = new QLabel;
-    targetsLabel->setWordWrap(true);
+    targetsText = new QTextEdit;
+    targetsText->setReadOnly(true);
+    targetsText->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
 
     functionComboBox = new FunctionComboBox;
     connect(functionComboBox, SIGNAL(currentIndexChanged(int)), SLOT(UpdateEditors()));
@@ -205,6 +208,7 @@ void FunctionDialog::Initialize()
     doxygenView->hide();
 
     mainLayout->addWidget(targetsLabel);
+    mainLayout->addWidget(targetsText);
     mainLayout->addWidget(doxygenView);
     mainLayout->addWidget(functionComboBox);
 
@@ -424,12 +428,12 @@ void FunctionDialog::GenerateTargetLabelAndFunctions()
     // Generate functions for the function combo box.
     std::set<FunctionMetadata> fmds;
 
-    QString targetText;
+    QString targetText, targets;
     assert(objects.size());
     if (objects.size() == 1)
-        targetText.append(tr("Target: "));
+        targetText = tr("Target:");
     else
-        targetText.append(tr("Targets: "));
+        targetText = tr("Targets:");
 
     // Clear previous content of function combo box
     functionComboBox->Clear();
@@ -453,7 +457,7 @@ void FunctionDialog::GenerateTargetLabelAndFunctions()
             superClassMo = superClassMo->superClass();
         }
 
-        targetText.append(mo->className());
+        targets.append(mo->className());
 
         // Decorate the target text according to the object type.
         {
@@ -461,20 +465,21 @@ void FunctionDialog::GenerateTargetLabelAndFunctions()
             IComponent *c = dynamic_cast<IComponent *>(obj);
             IAsset *a = dynamic_cast<IAsset *>(obj);
             if (e)
-                targetText.append('(' + QString::number((uint)e->Id()) + ')');
+                targets.append('(' + QString::number((uint)e->Id()) + ')');
             else if (c)
-                targetText.append('(' + c->Name() + ')');
+                targets.append('(' + c->Name() + ')');
             else if (a)
-                targetText.append('(' + a->Name() + ')');
+                targets.append('(' + a->Name() + ')');
         }
 
         if (i < objects.size() - 1)
-            targetText.append(", ");
+            targets.append(", ");
 
         Populate(mo, fmds);
     }
 
     targetsLabel->setText(targetText);
+    targetsText->setText(targets);
     functionComboBox->SetFunctions(fmds);
 
     // If no functions, disable exec buttons.

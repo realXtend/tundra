@@ -49,12 +49,12 @@ if (!framework.IsHeadless())
             label.indent = 10;
             if (sceneLoadFailed)
             {
-                label.text = "Tundra has started succesfully, but the startup scene '" + startupScenes[0] + "' failed to load.\n" +
+                label.text = "Tundra has started successfully, but the startup scene '" + startupScenes[0] + "' failed to load.\n" +
                     "Please check the filename.";
             }
             else
             {
-                label.text = "Tundra has started succesfully, but you have no active scene currently.\n" +
+                label.text = "Tundra has started successfully, but you have no active scene currently.\n" +
                     "Startup scenes can be specified by using the --file command line parameter. Run Tundra --help for instructions. \n" +
                     "Or alternatively, use File -> Open Scene to load an existing scene or New Scene to create an empty scene.";
             }

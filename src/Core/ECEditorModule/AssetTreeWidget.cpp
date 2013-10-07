@@ -14,8 +14,9 @@
 #include "RequestNewAssetDialog.h"
 #include "CloneAssetDialog.h"
 #include "FunctionDialog.h"
-
 #include "AssetsWindow.h"
+
+#include "Framework.h"
 #include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
@@ -121,13 +122,12 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
 
     QList<QObject *> targets;
 
-    targets << parentWidget();
     foreach(AssetItem *item, sel.assets)
         targets.append(item->Asset().get());
     foreach(AssetStorageItem *item, sel.storages)
         targets.append(item->Storage().get());
 
-    framework->Ui()->EmitContextMenuAboutToOpen(menu, targets);
+    framework->Ui()->EmitContextMenuAboutToOpen(menu, targets, parentWidget());
 }
 
 AssetTreeWidgetSelection AssetTreeWidget::SelectedItems() const

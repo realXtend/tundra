@@ -74,16 +74,18 @@ namespace Ogre
 
     Does not emit any actions.
 
-    <b>Depends on the component @ref EC_ Placeable "Placeable".</b>
+    <b>Depends on the component @ref EC_Placeable "Placeable".</b>
     </table> */
 class OGRE_MODULE_API EC_Camera : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_Camera", 15)
+    COMPONENT_NAME("Camera", 15)
 
 public:
+     /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_Camera(Scene* scene);
+    /// @endcond
     virtual ~EC_Camera();
 
     /// Camera up vector. Defines the yaw axis
@@ -118,6 +120,11 @@ public:
         @param renderUi If the image should have the user interface included.
         @return The render result image. */
     Ogre::Image ToOgreImage(bool renderUi = true);
+    
+    /// Update the render texture with the current view.
+    /** @param renderUi If the image should have the user interface included.
+        @return Texture that has the current camera view. */
+    Ogre::TexturePtr UpdateRenderTexture(bool renderUi);
 
     /// Returns entity IDs of visible entities in the camera's frustum.
     const std::set<entity_id_t>& VisibleEntityIDs();
@@ -247,9 +254,6 @@ private:
 
     /// Perform a frustum query for visible entities
     void QueryVisibleEntities();
-
-    /// Update the render texture with the current view.
-    Ogre::TexturePtr UpdateRenderTexture(bool renderUi);
 
     void SetNearClipDistance(float distance);
     void SetFarClipDistance(float distance);

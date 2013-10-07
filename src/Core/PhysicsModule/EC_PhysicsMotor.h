@@ -17,7 +17,7 @@ class EC_Placeable;
     Physics motor component
     Drives a RigidBody by impulses on each physics update, and optionally applies a damping (braking) force.
 
-    Registered by Physics::PhysicsModule.
+    Registered by PhysicsModule.
 
     <b>Attributes</b>:
     <ul>
@@ -43,11 +43,13 @@ class EC_Placeable;
 class EC_PhysicsMotor : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_PhysicsMotor", 43)
+    COMPONENT_NAME("PhysicsMotor", 43)
 
 public:
+    /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_PhysicsMotor(Scene* scene);
+    /// @endcond
     virtual ~EC_PhysicsMotor();
 
     /// World-space force applied to rigid body on each physics update.

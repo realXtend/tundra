@@ -65,7 +65,7 @@ void ECAttributeEditor<T>::UpdateMultiEditorValue(IAttribute *attribute)
     if(attribute)
     {
         QStringList values = propertyManager->AttributeValue(rootProperty_);
-        QString value = QString::fromStdString(attribute->ToString());
+        const QString value = attribute->ToString();
         if (!values.contains(value))
         {
             values.push_back(value);
@@ -83,7 +83,7 @@ void ECAttributeEditor<T>::UpdateMultiEditorValue(IAttribute *attribute)
                 continue;
             }
 
-            QString newValue = QString::fromStdString(attribute->ToString());
+            const QString newValue = attribute->ToString();
             // Make sure that we wont insert same strings into the list.
             if(!stringList.contains(newValue))
                 stringList << newValue;

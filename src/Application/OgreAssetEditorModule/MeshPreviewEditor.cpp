@@ -5,6 +5,8 @@
 
 #include "MeshPreviewEditor.h"
 #include "OgreAssetEditorModule.h"
+
+#include "Framework.h"
 #include "LoggingFunctions.h"
 #include "Application.h"
 #include "Renderer.h"
@@ -15,7 +17,6 @@
 #include "IAssetTransfer.h"
 #include "Math/MathConstants.h"
 
-#include <QUiLoader>
 #include <QFile>
 #include <QLayout>
 #include <QPushButton>
@@ -73,16 +74,8 @@ MeshPreviewEditor::MeshPreviewEditor(const AssetPtr &meshAsset, Framework *frame
     height_(400),
     asset(meshAsset)
 {
-    QUiLoader loader;
-    QFile file(Application::InstallationDirectory() + "data/ui/mesh_preview.ui");
-    if (!file.exists())
-    {
-        LogError("Cannot find OGRE Script Editor .ui file.");
-        return;
-    }
-
-    mainWidget_ = loader.load(&file);
-    file.close();
+    setupUi(this);
+    mainWidget_ = this;
 
     setMouseTracking(true);
 

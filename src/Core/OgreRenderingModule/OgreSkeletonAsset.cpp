@@ -5,6 +5,8 @@
 
 #include "OgreSkeletonAsset.h"
 #include "OgreRenderingModule.h"
+
+#include "Framework.h"
 #include "AssetAPI.h"
 #include "AssetCache.h"
 #include "LoggingFunctions.h"

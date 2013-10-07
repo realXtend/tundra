@@ -6,7 +6,6 @@
 #ifdef PCH_ENABLED
 #include "CoreTypes.h"
 #include "CoreDefines.h"
-#include "Framework.h"
 #include "LoggingFunctions.h"
 
 #include <QtCore>

@@ -9,6 +9,7 @@
 
 #include <QObject>
 #include <QPointer>
+#include <QMetaType>
 
 class QScriptEngine;
 
@@ -106,3 +107,5 @@ private slots:
     /// Embeds the ECEditorModule types to the given script engine.
     void OnScriptEngineCreated(QScriptEngine* engine);
 };
+
+Q_DECLARE_METATYPE(ECEditorWindow *)

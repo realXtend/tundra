@@ -7,13 +7,14 @@
 #pragma once
 
 #include "ECEditorModuleApi.h"
+#include "ui_EditorSettings.h"
+
 #include "SceneFwd.h"
 #include "Math/float3.h"
 #include "Math/Quat.h"
 #include "InputFwd.h"
 #include "IAttribute.h"
 
-#include <QWidget>
 #include <QPointer>
 
 class OgreWorld;
@@ -21,6 +22,14 @@ class UndoManager;
 #ifdef EC_TransformGizmo_ENABLED
 class EC_TransformGizmo;
 #endif
+
+class EditorSettings : public QWidget, public Ui::EditorSettings
+{
+    Q_OBJECT
+
+public:
+    explicit EditorSettings(QWidget *parent) : QWidget(parent) { setupUi(this); }
+};
 
 /// Controls Transform attributes for group of entities.
 /** Can be used to alter transforms of entities even without the visual gizmo (EC_TransformGizmo).*/
@@ -40,20 +49,20 @@ public:
     ~TransformEditor();
 
     /// Returns the current selection
-    QList<EntityPtr> Selection() const;
+    EntityList Selection() const;
 
     /// Sets new selection of entities, clears possible previous selection.
     /** @param entities Entities to be added. */
-    void SetSelection(const QList<EntityPtr> &entities);
+    void SetSelection(const EntityList &entities);
 
     /// Appends selection with new entities.
     /** @param entities Entities to be added. */
-    void AppendSelection(const QList<EntityPtr> &entities);
+    void AppendSelection(const EntityList &entities);
     void AppendSelection(const EntityPtr &entity); /**< @overload */
 
     /// Removes entities from selection.
     /** @param entities Entities to be removed. */
-    void RemoveFromSelection(const QList<EntityPtr> &entities);
+    void RemoveFromSelection(const EntityList &entities);
     void RemoveFromSelection(const EntityPtr &entity); /**< @overload */
 
     /// Clears the selection.
@@ -74,7 +83,7 @@ public:
 #endif
 
     /// Returns the transform gizmo editor settings widget.
-    QPointer<QWidget> EditorSettingsWidget() const { return editorSettings; }
+    QPointer<EditorSettings> EditorSettingsWidget() const { return editorSettings; }
 
     /// Translates a transform attribute.
     static void Translate(const TransformAttributeWeakPtr &attr, const float3 &offset, AttributeChange::Type change);
@@ -115,7 +124,7 @@ private:
     EntityPtr gizmo; ///< Gizmo entity.
     QList<TransformAttributeWeakPtr> targets; ///< Current target transform attributes.
     InputContextPtr input; ///< Input context for controlling gizmo mode.
-    QPointer<QWidget> editorSettings; ///< Editor settings window
+    QPointer<EditorSettings> editorSettings; ///< Editor settings window
     bool localAxes; ///< Whether to show object local axes instead of global world axes.
     UndoManager *undoManager; ///< Undo manager, if undo functionality used.
 

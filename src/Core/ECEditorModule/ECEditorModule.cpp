@@ -9,6 +9,7 @@
 #include "DoxygenDocReader.h"
 #include "TreeWidgetItemExpandMemory.h"
 
+#include "Framework.h"
 #include "SceneAPI.h"
 #include "Scene/Scene.h"
 #include "Entity.h"
@@ -25,12 +26,12 @@
 
 #include "MemoryLeakCheck.h"
 
-Q_DECLARE_METATYPE(ECEditorWindow *)
-
-// Shortcuts for config keys.
-static const char *cGizmoEnabled= "show editing gizmo";
-static const char *cHighlightingEnabled = "highlight selected entities";
-static const char *cECEditorWindowPos = "eceditor window pos";
+namespace
+{
+    const ConfigData cGizmoConfig(ConfigAPI::FILE_FRAMEWORK, "ECEditor", "show editing gizmo", true);
+    const ConfigData cHighlightConfig(ConfigAPI::FILE_FRAMEWORK, "ECEditor", "highlight selected entities", true);
+    const ConfigData cEditorPosConfig(ConfigAPI::FILE_FRAMEWORK, "ECEditor", "eceditor window pos", QPoint(50, 50));
+}
 
 ECEditorModule::ECEditorModule() :
     IModule("ECEditor"),
@@ -49,15 +50,8 @@ void ECEditorModule::Initialize()
     expandMemory = MAKE_SHARED(TreeWidgetItemExpandMemory, Name().toStdString().c_str(), framework_);
 
     ConfigAPI &cfg = *framework_->Config();
-    ConfigData gizmoConfig(ConfigAPI::FILE_FRAMEWORK, Name(), cGizmoEnabled, gizmoEnabled, true);
-    if (!cfg.HasValue(gizmoConfig))
-        cfg.Set(gizmoConfig);
-    gizmoEnabled = cfg.Get(gizmoConfig).toBool();
-
-    ConfigData highlightConfig(ConfigAPI::FILE_FRAMEWORK, Name(), cHighlightingEnabled, highlightingEnabled, true);
-    if (!cfg.HasValue(highlightConfig))
-        cfg.Set(highlightConfig);
-    highlightingEnabled = cfg.Get(highlightConfig).toBool();
+    gizmoEnabled = cfg.DeclareSetting(cGizmoConfig).toBool();
+    highlightingEnabled = cfg.DeclareSetting(cHighlightConfig).toBool();
 
     framework_->Console()->RegisterCommand("doc", "Prints the class documentation for the given symbol."
         "Usage example: 'doc(EC_Placeable::WorldPosition)'.", this, SLOT(ShowDocumentation(const QString &)));
@@ -73,11 +67,11 @@ void ECEditorModule::Initialize()
 void ECEditorModule::Uninitialize()
 {
     ConfigAPI &cfg = *framework_->Config();
-    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name());
-    cfg.Set(configData, cGizmoEnabled, gizmoEnabled);
-    cfg.Set(configData, cHighlightingEnabled, highlightingEnabled);
+    cfg.Write(cGizmoConfig, cGizmoConfig.key, gizmoEnabled);
+    cfg.Write(cHighlightConfig, cHighlightConfig.key, highlightingEnabled);
     if (commonEditor)
-        cfg.Set(configData, cECEditorWindowPos, commonEditor->pos());
+        cfg.Write(cEditorPosConfig, cEditorPosConfig.key, commonEditor->pos());
+
     SAFE_DELETE(commonEditor);
     SAFE_DELETE_LATER(xmlEditor);
 }
@@ -148,15 +142,12 @@ void ECEditorModule::ShowEditorWindow()
         return;
     }
 
-    ConfigAPI &config = *framework_->Config();
-    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name(), cECEditorWindowPos);
-
     if (commonEditor)
     {
         commonEditor->setVisible(!commonEditor->isVisible());
         if (!commonEditor->isVisible())
         {
-            config.Set(configData, cECEditorWindowPos, commonEditor->pos());
+            framework_->Config()->Write(cEditorPosConfig, cEditorPosConfig.key, commonEditor->pos());
             commonEditor->close();
         }
         return;
@@ -167,7 +158,7 @@ void ECEditorModule::ShowEditorWindow()
     activeEditor->setWindowFlags(Qt::Tool);
     activeEditor->setAttribute(Qt::WA_DeleteOnClose);
     // Load position from config
-    QPoint pos = config.Get(configData).toPoint();
+    QPoint pos = framework_->Config()->Read(cEditorPosConfig).toPoint();
     UiMainWindow::EnsurePositionWithinDesktop(activeEditor, pos);
     activeEditor->show();
     activeEditor->activateWindow();
@@ -209,7 +200,7 @@ void ECEditorModule::CreateXmlEditor(const QList<EntityPtr> &entities)
         xmlEditor->setAttribute(Qt::WA_DeleteOnClose);
         xmlEditor->setWindowFlags(Qt::Tool);
         if (activeEditor) // make sure the editing gizmo follow the entity when it's saved
-            connect(xmlEditor, SIGNAL(Saved()), activeEditor.data(), SLOT(RefreshPropertyBrowser()), Qt::UniqueConnection);
+            connect(xmlEditor, SIGNAL(Saved()), activeEditor.data(), SLOT(Refresh()), Qt::UniqueConnection);
     }
 
     xmlEditor->SetEntity(entities);
@@ -275,16 +266,18 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
                 Scene *activeScene = framework_->Scene()->MainCameraScene();
                 if (activeScene)
                 {
-                    // We can only manipulate entities that have placeable, but exclude temporarys (avatar, cameras etc.)
+                    // We can only manipulate entities that have placeable, but exclude temporaries (avatar, cameras etc.)
                     /// @todo Shouldn't "select all" select all, not exclude some entities with some random criteria?
                     /// Maybe add separate actions for the right-click context menu for each criteria (local, replicated, temprorary etc.)
-                    QList<entity_id_t> entIdsSelection;
-                    foreach(const EntityPtr &e, activeScene->EntitiesWithComponent(EC_Placeable::TypeNameStatic()))
-                        if (!e->IsTemporary())
-                            entIdsSelection.append(e->Id());
+                    EntityList selection = activeScene->EntitiesWithComponent<EC_Placeable>();
+                    for(EntityList::iterator it = selection.begin(); it != selection.end();)
+                        if ((*it)->IsTemporary())
+                            it = selection.erase(it);
+                        else
+                            ++it;
 
-                    if (!entIdsSelection.isEmpty())
-                        activeEditor->AddEntities(entIdsSelection, true);
+                    if (!selection.empty())
+                        activeEditor->AddEntities(selection, true);
                 }
             }
             else

@@ -97,10 +97,13 @@
 class EC_HoveringText : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("EC_HoveringText",29);
+    COMPONENT_NAME("HoveringText",29);
 
 public:
+    /// @cond PRIVATE
+    /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
     explicit EC_HoveringText(Scene* scene);
+    /// @endcond
     ~EC_HoveringText();
 
     /// Text to be shown

@@ -4,6 +4,10 @@
 #include "CoreStringUtils.h"
 
 #include <QTextStream>
+#include <QByteArray>
+
+#include <kNet/DataSerializer.h>
+#include <kNet/DataDeserializer.h>
 
 QString QStringFromWCharArray(const wchar_t *string, int size)
 {
@@ -206,11 +210,11 @@ uint ComputeHash(const std::string& str)
     return ret;
 }
 
-bool ParseBool(QString value)
+bool ParseBool(QString value, bool valueIfEmpty)
 {
     value = value.trimmed().toLower();
     if (value.isEmpty())
-        return false;
+        return valueIfEmpty;
     if (value == "1")
         return true;
     if (value == "on")
@@ -218,4 +222,25 @@ bool ParseBool(QString value)
     if (value == "true")
         return true;
     return false;
+}
+
+QString ReadUtf8String(kNet::DataDeserializer &dd)
+{
+    QByteArray utf8Bytes;
+    utf8Bytes.resize(dd.Read<u16>());
+    if (!utf8Bytes.isEmpty())
+    {
+        dd.ReadArray<u8>((u8*)utf8Bytes.data(), utf8Bytes.size());
+        return QString::fromUtf8(utf8Bytes.data(), utf8Bytes.size());
+    }
+    else
+        return QString();
+}
+
+void WriteUtf8String(kNet::DataSerializer& ds, const QString& str)
+{
+    const QByteArray utf8Bytes = str.toUtf8();
+    ds.Add<u16>(utf8Bytes.size());
+    if (!utf8Bytes.isEmpty())
+        ds.AddArray<u8>((const u8*)utf8Bytes.data(), utf8Bytes.size());
 }

@@ -7,6 +7,7 @@
 #include "EC_Camera.h"
 #include "OgreMaterialUtils.h"
 
+#include "Framework.h"
 #include "Scene/Scene.h"
 #include "FrameAPI.h"
 #include "Entity.h"

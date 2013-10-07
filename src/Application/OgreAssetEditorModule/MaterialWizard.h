@@ -1,11 +1,12 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   MaterialWizard.h
- *  @brief  Utitility tool for choosing right material script from the material script template library.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   MaterialWizard.h
+    @brief  Utitility tool for choosing right material script from the material script template library. */
 
 #pragma once
+
+#include "ui_MaterialWizard.h"
 
 #include <QWidget>
 #include <QString>
@@ -17,7 +18,7 @@ class QVBoxLayout;
 /// Utitility tool for choosing right material script from the material script template library.
 /** @cond PRIVATE
     @todo Delete this class / evaluate if contains any reusable code.*/
-class MaterialWizard : public QWidget
+class MaterialWizard : public QWidget, public Ui::MaterialWizard
 {
     Q_OBJECT
 

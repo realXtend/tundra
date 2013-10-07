@@ -7,7 +7,6 @@
 #include "Math/MathFwd.h"
 #include "CoreTypes.h"
 #include "CoreDefines.h"
-#include "Framework.h"
 
 #include <QtCore>
 #include <QtGui>

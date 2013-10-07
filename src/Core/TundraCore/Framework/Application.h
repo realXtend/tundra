@@ -27,8 +27,10 @@ class TUNDRACORE_API Application : public QApplication
     Q_PROPERTY(QString organizationName READ OrganizationName)  /**< @copydoc OrganizationName */
     Q_PROPERTY(QString applicationName READ ApplicationName)    /**< @copydoc ApplicationName */
     Q_PROPERTY(QString fullIdentifier READ FullIdentifier)      /**< @copydoc FullIdentifier */
+
     Q_PROPERTY(QString platform READ Platform)                  /**< @copydoc Platform */
-        
+    Q_PROPERTY(QString architecture READ Architecture)          /**< @copydoc Architecture */
+
     Q_PROPERTY(QString version READ Version)                    /**< @copydoc Version */
     Q_PROPERTY(uint majorVersion READ MajorVersion)             /**< @copydoc MajorVersion */
     Q_PROPERTY(uint minorVersion READ MinorVersion)             /**< @copydoc MinorVersion */
@@ -127,9 +129,13 @@ public:
     uint MinorPatchVersion() const { return versionNumbers[3]; }
 
     /// Returns the operating system/platform identifier.
-    /** Returns 'win' for Windows, 'mac' for Mac OS X, 'x11' for Linux, 'android' for Android, and empty string otherwise.
+    /** @return Returns 'win' for Windows, 'mac' for Mac OS X, 'x11' for Linux, 'android' for Android, and empty string otherwise.
         This is intended for scripting languages, as sometimes you need to do OS-specific UI changes with Qt etc. */
     static QString Platform();
+
+    /// Returns the machine architecture.
+    /** @return Always returns 'x86', 'x64' or 'arm'. **/
+    static QString Architecture();
 
     /// Returns "OrganizationName ApplicationName Version".
     /** @note Unlike OrganizationName, ApplicationName and Version, this function performs memory allocation. */
@@ -148,9 +154,6 @@ public:
 
     /// Returns the current FPS limit when inactive.
     double TargetFpsLimitWhenInactive() const { return targetFpsLimitWhenInactive; }
-
-    /// Reads and applies target FPS limit from config file.
-    void ReadTargetFpsLimitFromConfig();
 
     /// Find .qm translation files from @c dir.
     QStringList FindQmFiles(const QDir &dir);
