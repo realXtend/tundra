@@ -711,7 +711,7 @@ else
         if test -d DependenciesBuild; then
             rm -rf DependenciesBuild
         fi
-        hg clone https://bitbucket.org/cabalistic/ogredeps DependenciesBuild
+        hg clone -r 62 https://bitbucket.org/cabalistic/ogredeps DependenciesBuild
         cd DependenciesBuild
         $LC_CTYPE_OVERRIDE
         if [ $NO_BOOST == "ON" ]; then 

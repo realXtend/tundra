@@ -668,17 +668,13 @@ cd "%DEPS%\ogre-safe-nocrashes\RenderSystems\Headless"
 git pull
 
 :: Ogre dependencies
+:: Clone a specific changeset we know to work
 IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\ogredeps\.hg". (
     cecho {0D}Cloning Ogre dependencies from https://bitbucket.org/cabalistic/ogredeps into "%DEPS%\ogre-safe-nocrashes\ogredeps".{# #}{\n}
     cd "%DEPS%\ogre-safe-nocrashes\"
-    hg clone https://bitbucket.org/cabalistic/ogredeps
+    hg clone -r 62 https://bitbucket.org/cabalistic/ogredeps
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\ogredeps\.hg" GOTO :ERROR
-) ELSE (
-    cecho {0D}Updating Ogre dependencies to the newest version from https://bitbucket.org/cabalistic/ogredeps.{# #}{\n}
-    cd "%DEPS%\ogre-safe-nocrashes\ogredeps"
-    hg pull -u
-    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 
 cd "%DEPS%\ogre-safe-nocrashes\ogredeps"
