@@ -409,10 +409,6 @@ namespace OgreRenderer
         if (framework->HasCommandLineParameter("--opengl"))
             rendersystem_name = "OpenGL Rendering Subsystem";
 
-        // --nullrenderer disables all Ogre rendering ops.
-        if (framework->HasCommandLineParameter("--nullrenderer"))
-            rendersystem_name = "NULL Rendering Subsystem";
-
         // Ask Ogre if rendering system is available
         rendersystem = ogreRoot->getRenderSystemByName(rendersystem_name);
 

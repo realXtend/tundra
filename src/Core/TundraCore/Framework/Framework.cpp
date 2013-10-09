@@ -201,7 +201,6 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
         cmdLineDescs.commands["--maxTextureSize"] = "Resize texture assets that are larger than this. Default: no resizing."; // OgreRenderingModule
         cmdLineDescs.commands["--variablePhysicsStep"] = "Use variable physics timestep to avoid taking multiple physics substeps during one frame."; // PhysicsModule
         cmdLineDescs.commands["--opengl"] = "Use Ogre with \"OpenGL Rendering Subsystem\" for rendering, overrides the option that was set in config.";
-        cmdLineDescs.commands["--nullRenderer"] = "Disables all Ogre rendering operations."; // OgreRenderingModule
         cmdLineDescs.commands["--ogreCaptureTopWindow"] = "On some systems, the Ogre rendering output is overdrawn by the desktop compositing manager, "
             "but the actual cause of this is uncertain. As a workaround, try this switch to make Ogre output directly on the main window handle of the UI chain. "
             "However, this might introduce graphical issues."; // OgreRenderingModule
