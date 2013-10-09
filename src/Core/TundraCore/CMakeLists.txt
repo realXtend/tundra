@@ -75,3 +75,5 @@ SetupCompileFlagsWithPCH()
 
 final_target()
 
+# Declare Windows core dependencies
+setup_install_windows_deps ("qjson.dll" Release|RelWithDebInfo|Debug)

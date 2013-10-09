@@ -52,16 +52,7 @@ final_target()
 
 # Install files
 setup_install_directory(${TUNDRA_BIN}/media)
-
-setup_install_files_find(${TUNDRA_BIN} "resources.cfg")
-if (WIN32)
-    setup_install_files_find(${TUNDRA_BIN} "plugins.cfg" Release|RelWithDebInfo)
-    setup_install_files_find(${TUNDRA_BIN} "pluginsd.cfg" Debug)
-elseif(UNIX)
-    setup_install_files_find(${TUNDRA_BIN} "plugins-unix.cfg")
-elseif(APPLE)
-    setup_install_files_find(${TUNDRA_BIN} "plugins-mac.cfg")
-endif()
+setup_install_files (${TUNDRA_BIN}/tundra-rendering-ogre.json)
 
 # Install windows deps
 setup_install_windows_deps("cg.dll" Release|RelWithDebInfo|Debug)
