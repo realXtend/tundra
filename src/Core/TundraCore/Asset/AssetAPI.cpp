@@ -42,6 +42,17 @@ AssetAPI::AssetAPI(Framework *framework, bool headless) :
     // You can use this type to request asset data as binary, without generating any kind of in-memory representation or loading for it.
     // Your module/component can then parse the content in a custom way.
     RegisterAssetTypeFactory(MAKE_SHARED(BinaryAssetFactory, "Binary", ""));
+
+    if (fw->HasCommandLineParameter("--accept_unknown_http_sources"))
+        LogWarning("--accept_unknown_http_sources: this format of the command-line parameter is deprecated and support for it will be removed. Use --acceptUnknownHttpSources instead.");
+    if (fw->HasCommandLineParameter("--disable_http_ifmodifiedsince"))
+        LogWarning("--disable_http_ifmodifiedsince: this format of the command-line parameter is deprecated and support for it will be removed. Use --disableHttpIfModifiedSince instead.");
+    if (fw->HasCommandLineParameter("--accept_unknown_local_sources"))
+        LogWarning("--accept_unknown_local_sources: this format of the command-line parameter is deprecated and support for it will be removed. Use --acceptUnknownLocalSources instead.");
+    if (fw->HasCommandLineParameter("--no_async_asset_load"))
+        LogWarning("--no_async_asset_load: this format of the command-line parameter is deprecated and support for it will be removed. Use --noAsyncAssetLoad instead.");
+    if (fw->HasCommandLineParameter("--clear-asset-cache"))
+        LogWarning("--clear-asset-cache: this format of the command-line parameter is deprecated and support for it will be removed. Use --clearAssetCache instead.");
 }
 
 AssetAPI::~AssetAPI()

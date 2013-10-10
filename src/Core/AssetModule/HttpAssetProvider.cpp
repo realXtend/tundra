@@ -152,7 +152,8 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
 
 #ifdef HTTPASSETPROVIDER_NO_HTTP_IF_MODIFIED_SINCE
     QString cachePath = framework->Asset()->GetAssetCache()->FindInCache(assetRef);
-    if (framework->HasCommandLineParameter("--disable_http_ifmodifiedsince") && !cachePath.isEmpty())
+    if (!cachePath.isEmpty() && (framework->HasCommandLineParameter("--disableHttpIfModifiedSince") ||
+        framework->HasCommandLineParameter("--disable_http_ifmodifiedsince"))) /**< @todo Remove support for the deprecated underscore version at some point. */
     {
         PROFILE(HttpAssetProvider_ReadFileFromCache);
         transfer->SetCachingBehavior(false, cachePath);

@@ -164,6 +164,9 @@ void OgreRenderingModule::Load()
         framework_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(NullAssetFactory, "OgreParticle", ".particle"));
         framework_->Asset()->RegisterAssetTypeFactory(MAKE_SHARED(NullAssetFactory, "OgreSkeleton", ".skeleton"));
     }
+
+    if (framework_->HasCommandLineParameter("--hide_benign_ogre_messages"))
+        LogWarning("--hide_benign_ogre_messages: this format of the command-line parameter is deprecated and support for it will be removed. Use --hideBenignOgreMessages instead.");
 }
 
 void OgreRenderingModule::Initialize()
