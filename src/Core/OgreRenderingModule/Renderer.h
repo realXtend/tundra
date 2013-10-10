@@ -28,7 +28,6 @@ namespace Ogre
 #endif
 }
 
-
 namespace OgreRenderer
 {
     class OgreLogListener;
@@ -46,13 +45,12 @@ namespace OgreRenderer
         Q_PROPERTY(ShadowQualitySetting shadowQuality READ ShadowQuality WRITE SetShadowQuality)
         Q_PROPERTY(TextureQualitySetting textureQuality READ TextureQuality WRITE SetTextureQuality)
         Q_PROPERTY(int textureBudget READ TextureBudget WRITE SetTextureBudget)
-        
+
     public:
         /// Constructor
         /** @param Framework pointer. */
         Renderer(Framework *framework);
 
-        /// Destructor
         virtual ~Renderer();
 
         /// Returns framework
@@ -68,18 +66,18 @@ namespace OgreRenderer
         Ogre::Viewport *MainViewport() const { return mainViewport; }
 
         /// Returns current render window
-        Ogre::RenderWindow* GetCurrentRenderWindow() const;
+        Ogre::RenderWindow* CurrentRenderWindow() const;
 
         /// Returns currently active Ogre camera
         /** @note in case there is no active camera, will not return the default (dummy) camera, but 0 */
         Ogre::Camera* MainOgreCamera() const;
 
         /// Returns the OgreWorld of the currently active camera
-        OgreWorldPtr GetActiveOgreWorld() const;
+        OgreWorldPtr ActiveOgreWorld() const;
 
         /// Returns an unique name to create Ogre objects that require a mandatory name
         /** @param prefix Prefix for the name. */
-        std::string GetUniqueObjectName(const std::string &prefix);
+        std::string GenerateUniqueObjectName(const std::string &prefix);
 
         /// Initializes renderer. Called by OgreRenderingModule
         void Initialize();
@@ -88,8 +86,8 @@ namespace OgreRenderer
         OgreCompositionHandler *CompositionHandler() const { return compositionHandler; }
 
         /// Returns the globally used Ogre overlay system
-        Ogre::OverlaySystem* GetOverlaySystem() const { return overlaySystem; }
-        
+        Ogre::OverlaySystem* OgreOverlaySystem() const { return overlaySystem; }
+
         /// Returns RenderWindow used to display the 3D scene in.
         RenderWindow *GetRenderWindow() const { return renderWindow; }
 
@@ -146,13 +144,21 @@ namespace OgreRenderer
         /// Returns texture budget in megabytes.
         int TextureBudget() const { return textureBudget; }
 
-        /// Calculate current texture usage ratio (1 = budget completely in use). Optionally specify a data size in bytes which is going to be loaded, and will be added to the calculation
+        /// Calculate current texture usage ratio (1 = budget completely in use).
+        /** @param loadDataSize Can be used to specify a data size in bytes which is going to be loaded, and will be added to the calculation. */
         float TextureBudgetUse(size_t loadDataSize = 0) const;
 
 #ifdef ANDROID
         /// Returns the shader generator for converting fixed-function materials (Android only)
         Ogre::RTShader::ShaderGenerator* GetShaderGenerator() { return shaderGenerator; }
 #endif
+        // DEPRECATED
+        /// @cond PRIVATE
+        Ogre::RenderWindow* GetCurrentRenderWindow() const { return CurrentRenderWindow(); }
+        Ogre::OverlaySystem* GetOverlaySystem() const { return OgreOverlaySystem(); }
+        OgreWorldPtr GetActiveOgreWorld() const { return ActiveOgreWorld(); }
+        virtual std::string GetUniqueObjectName(const std::string &prefix) { return GenerateUniqueObjectName(prefix); }
+        /// @endcond
 
     public slots:
         /// Renders the screen. Advances Ogre's time internally by the frameTime specified
@@ -215,6 +221,7 @@ namespace OgreRenderer
         void DeleteUiPlane(UiPlane *plane);
 
         // DEPRECATED
+        /// @cond PRIVATE
         /// Do raycast into the currently active world from viewport coordinates, using all selection layers
         /** The coordinates are a position in the render window, not scaled to [0,1].
             @deprecated This function is deprecated. You should use the OgreWorld::Raycast function instead.
@@ -223,6 +230,7 @@ namespace OgreRenderer
             @param y Vertical position for the origin of the ray
             @return Raycast result structure */
         RaycastResult* Raycast(int x, int y);
+        /// @endcond
 
     signals:
         /// Emitted every time the main window active camera changes.
@@ -254,9 +262,6 @@ namespace OgreRenderer
         
         /// Create instancing variants of all vertex shaders
         void CreateInstancingShaders();
-
-        /// Prepare the config with needed default values if they are not there.
-        void PrepareConfig();
 
         /// Returns platform string that is used in --ogreConfig files.
         QString RenderingConfigPlatform() const;
@@ -324,3 +329,6 @@ namespace OgreRenderer
         OgreLogListener *logListener;
     };
 }
+
+Q_DECLARE_METATYPE(OgreRenderer::Renderer::ShadowQualitySetting)
+Q_DECLARE_METATYPE(OgreRenderer::Renderer::TextureQualitySetting)

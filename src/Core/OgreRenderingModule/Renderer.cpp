@@ -70,6 +70,9 @@ static const int DEFAULT_TEXTURE_BUDGET = 512;
 // Minimum texture budget
 static const int MINIMUM_TEXTURE_BUDGET = 1;
 
+static const char * const cD3D9RenderSystemName = "Direct3D9 Rendering Subsystem";
+static const char * const cOglRenderSystemName = "OpenGL Rendering Subsystem";
+
 #if defined(DIRECTX_ENABLED) && !defined(WIN32)
 #undef DIRECTX_ENABLED
 #endif
@@ -272,12 +275,26 @@ namespace OgreRenderer
             fw->HasCommandLineParameter("--hide_benign_ogre_messages")); /**< @todo Remove support for the deprecated underscore version at some point. */
 
         timerFrequency = GetCurrentClockFreq();
-        PrepareConfig();
+
+        ConfigAPI &cfg = *framework->Config();
+        const ConfigData renderingCfg(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
+        viewDistance = cfg.DeclareSetting(renderingCfg, "view distance", (double)viewDistance).toFloat(); // (as double to keep human-readable and configurable)
+        shadowQuality = cfg.DeclareSetting(renderingCfg, "shadow quality", shadowQuality).value<ShadowQualitySetting>();
+        textureQuality = cfg.DeclareSetting(renderingCfg, "texture quality", textureQuality).value<TextureQualitySetting>();
+        cfg.DeclareSetting(renderingCfg, "soft shadow", false);
+        cfg.DeclareSetting(renderingCfg, "rendering plugin",
+#ifdef _WINDOWS
+            cD3D9RenderSystemName
+#else
+            cOglRenderSystemName
+#endif
+            );
+        textureBudget = framework->Config()->DeclareSetting(renderingCfg, "texture budget", DEFAULT_TEXTURE_BUDGET).toInt();
     }
 
     Renderer::~Renderer()
     {
-        if (framework->Ui() && framework->Ui()->MainWindow())
+        if (framework->Ui()->MainWindow())
             framework->Ui()->MainWindow()->SaveWindowSettingsToFile();
 
         // Delete all UiPlanes that still exist.
@@ -311,31 +328,6 @@ namespace OgreRenderer
         SAFE_DELETE(renderWindow);
     }
 
-    void Renderer::PrepareConfig()
-    {
-        ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
-        // View distance, as double to keep human readable and configurable
-        if (!framework->Config()->HasValue(configData, "view distance"))
-            framework->Config()->Set(configData, "view distance", (double)viewDistance);
-        // Shadow quality
-        if (!framework->Config()->HasValue(configData, "shadow quality"))
-            framework->Config()->Set(configData, "shadow quality", 2);
-        // Texture quality
-        if (!framework->Config()->HasValue(configData, "texture quality"))
-            framework->Config()->Set(configData, "texture quality", 1);
-        // Soft shadow
-        if (!framework->Config()->HasValue(configData, "soft shadow"))
-            framework->Config()->Set(configData, "soft shadow", false);
-        // Rendering plugin
-#ifdef _WINDOWS
-        if (!framework->Config()->HasValue(configData, "rendering plugin"))
-            framework->Config()->Set(configData, "rendering plugin", "Direct3D9 Rendering Subsystem");
-#else
-        if (!framework->Config()->HasValue(configData, "rendering plugin"))
-            framework->Config()->Set(configData, "rendering plugin", "OpenGL Rendering Subsystem");
-#endif
-    }
-
     void Renderer::Initialize()
     {
         assert(!initialized);
@@ -355,10 +347,10 @@ namespace OgreRenderer
         if (!logDir.exists("logs"))
             logDir.mkdir("logs");
         logDir.cd("logs");
-        logfilepath = logDir.absoluteFilePath("Ogre.log").toStdString(); ///<\todo Unicode support
+        logfilepath = logDir.absoluteFilePath("Ogre.log").toStdString(); /**< @todo Unicode support */
 
 #include "DisableMemoryLeakCheck.h"
-// On Android instantiating our own LogManager results in a crash during Ogre initialization. Ogre has its own Android logging hook, so this can be skipped for now
+        // On Android instantiating our own LogManager results in a crash during Ogre initialization. Ogre has its own Android logging hook, so this can be skipped for now
 #ifndef ANDROID
         static Ogre::LogManager *overriddenLogManager = 0;
         overriddenLogManager = new Ogre::LogManager; ///\bug This pointer is never freed. We leak memory here, but cannot free due to Ogre singletons being accessed.
@@ -367,15 +359,12 @@ namespace OgreRenderer
         Ogre::LogManager::getSingleton().getDefaultLog()->addListener(logListener); // Make all Ogre log output to come to our log listener.
         Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_NORMAL); // This is probably the default level anyway, but be explicit.
 #endif
-        ogreRoot = OgreRootPtr(new Ogre::Root("", "", logfilepath));
+        ogreRoot = MAKE_SHARED(Ogre::Root, "", "", logfilepath);
 
 #include "EnableMemoryLeakCheck.h"
 
         // Write/read config.
         ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
-        viewDistance = framework->Config()->Get(configData, "view distance").toFloat();
-        textureQuality = (Renderer::TextureQualitySetting)framework->Config()->Get(configData, "texture quality").toInt();
-        textureBudget = framework->Config()->DeclareSetting(configData, "texture budget", DEFAULT_TEXTURE_BUDGET).toInt();
 
         if (framework->HasCommandLineParameter("--texturebudget"))
         {
@@ -388,7 +377,7 @@ namespace OgreRenderer
         QStringList loadedPlugins = LoadOgrePlugins();
 
         // Read the default rendersystem from Config API.
-        rendersystem_name = framework->Config()->Get(configData, "rendering plugin").toString().toStdString();
+        rendersystem_name = framework->Config()->Read(configData, "rendering plugin").toString().toStdString();
 
         // Headless renderer is selected from Ogre config if defined.
         // This can be overridden with --d3d9 and --opengl cmd line params.
@@ -402,24 +391,24 @@ namespace OgreRenderer
 #ifdef _WINDOWS
         // If --direct3d9 is specified, it overrides the option that was set in config.
         if (framework->HasCommandLineParameter("--d3d9") || framework->HasCommandLineParameter("--direct3d9"))
-            rendersystem_name = "Direct3D9 Rendering Subsystem";
+            rendersystem_name = cD3D9RenderSystemName;
 #endif
 
         // If --opengl is specified, it overrides the option that was set in config.
         if (framework->HasCommandLineParameter("--opengl"))
-            rendersystem_name = "OpenGL Rendering Subsystem";
+            rendersystem_name = cOglRenderSystemName;
 
         // Ask Ogre if rendering system is available
         rendersystem = ogreRoot->getRenderSystemByName(rendersystem_name);
 
 #ifdef _WINDOWS
         // If windows did not have the config/headless renderer fallback to Direct3D.
-        if (!rendersystem && rendersystem_name != "Direct3D9 Rendering Subsystem")
-            rendersystem = ogreRoot->getRenderSystemByName("Direct3D9 Rendering Subsystem");
+        if (!rendersystem && rendersystem_name != cD3D9RenderSystemName)
+            rendersystem = ogreRoot->getRenderSystemByName(cD3D9RenderSystemName);
 
         // If windows did not have Direct3D fallback to OpenGL.
-        if (!rendersystem && rendersystem_name != "OpenGL Rendering Subsystem")
-            rendersystem = ogreRoot->getRenderSystemByName("OpenGL Rendering Subsystem");
+        if (!rendersystem && rendersystem_name != cOglRenderSystemName)
+            rendersystem = ogreRoot->getRenderSystemByName(cOglRenderSystemName);
 #endif
 
 #ifdef ANDROID
@@ -436,8 +425,7 @@ namespace OgreRenderer
 
         // Allow PSSM mode shadows only on DirectX
         // On OpenGL (arbvp & arbfp) it runs out of vertex shader outputs
-        shadowQuality = (Renderer::ShadowQualitySetting)framework->Config()->Get(configData, "shadow quality").toInt();
-        if ((shadowQuality == Shadows_High) && (rendersystem->getName() != "Direct3D9 Rendering Subsystem"))
+        if (shadowQuality == Shadows_High && rendersystem->getName() != cD3D9RenderSystemName)
             shadowQuality = Shadows_Low;
 
         // This is needed for QWebView to not lock up!!!
@@ -583,19 +571,19 @@ namespace OgreRenderer
     void Renderer::SetShadowQuality(ShadowQualitySetting quality)
     {
         // We cannot effect the new setting immediately, so save only to config
-        framework->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "shadow quality", (int)quality);
+        framework->Config()->Write(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "shadow quality", quality);
     }
 
     void Renderer::SetTextureQuality(TextureQualitySetting quality)
     {
         // We cannot effect the new setting immediately, so save only to config
-        framework->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "texture quality", (int)quality);
+        framework->Config()->Write(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "texture quality", quality);
     }
     
     void Renderer::SetTextureBudget(int budget)
     {
         textureBudget = Max(budget, MINIMUM_TEXTURE_BUDGET);
-        framework->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "texture budget", textureBudget);
+        framework->Config()->Write(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "texture budget", textureBudget);
     }
 
     float Renderer::TextureBudgetUse(size_t loadDataSize) const
@@ -941,7 +929,7 @@ namespace OgreRenderer
         /// @todo view distance not currently used for anything
         viewDistance = distance;
         // As double to keep human readable and configurable
-        framework->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "view distance", (double)viewDistance);
+        framework->Config()->Write(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "view distance", (double)viewDistance);
     }
 
     void Renderer::DoFullUIRedraw()
@@ -988,7 +976,7 @@ namespace OgreRenderer
 
     RaycastResult* Renderer::Raycast(int x, int y)
     {
-        OgreWorldPtr world = GetActiveOgreWorld();
+        OgreWorldPtr world = ActiveOgreWorld();
         if (world)
             return world->Raycast(x, y, 0xFFFFFFFF);
         else
@@ -1003,7 +991,7 @@ namespace OgreRenderer
         // On windows systems with Pen & Touch input available, Qt doesn't want to actually display the QGgraphicsView even with a call
         // to QGraphicsView::show().
 #ifdef WIN32
-        if (framework->Ui() && framework->Ui()->GraphicsView())
+        if (framework->Ui()->GraphicsView())
             ShowWindow(((HWND)framework->Ui()->GraphicsView()->winId()), SW_SHOW);
 #endif
 
@@ -1218,7 +1206,7 @@ namespace OgreRenderer
 #endif
 
         // Flush debug geometry into vertex buffer now
-        OgreWorldPtr world = GetActiveOgreWorld();
+        OgreWorldPtr world = ActiveOgreWorld();
         if (world)
         {
             PROFILE(Renderer_Render_UpdateDebugGeometry)
@@ -1252,7 +1240,7 @@ namespace OgreRenderer
         if (!mainCameraEntity)
             return 0;
 
-        if (!mainCameraEntity->ParentScene() || !mainCameraEntity->GetComponent<EC_Camera>())
+        if (!mainCameraEntity->ParentScene() || !mainCameraEntity->Component<EC_Camera>())
         {
             SetMainCamera(0);
             return 0;
@@ -1265,7 +1253,7 @@ namespace OgreRenderer
         Entity *mainCamera = MainCamera();
         if (!mainCamera)
             return 0;
-        return mainCamera->GetComponent<EC_Camera>().get();
+        return mainCamera->Component<EC_Camera>().get();
     }
 
     Scene *Renderer::MainCameraScene()
@@ -1276,7 +1264,7 @@ namespace OgreRenderer
             return scene;
 
         // If there is no active camera, return the first scene on the list.
-        SceneMap scenes = framework->Scene()->Scenes();
+        const SceneMap &scenes = framework->Scene()->Scenes();
         if (scenes.size() > 0)
             return scenes.begin()->second.get();
 
@@ -1345,14 +1333,14 @@ namespace OgreRenderer
         LogError("Trying to delete nonexisting UiPlane!");
     }
 
-    OgreWorldPtr Renderer::GetActiveOgreWorld() const
+    OgreWorldPtr Renderer::ActiveOgreWorld() const
     {
         Entity *entity = activeMainCamera.lock().get();
         if (!entity)
             return OgreWorldPtr();
         Scene *scene = entity->ParentScene();
         if (scene)
-            return scene->GetWorld<OgreWorld>();
+            return scene->Subsystem<OgreWorld>();
         else
             return OgreWorldPtr();
     }
@@ -1363,12 +1351,12 @@ namespace OgreRenderer
         return mainViewport ? mainViewport->getCamera() : 0;
     }
 
-    Ogre::RenderWindow *Renderer::GetCurrentRenderWindow() const
+    Ogre::RenderWindow *Renderer::CurrentRenderWindow() const
     {
         return renderWindow->OgreRenderWindow();
     }
 
-    std::string Renderer::GetUniqueObjectName(const std::string &prefix)
+    std::string Renderer::GenerateUniqueObjectName(const std::string &prefix)
     {
         return QString("%1_%2").arg(prefix.c_str()).arg(uniqueObjectId++).toStdString();
     }
