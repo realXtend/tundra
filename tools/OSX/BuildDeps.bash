@@ -907,6 +907,22 @@ fi
 
 export ZZIPLIB_ROOT=$ZZIPLIBPREFIX
 
+what=websocketpp
+if test -f $tags/$what-done; then
+    echoInfo "$what is done"
+else
+    cd $build
+    rm -rf $what
+    echoInfo "Fetching $what, this may take a while... "
+    git clone https://github.com/zaphoyd/websocketpp.git $what
+    cd $what
+    git checkout 0.3.0-alpha3
+    touch $tags/$what-done
+fi
+
+cd $build
+
+
 # All deps are now fetched and built. Do the actual Tundra build.
 
 # Detect Mac OS X SDKs:
