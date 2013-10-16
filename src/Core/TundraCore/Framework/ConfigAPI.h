@@ -49,11 +49,21 @@ Q_DECLARE_METATYPE(ConfigData*)
 /// Configuration API for accessing config files.
 /** The Configuration API utilizes QVariants extensively for script-compatibility.
     In C++ code use the QVariant::to*() functions to convert the values to the correct type.
+    Also QVariant::value<T>() can be used when dealing with user-defined types, f.ex.:
+    @code
+    float3 pos = Fw()->Config()->Read("foo", "bar", "pos").value<float3>();
+    @endcode
+
+    @note QVariant::value<T> doesn't work for enums, which can be worked around as follows:
+    @code
+    MyEnum myEnumVal = static_cast<MyEnum>(Fw()->Config()->Read("foo", "bar", "myEnumVal").toInt());
+    @endcode
+
     The Config API supports ini sections but you may also write to the root of the ini document without a section.
 
     The API is available as 'config' dynamic property.
 
-    JavaScript example on usage:
+    QtScript example on usage:
     @code
     var file = "myconfig";
 
@@ -76,13 +86,13 @@ class TUNDRACORE_API ConfigAPI : public QObject
 
 public:
     ///\todo Make these properties so that can be obtained to scripts too.
-    static QString FILE_FRAMEWORK;
-    static QString SECTION_FRAMEWORK;
-    static QString SECTION_SERVER;
-    static QString SECTION_CLIENT;
-    static QString SECTION_RENDERING;
-    static QString SECTION_UI;
-    static QString SECTION_SOUND;
+    static const QString FILE_FRAMEWORK;
+    static const QString SECTION_FRAMEWORK;
+    static const QString SECTION_SERVER;
+    static const QString SECTION_CLIENT;
+    static const QString SECTION_RENDERING;
+    static const QString SECTION_UI;
+    static const QString SECTION_SOUND;
 
 public slots:
     /// Returns if a key exists in the config.

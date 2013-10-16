@@ -10,13 +10,13 @@
 #include <QSettings>
 #include <QDir>
 
-QString ConfigAPI::FILE_FRAMEWORK = "tundra";
-QString ConfigAPI::SECTION_FRAMEWORK = "framework";
-QString ConfigAPI::SECTION_SERVER = "server";
-QString ConfigAPI::SECTION_CLIENT = "client";
-QString ConfigAPI::SECTION_RENDERING = "rendering";
-QString ConfigAPI::SECTION_UI = "ui";
-QString ConfigAPI::SECTION_SOUND = "sound";
+const QString ConfigAPI::FILE_FRAMEWORK = "tundra";
+const QString ConfigAPI::SECTION_FRAMEWORK = "framework";
+const QString ConfigAPI::SECTION_SERVER = "server";
+const QString ConfigAPI::SECTION_CLIENT = "client";
+const QString ConfigAPI::SECTION_RENDERING = "rendering";
+const QString ConfigAPI::SECTION_UI = "ui";
+const QString ConfigAPI::SECTION_SOUND = "sound";
 
 ConfigAPI::ConfigAPI(Framework *framework) :
     QObject(framework),
@@ -141,7 +141,7 @@ QVariant ConfigAPI::Read(const ConfigData &data, QString key, const QVariant &de
         LogWarning("ConfigAPI::Read: ConfigData does not have enough information (file and section).");
         return data.defaultValue;
     }
-    if (defaultValue.isNull())
+    if (!defaultValue.isValid())
         return Read(data.file, data.section, key, data.defaultValue);
     else
         return Read(data.file, data.section, key, defaultValue);
@@ -151,15 +151,15 @@ QVariant ConfigAPI::Read(QString file, QString section, QString key, const QVari
 {
     if (configFolder_.isEmpty())
     {
-        LogError("ConfigAPI::Read: Config folder has not been prepared, returning null QVariant.");
-        return "";
+        LogError("ConfigAPI::Read: Config folder has not been prepared, returning invalid QVariant.");
+        return QVariant();
     }
 
     PrepareString(file);
     PrepareString(section);
     PrepareString(key);
 
-    // Don't return 'defaultValue' but null QVariant
+    // Don't return 'defaultValue' but invalid QVariant
     // as this is an error situation.
     if (!IsFilePathSecure(file))
         return QVariant();
@@ -173,7 +173,7 @@ QVariant ConfigAPI::Read(QString file, QString section, QString key, const QVari
 
 void ConfigAPI::Write(const ConfigData &data)
 {
-    if (data.file.isEmpty() || data.section.isEmpty() || data.key.isEmpty() || data.value.isNull())
+    if (data.file.isEmpty() || data.section.isEmpty() || data.key.isEmpty() || !data.value.isValid())
     {
         LogWarning("ConfigAPI::Write: ConfigData does not have enough information (file, section, key, and value).");
         return;
