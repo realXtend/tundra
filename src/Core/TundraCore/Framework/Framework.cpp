@@ -931,7 +931,7 @@ void Framework::LoadStartupOptionList(const QVariant &options, const QString &co
 
 void Framework::AddCommandLineParameter(const QString &command, const QString &parameter)
 {
-    startupOptions.insert(std::make_pair(command, std::make_pair(startupOptions.size() + 1, parameter)));
+    startupOptions.insert(std::make_pair(command, std::make_pair((int)startupOptions.size() + 1, parameter)));
 }
 
 bool Framework::HasCommandLineParameter(const QString &value) const
