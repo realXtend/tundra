@@ -442,7 +442,7 @@ IF NOT EXIST "%DEPS%\boost". (
     cd "%DEPS%\boost"
     cecho {0D}Building Boost. Please be patient, this will take a while.{# #}{\n}
     :: Building boost with single core takes ages, so utilize all cores for the build process
-    call .\b2 -j %NUMBER_OF_PROCESSORS% --with-system --with-regex --with-thread stage
+    call .\b2 -j %NUMBER_OF_PROCESSORS% --with-system --with-regex --with-thread --with-date_time stage
 ) ELSE (
     ::TODO Even if %DEPS%\boost exists, we have no guarantee that boost is built successfully for real
     cecho {0D}Boost already built. Skipping.{# #}{\n}

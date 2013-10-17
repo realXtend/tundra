@@ -340,7 +340,7 @@ else
     cd $pkgbase
     echoInfo "Building $what"
     ./bootstrap.sh --prefix=$prefix/$what
-    ./bjam toolset=darwin link=static threading=multi --with-thread --with-regex --with-system install
+    ./bjam toolset=darwin link=static threading=multi --with-thread --with-regex --with-system --with-date_time install
     cp LICENSE_1_0.txt $prefix/$what
     touch $tags/$what-done
 fi
