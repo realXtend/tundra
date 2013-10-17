@@ -1024,13 +1024,7 @@ void OgreWorld::SetupShadows()
     sceneManager_->setShadowTextureSelfShadow(true);
     sceneManager_->setShadowTextureFSAA(shadowTextureFSAA);
 
-    /** On DirectX/Windows PF_FLOAT32_R format produces a blue tinted shadow. This occurs 
-        at least when the basic "rex/ShadowCaster" is enabled (default for materials). */
-#ifdef DIRECTX_ENABLED
-    sceneManager_->setShadowTextureSettings(shadowTextureSize, shadowTextureCount, Ogre::PF_R8G8B8A8);
-#else
     sceneManager_->setShadowTextureSettings(shadowTextureSize, shadowTextureCount, Ogre::PF_FLOAT32_R);
-#endif
 
     Ogre::ShadowCameraSetupPtr shadowCameraSetup;
     if (pssmEnabled)
