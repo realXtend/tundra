@@ -90,12 +90,13 @@ public slots:
     void UpdateSubmeshes();
 
 private slots:
+    void Initialize();
     bool Blit(const QImage &source, Ogre::TexturePtr destination);
     void WidgetDestroyed(QObject *obj);
     void MeshMaterialsUpdated(uint index, const QString &material_name);
 
     /// Monitors when parent entity is set.
-    void ParentEntitySet();
+    void OnParentEntitySet();
 
     /// Monitors this entitys removed components.
     void ComponentRemoved(IComponent *component, AttributeChange::Type change);

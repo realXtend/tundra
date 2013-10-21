@@ -48,45 +48,12 @@ EC_WidgetCanvas::EC_WidgetCanvas(Scene *scene) :
     material_name_(""),
     texture_name_("")
 {
-    if (framework->IsHeadless())
-        return;
-	
-	if (framework->Renderer())
-    {
-        // Create texture
-        texture_name_ = framework->Renderer()->GetUniqueObjectName("EC_3DCanvas_tex");
-        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().createManual(
-            texture_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-            Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, 
-            Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
-        if (texture.isNull())
-        {
-            LogError("EC_WidgetCanvas: Could not create texture for usage!");
-            return;
-        }
-
-        // Create material: Make sure we have one tech with one pass with one texture unit.
-        // Don't use our lit textured templates here as emissive will not work there as it has vertex etc programs in it.
-        material_name_ = framework->Renderer()->GetUniqueObjectName("EC_3DCanvas_mat");
-        Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(material_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-        if (material->getNumTechniques() == 0)
-            material->createTechnique();
-        if (material->getTechnique(0) && 
-            material->getTechnique(0)->getNumPasses() == 0)
-            material->getTechnique(0)->createPass();
-        if (material->getTechnique(0)->getPass(0) && 
-            material->getTechnique(0)->getPass(0)->getNumTextureUnitStates() == 0)
-            material->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);        
-    }
-
-    connect(this, SIGNAL(ParentEntitySet()), SLOT(ParentEntitySet()), Qt::UniqueConnection);
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(Initialize()));
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(OnParentEntitySet()));
 }
 
 EC_WidgetCanvas::~EC_WidgetCanvas()
 {
-    if (framework->IsHeadless())
-        return;
-
     submeshes_.clear();
     widget_ = 0;
 
@@ -365,6 +332,40 @@ void EC_WidgetCanvas::Update()
     }
 }
 
+void EC_WidgetCanvas::Initialize()
+{
+    if (framework->IsHeadless())
+        return;
+
+    if (framework->Renderer())
+    {
+        // Create texture
+        texture_name_ = framework->Renderer()->GetUniqueObjectName("EC_3DCanvas_tex");
+        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().createManual(
+            texture_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+            Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, 
+            Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+        if (texture.isNull())
+        {
+            LogError("EC_WidgetCanvas: Could not create texture for usage!");
+            return;
+        }
+
+        // Create material: Make sure we have one tech with one pass with one texture unit.
+        // Don't use our lit textured templates here as emissive will not work there as it has vertex etc programs in it.
+        material_name_ = framework->Renderer()->GetUniqueObjectName("EC_3DCanvas_mat");
+        Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().create(material_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+        if (material->getNumTechniques() == 0)
+            material->createTechnique();
+        if (material->getTechnique(0) && 
+            material->getTechnique(0)->getNumPasses() == 0)
+            material->getTechnique(0)->createPass();
+        if (material->getTechnique(0)->getPass(0) && 
+            material->getTechnique(0)->getPass(0)->getNumTextureUnitStates() == 0)
+            material->getTechnique(0)->getPass(0)->createTextureUnitState(texture_name_);
+    }
+}
+
 bool EC_WidgetCanvas::Blit(const QImage &source, Ogre::TexturePtr destination)
 {
 #if defined(DIRECTX_ENABLED) && defined(WIN32)
@@ -522,7 +523,7 @@ void EC_WidgetCanvas::RestoreOriginalMeshMaterials()
     update_internals_ = true;
 }
 
-void EC_WidgetCanvas::ParentEntitySet()
+void EC_WidgetCanvas::OnParentEntitySet()
 {
     if (framework->IsHeadless())
         return;

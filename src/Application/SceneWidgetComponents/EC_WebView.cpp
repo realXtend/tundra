@@ -83,43 +83,8 @@ EC_WebView::EC_WebView(Scene *scene) :
     renderRefreshRate.SetMetadata(&refreshRateMetadata);
     controllerId.SetMetadata(&nonDesignableMetadata);
 
-    // Initializations depending if we are on the server or client
-    TundraLogicModule *tundraLogic = GetFramework()->Module<TundraLogicModule>();
-    if (tundraLogic)
-    {
-        if (tundraLogic->IsServer())
-            ServerInitialize(tundraLogic->GetServer().get());
-        else
-            myControllerId_ = tundraLogic->GetClient()->GetConnectionID();
-    }
-
-    // Don't do anything beyond if rendering is not enabled
-    // aka headless server. UI enabled server may continue, but they are not going
-    // to have perfect browsing sync as the entity actions are sent to "peers" as in other clients.
-    if (!ViewEnabled() || GetFramework()->IsHeadless())
-        return;
-
-    // Connect window size changes to update rendering as the ogre textures go black.
-    if (GetFramework()->Ui()->MainWindow())
-        connect(GetFramework()->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int,int)), SLOT(RenderWindowResized()), Qt::UniqueConnection);
-
-    // Connect signals from IComponent
-    connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
-    
-    // Prepare render timer
-    renderTimer_ = new QTimer(this);
-    connect(renderTimer_, SIGNAL(timeout()), SLOT(Render()), Qt::UniqueConnection);
-    resizeRenderTimer_ = new QTimer(this);
-    resizeRenderTimer_->setSingleShot(true);
-    connect(resizeRenderTimer_, SIGNAL(timeout()), SLOT(RenderDelayed()), Qt::UniqueConnection);
-
-    // Prepare scene interactions
-    SceneInteract *sceneInteract = GetFramework()->Module<SceneInteract>();
-    if (sceneInteract)
-    {
-        connect(sceneInteract, SIGNAL(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)), 
-                SLOT(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)));
-    }
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(Initialize()));
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()));
 }
 
 EC_WebView::~EC_WebView()
@@ -274,6 +239,44 @@ void EC_WebView::Render(QImage image)
         sceneCanvas->SetWidget(0);
 
     sceneCanvas->Update(image);   
+}
+
+void EC_WebView::Initialize()
+{
+    // Initializations depending if we are on the server or client
+    TundraLogicModule *tundraLogic = GetFramework()->Module<TundraLogicModule>();
+    if (tundraLogic)
+    {
+        if (tundraLogic->IsServer())
+            ServerInitialize(tundraLogic->GetServer().get());
+        else
+            myControllerId_ = tundraLogic->GetClient()->ConnectionId();
+    }
+
+    // Don't do anything beyond if rendering is not enabled
+    // aka headless server. UI enabled server may continue, but they are not going
+    // to have perfect browsing sync as the entity actions are sent to "peers" as in other clients.
+    if (!ViewEnabled() || GetFramework()->IsHeadless())
+        return;
+
+    // Connect window size changes to update rendering as the ogre textures go black.
+    if (GetFramework()->Ui()->MainWindow())
+        connect(GetFramework()->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int,int)), SLOT(RenderWindowResized()), Qt::UniqueConnection);
+
+    // Prepare render timer
+    renderTimer_ = new QTimer(this);
+    connect(renderTimer_, SIGNAL(timeout()), SLOT(Render()), Qt::UniqueConnection);
+    resizeRenderTimer_ = new QTimer(this);
+    resizeRenderTimer_->setSingleShot(true);
+    connect(resizeRenderTimer_, SIGNAL(timeout()), SLOT(RenderDelayed()), Qt::UniqueConnection);
+
+    // Prepare scene interactions
+    SceneInteract *sceneInteract = GetFramework()->Module<SceneInteract>();
+    if (sceneInteract)
+    {
+        connect(sceneInteract, SIGNAL(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)), 
+                SLOT(EntityClicked(Entity*, Qt::MouseButton, RaycastResult*)));
+    }
 }
 
 // Public slots

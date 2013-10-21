@@ -165,6 +165,8 @@ protected:
     void Render(QImage image);
 
 private slots:
+    void Initialize();
+
     /// Server side handler for user disconnects.
     void ServerHandleDisconnect(u32 connectionID, UserConnection *connection);
 

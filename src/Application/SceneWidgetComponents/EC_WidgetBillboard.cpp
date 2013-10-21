@@ -1,31 +1,29 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
+#include "DebugOperatorNew.h"
 #include "EC_WidgetBillboard.h"
 
 #include "Framework.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
-
 #include "EC_Billboard.h"
 #include "EC_Camera.h"
-
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
-
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
 #include "InputAPI.h"
 #include "InputContext.h"
-
 #include "OgreRenderingModule.h"
-#include "OgreTextureUnitState.h"
 #include "OgreMaterialAsset.h"
-#include "OgreBillboard.h"
-#include "OgreBillboardSet.h"
-#include "OgreCamera.h"
-#include "OgreVector3.h"
-#include "OgreMatrix4.h"
 #include "TextureAsset.h"
+
+#include <OgreTextureUnitState.h>
+#include <OgreBillboard.h>
+#include <OgreBillboardSet.h>
+#include <OgreCamera.h>
+#include <OgreVector3.h>
+#include <OgreMatrix4.h>
 
 #include <QGraphicsView>
 #include <QGraphicsScene>
@@ -39,6 +37,8 @@
 #include <QMouseEvent>
 #include <QResizeEvent>
 #include <QFocusEvent>
+
+#include "MemoryLeakCheck.h"
 
 EC_WidgetBillboard::EC_WidgetBillboard(Scene* scene) :
     IComponent(scene),
@@ -54,59 +54,8 @@ EC_WidgetBillboard::EC_WidgetBillboard(Scene* scene) :
     leftPressReleased_(true),
     trackingMouseMove_(false)
 {
-    using namespace OgreRenderer;
-
-    if (!ViewEnabled() || framework->IsHeadless())
-        return;
-
-    OgreRenderingModule *renderModule = framework->GetModule<OgreRenderer::OgreRenderingModule>();
-    if (renderModule)
-    {
-        renderer_ = renderModule->GetRenderer();
-        if (!renderer_.get())
-        {
-            LogError("EC_WidgetBillboard: Failed to get Renderer from OgreRenderingModule!");
-            return;
-        }
-
-        // Create manual material and texture to the asset system
-        uniqueMaterialName_ = QString::fromStdString(renderer_->GetUniqueObjectName("EC_WidgetBillboard")) + ".material";
-        uniqueTextureName_ = QString::fromStdString(renderer_->GetUniqueObjectName("EC_WidgetBillboard")) + ".png";
-
-        materialAsset_ = framework->Asset()->CreateNewAsset("OgreMaterial", uniqueMaterialName_);
-        textureAsset_ = framework->Asset()->CreateNewAsset("Texture", uniqueTextureName_);
-
-        // Request the clone asset
-        AssetTransferPtr transfer = framework->Asset()->RequestAsset(cloneMaterialRef_);
-        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), SLOT(PrepareComponent()));
-        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), SLOT(PrepareComponent()));
-
-        // Connect component signals
-        connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
-
-        // Asset reference listener
-        refListener_ = new AssetRefListener();
-        connect(refListener_, SIGNAL(Loaded(AssetPtr)), SLOT(OnUiAssetLoaded(AssetPtr)));
-        connect(refListener_, SIGNAL(TransferFailed(IAssetTransfer*, QString)), SLOT(OnUiAssetLoadFailed(IAssetTransfer*, QString)));
-
-        // RenderInternal timer
-        renderTimer_.setSingleShot(true);
-        connect(&renderTimer_, SIGNAL(timeout()), SLOT(RenderInternal()));
-
-        // Init widget container and scene
-        widgetContainer_ = new QGraphicsView();
-        widgetContainer_->setAttribute(Qt::WA_DontShowOnScreen, true);
-        widgetContainer_->setMouseTracking(true);
-        widgetContainer_->installEventFilter(this);
-
-        QGraphicsScene *scene = new QGraphicsScene(widgetContainer_);
-        widgetContainer_->setScene(scene);
-
-        connect(scene, SIGNAL(changed(const QList<QRectF>&)), SLOT(Render()));
-        connect(framework->Ui()->GraphicsView(), SIGNAL(WindowResized(int, int)), SLOT(Render())); 
-    }
-    else
-        LogError("EC_WidgetBillboard: Failed to get OgreRenderingModule!");
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(Initialize()));
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()));
 }
 
 EC_WidgetBillboard::~EC_WidgetBillboard()
@@ -221,8 +170,63 @@ EC_Billboard *EC_WidgetBillboard::GetBillboardComponent()
     return ParentEntity()->Component<EC_Billboard>(billboardCompName_).get();
 }
 
+void EC_WidgetBillboard::Initialize()
+{
+    if (!ViewEnabled() || framework->IsHeadless())
+        return;
+
+    OgreRenderingModule *renderModule = framework->Module<OgreRenderingModule>();
+    if (renderModule)
+    {
+        renderer_ = renderModule->Renderer();
+        if (!renderer_)
+        {
+            LogError("EC_WidgetBillboard: Failed to get Renderer from OgreRenderingModule!");
+            return;
+        }
+
+        // Create manual material and texture to the asset system
+        uniqueMaterialName_ = QString::fromStdString(renderer_->GetUniqueObjectName("EC_WidgetBillboard")) + ".material";
+        uniqueTextureName_ = QString::fromStdString(renderer_->GetUniqueObjectName("EC_WidgetBillboard")) + ".png";
+
+        materialAsset_ = framework->Asset()->CreateNewAsset("OgreMaterial", uniqueMaterialName_);
+        textureAsset_ = framework->Asset()->CreateNewAsset("Texture", uniqueTextureName_);
+
+        // Request the clone asset
+        AssetTransferPtr transfer = framework->Asset()->RequestAsset(cloneMaterialRef_);
+        connect(transfer.get(), SIGNAL(Succeeded(AssetPtr)), SLOT(PrepareComponent()));
+        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), SLOT(PrepareComponent()));
+
+        // Asset reference listener
+        refListener_ = new AssetRefListener();
+        connect(refListener_, SIGNAL(Loaded(AssetPtr)), SLOT(OnUiAssetLoaded(AssetPtr)));
+        connect(refListener_, SIGNAL(TransferFailed(IAssetTransfer*, QString)), SLOT(OnUiAssetLoadFailed(IAssetTransfer*, QString)));
+
+        // RenderInternal timer
+        renderTimer_.setSingleShot(true);
+        connect(&renderTimer_, SIGNAL(timeout()), SLOT(RenderInternal()));
+
+        // Init widget container and scene
+        widgetContainer_ = new QGraphicsView();
+        widgetContainer_->setAttribute(Qt::WA_DontShowOnScreen, true);
+        widgetContainer_->setMouseTracking(true);
+        widgetContainer_->installEventFilter(this);
+
+        QGraphicsScene *scene = new QGraphicsScene(widgetContainer_);
+        widgetContainer_->setScene(scene);
+
+        connect(scene, SIGNAL(changed(const QList<QRectF>&)), SLOT(Render()));
+        connect(framework->Ui()->GraphicsView(), SIGNAL(WindowResized(int, int)), SLOT(Render())); 
+    }
+    else
+        LogError("EC_WidgetBillboard: Failed to get OgreRenderingModule!");
+}
+
 void EC_WidgetBillboard::PrepareComponent()
 {
+    if (!ViewEnabled() || framework->IsHeadless())
+        return;
+
     // Wait until the needed asset have been loaded.
     AssetPtr cloneMaterialAsset = framework->Asset()->GetAsset(cloneMaterialRef_);
     if (!cloneMaterialAsset || !cloneMaterialAsset->IsLoaded())

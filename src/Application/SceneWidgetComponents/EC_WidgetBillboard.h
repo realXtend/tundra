@@ -65,6 +65,8 @@ public slots:
     void Render();
 
 private slots:
+    void Initialize();
+
     // Internal render called by a delay timer from Render(), due the fact that qt does resize etc operations lazily.
     void RenderInternal();
 
