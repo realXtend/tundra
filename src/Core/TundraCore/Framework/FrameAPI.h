@@ -86,6 +86,7 @@ private slots:
     /// Deletes delayed signal object and removes it from the list when it's expired.
     void DeleteDelayedSignal();
 };
+Q_DECLARE_METATYPE(FrameAPI*)
 
 /// Stores a delayed signal invocation.
 /** Scripting languages connect their slots when wanting to receive delayed signal when certain amount of application time has passed.
@@ -114,3 +115,4 @@ private slots:
     /** Called by FrameAPI object when the spesified amount of time has passed. */
     void Expire();
 };
+Q_DECLARE_METATYPE(DelayedSignal*)

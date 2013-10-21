@@ -122,3 +122,5 @@ public slots:
     int keyCodeInt() const { return (int)keyCode; }
     KeyEvent::EventType GetEventType() const { return Type(); } /**< @deprecated Use Type or 'eventType' instead. @todo Remove */
 };
+Q_DECLARE_METATYPE(KeyEvent*)
+//Q_DECLARE_METATYPE(KeyEvent::EventType)

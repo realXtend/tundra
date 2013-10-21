@@ -15,12 +15,12 @@
 #include "IModule.h"
 #include "FrameAPI.h"
 #include "ConsoleAPI.h"
-
 #include "InputAPI.h"
 #include "AssetAPI.h"
 #include "AudioAPI.h"
 #include "SceneAPI.h"
 #include "UiAPI.h"
+#include "Color.h"
 
 #ifndef _WINDOWS
 #include <sys/ioctl.h>
@@ -324,6 +324,20 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
     RegisterDynamicObject("profiler", profilerQObj);
 
     PrintStartupOptions();
+
+    qRegisterMetaType<size_t>("size_t");
+    qRegisterMetaType<s8>("s8");
+    qRegisterMetaType<u8>("u8");
+    qRegisterMetaType<s16>("s16");
+    qRegisterMetaType<u16>("u16");
+    qRegisterMetaType<s32>("s32");
+    qRegisterMetaType<u32>("u32");
+    qRegisterMetaType<s64>("s64");
+    qRegisterMetaType<u64>("u64");
+    qRegisterMetaType<QList<QObject*> >("QList<QObject*>");
+    qRegisterMetaType<QList<RaycastResult*> >("QList<RaycastResult*>");
+    qRegisterMetaType<Color>("Color");
+    qRegisterMetaType<std::string>("std::string");
 }
 
 Framework::~Framework()

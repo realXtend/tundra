@@ -261,6 +261,7 @@ private:
     entity_id_t entityId_;
     Entity* entity_;
 };
+Q_DECLARE_METATYPE(StateChangeRequest*)
 
 typedef std::list<component_id_t> ComponentIdList;
 
@@ -383,3 +384,4 @@ private:
 
     SceneWeakPtr scene_;
 };
+Q_DECLARE_METATYPE(SceneSyncState*)

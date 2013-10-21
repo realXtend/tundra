@@ -254,6 +254,7 @@ private:
     static JNIEnv* jniEnv;
 #endif 
 };
+Q_DECLARE_METATYPE(Framework*)
 
 template <class T>
 T *Framework::Module() const

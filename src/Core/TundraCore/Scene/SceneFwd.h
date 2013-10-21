@@ -36,3 +36,8 @@ typedef weak_ptr<IComponent> ComponentWeakPtr;
 typedef shared_ptr<IComponentFactory> ComponentFactoryPtr;
 typedef std::vector<IAttribute*> AttributeVector;
 typedef std::map<QString, ScenePtr> SceneMap;
+
+Q_DECLARE_METATYPE(ScenePtr)
+Q_DECLARE_METATYPE(EntityPtr)
+Q_DECLARE_METATYPE(ComponentPtr)
+Q_DECLARE_METATYPE(EntityList)

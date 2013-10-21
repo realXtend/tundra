@@ -42,3 +42,4 @@ private:
     std::string originalData; ///< Original particle script file data, asset references are in sanitated format.
     std::vector<AssetReference> references; ///< references to other resources this resource depends on
 };
+Q_DECLARE_METATYPE(OgreParticleAsset*)

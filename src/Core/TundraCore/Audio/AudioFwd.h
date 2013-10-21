@@ -24,3 +24,5 @@ typedef weak_ptr<AudioAsset> AudioAssetWeakPtr;
 // We don't want to include the OpenAL headers here directly (<AL/al.h>, <AL/alc.h>). Pulled the necessary declarations here directly.
 /** unsigned 32-bit integer */
 typedef unsigned int ALuint;
+
+Q_DECLARE_METATYPE(SoundChannelPtr)

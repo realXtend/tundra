@@ -177,3 +177,4 @@ private:
     Framework *framework_;
     QString configFolder_; ///< Absolute path to the folder where to store the config files.
 };
+Q_DECLARE_METATYPE(ConfigAPI*)

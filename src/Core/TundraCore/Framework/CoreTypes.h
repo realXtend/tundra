@@ -9,6 +9,7 @@
 
 #include <QString>
 #include <QStringList>
+#include <QMetaType>
 
 #if defined(unix) || defined(__APPLE__)
 #include <cmath>
@@ -130,3 +131,6 @@ typedef shared_ptr<StringVector> StringVectorPtr;
 
 typedef std::list<std::string> StringList;
 typedef shared_ptr<StringList> StringListPtr;
+
+Q_DECLARE_METATYPE(QList<QObject*>)
+Q_DECLARE_METATYPE(std::string)

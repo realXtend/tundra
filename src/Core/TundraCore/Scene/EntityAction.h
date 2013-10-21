@@ -68,3 +68,6 @@ private:
 
     const QString name; ///< Name of the action.
 };
+Q_DECLARE_METATYPE(EntityAction*);
+Q_DECLARE_METATYPE(EntityAction::ExecType);
+Q_DECLARE_METATYPE(EntityAction::ExecTypeField);

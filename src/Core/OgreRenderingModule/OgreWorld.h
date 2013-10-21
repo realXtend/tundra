@@ -346,7 +346,7 @@ private:
 /// Instancing mesh target data.
 class MeshInstanceTarget : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 
 public:
     MeshInstanceTarget(const QString &_ref, uint _batchSize, bool _static = false);

@@ -10,3 +10,4 @@ struct UserConnectedResponseData
 {
     QDomDocument responseData;
 };
+Q_DECLARE_METATYPE(UserConnectedResponseData*)

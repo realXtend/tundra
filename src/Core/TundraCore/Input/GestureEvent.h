@@ -41,7 +41,7 @@ public:
     QGesture *gesture;
 
     /// Type of the gesture ptr for casts into the correct subclass 
-    /// http://doc.trolltech.com/4.6/qgesture.html
+    /// http://qt-project.org/doc/qt-4.8/qgesture.html
     Qt::GestureType gestureType;
 
     /// Identifies of the gesture state this event is
@@ -67,3 +67,5 @@ public slots:
     bool IsUpdatedEvent() const { return eventType == GestureUpdated; } /**< @deprecated Use Type or 'eventType' @todo Remove. */
     bool IsFinishedEvent() const { return eventType == GestureFinished || eventType == GestureCanceled; } /**< @deprecated Use Type or 'eventType' @todo Remove. */
 };
+Q_DECLARE_METATYPE(GestureEvent*)
+//Q_DECLARE_METATYPE(GestureEvent::EventType)

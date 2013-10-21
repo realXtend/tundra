@@ -26,8 +26,10 @@ using TundraLogic::TundraLogicModule;
 
 class UserConnection;
 typedef shared_ptr<UserConnection> UserConnectionPtr;
+Q_DECLARE_METATYPE(UserConnectionPtr)
 typedef weak_ptr<UserConnection> UserConnectionWeakPtr;
 typedef std::list<UserConnectionPtr> UserConnectionList;
+Q_DECLARE_METATYPE(UserConnectionList)
 
 class SceneSyncState;
 struct EntitySyncState;
@@ -35,6 +37,7 @@ struct ComponentSyncState;
 struct UserConnectedResponseData;
 
 typedef std::map<QString, QString> LoginPropertyMap; ///< propertyName-propertyValue map of login properties.
+Q_DECLARE_METATYPE(LoginPropertyMap)
 
 struct MsgLogin;
 struct MsgLoginReply;

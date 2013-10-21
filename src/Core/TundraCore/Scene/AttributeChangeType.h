@@ -11,6 +11,7 @@
 #include "TundraCoreApi.h"
 
 #include <QObject>
+#include <QMetaType>
 
 /// Dummy class containing enumeration of attribute/component change types for replication.
 class TUNDRACORE_API AttributeChange : public QObject
@@ -36,3 +37,5 @@ public:
         Replicate
     };
 };
+Q_DECLARE_METATYPE(AttributeChange*)
+Q_DECLARE_METATYPE(AttributeChange::Type)

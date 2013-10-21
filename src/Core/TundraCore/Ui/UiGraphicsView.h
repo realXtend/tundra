@@ -96,3 +96,4 @@ private:
 private slots:
     void HandleSceneChanged(const QList<QRectF> &rectangles);
 };
+Q_DECLARE_METATYPE(UiGraphicsView*)

@@ -63,10 +63,15 @@ class OgreSkeletonAsset;
 class OgreParticleAsset;
 
 typedef shared_ptr<TextureAsset> TextureAssetPtr;
+Q_DECLARE_METATYPE(TextureAssetPtr)
 typedef shared_ptr<OgreMeshAsset> OgreMeshAssetPtr;
+Q_DECLARE_METATYPE(OgreMeshAssetPtr)
 typedef shared_ptr<OgreMaterialAsset> OgreMaterialAssetPtr;
+Q_DECLARE_METATYPE(OgreMaterialAssetPtr)
 typedef shared_ptr<OgreSkeletonAsset> OgreSkeletonAssetPtr;
+Q_DECLARE_METATYPE(OgreSkeletonAssetPtr)
 typedef shared_ptr<OgreParticleAsset> OgreParticleAssetPtr;
+Q_DECLARE_METATYPE(OgreParticleAssetPtr)
 
 class EC_AnimationController;
 class EC_Camera;

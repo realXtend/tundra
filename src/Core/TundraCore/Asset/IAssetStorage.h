@@ -158,3 +158,6 @@ protected:
     /// Specifies whether assets from this storage are trusted security-wise.
     TrustState trustState;
 };
+Q_DECLARE_METATYPE(IAssetStorage*)
+Q_DECLARE_METATYPE(IAssetStorage::ChangeType)
+Q_DECLARE_METATYPE(IAssetStorage::TrustState)

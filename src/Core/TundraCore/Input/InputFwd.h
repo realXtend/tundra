@@ -15,3 +15,5 @@ class GestureEvent;
 class QGraphicsItem;
 class QGraphicsView;
 typedef shared_ptr<InputContext> InputContextPtr;
+
+Q_DECLARE_METATYPE(InputContextPtr)

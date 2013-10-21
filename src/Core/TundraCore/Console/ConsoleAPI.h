@@ -147,6 +147,7 @@ private slots:
     void CreateNativeConsole(); // Windows-only
     void RemoveNativeConsole(); // Windows-only
 };
+Q_DECLARE_METATYPE(ConsoleAPI*)
 
 /// Represents a registered console command.
 class TUNDRACORE_API ConsoleCommand : public QObject
@@ -195,3 +196,4 @@ private:
     QString functionName;
     QString functionNameDefaultArgs;
 };
+Q_DECLARE_METATYPE(ConsoleCommand*)

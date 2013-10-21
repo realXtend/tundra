@@ -301,3 +301,4 @@ signals:
     void onS64(s64 test) const;
     void onU64(u64 test) const;
 };
+Q_DECLARE_METATYPE(IntegerTestRunner*);

@@ -74,6 +74,8 @@ public:
     /// Distance along the ray to the point of intersection. If this is FLOAT_INF, then no intersection has occurred.
     float t;
 };
+Q_DECLARE_METATYPE(RaycastResult*)
+Q_DECLARE_METATYPE(QList<RaycastResult*>)
 
 ///\todo This structure replaces and obsoletes the above. Delete the above one.
 struct TUNDRACORE_API RayQueryResult
@@ -105,6 +107,8 @@ struct TUNDRACORE_API RayQueryResult
     /// Distance along the ray to the point of intersection. If this is FLOAT_INF, then no intersection has occurred.
     float t;
 };
+Q_DECLARE_METATYPE(RayQueryResult)
+Q_DECLARE_METATYPE(RayQueryResult*)
 
 /// Describes the system renderer.
 /** @note This class is not an abstract reimplementable interface, but exists only internally for DLL dependency inversion

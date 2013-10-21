@@ -438,5 +438,8 @@ private:
     ActionMap actions_; ///< Map of registered entity actions.
     bool temporary_; ///< Temporary-flag
 };
+Q_DECLARE_METATYPE(Entity*)
+Q_DECLARE_METATYPE(Entity::ComponentVector)
+Q_DECLARE_METATYPE(Entity::ComponentMap)
 
 #include "Entity.inl"

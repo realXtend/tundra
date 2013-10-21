@@ -265,3 +265,4 @@ private:
     
     std::vector<PendingTextureApply> pendingApplies;
 };
+Q_DECLARE_METATYPE(OgreMaterialAsset*)

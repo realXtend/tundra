@@ -64,3 +64,4 @@ private:
 
     const QString name; ///< Name of the module
 };
+Q_DECLARE_METATYPE(IModule*)

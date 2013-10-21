@@ -74,3 +74,4 @@ protected:
     /** Emits Closed() signal. */
     virtual void closeEvent(QCloseEvent *e);
 };
+Q_DECLARE_METATYPE(UiProxyWidget*)

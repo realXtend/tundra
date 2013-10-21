@@ -168,3 +168,4 @@ private:
     struct AudioApiImpl;
     AudioApiImpl *impl;
 };
+Q_DECLARE_METATYPE(AudioAPI*)

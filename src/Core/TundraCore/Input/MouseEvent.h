@@ -48,7 +48,7 @@ public:
     }
     virtual ~MouseEvent() {}
 
-    /// These correspond to Qt::MouseEvent enum. See http://doc.trolltech.com/4.6/qt.html#MouseButton-enum 
+    /// These correspond to Qt::MouseEvent enum. See http://qt-project.org/doc/qt-4.8/qt.html#MouseButton-enum 
     enum MouseButton
     {
         NoButton = 0,
@@ -108,7 +108,7 @@ public:
     unsigned long otherButtons;
 
     /// A bitfield of the keyboard modifiers (Ctrl, Shift, ...) associated with this key event.
-    /// Use Qt::KeyboardModifier, http://doc.trolltech.com/4.6/qt.html#KeyboardModifier-enum to access these.
+    /// Use Qt::KeyboardModifier, http://qt-project.org/doc/qt-4.8/qt.html#KeyboardModifier-enum to access these.
     /// @sa HasShiftModifier, HasCtrlModifier, HasAltModifier
     unsigned long modifiers;
 
@@ -203,3 +203,7 @@ public slots:
     MouseEvent::MouseButton GetMouseButton() const { return Button(); } /**< @deprecated Use Button or 'button' @todo Remove */
     MouseEvent::PressOrigin GetPressOrigin() const { return Origin(); } /**< @deprecated Use Origin or 'origin' @todo Remove */
 };
+Q_DECLARE_METATYPE(MouseEvent*)
+//Q_DECLARE_METATYPE(MouseEvent::MouseButton)
+//Q_DECLARE_METATYPE(MouseEvent::EventType)
+//Q_DECLARE_METATYPE(MouseEvent::PressOrigin)

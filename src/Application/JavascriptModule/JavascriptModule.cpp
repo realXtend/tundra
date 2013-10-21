@@ -70,7 +70,7 @@ void JavascriptModule::Initialize()
 {
     connect(GetFramework()->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(SceneAdded(const QString&)));
 
-    RegisterCoreMetaTypes();
+    qRegisterMetaType<IntegerTestRunner*>("IntegerTestRunner");
 
     framework_->Console()->RegisterCommand(
         "jsExec", "Execute given code in the embedded Javascript interpreter. Usage: jsExec(mycodestring)",

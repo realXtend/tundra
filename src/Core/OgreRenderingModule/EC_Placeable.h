@@ -346,3 +346,4 @@ private:
     friend class BoneAttachmentListener;
     friend class CustomTagPoint;
 };
+Q_DECLARE_METATYPE(EC_Placeable*)

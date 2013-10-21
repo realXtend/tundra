@@ -2,11 +2,12 @@
 
 #pragma once
 
-#include <QMainWindow>
-#include <QHash>
-
 #include "UiFwd.h"
 #include "TundraCoreApi.h"
+
+#include <QMainWindow>
+#include <QHash>
+#include <QMetaType>
 
 class QMenu;
 class QAction;
@@ -94,3 +95,4 @@ private:
     /// A hash map to internally track existing menus.
     QHash<QString, QMenu*> menus_;
 };
+Q_DECLARE_METATYPE(UiMainWindow*)

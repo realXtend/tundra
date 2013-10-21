@@ -49,3 +49,4 @@ private:
     /// IAsset override.
     virtual void DoUnload();
 };
+Q_DECLARE_METATYPE(OgreSkeletonAsset*)

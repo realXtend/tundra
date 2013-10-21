@@ -71,3 +71,4 @@ signals:
     /// Emitted when action has been triggered for this specific user connection.
     void ActionTriggered(UserConnection* connection, Entity* entity, const QString& action, const QStringList& params);
 };
+Q_DECLARE_METATYPE(UserConnection*)

@@ -511,5 +511,8 @@ private:
     std::vector<AttributeInterpolation> interpolations_; ///< Running attribute interpolations.
     std::vector<std::pair<EntityWeakPtr, AttributeChange::Type> > entitiesCreatedThisFrame_; ///< Entities to signal for creation at frame end.
 };
+Q_DECLARE_METATYPE(Scene*);
+Q_DECLARE_METATYPE(Scene::EntityMap)
+Q_DECLARE_METATYPE(QList<Entity*>)
 
 #include "Scene.inl"

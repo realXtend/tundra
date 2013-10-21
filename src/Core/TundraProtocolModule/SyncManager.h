@@ -206,3 +206,4 @@ private:
 };
 
 }
+Q_DECLARE_METATYPE(TundraLogic::SyncManager*)

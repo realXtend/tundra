@@ -427,3 +427,4 @@ private:
     /// Set component id. Called by Entity
     void SetNewId(component_id_t newId);
 };
+Q_DECLARE_METATYPE(IComponent*)

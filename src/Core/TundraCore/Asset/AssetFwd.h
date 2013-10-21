@@ -51,3 +51,7 @@ typedef shared_ptr<AssetRefListener> AssetRefListenerPtr;
 class Framework;
 class BinaryAsset;
 typedef shared_ptr<BinaryAsset> BinaryAssetPtr;
+
+Q_DECLARE_METATYPE(AssetPtr)
+Q_DECLARE_METATYPE(AssetUploadTransferPtr)
+Q_DECLARE_METATYPE(AssetStoragePtr)

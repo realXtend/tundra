@@ -150,6 +150,7 @@ protected:
     /// @see ValueChanged().
     bool valueChanged;
 };
+Q_DECLARE_METATYPE(IAttribute*)
 
 typedef std::vector<IAttribute*> AttributeVector;
 

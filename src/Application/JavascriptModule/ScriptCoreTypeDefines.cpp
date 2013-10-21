@@ -2,13 +2,15 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
+#include "ScriptMetaTypeDefines.h"
+
 #include "Color.h"
 #include "IAttribute.h"
 #include "IRenderer.h"
 #include "AssetReference.h"
 #include "EntityReference.h"
 #include "Entity.h"
-#include "ScriptMetaTypeDefines.h"
 #include "Scene/Scene.h"
 #include "LoggingFunctions.h"
 #include "QScriptEngineHelpers.h"
@@ -17,23 +19,6 @@
 #include <QScriptValueIterator>
 
 #include "MemoryLeakCheck.h"
-
-Q_DECLARE_METATYPE(IAttribute*)
-Q_DECLARE_METATYPE(ScenePtr)
-Q_DECLARE_METATYPE(EntityPtr)
-Q_DECLARE_METATYPE(ComponentPtr)
-Q_DECLARE_METATYPE(Entity::ComponentVector)
-Q_DECLARE_METATYPE(QList<Entity*>)
-Q_DECLARE_METATYPE(QList<QObject*>)
-Q_DECLARE_METATYPE(QList<RaycastResult*>)
-Q_DECLARE_METATYPE(Entity*)
-Q_DECLARE_METATYPE(std::string)
-Q_DECLARE_METATYPE(EntityList)
-Q_DECLARE_METATYPE(Scene::EntityMap)
-Q_DECLARE_METATYPE(Entity::ComponentMap)
-
-// Test objects
-Q_DECLARE_METATYPE(IntegerTestRunner*);
 
 QScriptValue toScriptValueIAttribute(QScriptEngine *engine, IAttribute * const &s)
 {
@@ -377,34 +362,6 @@ void fromScriptValueIAttribute(const QScriptValue & /*obj*/, IAttribute *& /*s*/
     // Left empty deliberately, since we do not have need of conversion from QScriptValue to IAttribute
 }
 
-QScriptValue createColor(QScriptContext *ctx, QScriptEngine *engine)
-{
-    Color newColor;
-    if (ctx->argumentCount() >= 3)
-    {
-        if (ctx->argument(0).isNumber() && ctx->argument(1).isNumber() && ctx->argument(2).isNumber())
-        {
-            newColor.r = (float)ctx->argument(0).toNumber();
-            newColor.g = (float)ctx->argument(1).toNumber();
-            newColor.b = (float)ctx->argument(2).toNumber();
-        }
-        else
-            return ctx->throwError(QScriptContext::TypeError, "Color(): arguments aren't numbers.");
-
-        if (ctx->argumentCount() == 4) // Has alpha
-        {
-            if (ctx->argument(3).isNumber())
-                newColor.a = (float)ctx->argument(3).toNumber();
-            else
-                return ctx->throwError(QScriptContext::TypeError, "Color(): 4th argument is not a number.");
-        }
-    }
-    else
-        return ctx->throwError(QScriptContext::TypeError, "Color(): not enought arguments: minimum of 3 needed.");
-
-    return engine->toScriptValue(newColor);
-}
-
 QScriptValue createAssetReference(QScriptContext *ctx, QScriptEngine *engine)
 {
     AssetReference newAssetRef;
@@ -442,28 +399,6 @@ QScriptValue createIntegerTesterRunner(QScriptContext *ctx, QScriptEngine * /*en
     if (!ctx->engine() || ctx->thisObject().isNull())
         return QScriptValue();
     return ctx->engine()->newQObject(ctx->thisObject(), new IntegerTestRunner(), QScriptEngine::AutoOwnership);
-}
-
-void RegisterCoreMetaTypes()
-{
-    qRegisterMetaType<ScenePtr>("ScenePtr");
-    qRegisterMetaType<ComponentPtr>("ComponentPtr");
-    qRegisterMetaType<Color>("Color");
-    qRegisterMetaType<AssetReference>("AssetReference");
-    qRegisterMetaType<AssetReferenceList>("AssetReferenceList");
-    qRegisterMetaType<EntityReference>("EntityReference");
-    qRegisterMetaType<IAttribute*>("IAttribute*");
-    qRegisterMetaType<QList<Entity*> >("QList<Entity*>");
-    qRegisterMetaType<QList<QObject*> >("QList<QObject*>");
-    qRegisterMetaType<QList<RaycastResult*> >("QList<RaycastResult*>");
-    qRegisterMetaType<EntityList>("EntityList");
-    qRegisterMetaType<Scene::EntityMap>("EntityMap");
-    qRegisterMetaType<Entity::ComponentMap>("ComponentMap");
-    qRegisterMetaType<Entity::ComponentVector>("ComponentVector");
-    qRegisterMetaType<std::string>("std::string");
-    
-    // Test objects
-    qRegisterMetaType<IntegerTestRunner*>("IntegerTestRunner");
 }
 
 void ExposeCoreTypes(QScriptEngine *engine)

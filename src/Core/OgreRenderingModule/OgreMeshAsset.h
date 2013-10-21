@@ -95,3 +95,4 @@ private:
     /// Triangle counts per submesh.
     std::vector<int> subMeshTriangleCounts;
 };
+Q_DECLARE_METATYPE(OgreMeshAsset*)

@@ -26,15 +26,6 @@
 
 #include "MemoryLeakCheck.h"
 
-Q_DECLARE_METATYPE(UserConnection*);
-Q_DECLARE_METATYPE(UserConnectionPtr);
-Q_DECLARE_METATYPE(UserConnectionList);
-Q_DECLARE_METATYPE(TundraLogic::SyncManager*);
-Q_DECLARE_METATYPE(SceneSyncState*);
-Q_DECLARE_METATYPE(StateChangeRequest*);
-Q_DECLARE_METATYPE(UserConnectedResponseData*);
-Q_DECLARE_METATYPE(LoginPropertyMap);
-
 using namespace kNet;
 
 namespace TundraLogic
@@ -103,7 +94,7 @@ bool Server::Start(unsigned short port, QString protocol)
 
     emit ServerStarted();
 
-    KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
+    KristalliProtocolModule *kristalli = framework_->Module<KristalliProtocolModule>();
     connect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), 
         this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::packet_id_t, kNet::message_id_t, const char*, size_t)), Qt::UniqueConnection);
 
@@ -123,7 +114,7 @@ void Server::Stop()
         
         emit ServerStopped();
 
-        KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
+        KristalliProtocolModule *kristalli = framework_->Module<KristalliProtocolModule>();
         disconnect(kristalli, SIGNAL(NetworkMessageReceived(kNet::MessageConnection *, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), 
             this, SLOT(HandleKristalliMessage(kNet::MessageConnection*, kNet::packet_id_t, kNet::message_id_t, const char*, size_t)));
 

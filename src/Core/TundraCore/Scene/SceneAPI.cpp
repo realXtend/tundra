@@ -32,6 +32,18 @@ SceneAPI::SceneAPI(Framework *owner) :
     QObject(owner),
     framework(owner)
 {
+    qRegisterMetaType<EntityAction::ExecTypeField>("EntityAction::ExecTypeField");
+    qRegisterMetaType<entity_id_t>("entity_id_t");
+    qRegisterMetaType<component_id_t>("component_id_t");
+    qRegisterMetaType<ScenePtr>("ScenePtr");
+    qRegisterMetaType<ComponentPtr>("ComponentPtr");
+    qRegisterMetaType<EntityReference>("EntityReference");
+    qRegisterMetaType<IAttribute*>("IAttribute*");
+    qRegisterMetaType<QList<Entity*> >("QList<Entity*>");
+    qRegisterMetaType<EntityList>("EntityList");
+    qRegisterMetaType<Scene::EntityMap>("EntityMap");
+    qRegisterMetaType<Entity::ComponentMap>("ComponentMap");
+    qRegisterMetaType<Entity::ComponentVector>("ComponentVector");
 }
 
 SceneAPI::~SceneAPI()

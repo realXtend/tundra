@@ -289,3 +289,4 @@ private:
     /// Render texture name used in SaveScreenshot(), ToQImage() and ToOgreImage() functions.
     std::string renderTextureName_;
 };
+Q_DECLARE_METATYPE(EC_Camera*)

@@ -322,3 +322,4 @@ private:
     QWidget *mainWindow;
     Framework *framework;
 };
+Q_DECLARE_METATYPE(InputAPI::KeyBindingMap);

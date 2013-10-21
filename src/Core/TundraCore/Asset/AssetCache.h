@@ -77,3 +77,4 @@ private:
     /// Asset data dir.
     QDir assetDataDir;
 };
+Q_DECLARE_METATYPE(AssetCache*)

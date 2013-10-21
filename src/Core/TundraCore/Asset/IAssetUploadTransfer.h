@@ -77,3 +77,4 @@ signals:
     /// Emitted when upload fails.
     void Failed(IAssetUploadTransfer *transfer);
 };
+Q_DECLARE_METATYPE(IAssetUploadTransfer*)

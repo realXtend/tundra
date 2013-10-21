@@ -45,63 +45,7 @@
 
 #include "MemoryLeakCheck.h"
 
-// Input API defines
-Q_DECLARE_METATYPE(MouseEvent*)
-Q_DECLARE_METATYPE(KeyEvent*)
-Q_DECLARE_METATYPE(GestureEvent*)
-Q_DECLARE_METATYPE(InputContext*)
-Q_DECLARE_METATYPE(InputContextPtr);
-Q_DECLARE_METATYPE(InputAPI::KeyBindingMap);
-
-// Asset API defines
-Q_DECLARE_METATYPE(AssetPtr);
-Q_DECLARE_METATYPE(AssetUploadTransferPtr);
-Q_DECLARE_METATYPE(IAssetUploadTransfer*);
-Q_DECLARE_METATYPE(AssetStoragePtr);
-Q_DECLARE_METATYPE(IAssetStorage*);
-Q_DECLARE_METATYPE(ScriptAssetPtr);
-Q_DECLARE_METATYPE(ScriptAsset*);
-Q_DECLARE_METATYPE(AssetCache*);
-Q_DECLARE_METATYPE(AssetMap);
-Q_DECLARE_METATYPE(AssetTransferMap);
-Q_DECLARE_METATYPE(AssetStorageVector);
-Q_DECLARE_METATYPE(IAssetStorage::ChangeType);
-Q_DECLARE_METATYPE(IAssetStorage::TrustState);
-
-// Ui defines
-Q_DECLARE_METATYPE(UiProxyWidget*);
-Q_DECLARE_METATYPE(UiMainWindow*);
-Q_DECLARE_METATYPE(UiGraphicsView*);
 Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
-
-// Scene API defines.
-Q_DECLARE_METATYPE(SceneAPI*);
-Q_DECLARE_METATYPE(Scene*);
-Q_DECLARE_METATYPE(Entity*);
-Q_DECLARE_METATYPE(EntityAction*);
-Q_DECLARE_METATYPE(EntityAction::ExecType);
-Q_DECLARE_METATYPE(EntityAction::ExecTypeField);
-Q_DECLARE_METATYPE(AttributeChange*);
-Q_DECLARE_METATYPE(ChangeRequest*);
-Q_DECLARE_METATYPE(IComponent*);
-Q_DECLARE_METATYPE(AttributeChange::Type);
-
-// Framework object defines.
-Q_DECLARE_METATYPE(Framework*);
-Q_DECLARE_METATYPE(IModule*);
-Q_DECLARE_METATYPE(FrameAPI*);
-Q_DECLARE_METATYPE(ConsoleAPI*);
-Q_DECLARE_METATYPE(ConsoleCommand*);
-Q_DECLARE_METATYPE(DelayedSignal*);
-Q_DECLARE_METATYPE(ConfigAPI*);
-Q_DECLARE_METATYPE(RaycastResult*);
-
-// Audio API defines.
-Q_DECLARE_METATYPE(AudioAPI*);
-Q_DECLARE_METATYPE(SoundChannel*);
-Q_DECLARE_METATYPE(SoundChannel::SoundType)
-Q_DECLARE_METATYPE(SoundChannel::SoundState)
-Q_DECLARE_METATYPE(SoundChannelPtr);
 
 QScriptValue qScriptValueFromAssetMap(QScriptEngine *engine, const AssetMap &assetMap)
 {
@@ -272,19 +216,6 @@ static QScriptValue math_MathBreakOnAssume(QScriptContext * /*context*/, QScript
 
 void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 {
-    // C/C++ standard library typedef size_t
-    qRegisterMetaType<size_t>("size_t");
-
-    // Core integer type defines
-    qRegisterMetaType<s8>("s8");
-    qRegisterMetaType<u8>("u8");
-    qRegisterMetaType<s16>("s16");
-    qRegisterMetaType<u16>("u16");
-    qRegisterMetaType<s32>("s32");
-    qRegisterMetaType<u32>("u32");
-    qRegisterMetaType<s64>("s64");
-    qRegisterMetaType<u64>("u64");
-
     // JS -> C++: Enables correct JS 'number' type to our typedef conversion. Hits when slots take in eg. u32 as a parameter.
     qScriptRegisterMetaType(engine, toScriptU32OrSmaller<size_t>, fromScriptUInt<size_t>);
     qScriptRegisterMetaType(engine, toScriptS32OrSmaller<s8>, fromScriptChar<s8>);
@@ -329,13 +260,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<KeyEvent*>(engine);
     qScriptRegisterQObjectMetaType<GestureEvent*>(engine);
     qScriptRegisterQObjectMetaType<InputContext*>(engine);
-    qRegisterMetaType<InputContextPtr>("InputContextPtr");
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<InputContext>, qScriptValueToBoostSharedPtr<InputContext>);
-    qRegisterMetaType<KeyEvent::EventType>("EventType");
-    qRegisterMetaType<MouseEvent::EventType>("EventType");
-    qRegisterMetaType<MouseEvent::MouseButton>("MouseButton");
-    qRegisterMetaType<GestureEvent::EventType>("EventType");
-    qRegisterMetaType<InputAPI::KeyBindingMap>("KeyBindingMap");
     qScriptRegisterMetaType<InputAPI::KeyBindingMap>(engine, qScriptValueFromKeyBindingMap, qScriptValueToKeyBindingMap);
 
     // Scene metatypes.
@@ -348,11 +273,8 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<IComponent*>(engine);
     qScriptRegisterMetaType(engine, toScriptValueEnum<AttributeChange::Type>, fromScriptValueEnum<AttributeChange::Type>);
     qScriptRegisterMetaType(engine, toScriptValueEnum<EntityAction::ExecType>, fromScriptValueEnum<EntityAction::ExecType>);
-    qRegisterMetaType<EntityAction::ExecTypeField>("EntityAction::ExecTypeField");
 
-    qRegisterMetaType<entity_id_t>("entity_id_t");
     qScriptRegisterMetaType(engine, toScriptU32OrSmaller<entity_id_t>, fromScriptUInt<entity_id_t>);
-    qRegisterMetaType<component_id_t>("component_id_t");
     qScriptRegisterMetaType(engine, toScriptU32OrSmaller<component_id_t>, fromScriptUInt<component_id_t>);
 
     // Framework metatypes.
@@ -373,18 +295,11 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     register_ConfigData_prototype(engine);
 
     // Asset API
-    qRegisterMetaType<AssetPtr>("AssetPtr");
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAsset>, qScriptValueToBoostSharedPtr<IAsset>);
-
-    qRegisterMetaType<AssetTransferPtr>("AssetTransferPtr");
     qScriptRegisterQObjectMetaType<IAssetTransfer*>(engine);
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAssetTransfer>, qScriptValueToBoostSharedPtr<IAssetTransfer>);
-
-    qRegisterMetaType<AssetUploadTransferPtr>("AssetUploadTransferPtr");
     qScriptRegisterQObjectMetaType<IAssetUploadTransfer*>(engine);
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAssetUploadTransfer>, qScriptValueToBoostSharedPtr<IAssetUploadTransfer>);
-
-    qRegisterMetaType<AssetStoragePtr>("AssetStoragePtr");
     qScriptRegisterQObjectMetaType<IAssetStorage*>(engine);
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAssetStorage>, qScriptValueToBoostSharedPtr<IAssetStorage>);
 /*
@@ -394,13 +309,10 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 */
     qScriptRegisterQObjectMetaType<AssetCache*>(engine);
 
-    qRegisterMetaType<AssetMap>("AssetMap");
     qScriptRegisterMetaType<AssetMap>(engine, qScriptValueFromAssetMap, qScriptValueToAssetMap);
 
-    qRegisterMetaType<AssetTransferMap>("AssetTransferMap");
     qScriptRegisterMetaType<AssetTransferMap>(engine, qScriptValueFromAssetTransferMap, qScriptValueToAssetTransferMap);
 
-    qRegisterMetaType<AssetStorageVector>("AssetStorageVector");
     qScriptRegisterMetaType<AssetStorageVector>(engine, qScriptValueFromAssetStoragePtrVector, qScriptValueToAssetStoragePtrVector);
 
     qScriptRegisterMetaType(engine, toScriptValueEnum<IAssetStorage::ChangeType>, fromScriptValueEnum<IAssetStorage::ChangeType>);
@@ -416,10 +328,8 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("UiProxyWidget", object);
     
     // Sound metatypes.
-    qRegisterMetaType<sound_id_t>("sound_id_t");
     qScriptRegisterMetaType(engine, toScriptValueEnum<SoundChannel::SoundState>, fromScriptValueEnum<SoundChannel::SoundState>);
     qScriptRegisterMetaType(engine, toScriptValueEnum<SoundChannel::SoundType>, fromScriptValueEnum<SoundChannel::SoundType>);
-    qRegisterMetaType<SoundChannelPtr>("SoundChannelPtr");
     qScriptRegisterQObjectMetaType<SoundChannel*>(engine);
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<SoundChannel>, qScriptValueToBoostSharedPtr<SoundChannel>);
 

@@ -43,5 +43,7 @@ private slots:
     /// Parse internal references from script
     void ParseReferences();
 };
+Q_DECLARE_METATYPE(ScriptAsset*)
 
 typedef shared_ptr<ScriptAsset> ScriptAssetPtr;
+Q_DECLARE_METATYPE(ScriptAssetPtr)

@@ -190,3 +190,4 @@ private:
     SceneMap scenes; ///< All currently created scenes.
     static const QStringList attributeTypeNames;
 };
+Q_DECLARE_METATYPE(SceneAPI*);

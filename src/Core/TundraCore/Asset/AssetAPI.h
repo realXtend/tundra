@@ -35,11 +35,13 @@ std::map<QString, QString> TUNDRACORE_API ParseAssetRefArgs(const QString &url, 
 QString TUNDRACORE_API GuaranteeTrailingSlash(const QString &source);
 
 typedef std::map<QString, AssetPtr, QStringLessThanNoCase> AssetMap; ///<  Maps asset names to their AssetPtrs.
-typedef std::map<QString, AssetBundlePtr, QStringLessThanNoCase> AssetBundleMap; ///<  Maps asset bundle names to their AssetBundlePtrs.
+Q_DECLARE_METATYPE(AssetMap)
 typedef std::map<QString, AssetTransferPtr, QStringLessThanNoCase> AssetTransferMap;
-typedef std::map<QString, AssetBundleMonitorPtr, QStringLessThanNoCase> AssetBundleMonitorMap;
-
+Q_DECLARE_METATYPE(AssetTransferMap)
 typedef std::vector<AssetStoragePtr> AssetStorageVector;
+Q_DECLARE_METATYPE(AssetStorageVector)
+typedef std::map<QString, AssetBundlePtr, QStringLessThanNoCase> AssetBundleMap; ///<  Maps asset bundle names to their AssetBundlePtrs.
+typedef std::map<QString, AssetBundleMonitorPtr, QStringLessThanNoCase> AssetBundleMonitorMap;
 
 /// Implements asset download and upload functionality.
 class TUNDRACORE_API AssetAPI : public QObject
@@ -582,5 +584,6 @@ private:
     Framework *fw;
     AssetCache *assetCache;
 };
+Q_DECLARE_METATYPE(AssetAPI*)
 
 #include "AssetAPI.inl"

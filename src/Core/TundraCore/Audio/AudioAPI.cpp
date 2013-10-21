@@ -107,6 +107,9 @@ assetAPI(assetAPI_)
         assetAPI->RegisterAssetTypeFactory(MAKE_SHARED(GenericAssetFactory<AudioAsset>, "Audio", audioTypeExtensions));
     else
         assetAPI->RegisterAssetTypeFactory(MAKE_SHARED(NullAssetFactory, "Audio", audioTypeExtensions));
+
+    qRegisterMetaType<sound_id_t>("sound_id_t");
+    qRegisterMetaType<SoundChannelPtr>("SoundChannelPtr");
 }
 
 AudioAPI::~AudioAPI()

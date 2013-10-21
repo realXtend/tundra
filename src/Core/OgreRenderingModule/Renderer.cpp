@@ -47,20 +47,7 @@
 #include <OgreShaderGenerator.h>
 #endif
 
-Q_DECLARE_METATYPE(EC_Placeable*)
-Q_DECLARE_METATYPE(EC_Camera*)
-Q_DECLARE_METATYPE(UiPlane*)
-// Ogre asset types and ptr typedefs
-Q_DECLARE_METATYPE(OgreMeshAsset*)
-Q_DECLARE_METATYPE(TextureAsset*)
-Q_DECLARE_METATYPE(OgreMaterialAsset*)
-Q_DECLARE_METATYPE(OgreSkeletonAsset*)
-Q_DECLARE_METATYPE(OgreParticleAsset*)
-Q_DECLARE_METATYPE(TextureAssetPtr)
-Q_DECLARE_METATYPE(OgreMeshAssetPtr)
-Q_DECLARE_METATYPE(OgreMaterialAssetPtr)
-Q_DECLARE_METATYPE(OgreSkeletonAssetPtr)
-Q_DECLARE_METATYPE(OgreParticleAssetPtr)
+
 
 // Clamp elapsed frame time to avoid Ogre controllers going crazy
 static const float MAX_FRAME_TIME = 0.1f;

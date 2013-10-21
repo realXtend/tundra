@@ -236,4 +236,4 @@ private:
 
     friend class InputAPI;
 };
-
+Q_DECLARE_METATYPE(InputContext*)

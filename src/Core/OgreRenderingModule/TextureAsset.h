@@ -127,3 +127,4 @@ private:
     /// Strip the top level mips from a DDS image if it is too large. Overwrite memory stream with modified one as necessary. Needs a temp vector for the modified data.
     void ProcessDDSImage(Ogre::DataStreamPtr& stream, std::vector<u8>& modifiedDDSData);
 };
+Q_DECLARE_METATYPE(TextureAsset*)

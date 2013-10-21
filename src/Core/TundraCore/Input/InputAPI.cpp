@@ -101,6 +101,13 @@ framework(framework_)
     foreach(Qt::GestureType type, gestures)
         mainWindow->grabGesture(type);
 #endif
+
+    qRegisterMetaType<InputContextPtr>("InputContextPtr");
+    qRegisterMetaType<KeyEvent::EventType>("EventType");
+    qRegisterMetaType<MouseEvent::EventType>("EventType");
+    qRegisterMetaType<MouseEvent::MouseButton>("MouseButton");
+    qRegisterMetaType<GestureEvent::EventType>("EventType");
+    qRegisterMetaType<InputAPI::KeyBindingMap>("KeyBindingMap");
 }
 
 InputAPI::~InputAPI()

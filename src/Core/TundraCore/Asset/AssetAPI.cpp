@@ -53,6 +53,16 @@ AssetAPI::AssetAPI(Framework *framework, bool headless) :
         LogWarning("--no_async_asset_load: this format of the command-line parameter is deprecated and support for it will be removed. Use --noAsyncAssetLoad instead.");
     if (fw->HasCommandLineParameter("--clear-asset-cache"))
         LogWarning("--clear-asset-cache: this format of the command-line parameter is deprecated and support for it will be removed. Use --clearAssetCache instead.");
+
+    qRegisterMetaType<AssetPtr>("AssetPtr");
+    qRegisterMetaType<AssetTransferPtr>("AssetTransferPtr");
+    qRegisterMetaType<AssetUploadTransferPtr>("AssetUploadTransferPtr");
+    qRegisterMetaType<AssetStoragePtr>("AssetStoragePtr");
+    qRegisterMetaType<AssetMap>("AssetMap");
+    qRegisterMetaType<AssetTransferMap>("AssetTransferMap");
+    qRegisterMetaType<AssetStorageVector>("AssetStorageVector");
+    qRegisterMetaType<AssetReference>("AssetReference");
+    qRegisterMetaType<AssetReferenceList>("AssetReferenceList");
 }
 
 AssetAPI::~AssetAPI()

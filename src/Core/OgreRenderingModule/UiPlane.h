@@ -137,3 +137,4 @@ private:
     Framework *fw;
     RenderWindow *rw;
 };
+Q_DECLARE_METATYPE(UiPlane*)

@@ -9,6 +9,7 @@
 #include "TundraCoreApi.h"
 
 #include <QObject>
+#include <QMetaType>
 
 /// A result object to get return values from Qt signal handlers in the permission system (AboutToModifyEntity etc)
 class TUNDRACORE_API ChangeRequest : public QObject
@@ -26,3 +27,4 @@ public slots:
     void SetAllowed(bool allow);
     void Deny();
 };
+Q_DECLARE_METATYPE(ChangeRequest*)

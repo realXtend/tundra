@@ -179,5 +179,6 @@ private:
     /// Specifies an unique ID for this sound channel. Note that this ID should not be treated as a "channel index" or anything like that.
     sound_id_t channelId;
 };
-
-typedef shared_ptr<SoundChannel> SoundChannelPtr;
+Q_DECLARE_METATYPE(SoundChannel*)
+Q_DECLARE_METATYPE(SoundChannel::SoundType)
+Q_DECLARE_METATYPE(SoundChannel::SoundState)

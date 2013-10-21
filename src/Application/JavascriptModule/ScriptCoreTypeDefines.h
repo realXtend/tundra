@@ -2,7 +2,4 @@
 
 #pragma once
 
-void RegisterCoreMetaTypes();
 void ExposeCoreTypes(QScriptEngine *engine);
-
-
