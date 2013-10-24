@@ -465,10 +465,10 @@ void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type cha
     {
         IAttribute* attr = 0;
         QString id = attribute_element.attribute("id");
-        // Prefer lookup by ID if it's specified, but fallback to using attribute human-readable name if not defined
-        if (id.length())
+        // Prefer lookup by ID if it's specified, but fallback to using attribute's human-readable name if ID not defined or erroneous.
+        if (!id.isEmpty())
             attr = AttributeById(id);
-        else
+        if (!attr)
         {
             id = attribute_element.attribute("name");
             attr = AttributeByName(id);
