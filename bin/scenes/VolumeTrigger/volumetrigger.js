@@ -12,19 +12,17 @@ function print(s) {
 function entityEntered(ent) {
     print("Entity has entered the cube! " + ent.name);
    
-    var mats = me.mesh.meshMaterial;
+    var mats = me.mesh.materialRefs;
     mats[0] = ACTIVE_MATERIAL;
-    me.mesh.meshMaterial = mats;	
-    
+    me.mesh.materialRefs = mats;
 }
 
 function entityLeft(ent){ 
     print("Entity has left the cube! " + ent.name );
  
-    var mats = me.mesh.meshMaterial;
+    var mats = me.mesh.materialRefs;
     mats[0] = UNACTIVE_MATERIAL;
-    me.mesh.meshMaterial = mats;
-       
+    me.mesh.materialRefs = mats;
 }
 
 var vol = me.GetOrCreateComponent("VolumeTrigger");
@@ -35,6 +33,6 @@ print(vol.entityLeave.connect(entityLeft));
 var rigid = me.GetOrCreateComponent("RigidBody");
 rigid.phantom = true;
       
-mats = me.mesh.meshMaterial;
-mats[0] = UNACTIVE_MATERIAL;    
-me.mesh.meshMaterial = mats;
+mats = me.mesh.materialRefs;
+mats[0] = UNACTIVE_MATERIAL;
+me.mesh.materialRefs = mats;

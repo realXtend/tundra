@@ -107,7 +107,7 @@ QString EC_Material::GetInputMaterialName() const
     if (!mesh)
         return QString();
     
-    const AssetReferenceList& materialList = mesh->meshMaterial.Get();
+    const AssetReferenceList& materialList = mesh->materialRefs.Get();
     if (submesh >= materialList.Size())
     {
         LogWarning("EC_Material referring to a non-existent submesh material.");

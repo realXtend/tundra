@@ -158,8 +158,8 @@ void AssetInterestPlugin::Update(f64 frametime)
         Entity *d_cameraEnt = MainCamera();
         if (d_cameraEnt && d_cameraEnt->ParentScene())
         {
-            EC_Placeable *d_placeable = dynamic_cast<EC_Placeable*>(d_cameraEnt->GetComponent(EC_Placeable::TypeNameStatic()).get());
-            OgreWorld *d_ogreWorld = d_cameraEnt->ParentScene()->GetWorld<OgreWorld>().get();
+            EC_Placeable *d_placeable = d_cameraEnt->Component<EC_Placeable>().get();
+            OgreWorld *d_ogreWorld = d_cameraEnt->ParentScene()->Subsystem<OgreWorld>().get();
             if (d_placeable && d_ogreWorld)
                 d_ogreWorld->DebugDrawSphere(d_placeable->WorldPosition(), interestRadius, 8748, 1, 0, 0, true);
         }
@@ -194,8 +194,8 @@ void AssetInterestPlugin::Update(f64 frametime)
         Entity *cameraEnt = MainCamera();
         if (!cameraEnt || !cameraEnt->ParentScene())
             return;
-        EC_Camera *camera = dynamic_cast<EC_Camera*>(cameraEnt->GetComponent(EC_Camera::TypeNameStatic()).get());
-        EC_Placeable *placeable = dynamic_cast<EC_Placeable*>(cameraEnt->GetComponent(EC_Placeable::TypeNameStatic()).get());
+        EC_Camera *camera = cameraEnt->Component<EC_Camera>().get();
+        EC_Placeable *placeable = cameraEnt->Component<EC_Placeable>().get();
         if (!camera || !placeable)
             return;
         float3 cameraPos = placeable->WorldPosition();
@@ -213,8 +213,8 @@ void AssetInterestPlugin::Update(f64 frametime)
                 continue;
 
             // We assume there is a single placeable and mesh for now
-            EC_Placeable *entP = dynamic_cast<EC_Placeable*>(ent->GetComponent(EC_Placeable::TypeNameStatic()).get());
-            EC_Mesh *entM = dynamic_cast<EC_Mesh*>(ent->GetComponent(EC_Mesh::TypeNameStatic()).get());
+            EC_Placeable *entP = ent->Component<EC_Placeable>().get();
+            EC_Mesh *entM = ent->Component<EC_Mesh>().get();
             if (!entP || !entM)
                 continue;
 
@@ -227,7 +227,7 @@ void AssetInterestPlugin::Update(f64 frametime)
                 // Materials and textures
                 if (processTextures)
                 {   
-                    AssetReferenceList mats = entM->getmeshMaterial();
+                    const AssetReferenceList &mats = entM->materialRefs.Get();
                     for (int iMat=0; iMat<mats.Size(); iMat++)
                     {
                         QString ref = mats[iMat].ref;
@@ -256,7 +256,7 @@ void AssetInterestPlugin::Update(f64 frametime)
                 // Meshes
                 if (processMeshes)
                 {
-                    QString ref = entM->getmeshRef().ref;
+                    QString ref = entM->meshRef.Get().ref;
                     if (ShouldProcess(ref))
                     {
                         OgreMeshAsset *meshAsset = dynamic_cast<OgreMeshAsset*>(GetFramework()->Asset()->GetAsset(ref).get());
@@ -464,7 +464,7 @@ void AssetInterestPlugin::OnComponentRemoved(Entity *entity, IComponent *compone
         EC_Mesh *entM = dynamic_cast<EC_Mesh*>(component);
         if (entM && processTextures)
         {
-            AssetReferenceList mats = entM->getmeshMaterial();
+            const AssetReferenceList &mats = entM->materialRefs.Get();
             for (int iMat=0; iMat<mats.Size(); iMat++)
             {
                 QString ref = mats[iMat].ref;
@@ -479,8 +479,8 @@ void AssetInterestPlugin::OnComponentRemoved(Entity *entity, IComponent *compone
         }
         if (entM && processMeshes)
         {
-            if (ShouldProcess(entM->getmeshRef().ref, true) && !meshPendingUnload_.contains(entM->getmeshRef().ref))
-                meshPendingUnload_ << entM->getmeshRef().ref;
+            if (ShouldProcess(entM->meshRef.Get().ref, true) && !meshPendingUnload_.contains(entM->meshRef.Get().ref))
+                meshPendingUnload_ << entM->meshRef.Get().ref;
         }
     }
     else if (component->TypeName() == EC_Material::TypeNameStatic())
@@ -488,19 +488,19 @@ void AssetInterestPlugin::OnComponentRemoved(Entity *entity, IComponent *compone
         EC_Material *material = dynamic_cast<EC_Material*>(component);
         if (material && processTextures)
         {
-            if (!material->getinputMat().isEmpty() && ShouldProcess(material->getinputMat(), true))
+            if (!material->inputMat.Get().isEmpty() && ShouldProcess(material->inputMat.Get(), true))
             {
-                OgreMaterialAsset *inputMatAsset = dynamic_cast<OgreMaterialAsset*>(GetFramework()->Asset()->GetAsset(material->getinputMat()).get());
+                OgreMaterialAsset *inputMatAsset = dynamic_cast<OgreMaterialAsset*>(GetFramework()->Asset()->GetAsset(material->inputMat.Get()).get());
                 if (inputMatAsset && inputMatAsset->IsLoaded())
-                    if (!matsPendingUnload_.contains(material->getinputMat()))
-                        matsPendingUnload_ << material->getinputMat();
+                    if (!matsPendingUnload_.contains(material->inputMat.Get()))
+                        matsPendingUnload_ << material->inputMat.Get();
             }
-            if (!material->getoutputMat().isEmpty() && ShouldProcess(material->getoutputMat(), true))
+            if (!material->outputMat.Get().isEmpty() && ShouldProcess(material->outputMat.Get(), true))
             {
-                OgreMaterialAsset *outPutMatAsset = dynamic_cast<OgreMaterialAsset*>(GetFramework()->Asset()->GetAsset(material->getoutputMat()).get());
+                OgreMaterialAsset *outPutMatAsset = dynamic_cast<OgreMaterialAsset*>(GetFramework()->Asset()->GetAsset(material->outputMat.Get()).get());
                 if (outPutMatAsset && outPutMatAsset->IsLoaded())
-                    if (!matsPendingUnload_.contains(material->getoutputMat()))
-                        matsPendingUnload_ << material->getoutputMat();
+                    if (!matsPendingUnload_.contains(material->outputMat.Get()))
+                        matsPendingUnload_ << material->outputMat.Get();
             }
         }
     }
@@ -615,8 +615,8 @@ void AssetInterestPlugin::LoadEverythingBack()
     Entity *cameraEnt = MainCamera();
     if (!cameraEnt || !cameraEnt->ParentScene())
         return;
-    EC_Camera *camera = dynamic_cast<EC_Camera*>(cameraEnt->GetComponent(EC_Camera::TypeNameStatic()).get());
-    EC_Placeable *placeable = dynamic_cast<EC_Placeable*>(cameraEnt->GetComponent(EC_Placeable::TypeNameStatic()).get());
+    EC_Camera *camera = cameraEnt->Component<EC_Camera>().get();
+    EC_Placeable *placeable = cameraEnt->Component<EC_Placeable>().get();
     if (!camera || !placeable)
         return;
     float3 cameraPos = placeable->WorldPosition();
@@ -635,13 +635,13 @@ void AssetInterestPlugin::LoadEverythingBack()
             continue;
 
         // We assume there is a single placeable and mesh for now
-        EC_Placeable *entP = dynamic_cast<EC_Placeable*>(ent->GetComponent(EC_Placeable::TypeNameStatic()).get());
-        EC_Mesh *entM = dynamic_cast<EC_Mesh*>(ent->GetComponent(EC_Mesh::TypeNameStatic()).get());
+        EC_Placeable *entP = ent->Component<EC_Placeable>().get();
+        EC_Mesh *entM = ent->Component<EC_Mesh>().get();
         if (!entP || !entM)
             continue;
 
         // Materials and textures
-        AssetReferenceList mats = entM->getmeshMaterial();
+        const AssetReferenceList &mats = entM->materialRefs.Get();
         for (int iMat=0; iMat<mats.Size(); iMat++)
         {
             QString ref = mats[iMat].ref;
@@ -654,7 +654,7 @@ void AssetInterestPlugin::LoadEverythingBack()
         }
 
         // Meshes
-        QString ref = entM->getmeshRef().ref;
+        QString ref = entM->meshRef.Get().ref;
         if (ShouldProcess(ref))
         {
             OgreMeshAsset *meshAsset = dynamic_cast<OgreMeshAsset*>(GetFramework()->Asset()->GetAsset(ref).get());

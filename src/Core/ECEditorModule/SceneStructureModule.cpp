@@ -735,7 +735,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
 
                     // Add our dropped material to the raycasted submesh,
                     // append empty string or the current material string to the rest of them
-                    const AssetReferenceList &currentMaterials = mesh->meshMaterial.Get();
+                    const AssetReferenceList &currentMaterials = mesh->materialRefs.Get();
                     AssetReferenceList afterMaterials;
                     for(uint i=0; i<subMeshCount; ++i)
                     {
@@ -860,7 +860,7 @@ void SceneStructureModule::FinishMaterialDrop(bool apply, const QString &materia
                     else
                         rewrittenMats.Append(mats[i]);
                 }
-                mesh->meshMaterial.Set(rewrittenMats, AttributeChange::Default);
+                mesh->materialRefs.Set(rewrittenMats, AttributeChange::Default);
             }
         }
     }

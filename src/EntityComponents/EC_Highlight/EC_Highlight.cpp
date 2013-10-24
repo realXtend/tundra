@@ -66,14 +66,14 @@ void EC_Highlight::Show()
     // Clone all valid material assets that we can find from the mesh
     /// \todo Currently will clone the same material several times if used on several submeshes
     /// \todo What if the material is yet pending, or is not an asset (LitTextured)
-    const AssetReferenceList &materialList = mesh->meshMaterial.Get();
+    const AssetReferenceList &materialList = mesh->materialRefs.Get();
     for(int i = 0; i < materialList.Size(); ++i)
     {
         if (!materialList[i].ref.isEmpty())
         {
             QString assetFullName = assetAPI->ResolveAssetRef("", materialList[i].ref);
             AssetPtr asset = assetAPI->GetAsset(assetFullName);
-            if ((asset) && (asset->IsLoaded()) && (dynamic_cast<OgreMaterialAsset*>(asset.get())))
+            if (asset && asset->IsLoaded() && dynamic_cast<OgreMaterialAsset*>(asset.get()))
             {
                 AssetPtr clone = asset->Clone(QString::fromStdString(world_.lock()->GetUniqueObjectName("EC_Highlight_Material")) + ".material");
 
@@ -235,7 +235,7 @@ void EC_Highlight::TriggerReapply()
         return;
     
     // We might get multiple requests to reapply, but actually execute on the next frame, so that we don't do needless recreation of materials
-    if ((!reapplyPending_) && (visible.Get()))
+    if (!reapplyPending_ && visible.Get())
     {
         reapplyPending_ = true;
         QTimer::singleShot(0, this, SLOT(ReapplyHighlight()));

@@ -98,7 +98,7 @@ function CreateBoxes()
 
             var matRefs = new AssetReferenceList();
             matRefs = [ "Box.material" ];
-            box.mesh.meshMaterial = matRefs;
+            box.mesh.materialRefs = matRefs;
 
             box.placeable.SetScale(new float3(5, 5, 5));
             box.placeable.SetPosition(new float3(7*i, 0, 7*j));

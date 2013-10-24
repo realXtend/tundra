@@ -33,8 +33,8 @@
     <div>@copydoc meshRef</div>
     <li>AssetReference: skeletonRef
     <div>@copydoc skeletonRef</div>
-    <li>AssetReferenceList: meshMaterial
-    <div>@copydoc meshMaterial</div>
+    <li>AssetReferenceList: materialRefs
+    <div>@copydoc materialRefs</div>
     <li>float: drawDistance
     <div>@copydoc drawDistance</div>
     <li>bool: castShadows
@@ -118,8 +118,8 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, skeletonRef);
 
     /// Mesh material asset reference list.
-    Q_PROPERTY(AssetReferenceList meshMaterial READ getmeshMaterial WRITE setmeshMaterial);
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReferenceList, meshMaterial);
+    Q_PROPERTY(AssetReferenceList materialRefs READ getmaterialRefs WRITE setmaterialRefs);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReferenceList, materialRefs);
 
     /// Mesh draw distance, 0.0 = draw always (default)
     Q_PROPERTY(float drawDistance READ getdrawDistance WRITE setdrawDistance);
@@ -147,20 +147,21 @@ public:
     /// Returns adjustment scene node (used for scaling/offset/orientation modifications)
     Ogre::SceneNode* AdjustmentSceneNode() const;
 
-    /// Returns Ogre attachment mesh entity.
-    /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
-    Ogre::Entity* AttachmentOgreEntity(uint index) const;
-
     /// Raycast into an Ogre mesh entity using a world-space ray.
     /** Returns true if a hit happens, in which case the fields (which are not null) are filled appropriately. */
     static bool Raycast(Ogre::Entity* meshEntity, const Ray& ray, float* distance = 0, unsigned* subMeshIndex = 0,
         unsigned* triangleIndex = 0, float3* hitPosition = 0, float3* normal = 0, float2* uv = 0);
 
     // DEPRECATED
+    /// @cond PRIVATE
+    /// Returns Ogre attachment mesh entity.
+    /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT */
+    Ogre::Entity* AttachmentOgreEntity(uint index) const;
     Ogre::Entity* GetEntity() const { return OgreEntity(); } /**< @deprecated use OgreEntity instead. @todo Add warning print. */
     Ogre::Bone* GetBone(const QString& boneName) const { return OgreBone(boneName); } /**< @deprecated use OgreBone instead. @todo Add warning print. */
     Ogre::SceneNode* GetAdjustmentSceneNode() const { return AdjustmentSceneNode(); } /**< @deprecated use AdjustmentSceneNode instead. @todo Add warning print. */
     Ogre::Entity* GetAttachmentEntity(uint index) const { return AttachmentOgreEntity(index); } /**< @deprecated use AttachmentOgreEntity instead. @todo Add warning print. */
+    /// @endcond
 
 public slots:
     /// Automatically finds the placeable from the parent entity and sets it.
@@ -330,6 +331,7 @@ public slots:
     /// Returns the possible asset used by this component.
     OgreSkeletonAssetPtr SkeletonAsset() const;
 
+    /// @cond PRIVATE
     // DEPRECATED
     /// Sets an attachment mesh.
     /** @deprecated THIS FUNCTION IS DEPRECATED. ONLY EC_AVATAR IS ALLOWED TO CALL IT
@@ -405,6 +407,7 @@ public slots:
     size_t GetNumAttachments() const { return NumAttachments(); } /**< @deprecated Use NumAttachments instead. @todo Add warning print. */
     uint GetAttachmentNumMaterials(uint index) const { return NumAttachmentMaterials(index); } /**< @deprecated use NumAttachmentMaterials instead. @todo Add warning print. */
     const std::string& GetAttachmentMaterialName(uint index, uint submeshIndex) const { return AttachmentMaterialName(index, submeshIndex); } /**< @deprecated use AttachmentMaterialName instead. @todo Add warning print. */
+    /// @endcond
 
 signals:
     /// Emitted before the Ogre mesh entity is about to be destroyed
@@ -439,6 +442,12 @@ private slots:
     void OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason);
 
 private:
+    /// @cond PRIVATE
+    Q_PROPERTY(AssetReferenceList meshMaterial READ DeprecatedMeshMaterial WRITE DeprecatedSetMeshMaterial);
+    void DeprecatedSetMeshMaterial(const AssetReferenceList &refs);
+    AssetReferenceList DeprecatedMeshMaterial() const;
+    /// @endcond
+
     /// Called when some of the attributes has been changed.
     void AttributesChanged();
 

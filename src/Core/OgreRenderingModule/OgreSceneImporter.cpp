@@ -127,7 +127,7 @@ EntityPtr OgreSceneImporter::ImportMesh(const QString &filename, const QString &
         meshPtr->meshRef.Set(AssetReference(prefix + meshleafname), AttributeChange::Disconnected);
         if (!skeleton_name.isEmpty())
             meshPtr->skeletonRef.Set(AssetReference(prefix + skeleton_name), AttributeChange::Disconnected);
-        meshPtr->meshMaterial.Set(materials, AttributeChange::Disconnected);
+        meshPtr->materialRefs.Set(materials, AttributeChange::Disconnected);
 
         if (inspect)
             meshPtr->nodeTransformation.Set(Transform(float3(0,0,0), float3(90,0,180), float3(1,1,1)), AttributeChange::Disconnected);
@@ -430,7 +430,7 @@ SceneDesc OgreSceneImporter::CreateSceneDescFromMesh(const QString &source) cons
         else
         {
             mesh->meshRef.Set(AssetReference(path + "/" + meshleafname), AttributeChange::Disconnected);
-            mesh->meshMaterial.Set(materials, AttributeChange::Disconnected);
+            mesh->materialRefs.Set(materials, AttributeChange::Disconnected);
             if (!skeletonName.isEmpty())
                 mesh->skeletonRef.Set(AssetReference(path + "/" + skeletonName), AttributeChange::Disconnected);
         }
@@ -776,7 +776,7 @@ void OgreSceneImporter::ProcessNodeForCreation(QList<Entity* > &entities, QDomEl
                     foreach(QString material, materials)
                         materialRefs.Append(AssetReference(material));
 
-                    meshPtr->meshMaterial.Set(materialRefs, change);
+                    meshPtr->materialRefs.Set(materialRefs, change);
                     meshPtr->castShadows.Set(cast_shadows, change);
 
                     if (new_entity)
@@ -963,7 +963,7 @@ void OgreSceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement nodeElem
                 foreach(QString material, materials)
                     materialRefs.Append(AssetReference(material));
 
-                meshPtr->meshMaterial.Set(materialRefs, change);
+                meshPtr->materialRefs.Set(materialRefs, change);
                 meshPtr->skeletonRef.Set(AssetReference(skeletonRef), change);
                 meshPtr->castShadows.Set(cast_shadows, change);
 

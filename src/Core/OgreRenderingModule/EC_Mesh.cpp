@@ -39,7 +39,7 @@ EC_Mesh::EC_Mesh(Scene* scene) :
     INIT_ATTRIBUTE_VALUE(nodeTransformation, "Transform", Transform(float3(0,0,0),float3(0,0,0),float3(1,1,1))),
     INIT_ATTRIBUTE_VALUE(meshRef, "Mesh ref", AssetReference("", "OgreMesh")),
     INIT_ATTRIBUTE_VALUE(skeletonRef, "Skeleton ref", AssetReference("", "OgreSkeleton")),
-    INIT_ATTRIBUTE_VALUE(meshMaterial, "Mesh materials", AssetReferenceList("OgreMaterial")),
+    INIT_ATTRIBUTE_VALUE(materialRefs, "Mesh materials", AssetReferenceList("OgreMaterial")), /**< @todo 24.10.2013 Rename name to "Material refs" or similar. */
     INIT_ATTRIBUTE_VALUE(drawDistance, "Draw distance", 0.0f),
     INIT_ATTRIBUTE_VALUE(castShadows, "Cast shadows", false),
     INIT_ATTRIBUTE_VALUE(useInstancing, "Use instancing", false),
@@ -49,14 +49,14 @@ EC_Mesh::EC_Mesh(Scene* scene) :
     attached_(false)
 {
     if (scene)
-        world_ = scene->GetWorld<OgreWorld>();
+        world_ = scene->Subsystem<OgreWorld>();
 
     static AttributeMetadata drawDistanceData("", "0", "10000");
     drawDistance.SetMetadata(&drawDistanceData);
 
     static AttributeMetadata materialMetadata;
     materialMetadata.elementType = "AssetReference";
-    meshMaterial.SetMetadata(&materialMetadata);
+    materialRefs.SetMetadata(&materialMetadata);
 
     meshAsset = MAKE_SHARED(AssetRefListener);
     skeletonAsset = MAKE_SHARED(AssetRefListener);
@@ -590,14 +590,14 @@ bool EC_Mesh::SetMaterial(uint index, const QString& material_name, AttributeCha
             pendingFailedMaterials_.removeAll(index);
 
         // Update the EC_Mesh material attribute list so that users can call EC_Mesh::SetMaterial as a replacement for setting
-        // meshMaterial attribute. Only apply the change if the value really changed.
-        AssetReferenceList materials = meshMaterial.Get();
+        // materialRefs attribute. Only apply the change if the value really changed.
+        AssetReferenceList materials = materialRefs.Get();
         while(materials.Size() <= (int)index)
             materials.Append(AssetReference());
         if (material_name.compare(materials[index].ref, Qt::CaseSensitive) != 0)
         {
             materials.Set(index, AssetReference(material_name));
-            meshMaterial.Set(materials, change); // Potentially signal the change of attribute, if requested so.
+            materialRefs.Set(materials, change); // Potentially signal the change of attribute, if requested so.
         }
 
         // To retain compatibility with old behavior, always fire the EC_Mesh -specific change signal independent of the value of 'change'.
@@ -871,7 +871,7 @@ void EC_Mesh::CreateInstance(const AssetPtr &meshAsset)
     if (world_.expired())
         return;
 
-    instancedEntity_ = world_.lock()->CreateInstance(this, meshAsset.get() != 0 ? meshAsset : this->meshAsset->Asset(), meshMaterial.Get(), drawDistance.Get(), castShadows.Get());
+    instancedEntity_ = world_.lock()->CreateInstance(this, meshAsset.get() != 0 ? meshAsset : this->meshAsset->Asset(), materialRefs.Get(), drawDistance.Get(), castShadows.Get());
     if (!instancedEntity_)
         return;
 
@@ -1027,12 +1027,12 @@ void EC_Mesh::AttributesChanged()
             LogDebug("Warning: Mesh \"" + this->parentEntity->Name() + "\" mesh ref was set to an empty reference!");
         meshAsset->HandleAssetRefChange(&meshRef);
     }
-    if (meshMaterial.ValueChanged())
+    if (materialRefs.ValueChanged())
     {
         if (!ViewEnabled())
             return;
 
-        AssetReferenceList materials = meshMaterial.Get();
+        AssetReferenceList materials = materialRefs.Get();
 
         // Reset all the materials from the submeshes which now have an empty material asset reference set.
         for(uint i = 0; i < GetNumMaterials(); ++i)
@@ -1138,7 +1138,7 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
     Ogre::MaterialPtr material = ogreMaterial->ogreMaterial;
     bool assetUsed = false;
 
-    AssetReferenceList materialList = meshMaterial.Get();
+    AssetReferenceList materialList = materialRefs.Get();
     for(int i = 0; i < materialList.Size(); ++i)
     {
         if (materialList[i].ref.compare(ogreMaterial->Name(), Qt::CaseInsensitive) == 0 ||
@@ -1169,13 +1169,13 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
 void EC_Mesh::OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason)
 {
     // Check which of the material(s) match the failed ref
-    AssetReferenceList materialList = meshMaterial.Get();
+    AssetReferenceList materialList = materialRefs.Get();
     for(int i = 0; i < materialList.Size(); ++i)
     {
         QString absoluteRef = framework->Asset()->ResolveAssetRef("", materialList[i].ref);
         if (absoluteRef == transfer->source.ref)
         {
-            // Do not use SetMaterial here as it will modify meshMaterials into "AssetLoadError"
+            // Do not use SetMaterial here as it will modify materialRefss into "AssetLoadError"
             // which is not what we want to do here. If the asset it later created/loaded the 
             // string compare in OnMaterialAssetLoaded breaks. This is a valid scenario in some 
             // components like EC_Material.
@@ -1200,9 +1200,23 @@ void EC_Mesh::OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason)
     }
 }
 
+void EC_Mesh::DeprecatedSetMeshMaterial(const AssetReferenceList &refs)
+{
+    /// @todo 24.10.2013 Enable the deprecation warning print.
+    //LogWarning("EC_Mesh: 'meshMaterial' is deprecated and will be removed. Use 'materialRefs' instead.");
+    materialRefs.Set(refs, AttributeChange::Default);
+}
+
+AssetReferenceList EC_Mesh::DeprecatedMeshMaterial() const
+{
+    /// @todo 24.10.2013 Enable the deprecation warning print.
+    //LogWarning("EC_Mesh: 'meshMaterial' is deprecated and will be removed. Use 'materialRefs' instead.");
+    return materialRefs.Get();
+}
+
 void EC_Mesh::ApplyMaterial()
 {
-    AssetReferenceList materialList = meshMaterial.Get();
+    AssetReferenceList materialList = materialRefs.Get();
     AssetAPI *assetAPI = framework->Asset();
     for(int i = 0; i < materialList.Size(); ++i)
     {

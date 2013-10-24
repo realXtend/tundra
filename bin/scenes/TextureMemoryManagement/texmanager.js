@@ -10,13 +10,13 @@ print(ow.GetVisibleEntities());
 ent = ow.GetVisibleEntities()[0];
 print(ent);
 print(ent.mesh);
-print(ent.mesh.meshMaterial[0]);
+print(ent.mesh.materialRefs[0]);
 
-var matrefs = ent.mesh.meshMaterial;
+var matrefs = ent.mesh.materialRefs;
 var matref = matrefs[0];
 print(matref);
 
-ent.mesh.meshMaterial = ["local://AxisRed.material"];
+ent.mesh.materialRefs = ["local://AxisRed.material"];
 
 //var matass = asset.GetAsset(ref);
 //print(matass.References());

@@ -152,7 +152,7 @@ void EC_TransformGizmo::Initialize()
     materials.Append(cAxisGreen);
     materials.Append(cAxisRed);
     materials.Append(cAxisBlue);
-    mesh->meshMaterial.Set(materials, AttributeChange::Default);
+    mesh->materialRefs.Set(materials, AttributeChange::Default);
 }
 
 void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
@@ -415,8 +415,8 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
         break;
     }
 
-    if (mesh->meshMaterial.Get() != materials)
-        mesh->meshMaterial.Set(materials, AttributeChange::Default);
+    if (mesh->materialRefs.Get() != materials)
+        mesh->materialRefs.Set(materials, AttributeChange::Default);
 }
 
 void EC_TransformGizmo::OnFrameUpdate(float /*dt*/)

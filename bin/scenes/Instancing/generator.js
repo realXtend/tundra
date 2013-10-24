@@ -97,7 +97,7 @@ function generate()
     var x = z           = 0;
 
     // Clear any meshe entities in the scene
-    var meshEnts = scene.EntitiesWithComponent("EC_Mesh");
+    var meshEnts = scene.EntitiesWithComponent("Mesh");
     for (var i = meshEnts.length-1; i >= 0; --i)
         scene.RemoveEntity(meshEnts[i].id);
 
@@ -112,11 +112,11 @@ function generate()
             if (ent != null)
                 scene.RemoveEntity(ent.id);
 
-            ent = scene.CreateLocalEntity(["EC_Name", "EC_Placeable", "EC_Mesh"], 2, false, true);
+            ent = scene.CreateLocalEntity(["Name", "Placeable", "Mesh"], 2, false, true);
             ent.name = entName;
 
             ent.mesh.meshRef = "instancing-cube.mesh";
-            ent.mesh.meshMaterial = [ "instancing-textured.material" ];
+            ent.mesh.materialRefs = [ "instancing-textured.material" ];
             ent.mesh.useInstancing = useInstancing;
 
             ent.placeable.SetScale(0.1, 0.1, 0.1);
