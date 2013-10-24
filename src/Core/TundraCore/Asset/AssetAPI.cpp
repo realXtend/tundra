@@ -470,7 +470,7 @@ AssetPtr AssetAPI::CreateAssetFromFile(QString assetType, QString assetFile)
 
 bool AssetAPI::ForgetAsset(QString assetRef, bool removeDiskSource)
 {
-    return ForgetAsset(GetAsset(assetRef), removeDiskSource);
+    return ForgetAsset(FindAsset(assetRef), removeDiskSource);
 }
 
 bool AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
@@ -518,7 +518,7 @@ bool AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
 
 bool AssetAPI::ForgetBundle(QString bundleRef, bool removeDiskSource)
 {
-    return ForgetBundle(GetBundle(bundleRef), removeDiskSource);
+    return ForgetBundle(FindBundle(bundleRef), removeDiskSource);
 }
 
 bool AssetAPI::ForgetBundle(AssetBundlePtr bundle, bool removeDiskSource)
@@ -559,7 +559,7 @@ bool AssetAPI::ForgetBundle(AssetBundlePtr bundle, bool removeDiskSource)
 
 void AssetAPI::DeleteAssetFromStorage(QString assetRef)
 {
-    AssetPtr asset = GetAsset(assetRef);
+    AssetPtr asset = FindAsset(assetRef);
 
     AssetProviderPtr provider = (asset.get() ? asset->AssetProvider() : AssetProviderPtr());
     if (!provider)
@@ -763,7 +763,7 @@ std::vector<AssetTransferPtr> AssetAPI::PendingTransfers() const
     return transfers;
 }
 
-AssetTransferPtr AssetAPI::GetPendingTransfer(QString assetRef) const
+AssetTransferPtr AssetAPI::PendingTransfer(QString assetRef) const
 {
     AssetTransferMap::const_iterator iter = currentTransfers.find(assetRef);
     if (iter != currentTransfers.end())
@@ -806,7 +806,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
     //   2) If we don't have the sub asset but we have the bundle we request the data from the bundle.
     //   3) If we don't have the bundle we request it. If that succeeds we go to 2), if not we fail the sub asset transfer.
     /// @todo Live reloading on disk source changes is not implemented for bundles. Implement if there seems to be need for it. 
-    bool isSubAsset = !subAssetPart.isEmpty();
+    const bool isSubAsset = !subAssetPart.isEmpty();
     if (isSubAsset) 
         assetRef = mainAssetPart;
 
@@ -817,7 +817,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType, boo
     if (ongoingTransferIter != currentTransfers.end())
     {
         AssetTransferPtr transfer = ongoingTransferIter->second;
-        if (forceTransfer && dynamic_cast<VirtualAssetTransfer*>(transfer.get()))
+        if (forceTransfer && qobject_cast<VirtualAssetTransfer*>(transfer.get()))
         {
             // If forceTransfer is on, but the transfer is virtual, log error. This case can not be currently handled properly.
             LogError("AssetAPI::RequestAsset: Received forceTransfer for asset " + assetRef + " while a virtual transfer is already going on");
@@ -1195,7 +1195,7 @@ QString AssetAPI::GenerateUniqueAssetName(QString assetTypePrefix, QString asset
     for(int i = 0; i < 10000; ++i) // The intent is to loop 'infinitely' until a name is found, but do an artificial limit to avoid voodoo bugs.
     {
         assetName = assetTypePrefix + "_" + assetNamePrefix + (assetNamePrefix.isEmpty() ? "" : "_") + QString::number(uniqueRunningAssetCounter++);
-        if (!GetAsset(assetName))
+        if (!FindAsset(assetName))
             return assetName;
     }
     assert(false);
@@ -1439,7 +1439,7 @@ AssetBundleTypeFactoryPtr AssetAPI::AssetBundleTypeFactory(const QString &typeNa
     return AssetBundleTypeFactoryPtr();
 }
 
-AssetPtr AssetAPI::GetAsset(QString assetRef) const
+AssetPtr AssetAPI::FindAsset(QString assetRef) const
 {
     // First try to see if the ref has an exact match.
     AssetMap::const_iterator iter = assets.find(assetRef);
@@ -1455,7 +1455,7 @@ AssetPtr AssetAPI::GetAsset(QString assetRef) const
     return AssetPtr();
 }
 
-AssetBundlePtr AssetAPI::GetBundle(QString bundleRef) const
+AssetBundlePtr AssetAPI::FindBundle(QString bundleRef) const
 {
     // First try to see if the ref has an exact match.
     AssetBundleMap::const_iterator iter = assetBundles.find(bundleRef);
@@ -1917,7 +1917,7 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
     
     // If we have the asset (with possible old contents) in memory, unload it now
     {
-        AssetPtr asset = GetAsset(assetRef);
+        AssetPtr asset = FindAsset(assetRef);
         if (asset && asset->IsLoaded())
             asset->Unload();
     }
@@ -1993,7 +1993,7 @@ void AssetAPI::RequestAssetDependencies(AssetPtr asset)
         if (ref.ref.isEmpty())
             continue;
 
-        AssetPtr existing = GetAsset(ref.ref);
+        AssetPtr existing = FindAsset(ref.ref);
         if (!existing || !existing->IsLoaded())
         {
 //            LogDebug("Asset " + asset->ToString() + " depends on asset " + ref.ref + " (type=\"" + ref.type + "\") which has not been loaded yet. Requesting..");
@@ -2046,7 +2046,7 @@ int AssetAPI::NumPendingDependencies(AssetPtr asset) const
         if (dynamic_cast<NullAssetFactory*>(AssetTypeFactory(GetResourceTypeFromAssetRef(refs[i])).get()))
             continue;
 
-        AssetPtr existing = GetAsset(refs[i].ref);
+        AssetPtr existing = FindAsset(refs[i].ref);
         if (!existing)
         {
             // Not loaded, just mark the single one
@@ -2086,7 +2086,7 @@ bool AssetAPI::HasPendingDependencies(AssetPtr asset) const
         if (dynamic_cast<NullAssetFactory*>(AssetTypeFactory(ResourceTypeForAssetRef(refs[i])).get()))
             continue;
 
-        AssetPtr existing = GetAsset(refs[i].ref);
+        AssetPtr existing = FindAsset(refs[i].ref);
         if (!existing) // Not loaded, just mark the single one
             return true;
         else
@@ -2117,7 +2117,7 @@ void AssetAPI::HandleAssetDiscovery(const QString &assetRef, const QString &asse
 
 void AssetAPI::HandleAssetDiscovery(const QString &assetRef, const QString &assetType, AssetStoragePtr storage)
 {
-    AssetPtr existing = GetAsset(assetRef);
+    AssetPtr existing = FindAsset(assetRef);
     // If asset did not exist, create new empty asset
     if (!existing)
     {
@@ -2135,7 +2135,7 @@ void AssetAPI::HandleAssetDiscovery(const QString &assetRef, const QString &asse
 void AssetAPI::HandleAssetDeleted(const QString &assetRef)
 {
     // If the asset is unloaded, delete it from memory. If it is loaded, it might be in use, so do nothing
-    AssetPtr existing = GetAsset(assetRef);
+    AssetPtr existing = FindAsset(assetRef);
     if (!existing)
         return;
     if (!existing->IsLoaded())
@@ -2154,6 +2154,12 @@ void AssetAPI::EmitAssetStorageAdded(AssetStoragePtr newStorage)
     connect(newStorage.get(), SIGNAL(AssetChanged(QString, QString, IAssetStorage::ChangeType)),
         SLOT(OnAssetChanged(QString, QString, IAssetStorage::ChangeType)), Qt::UniqueConnection);
     emit AssetStorageAdded(newStorage);
+}
+
+AssetTransferPtr AssetAPI::GetPendingTransfer(QString assetRef) const
+{
+    LogWarning("AssetAPI::GetPendingTransfer: this function is deprecated and will be removed. Use PendingTransfer instead.");
+    return PendingTransfer(assetRef);
 }
 
 QMap<QString, QString> AssetAPI::ParseAssetStorageString(QString storageString)
@@ -2238,34 +2244,18 @@ void AssetAPI::OnAssetDiskSourceChanged(const QString &path_)
     }
 }
 
-///\todo Delete this whole function and logic when OnAssetChanged is implemented
-/*
-void AssetAPI::OnAssetStorageRefsChanged(AssetStoragePtr storage)
-{
-    QStringList refs = storage->GetAllAssetRefs();
-    for(int i = 0; i < refs.size(); ++i)
-    {
-        // If the asset does not exist at all, create a new empty asset.
-        // However, if the asset already exists, do not refresh its data now (as we may be getting a huge amount of refs)
-        if (!GetAsset(refs[i]))
-            // Use optimized discovery: the storage does not have to be looked up as it is known
-            HandleAssetDiscovery(refs[i], "", storage);
-    }
-}
-*/
-
 void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStorage::ChangeType change)
 {
     PROFILE(AssetAPI_OnAssetChanged);
 
-    IAssetStorage *storage = dynamic_cast<IAssetStorage *>(sender());
+    IAssetStorage *storage = qobject_cast<IAssetStorage *>(sender());
     assert(storage);
     if (!storage)
         return;
 
     QString assetRef = storage->GetFullAssetURL(localName);
     QString assetType = ResourceTypeForAssetRef(assetRef);
-    AssetPtr existing = GetAsset(assetRef);
+    AssetPtr existing = FindAsset(assetRef);
     if (change == IAssetStorage::AssetCreate && existing)
     {
         LogDebug("AssetAPI: Received AssetCreate notification for existing and loaded asset " + assetRef + ". Handling this as AssetModify.");
@@ -2280,7 +2270,7 @@ void AssetAPI::OnAssetChanged(QString localName, QString diskSource, IAssetStora
             if (asset && !diskSource.isEmpty())
             {
                 asset->SetDiskSource(diskSource);
-                //bool cached = (assetCache && diskSource.contains(GetAssetCache()->GetCacheDirectory(), Qt::CaseInsensitive));
+                //bool cached = (assetCache && diskSource.contains(Cache()->CacheDirectory(), Qt::CaseInsensitive));
                 //asset->SetDiskSourceType(cached ? IAsset::Cached : IAsset::Original);
             }
         }

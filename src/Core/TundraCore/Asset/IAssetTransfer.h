@@ -15,7 +15,7 @@
 /// Represents a currently ongoing asset download operation.
 class TUNDRACORE_API IAssetTransfer : public QObject, public enable_shared_from_this<IAssetTransfer>
 {
-Q_OBJECT
+    Q_OBJECT
 
 public:
     IAssetTransfer();
@@ -119,4 +119,5 @@ Q_DECLARE_METATYPE(AssetTransferPtr);
 /// Virtual asset transfer for assets that have already been loaded, but are re-requested
 class VirtualAssetTransfer : public IAssetTransfer
 {
+    Q_OBJECT
 };

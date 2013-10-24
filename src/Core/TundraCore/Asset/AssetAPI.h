@@ -53,6 +53,15 @@ public:
     ~AssetAPI();
 
 public:
+    /// Returns the given asset by full URL ref if it exists casted to the correct type T, or null otherwise.
+    /** @note The "name" of an asset is in most cases the URL ref of the asset, so use this function to query an asset by name. */
+    template<typename T>
+    shared_ptr<T> FindAsset(QString assetRef) const;
+
+    /// Returns all assets of a specific type T (derived from IAsset).
+    template<typename T>
+    std::vector<shared_ptr<T> > AssetsOfType() const;
+
     /// Registers a type factory for creating assets of the type governed by the factory.
     void RegisterAssetTypeFactory(AssetTypeFactoryPtr factory);
 
@@ -174,10 +183,12 @@ public:
     Framework *GetFramework() const { return fw; }
 
     // DEPRECATED
+    /// @cond PRIVATE
     bool IsAssetTypeFactoryRegistered(const QString &typeName) const { return AssetTypeFactory(typeName) != 0; } /**< @deprecated Use AssetTypeFactory. @todo Remove. */
     std::vector<AssetProviderPtr> GetAssetProviders() const { return AssetProviders(); }  /**< @deprecated Use AssetProviders instead @todo Add warning print in some distant future */
     std::vector<AssetTypeFactoryPtr> GetAssetTypeFactories() const { return AssetTypeFactories(); } /**< @deprecated Use AssetTypeFactories instead @todo Add warning print in some distant future */
     template<typename T> shared_ptr<T> GetAssetProvider() const { return AssetProvider<T>(); } /**< @deprecated Use AssetProvider instead @todo Add warning print in some distant future */
+    /// @endcond
 
 public slots:
     /// Returns all assets known to the asset system.
@@ -249,11 +260,11 @@ public slots:
 
     /// Returns the given asset by full URL ref if it exists, or null otherwise.
     /// @note The "name" of an asset is in most cases the URL ref of the asset, so use this function to query an asset by name.
-    AssetPtr GetAsset(QString assetRef) const;
+    AssetPtr FindAsset(QString assetRef) const;
 
     /// Returns the given asset bundle by full URL ref if it exists, or null otherwise.
     /// @note The "name" of an asset is in most cases the URL ref of the asset bundle, so use this function to query an asset bundle by name.
-    AssetBundlePtr GetBundle(QString bundleRef) const;
+    AssetBundlePtr FindBundle(QString bundleRef) const;
 
     /// Returns the asset cache object that generates a disk source for all assets.
     AssetCache *Cache() const { return assetCache; }
@@ -392,7 +403,7 @@ public slots:
         both an IAssetTransfer and IAsset to this particular assetRef (so the existence of these two objects is not mutually exclusive).
         @note Client code should not need to worry about whether a particular transfer is pending or not, but simply call RequestAsset whenever an asset
         request is needed. AssetAPI will optimize away any duplicate transfers to the same asset. */
-    AssetTransferPtr GetPendingTransfer(QString assetRef) const;
+    AssetTransferPtr PendingTransfer(QString assetRef) const;
 
     /// Starts an asset transfer for each dependency the given asset has.
     void RequestAssetDependencies(AssetPtr transfer);
@@ -430,6 +441,8 @@ public slots:
     const std::vector<AssetTransferPtr>& DebugGetReadyTransfers() const { return readyTransfers; }
 
     // DEPRECATED
+    /// @cond PRIVATE
+    AssetPtr GetAsset(QString assetRef) const { return FindAsset(assetRef); } /**< @deprecated Use FindAsset instead @todo Add warning print in some distant future */
     AssetMap GetAllAssets() const { return Assets(); } /**< @deprecated Use Assets instead @todo Add warning print in some distant future */
     AssetMap GetAllAssetsOfType(const QString& type) const { return AssetsOfType(type); } /**< @deprecated Use AssetsOfType instead @todo Add warning print in some distant future */
     AssetStorageVector GetAssetStorages() const { return AssetStorages(); } /**< @deprecated Use AssetStorages instead @todo Add warning print in some distant future */
@@ -444,6 +457,8 @@ public slots:
     AssetBundleTypeFactoryPtr GetAssetBundleTypeFactory(const QString &typeName) const { return AssetBundleTypeFactory(typeName); } /**< @deprecated Use AssetBundleTypeFactory instead @todo Add warning print in some distant future */
     QString GetResourceTypeFromAssetRef(QString assetRef) const { return ResourceTypeForAssetRef(assetRef); } /**< @deprecated Use ResourceTypeForAssetRef instead @todo Add warning print in some distant future */
     QString GetResourceTypeFromAssetRef(const AssetReference &ref) const { return ResourceTypeForAssetRef(ref); } /**< @deprecated Use ResourceTypeForAssetRef instead @todo Add warning print in some distant future */
+    AssetTransferPtr GetPendingTransfer(QString assetRef) const; /**< @deprecated Use PendingTransfer instead @todo Remove. */
+    /// @endcond
 
 signals:
     /// Emitted for each new asset that was created and added to the system.
@@ -486,10 +501,6 @@ private slots:
 
     /// The Asset API reloads all assets from file when their disk source contents change.
     void OnAssetDiskSourceChanged(const QString &path);
-
-    /// An asset storage refreshed its references. Create empty assets from the new refs as necessary
-    ///\todo Delete this whole function and logic when OnAssetChanged is implemented
-    //void OnAssetStorageRefsChanged(AssetStoragePtr storage);
 
     /// Contents of asset storage has been changed.
     void OnAssetChanged(QString localName, QString diskSource, IAssetStorage::ChangeType change);
