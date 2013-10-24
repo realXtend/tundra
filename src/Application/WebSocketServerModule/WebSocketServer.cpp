@@ -5,6 +5,7 @@
 #include "Framework.h"
 #include "CoreDefines.h"
 #include "CoreJsonUtils.h"
+#include "CoreStringUtils.h"
 #include "LoggingFunctions.h"
 #include "Profiler.h"
 #include "UniqueIdGenerator.h"
@@ -16,7 +17,7 @@
 
 #include "kNet/DataDeserializer.h"
 
-#include "websocket_frame.hpp"
+#include <websocketpp/frame.hpp>
 
 #include "AssetAPI.h"
 #include "IAssetStorage.h"
@@ -51,27 +52,29 @@
 namespace WebSocket
 {
 
-/// @todo Temporarily here, move to core string utils or similar.
+// ServerThread
 
-void WriteUTF8String(kNet::DataSerializer& ds, const QString& str)
+void ServerThread::run()
 {
-    QByteArray utf8bytes = str.toUtf8();
-    ds.Add<u16>(utf8bytes.size());
-    if (utf8bytes.size())
-        ds.AddArray<u8>((const u8*)utf8bytes.data(), utf8bytes.size());
-}
-
-QString ReadUTF8String(kNet::DataDeserializer& dd)
-{
-    QByteArray utf8bytes;
-    utf8bytes.resize(dd.Read<u16>());
-    if (utf8bytes.size())
+    if (!server_)
+        return;
+    
+    try
     {
-        dd.ReadArray<u8>((u8*)utf8bytes.data(), utf8bytes.size());
-        return QString::fromUtf8(utf8bytes.data(), utf8bytes.size());
+        server_->run();
+    } 
+    catch (const std::exception & e) 
+    {
+        LogError("Exception while running websocket server: " + QString(e.what()));
+    } 
+    catch (websocketpp::lib::error_code e) 
+    {
+        LogError("Exception while running websocket server: " + QString::fromStdString(e.message()));
+    } 
+    catch (...) 
+    {
+        LogError("Exception while running websocket server: other exception");
     }
-    else
-        return QString();
 }
 
 // Server
@@ -208,7 +211,7 @@ void Server::Update(float frametime)
                 if (messageId == cLoginMessage)
                 {
                     bool ok = false;
-                    QString loginDataString = ReadUTF8String(dd);
+                    QString loginDataString = ReadUtf8String(dd);
                     QVariantMap map = TundraJson::Parse(loginDataString.toUtf8(), &ok).toMap();
                     if (ok)
                     {
@@ -446,18 +449,31 @@ bool Server::Start()
     
     try
     {
-        //  Create server with a handler. We'll get callbacks in the websocketpp thread context.
-        handler_ = WebSocket::HandlerPtr(new Handler(this));
-        server_ = WebSocket::ServerPtr(new websocketpp::server(handler_));
+        server_ = WebSocket::ServerPtr(new websocketpp::server<websocketpp::config::asio>());
+
+        // Initialize ASIO transport
+        server_->init_asio();
+
+        // Register handler callbacks
+        server_->set_open_handler(boost::bind(&Server::OnConnected, this, ::_1));
+        server_->set_close_handler(boost::bind(&Server::OnDisconnected, this, ::_1));
+        server_->set_message_handler(boost::bind(&Server::OnMessage, this, ::_1, ::_2));
 
         // Setup logging
-        server_->alog().unset_level(websocketpp::log::alevel::ALL);
-        server_->elog().unset_level(websocketpp::log::elevel::ALL);
-        server_->elog().set_level(websocketpp::log::elevel::RERROR);
-        server_->elog().set_level(websocketpp::log::elevel::FATAL);
+        server_->get_alog().clear_channels(websocketpp::log::alevel::all);
+        server_->get_elog().clear_channels(websocketpp::log::elevel::all);
+        server_->get_elog().set_channels(websocketpp::log::elevel::rerror);
+        server_->get_elog().set_channels(websocketpp::log::elevel::fatal);
 
-        // Start listening to port.
-        server_->start_listen(port_, QThread::idealThreadCount() > 0 ? QThread::idealThreadCount() : 1);
+        server_->listen(port_);
+
+        // Start the server accept loop
+        server_->start_accept();
+
+        // Start the ASIO io_service run loop
+        thread_.server_ = server_;
+        thread_.start();
+
     } 
     catch (std::exception &e) 
     {
@@ -480,7 +496,8 @@ void Server::Stop()
     {
         if (server_)
         {
-            server_->stop(false);
+            server_->stop();
+            thread_.terminate();
             emit ServerStopped();
         }
     }
@@ -501,149 +518,78 @@ void Server::Reset()
         SAFE_DELETE(connection);
     connections_.clear();
 
-    handler_.reset();
     server_.reset();
 }
 
-void Server::OnConnected(ConnectionPtr connection)
+void Server::OnConnected(ConnectionHandle connection)
 {
-    if (mutexEvents_.tryLock(100))
-    {   
-        // Find existing events and remove them if we got duplicates 
-        // that were not synced to main thread yet.
-        QList<SocketEvent*> removeItems;
-        for (int i=0; i<events_.size(); ++i)
-        {
-            // Remove any and all messages from this connection, 
-            // if there are any data messages for this connection.
-            // Which is not possible in theory.
-            SocketEvent *existing = events_[i];
-            if (existing->connection == connection)
-                removeItems << existing;
-        }
-        if (!removeItems.isEmpty())
-        {
-            foreach(SocketEvent *existing, removeItems)
-            {
-                events_.removeAll(existing);
-                SAFE_DELETE(existing);
-            }
-            removeItems.clear();
-        }
+    QMutexLocker lock(&mutexEvents_);
 
-        events_ << new SocketEvent(connection, SocketEvent::Connected);
-        
-        mutexEvents_.unlock();
-    }
-    else
+    ConnectionPtr connectionPtr = server_->get_con_from_hdl(connection);
+
+    // Find existing events and remove them if we got duplicates 
+    // that were not synced to main thread yet.
+    QList<SocketEvent*> removeItems;
+    for (int i=0; i<events_.size(); ++i)
     {
-        LogError(LC + "Event mutex too busy, denying new connection.");
-        if (connection)
-            connection->close(websocketpp::close::status::NORMAL);
+        // Remove any and all messages from this connection, 
+        // if there are any data messages for this connection.
+        // Which is not possible in theory.
+        SocketEvent *existing = events_[i];
+        if (existing->connection == connectionPtr)
+            removeItems << existing;
     }
+    if (!removeItems.isEmpty())
+    {
+        foreach(SocketEvent *existing, removeItems)
+        {
+            events_.removeAll(existing);
+            SAFE_DELETE(existing);
+        }
+        removeItems.clear();
+    }
+
+    events_ << new SocketEvent(connectionPtr, SocketEvent::Connected);
+        
+    mutexEvents_.unlock();
 }
 
-void Server::OnDisconnected(ConnectionPtr connection)
+void Server::OnDisconnected(ConnectionHandle connection)
 {
-    if (mutexEvents_.tryLock(100))
-    {
-        // Find existing events and remove them if we got duplicates 
-        // that were not synced to main thread yet.
-        QList<SocketEvent*> removeItems;
-        for (int i=0; i<events_.size(); ++i)
-        {
-            // Remove any and all messages from this connection, 
-            // no need to process he is disconnecting
-            SocketEvent *existing = events_[i];
-            if (existing->connection == connection)
-                removeItems << existing;
-        }
-        if (!removeItems.isEmpty())
-        {
-            foreach(SocketEvent *existing, removeItems)
-            {
-                events_.removeAll(existing);
-                SAFE_DELETE(existing);
-            }
-            removeItems.clear();
-        }
+    QMutexLocker lock(&mutexEvents_);
 
-        events_ << new SocketEvent(connection, SocketEvent::Disconnected);
-        
-        mutexEvents_.unlock();
+    ConnectionPtr connectionPtr = server_->get_con_from_hdl(connection);
+
+    // Find existing events and remove them if we got duplicates 
+    // that were not synced to main thread yet.
+    QList<SocketEvent*> removeItems;
+    for (int i=0; i<events_.size(); ++i)
+    {
+        // Remove any and all messages from this connection, 
+        // no need to process he is disconnecting
+        SocketEvent *existing = events_[i];
+        if (existing->connection == connectionPtr)
+            removeItems << existing;
     }
-    else
-        LogError(LC + "Event mutex too busy, cannot handle disconnect event.");
+    if (!removeItems.isEmpty())
+    {
+        foreach(SocketEvent *existing, removeItems)
+        {
+            events_.removeAll(existing);
+            SAFE_DELETE(existing);
+        }
+        removeItems.clear();
+    }
+
+    events_ << new SocketEvent(connectionPtr, SocketEvent::Disconnected);
 }
 
-void Server::OnMessage(ConnectionPtr connection, const char *data, size_t size)
+void Server::OnMessage(ConnectionHandle connection, MessagePtr data)
 {   
     QMutexLocker lock(&mutexEvents_);
 
-    SocketEvent *event = new SocketEvent(connection, SocketEvent::Data);
-    event->data = DataSerializerPtr(new kNet::DataSerializer(size));
-    event->data->AddAlignedByteArray(data, size);
+    ConnectionPtr connectionPtr = server_->get_con_from_hdl(connection);
 
-    events_ << event;
-}
-
-void Server::OnHttpRequest(WebSocket::ConnectionPtr connection)
-{    
-    QByteArray resourcePath = QString::fromStdString(connection->get_resource()).toUtf8();
-
-    qDebug() << "OnHttpRequest" << resourcePath;
-        
-    QByteArray data("Hello World to " + resourcePath);
-    std::string payload;
-    payload.resize(data.size());
-    memcpy((void*)payload.data(), (void*)data.data(), data.size());
-    
-    connection->set_status(websocketpp::http::status_code::OK);
-    connection->set_body(payload);
-    connection->replace_response_header("Content-Length", QString::number(data.size()).toStdString());
-}
-
-// Handler
-
-Handler::Handler(Server *server) :
-    server_(server)
-{
-}
-
-Handler::~Handler()
-{
-    server_ = 0;
-}
-
-void Handler::validate(ConnectionPtr con)
-{
-    /// @todo Validate origin header here!  
-}
-
-void Handler::on_handshake_init(ConnectionPtr con)
-{
-}
-
-void Handler::on_open(ConnectionPtr con)
-{
-    if (server_)
-        server_->OnConnected(con);
-}
-
-void Handler::on_close(ConnectionPtr con)
-{
-    if (server_)
-        server_->OnDisconnected(con);
-}
-
-void Handler::on_fail(ConnectionPtr con)
-{
-    if (server_)
-        server_->OnDisconnected(con);
-}
-
-void Handler::on_message(ConnectionPtr con, websocketpp::message::data_ptr data)
-{   
     if (data->get_opcode() == websocketpp::frame::opcode::TEXT)
     {
         QByteArray buffer = QString::fromStdString(data->get_payload()).toUtf8();
@@ -657,31 +603,31 @@ void Handler::on_message(ConnectionPtr con, websocketpp::message::data_ptr data)
             LogError("[WebSocketServer]: Received 0 sized payload, ignoring");
             return;
         }
-        if (server_)
-            server_->OnMessage(con, &payload[0], payload.size());
+        SocketEvent *event = new SocketEvent(connectionPtr, SocketEvent::Data);
+        event->data = DataSerializerPtr(new kNet::DataSerializer(payload.size()));
+        event->data->AddAlignedByteArray(&payload[0], payload.size());
+
+        events_ << event;
     }
 }
 
-bool Handler::on_ping(ConnectionPtr con, std::string msg)
+/// \todo Implement actual registering of http handlers, for now disabled
+/*
+void Server::OnHttpRequest(WebSocket::ConnectionHandle connection)
 {
-    LogInfo("on_ping");  
-    return true;
-}
+    QByteArray resourcePath = QString::fromStdString(connection->get_resource()).toUtf8();
 
-void Handler::on_pong(ConnectionPtr con, std::string msg)
-{
-    LogInfo("on_pong");  
+    qDebug() << "OnHttpRequest" << resourcePath;
+        
+    QByteArray data("Hello World to " + resourcePath);
+    std::string payload;
+    payload.resize(data.size());
+    memcpy((void*)payload.data(), (void*)data.data(), data.size());
+    
+    connection->set_status(websocketpp::http::status_code::ok);
+    connection->set_body(payload);
+    connection->replace_header("Content-Length", QString::number(data.size()).toStdString());
 }
-
-void Handler::on_pong_timeout(ConnectionPtr con, std::string msg)
-{
-    LogInfo("on_pong_timeout");  
-}
-
-void Handler::http(ConnectionPtr con)
-{
-    if (con->get_version() == -1 && server_)
-        server_->OnHttpRequest(con);
-}
+*/
 
 }

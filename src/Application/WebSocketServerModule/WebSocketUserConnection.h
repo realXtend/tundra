@@ -16,8 +16,6 @@
 #include <QString>
 #include <QVariant>
 
-#include "websocketpp.hpp"
-
 namespace WebSocket
 {
     class WEBSOCKET_SERVER_MODULE_API UserConnection : public QObject, public enable_shared_from_this<UserConnection>

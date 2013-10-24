@@ -23,7 +23,8 @@
                      "DebugStatsModule",
                      "SceneWidgetComponents",
                      "MumblePlugin",
-                     "CanvasPlugin" ]
+                     "CanvasPlugin",
+                     "WebSocketServerModule" ]
     },
 
     // Javascript plugins

@@ -27,11 +27,6 @@ WebSocketServerModule::~WebSocketServerModule()
 void WebSocketServerModule::Load()
 {
     isServer_ = framework_->HasCommandLineParameter("--server");
-    if (!isServer_)
-    {
-        LogError(LC + "Loaded in a non server configuration, aborting load.");
-        return;
-    }
 }
 
 void WebSocketServerModule::Initialize()

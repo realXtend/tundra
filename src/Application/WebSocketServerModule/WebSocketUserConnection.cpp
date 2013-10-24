@@ -5,7 +5,7 @@
 #include "kNet/DataDeserializer.h"
 #include "kNet/DataSerializer.h"
 
-#include "websocket_frame.hpp"
+#include <websocketpp/frame.hpp>
 
 #include <QTimer>
 
@@ -71,7 +71,7 @@ void UserConnection::DenyConnection(const QString &reason)
 void UserConnection::Disconnect()
 {
     if (!connection.expired())
-        connection.lock()->close(websocketpp::close::status::NORMAL);
+        connection.lock()->close(websocketpp::close::status::normal, "ok");
 }
 
 void UserConnection::DisconnectDelayed(int msec)

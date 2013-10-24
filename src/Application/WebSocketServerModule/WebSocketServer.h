@@ -22,17 +22,18 @@
 #include <QDateTime>
 #include <QMutex>
 
-#include "websocketpp.hpp"
+#include <websocketpp/config/asio_no_tls.hpp>
+#include <websocketpp/server.hpp>
 #include "kNet/DataSerializer.h"
 #include "boost/weak_ptr.hpp"
 
 namespace WebSocket
-{   
-    typedef websocketpp::server::ptr ServerPtr;
-    typedef websocketpp::server::handler::ptr HandlerPtr;
-    typedef websocketpp::server::connection_ptr ConnectionPtr;
-    typedef boost::weak_ptr<websocketpp::server::connection_type> ConnectionWeakPtr;
-    typedef websocketpp::message::data_ptr DataPtr;
+{
+    typedef shared_ptr<websocketpp::server<websocketpp::config::asio> > ServerPtr;
+    typedef websocketpp::server<websocketpp::config::asio>::connection_ptr ConnectionPtr;
+    typedef boost::weak_ptr<websocketpp::server<websocketpp::config::asio>::connection_type> ConnectionWeakPtr;
+    typedef websocketpp::connection_hdl ConnectionHandle;
+    typedef websocketpp::server<websocketpp::config::asio>::message_ptr MessagePtr;
     typedef shared_ptr<kNet::DataSerializer> DataSerializerPtr;
     
     // WebSocket events
@@ -54,6 +55,15 @@ namespace WebSocket
         SocketEvent(WebSocket::ConnectionPtr connection_, EventType type_) : connection(connection_), type(type_) {}
     };
 
+    /// Server run thread
+    class ServerThread : public QThread
+    {
+    public:
+        virtual void run();
+
+        WebSocket::ServerPtr server_;
+    };
+
     /// WebSocket server. 
     /** Manages user requestedConnections and receiving/sending out data with them.
         All signals emitted by this object will be in the main thread. */
@@ -66,7 +76,7 @@ namespace WebSocket
         ~Server();
         
         bool Start();
-        void Stop();        
+        void Stop();
         void Update(float frametime);
         
         /// Returns all users.
@@ -117,10 +127,10 @@ namespace WebSocket
         void Reset();
 
         void OnUserDisconnected(WebSocket::UserConnection *userConnection);
-        void OnConnected(WebSocket::ConnectionPtr connection);
-        void OnDisconnected(WebSocket::ConnectionPtr connection);
-        void OnMessage(WebSocket::ConnectionPtr connection, const char *data, size_t size);
-        void OnHttpRequest(WebSocket::ConnectionPtr connection);
+        void OnConnected(WebSocket::ConnectionHandle connection);
+        void OnDisconnected(WebSocket::ConnectionHandle connection);
+        void OnMessage(WebSocket::ConnectionHandle connection, WebSocket::MessagePtr data);
+        void OnHttpRequest(WebSocket::ConnectionHandle connection);
         
     private:
         /// @note Does not lock the requestedConnections mutex
@@ -132,9 +142,10 @@ namespace WebSocket
         Framework *framework_;
         
         WebSocket::ServerPtr server_;
-        WebSocket::HandlerPtr handler_;
         WebSocket::UserConnectionList connections_;
         WebSocket::UserConnection *actionSender_;
+
+        ServerThread thread_;
 
         QMutex mutexEvents_;
         QList<SocketEvent*> events_;
@@ -144,33 +155,5 @@ namespace WebSocket
 
         /// Time accumulator for update
         float updateAcc_;
-    };
-
-    /// WebSocket server handler class. 
-    /** @note Callbacks are executed in network
-        thread(s) not the main thread. */
-    class WEBSOCKET_SERVER_MODULE_API Handler : public websocketpp::server::handler 
-    {
-    public:
-        Handler(Server *server);
-        ~Handler();
-        
-        void Close();
-        
-        void validate(ConnectionPtr con);
-        
-        void on_handshake_init(ConnectionPtr con);
-        void on_open(ConnectionPtr con);
-        void on_close(ConnectionPtr con);
-        void on_fail(ConnectionPtr con);
-
-        void on_message(ConnectionPtr con, DataPtr data);
-        bool on_ping(ConnectionPtr con, std::string msg);
-        void on_pong(ConnectionPtr con, std::string msg);
-        void on_pong_timeout(ConnectionPtr con, std::string msg);
-        void http(ConnectionPtr con);
-        
-    private:
-        Server *server_;
     };
 }
