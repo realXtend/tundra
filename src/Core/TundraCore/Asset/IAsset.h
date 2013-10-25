@@ -201,10 +201,10 @@ protected:
     AssetStorageWeakPtr storage;
 
     /// Specifies the type of this asset, e.g. "Texture" or "OgreMaterial".
-    QString type;
+    const QString type;
 
     /// Specifies the name of this asset, which for most assets is the source URL ref of where the asset was loaded.
-    QString name;
+    const QString name;
 
     /// This path specifies a local filename from which this asset can be reloaded if necessary.
     QString diskSource;
