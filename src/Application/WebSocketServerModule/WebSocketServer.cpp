@@ -61,7 +61,8 @@ void ServerThread::run()
     
     try
     {
-        server_->run();
+        while (!server_->stopped())
+            server_->poll();
     } 
     catch (const std::exception & e) 
     {
@@ -470,7 +471,7 @@ bool Server::Start()
         // Start the server accept loop
         server_->start_accept();
 
-        // Start the ASIO io_service run loop
+        // Start the server polling thread
         thread_.server_ = server_;
         thread_.start();
 
@@ -497,7 +498,7 @@ void Server::Stop()
         if (server_)
         {
             server_->stop();
-            thread_.terminate();
+            thread_.wait();
             emit ServerStopped();
         }
     }
