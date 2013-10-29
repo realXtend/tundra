@@ -133,7 +133,6 @@ public slots:
 
     // DEPRECATED
     void AddQVariantAttribute(const QString &id, AttributeChange::Type change = AttributeChange::Default); /**< @deprecated Use CreateAttribute('qvariant') @todo Remove */
-    void SetAttributeQScript(const QString &id, const QScriptValue &value, AttributeChange::Type change = AttributeChange::Default); /**< @deprecated Use SetAttribute @todo Remove */
     /// Returns name of attribute with the specific @c index
     /** @param index Index of the attribute.
         @todo Remove once nothing uses it, as IDs are same as name for dynamic attributes */

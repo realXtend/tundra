@@ -250,14 +250,6 @@ void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, Attribu
     attributes[attrIndex]->FromQVariant(value, change);
 }
 
-void EC_DynamicComponent::SetAttributeQScript(const QString &id, const QScriptValue &value, AttributeChange::Type change)
-{
-    LogWarning("EC_DynamicComponent::SetAttributeQScript is deprecated and will be removed. Use SetAttribute instead.");
-    IAttribute* attr = AttributeById(id);
-    if (attr)
-        attr->FromScriptValue(value, change);
-}
-
 void EC_DynamicComponent::SetAttribute(const QString &id, const QVariant &value, AttributeChange::Type change)
 {
     IAttribute* attr = AttributeById(id);

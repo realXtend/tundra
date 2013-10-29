@@ -599,93 +599,6 @@ template<> QVariant TUNDRACORE_API Attribute<QPoint>::ToQVariant() const
     return QVariant::fromValue<QPoint>(Get());
 }
 
-// FROMSCRIPTVALUE TEMPLATE IMPLEMENTATIONS.
-
-template<> void TUNDRACORE_API Attribute<QString>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(qScriptValueToValue<QString>(value), change);
-}
-
-template<> void TUNDRACORE_API Attribute<bool>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(qScriptValueToValue<bool>(value), change);
-}
-
-template<> void TUNDRACORE_API Attribute<int>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(qScriptValueToValue<int>(value), change);
-}
-
-template<> void TUNDRACORE_API Attribute<uint>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(qScriptValueToValue<uint>(value), change);
-}
-
-template<> void TUNDRACORE_API Attribute<float>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(qScriptValueToValue<float>(value), change);
-}
-
-template<> void TUNDRACORE_API Attribute<Quat>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(value.data().toVariant().value<Quat>(), change);
-}
-
-template<> void TUNDRACORE_API Attribute<float2>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(value.data().toVariant().value<float2>(), change);
-}
-
-template<> void TUNDRACORE_API Attribute<float3>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(value.data().toVariant().value<float3>(), change);
-}
-
-template<> void TUNDRACORE_API Attribute<float4>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(value.data().toVariant().value<float4>(), change);
-}
-
-template<> void TUNDRACORE_API Attribute<Color>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(qScriptValueToValue<Color>(value), change);
-}
-
-template<> void TUNDRACORE_API Attribute<AssetReference>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(qScriptValueToValue<AssetReference>(value), change);
-}
-
-template<> void TUNDRACORE_API Attribute<AssetReferenceList>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(qScriptValueToValue<AssetReferenceList>(value), change);
-}
-
-template<> void TUNDRACORE_API Attribute<EntityReference>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(qScriptValueToValue<EntityReference>(value), change);
-}
-
-template<> void TUNDRACORE_API Attribute<QVariant>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(qScriptValueToValue<QVariant>(value), change);
-}
-
-template<> void TUNDRACORE_API Attribute<QVariantList>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(qScriptValueToValue<QVariantList>(value), change);
-}
-
-template<> void TUNDRACORE_API Attribute<Transform>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(qScriptValueToValue<Transform>(value), change);
-}
-
-template<> void TUNDRACORE_API Attribute<QPoint>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
-{
-    Set(qScriptValueToValue<QPoint>(value), change);
-}
-
 // TOBINARY TEMPLATE IMPLEMENTATIONS.
 
 template<> void TUNDRACORE_API Attribute<QString>::ToBinary(kNet::DataSerializer& dest) const
@@ -718,7 +631,6 @@ template<> void TUNDRACORE_API Attribute<float>::ToBinary(kNet::DataSerializer& 
 
 template<> void TUNDRACORE_API Attribute<Quat>::ToBinary(kNet::DataSerializer& dest) const
 {
-    ///\todo Optimize here by omitting the fourth scalar.
     dest.Add<float>(value.x);
     dest.Add<float>(value.y);
     dest.Add<float>(value.z);
@@ -841,7 +753,6 @@ template<> void TUNDRACORE_API Attribute<Color>::FromBinary(kNet::DataDeserializ
 
 template<> void TUNDRACORE_API Attribute<Quat>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
-    ///\todo Optimize here by omitting the fourth scalar.
     Quat value;
     value.x = source.Read<float>();
     value.y = source.Read<float>();
@@ -887,7 +798,7 @@ template<> void TUNDRACORE_API Attribute<AssetReference>::FromBinary(kNet::DataD
 template<> void TUNDRACORE_API Attribute<AssetReferenceList>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
     AssetReferenceList value;
-    u8 numValues = source.Read<u8>();
+    const u8 numValues = source.Read<u8>();
     for(u32 i = 0; i < numValues; ++i)
         value.Append(AssetReference(source.ReadString().c_str())); /**< @todo Use UTF-8, see Attribute<QString>::FromBinary */
 
@@ -912,7 +823,7 @@ template<> void TUNDRACORE_API Attribute<QVariantList>::FromBinary(kNet::DataDes
 {
     QVariantList value;
     
-    u8 numValues = source.Read<u8>();
+    const u8 numValues = source.Read<u8>();
     for(u32 i = 0; i < numValues; ++i)
     {
         std::string str = source.ReadString(); /**< @todo Use UTF-8, see Attribute<QString>::FromBinary */

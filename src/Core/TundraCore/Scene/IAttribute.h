@@ -76,11 +76,6 @@ public:
     /// Convert QVariant to attribute value.
     virtual void FromQVariant(const QVariant &variant, AttributeChange::Type change) = 0;
 
-    /// Convert QScriptValue to attribute value (QtScript specific).
-    /// @deprecated FromQVariant should be used instead.
-    /// @todo Remove when if possible.
-    virtual void FromScriptValue(const QScriptValue &value, AttributeChange::Type change) = 0;
-
     /// Sets attribute's metadata.
     /** If owner component is set calls IComponent::EmitAttributeMetadataChanged to make IComponent emit metadata changed signal.
         If you change metadata directly with Metadata().property = value; you need to call 
@@ -241,7 +236,6 @@ public:
     virtual u32 TypeId() const; ///< IAttribute override
     virtual QVariant ToQVariant() const; ///< IAttribute override
     virtual void FromQVariant(const QVariant &variant, AttributeChange::Type change); ///< IAttribute override
-    virtual void FromScriptValue(const QScriptValue &value, AttributeChange::Type change); ///< IAttribute override
 
     /// Returns pre-defined default value for the attribute.
     /** Usually zero for primitive data types and for classes/structs that are collections of primitive data types (e.g. float3::zero), or the default consturctor. */
