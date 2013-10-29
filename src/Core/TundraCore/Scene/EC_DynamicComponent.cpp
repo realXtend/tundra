@@ -2,16 +2,12 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "EC_DynamicComponent.h"
-
 #include "SceneAPI.h"
-
 #include "Entity.h"
 #include "LoggingFunctions.h"
 #include "Scene/Scene.h"
-
-#include <QScriptEngine>
-#include <QScriptValueIterator>
 
 #include <kNet.h>
 
@@ -37,13 +33,13 @@ struct DeserializeData
 /// Function that is used by std::sort algorithm to sort attributes by their ID.
 bool CmpAttributeById(const IAttribute *a, const IAttribute *b)
 {
-    return a->Id().compare(b->Id(), Qt::CaseInsensitive);
+    return a->Id().compare(b->Id(), Qt::CaseInsensitive) < 0;
 }
 
 /// Function that is used by std::sort algorithm to sort DeserializeData by their ID.
 bool CmpAttributeDataById(const DeserializeData &a, const DeserializeData &b)
 {
-    return a.id_.compare(b.id_, Qt::CaseInsensitive);
+    return a.id_.compare(b.id_, Qt::CaseInsensitive) < 0;
 }
 
 /** @endcond */

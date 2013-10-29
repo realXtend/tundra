@@ -24,7 +24,6 @@
 
 #include <QVariant>
 #include <QStringList>
-#include <QScriptEngine>
 #include <QPoint>
 
 #include <kNet/DataDeserializer.h>
