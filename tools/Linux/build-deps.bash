@@ -390,6 +390,19 @@ else
     touch $tags/$what-done
 fi
 
+cd $build
+what=websocketpp
+if test -f $tags/$what-done; then
+    echo $what is done
+else
+    rm -rf $what
+    echo Fetching $what, this may take a while...
+    git clone https://github.com/zaphoyd/websocketpp.git $what
+    cd $what
+    git checkout 0.3.0-alpha3
+    touch $tags/$what-done
+fi
+
 if test "$1" = "--depsonly"; then
     exit 0
 fi

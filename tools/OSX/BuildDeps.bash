@@ -324,28 +324,25 @@ fi
 
 cd $build
 
-if [ $USE_BOOST == "ON" ]; then
-    what=boost    
-    urlbase=http://downloads.sourceforge.net/project/boost/boost/1.46.1
-    pkgbase=boost_1_46_1
-    dlurl=$urlbase/$pkgbase.tar.gz    
-    if test -f $tags/$what-done; then
-        echoInfo "$what is done"
-    else
-        rm -rf $pkgbase
-        zip=$tarballs/$pkgbase.tar.gz
-        test -f $zip || echoInfo "Fetching $what, this may take a while... " && curl -L -o $zip $dlurl
-        tar xzf $zip
-
-        cd $pkgbase
-        echoInfo "Building $what"
-        ./bootstrap.sh --prefix=$prefix/$what
-        ./bjam toolset=darwin link=static threading=multi --with-thread --with-regex install
-        cp LICENSE_1_0.txt $prefix/$what
-        touch $tags/$what-done
-    fi
+# Always build boost due to websocketpp needing it
+what=boost
+urlbase=http://downloads.sourceforge.net/project/boost/boost/1.46.1
+pkgbase=boost_1_46_1
+dlurl=$urlbase/$pkgbase.tar.gz    
+if test -f $tags/$what-done; then
+    echoInfo "$what is done"
 else
-    echoInfo "'--use-boost' or '-ub' was not specified. Skipping boost."
+    rm -rf $pkgbase
+    zip=$tarballs/$pkgbase.tar.gz
+    test -f $zip || echoInfo "Fetching $what, this may take a while... " && curl -L -o $zip $dlurl
+    tar xzf $zip
+
+    cd $pkgbase
+    echoInfo "Building $what"
+    ./bootstrap.sh --prefix=$prefix/$what
+    ./bjam toolset=darwin link=static threading=multi --with-thread --with-regex --with-system --with-date_time install
+    cp LICENSE_1_0.txt $prefix/$what
+    touch $tags/$what-done
 fi
 
 cd $build
@@ -711,7 +708,7 @@ else
         if test -d DependenciesBuild; then
             rm -rf DependenciesBuild
         fi
-        hg clone https://bitbucket.org/cabalistic/ogredeps DependenciesBuild
+        hg clone -r 62 https://bitbucket.org/cabalistic/ogredeps DependenciesBuild
         cd DependenciesBuild
         $LC_CTYPE_OVERRIDE
         if [ $NO_BOOST == "ON" ]; then 
@@ -909,6 +906,22 @@ else
 fi
 
 export ZZIPLIB_ROOT=$ZZIPLIBPREFIX
+
+what=websocketpp
+if test -f $tags/$what-done; then
+    echoInfo "$what is done"
+else
+    cd $build
+    rm -rf $what
+    echoInfo "Fetching $what, this may take a while... "
+    git clone https://github.com/zaphoyd/websocketpp.git $what
+    cd $what
+    git checkout 0.3.0-alpha3
+    touch $tags/$what-done
+fi
+
+cd $build
+
 
 # All deps are now fetched and built. Do the actual Tundra build.
 

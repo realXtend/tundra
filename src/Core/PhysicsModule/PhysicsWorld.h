@@ -50,7 +50,7 @@ class PHYSICS_MODULE_API PhysicsWorld : public QObject, public enable_shared_fro
     Q_PROPERTY(bool drawDebugGeometry READ IsDebugGeometryEnabled WRITE SetDebugGeometryEnabled)
     Q_PROPERTY(bool running READ IsRunning WRITE SetRunning)
 
-    friend class PhysicsModule;
+    friend class ::PhysicsModule;
     friend class ::EC_RigidBody;
 
 public:

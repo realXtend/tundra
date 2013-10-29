@@ -33,7 +33,7 @@ endif()
 # On Linux TUNDRA_NO_BOOST can not yet be used
 option(TUNDRA_NO_BOOST "Specifies whether Tundra is built without Boost." ON)
 # TODO No-Boost support for Linux.
-if (NOT WIN32 OR APPLE)
+if (NOT WIN32 AND NOT APPLE)
     set(TUNDRA_NO_BOOST OFF)
 endif()
 
@@ -87,7 +87,7 @@ endif()
 
 macro(PrintUsedEnvVariables)
     # Print out the resolved variables. Note that this does not print the env variables
-    # in most cases as they should be resolved to our cmake variables and get cached.
+    # in most cases as they should be resolved to our CMake variables and get cached.
     # This way this printed list wont lie if ran without env variables and we are still
     # successfully finding all the deps from our cacher (or in bad cases assumed) dirs.
     message("\n=========== Used Environment Variables ===========\n")
@@ -400,8 +400,6 @@ endif()
 configure_qt4()
 configure_qjson()
 configure_ogre()
-if (NOT TUNDRA_NO_AUDIO)
-endif()
 if (NOT TUNDRA_NO_AUDIO)
     configure_openal()
 endif()

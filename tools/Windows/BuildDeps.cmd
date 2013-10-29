@@ -420,16 +420,16 @@ set BOOST_ROOT=%DEPS%\boost
 set BOOST_INCLUDEDIR=%DEPS%\boost
 set BOOST_LIBRARYDIR=%DEPS%\boost\stage\lib
 
-IF %USE_BOOST%==FALSE (
-   cecho {0D}USE_BOOST set to FALSE. Skipping Boost.{# #}{\n}
-   GOTO :SKIP_BOOST
-)
-
+:: Boost is built for websocketpp library, even if not needed by Tundra
 IF NOT EXIST "%DEPS%\boost". (
-    cecho {0D}Cloning Boost into "%DEPS%\boost".{# #}{\n}
+    cecho {0D}Downloading and extracting Boost into "%DEPS%\boost".{# #}{\n}
     cd "%DEPS%"
-    svn checkout http://svn.boost.org/svn/boost/tags/release/Boost_1_49_0 boost
-    IF NOT EXIST "%DEPS%\boost\.svn" GOTO :ERROR
+    IF NOT EXIST boost_1_49_0.zip. (
+        wget http://downloads.sourceforge.net/project/boost/boost/1.49.0/boost_1_49_0.zip
+        IF NOT EXIST boost_1_49_0.zip. GOTO :ERROR
+    )
+    7za x boost_1_49_0.zip
+    ren boost_1_49_0 boost
     IF NOT EXIST "%DEPS%\boost\boost.css" GOTO :ERROR
     cd "%DEPS%\boost"
     cecho {0D}Building Boost build script.{# #}{\n}
@@ -442,13 +442,11 @@ IF NOT EXIST "%DEPS%\boost". (
     cd "%DEPS%\boost"
     cecho {0D}Building Boost. Please be patient, this will take a while.{# #}{\n}
     :: Building boost with single core takes ages, so utilize all cores for the build process
-    call .\b2 -j %NUMBER_OF_PROCESSORS% --without-mpi thread regex stage
+    call .\b2 -j %NUMBER_OF_PROCESSORS% --with-system --with-regex --with-thread --with-date_time stage
 ) ELSE (
     ::TODO Even if %DEPS%\boost exists, we have no guarantee that boost is built successfully for real
     cecho {0D}Boost already built. Skipping.{# #}{\n}
 )
-
-:SKIP_BOOST
 
 IF NOT EXIST "%DEPS%\assimp\". (
     cecho {0D}Checking out OpenAssetImport library from https://github.com/assimp/assimp.git into "%DEPS%\assimp".{# #}{\n}
@@ -668,17 +666,13 @@ cd "%DEPS%\ogre-safe-nocrashes\RenderSystems\Headless"
 git pull
 
 :: Ogre dependencies
+:: Clone a specific changeset we know to work
 IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\ogredeps\.hg". (
     cecho {0D}Cloning Ogre dependencies from https://bitbucket.org/cabalistic/ogredeps into "%DEPS%\ogre-safe-nocrashes\ogredeps".{# #}{\n}
     cd "%DEPS%\ogre-safe-nocrashes\"
-    hg clone https://bitbucket.org/cabalistic/ogredeps
+    hg clone -r 62 https://bitbucket.org/cabalistic/ogredeps
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\ogredeps\.hg" GOTO :ERROR
-) ELSE (
-    cecho {0D}Updating Ogre dependencies to the newest version from https://bitbucket.org/cabalistic/ogredeps.{# #}{\n}
-    cd "%DEPS%\ogre-safe-nocrashes\ogredeps"
-    hg pull -u
-    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 
 cd "%DEPS%\ogre-safe-nocrashes\ogredeps"
@@ -1229,6 +1223,16 @@ IF NOT EXIST "%DEPS%\zziplib\lib\zziplib%POSTFIX_D%.lib". (
     copy /Y ..\zzip\*.h ..\..\include\zzip
 ) ELSE (
     cecho {0D}%DEBUG_OR_RELEASE% zziplib %ZZIPLIB_VERSION% already built. Skipping.{# #}{\n}
+)
+
+:: websocketpp
+IF NOT EXIST "%DEPS%\websocketpp\". (
+    cecho {0D}Cloning websocketpp library from https://https://github.com/zaphoyd/websocketpp.git into "%DEPS%\websocketpp".{# #}{\n}
+    cd "%DEPS%"
+    git clone https://github.com/zaphoyd/websocketpp.git websocketpp
+    cd "%DEPS%\websocketpp"
+    git checkout 0.3.0-alpha3
+    cd "%DEPS%"
 )
 
 echo.

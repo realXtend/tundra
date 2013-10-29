@@ -46,19 +46,7 @@ typedef unsigned int component_id_t;
 #else
 #include <memory>
 #include <regex>
-// <unordered_map> is a bit trickier to include.
-// __has_include is a Clang-only define.
-#ifndef __has_include
-#define __has_include(x) 0
-#endif
-/// @todo Verify the Clang and GCC parts! The GCC part is probably wrong, but that's ok for now
-/// as TUNDRA_NO_BOOST cannot be used yet on GCC+Linux. For now assuming that if __APPLE__ is
-/// defined it means the we're using Clang (and __has_include is available).
-#if (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 2) || (defined(__APPLE__) && __has_include(<tr1/unordered_map>))
-#include <tr1/unordered_map>
-#elif defined(_MSC_VER) || /** @todo check for GCC defines */ (defined(__APPLE__) && __has_include(<unordered_map>))
 #include <unordered_map>
-#endif
 #endif
 
 /** @def CORETYPES_NAMESPACE

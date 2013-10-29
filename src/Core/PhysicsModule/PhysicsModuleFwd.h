@@ -11,17 +11,15 @@
 /// @todo Remove the Physics namespace.
 namespace Physics
 {
-    class PhysicsModule;
-    class PhysicsWorld;
     struct ConvexHull;
     struct ConvexHullSet;
 }
 
-using Physics::PhysicsModule;
-using Physics::PhysicsWorld;
 using Physics::ConvexHull;
 using Physics::ConvexHullSet;
 
+class PhysicsModule;
+class PhysicsWorld;
 class PhysicsRaycastResult;
 class EC_RigidBody;
 class EC_VolumeTrigger;
