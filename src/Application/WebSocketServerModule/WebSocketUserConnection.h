@@ -1,15 +1,15 @@
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
 #include "WebSocketServerModuleApi.h"
-#include "Win.h"
+#include "WebSocketFwd.h"
+#include "WebSocketServer.h"
 
 #include "FrameworkFwd.h"
-#include "WebSocketFwd.h"
-#include "kNetFwd.h"
-
-#include "WebSocketServer.h"
 #include "SyncState.h"
+
+#include <kNetFwd.h>
 
 #include <QObject>
 #include <QHash>

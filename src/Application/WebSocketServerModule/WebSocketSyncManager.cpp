@@ -34,14 +34,14 @@ UserConnection* currentSender = 0;
 namespace WebSocket
 {
 
-void SyncManager::QueueMessage(UserConnection* connection, kNet::message_id_t id, bool reliable, bool inOrder, kNet::DataSerializer& ds)
+void SyncManager::QueueMessage(UserConnection* connection, kNet::message_id_t id, bool /*reliable*/, bool /*inOrder*/, kNet::DataSerializer& ds)
 {
     if (!connection)
         return;
 
     kNet::DataSerializer data(ds.BytesFilled() + 2);
     data.Add<u16>(static_cast<u16>(id));
-    data.AddAlignedByteArray(ds.GetData(), ds.BytesFilled());
+    data.AddAlignedByteArray(ds.GetData(), static_cast<u32>(ds.BytesFilled()));
     
     connection->Send(data);
 }
@@ -75,8 +75,8 @@ void SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPt
     }
     
     // Add the attribute array to the main serializer
-    ds.Add<u32>(attrDs.BytesFilled());
-    ds.AddArray<u8>((unsigned char*)attrDataBuffer_, attrDs.BytesFilled());
+    ds.Add<u32>(static_cast<u32>(attrDs.BytesFilled()));
+    ds.AddArray<u8>((unsigned char*)attrDataBuffer_, static_cast<u32>(attrDs.BytesFilled()));
 }
 
 SyncManager::SyncManager(WebSocketServerModule* owner) :
@@ -154,7 +154,7 @@ void SyncManager::RegisterToScene(ScenePtr scene)
         SLOT( OnActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecTypeField)));
 }
 
-void SyncManager::HandleKristalliMessage(UserConnection* source, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
+void SyncManager::HandleKristalliMessage(UserConnection* source, kNet::packet_id_t /*packetId*/, kNet::message_id_t messageId, const char* data, size_t numBytes)
 {
     try
     {
@@ -200,7 +200,7 @@ void SyncManager::HandleKristalliMessage(UserConnection* source, kNet::packet_id
     currentSender = 0;
 }
 
-void SyncManager::OnUserConnected(WebSocket::UserConnection *connection, QVariantMap *data)
+void SyncManager::OnUserConnected(WebSocket::UserConnection *connection, QVariantMap * /*data*/)
 {
     PROFILE(WebSocketSyncManager_NewUserConnected);
     
@@ -263,7 +263,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
             (*i)->syncState->MarkAttributeDirty(entity->Id(), comp->Id(), attr->Index());
 }
 
-void SyncManager::OnAttributeAdded(IComponent* comp, IAttribute* attr, AttributeChange::Type change)
+void SyncManager::OnAttributeAdded(IComponent* comp, IAttribute* attr, AttributeChange::Type /*change*/)
 {
     assert(comp && attr);
     if (!comp || !attr)
@@ -285,7 +285,7 @@ void SyncManager::OnAttributeAdded(IComponent* comp, IAttribute* attr, Attribute
         if ((*i)->syncState) (*i)->syncState->MarkAttributeCreated(entity->Id(), comp->Id(), attr->Index());
 }
 
-void SyncManager::OnAttributeRemoved(IComponent* comp, IAttribute* attr, AttributeChange::Type change)
+void SyncManager::OnAttributeRemoved(IComponent* comp, IAttribute* attr, AttributeChange::Type /*change*/)
 {
     assert(comp && attr);
     if (!comp || !attr)
@@ -940,7 +940,7 @@ void SyncManager::ProcessSyncState(UserConnection* destination, SceneSyncState* 
                     
                     // Now, if remaining dirty bits exist, they must be sent in the edit attributes message. These are the majority of our network data.
                     changedAttributes_.clear();
-                    unsigned numBytes = (attrs.size() + 7) >> 3;
+                    size_t numBytes = (attrs.size() + 7) >> 3;
                     for (unsigned i = 0; i < numBytes; ++i)
                     {
                         u8 byte = compState.dirtyAttributes[i];
@@ -999,14 +999,14 @@ void SyncManager::ProcessSyncState(UserConnection* destination, SceneSyncState* 
                             kNet::DataSerializer attrDataDs(attrDataBuffer_, 16 * 1024);
                             
                             // There are changed attributes. Check if it is more optimal to send attribute indices, or the whole bitmask
-                            unsigned bitsMethod1 = changedAttributes_.size() * 8 + 8;
-                            unsigned bitsMethod2 = attrs.size();
+                            size_t bitsMethod1 = changedAttributes_.size() * 8 + 8;
+                            size_t bitsMethod2 = attrs.size();
                             // Method 1: indices
                             if (bitsMethod1 <= bitsMethod2)
                             {
                                 attrDataDs.Add<kNet::bit>(0);
-                                attrDataDs.Add<u8>(changedAttributes_.size());
-                                for (unsigned i = 0; i < changedAttributes_.size(); ++i)
+                                attrDataDs.Add<u8>(static_cast<u8>(changedAttributes_.size()));
+                                for (size_t  i = 0; i < changedAttributes_.size(); ++i)
                                 {
                                     attrDataDs.Add<u8>(changedAttributes_[i]);
                                     attrs[changedAttributes_[i]]->ToBinary(attrDataDs);
@@ -1016,7 +1016,7 @@ void SyncManager::ProcessSyncState(UserConnection* destination, SceneSyncState* 
                             else
                             {
                                 attrDataDs.Add<kNet::bit>(1);
-                                for (unsigned i = 0; i < attrs.size(); ++i)
+                                for (size_t  i = 0; i < attrs.size(); ++i)
                                 {
                                     if (compState.dirtyAttributes[i >> 3] & (1 << (i & 7)))
                                     {
@@ -1029,8 +1029,8 @@ void SyncManager::ProcessSyncState(UserConnection* destination, SceneSyncState* 
                             }
                             
                             // Add the attribute data array to the main serializer
-                            editAttrsDs.Add<u16>(attrDataDs.BytesFilled());
-                            editAttrsDs.AddArray<u8>((unsigned char*)attrDataBuffer_, attrDataDs.BytesFilled());
+                            editAttrsDs.Add<u16>(static_cast<u16>(attrDataDs.BytesFilled()));
+                            editAttrsDs.AddArray<u8>((unsigned char*)attrDataBuffer_, static_cast<u32>(attrDataDs.BytesFilled()));
                         }
                         
                         // Now zero out all remaining dirty bits
@@ -1081,7 +1081,7 @@ void SyncManager::ProcessSyncState(UserConnection* destination, SceneSyncState* 
     //    std::cout << "Sent " << numMessagesSent << " scenesync messages" << std::endl;
 }
 
-bool SyncManager::ValidateAction(UserConnection* source, unsigned messageID, entity_id_t entityID)
+bool SyncManager::ValidateAction(UserConnection* source, unsigned /*messageID*/, entity_id_t /*entityID*/)
 {
     assert(source);
     
@@ -1227,7 +1227,7 @@ void SyncManager::HandleCreateEntity(UserConnection* source, const char* data, s
     replyDs.AddVLE<kNet::VLE8_16_32>(sceneID);
     replyDs.AddVLE<kNet::VLE8_16_32>(senderEntityID & UniqueIdGenerator::LAST_REPLICATED_ID);
     replyDs.AddVLE<kNet::VLE8_16_32>(entityID & UniqueIdGenerator::LAST_REPLICATED_ID);
-    replyDs.AddVLE<kNet::VLE8_16_32>(componentIdRewrites.size());
+    replyDs.AddVLE<kNet::VLE8_16_32>(static_cast<u32>(componentIdRewrites.size()));
     for (unsigned i = 0; i < componentIdRewrites.size(); ++i)
     {
         replyDs.AddVLE<kNet::VLE8_16_32>(componentIdRewrites[i].first & UniqueIdGenerator::LAST_REPLICATED_ID);
@@ -1349,7 +1349,7 @@ void SyncManager::HandleCreateComponents(UserConnection* source, const char* dat
     kNet::DataSerializer replyDs(createEntityBuffer_, 64 * 1024);
     replyDs.AddVLE<kNet::VLE8_16_32>(sceneID);
     replyDs.AddVLE<kNet::VLE8_16_32>(entityID & UniqueIdGenerator::LAST_REPLICATED_ID);
-    replyDs.AddVLE<kNet::VLE8_16_32>(componentIdRewrites.size());
+    replyDs.AddVLE<kNet::VLE8_16_32>(static_cast<u32>(componentIdRewrites.size()));
     for (unsigned i = 0; i < componentIdRewrites.size(); ++i)
     {
         replyDs.AddVLE<kNet::VLE8_16_32>(componentIdRewrites[i].first & UniqueIdGenerator::LAST_REPLICATED_ID);

@@ -1,3 +1,4 @@
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #pragma once
 
@@ -22,10 +23,21 @@
 #include <QDateTime>
 #include <QMutex>
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4100)
+#pragma warning(disable : 4267)
+#pragma warning(disable : 4701)
+#endif
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
-#include "kNet/DataSerializer.h"
-#include "boost/weak_ptr.hpp"
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+#include <kNet/DataSerializer.h>
+
+#include <boost/weak_ptr.hpp>
 
 namespace WebSocket
 {

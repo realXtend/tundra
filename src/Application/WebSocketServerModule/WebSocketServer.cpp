@@ -1,3 +1,4 @@
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "WebSocketServer.h"
 #include "WebSocketUserConnection.h"
@@ -15,7 +16,7 @@
 #include "UserConnectedResponseData.h"
 #include "MsgLoginReply.h"
 
-#include "kNet/DataDeserializer.h"
+#include <kNet/DataDeserializer.h>
 
 #include <websocketpp/frame.hpp>
 
@@ -278,7 +279,7 @@ void Server::Update(float frametime)
                             ds.Add<u32>(userConnection->connectionId);
                             ds.Add<u16>(responseByteData.size());
                             if (responseByteData.size() > 0)
-                                ds.AddArray<s8>(&loginReplyData[0], loginReplyData.size());
+                                ds.AddArray<s8>(&loginReplyData[0], static_cast<u32>(loginReplyData.size()));
 
                             userConnection->Send(ds);
                         }
@@ -300,9 +301,9 @@ void Server::Update(float frametime)
                             ds.Add<u16>(static_cast<u16>(cLoginReplyMessage));
                             ds.Add<u8>(0); // failure
                             ds.Add<u32>(0);
-                            ds.Add<u16>(loginReplyData.size());
+                            ds.Add<u16>(static_cast<u16>(loginReplyData.size()));
                             if (loginReplyData.size() > 0)
-                                ds.AddArray<s8>(&loginReplyData[0], loginReplyData.size());
+                                ds.AddArray<s8>(&loginReplyData[0], static_cast<u32>(loginReplyData.size()));
 
                             userConnection->Send(ds);
                             userConnection->DisconnectDelayed();
@@ -606,7 +607,7 @@ void Server::OnMessage(ConnectionHandle connection, MessagePtr data)
         }
         SocketEvent *event = new SocketEvent(connectionPtr, SocketEvent::Data);
         event->data = DataSerializerPtr(new kNet::DataSerializer(payload.size()));
-        event->data->AddAlignedByteArray(&payload[0], payload.size());
+        event->data->AddAlignedByteArray(&payload[0], static_cast<u32>(payload.size()));
 
         events_ << event;
     }

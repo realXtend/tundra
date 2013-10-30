@@ -1,9 +1,10 @@
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "WebSocketUserConnection.h"
 #include "LoggingFunctions.h"
 
-#include "kNet/DataDeserializer.h"
-#include "kNet/DataSerializer.h"
+#include <kNet/DataDeserializer.h>
+#include <kNet/DataSerializer.h>
 
 #include <websocketpp/frame.hpp>
 
@@ -13,9 +14,9 @@ namespace WebSocket
 {
 
 UserConnection::UserConnection(uint connectionId_, ConnectionPtr connection_) :
-    connectionId(connectionId_)
+    connectionId(connectionId_),
+    connection(connection_)
 {
-    connection = ConnectionWeakPtr(connection_);
 }
 
 UserConnection::~UserConnection()
