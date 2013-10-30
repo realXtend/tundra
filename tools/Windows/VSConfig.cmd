@@ -1,4 +1,4 @@
-:: This script initializes various Visual Studio -related envinronment variables needed for building
+:: This script initializes various Visual Studio -related environment variables needed for building
 :: NOTE: The delayed environment variable expansion needs to be enabled before calling this.
 
 @echo off
@@ -26,6 +26,7 @@ IF NOT !GENERATOR!==%GENERATOR_VS2008% IF NOT !GENERATOR!==%GENERATOR_VS2008_WIN
 
 :: Figure out the build configuration from the CMake generator string.
 :: Are we building 32-bit or 64-bit version.
+set ARCH_BITS=32
 set TARGET_ARCH=x86
 set INTEL_ARCH=ia32
 :: Visual Studio platform name.
@@ -50,6 +51,7 @@ FOR %%i IN (%GENERATOR_SPLIT%) DO (
     )
     REM Are going to perform a 64-bit build?
     IF %%i==Win64 (
+        set ARCH_BITS=64
         set TARGET_ARCH=x64
         set INTEL_ARCH=intel64
         set VS_PLATFORM=x64

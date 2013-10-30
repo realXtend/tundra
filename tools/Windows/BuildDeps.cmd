@@ -416,33 +416,33 @@ IF NOT EXIST "%DEPS%\bullet\lib\%BUILD_TYPE%\BulletCollision.lib". (
     cecho {0D}%BUILD_TYPE% Bullet already built. Skipping.{# #}{\n}
 )
 
+set BOOST_VERSION=1.49.0
+:: Version string with underscores instead of dots.
+set BOOST_VER=%BOOST_VERSION:.=_%
 set BOOST_ROOT=%DEPS%\boost
 set BOOST_INCLUDEDIR=%DEPS%\boost
 set BOOST_LIBRARYDIR=%DEPS%\boost\stage\lib
 
 :: Boost is built for websocketpp library, even if not needed by Tundra
 IF NOT EXIST "%DEPS%\boost". (
-    cecho {0D}Downloading and extracting Boost into "%DEPS%\boost".{# #}{\n}
+    cecho {0D}Downloading and extracting Boost %BOOST_VERSION% into "%DEPS%\boost".{# #}{\n}
     cd "%DEPS%"
-    IF NOT EXIST boost_1_49_0.zip. (
-        wget http://downloads.sourceforge.net/project/boost/boost/1.49.0/boost_1_49_0.zip
-        IF NOT EXIST boost_1_49_0.zip. GOTO :ERROR
+    IF NOT EXIST boost_%BOOST_VER%.zip. (
+        wget http://downloads.sourceforge.net/project/boost/boost/%BOOST_VERSION%/boost_%BOOST_VER%.zip
+        IF NOT EXIST boost_%BOOST_VER%.zip. GOTO :ERROR
     )
-    7za x boost_1_49_0.zip
-    ren boost_1_49_0 boost
+    7za x boost_%BOOST_VER%.zip
+    ren boost_%BOOST_VER% boost
     IF NOT EXIST "%DEPS%\boost\boost.css" GOTO :ERROR
+
     cd "%DEPS%\boost"
     cecho {0D}Building Boost build script.{# #}{\n}
     call bootstrap
-
-    :: Copy proper config file depending on the used VS version.
-    copy /Y "%TOOLS%\Mods\boost-user-config-%VS_VER%.jam" "%DEPS%\boost\tools\build\v2\user-config.jam"
-
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
+
     cd "%DEPS%\boost"
     cecho {0D}Building Boost. Please be patient, this will take a while.{# #}{\n}
-    :: Building boost with single core takes ages, so utilize all cores for the build process
-    call .\b2 -j %NUMBER_OF_PROCESSORS% --with-system --with-regex --with-thread --with-date_time stage
+    call .\b2 --toolset=msvc address-model=%ARCH_BITS% -j %NUMBER_OF_PROCESSORS% --with-system --with-regex --with-thread --with-date_time stage
 ) ELSE (
     ::TODO Even if %DEPS%\boost exists, we have no guarantee that boost is built successfully for real
     cecho {0D}Boost already built. Skipping.{# #}{\n}
