@@ -44,10 +44,13 @@ FOR %%i IN (%GENERATOR_SPLIT%) DO (
     IF %%i==10 (
         set VS_VER=vs2010
         set VC_VER=vc10
+        REM TODO Merge VC_VER and VC_VER_NUM
+        set VC_VER_NUM=10
     )
     IF %%i==2008 (
         set VS_VER=vs2008
         set VC_VER=vc9
+        set VC_VER_NUM=9
     )
     REM Are going to perform a 64-bit build?
     IF %%i==Win64 (

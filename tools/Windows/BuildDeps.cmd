@@ -442,7 +442,8 @@ IF NOT EXIST "%DEPS%\boost". (
 
     cd "%DEPS%\boost"
     cecho {0D}Building Boost. Please be patient, this will take a while.{# #}{\n}
-    call .\b2 --toolset=msvc address-model=%ARCH_BITS% -j %NUMBER_OF_PROCESSORS% --with-system --with-regex --with-thread --with-date_time stage
+    REM NOTE The ".0" postfix below doesn't necessarily work for all future VS versions.
+    call .\b2 --toolset=msvc-%VC_VER_NUM%.0 address-model=%ARCH_BITS% -j %NUMBER_OF_PROCESSORS% --with-system --with-regex --with-thread --with-date_time stage
 ) ELSE (
     ::TODO Even if %DEPS%\boost exists, we have no guarantee that boost is built successfully for real
     cecho {0D}Boost already built. Skipping.{# #}{\n}
