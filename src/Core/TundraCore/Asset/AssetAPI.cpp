@@ -399,7 +399,24 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
     int lastPeriodIndex = fullPathRef.lastIndexOf(".");
     int directorySeparatorIndex = fullPathRef.lastIndexOf("/"); 
     if (lastPeriodIndex == -1 || lastPeriodIndex < directorySeparatorIndex)
-        directorySeparatorIndex = fullPathRef.length()-1;
+    {
+        /** Don't do anything, use the last dir separator as is. The old code below
+            breaks refs that do not have a asset extension (eg. .mesh) in the filename part.
+
+            We want the following to work correctly.
+            http://myservice.com/list/objects?id=15
+                -> Path     : http://myservice.com/list/
+                -> Filename : objects?id=15
+            http://asset.service.com/some/path/assetWithoutExtension
+                -> Path     : http://asset.service.com/some/path/
+                -> Filename : assetWithoutExtension
+
+            @note Not having suffix in the asset filename will only work for "Binary"
+            requests. As the file suffix is the main and only way we detect what IAsset
+            implementation should handle the incoming data. */
+
+        //directorySeparatorIndex = fullPathRef.length()-1;
+    }
 
     QString path = GuaranteeTrailingSlash(fullPathRef.left(directorySeparatorIndex+1).trimmed());
     if (outPath)
@@ -407,6 +424,11 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRef(QString assetRef, QString *outPro
     protocol_path += path;
     if (outProtocol_Path)
         *outProtocol_Path += path;
+
+    /** @todo Handle url query separately? outFilename will have the query (and should as the request should be done with it)
+        but if something is interested in the query alone, should be parsed separately to a new out QString* param.
+        Note however that this will only work for "Binary" type assets, if you have <ref>/mymesh.mesh?something=x the
+        file suffix will be read incorrectly and not passed to the correct IAsset implementation. */
     QString assetFilename = fullPathRef.mid(directorySeparatorIndex+1);
     if (outFilename)
         *outFilename = assetFilename;
