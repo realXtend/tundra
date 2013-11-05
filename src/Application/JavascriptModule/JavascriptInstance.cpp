@@ -332,12 +332,25 @@ bool JavascriptInstance::RegisterService(QObject *serviceObject, const QString &
 
 void JavascriptInstance::IncludeFile(const QString &path)
 {
+    // Check for self (own absolute asset ref) inclusions. If not checked, it will make an infinite loop.
+    for (unsigned i = 0; i < scriptRefs_.size(); ++i)
+    {
+        if (scriptRefs_[i]->Name().compare(path, Qt::CaseSensitive) == 0)
+        {
+            LogWarning("JavascriptInstance::IncludeFile: Script " + scriptRefs_[i]->Name() + ", or one of the other scripts in this instance, is trying to include itself!");
+            return;
+        }
+    }
+
+    // Check for already included files
     for(uint i = 0; i < includedFiles.size(); ++i)
+    {
         if (includedFiles[i].toLower() == path.toLower())
         {
             LogDebug("JavascriptInstance::IncludeFile: Not including already included file " + path);
             return;
         }
+    }
 
     QString script = LoadScript(path);
 
@@ -360,17 +373,17 @@ void JavascriptInstance::IncludeFile(const QString &path)
     context->setThisObject(context->parentContext()->thisObject());
 
     QScriptSyntaxCheckResult syntaxResult = engine_->checkSyntax(script);
-    if(syntaxResult.state() != QScriptSyntaxCheckResult::Valid)
+    if (syntaxResult.state() != QScriptSyntaxCheckResult::Valid)
     {
         LogError("JavascriptInstance::IncludeFile: Syntax error in " + path + ". " + syntaxResult.errorMessage() +
             " In line:" + QString::number(syntaxResult.errorLineNumber()));
         return;
     }
 
-    QScriptValue result = engine_->evaluate(script, path);
-
     includedFiles.push_back(path);
-    
+
+    // Evaluate
+    QScriptValue result = engine_->evaluate(script, path);
     if (engine_->hasUncaughtException())
         LogError(result.toString());
 }
