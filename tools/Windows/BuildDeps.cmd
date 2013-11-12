@@ -191,7 +191,7 @@ IF NOT EXIST "%OPENSSL_OUTPUT_PREFIX%\bin\ssleay32.dll". (
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
     REM Build Makefiles  with assembly language files. ml.exe is a part of Visual Studio
-    cecho {0D}Building OpenSSL. Please be patient, this will take a while.{# #}{\n}    
+    cecho {0D}Building OpenSSL. Please be patient, this will take a while.{# #}{\n}
     if %TARGET_ARCH%==x64 (
         call ms\do_win64a.bat
     ) else (
@@ -255,8 +255,8 @@ IF NOT EXIST "%DEPS%\qt\jom\jom.exe". (
 
 :SKIP_JOM
 
-:: Enable OpenSSL in the Qt if OpenSSL build is enabled. For some reason if you 
-:: echo QT_OPENSSL_CONFIGURE inside the IF statement it will always be empty. 
+:: Enable OpenSSL in the Qt if OpenSSL build is enabled. For some reason if you
+:: echo QT_OPENSSL_CONFIGURE inside the IF statement it will always be empty.
 :: Hence the secondary IF to print it out when build is enabled. Only print these if Qt will be built
 SET QT_INSTALL_WEBKIT_DLL_FILENAME="%DEPS%\qt\lib\QtWebKit%POSTFIX_D%4.dll"
 SET QT_OPENSSL_CONFIGURE=
@@ -443,7 +443,7 @@ IF NOT EXIST "%DEPS%\boost". (
     cd "%DEPS%\boost"
     cecho {0D}Building Boost. Please be patient, this will take a while.{# #}{\n}
     REM NOTE The ".0" postfix below doesn't necessarily work for all future VS versions.
-    call .\b2 --toolset=msvc-%VC_VER_NUM%.0 address-model=%ARCH_BITS% -j %NUMBER_OF_PROCESSORS% --with-system --with-regex --with-thread --with-date_time stage
+    call .\b2 --toolset=msvc-%VC_VER_NUM%.0 address-model=%ARCH_BITS% -j %NUMBER_OF_PROCESSORS% --with-system --with-regex --with-thread --with-date_time --with-random stage
 ) ELSE (
     ::TODO Even if %DEPS%\boost exists, we have no guarantee that boost is built successfully for real
     cecho {0D}Boost already built. Skipping.{# #}{\n}
@@ -568,7 +568,7 @@ IF NOT EXIST "%DEPS%\qtscriptgenerator\generator\release\generator.exe". (
             nmake /nologo
         )
     )
-    IF NOT %ERRORLEVEL%==0 GOTO :ERROR    
+    IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 )
 :: 2) QtScriptGenerator's qtbindings - the actual bindings.
 IF NOT EXIST "%DEPS%\qtscriptgenerator\plugins\script\qtscript_webkit%POSTFIX_D%.dll". (
@@ -928,7 +928,7 @@ IF NOT EXIST "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%\libth
     copy /Y "%TOOLS%\Mods\vs2008-%VS_PLATFORM%-libtheora_static.vcproj" libtheora_static.vcproj
     IF NOT %VS_VER%==vs2008 VCUpgrade /nologo /overwrite libtheora_static.vcproj
 
-    MSBuild libtheora_static.%VCPROJ_FILE_EXT% /p:configuration=%THEORA_BUILD_TYPE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%   
+    MSBuild libtheora_static.%VCPROJ_FILE_EXT% /p:configuration=%THEORA_BUILD_TYPE% /p:platform="%VS_PLATFORM%" /clp:ErrorsOnly /nologo /m:%NUMBER_OF_PROCESSORS%
     IF NOT %ERRORLEVEL%==0 GOTO :ERROR
     IF NOT EXIST "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%". mkdir "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%"
     copy /Y "%VS_PLATFORM%\%THEORA_BUILD_TYPE%\libtheora_static.lib" "%DEPS%\theora\win32\VS2008\%VS_PLATFORM%\%THEORA_BUILD_TYPE%\libtheora_static.lib"
@@ -976,7 +976,7 @@ IF NOT EXIST "%DEPS%\protobuf". (
       wget http://protobuf.googlecode.com/files/protobuf-2.4.1.zip
       IF NOT %ERRORLEVEL%==0 GOTO :ERROR
    )
-   
+
    cecho {0D}Extracting Google Protobuf 2.4.1 sources to "%DEPS%\protobuf".{# #}{\n}
    7za x -y protobuf-2.4.1.zip
    REM IF NOT %ERRORLEVEL%==0 GOTO :ERROR
