@@ -24,7 +24,7 @@ class AssetItemMenuHandler : public QObject
     Q_OBJECT
 
 public:
-    AssetItemMenuHandler(Framework *fw);
+    explicit AssetItemMenuHandler(Framework *fw);
 
 private slots:
     void AddAssetMenuItems(QMenu * menu, QList<QObject *> targets, QObject *sender);

@@ -13,6 +13,9 @@
 #include "SupportedFileTypes.h"
 #include "AddContentWindow.h"
 #include "KeyBindingsConfigWindow.h"
+#include "AssetItemMenuHandler.h"
+#include "ECEditorModule.h"
+#include "ECEditorWindow.h"
 
 #include "Framework.h"
 #include "SceneAPI.h"
@@ -34,12 +37,9 @@
 #include "UiMainWindow.h"
 #include "LoggingFunctions.h"
 #include "SceneDesc.h"
-#include "ECEditorModule.h"
-#include "ECEditorWindow.h"
 #include "OgreWorld.h"
 #include "ConfigAPI.h"
 #include "OgreMaterialUtils.h"
-#include "AssetItemMenuHandler.h"
 
 #include <QToolTip>
 #include <QCursor>
@@ -62,7 +62,8 @@ SceneStructureModule::SceneStructureModule() :
     keyBindingsWindow(0),
     toolTipWidget(0),
     toolTip(0),
-    assetDragAndDropEnabled_(false)
+    assetDragAndDropEnabled_(false),
+    assetItemMenuHandler(0)
 {
 }
 
@@ -72,6 +73,7 @@ SceneStructureModule::~SceneStructureModule()
     SAFE_DELETE(assetsWindow);
     SAFE_DELETE(keyBindingsWindow);
     SAFE_DELETE(toolTipWidget);
+    SAFE_DELETE(assetItemMenuHandler);
 }
 
 void SceneStructureModule::Initialize()
@@ -81,6 +83,8 @@ void SceneStructureModule::Initialize()
         this, SLOT(ToggleSceneStructureWindow()));
     framework_->Console()->RegisterCommand("assets", "Shows the Assets window, hides it if it's visible.", 
         this, SLOT(ToggleAssetsWindow()));
+
+    assetItemMenuHandler = new AssetItemMenuHandler(framework_);
 
     if (!framework_->IsHeadless())
     {
@@ -106,8 +110,6 @@ void SceneStructureModule::Initialize()
 
         // Enable drag and dropping by default.
         SetAssetDragAndDropEnabled(true);
-
-        assetItemMenuHandler = new AssetItemMenuHandler(framework_);
     }
 }
 
@@ -234,7 +236,7 @@ void SceneStructureModule::CentralizeEntitiesTo(const float3 &pos, const QList<E
     QList<Entity*> filteredEntities;
     foreach(Entity *e, entities)
     {
-        EC_Placeable *p = e->GetComponent<EC_Placeable>().get();
+        EC_Placeable *p = e->Component<EC_Placeable>().get();
         // Ignore entities that doesn't have placable component or they are a child of another placable.
         if (p && p->parentRef.Get().IsEmpty())
             filteredEntities.push_back(e);
@@ -242,7 +244,7 @@ void SceneStructureModule::CentralizeEntitiesTo(const float3 &pos, const QList<E
 
     foreach(Entity *e, filteredEntities)
     {
-        EC_Placeable *p = e->GetComponent<EC_Placeable>().get();
+        EC_Placeable *p = e->Component<EC_Placeable>().get();
         if (p)
         {
             float3 pos = p->transform.Get().pos;
@@ -261,7 +263,7 @@ void SceneStructureModule::CentralizeEntitiesTo(const float3 &pos, const QList<E
 
     foreach(Entity *e, filteredEntities)
     {
-        EC_Placeable *p = e->GetComponent<EC_Placeable>().get();
+        EC_Placeable *p = e->Component<EC_Placeable>().get();
         if (p)
         {
             Transform t = p->transform.Get();
@@ -573,7 +575,7 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e, QGraphicsItem 
                 RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
                 if (res->entity)
                 {
-                    EC_Mesh *mesh = res->entity->GetComponent<EC_Mesh>().get();
+                    EC_Mesh *mesh = res->entity->Component<EC_Mesh>().get();
                     if (mesh)
                     {
                         currentToolTipDestination.append("Submesh " + QString::number(res->submesh));
@@ -668,7 +670,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e, QGraphicsItem *widget)
                 tr("Tundra has currently no active scene in which to import content. Create a new scene first in order to import content."));
             return;
         }
-        OgreWorldPtr world = scene->GetWorld<OgreWorld>();
+        OgreWorldPtr world = scene->Subsystem<OgreWorld>();
         if (!world)
             return;
 
@@ -680,7 +682,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e, QGraphicsItem *widget)
         {
             // No entity hit, use camera's position with hard-coded offset.
             Entity *cameraEntity = world->Renderer()->MainCamera();
-            EC_Placeable *placeable = (cameraEntity ? cameraEntity->GetComponent<EC_Placeable>().get() : 0);
+            EC_Placeable *placeable = (cameraEntity ? cameraEntity->Component<EC_Placeable>().get() : 0);
             if (placeable)
             {
                 float3 dir = placeable->WorldOrientation() * scene->ForwardVector();
@@ -717,10 +719,10 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
         RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
         if (res->entity)
         {
-            EC_Mesh *mesh = res->entity->GetComponent<EC_Mesh>().get();
+            EC_Mesh *mesh = res->entity->Component<EC_Mesh>().get();
             if (mesh)
             {
-                uint subMeshCount = mesh->GetNumSubMeshes();
+                uint subMeshCount = mesh->NumSubMeshes();
                 uint subMeshIndex = res->submesh;
                 if (subMeshIndex < subMeshCount)
                 {
