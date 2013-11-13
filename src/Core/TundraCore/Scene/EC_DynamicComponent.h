@@ -41,9 +41,8 @@ struct DeserializeData;
     <b>Exposes the following scriptable functions:</b>
     <ul>
     <li>"CreateAttribute": @copydoc CreateAttribute
-    <li>"GetAttribute": @copydoc GetAttribute
+    <li>"Attribute": @copydoc Attribute
     <li>"SetAttribute": @copydoc SetAttribute
-    <li>"GetAttributeName": @copydoc GetAttributeName
     <li>"ContainSameAttributes": @copydoc ContainSameAttributes
     <li>"RemoveAttribute": @copydoc RemoveAttribute
     <li>"ContainsAttribute": @copydoc ContainsAttribute
@@ -96,13 +95,12 @@ public slots:
         @note Name of the attribute will be assigned to same as the ID. */
     IAttribute *CreateAttribute(const QString &typeName, const QString &id, AttributeChange::Type change = AttributeChange::Default);
 
-    /// Get attribute value as QVariant.
-    /** If attribute type isn't QVariantAttribute then attribute value is returned as in string format.
-        Use QVariant's isNull method to check if the variant value is initialized.
-        @param index Index to attribute list.
+    /// Returns attribute's value as QVariant.
+    /** In C++ use QVariant::isValid()to check if the variant value is valid. In QtScript checking whether the value is null can be used.
+        @param id ID of the attribute, case-insensitive. Note that for attributes of dynamic components attributes ID equals its name.
         @return Return attribute value as QVariant if attribute has been found, else return null QVariant. */
-    QVariant GetAttribute(int index) const;
-    QVariant GetAttribute(const QString &id) const; /**< @overload @param id IDe of the attribute, case-insensitive. */
+    QVariant Attribute(const QString &id) const;
+    QVariant Attribute(int index) const; /**< @overload @param index Index to attribute list. */
 
     /// Inserts new attribute value to attribute.
     /** @param index Index for the attribute.
@@ -132,11 +130,15 @@ public slots:
     void RemoveAllAttributes(AttributeChange::Type change = AttributeChange::Default);
 
     // DEPRECATED
+    /// @cond PRIVATE
+    QVariant GetAttribute(const QString &id) const { return Attribute(id); } /**< @deprecated Use Attribute instead. @todo Add warning print at some point. @todo Remove */
+    QVariant GetAttribute(int index) const { return Attribute(index); }  /**< @deprecated Use Attribute instead. @todo Add warning print at some point. @todo Remove */
     void AddQVariantAttribute(const QString &id, AttributeChange::Type change = AttributeChange::Default); /**< @deprecated Use CreateAttribute('qvariant') @todo Remove */
     /// Returns name of attribute with the specific @c index
     /** @param index Index of the attribute.
         @todo Remove once nothing uses it, as IDs are same as name for dynamic attributes */
     QString GetAttributeName(int index) const;
+    /// @endcond
 
 private:
     void DeserializeCommon(std::vector<DeserializeData>& deserializedAttributes, AttributeChange::Type change);

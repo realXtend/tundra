@@ -212,7 +212,7 @@ void EC_DynamicComponent::AddQVariantAttribute(const QString &id, AttributeChang
     //Check if the attribute has already been created.
     if(!ContainsAttribute(id))
     {
-        Attribute<QVariant> *attribute = new Attribute<QVariant>(this, id.toStdString().c_str());
+        ::Attribute<QVariant> *attribute = new ::Attribute<QVariant>(this, id.toStdString().c_str());
         EmitAttributeChanged(attribute, change);
         emit AttributeAdded(attribute);
     }
@@ -220,7 +220,7 @@ void EC_DynamicComponent::AddQVariantAttribute(const QString &id, AttributeChang
         LogWarning("Failed to add a new QVariant with ID " + id + ", because there already is an attribute with that ID.");
 }
 
-QVariant EC_DynamicComponent::GetAttribute(int index) const
+QVariant EC_DynamicComponent::Attribute(int index) const
 {
     // Do not count holes.
     int attrIndex = GetInternalAttributeIndex(index);
@@ -229,7 +229,7 @@ QVariant EC_DynamicComponent::GetAttribute(int index) const
     return attributes[attrIndex]->ToQVariant();
 }
 
-QVariant EC_DynamicComponent::GetAttribute(const QString &id) const
+QVariant EC_DynamicComponent::Attribute(const QString &id) const
 {
     return IComponent::GetAttributeQVariant(id);
 }
