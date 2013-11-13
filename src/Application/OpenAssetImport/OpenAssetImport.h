@@ -77,9 +77,9 @@ signals:
 
 private:
     /// Sets texture unit to material.
-    void SetTexture(QString &texFile);
+    void SetTexture(const QString &textureRef);
     /// Returns if all textures are loaded.
-    bool PendingTextures();
+    bool HasPendingTextures();
     /// Parses texture path.
     QString GetPathToTexture(const QString &meshFileName, const QString &meshFileDiskSource, QString &texturePath);
     /// Loads texture files from disk or requests them from http asset server.

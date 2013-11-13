@@ -211,37 +211,37 @@ void OpenAssetConverter::LoadTextureFile(QString &filename)
     LogError("AssimpImport: Failed to load texture from '" + filename + "'");
 }
 
-void OpenAssetConverter::SetTexture(QString &texFile)
+void OpenAssetConverter::SetTexture(const QString &textureRef)
 {
-    Ogre::MaterialPtr ogreMat = texMatMap.find(texFile)->second;
-    ogreMat->getTechnique(0)->getPass(0)->createTextureUnitState(AssetAPI::SanitateAssetRef(texFile.toStdString()));
+    Ogre::MaterialPtr ogreMat = texMatMap.find(textureRef)->second;
+    ogreMat->getTechnique(0)->getPass(0)->createTextureUnitState(AssetAPI::SanitateAssetRef(textureRef).toStdString());
     ogreMat->load();
 
-    texMatMap.erase(texFile);
+    texMatMap.erase(textureRef);
 
-    if(meshCreated && PendingTextures())
+    if (meshCreated && !HasPendingTextures())
         emit ConversionDone(true);
 }
 
 void OpenAssetConverter::OnTextureLoaded(IAssetTransfer* assetTransfer)
 {
-    QString texFile = assetTransfer->Asset()->Name();
-    SetTexture(texFile);
+    QString textureRef = assetTransfer->Asset()->Name();
+    SetTexture(textureRef);
 }
 
 void OpenAssetConverter::OnTextureLoadFailed(IAssetTransfer* assetTransfer, QString reason)
 {
-    QString texFile = assetTransfer->Asset()->Name();
-    LogError("AssImp importer::createMaterial: Failed to load texture file " +texFile.toStdString()+ " reason: " + reason.toStdString());
-    texMatMap.erase(texFile);
+    QString textureRef = assetTransfer->Asset()->Name();
+    LogError("AssimpImporter: createMaterial() Failed to load texture " + textureRef + ": " + reason);
+    texMatMap.erase(textureRef);
 
-    if(meshCreated && PendingTextures())
+    if (meshCreated && !HasPendingTextures())
         emit ConversionDone(true); //mesh created succesfully without textures
 }
 
-bool OpenAssetConverter::PendingTextures()
+bool OpenAssetConverter::HasPendingTextures()
 {
-    return texMatMap.empty();
+    return !texMatMap.empty();
 }
 
 aiMatrix4x4 UpdateAnimationFunc(const aiScene * scene, aiNodeAnim * pchannel, Ogre::Real val, float & ticks, aiMatrix4x4 & mat)
@@ -605,7 +605,7 @@ void OpenAssetConverter::Convert(const u8 *data_, size_t numBytes, const QString
     Ogre::MeshManager::getSingleton().removeUnreferencedResources();
     Ogre::SkeletonManager::getSingleton().removeUnreferencedResources();
 	
-    if(meshCreated && PendingTextures())
+    if (meshCreated && !HasPendingTextures())
         emit ConversionDone(true);
 }
 
