@@ -37,6 +37,9 @@ public:
     /// Loaded Ogre mesh asset, null if not loaded.
     Ogre::MeshPtr ogreMesh;
 
+    /// Returns if the asset can be asynchronously loaded via Ogre::ResourceBackgroundQueue.
+    bool AllowAsynchronousLoading() const;
+
 public slots:
     /// IAsset override.
     virtual bool IsLoaded() const;

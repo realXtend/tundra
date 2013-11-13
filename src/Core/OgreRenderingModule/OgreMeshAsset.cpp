@@ -28,16 +28,19 @@ OgreMeshAsset::~OgreMeshAsset()
     Unload();
 }
 
-bool OgreMeshAsset::LoadFromFile(QString filename)
+bool OgreMeshAsset::AllowAsynchronousLoading() const
 {
     /// @todo Duplicate allowAsynchronous code in OgreMeshAsset and TextureAsset.
-    bool allowAsynchronous = true;
-    if ((OGRE_THREAD_SUPPORT == 0) || !assetAPI->Cache() || assetAPI->IsHeadless() ||
+    if ((OGRE_THREAD_SUPPORT == 0) || !assetAPI->Cache() || assetAPI->IsHeadless() || IsAssimpFileType() ||
         assetAPI->GetFramework()->HasCommandLineParameter("--noAsyncAssetLoad") ||
-        assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load")) /**< @todo Remove support for the deprecated underscore version at some point. */
-    {
-        allowAsynchronous = false;
-    }
+        assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load"))
+        return false;
+    return true;
+}
+
+bool OgreMeshAsset::LoadFromFile(QString filename)
+{
+    bool allowAsynchronous = AllowAsynchronousLoading();
 
     QString cacheDiskSource;
     if (allowAsynchronous)
@@ -60,13 +63,8 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
     /// Force an unload of this data first.
     Unload();
 
-    /// @todo Duplicate allowAsynchronous code in OgreMeshAsset and TextureAsset.
-    if ((OGRE_THREAD_SUPPORT == 0) || !assetAPI->Cache() || assetAPI->IsHeadless() || IsAssimpFileType() ||
-        assetAPI->GetFramework()->HasCommandLineParameter("--noAsyncAssetLoad") ||
-        assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load")) /**< @todo Remove support for the deprecated underscore version at some point. */
-    {
+    if (!AllowAsynchronousLoading())
         allowAsynchronous = false;
-    }
 
     QString cacheDiskSource;
     if (allowAsynchronous)
