@@ -97,16 +97,29 @@ QString OpenAssetConverter::GetPathToTexture(const QString &meshFileName, const 
     texturePath.replace("\\", "/"); // Normalize all path separators to use forward slashes.
     QString path;
 
-    //When the texture path in .dae file is a http address there is no need to parse it.
-    if(texturePath.startsWith("http:") || texturePath.startsWith("https:"))
+    // When the texture path in .dae file is a http address there is no need to parse it.
+    if(texturePath.startsWith("http:", Qt::CaseInsensitive) || texturePath.startsWith("https:", Qt::CaseInsensitive))
     {
         path = texturePath;
         return path;
     }
     else
     {
-        QStringList parsedMeshPath;
+        // Parent ref is a URL, resolve base and add the relative texturePath to it
+        if (meshFileName.startsWith("http:", Qt::CaseInsensitive) || meshFileName.startsWith("https:", Qt::CaseInsensitive))
+        {
+            QString endPart = texturePath.trimmed();
+            if (endPart.startsWith("/"))
+                endPart = endPart.mid(1);
 
+            QString base = meshFileName.left(meshFileName.lastIndexOf("/")+1).trimmed();
+            return base + endPart;
+        }
+
+        // I cant follow this code and what it should do. It just gives an empty string as a result for cases like:
+        // Parent http://assets.com/path/my.dae Texture: textures/my.jpg or my.jpg.
+        // @todo Remove below code when can verify it has no use cases left, the top code should handle relative refs.
+        QStringList parsedMeshPath;
         if(meshFileName.startsWith("http:") || meshFileName.startsWith("https:"))
         {
             parsedMeshPath = meshFileName.split("/");
@@ -128,7 +141,7 @@ QString OpenAssetConverter::GetPathToTexture(const QString &meshFileName, const 
             }
         }
 
-        if(dots!=0)
+        if (dots!=0)
         {
             texturePath = texturePath.remove(0, dots);
             path = parsedMeshPath.join("/");
@@ -140,7 +153,7 @@ QString OpenAssetConverter::GetPathToTexture(const QString &meshFileName, const 
         //In that case the correct texture file is searched using a top-down search.   
         else
         {
-//            int length = parsedMeshPath.length();
+            //int length = parsedMeshPath.length();
             QString base;
 
             for(int j=0; j<4/*length*/; j++)
@@ -161,39 +174,41 @@ QString OpenAssetConverter::GetPathToTexture(const QString &meshFileName, const 
 //Loads texture file from disk or from http asset server.
 void OpenAssetConverter::LoadTextureFile(QString &filename)
 {
+    if (filename.trimmed().isEmpty())
+    {
+        LogError("AssimpImport: LoadTextureFile() cannot process empty texture ref.");
+        return;
+    }
 
-    //Loads the texture from http address
+    // Loads the texture from http address
     if(filename.startsWith("http:") || filename.startsWith("https:"))
     {
         assetAPI->ForgetAsset(filename, false);
         AssetTransferPtr transPtr = assetAPI->RequestAsset(filename, "Texture", true);
-	
-        if (!transPtr)
+        if (transPtr.get())
         {
-            texMatMap.erase(filename);
-            LogError("AssImp importer: Failed to load texture file " +filename.toStdString());
+            connect(transPtr.get(), SIGNAL(Downloaded(IAssetTransfer *)), this, SLOT(OnTextureLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+            connect(transPtr.get(), SIGNAL(Failed(IAssetTransfer*, QString)),this, SLOT(OnTextureLoadFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
             return;
         }
-
-        connect(transPtr.get(), SIGNAL(Downloaded(IAssetTransfer *)), this, SLOT(OnTextureLoaded(IAssetTransfer*)), Qt::UniqueConnection);
-        connect(transPtr.get(), SIGNAL(Failed(IAssetTransfer*, QString)),this, SLOT(OnTextureLoadFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
     }
-
-    //loads the texture from file
+    // Loads the texture from file
     else
     {
         AssetPtr assetPtr = assetAPI->CreateNewAsset("Texture", filename);
-        assetPtr->SetDiskSource(filename);
-        bool success = assetPtr->LoadFromFile(filename);
-
-        if(success)
-            SetTexture(filename);
-        else
+        if (assetPtr.get())
         {
-            texMatMap.erase(filename);
-            LogError("AssImp importer: Failed to load texture file " +filename.toStdString());
+            assetPtr->SetDiskSource(filename);
+            if (assetPtr->LoadFromFile(filename))
+            {
+                SetTexture(filename);
+                return;
+            }
         }
     }
+    
+    texMatMap.erase(filename);
+    LogError("AssimpImport: Failed to load texture from '" + filename + "'");
 }
 
 void OpenAssetConverter::SetTexture(QString &texFile)
