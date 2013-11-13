@@ -155,13 +155,13 @@ QStringList IComponent::GetAttributeIds() const
 
 IAttribute* IComponent::GetAttribute(const QString &name) const
 {
-    LogWarning("IComponent::GetAttribute is deprecated and will be removed. Use AttributeById or AttributeByName instead.");
+    LogWarning("IComponent::GetAttribute(name) is deprecated and will be removed. Use AttributeByName.");
     return AttributeByName(name);
 }
 
 IAttribute* IComponent::AttributeById(const QString &id) const
 {
-    for(unsigned int i = 0; i < attributes.size(); ++i)
+    for(size_t i = 0; i < attributes.size(); ++i)
         if(attributes[i] && attributes[i]->Id().compare(id, Qt::CaseInsensitive) == 0)
             return attributes[i];
     return 0;
@@ -169,7 +169,7 @@ IAttribute* IComponent::AttributeById(const QString &id) const
 
 IAttribute* IComponent::AttributeByName(const QString &name) const
 {
-    for(unsigned int i = 0; i < attributes.size(); ++i)
+    for(size_t i = 0; i < attributes.size(); ++i)
         if(attributes[i] && attributes[i]->Name().compare(name, Qt::CaseInsensitive) == 0)
             return attributes[i];
     return 0;
@@ -178,7 +178,7 @@ IAttribute* IComponent::AttributeByName(const QString &name) const
 int IComponent::NumAttributes() const
 {
     int ret = 0;
-    for (unsigned int i = 0; i < attributes.size(); ++i)
+    for(size_t i = 0; i < attributes.size(); ++i)
         if(attributes[i])
             ++ret;
     return ret;
@@ -187,7 +187,7 @@ int IComponent::NumAttributes() const
 int IComponent::NumStaticAttributes() const
 {
     int ret = 0;
-    for (unsigned int i = 0; i < attributes.size(); ++i)
+    for(size_t i = 0; i < attributes.size(); ++i)
     {
         // Break when the first hole or dynamically allocated attribute is encountered
         if (attributes[i] && !attributes[i]->IsDynamic())
