@@ -11,4 +11,6 @@ namespace MumbleAudio
 {
     class AudioProcessor;
     class CeltCodec;
+
+    struct UserOutputAudioState;
 }

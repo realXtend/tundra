@@ -17,6 +17,9 @@
 #include <QReadWriteLock>
 #include <QTimer>
 
+#include <al.h>
+#include <alc.h>
+
 /// @cond PRIVATE
 namespace MumbleAudio
 {
@@ -40,6 +43,32 @@ namespace MumbleAudio
 
     typedef std::map<uint, UserAudioState* > AudioStateMap;
 
+    struct UserOutputAudioState
+    {
+        explicit UserOutputAudioState();
+
+        bool isLoopBack;
+        bool isPositional;
+        float3 position;
+        size_t numberOfFrames;
+    };
+
+    class AudioRecorder : public QObject
+    {
+        Q_OBJECT
+    public:
+        AudioRecorder();
+        ~AudioRecorder();
+
+        bool StartRecording(const QString &name, uint frequency, bool is16bit, bool stereo, uint bufferSize);
+        void StopRecording();
+        uint RecordedSoundSize() const;
+        uint RecordedSoundData(void *data, uint size);
+    private:
+        uint captureSampleSize_;
+        ALCdevice *captureDevice_;
+    };
+
     //////////////////////////////////////////////////////
 
     class AudioProcessor : public QThread
@@ -47,7 +76,7 @@ namespace MumbleAudio
         Q_OBJECT
 
     public:
-        AudioProcessor(Framework *framework_, MumbleAudio::AudioSettings settings);
+        AudioProcessor(Framework *framework_, MumbleAudio::AudioSettings settings, MumbleNetworkHandler *networkHandler);
         ~AudioProcessor();
 
         void GetLevels(float &peakMic, bool &speaking);
@@ -60,14 +89,19 @@ namespace MumbleAudio
         void timerEvent(QTimerEvent *event);
 
     public slots:
-        ByteArrayVector ProcessOutputAudio();
+        void ProcessOutputAudio();
         void SetOutputAudioMuted(bool outputAudioMuted_);
+
+        void SetUserOutputState(UserOutputAudioState state);
+        UserOutputAudioState UserOutputState();
 
         /// Plays all input audio frames from other users.
         /// Updates MumbleUser::isPositional and emits MumbleUser::PositionalChanged
         /// and MumblePlugin::UserPositionalChanged
         void PlayInputAudio(MumblePlugin *mumble);
         void SetInputAudioMuted(bool inputAudioMuted_);
+        SoundChannelPtr CreateVoiceChannel(const SoundBuffer &buffer);
+        AudioAssetPtr CreateAudioAssetFromSoundBuffer(const SoundBuffer &buffer);
 
         void ApplyFramesPerPacket(int framesPerPacket);
         void ApplySettings(AudioSettings settings);
@@ -101,6 +135,9 @@ namespace MumbleAudio
         bool isSpeech;
         bool wasPreviousSpeech;
 
+        MumbleNetworkHandler *networkHandler_;
+        AudioRecorder *recorder_;
+
         // Used only in the main thread.
         Framework *framework;
 
@@ -118,6 +155,9 @@ namespace MumbleAudio
 
         // Used in both main and audio thread with mutexInput.
         AudioStateMap inputAudioStates;
+
+        // This user's output state
+        UserOutputAudioState ownAudioState;
 
         // Used in both main and audio thread with mutexOutputEncoded.
         QList<QByteArray> pendingEncodedFrames;
@@ -147,6 +187,7 @@ namespace MumbleAudio
 
         QReadWriteLock mutexAudioMute;
         QReadWriteLock mutexAudioSettings;
+        QReadWriteLock mutexUserOutputAudioState;
 
         int qualityBitrate;
         int qualityFramesPerPacket;

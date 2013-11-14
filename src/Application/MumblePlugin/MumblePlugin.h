@@ -330,7 +330,7 @@ private slots:
     void OnScriptEngineCreated(QScriptEngine *engine);
 
     // Updates our active EC_SoundListener position to the voice packet info.
-    void UpdatePositionalInfo(MumbleNetwork::VoicePacketInfo &packetInfo);
+    void UpdatePositionalInfo(MumbleAudio::UserOutputAudioState &packetInfo);
 
     // Audio widget is destroyed. We have to reset its user audio state object in the audio thread.
     void AudioWizardDestroyed();

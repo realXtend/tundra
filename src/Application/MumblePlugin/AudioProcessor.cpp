@@ -7,19 +7,109 @@
 #include "celt/celt.h"
 
 #include "Framework.h"
-#include "Profiler.h"
 #include "AudioAPI.h"
 #include "CoreDefines.h"
 #include "CoreTypes.h"
 #include "LoggingFunctions.h"
+#include "MumbleNetworkHandler.h"
 
 #include <QMutexLocker>
 
 namespace MumbleAudio
 {
-    AudioProcessor::AudioProcessor(Framework *framework_, MumbleAudio::AudioSettings settings) :
+    AudioRecorder::AudioRecorder() :
+        captureDevice_(0),
+        captureSampleSize_(0)
+    {
+    }
+
+    AudioRecorder::~AudioRecorder()
+    {
+        StopRecording();
+    }
+
+    bool AudioRecorder::StartRecording(const QString &name, uint frequency, bool is16bit, bool stereo, uint bufferSize)
+    {
+        StopRecording();
+
+        ALenum format;
+        captureSampleSize_ = 1;
+        if (stereo)
+            captureSampleSize_ <<= 1;
+        if (is16bit)
+            captureSampleSize_ <<= 1;
+
+        if (!stereo)
+        {
+            if (!is16bit)
+                format = AL_FORMAT_MONO8;
+            else
+                format = AL_FORMAT_MONO16;
+        }
+        else
+        {
+            if (!is16bit)
+                format = AL_FORMAT_STEREO8;
+            else
+                format = AL_FORMAT_STEREO16;
+        }
+
+        if (name.isEmpty())
+            captureDevice_ = alcCaptureOpenDevice(NULL, frequency, format, bufferSize / captureSampleSize_);
+        else
+            captureDevice_ = alcCaptureOpenDevice(name.toStdString().c_str(), frequency, format, bufferSize / captureSampleSize_);
+
+        if (!captureDevice_)
+        {
+            LogError("Could not open OpenAL recording device " + name);
+            return false;
+        }
+
+        alcCaptureStart(captureDevice_);
+
+        LogInfo("Opened recorder: " + name);
+        return true;
+    }
+
+    void AudioRecorder::StopRecording()
+    {
+        if (captureDevice_)
+        {
+            alcCaptureStop(captureDevice_);
+            alcCaptureCloseDevice(captureDevice_);
+            captureDevice_ = 0;
+        }
+    }
+
+    uint AudioRecorder::RecordedSoundSize() const
+    {
+        if (!captureDevice_)
+            return 0;
+
+        ALCint samples;
+        alcGetIntegerv(captureDevice_, ALC_CAPTURE_SAMPLES, 1, &samples);
+        return samples * captureSampleSize_;
+    }
+
+    uint AudioRecorder::RecordedSoundData(void *buffer, uint size)
+    {
+        if (!captureDevice_)
+            return 0;
+
+        ALCint samples = size / captureSampleSize_;
+        ALCint maxSamples = 0;
+        alcGetIntegerv(captureDevice_, ALC_CAPTURE_SAMPLES, 1, &maxSamples);
+        if (samples > maxSamples)
+            samples = maxSamples;
+
+        alcCaptureSamples(captureDevice_, buffer, samples);
+        return samples * captureSampleSize_;
+    }
+
+    AudioProcessor::AudioProcessor(Framework *framework_, MumbleAudio::AudioSettings settings, MumbleNetworkHandler *networkHandler) :
         LC("[MumbleAudioProcessor]: "),
         framework(framework_),
+        networkHandler_(networkHandler),
         codec(new CeltCodec()),
         speexPreProcessor(0),
         speexEcho(0),
@@ -29,7 +119,8 @@ namespace MumbleAudio
         wasPreviousSpeech(false),
         holdFrames(0),
         bufferFullFrames(0),
-        qualityFramesPerPacket(MUMBLE_AUDIO_FRAMES_PER_PACKET_ULTRA)
+        qualityFramesPerPacket(MUMBLE_AUDIO_FRAMES_PER_PACKET_ULTRA),
+        ownAudioState(UserOutputAudioState())
     {
         ApplySettings(settings);
 
@@ -126,14 +217,18 @@ namespace MumbleAudio
     {
         qobjTimerId = startTimer(15); // Audio processing with ~60 fps.
 
+        recorder_ = new AudioRecorder();
+
         exec(); // Blocks untill quit()
 
         killTimer(qobjTimerId);
 
         SAFE_DELETE(codec);
+        SAFE_DELETE(recorder_);
 
         ClearInputAudio();
         framework = 0;
+        networkHandler_ = 0;
 
         if (speexPreProcessor)
         {
@@ -168,6 +263,8 @@ namespace MumbleAudio
         float VADmin = audioSettings.VADmin;
         float VADmax = audioSettings.VADmax;
         mutexAudioSettings.unlock();
+
+        ProcessOutputAudio();
 
         mutexOutputPCM.lock();
         if (pendingPCMFrames.size() == 0)
@@ -273,6 +370,15 @@ namespace MumbleAudio
         for(int i=0; i<encodedFrames.size(); ++i)
             pendingEncodedFrames.append(QByteArray(encodedFrames.at(i)));
         mutexOutputEncoded.unlock();
+
+        if (mutexInput.tryLock(15))
+        {
+            for (AudioStateMap::iterator i = inputAudioStates.begin(); i != inputAudioStates.end(); ++i)
+                if (i->second->soundChannel.get())
+                    i->second->soundChannel->Update(i->second->soundChannel->Position());
+
+            mutexInput.unlock();
+        }
     }
 
     void AudioProcessor::GetLevels(float &peakMic, bool &speaking)
@@ -359,17 +465,17 @@ namespace MumbleAudio
 
             // Recording buffer of 40 celt frames, 38400 bytes (overcompensate a bit)
             int bufferSize = (MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8) * 40;
-            if (!framework->Audio()->StartRecording(audioSettings.recordingDevice, MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize))
+            if (!recorder_->StartRecording(audioSettings.recordingDevice, MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize))
             {
                 LogWarning("Could not open recording device '" + audioSettings.recordingDevice + "'. Trying to open the default device instead.");
-                framework->Audio()->StartRecording("", MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize);
+                recorder_->StartRecording("", MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize);
             }
 
             mutexAudioSettings.unlock();
         }
         else
         {
-            framework->Audio()->StopRecording();
+            recorder_->StopRecording();
 
             // Clear obsolete playback history for echo cancellation.
             if (mutexInput.tryLock(15))
@@ -395,6 +501,26 @@ namespace MumbleAudio
         mutexAudioMute.unlock();
 
         ClearInputAudio();
+    }
+
+    SoundChannelPtr AudioProcessor::CreateVoiceChannel(const SoundBuffer &buffer)
+    {
+        SoundChannelPtr channel = MAKE_SHARED(SoundChannel, 0, SoundChannel::Voice);
+        AudioAssetPtr audioAsset = CreateAudioAssetFromSoundBuffer(buffer);
+        channel->AddBuffer(audioAsset);
+        return channel;
+    }
+
+    AudioAssetPtr AudioProcessor::CreateAudioAssetFromSoundBuffer(const SoundBuffer &buffer)
+    {
+        // Construct a sound from the buffer
+        AudioAssetPtr newSound = MAKE_SHARED(AudioAsset, framework->Asset(), "Audio", "buffer");
+        newSound->LoadFromSoundBuffer(buffer);
+
+        if (!newSound->GetHandle())
+            return AudioAssetPtr();
+
+        return newSound;
     }
 
     void AudioProcessor::ApplyFramesPerPacket(int framesPerPacket)
@@ -497,11 +623,11 @@ namespace MumbleAudio
         if (recondingDeviceChanged)
         {
             LogInfo(LC + "Recording device change detected to '" + (settings.recordingDevice.isEmpty() ? "Default Recording Device" : settings.recordingDevice) + "'.");
-            framework->Audio()->StopRecording();
+            recorder_->StopRecording();
 
             // Recording buffer of 40 celt frames, 38400 bytes (overcompensate a bit)
             int bufferSize = (MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8) * 40;
-            framework->Audio()->StartRecording(settings.recordingDevice, MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize);
+            recorder_->StartRecording(settings.recordingDevice, MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize);
 
             ClearOutputAudio();
         }
@@ -515,21 +641,39 @@ namespace MumbleAudio
         return threadSettings;
     }
 
-    ByteArrayVector AudioProcessor::ProcessOutputAudio()
+    void AudioProcessor::SetUserOutputState(UserOutputAudioState state)
     {
-        // This function is called in the main thread
+        // This function is used in the main thread
+        mutexUserOutputAudioState.lockForWrite();
+        ownAudioState.isLoopBack = state.isLoopBack;
+        ownAudioState.isPositional = state.isPositional;
+        ownAudioState.position = state.position;
+        mutexUserOutputAudioState.unlock();
+    }
+
+    UserOutputAudioState AudioProcessor::UserOutputState()
+    {
+        // This function is used in the main thread
+        mutexUserOutputAudioState.lockForRead();
+        UserOutputAudioState out = ownAudioState;
+        mutexUserOutputAudioState.unlock();
+        return out;
+    }
+
+    void AudioProcessor::ProcessOutputAudio()
+    {
+        // This function is called in the audio thread
         if (!framework)
-            return ByteArrayVector();
+            return;
 
         // Get recorded PCM frames from AudioAPI.
-        PROFILE(Mumble_ProcessOutputAudio_Queue_Encoding)
         std::vector<SoundBuffer> pcmFrames;
         uint celtFrameSize = MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8;
-        while (framework->Audio()->GetRecordedSoundSize() >= celtFrameSize)
+        while (recorder_->RecordedSoundSize() >= celtFrameSize)
         {
             SoundBuffer outputPCM;
             outputPCM.data.resize(celtFrameSize);
-            uint bytesOut = framework->Audio()->GetRecordedSoundData(&outputPCM.data[0], celtFrameSize);
+            uint bytesOut = recorder_->RecordedSoundData(&outputPCM.data[0], celtFrameSize);
             if (bytesOut == celtFrameSize)
                 pcmFrames.push_back(outputPCM);
         }
@@ -544,14 +688,18 @@ namespace MumbleAudio
             else
                 LogDebug(LC + QString("Failed to acquire pending PCM frames mutex for %1 frames").arg(pcmFrames.size()));
         }
-        ELIFORP(Mumble_ProcessOutputAudio_Queue_Encoding)
 
-        PROFILE(Mumble_ProcessOutputAudio_Get_Encoded)
         QMutexLocker lockEncoded(&mutexOutputEncoded);
 
         // No queued encoded frames for network.
         if (pendingEncodedFrames.size() == 0)
-            return ByteArrayVector();
+        {
+            mutexUserOutputAudioState.lockForWrite();
+            ownAudioState.numberOfFrames = 0;
+            mutexUserOutputAudioState.unlock();
+
+            return;
+        }
 
         // Get packet count per frame.
         mutexAudioSettings.lockForRead();
@@ -610,6 +758,7 @@ namespace MumbleAudio
         if (pendingEncodedFrames.size() >= framesToPacket)
         {
             ByteArrayVector sendOutNow;
+
             for (int i=0; i<framesToPacket; ++i)
             {
                 if (!pendingEncodedFrames.isEmpty())
@@ -617,10 +766,21 @@ namespace MumbleAudio
                 else
                     break;
             }
-            return sendOutNow;
+
+            MumbleNetwork::VoicePacketInfo voicePacket(sendOutNow);
+
+            mutexUserOutputAudioState.lockForRead();
+            voicePacket.isPositional = ownAudioState.isPositional;
+            voicePacket.isLoopBack = ownAudioState.isLoopBack;
+            voicePacket.pos = ownAudioState.position;
+            mutexUserOutputAudioState.unlock();
+
+            networkHandler_->SendVoicePacket(voicePacket);
+
+            mutexUserOutputAudioState.lockForWrite();
+            ownAudioState.numberOfFrames = voicePacket.encodedFrames.size();
+            mutexUserOutputAudioState.unlock();
         }
-        else
-            return ByteArrayVector();
     }
 
     void AudioProcessor::PlayInputAudio(MumblePlugin *mumble)
@@ -740,7 +900,7 @@ namespace MumbleAudio
                 if (userAudioState->soundChannel.get())
                 {
                     // Create new AudioAsset to be added to the sound channels playback buffer.
-                    AudioAssetPtr audioAsset = framework->Audio()->CreateAudioAssetFromSoundBuffer(frame);
+                    AudioAssetPtr audioAsset = CreateAudioAssetFromSoundBuffer(frame);
                     if (audioAsset.get())
                     {
                         // Update user speaking state and add buffer to the sound channel.
@@ -762,7 +922,7 @@ namespace MumbleAudio
                 else
                 {
                     // Create sound channel with initial audio frame. We should get here only once per this for loop.
-                    userAudioState->soundChannel = framework->Audio()->PlaySoundBuffer(frame, SoundChannel::Voice);
+                    userAudioState->soundChannel = CreateVoiceChannel(frame);
                     if (userAudioState->soundChannel.get())
                     {
                         // Set positional if available and our local settings allows it
@@ -849,6 +1009,11 @@ namespace MumbleAudio
             QMutexLocker lockEncoded(&mutexOutputEncoded);
             pendingEncodedFrames.clear();
             pendingVADPreBuffer.clear();
+        }
+        {
+            mutexUserOutputAudioState.lockForWrite();
+            ownAudioState = UserOutputAudioState();
+            mutexUserOutputAudioState.unlock();
         }
         {
             QMutexLocker lockOutput(&mutexOutputPCM);
@@ -1008,5 +1173,13 @@ namespace MumbleAudio
         frames.clear();
         playedFrames.clear();
         soundChannel.reset();
+    }
+
+    UserOutputAudioState::UserOutputAudioState()
+    {
+        isPositional = false;
+        isLoopBack = false;
+        position = float3::zero;
+        numberOfFrames = 0;
     }
 }

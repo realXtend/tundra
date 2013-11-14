@@ -126,13 +126,13 @@ void MumblePlugin::timerEvent(QTimerEvent *event)
             bool speaking = false;
 
             PROFILE(MumblePlugin_Update_ProcessOutputAudio)
-            VoicePacketInfo packetInfo(audio_->ProcessOutputAudio());
+            UserOutputAudioState packetInfo = audio_->UserOutputState();
             audio_->GetLevels(levelPeakMic, speaking);
             ELIFORP(MumblePlugin_Update_ProcessOutputAudio)
 
-            if (packetInfo.encodedFrames.size() > 0)
+            if (packetInfo.numberOfFrames > 0)
             {
-                // Remember that in Mumble protocol when you are 'deaf' (state.inputAudioMuted == true) 
+                // Remember that in Mumble protocol when you are 'deaf' (state.inputAudioMuted == true)
                 // no one will hear you even if you send the voice packets to the server. Skip sending 
                 // anything in this case and mark as not speaking so the end user wont get alarmed 
                 // that his voice is going out in 'deaf' mode.
@@ -153,7 +153,7 @@ void MumblePlugin::timerEvent(QTimerEvent *event)
                         me->SetAndEmitPositional(false);
                     me->SetAndEmitSpeaking(true);
 
-                    network_->SendVoicePacket(packetInfo);
+                    audio_->SetUserOutputState(packetInfo);
                 }
                 else
                     me->SetAndEmitSpeaking(false);
@@ -214,11 +214,10 @@ void MumblePlugin::Connect(QString address, int port, QString username, QString 
     MumbleAudio::AudioSettings currentSettings = LoadSettings();
     state.outputPositional = currentSettings.allowSendingPositional;
 
-    audio_ = new MumbleAudio::AudioProcessor(framework_, currentSettings);
-    audio_->moveToThread(audio_);
-
     network_ = new MumbleNetworkHandler(state.address, state.port, state.username, password);
+    audio_ = new MumbleAudio::AudioProcessor(framework_, currentSettings, network_);
     network_->codecBitStreamVersion = audio_->CodecBitStreamVersion();
+    audio_->moveToThread(audio_);
     network_->moveToThread(network_);
 
     // Handle signals from network thread to the main thread.
@@ -1134,7 +1133,7 @@ void MumblePlugin::OnScriptEngineCreated(QScriptEngine *engine)
     RegisterMumblePluginMetaTypes(engine);
 }
 
-void MumblePlugin::UpdatePositionalInfo(VoicePacketInfo &packetInfo)
+void MumblePlugin::UpdatePositionalInfo(UserOutputAudioState &packetInfo)
 {
     packetInfo.isPositional = false;
     if (!state.outputPositional)
@@ -1177,7 +1176,7 @@ void MumblePlugin::UpdatePositionalInfo(VoicePacketInfo &packetInfo)
             me->pos = worldPos;
             if (me->isPositional == false)
                 me->SetAndEmitPositional(true);
-            packetInfo.pos = worldPos;
+            packetInfo.position = worldPos;
             packetInfo.isPositional = true;
             return;
         }
