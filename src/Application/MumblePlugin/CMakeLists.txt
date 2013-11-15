@@ -186,6 +186,7 @@ link_package(SPEEX)
 link_package(CELT)
 link_package(PROTOBUF)
 link_package(OPENSSL)
+link_package(OPENAL)
 
 if (NOT WIN32)
     link_ogre()
