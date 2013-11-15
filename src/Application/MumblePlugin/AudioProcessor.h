@@ -9,16 +9,21 @@
 #include "SoundBuffer.h"
 #include "SoundChannel.h"
 
-#include "speex/speex_preprocess.h"
-#include "speex/speex_echo.h"
+#include <speex/speex_preprocess.h>
+#include <speex/speex_echo.h>
 
 #include <QThread>
 #include <QMutex>
 #include <QReadWriteLock>
 #include <QTimer>
 
+#ifdef Q_WS_MAC
 #include <al.h>
 #include <alc.h>
+#else
+#include <AL/al.h>
+#include <AL/alc.h>
+#endif
 
 /// @cond PRIVATE
 namespace MumbleAudio
