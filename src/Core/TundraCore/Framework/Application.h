@@ -143,7 +143,7 @@ public:
 
     /// Specifies a new FPS limit to use for the main loop.
     /** Pass in a value of 0 to remove fps limiting altogether. */
-    void SetTargetFpsLimit(double fpsLimit) { targetFpsLimit = fpsLimit; if (targetFpsLimit <= 1.0) targetFpsLimit = 0.0; }
+    void SetTargetFpsLimit(double fpsLimit);
 
     /// Returns the current FPS limit.
     /** 0 means the FPS limiting is disabled. */

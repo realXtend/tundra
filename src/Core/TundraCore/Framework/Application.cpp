@@ -635,6 +635,16 @@ bool Application::IsActive() const
     return appActivated;
 }
 
+void Application::SetTargetFpsLimit(double fpsLimit)
+{
+    targetFpsLimit = fpsLimit;
+    if (targetFpsLimit <= 1.0)
+        targetFpsLimit = 0.0;
+
+    if (targetFpsLimitWhenInactive >= targetFpsLimit)
+        targetFpsLimitWhenInactive = targetFpsLimit * 0.5;
+}
+
 void Application::SetTargetFpsLimitWhenInactive(double fpsWhenInactive)
 {
     if (fpsWhenInactive <= 0.0)
@@ -919,6 +929,9 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
 void MakeFontsLargerOnOSX(QWidget *w)
 {
     assert(w != 0);
+
+    if (w)
+        w->setAttribute(Qt::WA_LayoutUsesWidgetRect, true);
 
     if (w->styleSheet() != "")
     {
