@@ -114,6 +114,7 @@ namespace MumbleAudio
         codec(new CeltCodec()),
         speexPreProcessor(0),
         speexEcho(0),
+        resetFramesPerPacket(0),
         outputPreProcessed(false),
         preProcessorReset(true),
         isSpeech(false),
@@ -124,11 +125,6 @@ namespace MumbleAudio
         ownAudioState(UserOutputAudioState())
     {
         ApplySettings(settings);
-
-        // Timer is created in the main thread context as it can only be started in the thread its created in,
-        // and we want to start it in ProcessOutputAudio().
-        resetFramesPerPacket.setSingleShot(true);
-        connect(&resetFramesPerPacket, SIGNAL(timeout()), this, SLOT(OnResetFramesPerPacket()), Qt::QueuedConnection);
     }
 
     AudioProcessor::~AudioProcessor()
@@ -216,6 +212,10 @@ namespace MumbleAudio
 
     void AudioProcessor::run()
     {
+        resetFramesPerPacket = new QTimer(this);
+        resetFramesPerPacket->setSingleShot(true);
+        connect(resetFramesPerPacket, SIGNAL(timeout()), this, SLOT(OnResetFramesPerPacket()));
+        
         qobjTimerId = startTimer(15); // Audio processing with ~60 fps.
 
         recorder_ = new AudioRecorder();
@@ -223,6 +223,7 @@ namespace MumbleAudio
         exec(); // Blocks untill quit()
 
         killTimer(qobjTimerId);
+        resetFramesPerPacket = 0;
 
         SAFE_DELETE(codec);
 
@@ -268,119 +269,123 @@ namespace MumbleAudio
         float VADmax = audioSettings.VADmax;
         mutexAudioSettings.unlock();
 
-        ProcessOutputAudio();
+        // Read OpenAL microphone to pendingPCMFrames
+        ReadMicrophoneAudio();
 
         mutexOutputPCM.lock();
-        if (pendingPCMFrames.size() == 0)
+        if (pendingPCMFrames.size() > 0)
         {
-            mutexOutputPCM.unlock();
-            return;
-        }
-
-        QList<QByteArray> encodedFrames;
-        for (std::vector<SoundBuffer>::iterator pcmIter = pendingPCMFrames.begin(); pcmIter != pendingPCMFrames.end(); ++pcmIter)
-        {
-            SoundBuffer &pcmFrame = (*pcmIter);
-            if (pcmFrame.data.size() == 0)
-                continue;
-
-            isSpeech = true;
-            DoEchoCancellation(pcmFrame);
-
-            if (localPreProcess)
+            QList<QByteArray> encodedFrames;
+            for (std::vector<SoundBuffer>::iterator pcmIter = pendingPCMFrames.begin(); pcmIter != pendingPCMFrames.end(); ++pcmIter)
             {
-                speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_GET_AGC_GAIN, &localGain);
-                int suppression = localSuppress - localGain;
-                if (suppression > 0)
-                    suppression = 0;
-                speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &suppression);
-                speex_preprocess_run(speexPreProcessor, (spx_int16_t*)&pcmFrame.data[0]);
+                SoundBuffer &pcmFrame = (*pcmIter);
+                if (pcmFrame.data.size() == 0)
+                    continue;
 
-                if (detectVAD)
+                isSpeech = true;
+                DoEchoCancellation(pcmFrame);
+
+                if (localPreProcess)
                 {
-                    float sum = 1.0f;
-                    short *data = (short*)&pcmFrame.data[0];
-                    for (int index=0; index<MUMBLE_AUDIO_SAMPLES_IN_FRAME; index++)
+                    speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_GET_AGC_GAIN, &localGain);
+                    int suppression = localSuppress - localGain;
+                    if (suppression > 0)
+                        suppression = 0;
+                    speex_preprocess_ctl(speexPreProcessor, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &suppression);
+                    speex_preprocess_run(speexPreProcessor, (spx_int16_t*)&pcmFrame.data[0]);
+
+                    if (detectVAD)
                     {
-                        int value = data[index];
-                        sum += static_cast<float>(value * value);
-                    }
+                        float sum = 1.0f;
+                        short *data = (short*)&pcmFrame.data[0];
+                        for (int index=0; index<MUMBLE_AUDIO_SAMPLES_IN_FRAME; index++)
+                        {
+                            int value = data[index];
+                            sum += static_cast<float>(value * value);
+                        }
 
-                    levelPeakMic = qMax(20.0f * log10f(sqrtf(sum / static_cast<float>(MUMBLE_AUDIO_SAMPLES_IN_FRAME)) / 32768.0f), -96.0f);
-                    levelPeakMic = qMax(levelPeakMic - localGain, -96.0f);
-                    levelMic = (1.0f + levelPeakMic / 96.0f);
+                        levelPeakMic = qMax(20.0f * log10f(sqrtf(sum / static_cast<float>(MUMBLE_AUDIO_SAMPLES_IN_FRAME)) / 32768.0f), -96.0f);
+                        levelPeakMic = qMax(levelPeakMic - localGain, -96.0f);
+                        levelMic = (1.0f + levelPeakMic / 96.0f);
 
-                    // Detect mic level if speaking
-                    if (levelMic > VADmax)
-                        isSpeech = true;
-                    else if (levelMic > VADmin && wasPreviousSpeech)
-                        isSpeech = true;
-                    else
-                        isSpeech = false;
-
-                    if (isSpeech)
-                        holdFrames = 0;
-                    else
-                    {
-                        // Hold certain amount of frames even if not speaking.
-                        // This allows end of sentences to get to the outgoing buffer safely.
-                        holdFrames++;
-                        if (holdFrames < 20)
+                        // Detect mic level if speaking
+                        if (levelMic > VADmax)
                             isSpeech = true;
-                    }
-                }
-            }
-
-            // Encode
-            unsigned char compressedBuffer[512];
-            int bytesWritten = codec->Encode(pcmFrame, compressedBuffer, localQualityBitrate);
-            if (bytesWritten > 0)
-            {
-                QByteArray encodedFrame(reinterpret_cast<const char*>(compressedBuffer), bytesWritten);
-
-                // If speech, add to encoded frames. But first
-                // append any 'prediction' buffered frames so start of sentences
-                // can get to the outgoing buffer safely.
-                if (isSpeech || wasPreviousSpeech)
-                {
-                    if (detectVAD && pendingVADPreBuffer.size() > 0)
-                    {
-                        encodedFrames.append(pendingVADPreBuffer);
-                        pendingVADPreBuffer.clear();
-                    }
-                    encodedFrames.push_back(encodedFrame);
-                }
-                // If voice activity detection is enabled but this is
-                // not speech, add the frame to the VAD 'prediction' buffer.
-                else if (detectVAD && !isSpeech && !wasPreviousSpeech)
-                {
-                    while(pendingVADPreBuffer.size() >= 5)
-                    {
-                        if (!pendingVADPreBuffer.isEmpty())
-                            pendingVADPreBuffer.removeFirst();
+                        else if (levelMic > VADmin && wasPreviousSpeech)
+                            isSpeech = true;
                         else
-                            break;
+                            isSpeech = false;
+
+                        if (isSpeech)
+                            holdFrames = 0;
+                        else
+                        {
+                            // Hold certain amount of frames even if not speaking.
+                            // This allows end of sentences to get to the outgoing buffer safely.
+                            holdFrames++;
+                            if (holdFrames < 20)
+                                isSpeech = true;
+                        }
                     }
-                    pendingVADPreBuffer.push_back(encodedFrame);
                 }
+
+                // Encode
+                unsigned char compressedBuffer[512];
+                int bytesWritten = codec->Encode(pcmFrame, compressedBuffer, localQualityBitrate);
+                if (bytesWritten > 0)
+                {
+                    QByteArray encodedFrame(reinterpret_cast<const char*>(compressedBuffer), bytesWritten);
+
+                    // If speech, add to encoded frames. But first
+                    // append any 'prediction' buffered frames so start of sentences
+                    // can get to the outgoing buffer safely.
+                    if (isSpeech || wasPreviousSpeech)
+                    {
+                        if (detectVAD && pendingVADPreBuffer.size() > 0)
+                        {
+                            encodedFrames.append(pendingVADPreBuffer);
+                            pendingVADPreBuffer.clear();
+                        }
+                        encodedFrames.push_back(encodedFrame);
+                    }
+                    // If voice activity detection is enabled but this is
+                    // not speech, add the frame to the VAD 'prediction' buffer.
+                    else if (detectVAD && !isSpeech && !wasPreviousSpeech)
+                    {
+                        while(pendingVADPreBuffer.size() >= 5)
+                        {
+                            if (!pendingVADPreBuffer.isEmpty())
+                                pendingVADPreBuffer.removeFirst();
+                            else
+                                break;
+                        }
+                        pendingVADPreBuffer.push_back(encodedFrame);
+                    }
+                }
+                wasPreviousSpeech = isSpeech;
             }
-            wasPreviousSpeech = isSpeech;
+            pendingPCMFrames.clear();
+            
+            // Push encoded frames to be sent out to network in next invocation of SendOutputAudio.
+            mutexOutputEncoded.lock();
+            for(int i=0; i<encodedFrames.size(); ++i)
+                pendingEncodedFrames.append(QByteArray(encodedFrames.at(i)));
+            mutexOutputEncoded.unlock();
         }
-        pendingPCMFrames.clear();
         mutexOutputPCM.unlock();
 
-        // Push encoded frames for the main thread to send out to network.
-        mutexOutputEncoded.lock();
-        for(int i=0; i<encodedFrames.size(); ++i)
-            pendingEncodedFrames.append(QByteArray(encodedFrames.at(i)));
-        mutexOutputEncoded.unlock();
+        // Send encoded frames to network.
+        SendOutputAudio();
 
+        // Update sound channels that have been filled with pending PCM frames in the main thread.
+        // This will push the frames to OpenAL.
         if (mutexInput.tryLock(15))
         {
             for (AudioStateMap::iterator i = inputAudioStates.begin(); i != inputAudioStates.end(); ++i)
+            {
                 if (i->second->soundChannel.get())
                     i->second->soundChannel->Update(i->second->soundChannel->Position());
-
+            }
             mutexInput.unlock();
         }
     }
@@ -675,18 +680,12 @@ namespace MumbleAudio
         mutexUserOutputAudioState.unlock();
         return out;
     }
-
-    void AudioProcessor::ProcessOutputAudio()
+    
+    void AudioProcessor::ReadMicrophoneAudio()
     {
-        // This function is called in the audio thread
-        if (!framework)
-            return;
-
-        
         // Get recorded PCM frames from AudioAPI.
         std::vector<SoundBuffer> pcmFrames;
         uint celtFrameSize = MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8;
-
         {
             QMutexLocker mutexLockerRecorder(&mutexRecorder);
             if (recorder_)
@@ -713,7 +712,10 @@ namespace MumbleAudio
             else
                 LogDebug(LC + QString("Failed to acquire pending PCM frames mutex for %1 frames").arg(pcmFrames.size()));
         }
+    }
 
+    void AudioProcessor::SendOutputAudio()
+    {
         QMutexLocker lockEncoded(&mutexOutputEncoded);
 
         // No queued encoded frames for network.
@@ -722,7 +724,6 @@ namespace MumbleAudio
             mutexUserOutputAudioState.lockForWrite();
             ownAudioState.numberOfFrames = 0;
             mutexUserOutputAudioState.unlock();
-
             return;
         }
 
@@ -770,8 +771,8 @@ namespace MumbleAudio
                 qualityFramesPerPacket += 2;
                 framesPerPacket = qualityFramesPerPacket;
 
-                if (!resetFramesPerPacket.isActive())
-                    resetFramesPerPacket.start(5000);
+                if (resetFramesPerPacket && !resetFramesPerPacket->isActive())
+                    resetFramesPerPacket->start(5000);
             }
             mutexAudioSettings.unlock();
         }

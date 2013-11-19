@@ -122,13 +122,13 @@ void MumblePlugin::timerEvent(QTimerEvent *event)
         // Output audio
         if (!state.outputAudioMuted)
         {
+            PROFILE(MumblePlugin_Update_OutputAudioState)
+            
             float levelPeakMic = 0.0f;
             bool speaking = false;
-
-            PROFILE(MumblePlugin_Update_ProcessOutputAudio)
+            
             UserOutputAudioState packetInfo = audio_->UserOutputState();
             audio_->GetLevels(levelPeakMic, speaking);
-            ELIFORP(MumblePlugin_Update_ProcessOutputAudio)
 
             if (packetInfo.numberOfFrames > 0)
             {
@@ -136,7 +136,6 @@ void MumblePlugin::timerEvent(QTimerEvent *event)
                 // no one will hear you even if you send the voice packets to the server. Skip sending 
                 // anything in this case and mark as not speaking so the end user wont get alarmed 
                 // that his voice is going out in 'deaf' mode.
-                PROFILE(MumblePlugin_Update_ProcessOutputNetwork)
                 if (!state.inputAudioMuted)
                 {
                     packetInfo.isLoopBack = state.outputAudioLoopBack;
@@ -157,13 +156,14 @@ void MumblePlugin::timerEvent(QTimerEvent *event)
                 }
                 else
                     me->SetAndEmitSpeaking(false);
-                ELIFORP(MumblePlugin_Update_ProcessOutputNetwork)
             }
             else if (!speaking)
                 me->SetAndEmitSpeaking(false);
 
             if (audioWizard)
                 audioWizard->SetLevels(levelPeakMic, speaking);
+
+            ELIFORP(MumblePlugin_Update_OutputAudioState)
         }
         else
         {

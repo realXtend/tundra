@@ -94,7 +94,9 @@ namespace MumbleAudio
         void timerEvent(QTimerEvent *event);
 
     public slots:
-        void ProcessOutputAudio();
+        void ReadMicrophoneAudio();
+        void SendOutputAudio();
+
         void SetOutputAudioMuted(bool outputAudioMuted_);
 
         void SetUserOutputState(UserOutputAudioState state);
@@ -202,7 +204,7 @@ namespace MumbleAudio
         int holdFrames;
         int qobjTimerId;
 
-        QTimer resetFramesPerPacket;
+        QTimer *resetFramesPerPacket;
 
         QString LC;
 
