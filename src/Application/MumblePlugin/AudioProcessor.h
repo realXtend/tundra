@@ -189,6 +189,7 @@ namespace MumbleAudio
         QMutex mutexInput;
         QMutex mutexOutputPCM;
         QMutex mutexOutputEncoded;
+        QMutex mutexRecorder;
 
         QReadWriteLock mutexAudioMute;
         QReadWriteLock mutexAudioSettings;

@@ -224,7 +224,10 @@ namespace MumbleAudio
         killTimer(qobjTimerId);
 
         SAFE_DELETE(codec);
+
+        mutexRecorder.lock();
         SAFE_DELETE(recorder_);
+        mutexRecorder.unlock();
 
         ClearInputAudio();
         framework = 0;
@@ -465,17 +468,24 @@ namespace MumbleAudio
 
             // Recording buffer of 40 celt frames, 38400 bytes (overcompensate a bit)
             int bufferSize = (MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8) * 40;
-            if (!recorder_->StartRecording(audioSettings.recordingDevice, MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize))
+
             {
-                LogWarning("Could not open recording device '" + audioSettings.recordingDevice + "'. Trying to open the default device instead.");
-                recorder_->StartRecording("", MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize);
+                QMutexLocker mutexLockRecorder(&mutexRecorder);
+                if (recorder_ && !recorder_->StartRecording(audioSettings.recordingDevice, MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize))
+                {
+                    LogWarning("Could not open recording device '" + audioSettings.recordingDevice + "'. Trying to open the default device instead.");
+                    recorder_->StartRecording("", MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize);
+                }
             }
 
             mutexAudioSettings.unlock();
         }
         else
         {
-            recorder_->StopRecording();
+            mutexRecorder.lock();
+            if (recorder_)
+                recorder_->StopRecording();
+            mutexRecorder.unlock();
 
             // Clear obsolete playback history for echo cancellation.
             if (mutexInput.tryLock(15))
@@ -623,12 +633,17 @@ namespace MumbleAudio
         if (recondingDeviceChanged)
         {
             LogInfo(LC + "Recording device change detected to '" + (settings.recordingDevice.isEmpty() ? "Default Recording Device" : settings.recordingDevice) + "'.");
-            recorder_->StopRecording();
+            {
+                QMutexLocker mutexLockerRecorder(&mutexRecorder);
+                if (recorder_)
+                {
+                    recorder_->StopRecording();
 
-            // Recording buffer of 40 celt frames, 38400 bytes (overcompensate a bit)
-            int bufferSize = (MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8) * 40;
-            recorder_->StartRecording(settings.recordingDevice, MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize);
-
+                    // Recording buffer of 40 celt frames, 38400 bytes (overcompensate a bit)
+                    int bufferSize = (MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8) * 40;
+                    recorder_->StartRecording(settings.recordingDevice, MUMBLE_AUDIO_SAMPLE_RATE, true, false, bufferSize);
+                }
+            }
             ClearOutputAudio();
         }
     }
@@ -666,17 +681,26 @@ namespace MumbleAudio
         if (!framework)
             return;
 
+        
         // Get recorded PCM frames from AudioAPI.
         std::vector<SoundBuffer> pcmFrames;
         uint celtFrameSize = MUMBLE_AUDIO_SAMPLES_IN_FRAME * MUMBLE_AUDIO_SAMPLE_WIDTH / 8;
-        while (recorder_->RecordedSoundSize() >= celtFrameSize)
+
         {
-            SoundBuffer outputPCM;
-            outputPCM.data.resize(celtFrameSize);
-            uint bytesOut = recorder_->RecordedSoundData(&outputPCM.data[0], celtFrameSize);
-            if (bytesOut == celtFrameSize)
-                pcmFrames.push_back(outputPCM);
+            QMutexLocker mutexLockerRecorder(&mutexRecorder);
+            if (recorder_)
+            {
+                while (recorder_->RecordedSoundSize() >= celtFrameSize)
+                {
+                    SoundBuffer outputPCM;
+                    outputPCM.data.resize(celtFrameSize);
+                    uint bytesOut = recorder_->RecordedSoundData(&outputPCM.data[0], celtFrameSize);
+                    if (bytesOut == celtFrameSize)
+                        pcmFrames.push_back(outputPCM);
+                }
+            }
         }
+
         if (pcmFrames.size() > 0)
         {
             // We want to fail here if something is about to give on the mutexes.
