@@ -110,6 +110,7 @@ namespace MumbleAudio
         LC("[MumbleAudioProcessor]: "),
         framework(framework_),
         networkHandler_(networkHandler),
+        recorder_(0),
         codec(new CeltCodec()),
         speexPreProcessor(0),
         speexEcho(0),

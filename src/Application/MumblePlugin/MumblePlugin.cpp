@@ -258,7 +258,7 @@ void MumblePlugin::Disconnect(QString reason)
     if (audio_ && audio_->isRunning())
     {
         audio_->exit();
-        audio_->wait();
+        audio_->wait(5000);
     }
     SAFE_DELETE(audio_);
 
@@ -266,7 +266,7 @@ void MumblePlugin::Disconnect(QString reason)
     if (network_ && network_->isRunning())
     {
         network_->exit();
-        network_->wait();
+        network_->wait(5000);
     }
     SAFE_DELETE(network_);
 
