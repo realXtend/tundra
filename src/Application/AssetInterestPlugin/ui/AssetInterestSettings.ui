@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>557</width>
-    <height>342</height>
+    <height>437</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -21,7 +21,7 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget {
-	font-size: 9pt;
+	font-size: 12px;
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -40,9 +40,7 @@
       <widget class="QLabel" name="label">
        <property name="font">
         <font>
-         <pointsize>9</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
+         <pointsize>-1</pointsize>
         </font>
        </property>
        <property name="text">
@@ -182,9 +180,7 @@
       <widget class="QLabel" name="label_2">
        <property name="font">
         <font>
-         <pointsize>9</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
+         <pointsize>-1</pointsize>
         </font>
        </property>
        <property name="text">
@@ -213,7 +209,7 @@
       <widget class="QLabel" name="unloadingLabelTitle">
        <property name="font">
         <font>
-         <pointsize>9</pointsize>
+         <pointsize>-1</pointsize>
         </font>
        </property>
        <property name="text">
@@ -238,7 +234,7 @@
       <widget class="QLabel" name="loadingLabelTitle">
        <property name="font">
         <font>
-         <pointsize>9</pointsize>
+         <pointsize>-1</pointsize>
         </font>
        </property>
        <property name="text">
@@ -263,7 +259,7 @@
       <widget class="QLabel" name="loadingLabelTitle_3">
        <property name="font">
         <font>
-         <pointsize>9</pointsize>
+         <pointsize>-1</pointsize>
         </font>
        </property>
        <property name="text">
@@ -278,7 +274,7 @@
       <widget class="QLabel" name="textureManagerStatus">
        <property name="font">
         <font>
-         <pointsize>9</pointsize>
+         <pointsize>-1</pointsize>
         </font>
        </property>
        <property name="text">
@@ -290,7 +286,7 @@
       <widget class="QLabel" name="loadingLabelTitle_2">
        <property name="font">
         <font>
-         <pointsize>9</pointsize>
+         <pointsize>-1</pointsize>
         </font>
        </property>
        <property name="text">
@@ -315,7 +311,7 @@
       <widget class="QLabel" name="unloadingLabelTitle_2">
        <property name="font">
         <font>
-         <pointsize>9</pointsize>
+         <pointsize>-1</pointsize>
         </font>
        </property>
        <property name="text">
