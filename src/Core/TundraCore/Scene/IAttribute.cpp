@@ -24,6 +24,7 @@
 
 #include <QVariant>
 #include <QStringList>
+#include <QScriptEngine>
 #include <QPoint>
 
 #include <kNet/DataDeserializer.h>
@@ -40,6 +41,19 @@ IAttribute::IAttribute(IComponent* owner_, const char* id_) :
     index(0),
     valueChanged(true)
 {
+#ifdef Q_OS_WIN
+    /** @bug Due to mysterious Qt(Script) crashes the following 'registration'
+        is required for some non-obvious reasons. If not done on a --headless
+        Tundra instance, Tundra will crash on exit.
+
+        The bug was introduced when the Attribute::FromScriptValue<T> functions were removed
+        in https://github.com/Adminotech/tundra/commit/aa7f8ab75f0fb88fb369369edbfaaf485de8c460
+        but instead of bringing all that dead code back, we have the following hack.
+
+        Can be removed only when a --headless Tundra instance no longer crashes on exit on Windows. */
+    qScriptValueToValue<int>(0);
+#endif
+
     if (owner_)
         owner_->AddAttribute(this);
 }
