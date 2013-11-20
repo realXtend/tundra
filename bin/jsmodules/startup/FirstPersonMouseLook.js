@@ -7,7 +7,7 @@ function FindUserAvatar()
 {
     var scene = framework.Scene().MainCameraScene();
     if (scene && client.IsConnected())
-        return scene.GetEntityByName("Avatar" + client.connectionId);
+        return scene.EntityByName("Avatar" + client.connectionId);
     else
         return null;
 }
@@ -21,9 +21,9 @@ function MouseEvent(event)
     var scene = framework.Scene().MainCameraScene();
     if (userAvatar && scene)
     {
-        var avatarCamera = scene.GetEntityByName("AvatarCamera");
+        var avatarCamera = scene.EntityByName("AvatarCamera");
         if (avatarCamera && avatarCamera.camera)
-            avatarCameraActiveInFps = avatarCamera.camera.IsActive() && userAvatar.dynamiccomponent.GetAttribute("cameraDistance") < 0;
+            avatarCameraActiveInFps = avatarCamera.camera.IsActive() && userAvatar.dynamicComponent.Attribute("cameraDistance") < 0;
     }
 
     // RMB pressed

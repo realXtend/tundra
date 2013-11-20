@@ -9,7 +9,7 @@ function print(s) {
 }
 
 function loadAll() {
-    var parts = scene.EntitiesWithComponent("EC_DynamicComponent", "ScenePart");
+    var parts = scene.EntitiesWithComponent("DynamicComponent", "ScenePart");
     //print(parts);
 
     var partfile;
@@ -17,7 +17,7 @@ function loadAll() {
         //print(i + ":" + parts[i]);
 
         var placeholder = parts[i];
-        partfile = placeholder.dynamiccomponent.GetAttribute("sceneref");
+        partfile = placeholder.dynamicComponent.Attribute("sceneref");
         loadPart(placeholder, partfile);
     }
 }

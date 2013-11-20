@@ -145,7 +145,7 @@ SimpleAvatar.prototype.ServerInitialize = function() {
 SimpleAvatar.prototype.ServerUpdate = function(frametime) {
 
     // If walk enable was toggled off, make sure the motion state is cleared
-    if (!this.attrs.GetAttribute("enableWalk") && (this.motionX != 0 || this.motionZ != 0))
+    if (!this.attrs.Attribute("enableWalk") && (this.motionX != 0 || this.motionZ != 0))
     {
         this.motionX = 0;
         this.motionZ = 0;
@@ -156,7 +156,7 @@ SimpleAvatar.prototype.ServerUpdate = function(frametime) {
 
 SimpleAvatar.prototype.ServerHandleMove = function(param) {
 
-    if (this.attrs.GetAttribute("enableWalk")) {
+    if (this.attrs.Attribute("enableWalk")) {
         if (param == "forward") {
             this.motionZ = 1;
         }
@@ -215,7 +215,7 @@ SimpleAvatar.prototype.ServerUpdateMotionForce = function() {
 }
 
 SimpleAvatar.prototype.ServerHandleSetRotation = function(param) {
-    if (this.attrs.GetAttribute("enableRotate")) {
+    if (this.attrs.Attribute("enableRotate")) {
         var rot = new float3(0, parseFloat(param), 0);
         this.me.rigidbody.SetRotation(rot);
     }
@@ -405,7 +405,7 @@ SimpleAvatar.prototype.GestureStarted = function(gestureEvent) {
         this.listenGesture = true;
 
         var attrs = this.me.dynamiccomponent;
-        if (attrs.GetAttribute("enableRotate")) {
+        if (attrs.Attribute("enableRotate")) {
             var x = new Number(gestureEvent.Gesture().offset.toPoint().x());
             this.yaw += x;
             this.me.Exec(2, "SetRotation", this.yaw.toString());
@@ -473,10 +473,10 @@ SimpleAvatar.prototype.ClientHandleKeyboardZoom = function(direction) {
 SimpleAvatar.prototype.ClientHandleMouseScroll = function(relativeScroll) {
     var attrs = this.me.dynamiccomponent;
     // Check that zoom is allowed
-    if (!attrs.GetAttribute("enableZoom"))
+    if (!attrs.Attribute("enableZoom"))
         return;
 
-    var avatarCameraDistance = attrs.GetAttribute("cameraDistance");
+    var avatarCameraDistance = attrs.Attribute("cameraDistance");
 
     if (!this.IsCameraActive())
         return;
@@ -528,7 +528,7 @@ SimpleAvatar.prototype.ClientHandleStopRotate = function(param) {
 SimpleAvatar.prototype.ClientUpdateRotation = function(frametime) {
     var attrs = this.me.dynamiccomponent;
     // Check that rotation is allowed
-    if (!attrs.GetAttribute("enableRotate"))
+    if (!attrs.Attribute("enableRotate"))
         return;
 
     if (this.rotate != 0) {
@@ -545,7 +545,7 @@ SimpleAvatar.prototype.ClientUpdateAvatarCamera = function() {
     var attrs = this.me.dynamiccomponent;
     if (attrs == null)
         return;
-    var avatarCameraDistance = attrs.GetAttribute("cameraDistance");
+    var avatarCameraDistance = attrs.Attribute("cameraDistance");
     var firstPerson = avatarCameraDistance < 0;
 
     var cameraentity = scene.GetEntityByName("AvatarCamera");
@@ -572,7 +572,7 @@ SimpleAvatar.prototype.ClientUpdateAvatarCamera = function() {
 
 SimpleAvatar.prototype.ClientCheckState = function() {
     var attrs = this.me.dynamiccomponent;
-    var firstPerson = attrs.GetAttribute("cameraDistance") < 0;
+    var firstPerson = attrs.Attribute("cameraDistance") < 0;
 
     var cameraentity = scene.EntityByName("AvatarCamera");
     var avatarPlaceable = this.me.Component("Placeable");
@@ -614,7 +614,7 @@ SimpleAvatar.prototype.ClientCheckState = function() {
 
 SimpleAvatar.prototype.ClientHandleMouseMove = function(mouseevent) {
     var attrs = this.me.dynamiccomponent;
-    var firstPerson = attrs.GetAttribute("cameraDistance") < 0;
+    var firstPerson = attrs.Attribute("cameraDistance") < 0;
 
     if ((firstPerson) && (input.IsMouseCursorVisible()))
     {
@@ -624,7 +624,7 @@ SimpleAvatar.prototype.ClientHandleMouseMove = function(mouseevent) {
     }
         
     // Do not rotate if not allowed
-    if (!attrs.GetAttribute("enableRotate"))
+    if (!attrs.Attribute("enableRotate"))
         return;
 
     // Do not rotate in third person if right mousebutton not held down
@@ -717,7 +717,7 @@ SimpleAvatar.prototype.CommonUpdateAnimation = function(frametime) {
         return;
     }
 
-    if (!attrs.GetAttribute("enableAnimation"))
+    if (!attrs.Attribute("enableAnimation"))
     {
         // When animations disabled, forcibly disable all running move animations
         // Todo: what if custom scripts want to run the move anims as well?
