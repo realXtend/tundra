@@ -6,46 +6,73 @@
 #include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
 
+#include <QMutexLocker>
+#include <QTimer>
 #include <iostream>
 
-ShellInputThread::ShellInputThread()
+ShellInputThread::ShellInputThread() :
+    exiting_(false)
 {
-    std::cin.clear(); // clear std::cin error state in case it has failed previously
-    start();
+    // clear std::cin error state in case it has failed previously
+    std::cin.clear(); 
 }
 
 ShellInputThread::~ShellInputThread()
 {
 }
 
+void ShellInputThread::Stop()
+{
+    exiting_ = true;
+    std::cin.clear(std::cin.eofbit, true);
+    
+    if (isRunning())
+    {
+        exit();
+        /// @todo This will never return cleanly as ReadShellInput blocks the QEventLoop.
+        wait(1);
+    }
+}
+
 void ShellInputThread::run()
 {
+    QTimer::singleShot(1, this, SLOT(ReadShellInput()));
+    exec(); // Starts QThreads QEventLoop and block until exit()
+}
+
+void ShellInputThread::ReadShellInput()
+{
+    /// @todo This will block the QEventLoop of this thread. Find a non blocking replacement to std::getline and poll it.
     for(;;)
     {
         std::string commandLine;
         std::getline(std::cin, commandLine);
+        
+        if (std::cin.eof()) exiting_ = true;
+        if (exiting_) break;
+        
         if (std::cin.fail())
         {
-            /// @todo Ideally we'd like to use LogError for this, but currently we end up here also when doing regular ShellInputThread teardown.
-            LogDebug("ShellInputThread::run: cin failed! Aborting input reading.");
-            return;
+            LogError("[ConsoleAPI] Error in std::getline(std::cin, ...)");
+            std::cin.clear(); 
+            continue;
         }
-
-        inputQueueLock.lock();
-        inputQueue.push_back(commandLine);
-        inputQueueLock.unlock();
+        if (!commandLine.empty())
+        {
+            QMutexLocker lock(&inputQueueLock);
+            inputQueue.push_back(commandLine);
+        }
     }
 }
 
 std::string ShellInputThread::GetLine()
 {
     std::string input = "";
-    inputQueueLock.lock();
+    QMutexLocker lock(&inputQueueLock);
     if (inputQueue.size() > 0)
     {
         input = inputQueue.front();
         inputQueue.erase(inputQueue.begin());
     }
-    inputQueueLock.unlock();
     return input;
 }

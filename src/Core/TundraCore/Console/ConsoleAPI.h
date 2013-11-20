@@ -130,7 +130,12 @@ public slots:
 
 private:
     friend class Framework;
-    void Initialize(); ///< Called by Framework when Input and UI APIs are initialized.
+    
+    /// Called by Framework when Input and UI APIs are initialized.
+    void Initialize();
+
+    void StartShellInputThread();
+    void StopShellInputThread();
 
     Framework *framework;
     CommandMap commands; ///< Stores all the registered console commands.

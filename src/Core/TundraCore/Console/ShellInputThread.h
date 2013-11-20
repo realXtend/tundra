@@ -15,16 +15,24 @@ class ShellInputThread : public QThread
     Q_OBJECT
 
 public:
-    /// Starts the thread.
     ShellInputThread();
-    /// Stops the thread.
     ~ShellInputThread();
+    
+    /// Stops the thread.
+    void Stop();
+    
     /// Gets a new line of input from the input thread if it exists, or an empty string otherwise.
     std::string GetLine();
 
-private:
+private slots:
+    void ReadShellInput();
+
+protected:
     /// QThread override
     void run();
+
+private:
+    bool exiting_;
 
     QMutex inputQueueLock;
     std::vector<std::string> inputQueue;

@@ -46,10 +46,11 @@ ConsoleAPI::~ConsoleAPI()
 
 void ConsoleAPI::Reset()
 {
+    StopShellInputThread();
+
     commands.clear();
     inputContext.reset();
     SAFE_DELETE(consoleWidget);
-    shellInputThread.reset();
     SAFE_DELETE(logFileText);
     SAFE_DELETE(logFile);
 }
@@ -287,7 +288,7 @@ void ConsoleAPI::Update(f64 /*frametime*/)
 {
     PROFILE(ConsoleAPI_Update);
 
-    std::string input = shellInputThread->GetLine();
+    std::string input = shellInputThread.get() ? shellInputThread->GetLine() : "";
     if (input.length() > 0)
         ExecuteCommand(input.c_str());
 }
@@ -333,8 +334,24 @@ void ConsoleAPI::Initialize()
     RegisterCommand("removeConsole", "Removes the native Windows console if applicable.", this, SLOT(RemoveNativeConsole()));
 #endif
 
+    StartShellInputThread();
+}
+
+void ConsoleAPI::StartShellInputThread()
+{
+    StopShellInputThread();
+
     /// \todo Visual Leak Detector shows a memory leak originating from this allocation although the shellInputThread is released in the destructor. Perhaps a shared pointer is held elsewhere.
     shellInputThread = MAKE_SHARED(ShellInputThread);
+    shellInputThread->moveToThread(shellInputThread.get());
+    shellInputThread->start(QThread::LowPriority);
+}
+
+void ConsoleAPI::StopShellInputThread()
+{
+    if (shellInputThread.get())
+        shellInputThread->Stop();
+    shellInputThread.reset();
 }
 
 void ConsoleAPI::HandleKeyEvent(KeyEvent *e)
@@ -347,7 +364,10 @@ void ConsoleAPI::CreateNativeConsole()
 {
 #ifdef WIN32
     if (!GetConsoleWindow() && Application::ShowConsoleWindow(false))
-        shellInputThread = MAKE_SHARED(ShellInputThread); // Recreate ShellInputThread so that we will have working input.
+    {
+        // Recreate ShellInputThread so that we will have working input.
+        StartShellInputThread();
+    }
 #endif
 }
 
