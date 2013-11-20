@@ -41,7 +41,7 @@
 
 JavascriptModule::JavascriptModule() :
     IModule("Javascript"),
-    engine(new QScriptEngine(this))
+    engine(new QScriptEngine())
 {
     qRegisterMetaType<IntegerTestRunner*>("IntegerTestRunner");
 }
