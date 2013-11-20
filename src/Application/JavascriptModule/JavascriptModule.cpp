@@ -43,6 +43,7 @@ JavascriptModule::JavascriptModule() :
     IModule("Javascript"),
     engine(new QScriptEngine(this))
 {
+    qRegisterMetaType<IntegerTestRunner*>("IntegerTestRunner");
 }
 
 JavascriptModule::~JavascriptModule()
@@ -69,8 +70,6 @@ void JavascriptModule::Load()
 void JavascriptModule::Initialize()
 {
     connect(GetFramework()->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(SceneAdded(const QString&)));
-
-    qRegisterMetaType<IntegerTestRunner*>("IntegerTestRunner");
 
     framework_->Console()->RegisterCommand(
         "jsExec", "Execute given code in the embedded Javascript interpreter. Usage: jsExec(mycodestring)",
