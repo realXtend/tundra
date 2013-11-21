@@ -185,7 +185,10 @@ void Application::InitializeSplash()
     {
         QString runDir = InstallationDirectory();
         splashScreen = new QSplashScreen(QPixmap(runDir + "/data/ui/images/adminotech_tundra_splash.png"));
-        splashScreen->setFont(QFont("Calibri", 9));
+        QFont splashScreenFont("Calibri");
+        splashScreenFont.setPixelSize(12);
+
+        splashScreen->setFont(splashScreenFont);
         splashScreen->show();
         splashScreen->activateWindow();
 #ifdef __APPLE__
