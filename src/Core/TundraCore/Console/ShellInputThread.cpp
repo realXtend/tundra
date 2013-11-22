@@ -24,7 +24,7 @@ ShellInputThread::~ShellInputThread()
 void ShellInputThread::Stop()
 {
     exiting_ = true;
-    std::cin.clear(std::cin.eofbit, true);
+    std::cin.clear(std::cin.eofbit);
     
     if (isRunning())
     {
