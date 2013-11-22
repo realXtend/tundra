@@ -18,7 +18,14 @@
 
 #include <kNet/DataDeserializer.h>
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
 #include <websocketpp/frame.hpp>
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #include "AssetAPI.h"
 #include "IAssetStorage.h"

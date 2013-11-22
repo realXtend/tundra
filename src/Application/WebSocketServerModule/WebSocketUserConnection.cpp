@@ -6,7 +6,14 @@
 #include <kNet/DataDeserializer.h>
 #include <kNet/DataSerializer.h>
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
 #include <websocketpp/frame.hpp>
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #include <QTimer>
 

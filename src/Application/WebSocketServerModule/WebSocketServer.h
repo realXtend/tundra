@@ -28,6 +28,7 @@
 #pragma warning(disable : 4100)
 #pragma warning(disable : 4267)
 #pragma warning(disable : 4701)
+#pragma warning(disable : 4996)
 #endif
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
