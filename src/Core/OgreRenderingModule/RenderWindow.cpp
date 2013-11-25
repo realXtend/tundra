@@ -291,6 +291,16 @@ void RenderWindow::Resize(int width, int height)
 {
     assert(renderWindow);
 
+#ifdef Q_WS_MAC
+#include "SystemInfo.h"
+
+    s32 majorVersion, minorVersion;
+    OSXVersionInfo(&majorVersion, &minorVersion, 0);
+
+    // For non-obvious reasons, on Mac OS X Maverick, renderWindow->getWidth() and width (same applies for height) is always equals,
+    // thus it will fail to resize the UI texture. Bypass this check in case of OS X Maverick (10.9.X)
+    if (majorVersion <= 10 && minorVersion < 9)
+#endif
     if (width == (int)renderWindow->getWidth() && height == (int)renderWindow->getHeight())
         return; // Avoid recreating resources if the size didn't actually change.
 
