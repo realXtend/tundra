@@ -601,18 +601,19 @@ void Application::ChangeLanguage(const QString& file)
 #endif
 }
 
-#ifdef __APPLE__
-const int MAC_MIN_FONT_SIZE = 12;
-void MakeFontsLargerOnOSX(QWidget *w);
-#endif
-
 bool Application::notify(QObject *receiver, QEvent *event)
 {
     try
     {
 #ifdef __APPLE__
         if (event->type() == QEvent::Polish && receiver && receiver->isWidgetType())
-            MakeFontsLargerOnOSX(static_cast<QWidget*>(receiver));
+        {
+            QWidget *w = static_cast<QWidget*>(receiver);
+            assert(w);
+
+            if (w)
+                w->setAttribute(Qt::WA_LayoutUsesWidgetRect, true);
+        }
 #endif
 
         return QApplication::notify(receiver, event);
@@ -925,40 +926,5 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
         Application::Message(szAppName, L"Unexpected error was encountered while generating minidump!");
 
     return EXCEPTION_EXECUTE_HANDLER;
-}
-#endif
-
-#ifdef __APPLE__
-void MakeFontsLargerOnOSX(QWidget *w)
-{
-    assert(w != 0);
-
-    if (w)
-        w->setAttribute(Qt::WA_LayoutUsesWidgetRect, true);
-
-    if (w->styleSheet() != "")
-    {
-        QRegExp fontSection("(font|font-size):\\s*(\\d+)(px|pt).*;");
-        fontSection.setMinimal(true);
-        int pos = fontSection.indexIn(w->styleSheet());
-        int size = fontSection.capturedTexts()[2].toInt();
-        if (size != 0 && size < MAC_MIN_FONT_SIZE)
-        {
-            QString fontProperty = fontSection.capturedTexts()[0];
-            fontProperty.replace(fontSection.capturedTexts()[2] + fontSection.capturedTexts()[3],
-                                 QString::number(MAC_MIN_FONT_SIZE) + fontSection.capturedTexts()[3]);
-            QString stylesheet = w->styleSheet();
-            stylesheet.replace(fontSection.capturedTexts()[0], fontProperty);
-            w->setStyleSheet(stylesheet);
-        }
-    }
-    else
-    {
-        if (w->font().pixelSize() != -1 && w->font().pixelSize() < MAC_MIN_FONT_SIZE)
-            w->setStyleSheet("font-size: " + QString::number(MAC_MIN_FONT_SIZE) + "px;");
-        else if (w->font().pointSize() != -1 && w->font().pointSize() < MAC_MIN_FONT_SIZE)
-            w->setStyleSheet("font-size: " + QString::number(MAC_MIN_FONT_SIZE) + "pt;");
-    }
-
 }
 #endif
