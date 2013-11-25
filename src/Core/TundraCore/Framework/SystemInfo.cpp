@@ -437,13 +437,17 @@ unsigned long TotalVideoMemory()
 #include <ApplicationServices/ApplicationServices.h>
 #include <sys/sysctl.h>
 
+void OSXVersionInfo(s32 *majorVersion, s32 *minorVersion, s32 *bugfixVersion)
+{
+    Gestalt(gestaltSystemVersionMajor, majorVersion);
+    Gestalt(gestaltSystemVersionMinor, minorVersion);
+    Gestalt(gestaltSystemVersionBugFix, bugfixVersion);
+}
+
 QString OsDisplayString()
 {
     s32 majorVersion, minorVersion, bugfixVersion;
-
-    Gestalt(gestaltSystemVersionMajor, &majorVersion);
-    Gestalt(gestaltSystemVersionMinor, &minorVersion);
-    Gestalt(gestaltSystemVersionBugFix, &bugfixVersion);
+    OSXVersionInfo(&majorVersion, &minorVersion, &bugfixVersion);
 
     QString codename;
     switch(minorVersion)
@@ -460,11 +464,14 @@ QString OsDisplayString()
         case 8:
             codename = "Mountain Lion";
             break;
+        case 9:
+            codename = "Maverick";
+            break;
         default:
             codename = "";
             break;
     }
-
+    
     return QString("Mac OS X %1.%2.%3 (%4)").arg(majorVersion).arg(minorVersion).arg(bugfixVersion).arg(codename);
 }
 
