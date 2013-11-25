@@ -9,5 +9,5 @@
 #define WEBSOCKET_SERVER_MODULE_API __declspec(dllimport)
 #endif
 #else
-#define WEBSOCKET_MODULE_API
+#define WEBSOCKET_SERVER_MODULE_API
 #endif
