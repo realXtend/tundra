@@ -1760,7 +1760,7 @@ void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
     std::vector<AssetPtr> dependents = FindDependents(transfer->source.ref);
     for(size_t i = 0; i < dependents.size(); ++i)
     {
-        AssetTransferPtr dependentTransfer = GetPendingTransfer(dependents[i]->Name());
+        AssetTransferPtr dependentTransfer = PendingTransfer(dependents[i]->Name());
         if (dependentTransfer)
         {
             QString failReason = "Transfer of dependency " + transfer->source.ref + " failed due to reason: \"" + reason + "\"";
@@ -1788,7 +1788,7 @@ void AssetAPI::AssetTransferAborted(IAssetTransfer *transfer)
     std::vector<AssetPtr> dependents = FindDependents(transfer->source.ref);
     for(size_t i = 0; i < dependents.size(); ++i)
     {
-        AssetTransferPtr dependentTransfer = GetPendingTransfer(dependents[i]->Name());
+        AssetTransferPtr dependentTransfer = PendingTransfer(dependents[i]->Name());
         if (dependentTransfer)
             AssetTransferAborted(dependentTransfer.get());
     }
