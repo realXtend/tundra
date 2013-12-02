@@ -978,7 +978,8 @@ QStringList Framework::CommandLineParameters(const QString &key) const
     OptionsMapIteratorPair iter = startupOptions.equal_range(key);
 
     for (OptionsMap::const_iterator i = iter.first; i != iter.second; ++i)
-        sortedSet.insert(i->second);
+        if (!i->second.second.isEmpty()) // parameter must be non-empty
+            sortedSet.insert(i->second);
 
     for (SortedOptionSet::const_iterator i = sortedSet.begin(); i != sortedSet.end(); ++i)
         ret << i->second;
