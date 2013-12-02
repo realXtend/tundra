@@ -163,7 +163,7 @@ public slots:
         @param key Key with possible prefixes, case-insensitive */
     QStringList CommandLineParameters(const QString &key) const;
 
-    /// Returns list of all the config XML filenames specified on command line or within another config XML
+    /// Returns list of all the config JSON or XML filenames specified on command line or within another config file.
     QStringList ConfigFiles() const { return configFiles; }
 
     /// Processes command line options and stores them into a multimap
@@ -182,7 +182,7 @@ private:
     /// Adds new command line parameter (option | value pair) to the unordered multimap.
     void AddCommandLineParameter(const QString &command, const QString &parameter = "");
 
-    /// Directs to XML of JSON parsing function depending on file suffix.
+    /// Directs to XML or JSON parsing function depending on file suffix.
     bool LoadStartupOptionsFromFile(const QString &configurationFile);
     
     /// Appends all found startup options from the given file to the startupOptions member.
@@ -224,22 +224,13 @@ private:
     PluginAPI *plugin;
     IRenderer *renderer;
 
-    /// Sorts OptionsMap by options' insertion order.
-    struct OptionMapLessThan
-    {
-        bool operator()(const std::pair<int, QString> &op1, const std::pair<int, QString> &op2) const
-        {
-            return op1.first < op2.first;
-        }
-    };
+    typedef std::multimap<QString, std::pair<int, QString>, QStringLessThanNoCase> StartupOptionMap;
+    typedef std::pair<StartupOptionMap::const_iterator, StartupOptionMap::const_iterator> StartupOptionMapRange;
 
-    typedef std::multimap<QString, std::pair<int, QString>, QStringLessThanNoCase> OptionsMap;
-    typedef std::pair<OptionsMap::const_iterator, OptionsMap::const_iterator> OptionsMapIteratorPair;
-    
-    /// Stores all command line parameters and expanded options specified in the Config XML files, except for the config file(s) themselves.
-    OptionsMap startupOptions;
+    /// Stores all command line parameters and expanded options specified in the config JSON or XML files, except for the config file(s) themselves.
+    StartupOptionMap startupOptions;
 
-    /// Stores config XML filenames
+    /// Stores filenames of the succesfully loaded JSON or XML config files.
     QStringList configFiles;
 
     /// Framework owns the memory of all the modules in the system. These are freed when Framework is exiting.

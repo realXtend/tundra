@@ -101,6 +101,16 @@ struct CommandLineParameterMap
 
     QMap<QString, QString> commands;
 };
+
+/// Sorts StartupOptionMap by options' insertion order.
+struct OptionMapLessThan
+{
+    bool operator()(const std::pair<int, QString> &op1, const std::pair<int, QString> &op2) const
+    {
+        return op1.first < op2.first;
+    }
+};
+
 /** @endcond */
 
 } //~unnamed namespace
@@ -179,7 +189,8 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
         cmdLineDescs.commands["--jsplugin"] = "Specifies a javascript file to be loaded at startup, relative to 'TUNDRA_DIRECTORY/jsplugins' path. Multiple jsplugin parameters are supported, f.ex. '--jsplugin MyPlugin.js --jsplugin MyOtherPlugin.js', or multiple parameters per --jsplugin, separated with semicolon (;) and enclosed in quotation marks, f.ex. --jsplugin \"MyPlugin.js;MyOtherPlugin.js;Etc.js\". If JavascriptModule is not loaded, this parameter has no effect."; // JavascriptModule
         cmdLineDescs.commands["--file"] = "Specifies a startup scene file. Multiple files supported. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI."; // TundraLogicModule & AssetModule
         cmdLineDescs.commands["--storage"] = "Adds the given directory as a local storage directory on startup."; // AssetModule
-        cmdLineDescs.commands["--config"] = "Specifies a startup configuration file to use. Multiple config files are supported, f.ex. '--config tundra.json --config MyCustomAddons.xml'. XML and JSON Tundra startup configs are supported."; // Framework & PluginAPI
+        cmdLineDescs.commands["--config"] = "Specifies a startup configuration file to use. Multiple parameters are supported, f.ex. '--config tundra.json --config MyCustomAddons.xml'. "
+            "Both JSON and XML config files are supported. If no --config is provided, the default tundra.json config is used."; // Framework & PluginAPI
         cmdLineDescs.commands["--connect"] = "Connects to a Tundra server automatically. Syntax: '--connect serverIp;port;protocol;name;password'. Password is optional."; // TundraLogicModule & AssetModule
         cmdLineDescs.commands["--login"] = "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username."; // TundraLogicModule & AssetModule
         cmdLineDescs.commands["--netRate"] = "Specifies the number of network updates per second. Default: 30."; // TundraLogicModule
@@ -187,10 +198,10 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
         cmdLineDescs.commands["--assetCacheDir"] = "Specify asset cache directory to use."; // Framework
         cmdLineDescs.commands["--clearAssetCache"] = "At the start of Tundra, remove all data and metadata files from asset cache."; // AssetCache
         cmdLineDescs.commands["--logLevel"] = "Sets the current log level: 'error', 'warning', 'info', 'debug'."; // ConsoleAPI
-        cmdLineDescs.commands["--logFile"] = "Sets logging file. Usage example: '--logfile TundraLogFile.txt'."; // ConsoleAPI
+        cmdLineDescs.commands["--logFile"] = "Sets logging file, '--logfile <filename>'."; // ConsoleAPI
         cmdLineDescs.commands["--physicsRate"] = "Specifies the number of physics simulation steps per second. Default: 60."; // PhysicsModule
         cmdLineDescs.commands["--physicsMaxSteps"] = "Specifies the maximum number of physics simulation steps in one frame to limit CPU usage. If the limit would be exceeded, physics will appear to slow down. Default: 6."; // PhysicsModule
-        cmdLineDescs.commands["--splash"] = "Shows splash screen during the startup, --splash Image.png can be used to show custom image instead of the default one, both relative and absolute filenames are accepted."; // Framework
+        cmdLineDescs.commands["--splash"] = "Shows splash screen during the startup, optional filename can be used to show custom image instead of the default one, both relative and absolute filenames are accepted."; // Framework
         cmdLineDescs.commands["--fullscreen"] = "Starts application in fullscreen mode."; // OgreRenderingModule
         cmdLineDescs.commands["--vsync"] = "Synchronizes buffer swaps to monitor vsync, eliminating tearing at the expense of a fixed frame rate."; // OgreRenderingModule
         cmdLineDescs.commands["--vsyncFrequency"] = "Sets display frequency rate for vsync, applicable only if fullscreen is set. Usage: '--vsyncFrequency <number>'."; // OgreRenderingModule
@@ -961,23 +972,17 @@ void Framework::AddCommandLineParameter(const QString &command, const QString &p
 
 bool Framework::HasCommandLineParameter(const QString &value) const
 {
-    if (value.compare("--config", Qt::CaseInsensitive) == 0)
-        return !configFiles.isEmpty();
-
     return startupOptions.find(value) != startupOptions.end();
 }
 
 QStringList Framework::CommandLineParameters(const QString &key) const
 {
-    if (key.compare("--config", Qt::CaseInsensitive) == 0)
-        return ConfigFiles();
-    
     typedef std::set<std::pair<int, QString>, OptionMapLessThan> SortedOptionSet;
     SortedOptionSet sortedSet;
     QStringList ret;
-    OptionsMapIteratorPair iter = startupOptions.equal_range(key);
+    StartupOptionMapRange iter = startupOptions.equal_range(key);
 
-    for (OptionsMap::const_iterator i = iter.first; i != iter.second; ++i)
+    for (StartupOptionMap::const_iterator i = iter.first; i != iter.second; ++i)
         if (!i->second.second.isEmpty()) // parameter must be non-empty
             sortedSet.insert(i->second);
 
@@ -1050,6 +1055,7 @@ void Framework::ProcessStartupOptions()
         // --config
         if (option.compare("--config", Qt::CaseInsensitive) == 0)
         {
+            AddCommandLineParameter(option, peekOption);
             LoadStartupOptionsFromFile(peekOption);
             ++i;
             continue;
@@ -1072,13 +1078,13 @@ void Framework::ProcessStartupOptions()
 
 void Framework::PrintStartupOptions()
 {
-    typedef std::map<int, std::pair<QString, QString> > SortedOptionsMap;
-    SortedOptionsMap sortedMap;
-    for (OptionsMap::const_iterator i = startupOptions.begin(); i != startupOptions.end(); ++i)
+    typedef std::map<int, std::pair<QString, QString> > SortedStartupOptionMap;
+    SortedStartupOptionMap sortedMap;
+    for (StartupOptionMap::const_iterator i = startupOptions.begin(); i != startupOptions.end(); ++i)
         sortedMap.insert(std::make_pair(i->second.first, std::make_pair(i->first, i->second.second)));
 
     QString lastOption;
-    for (SortedOptionsMap::const_iterator i = sortedMap.begin(); i != sortedMap.end(); ++i)
+    for (SortedStartupOptionMap::const_iterator i = sortedMap.begin(); i != sortedMap.end(); ++i)
     {
         QString output = "";
         QString option = i->second.first;
