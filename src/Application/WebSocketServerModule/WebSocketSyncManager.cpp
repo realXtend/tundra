@@ -49,8 +49,8 @@ void SyncManager::QueueMessage(UserConnection* connection, kNet::message_id_t id
 void SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPtr comp)
 {
     // Component identification
-    ds.Add<u16>(comp->Id() & UniqueIdGenerator::LAST_REPLICATED_ID);
-    ds.Add<u16>(comp->TypeId());
+    ds.AddVLE<kNet::VLE8_16_32>(comp->Id() & UniqueIdGenerator::LAST_REPLICATED_ID);
+    ds.AddVLE<kNet::VLE8_16_32>(comp->TypeId());
     ds.AddString(comp->Name().toStdString());
     
     // Create a nested dataserializer for the attributes, so we can survive unknown or incompatible components
@@ -75,7 +75,7 @@ void SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPt
     }
     
     // Add the attribute array to the main serializer
-    ds.Add<u32>(attrDs.BytesFilled());
+    ds.AddVLE<kNet::VLE8_16_32>(attrDs.BytesFilled());
     ds.AddArray<u8>((unsigned char*)attrDataBuffer_, attrDs.BytesFilled());
 }
 
@@ -786,8 +786,8 @@ void SyncManager::ProcessSyncState(UserConnection* destination, SceneSyncState* 
                 removeState = true;
             
             kNet::DataSerializer ds(removeEntityBuffer_, 1024);
-            ds.Add<u8>(sceneId);
-            ds.Add<u16>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+            ds.AddVLE<kNet::VLE8_16_32>(sceneId);
+            ds.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
             QueueMessage(destination, cRemoveEntityMessage, true, true, ds);
             ++numMessagesSent;
         }
@@ -797,8 +797,8 @@ void SyncManager::ProcessSyncState(UserConnection* destination, SceneSyncState* 
             kNet::DataSerializer ds(createEntityBuffer_, 64 * 1024);
             
             // Entity identification and temporary flag
-            ds.Add<u8>(sceneId);
-            ds.Add<u16>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+            ds.AddVLE<kNet::VLE8_16_32>(sceneId);
+            ds.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
             // Do not write the temporary flag as a bit to not desync the byte alignment at this point, as a lot of data potentially follows
             ds.Add<u8>(entity->IsTemporary() ? 1 : 0);
             
@@ -810,7 +810,7 @@ void SyncManager::ProcessSyncState(UserConnection* destination, SceneSyncState* 
                 if (i->second->IsReplicated())
                     ++numReplicatedComponents;
             }
-            ds.Add<u16>(numReplicatedComponents);
+            ds.AddVLE<kNet::VLE8_16_32>(numReplicatedComponents);
             
             // Serialize each replicated component
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
@@ -868,11 +868,11 @@ void SyncManager::ProcessSyncState(UserConnection* destination, SceneSyncState* 
                     // If first component, write the entity ID first
                     if (!removeCompsDs.BytesFilled())
                     {
-                        removeCompsDs.Add<u8>(sceneId);
-                        removeCompsDs.Add<u16>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                        removeCompsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
+                        removeCompsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                     }
                     // Then add component ID
-                    removeCompsDs.Add<u16>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                    removeCompsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                 }
                 // New component
                 else if (compState.isNew)
@@ -880,8 +880,8 @@ void SyncManager::ProcessSyncState(UserConnection* destination, SceneSyncState* 
                     // If first component, write the entity ID first
                     if (!createCompsDs.BytesFilled())
                     {
-                        createCompsDs.Add<u8>(sceneId);
-                        createCompsDs.Add<u16>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                        createCompsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
+                        createCompsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                     }
                     // Then add the component data
                     WriteComponentFullUpdate(createCompsDs, comp);
@@ -911,12 +911,12 @@ void SyncManager::ProcessSyncState(UserConnection* destination, SceneSyncState* 
                                 // If first attribute, write the entity ID first
                                 if (!createAttrsDs.BytesFilled())
                                 {
-                                    createAttrsDs.Add<u8>(sceneId);
-                                    createAttrsDs.Add<u16>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                                    createAttrsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
+                                    createAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                                 }
                                 
                                 IAttribute* attr = attrs[attrIndex];
-                                createAttrsDs.Add<u16>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                                createAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                                 createAttrsDs.Add<u8>(attrIndex); // Index
                                 createAttrsDs.Add<u8>(attr->TypeId());
                                 createAttrsDs.AddString(attr->Name().toStdString());
@@ -929,10 +929,10 @@ void SyncManager::ProcessSyncState(UserConnection* destination, SceneSyncState* 
                             // If first attribute, write the entity ID first
                             if (!removeAttrsDs.BytesFilled())
                             {
-                                removeAttrsDs.Add<u8>(sceneId);
-                                removeAttrsDs.Add<u16>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                                removeAttrsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
+                                removeAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                             }
-                            removeAttrsDs.Add<u16>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                            removeAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                             removeAttrsDs.Add<u8>(attrIndex);
                         }
                     }
@@ -964,7 +964,7 @@ void SyncManager::ProcessSyncState(UserConnection* destination, SceneSyncState* 
                         /// @todo HACK for web clients while ReplicateRigidBodyChanges() is not implemented! 
                         /// Don't send out minuscule pos/rot/scale changes as it spams the network.
                         bool sendChanges = true;
-                        if (changedAttributes_.size() == 1 && changedAttributes_[0] == 0 && comp->TypeId() == EC_Placeable::TypeIdStatic())
+                        if (comp->TypeId() == EC_Placeable::TypeIdStatic() && changedAttributes_.size() == 1 && changedAttributes_[0] == 0)
                         {
                             // EC_Placeable::Transform is the only change!
                             EC_Placeable *placeable = dynamic_cast<EC_Placeable*>(comp.get());
@@ -990,10 +990,10 @@ void SyncManager::ProcessSyncState(UserConnection* destination, SceneSyncState* 
                             // If first component for which attribute changes are sent, write the entity ID first
                             if (!editAttrsDs.BytesFilled())
                             {
-                                editAttrsDs.Add<u8>(sceneId);
-                                editAttrsDs.Add<u16>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                                editAttrsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
+                                editAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                             }
-                            editAttrsDs.Add<u16>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                            editAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                             
                             // Create a nested dataserializer for the actual attribute data, so we can skip components
                             kNet::DataSerializer attrDataDs(attrDataBuffer_, 16 * 1024);
@@ -1029,7 +1029,7 @@ void SyncManager::ProcessSyncState(UserConnection* destination, SceneSyncState* 
                             }
                             
                             // Add the attribute data array to the main serializer
-                            editAttrsDs.Add<u16>(attrDataDs.BytesFilled());
+                            editAttrsDs.AddVLE<kNet::VLE8_16_32>(attrDataDs.BytesFilled());
                             editAttrsDs.AddArray<u8>((unsigned char*)attrDataBuffer_, attrDataDs.BytesFilled());
                         }
                         
