@@ -324,8 +324,8 @@ namespace OgreRenderer
             return;
         }
 
-        std::string logfilepath, rendersystem_name;
-        Ogre::RenderSystem *rendersystem = 0;
+        std::string logFilePath, renderSystemName;
+        Ogre::RenderSystem *renderSystem = 0;
 
         LogInfo("Renderer: Initializing Ogre");
 
@@ -334,7 +334,7 @@ namespace OgreRenderer
         if (!logDir.exists("logs"))
             logDir.mkdir("logs");
         logDir.cd("logs");
-        logfilepath = logDir.absoluteFilePath("Ogre.log").toStdString(); /**< @todo Unicode support */
+        logFilePath = logDir.absoluteFilePath("Ogre.log").toStdString(); /**< @todo Unicode support */
 
 #include "DisableMemoryLeakCheck.h"
         // On Android instantiating our own LogManager results in a crash during Ogre initialization. Ogre has its own Android logging hook, so this can be skipped for now
@@ -346,7 +346,7 @@ namespace OgreRenderer
         Ogre::LogManager::getSingleton().getDefaultLog()->addListener(logListener); // Make all Ogre log output to come to our log listener.
         Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_NORMAL); // This is probably the default level anyway, but be explicit.
 #endif
-        ogreRoot = MAKE_SHARED(Ogre::Root, "", "", logfilepath);
+        ogreRoot = MAKE_SHARED(Ogre::Root, "", "", logFilePath);
 
 #include "EnableMemoryLeakCheck.h"
 
@@ -360,65 +360,76 @@ namespace OgreRenderer
                 SetTextureBudget(sizeParam.first().toInt());
         }
 
-        // Load plugins
-        QStringList loadedPlugins = LoadOgrePlugins();
+        QString renderingConfig = QDir(Application::InstallationDirectory()).absoluteFilePath("tundra-rendering-ogre.json");
+        const bool hasOgreConfig = framework->HasCommandLineParameter("--ogreConfig");
+        const QStringList ogreConfigs = framework->CommandLineParameters("--ogreConfig");
+        if (hasOgreConfig)
+        {
+            if (ogreConfigs.empty())
+                LogError("Renderer::Initialize: --ogreConfig specified without a value. Using the default config.");
+            else
+                renderingConfig = framework->CommandLineParameters("--ogreConfig").first();
+        }
 
-        // Read the default rendersystem from Config API.
-        rendersystem_name = framework->Config()->Read(configData, "rendering plugin").toString().toStdString();
+        // Load plugins
+        const QStringList loadedPlugins = LoadOgrePlugins(renderingConfig);
+
+        // Read the default renderSystem from Config API.
+        renderSystemName = framework->Config()->Read(configData, "rendering plugin").toString().toStdString();
 
         // Headless renderer is selected from Ogre config if defined.
         // This can be overridden with --d3d9 and --opengl cmd line params.
         if (framework->IsHeadless())
         {
-            QString headlessRenderer = HeadlessRenderingPluginName();
+            const QString headlessRenderer = HeadlessRenderingPluginName(renderingConfig);
             if (!headlessRenderer.isEmpty())
-                rendersystem_name = headlessRenderer.toStdString();
+                renderSystemName = headlessRenderer.toStdString();
         }
 
 #ifdef _WINDOWS
         // If --direct3d9 is specified, it overrides the option that was set in config.
         if (framework->HasCommandLineParameter("--d3d9") || framework->HasCommandLineParameter("--direct3d9"))
-            rendersystem_name = cD3D9RenderSystemName;
+            renderSystemName = cD3D9RenderSystemName;
 #endif
 
         // If --opengl is specified, it overrides the option that was set in config.
         if (framework->HasCommandLineParameter("--opengl"))
-            rendersystem_name = cOglRenderSystemName;
+            renderSystemName = cOglRenderSystemName;
 
         // Ask Ogre if rendering system is available
-        rendersystem = ogreRoot->getRenderSystemByName(rendersystem_name);
+        renderSystem = ogreRoot->getRenderSystemByName(renderSystemName);
 
 #ifdef _WINDOWS
         // If windows did not have the config/headless renderer fallback to Direct3D.
-        if (!rendersystem && rendersystem_name != cD3D9RenderSystemName)
-            rendersystem = ogreRoot->getRenderSystemByName(cD3D9RenderSystemName);
+        if (!renderSystem && renderSystemName != cD3D9RenderSystemName)
+            renderSystem = ogreRoot->getRenderSystemByName(cD3D9RenderSystemName);
 
         // If windows did not have Direct3D fallback to OpenGL.
-        if (!rendersystem && rendersystem_name != cOglRenderSystemName)
-            rendersystem = ogreRoot->getRenderSystemByName(cOglRenderSystemName);
+        if (!renderSystem && renderSystemName != cOglRenderSystemName)
+            renderSystem = ogreRoot->getRenderSystemByName(cOglRenderSystemName);
 #endif
 
 #ifdef ANDROID
-        // Android: use the first available rendersystem, should be GLES2
-        if (!rendersystem)
-            rendersystem = ogreRoot->getAvailableRenderers().at(0);
+        // Android: use the first available renderSystem, should be GLES2
+        if (!renderSystem)
+            renderSystem = ogreRoot->getAvailableRenderers().at(0);
 #endif
 
-        if (!rendersystem)
-            throw Exception("Could not find Ogre rendersystem.");
+        if (!renderSystem)
+            throw Exception("Could not find Ogre renderSystem.");
 
         // Report rendering plugin to log so user can check what actually got loaded
-        LogInfo(QString("Renderer: Using '%1'").arg(rendersystem->getName().c_str()));
+        LogInfo(QString("Renderer: Using '%1'").arg(renderSystem->getName().c_str()));
 
         // Allow PSSM mode shadows only on DirectX
         // On OpenGL (arbvp & arbfp) it runs out of vertex shader outputs
-        if (shadowQuality == Shadows_High && rendersystem->getName() != cD3D9RenderSystemName)
+        if (shadowQuality == Shadows_High && renderSystem->getName() != cD3D9RenderSystemName)
             shadowQuality = Shadows_Low;
 
         // This is needed for QWebView to not lock up!!!
-        Ogre::ConfigOptionMap& map = rendersystem->getConfigOptions();
+        Ogre::ConfigOptionMap& map = renderSystem->getConfigOptions();
         if (map.find("Floating-point mode") != map.end())
-            rendersystem->setConfigOption("Floating-point mode", "Consistent");
+            renderSystem->setConfigOption("Floating-point mode", "Consistent");
 
         if (framework->IsHeadless())
         {
@@ -438,7 +449,7 @@ namespace OgreRenderer
         else
         {
             // Set the found rendering system
-            ogreRoot->setRenderSystem(rendersystem);
+            ogreRoot->setRenderSystem(renderSystem);
 
             // Instantiate overlay system
             overlaySystem = new Ogre::OverlaySystem();
@@ -506,7 +517,7 @@ namespace OgreRenderer
             }
 
             LogInfo("Renderer: Loading Ogre resources");
-            LoadOgreResourceLocations();
+            LoadOgreResourceLocations(renderingConfig);
             CreateInstancingShaders();
 
 #ifdef ANDROID
@@ -578,22 +589,19 @@ namespace OgreRenderer
         return (float)(Ogre::TextureManager::getSingletonPtr()->getMemoryUsage() + loadDataSize) / (1024.f*1024.f) / (float)textureBudget;
     }
 
-    QString Renderer::HeadlessRenderingPluginName() const
+    QString Renderer::HeadlessRenderingPluginName(const QString &renderingConfig) const
     {
-        QString renderingConfig = (framework->HasCommandLineParameter("--ogreConfig") ?
-            framework->CommandLineParameters("--ogreConfig").first() : QDir(Application::InstallationDirectory()).absoluteFilePath("tundra-rendering-ogre.json"));
-
         bool ok = false;
         QVariantMap configData = TundraJson::ParseFile(renderingConfig, true, &ok).toMap();
         if (!ok)
         {
-            LogError("LoadOgrePlugins: Failed to parse Ogre config file: " + renderingConfig);
+            LogError("HeadlessRenderingPluginName: Failed to parse Ogre config file: " + renderingConfig);
             return "";
         }
         QVariantMap pluginsSection = TundraJson::Value(configData, "Plugins").toMap();
         if (pluginsSection.isEmpty())
         {
-            LogError("LoadOgrePlugins: 'Plugins' section is empty in config file: " + renderingConfig);
+            LogError("HeadlessRenderingPluginName: 'Plugins' section is empty in config file: " + renderingConfig);
             return "";
         }
 
@@ -614,12 +622,9 @@ namespace OgreRenderer
 
 #else
 
-    QStringList Renderer::LoadOgrePlugins()
+    QStringList Renderer::LoadOgrePlugins(const QString &renderingConfig)
     {
         QStringList loadedPlugins;
-
-        QString renderingConfig = (framework->HasCommandLineParameter("--ogreConfig") ?
-            framework->CommandLineParameters("--ogreConfig").first() : QDir(Application::InstallationDirectory()).absoluteFilePath("tundra-rendering-ogre.json"));
 
         bool ok = false;
         QVariantMap configData = TundraJson::ParseFile(renderingConfig, true, &ok).toMap();
@@ -712,11 +717,8 @@ namespace OgreRenderer
 
 #endif
 
-    void Renderer::LoadOgreResourceLocations()
+    void Renderer::LoadOgreResourceLocations(const QString &renderingConfig)
     {
-        QString renderingConfig = (framework->HasCommandLineParameter("--ogreConfig") ?
-            framework->CommandLineParameters("--ogreConfig").first() : QDir(Application::InstallationDirectory()).absoluteFilePath("tundra-rendering-ogre.json"));
-
         bool ok = false;
         QVariantMap configData = TundraJson::ParseFile(renderingConfig, true, &ok).toMap();
         if (!ok)

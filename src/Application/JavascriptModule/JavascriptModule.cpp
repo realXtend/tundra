@@ -576,10 +576,7 @@ QStringList JavascriptModule::ParseStartupScriptConfig()
 
 QStringList JavascriptModule::StartupScripts()
 {
-    QStringList scripts;
-    if (framework_->HasCommandLineParameter("--jsplugin"))
-        scripts << framework_->CommandLineParameters("--jsplugin");
-    return scripts;
+    return framework_->CommandLineParameters("--jsplugin");
 }
 
 void JavascriptModule::LoadStartupScripts()

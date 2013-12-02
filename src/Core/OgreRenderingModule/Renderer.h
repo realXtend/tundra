@@ -248,18 +248,16 @@ namespace OgreRenderer
         /// Sleeps the main thread to throttle the main loop execution speed.
         void DoFrameTimeLimiting();
 
-        /// Returns the headless renderer for this platform from --ogreConfig, empty string if not defined.
-        QString HeadlessRenderingPluginName() const;
+        /// Returns the headless renderer for this platform specified by the Ogre config file, empty string if not defined.
+        QString HeadlessRenderingPluginName(const QString &renderingConfig) const;
 
-        /// Loads Ogre plugins in a manner which allows individual plugin loading to fail.
-        /** @note Uses --ogreConfig cmd line param, if not present defaults to 'tundra-rendering-ogre.json'. */
-        QStringList LoadOgrePlugins();
+        /// Loads Ogre plugins specified by the Ogre config file in a manner which allows individual plugin loading to fail.
+        QStringList LoadOgrePlugins(const QString &renderingConfig);
 
-        /// Load Ogre resource locations and initialize them.
-        /** This does not actually load the assets, the files are just being recognized by the Ogre resource system.
-            @note Uses --ogreConfig cmd line param, if not present defaults to 'tundra-rendering-ogre.json'. */
-        void LoadOgreResourceLocations();
-        
+        /// Load Ogre resource locations specified by the Ogre config file and initialize them.
+        /** This does not actually load the assets, the files are just being recognized by the Ogre resource system. */
+        void LoadOgreResourceLocations(const QString &renderingConfig);
+
         /// Create instancing variants of all vertex shaders
         void CreateInstancingShaders();
 

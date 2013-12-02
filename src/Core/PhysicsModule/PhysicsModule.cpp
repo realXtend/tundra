@@ -87,17 +87,20 @@ void PhysicsModule::Initialize()
         this, SLOT(AutoCollisionMesh()));
     
     // Check physics execution rate related command line parameters
-    if (framework_->HasCommandLineParameter("--physicsrate"))
+    QStringList params = framework_->CommandLineParameters("--physicsRate");
+    if (!params.empty())
     {
         bool ok;
-        int rate = framework_->CommandLineParameters("--physicsrate")[0].toInt(&ok);
+        int rate = params.first().toInt(&ok);
         if (ok && rate > 0)
             SetDefaultPhysicsUpdatePeriod(1.0f / (float)rate);
     }
-    if (framework_->HasCommandLineParameter("--physicsmaxsteps"))
+
+    params = framework_->CommandLineParameters("--physicsMaxSteps");
+    if (!params.empty())
     {
         bool ok;
-        int steps = framework_->CommandLineParameters("--physicsmaxsteps")[0].toInt(&ok);
+        int steps = params.first().toInt(&ok);
         if (ok && steps > 0)
             SetDefaultMaxSubSteps(steps);
     }
