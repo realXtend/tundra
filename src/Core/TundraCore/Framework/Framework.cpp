@@ -616,9 +616,9 @@ bool Framework::LoadStartupOptionsFromFile(const QString &configurationFile)
     else if (suffix == "json")
         read = LoadStartupOptionsFromJSON(configurationFile);
     else
-        LogError("Invalid config file format. Only .xml and .json are supported: " + configurationFile);
+        LogError("Invalid config file format: " + configurationFile + ". Only .xml and .json are supported.");
     if (read)
-        configFiles << configurationFile;        
+        configFiles << configurationFile;
     return read;
 }
 
@@ -925,7 +925,7 @@ void Framework::LoadStartupOptionList(const QVariant &options, const QString &co
                     AddCommandLineParameter(command, option.toString());
                 else
                     AddCommandLineParameter(option.toString());
-            }    
+            }
             else if (TundraJson::IsMap(option))
             {
                 // This cannot be a root level list with a map option, as then the 'command' would be empty.
@@ -933,7 +933,7 @@ void Framework::LoadStartupOptionList(const QVariant &options, const QString &co
                 if (!command.isEmpty())
                     LoadStartupOptionMap(command, option);
                 else
-                    LogError("LoadStartupOptionList: Cannot load a map type inside a list without an command! Are you using a map inside a root level value list?!");
+                    LogError("LoadStartupOptionList: Cannot load a map type inside a list without a command! Are you using a map inside a root level value list?");
             }
             else if (TundraJson::IsList(option))
                 LoadStartupOptionList(option, command);
@@ -944,7 +944,7 @@ void Framework::LoadStartupOptionList(const QVariant &options, const QString &co
                 if (!command.isEmpty())
                     LoadStartupOptionMap(command, option);
                 else
-                    LogError("LoadStartupOptionList: Cannot load a map type inside a list without an command! Are you using a map inside a root level value list?!");
+                    LogError("LoadStartupOptionList: Cannot load a map type inside a list without a command! Are you using a map inside a root level value list?");
             }
             else if (TundraJson::IsList(option))
                 LoadStartupOptionList(option, command);
@@ -992,6 +992,8 @@ void Framework::ProcessStartupOptions()
     for(int i = 1; i < argc; ++i)
     {
         QString option(argv[i]);
+        if (option.trimmed().isEmpty())
+            continue;
         QString peekOption = (i+1 < argc ? QString(argv[i+1]) : "");
         if (option.startsWith("--") && !peekOption.isEmpty())
         {
@@ -1023,7 +1025,7 @@ void Framework::ProcessStartupOptions()
                         
                         peekOption += " " + param;
                         if (param.endsWith("\""))
-                        {                            
+                        {
                             if (peekOption.startsWith("\""))
                                 peekOption = peekOption.mid(1);
                             if (peekOption.endsWith("\""))
@@ -1039,16 +1041,11 @@ void Framework::ProcessStartupOptions()
             }
 #endif
         }
-        else if (option.startsWith("--") && peekOption.isEmpty())
-            AddCommandLineParameter(option);
-        else
+        else if (!option.startsWith("--"))
         {
             LogWarning("Orphaned startup option parameter value specified: " + QString(argv[i]));
             continue;
         }
-
-        if (option.trimmed().isEmpty())
-            continue;
 
         // --config
         if (option.compare("--config", Qt::CaseInsensitive) == 0)
