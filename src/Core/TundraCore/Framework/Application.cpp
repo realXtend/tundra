@@ -183,8 +183,22 @@ void Application::InitializeSplash()
 
     if (!splashScreen)
     {
-        QString runDir = InstallationDirectory();
-        splashScreen = new QSplashScreen(QPixmap(runDir + "/data/ui/images/adminotech_tundra_splash.png"));
+        const QString defaultSplash = InstallationDirectory() + "data/ui/images/realxtend_tundra_splash.png";
+        const QStringList splash = framework->CommandLineParameters("--splash");
+        QString splashImage = defaultSplash;
+        if (!splash.isEmpty())
+        {
+            splashImage = splash.last();
+            if (QDir::isRelativePath(splashImage))
+                splashImage = InstallationDirectory() + splashImage;
+            if (!QFile::exists(splashImage))
+            {
+                LogError("Application::InitializeSplash: File " + splashImage + " does not exist.");
+                splashImage = defaultSplash;
+            }
+        }
+
+        splashScreen = new QSplashScreen(QPixmap(splashImage));
         QFont splashScreenFont("Calibri");
         splashScreenFont.setPixelSize(12);
 
