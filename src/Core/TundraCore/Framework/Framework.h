@@ -163,7 +163,7 @@ public slots:
         @param key Key with possible prefixes, case-insensitive */
     QStringList CommandLineParameters(const QString &key) const;
 
-    /// Returns list of all the config JSON or XML filenames specified on command line or within another config file.
+    /// Returns absolute filenames of the succesfully loaded JSON or XML config files.
     QStringList ConfigFiles() const { return configFiles; }
 
     /// Processes command line options and stores them into a multimap
@@ -183,13 +183,13 @@ private:
     void AddCommandLineParameter(const QString &command, const QString &parameter = "");
 
     /// Directs to XML or JSON parsing function depending on file suffix.
-    bool LoadStartupOptionsFromFile(const QString &configurationFile);
+    bool LoadStartupOptionsFromFile(QString configurationFile);
     
     /// Appends all found startup options from the given file to the startupOptions member.
-    bool LoadStartupOptionsFromXML(QString configurationFile);
+    bool LoadStartupOptionsFromXML(const QString &configurationFile);
     
     /// Appends all found startup options from the given file to the startupOptions member.
-    bool LoadStartupOptionsFromJSON(QString configurationFile);
+    bool LoadStartupOptionsFromJSON(const QString &configurationFile);
 
     /// Load a QVariant map type to startup options.
     void LoadStartupOptionMap(const QVariant &options);
@@ -230,7 +230,7 @@ private:
     /// Stores all command line parameters and expanded options specified in the config JSON or XML files, except for the config file(s) themselves.
     StartupOptionMap startupOptions;
 
-    /// Stores filenames of the succesfully loaded JSON or XML config files.
+    /// Absolute filenames of the succesfully loaded JSON or XML config files.
     QStringList configFiles;
 
     /// Framework owns the memory of all the modules in the system. These are freed when Framework is exiting.

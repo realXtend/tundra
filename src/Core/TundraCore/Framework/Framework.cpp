@@ -618,25 +618,29 @@ bool Framework::RegisterDynamicObject(QString name, QObject *object)
 
 QString LookupRelativePath(QString path);
 
-bool Framework::LoadStartupOptionsFromFile(const QString &configurationFile)
+bool Framework::LoadStartupOptionsFromFile(QString configurationFile)
 {
+    configurationFile = LookupRelativePath(configurationFile);
     QString suffix = QFileInfo(configurationFile).suffix().toLower();
     bool read = false;
+    if (configFiles.contains(configurationFile))
+    {
+        LogWarning("Skipping loading of already loaded config " + configurationFile + ".");
+        return read;
+    }
+
     if (suffix == "xml")
         read = LoadStartupOptionsFromXML(configurationFile);
     else if (suffix == "json")
         read = LoadStartupOptionsFromJSON(configurationFile);
     else
         LogError("Invalid config file format: " + configurationFile + ". Only .xml and .json are supported.");
-    if (read)
-        configFiles << configurationFile;
+
     return read;
 }
 
-bool Framework::LoadStartupOptionsFromXML(QString configurationFile)
+bool Framework::LoadStartupOptionsFromXML(const QString &configurationFile)
 {
-    configurationFile = LookupRelativePath(configurationFile);
-
     QDomDocument doc("plugins");
     QFile file(configurationFile);
     if (!file.open(QIODevice::ReadOnly))
@@ -654,6 +658,10 @@ bool Framework::LoadStartupOptionsFromXML(QString configurationFile)
         return false;
     }
     file.close();
+
+    // After this point we're not going to fail: store the config name so that we can prevent
+    // including the same file more than once or even recursively infinitely.
+    configFiles << configurationFile;
 
     QDomElement docElem = doc.documentElement();
 
@@ -687,10 +695,8 @@ bool Framework::LoadStartupOptionsFromXML(QString configurationFile)
     return true;
 }
 
-bool Framework::LoadStartupOptionsFromJSON(QString configurationFile)
+bool Framework::LoadStartupOptionsFromJSON(const QString &configurationFile)
 {
-    configurationFile = LookupRelativePath(configurationFile);
-    
     bool ok = false;
     QVariantList startupOptions = TundraJson::ParseFile(configurationFile, true, &ok).toList();
     if (!ok)
@@ -703,6 +709,10 @@ bool Framework::LoadStartupOptionsFromJSON(QString configurationFile)
         LogWarning("Config file does not seem to have any values is it: " + configurationFile);
         return false;
     }
+
+    // After this point we're not going to fail: store the config name so that we can prevent
+    // including the same file more than once or even recursively infinitely.
+    configFiles << configurationFile;
 
     foreach(const QVariant &option, startupOptions)
     {
