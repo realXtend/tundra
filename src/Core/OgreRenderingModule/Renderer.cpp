@@ -266,8 +266,8 @@ namespace OgreRenderer
         ConfigAPI &cfg = *framework->Config();
         const ConfigData renderingCfg(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
         viewDistance = cfg.DeclareSetting(renderingCfg, "view distance", (double)viewDistance).toFloat(); // (as double to keep human-readable and configurable)
-        shadowQuality = cfg.DeclareSetting(renderingCfg, "shadow quality", shadowQuality).value<ShadowQualitySetting>();
-        textureQuality = cfg.DeclareSetting(renderingCfg, "texture quality", textureQuality).value<TextureQualitySetting>();
+        shadowQuality = static_cast<ShadowQualitySetting>(cfg.DeclareSetting(renderingCfg, "shadow quality", shadowQuality).toInt());
+        textureQuality = static_cast<TextureQualitySetting>(cfg.DeclareSetting(renderingCfg, "texture quality", textureQuality).toInt());
         cfg.DeclareSetting(renderingCfg, "soft shadow", false);
         cfg.DeclareSetting(renderingCfg, "rendering plugin",
 #ifdef _WINDOWS
