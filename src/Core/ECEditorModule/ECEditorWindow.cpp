@@ -795,7 +795,8 @@ void ECEditorWindow::RemoveEntity(Entity* entity)
 void ECEditorWindow::SetFocus(bool focus)
 {
     hasFocus = focus;
-    SetGizmoVisible(!SelectedEntities().empty() && hasFocus);
+    const bool enabled = framework->Module<ECEditorModule>()->IsGizmoEnabled();
+    SetGizmoVisible(enabled && hasFocus && !SelectedEntities().empty());
     if (framework->Module<ECEditorModule>()->IsHighlightingEnabled())
         for(int i = 0; i < entityList->count(); i++)
         {
