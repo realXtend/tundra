@@ -35,6 +35,12 @@ public slots:
     /// Clears the console log.
     void ClearLog();
 
+    /// Returns the text widget used for the output.
+    QPlainTextEdit *TextEdit() const { return textEdit; }
+
+    /// Returns the line edit widget used for input.
+    QLineEdit *LineEdit() const { return lineEdit; }
+
 private slots:
     /// Handles input to the console (called after return is pressed).
     void HandleInput();
@@ -62,3 +68,4 @@ private:
     QStringList prevSuggestions; ///< Already shown suggestions.
     float height; ///< Relative height [0,1] of the console UI.
 };
+Q_DECLARE_METATYPE(ConsoleWidget*)

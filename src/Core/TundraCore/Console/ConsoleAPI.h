@@ -125,8 +125,13 @@ public slots:
     /// Returns the bitset of currently enabled log channels.
     u32 EnabledLogChannels() const;
 
-    /// Toggles visibility of the GUI console (ConsoleWidget).
-    void ToggleConsole();
+    /// Returns the GUI console widget, null in headless mode.
+    ConsoleWidget *Widget() const;
+
+    // DEPRECATED
+    /// @cond PRIVATE
+    void ToggleConsole(); /**< @deprecated Use Widget to access the console widget directly. @todo Remove. */
+    /// @endcond
 
 private:
     friend class Framework;
@@ -171,10 +176,10 @@ public:
     }
 
     /// Returns the name of this command.
-    QString Name() const { return name; }
+    const QString &Name() const { return name; }
 
     /// Returns the description of this command.
-    QString Description() const { return description; }
+    const QString &Description() const { return description; }
 
     /// Returns the QObject instance which gets invoked when this command is executed.
     /// This may be null if this ConsoleCommand is registered from a script.
@@ -182,7 +187,7 @@ public:
 
     /// Returns the name of the function on the Target QObject that is invoked when this command is executed.
     /// This may be "" if this ConsoleCommand is registered from a script.
-    QString FunctionName() const { return functionName; }
+    const QString &FunctionName() const { return functionName; }
 
     /// Executes this command.
     /// @return The return value of the console command is returned.
@@ -195,10 +200,10 @@ signals:
     void Invoked(const QStringList &params);
 
 private:
-    QString name;
-    QString description;
+    const QString name;
+    const QString description;
     QPointer<QObject> target;
-    QString functionName;
-    QString functionNameDefaultArgs;
+    const QString functionName;
+    const QString functionNameDefaultArgs;
 };
 Q_DECLARE_METATYPE(ConsoleCommand*)

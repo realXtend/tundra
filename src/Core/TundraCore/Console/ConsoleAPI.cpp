@@ -295,6 +295,7 @@ void ConsoleAPI::Update(f64 /*frametime*/)
 
 void ConsoleAPI::ToggleConsole()
 {
+    LogWarning("ConsoleAPI::ToggleConsole: this function is deprecated. Use ConsoleAPI::Widget to access the console widget directly.");
     if (consoleWidget)
         consoleWidget->ToggleConsole();
 }
@@ -356,8 +357,8 @@ void ConsoleAPI::StopShellInputThread()
 
 void ConsoleAPI::HandleKeyEvent(KeyEvent *e)
 {
-    if (e->sequence == framework->Input()->KeyBinding("ToggleConsole", QKeySequence(Qt::Key_F1)))
-        ToggleConsole();
+    if (consoleWidget && e->sequence == framework->Input()->KeyBinding("ToggleConsole", QKeySequence(Qt::Key_F1)))
+        consoleWidget->ToggleConsole();
 }
 
 void ConsoleAPI::CreateNativeConsole()
@@ -419,3 +420,7 @@ u32 ConsoleAPI::EnabledLogChannels() const
     return enabledLogChannels;
 }
 
+ConsoleWidget *ConsoleAPI::Widget() const
+{
+    return consoleWidget.data();
+}
