@@ -60,6 +60,9 @@ public slots:
     SceneSyncState* SceneState(uint connectionId) const;
     SceneSyncState* SceneState(WebSocket::UserConnection *connection) const; /**< @overload @param connection Client connection.*/
 
+    /// Handle a Websocket message from a client
+    void OnNetworkMessageReceived(WebSocket::UserConnection *source, kNet::message_id_t id, const char* data, size_t numBytes);
+
 signals:
     /// This signal is emitted when a new user connects and a new SceneSyncState is created for the connection.
     /// @note See signals of the SceneSyncState object to build prioritization logic how the sync state is filled.
@@ -92,9 +95,6 @@ private slots:
 
     /// Trigger sync of entity action to specific user
     void OnUserActionTriggered(WebSocket::UserConnection* user, Entity *entity, const QString &action, const QStringList &params);
-
-    /// Handle a Kristalli protocol message
-    void HandleKristalliMessage(UserConnection* source, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);
 
 private:
     /// Queue a message to the receiver from a given DataSerializer.

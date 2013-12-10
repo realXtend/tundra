@@ -120,9 +120,12 @@ namespace WebSocket
         /// A user has disconnected
         void UserDisconnected(WebSocket::UserConnection *connection);
         
+        /// Network message received from client
+        void NetworkMessageReceived(WebSocket::UserConnection *source, kNet::message_id_t id, const char* data, size_t numBytes);
+
         /// Web client entity action
-        void ClientEntityAction(WebSocket::UserConnection *source, MsgEntityAction action);
-          
+        ///void ClientEntityAction(WebSocket::UserConnection *source, MsgEntityAction action);
+        
     protected:
         void Reset();
 

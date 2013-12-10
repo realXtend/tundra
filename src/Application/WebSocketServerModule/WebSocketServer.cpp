@@ -251,7 +251,7 @@ void Server::Update(float frametime)
                                 }
                             }
 
-                            // Send login reply           
+                            // Send login reply
                             QVariantMap replyData;
                             emit UserConnected(userConnection, &replyData);
                             
@@ -309,7 +309,13 @@ void Server::Update(float frametime)
                         }
                     }
                 }
-                // EntityActionMessage
+                else
+                {
+                    // Signal network message. As per kNet tradition the message ID is given separately in addition with the rest of the data
+                    NetworkMessageReceived(userConnection, messageId, event->data->GetData() + sizeof(u16), event->data->BytesFilled() - sizeof(u16));
+                }
+
+                /*
                 else if (messageId == cEntityActionMessage)
                 {
                     MsgEntityAction msg;
@@ -339,6 +345,7 @@ void Server::Update(float frametime)
 
                     emit ClientEntityAction(userConnection, msg);
                 }
+                */
             }
             else
                 LogError(LC + "Received message from unauthorized connection, ignoring.");

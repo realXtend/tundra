@@ -154,7 +154,7 @@ void SyncManager::RegisterToScene(ScenePtr scene)
         SLOT( OnActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecTypeField)));
 }
 
-void SyncManager::HandleKristalliMessage(UserConnection* source, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
+void SyncManager::OnNetworkMessageReceived(UserConnection* source, kNet::message_id_t messageId, const char* data, size_t numBytes)
 {
     try
     {
@@ -195,7 +195,6 @@ void SyncManager::HandleKristalliMessage(UserConnection* source, kNet::packet_id
     catch (kNet::NetException& e)
     {
         LogError("Exception while handling scene sync network message " + QString::number(messageId) + ": " + QString(e.what()));
-        throw; // Propagate the message so that Tundra server will kill the connection (if we are the server).
     }
     currentSender = 0;
 }

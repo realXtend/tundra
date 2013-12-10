@@ -93,8 +93,10 @@ void WebSocketServerModule::StartServer()
     // Connect new users for scene state creation in syncmanager.
     connect(server_.get(), SIGNAL(UserConnected(WebSocket::UserConnection*, QVariantMap*)),
             syncManager_.get(), SLOT(OnUserConnected(WebSocket::UserConnection*, QVariantMap*)));
-    connect(server_.get(), SIGNAL(ClientEntityAction(WebSocket::UserConnection*, MsgEntityAction)),
-            syncManager_.get(), SLOT(OnClientEntityAction(WebSocket::UserConnection*, MsgEntityAction)));
+    connect(server_.get(), SIGNAL(NetworkMessageReceived(WebSocket::UserConnection*, kNet::message_id_t, const char*, size_t)),
+            syncManager_.get(), SLOT(OnNetworkMessageReceived(WebSocket::UserConnection*, kNet::message_id_t, const char*, size_t)));
+    //connect(server_.get(), SIGNAL(ClientEntityAction(WebSocket::UserConnection*, MsgEntityAction)),
+    //        syncManager_.get(), SLOT(OnClientEntityAction(WebSocket::UserConnection*, MsgEntityAction)));
 
     framework_->RegisterDynamicObject("websocketserver", server_.get());
     framework_->RegisterDynamicObject("websocketsyncmanager", syncManager_.get());
