@@ -698,10 +698,10 @@ SimpleAvatar.prototype.ClientUpdateAvatarCamera = function() {
     cameratransform.pos = new float3(0, this.avatarCameraHeight, avatarCameraDistance);
 
     // Track the head bone in 1st person
-    if ((firstPerson) && (me.mesh != null))
+    if (firstPerson && this.me.mesh)
     {
-        me.mesh.ForceSkeletonUpdate();
-        var headPos = me.mesh.GetBoneDerivedPosition("Bip01_Head");
+        this.me.mesh.ForceSkeletonUpdate();
+        var headPos = this.me.mesh.GetBoneDerivedPosition("Bip01_Head");
         headPos.z -= 0.5;
         headPos.y -= 0.7;
         cameratransform.pos = headPos;
