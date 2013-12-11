@@ -30,7 +30,7 @@ function SimpleAvatar(entity, comp)
     this.motionY = 0;
     this.motionZ = 0;
 
-    // Clientside yaw, pitch & rotation state
+    // Client-side yaw, pitch & rotation state
     this.yaw = 0;
     this.pitch = 0;
     this.rotate = 0;
@@ -56,7 +56,7 @@ function SimpleAvatar(entity, comp)
     // Android finger touch movement
     this.fingersDown = 0;
 
-    // Create avatar on server, and camera & inputmapper on client
+    // Create avatar on server, and camera & input mapper on client
     if (this.isServer)
         this.ServerInitialize();
     else
@@ -142,7 +142,7 @@ SimpleAvatar.prototype.ServerInitialize = function() {
     attrs.SetAttribute("enableZoom", true);
     attrs.SetAttribute("cameraDistance", 7.0);
 
-    // Create an inactive proximitytrigger, so that other proximitytriggers can detect the avatar
+    // Create an inactive proximity trigger, so that other proximity triggers can detect the avatar
     // var proxtrigger = me.GetOrCreateComponent("ProximityTrigger");
     // proxtrigger.active = false;
 
@@ -152,7 +152,7 @@ SimpleAvatar.prototype.ServerInitialize = function() {
     // Hook to tick update for animation update
     frame.Updated.connect(this, this.ServerUpdate);
 
-    // Connect actions. These come from the client side inputmapper
+    // Connect actions. These come from the client-side input mapper
     this.me.Action("Move").Triggered.connect(this, this.ServerHandleMove);
     this.me.Action("Stop").Triggered.connect(this, this.ServerHandleStop);
     this.me.Action("ToggleFly").Triggered.connect(this, this.ServerHandleToggleFly);
@@ -449,7 +449,7 @@ SimpleAvatar.prototype.ClientUpdate = function(frametime) {
         if (fingersDownNow != this.fingersDown) {
             this.fingersDown = fingersDownNow;
             if (fingersDownNow >= 2)
-		this.me.Exec(2, "Move", "forward");
+                this.me.Exec(2, "Move", "forward");
             else
                 this.me.Exec(2, "Stop", "forward");
         }
@@ -499,6 +499,17 @@ SimpleAvatar.prototype.ClientCreateInputMapper = function() {
         inputContext.GestureStarted.connect(this, this.GestureStarted);
         inputContext.GestureUpdated.connect(this, this.GestureUpdated);
         inputContext.MouseMove.connect(this, this.ClientHandleMouseMove);
+        // Mouse cursor visibility altering on RMB press and release
+        inputContext.MouseRightPressed.connect(function()
+        {
+            if (input.IsMouseCursorVisible())
+                input.SetMouseCursorVisible(false);
+        });
+        inputContext.MouseRightReleased.connect(function()
+        {
+            if (!input.IsMouseCursorVisible())
+                input.SetMouseCursorVisible(true);
+        });
     }
 
     // Local mapper for mouse scroll and rotate
@@ -719,7 +730,7 @@ SimpleAvatar.prototype.ClientCheckState = function() {
 
     if (this.crosshair == null)
         return;
-    // If ent got destroyed or something fatal, return cursor
+    // If entity got destroyed or something fatal, return cursor
     if (cameraentity == null || avatarPlaceable == null) {
         if (this.crosshair.isActive()) {
             this.crosshair.hide();
@@ -775,19 +786,19 @@ SimpleAvatar.prototype.ClientHandleMouseMove = function(mouseevent) {
     var attrs = this.me.dynamiccomponent;
     var firstPerson = attrs.Attribute("cameraDistance") < 0;
 
-    if ((firstPerson) && (input.IsMouseCursorVisible()))
+    if (firstPerson && input.IsMouseCursorVisible())
     {
         input.SetMouseCursorVisible(false);
         if (!this.crosshair.isUsingLabel)
             QApplication.setOverrideCursor(crosshair.cursor);
     }
-        
+
     // Do not rotate if not allowed
     if (!attrs.Attribute("enableRotate"))
         return;
 
-    // Do not rotate in third person if right mousebutton not held down
-    if ((!firstPerson) && (input.IsMouseCursorVisible()))
+    // Do not rotate in third person if right mouse button not held down
+    if (!firstPerson && input.IsMouseCursorVisible())
         return;
 
     if (mouseevent.IsRightButtonDown())
@@ -799,7 +810,7 @@ SimpleAvatar.prototype.ClientHandleMouseMove = function(mouseevent) {
     if (cameraentity == null)
         return;
 
-    // Dont move av rotation if we are not the active cam
+    // Don't move av rotation if we are not the active cam
     if (!cameraentity.camera.IsActive())
         return;
 
@@ -816,7 +827,7 @@ SimpleAvatar.prototype.ClientHandleMouseMove = function(mouseevent) {
         var attrs = this.me.dynamiccomponent;
         this.pitch -= this.mouseRotateSensitivity * parseInt(mouseevent.relativeY);
 
-        // Dont let the 1st person flip vertically, 180 deg view angle
+        // Don't let the 1st person flip vertically, 180 deg view angle
         if (this.pitch < -90)
             this.pitch = -90;
         if (this.pitch > 90)
@@ -906,11 +917,10 @@ SimpleAvatar.prototype.CommonUpdateAnimation = function(frametime) {
         }
     }
 
-    // If walk animation is playing, adjust its speed according to the avatar rigidbody velocity
+    // If walk animation is playing, adjust its speed according to the avatar's rigid body velocity
     if (animName != ""  && animcontroller.IsAnimationActive(this.walkAnimName)) {
         var velocity = rigidbody.linearVelocity;
         var walkspeed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * this.walkAnimSpeed;
         animcontroller.SetAnimationSpeed(this.walkAnimName, walkspeed);
     }
 }
-

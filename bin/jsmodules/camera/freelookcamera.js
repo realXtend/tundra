@@ -46,14 +46,6 @@ if (!framework.IsHeadless())
     var placeable = me.GetOrCreateLocalComponent("Placeable");
     var soundListener = me.GetOrCreateLocalComponent("SoundListener");
 
-    // Co-operate with the AvatarApplication: if AvatarCamera already exists, do not activate the FreeLookCamera right now
-    var avatarCameraEntity = scene.EntityByName("AvatarCamera");
-    if (!avatarCameraEntity)
-    {
-        camera.SetActive(); // This will connect frame updates for this script.
-        soundListener.active = true;
-    }
-
     // Register input handling
     var inputContext = input.RegisterInputContextRaw("FreeLookCamera", 101);
     inputContext.takeMouseEventsOverQt = true;
@@ -69,6 +61,11 @@ if (!framework.IsHeadless())
             inputContext.GestureUpdated.connect(GestureUpdated);
         }
     }
+
+    // Co-operate with the AvatarApplication: if AvatarCamera already exists, do not activate the FreeLookCamera right now
+    var avatarCameraEntity = scene.EntityByName("AvatarCamera");
+    if (!avatarCameraEntity)
+        camera.SetActive(); // This will trigger ActiveCameraChanged connect frame updates for this script.
 }
 
 function IsCameraActive()
@@ -145,6 +142,14 @@ function HandleStop(e)
 
 function HandleMouse(e)
 {
+    if (!IsCameraActive())
+        return;
+
+    if (e.eventType == 3 /*MousePress*/ && e.button == 2 && input.IsMouseCursorVisible())
+        input.SetMouseCursorVisible(false);
+    if (e.eventType == 4 /*MouseRelease*/ && e.button == 2 && !input.IsMouseCursorVisible())
+        input.SetMouseCursorVisible(true);
+
     if (e.IsButtonDown(2) && !input.IsMouseCursorVisible())
     {
         if (e.relativeX != 0)
@@ -156,9 +161,6 @@ function HandleMouse(e)
 
 function HandleMouseLookX(param)
 {
-    if (!IsCameraActive())
-        return;
-
     var transform = me.placeable.transform;
     transform.rot.y -= _g.rotate.sensitivity * parseInt(param);
     me.placeable.transform = transform;
@@ -166,9 +168,6 @@ function HandleMouseLookX(param)
 
 function HandleMouseLookY(param)
 {
-    if (!IsCameraActive())
-        return;
-
     var transform = me.placeable.transform;
     transform.rot.x -= _g.rotate.sensitivity * parseInt(param);
     if (transform.rot.x > 90.0)
@@ -180,79 +179,66 @@ function HandleMouseLookY(param)
 
 function GestureStarted(gestureEvent)
 {
-        if (!IsCameraActive())
-            return;
-    
-        if (gestureEvent.GestureType() == Qt.TapAndHoldGesture)
-        {
-            if (motion_z == 0)
-                HandleMove("forward");
-            else
-                HandleStop("forward");
-            gestureEvent.Accept();
-        }
-        else if (gestureEvent.GestureType() == Qt.PanGesture)
-        {
-            var offset = gestureEvent.Gesture().offset.toPoint();
-            HandleMouseLookX(offset.x());
-            HandleMouseLookY(offset.y());
-            gestureEvent.Accept();
-        }
+    if (!IsCameraActive())
+        return;
+
+    if (gestureEvent.GestureType() == Qt.TapAndHoldGesture)
+    {
+        if (motion_z == 0)
+            HandleMove("forward");
+        else
+            HandleStop("forward");
+        gestureEvent.Accept();
+    }
+    else if (gestureEvent.GestureType() == Qt.PanGesture)
+    {
+        var offset = gestureEvent.Gesture().offset.toPoint();
+        HandleMouseLookX(offset.x());
+        HandleMouseLookY(offset.y());
+        gestureEvent.Accept();
+    }
 }
 
 function GestureUpdated(gestureEvent)
 {
-        if (!IsCameraActive())
-            return;
+    if (!IsCameraActive())
+        return;
 
-        if (gestureEvent.GestureType() == Qt.PanGesture)
-        {
-            var delta = gestureEvent.Gesture().delta.toPoint();
-            HandleMouseLookX(delta.x());
-            HandleMouseLookY(delta.y());
-            gestureEvent.Accept();
-        }
-}
-
-function DisconnectApplication()
-{
-    if (_g.connected)
+    if (gestureEvent.GestureType() == Qt.PanGesture)
     {
-        // Disconnect frame updates and enabled SoundListener
-        frame.Updated.disconnect(Update);
-        if (me.soundlistener != null)
-            me.soundlistener.active = false;
-        _g.connected = false;
-
-        _g.move.amount.x = 0;
-        _g.move.amount.y = 0;
-        _g.move.amount.z = 0;
+        var delta = gestureEvent.Gesture().delta.toPoint();
+        HandleMouseLookX(delta.x());
+        HandleMouseLookY(delta.y());
+        gestureEvent.Accept();
     }
 }
 
-function ConnectApplication()
+function ResetState()
 {
-    if (!_g.connected)
-    {
-        // Connect frame updates and enabled SoundListener
-        frame.Updated.connect(Update);
-        if (me.soundlistener != null)
-            me.soundlistener.active = true;
-        _g.connected = true;
+    _g.move.amount.Set(0,0,0);
+    _g.motion.Set(0,0,0);
+}
 
-        _g.move.amount.x = 0;
-        _g.move.amount.y = 0;
-        _g.move.amount.z = 0;
+function SetApplicationActive(active)
+{
+    if (active != _g.connected)
+    {
+        if (active)
+            frame.Updated.connect(Update);
+        else
+            frame.Updated.disconnect(Update);
+
+        if (me.soundListener)
+            me.soundListener.active = active;
+
+        _g.connected = active;
+
+        ResetState();
     }
 }
 
 function ActiveCameraChanged(cameraEnt)
 {
-    if (cameraEnt == null)
-        return;
-
-    if (cameraEnt == me)
-        ConnectApplication();
-    else
-        DisconnectApplication();
+    if (cameraEnt)
+        SetApplicationActive(cameraEnt == me);
 }
