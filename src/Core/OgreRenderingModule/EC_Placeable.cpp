@@ -737,11 +737,8 @@ void EC_Placeable::OnComponentAdded(IComponent* component, AttributeChange::Type
 
 void EC_Placeable::SetPosition(float x, float y, float z)
 {
-    assume(IsFinite(x));
-    assume(IsFinite(y));
-    assume(IsFinite(z));
     Transform newtrans = transform.Get();
-    newtrans.SetPos(x, y, z);
+    newtrans.SetPos(x, y, z); // SetPos contains assume(IsFinite()) checks for all values.
     transform.Set(newtrans, AttributeChange::Default);
 }
 
@@ -793,13 +790,7 @@ void EC_Placeable::SetTransform(const float3x4 &tm)
 {
     assume(tm.IsColOrthogonal());
     assume(!tm.HasNegativeScale());
-    float3 translate;
-    Quat rotate;
-    float3 scale;
-    tm.Decompose(translate, rotate, scale);
-    SetPosition(translate);
-    SetOrientation(rotate);
-    SetScale(scale);
+    transform.Set(Transform(tm), AttributeChange::Default);
 }
 
 void EC_Placeable::SetTransform(const Quat &orientation, const float3 &pos)
