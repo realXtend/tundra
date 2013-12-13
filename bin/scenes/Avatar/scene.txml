@@ -129,7 +129,6 @@
   <component type="EC_EnvironmentLight" sync="1">
    <attribute value="0.638999999 0.638999999 0.638999999 1" name="Sunlight color"/>
    <attribute value="0.363999993 0.363999993 0.363999993 1" name="Ambient light color"/>
-   <attribute value="0.930000007 0.930000007 0.930000007 1" name="Sunlight diffuse color"/>
    <attribute value="-1.000000 -1.000000 -1.000000" name="Sunlight direction vector"/>
    <attribute value="true" name="Sunlight cast shadows"/>
   </component>
