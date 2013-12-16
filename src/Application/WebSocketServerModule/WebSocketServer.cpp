@@ -83,9 +83,7 @@ void ServerThread::run()
 Server::Server(Framework *framework) :
     LC("[WebSocketServer]: "),
     framework_(framework),
-    port_(2345),
-    updatePeriod_(1.0f / 20.0f),
-    updateAcc_(0.0)
+    port_(2345)
 {
     // Port
     QStringList portParam = framework->CommandLineParameters("--port");
@@ -110,14 +108,6 @@ Server::~Server()
 
 void Server::Update(float frametime)
 {
-    // Check if it is yet time to perform a network update tick.
-    updateAcc_ += (float)frametime;
-    if (updateAcc_ < updatePeriod_)
-        return;
-
-    // If multiple updates passed, update still just once.
-    updateAcc_ = fmod(updateAcc_, updatePeriod_);
-    
     // Clean dead requestedConnections
     if (!connections_.empty())
     {
@@ -142,14 +132,20 @@ void Server::Update(float frametime)
         }
     }
     
-    QMutexLocker lockEvents(&mutexEvents_);
-    if (events_.size() == 0)
-        return;
+    QList<SocketEvent*> processEvents;
+    {
+        QMutexLocker lockEvents(&mutexEvents_);
+        if (events_.size() == 0)
+            return;
+        // Make copy of current event queue for processing
+        processEvents = events_;
+        events_.clear();
+    }
 
     // Process events pushed from the websocket thread(s)
-    for (int i=0; i<events_.size(); ++i)
+    for (int i=0; i< processEvents.size(); ++i)
     {
-        SocketEvent *event = events_[i];
+        SocketEvent *event = processEvents[i];
         if (!event)
             continue;
 
@@ -357,7 +353,6 @@ void Server::Update(float frametime)
         
         SAFE_DELETE(event);
     }
-    events_.clear();
 }
 
 void Server::OnUserDisconnected(WebSocket::UserConnection *userConnection)

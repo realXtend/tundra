@@ -152,11 +152,5 @@ namespace WebSocket
 
         QMutex mutexEvents_;
         QList<SocketEvent*> events_;
-
-        /// Time period for update, default 20 time a sec
-        float updatePeriod_;
-
-        /// Time accumulator for update
-        float updateAcc_;
     };
 }
