@@ -1521,6 +1521,45 @@ float OgreMaterialAsset::DepthBias(int techIndex, int passIndex) const
     return pass->getDepthBiasConstant();
 }
 
+bool OgreMaterialAsset::SetAlphaRejection(int techIndex, int passIndex, u8 rejection)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setAlphaRejectValue(rejection);
+    return true;
+}
+
+u8 OgreMaterialAsset::AlphaRejection(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError(QString("OgreMaterialAsset::AlphaRejection: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
+        return 0;
+    }
+    return pass->getAlphaRejectValue();
+}
+
+bool OgreMaterialAsset::SetAlphaRejectionFunction(int techIndex, int passIndex, Ogre::CompareFunction func)
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+        return false;
+    pass->setAlphaRejectFunction(func);
+    return true;
+}
+
+Ogre::CompareFunction OgreMaterialAsset::AlphaRejectionFunction(int techIndex, int passIndex) const
+{
+    Ogre::Pass* pass = GetPass(techIndex, passIndex);
+    if (!pass)
+    {
+        LogError(QString("OgreMaterialAsset::AlphaRejectionFunction: Could not find technique %1 pass %2.").arg(techIndex).arg(passIndex));
+        return Ogre::CMPF_ALWAYS_FAIL;
+    }
+    return pass->getAlphaRejectFunction();
+}
 
 bool OgreMaterialAsset::SetHardwareCullingMode(int techIndex, int passIndex, unsigned mode)
 {

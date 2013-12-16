@@ -178,6 +178,14 @@ public slots:
     /// Set constant depth bias
     bool SetDepthBias(int techIndex, int passIndex, float bias);
     float DepthBias(int techIndex, int passIndex) const;
+    
+    /// Set alpha rejection threshold in the range of [0-255].
+    bool SetAlphaRejection(int techIndex, int passIndex, u8 rejection);
+    u8 AlphaRejection(int techIndex, int passIndex) const;
+    
+    /// Set alpha rejection threshold in the range of [0-255].
+    bool SetAlphaRejectionFunction(int techIndex, int passIndex, Ogre::CompareFunction func);
+    Ogre::CompareFunction AlphaRejectionFunction(int techIndex, int passIndex) const;
 
     /// Sets the hardware culling mode.
     /** See Ogre::CullingMode for @c mode. */
