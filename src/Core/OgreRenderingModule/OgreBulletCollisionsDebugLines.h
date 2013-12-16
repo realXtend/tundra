@@ -30,25 +30,33 @@ THE SOFTWARE.
 
 // Modified for use with realXtend Tundra.
 
-#ifndef _OgreBulletCollisions_DEBUGLines_H_
-#define _OgreBulletCollisions_DEBUGLines_H_
+#pragma once
+
+#include "OgreModuleApi.h"
+
+#include <OgreSimpleRenderable.h>
+#include <OgreHardwareVertexBuffer.h>
+#include <OgreColourValue.h>
+#include <OgreVector3.h>
 
 #define MATH_OGRE_INTEROP
-
-#include <Ogre.h>
 #include "Math/float3.h"
 #include "Color.h"
 
-/** @cond PRIVATE */
-struct DebugLine
+/// @cond PRIVATE
+
+struct OGRE_MODULE_API DebugLine
 {
+    DebugLine() {}
+    DebugLine(const Ogre::Vector3 &start, const Ogre::Vector3 &end, const Ogre::ColourValue &color) :
+        _start(start), _end(end), _color(color) {}
+
     Ogre::Vector3 _start;
     Ogre::Vector3 _end;
     Ogre::ColourValue _color;
 };
 
-//------------------------------------------------------------------------------------------------
-class DebugLines : public Ogre::SimpleRenderable
+class OGRE_MODULE_API DebugLines : public Ogre::SimpleRenderable
 {
 public:
     DebugLines(const std::string& name);
@@ -56,15 +64,16 @@ public:
 
     void addLine(const float3 &from, const float3 &to, const Color &color)
     {
-        DebugLine newLine;
-        newLine._start = from;
-        newLine._end = to;
-        newLine._color = color;
-        _lines.push_back(newLine);
+        _lines.push_back(DebugLine(from, to, color));
+    }
+    
+    void addLine(const DebugLine &line)
+    {
+        _lines.push_back(line);
     }
 
-    void draw ();
-    void clear ();
+    void draw();
+    void clear();
 
     Ogre::Real getSquaredViewDepth (const Ogre::Camera *cam) const;
     Ogre::Real getBoundingRadius (void) const;
@@ -73,5 +82,5 @@ protected:
     std::vector<DebugLine> _lines;
     Ogre::HardwareVertexBufferSharedPtr _vbuf;
 };
-/** @endcond */
-#endif //_OgreBulletCollisions_DEBUGLines_H_
+
+/// @endcond
