@@ -3,7 +3,6 @@
 
 #include "WebSocketServer.h"
 #include "WebSocketSyncManager.h"
-#include "WebSocketScriptTypeDefines.h"
 
 #include "Framework.h"
 #include "CoreDefines.h"
@@ -117,11 +116,6 @@ void WebSocketServerModule::OnSceneAdded(const QString &sceneName)
         return;
     if (sceneName == "TundraServer")
         syncManager_->RegisterToScene(framework_->Scene()->GetScene(sceneName));
-}
-
-void WebSocketServerModule::OnScriptEngineCreated(QScriptEngine *engine)
-{
-    RegisterWebSocketPluginMetaTypes(engine);
 }
 
 extern "C"

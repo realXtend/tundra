@@ -27,6 +27,8 @@
 #include "kNet/DataSerializer.h"
 #include "boost/weak_ptr.hpp"
 
+class QScriptEngine;
+
 namespace WebSocket
 {
     typedef shared_ptr<websocketpp::server<websocketpp::config::asio> > ServerPtr;
@@ -101,6 +103,9 @@ namespace WebSocket
         void SetActionSender(WebSocket::UserConnection *user);
         WebSocket::UserConnection *ActionSender() const;
         
+    private slots:
+        void OnScriptEngineCreated(QScriptEngine *engine);
+
     signals:
         /// The server has been started
         void ServerStarted();

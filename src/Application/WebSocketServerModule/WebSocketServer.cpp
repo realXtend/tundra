@@ -1,6 +1,7 @@
 
 #include "WebSocketServer.h"
 #include "WebSocketUserConnection.h"
+#include "WebSocketScriptTypeDefines.h"
 
 #include "Framework.h"
 #include "CoreDefines.h"
@@ -10,7 +11,7 @@
 #include "Profiler.h"
 #include "UniqueIdGenerator.h"
 #include "OgreMaterialUtils.h"
-
+#include "WebSocketScriptTypeDefines.h"
 #include "TundraMessages.h"
 #include "UserConnectedResponseData.h"
 #include "MsgLoginReply.h"
@@ -613,6 +614,12 @@ void Server::OnMessage(ConnectionHandle connection, MessagePtr data)
         events_ << event;
     }
 }
+
+void Server::OnScriptEngineCreated(QScriptEngine *engine)
+{
+    RegisterWebSocketPluginMetaTypes(engine);
+}
+
 
 /// \todo Implement actual registering of http handlers, for now disabled
 /*
