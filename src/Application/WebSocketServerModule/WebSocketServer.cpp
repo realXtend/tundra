@@ -62,8 +62,7 @@ void ServerThread::run()
     
     try
     {
-        while (!server_->stopped())
-            server_->poll();
+        server_->run();
     } 
     catch (const std::exception & e) 
     {
