@@ -10,6 +10,40 @@
 
 #include "MemoryLeakCheck.h"
 
+void UserConnection::Send(kNet::message_id_t id, const char* data, size_t numBytes, bool reliable, bool inOrder, unsigned long priority, unsigned long contentID)
+{
+    if (!data && numBytes)
+    {
+        LogError("UserConnection::Send: can not queue message, null data pointer with nonzero data size specified");
+        return;
+    }
+
+    if (!connection)
+    {
+        LogError("UserConnection::Send: can not queue message as connection is null");
+        return;
+    }
+
+    kNet::NetworkMessage* msg = connection->StartNewMessage(id, numBytes);
+    if (numBytes)
+        memcpy(msg->data, data, numBytes); /// \todo Copy should be optimized out
+    msg->reliable = reliable;
+    msg->inOrder = inOrder;
+    msg->priority = priority;
+    msg->contentID = contentID;
+    connection->EndAndQueueMessage(msg);
+}
+
+void UserConnection::Send(kNet::message_id_t id, bool reliable, bool inOrder, kNet::DataSerializer& ds, unsigned long priority, unsigned long contentID)
+{
+    Send(id, ds.GetData(), ds.BytesFilled(), reliable, inOrder, priority, contentID);
+}
+
+void UserConnection::EmitNetworkMessageReceived(kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
+{
+    emit NetworkMessageReceived(packetId, messageId, data, numBytes);
+}
+
 void UserConnection::Exec(Entity *entity, const QString &action, const QStringList &params)
 {
     if (entity)

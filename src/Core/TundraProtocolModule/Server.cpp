@@ -242,7 +242,6 @@ void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packe
     // If we are server, only allow the login message from an unauthenticated user
     if (messageId != MsgLogin::messageID && user->properties["authenticated"] != "true")
     {
-        UserConnectionPtr user = GetUserConnection(source);
         if (!user || user->properties["authenticated"] != "true")
         {
             ::LogWarning("Server: dropping message " + QString::number(messageId) + " from unauthenticated user.");
@@ -257,6 +256,7 @@ void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packe
     }
 
     emit MessageReceived(user.get(), packetId, messageId, data, numBytes);
+    user->EmitNetworkMessageReceived(packetId, messageId, data, numBytes);
 }
 
 void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
@@ -311,7 +311,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     MsgClientJoined joined;
     joined.userID = user->userID;
     foreach(const UserConnectionPtr &u, users)
-        u->connection->Send(joined);
+        u->Send(joined);
     
     // Advertise the users who already are in the world, to the new user
     foreach(const UserConnectionPtr &u, users)
@@ -343,7 +343,7 @@ void Server::HandleUserDisconnected(UserConnection* user)
     left.userID = user->userID;
     foreach(const UserConnectionPtr &u, AuthenticatedUsers())
         if (u->userID != user->userID)
-            u->connection->Send(left);
+            u->Send(left);
 
     emit UserDisconnected(user->userID, user);
 }

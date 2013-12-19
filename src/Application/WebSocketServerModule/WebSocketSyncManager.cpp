@@ -28,9 +28,6 @@
 
 #include <cstring>
 
-// This variable is used for the interpolation stop check
-UserConnection* currentSender = 0;
-
 namespace WebSocket
 {
 
@@ -196,7 +193,6 @@ void SyncManager::OnNetworkMessageReceived(UserConnection* source, kNet::message
     {
         LogError("Exception while handling scene sync network message " + QString::number(messageId) + ": " + QString(e.what()));
     }
-    currentSender = 0;
 }
 
 void SyncManager::OnUserConnected(WebSocket::UserConnection *connection, QVariantMap *data)

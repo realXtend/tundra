@@ -320,7 +320,7 @@ void AssetModule::HandleAssetDiscovery(kNet::MessageConnection* source, MsgAsset
     if (tundra->IsServer())
         foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
             if (userConn->connection != source)
-                userConn->connection->Send(msg);
+                userConn->Send(msg);
 
     // Then let assetAPI handle locally
     framework_->Asset()->HandleAssetDiscovery(assetRef, assetType);
@@ -340,7 +340,7 @@ void AssetModule::HandleAssetDeleted(kNet::MessageConnection* source, MsgAssetDe
     if (tundra->IsServer())
         foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
             if (userConn->connection != source)
-                userConn->connection->Send(msg);
+                userConn->Send(msg);
 
     // Then let assetAPI handle locally
     framework_->Asset()->HandleAssetDeleted(assetRef);
@@ -363,7 +363,7 @@ void AssetModule::OnAssetUploaded(const QString& assetRef)
     if (tundra->IsServer())
     {
         foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
-            userConn->connection->Send(msg);
+            userConn->Send(msg);
     }
     // If we are client, send to server
     else
@@ -390,7 +390,7 @@ void AssetModule::OnAssetDeleted(const QString& assetRef)
     if (tundra->IsServer())
     {
         foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
-            userConn->connection->Send(msg);
+            userConn->Send(msg);
     }
     // If we are client, send to server
     else
