@@ -14,17 +14,32 @@
 class Entity;
 class SceneSyncState;
 
+/// Protocol versioning for client connections.
+enum NetworkProtocolVersion
+{
+    ProtocolOriginal = 0x1
+};
+
+/// Highest supported protocol version in the build. Update this when a new protocol version is added
+const NetworkProtocolVersion cHighestSupportedProtocolVersion = ProtocolOriginal;
+
 /// Represents a client connection on the server side. May be subclassed by other networking implementations.
 class TUNDRAPROTOCOL_MODULE_API UserConnection : public QObject, public enable_shared_from_this<UserConnection>
 {
     Q_OBJECT
     Q_PROPERTY(int id READ ConnectionId)
+    Q_PROPERTY(int protocolVersion READ ProtocolVersion)
 
 public:
-    UserConnection() : userID(0) {}
+    UserConnection() : 
+        userID(0),
+        protocolVersion(ProtocolOriginal)
+    {}
 
     /// Returns the connection ID.
     u32 ConnectionId() const { return userID; }
+    /// Returns the protocol version.
+    NetworkProtocolVersion ProtocolVersion() const { return protocolVersion; }
 
     /// Message connection. Null if not a native connection
     Ptr(kNet::MessageConnection) connection;
@@ -36,6 +51,8 @@ public:
     LoginPropertyMap properties;
     /// Scene sync state, created and used by the SyncManager
     shared_ptr<SceneSyncState> syncState;
+    /// Network protocol version in use
+    NetworkProtocolVersion protocolVersion;
 
     /// Queue a network message to be sent to the client. All implementations may not use the reliable, inOrder, priority and contentID parameters.
     virtual void Send(kNet::message_id_t id, const char* data, size_t numBytes, bool reliable, bool inOrder, unsigned long priority = 100, unsigned long contentID = 0);
@@ -53,6 +70,8 @@ public:
 
     /// Trigger a network message signal. Called by the networking implementation.
     void EmitNetworkMessageReceived(kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes);
+
+    NetworkProtocolVersion ProtocolVersion() { return protocolVersion; }
 
 public slots:
     /// Execute an action on an entity, sent only to the specific user

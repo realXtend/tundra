@@ -46,6 +46,10 @@ Client::Client(TundraLogicModule* owner) :
     firstCameraUpdateSent_(false),
     client_id_(0)
 {
+    // Create "virtual" client->server connection & syncstate. Used by SyncManager
+    serverUserConnection_ = MAKE_SHARED(UserConnection);
+    serverUserConnection_->properties["authenticated"] = true;
+    serverUserConnection_->syncState = MAKE_SHARED(SceneSyncState, 0, false);
 }
 
 Client::~Client()
@@ -193,6 +197,7 @@ void Client::DoLogout(bool fail)
             ::LogInfo("Disconnected");
         }
         
+        serverUserConnection_->connection = 0;
         loginstate_ = NotConnected;
         client_id_ = 0;
         
@@ -274,7 +279,11 @@ void Client::CheckLogin()
             emit AboutToConnect(); // This signal is used as a 'function call'. Any interested party can fill in
             // new content to the login properties of the client object, which will then be sent out on the line below.
             msg.loginData = StringToBuffer(LoginPropertiesAsXml().toStdString());
-            connection->Send(msg);
+            DataSerializer ds(msg.Size() + 4);
+            msg.SerializeTo(ds);
+            // Add requested protocol version
+            ds.AddVLE<kNet::VLE8_16_32>(cHighestSupportedProtocolVersion);
+            connection->SendMessage(msg.messageID, msg.reliable, msg.inOrder, msg.priority, 0, ds.GetData(), ds.BytesFilled());
         }
         break;
     case LoggedIn:
@@ -349,17 +358,8 @@ void Client::GetCameraOrientation()
             cameraUpdateTimer->start(500);
     }
 
-    // Finally send the message
-    SendCameraOrientation(ds, msg);
-}
-
-void Client::SendCameraOrientation(kNet::DataSerializer ds, kNet::NetworkMessage *msg)
-{
-    Ptr(kNet::MessageConnection) connection = GetConnection();
-
     if (ds.BytesFilled() > 0)
         connection->EndAndQueueMessage(msg, ds.BytesFilled());
-
     else
         connection->FreeMessage(msg);
 }
@@ -408,8 +408,7 @@ void Client::HandleKristalliMessage(MessageConnection* source, packet_id_t packe
         break;
     case MsgLoginReply::messageID:
         {
-            MsgLoginReply msg(data, numBytes);
-            HandleLoginReply(source, msg);
+            HandleLoginReply(source, data, numBytes);
         }
         break;
     case MsgClientJoined::messageID:
@@ -425,7 +424,10 @@ void Client::HandleKristalliMessage(MessageConnection* source, packet_id_t packe
         }
         break;
     }
+
     emit NetworkMessageReceived(packetId, messageId, data, numBytes);
+    // SyncManager uses this route to handle messages
+    serverUserConnection_->EmitNetworkMessageReceived(packetId, messageId, data, numBytes);
 }
 
 void Client:: HandleCameraOrientationRequest(MessageConnection* /*source*/, const MsgCameraOrientationRequest& msg)
@@ -451,8 +453,18 @@ void Client:: HandleCameraOrientationRequest(MessageConnection* /*source*/, cons
     }
 }
 
-void Client::HandleLoginReply(MessageConnection* /*source*/, const MsgLoginReply& msg)
+void Client::HandleLoginReply(MessageConnection* /*source*/, const char *data, size_t numBytes)
 {
+    DataDeserializer dd(data, numBytes);
+    MsgLoginReply msg;
+    msg.DeserializeFrom(dd);
+
+    // Read optional protocol version
+    // Server can downgrade what we sent, but never upgrade
+    serverUserConnection_->protocolVersion = ProtocolOriginal;
+    if (dd.BytesLeft())
+        serverUserConnection_->protocolVersion = (NetworkProtocolVersion)dd.ReadVLE<kNet::VLE8_16_32>();
+
     if (msg.success)
     {
         loginstate_ = LoggedIn;
@@ -462,6 +474,9 @@ void Client::HandleLoginReply(MessageConnection* /*source*/, const MsgLoginReply
         // Note: create scene & send info of login success only on first connection, not on reconnect
         if (!reconnect_)
         {
+            // The connection is now live for use by eg. SyncManager
+            serverUserConnection_->connection = GetConnection();
+
             // Create a non-authoritative scene for the client
             ScenePtr scene = framework_->Scene()->CreateScene("TundraClient", true, false);
 

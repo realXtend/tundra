@@ -251,15 +251,14 @@ void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packe
     }
     else if (messageId == MsgLogin::messageID)
     {
-        MsgLogin msg(data, numBytes);
-        HandleLogin(source, msg);
+        HandleLogin(source, data, numBytes);
     }
 
     emit MessageReceived(user.get(), packetId, messageId, data, numBytes);
     user->EmitNetworkMessageReceived(packetId, messageId, data, numBytes);
 }
 
-void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
+void Server::HandleLogin(kNet::MessageConnection* source, const char* data, size_t numBytes)
 {
     UserConnectionPtr user = GetUserConnection(source);
     if (!user)
@@ -267,9 +266,23 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
         ::LogWarning("Server::HandleLogin: Login message from an unknown user.");
         return;
     }
-    
-    QDomDocument xml;
+
+    DataDeserializer dd(data, numBytes);
+
+    MsgLogin msg;
+    // Read login data (all clients)
+    msg.DeserializeFrom(dd);
     QString loginData = QString::fromStdString(BufferToString(msg.loginData));
+
+    // Read optional protocol version
+    if (dd.BytesLeft())
+        user->protocolVersion = (NetworkProtocolVersion)dd.ReadVLE<kNet::VLE8_16_32>();
+    
+    // Clamp version if not supported by server
+    if (user->protocolVersion > cHighestSupportedProtocolVersion)
+        user->protocolVersion = cHighestSupportedProtocolVersion;
+
+    QDomDocument xml;
     bool success = xml.setContent(loginData);
     if (!success)
         ::LogWarning("Server::HandleLogin: Received malformed XML login data from user " + QString::number(user->userID) + ".");
@@ -295,11 +308,11 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
         reply.userID = 0;
         QByteArray responseByteData = user->properties["reason"].toAscii();
         reply.loginReplyData.insert(reply.loginReplyData.end(), responseByteData.data(), responseByteData.data() + responseByteData.size());
-        user->connection->Send(reply);
+        user->Send(reply);
         return;
     }
     
-    ::LogInfo("User with connection ID " + QString::number(user->userID) + " logged in.");
+    ::LogInfo("User with connection ID " + QString::number(user->userID) + " and protocol version " + QString::number(user->protocolVersion) + " logged in.");
     
     // Allow entityactions & EC sync from now on
     MsgLoginReply reply;
@@ -319,7 +332,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
         {
             MsgClientJoined joined;
             joined.userID = u->userID;
-            user->connection->Send(joined);
+            user->Send(joined);
         }
     
     // Tell syncmanager of the new user
@@ -333,7 +346,12 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
 
     QByteArray responseByteData = responseData.responseData.toByteArray(-1);
     reply.loginReplyData.insert(reply.loginReplyData.end(), responseByteData.data(), responseByteData.data() + responseByteData.size());
-    user->connection->Send(reply);
+
+    // Send login reply, with protocol version accepted by the server appended
+    DataSerializer ds(reply.Size() + 4 + 4);
+    reply.SerializeTo(ds);
+    ds.AddVLE<kNet::VLE8_16_32>(user->protocolVersion); 
+    user->Send(reply.messageID, reply.reliable, reply.inOrder, ds, reply.priority);
 }
 
 void Server::HandleUserDisconnected(UserConnection* user)

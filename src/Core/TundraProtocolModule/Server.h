@@ -122,7 +122,7 @@ private slots:
 
 private:
     /// Handle a login message
-    void HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg);
+    void HandleLogin(kNet::MessageConnection* source, const char* data, size_t numBytes);
 
     UserConnectionWeakPtr actionSender;
     TundraLogicModule* owner_;

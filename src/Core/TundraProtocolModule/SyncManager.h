@@ -81,10 +81,6 @@ signals:
 private slots:
     /// Network message received from an user connection
     void HandleNetworkMessage(kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes);
-    /// Handle client connecting to the server.
-    void HandleClientConnected(UserConnectedResponseData*);
-    /// Handle client disconnecting from the server.
-    void HandleClientDisconnected();
 
     /// Trigger EC sync because of component attributes changing
     void OnAttributeChanged(IComponent* comp, IAttribute* attr, AttributeChange::Type change);

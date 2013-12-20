@@ -64,6 +64,9 @@ public:
         @todo Rename to Connection */
     kNet::MessageConnection* GetConnection();
 
+    /// Returns the "virtual" user connection object representing the server. This object will exist always, but its MessageConnection is null when not connected.
+    UserConnectionPtr ServerUserConnection() { return serverUserConnection_; }
+
     /// Logout immediately and delete the client scene content
     /** @param fail Pass in true if the logout was due to connection/login failure. False, if the connection was aborted deliberately by the client. */
     void DoLogout(bool fail = false);
@@ -153,10 +156,6 @@ private slots:
     void DelayedLogout();
 
 private:
-    /// Send camera orientation to the server
-    /// @todo SyncManager/InterestManager functionality. Move away from here.
-    void SendCameraOrientation(kNet::DataSerializer ds, kNet::NetworkMessage *msg);
-
     /// Handles pending login to server
     void CheckLogin();
 
@@ -165,7 +164,7 @@ private:
     void HandleCameraOrientationRequest(kNet::MessageConnection* source, const MsgCameraOrientationRequest& msg);
 
     /// Handles a loginreply message
-    void HandleLoginReply(kNet::MessageConnection* source, const MsgLoginReply& msg);
+    void HandleLoginReply(kNet::MessageConnection* source, const char *data, size_t numBytes);
 
     /// Handles a client joined message
     void HandleClientJoined(kNet::MessageConnection* source, const MsgClientJoined& msg);
@@ -193,6 +192,9 @@ private:
     bool sendCameraUpdates_;
     /// @todo SyncManager/InterestManager functionality. Move away from here.
     bool firstCameraUpdateSent_;
+
+    /// "Virtual" user connection representing the server and its syncstate (client only)
+    UserConnectionPtr serverUserConnection_;
 };
 
 }

@@ -127,16 +127,9 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     
     GetClientExtrapolationTime();
 
-    // Create client connection & syncstate
-    serverConnection_ = MAKE_SHARED(UserConnection);
-    serverConnection_->properties["authenticated"] = true;
-    serverConnection_->syncState = MAKE_SHARED(SceneSyncState, 0, false);
-
-    // Connect to client network messages
-    Client* client = owner_->GetClient().get();
-    connect(client, SIGNAL(NetworkMessageReceived(kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), this, SLOT(HandleNetworkMessage(kNet::packet_id_t, kNet::message_id_t, const char *, size_t)));
-    connect(client, SIGNAL(Connected(UserConnectedResponseData *)), this, SLOT(HandleClientConnected(UserConnectedResponseData *)));
-    connect(client, SIGNAL(Disconnected()), this, SLOT(HandleClientDisconnected()));
+    // Connect to network messages from the server
+    serverConnection_ = owner_->GetClient()->ServerUserConnection();
+    connect(serverConnection_.get(), SIGNAL(NetworkMessageReceived(kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), this, SLOT(HandleNetworkMessage(kNet::packet_id_t, kNet::message_id_t, const char *, size_t)));
 }
 
 SyncManager::~SyncManager()
@@ -277,10 +270,10 @@ void SyncManager::RegisterToScene(ScenePtr scene)
     if (previous)
     {
         disconnect(previous.get(), 0, this, 0);
-        serverConnection_->syncState->Clear();
-        serverConnection_->syncState->SetParentScene(SceneWeakPtr(scene));
     }
     
+    serverConnection_->syncState->Clear();
+    serverConnection_->syncState->SetParentScene(SceneWeakPtr(scene));
     scene_.reset();
     
     if (!scene)
@@ -314,15 +307,8 @@ void SyncManager::RegisterToScene(ScenePtr scene)
 void SyncManager::HandleNetworkMessage(kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
 {
     UserConnection* user = qobject_cast<UserConnection*>(sender());
-    if (!user)
-    {
-        // If the sender is not a userconnection, it's has to be from the client. Make sure the client's kNet connection is current
-        // so that we can send messages back to the server
-        user = serverConnection_.get();
-        // If have not registered to the scene yet (no loginreply), do not proceed
-        if (!scene_.lock().get() || !user->connection)
-            return;
-    }
+    if (!user || !scene_.lock().get())
+        return;
 
     try
     {
@@ -377,18 +363,6 @@ void SyncManager::HandleNetworkMessage(kNet::packet_id_t packetId, kNet::message
         LogError("Exception while handling scene sync network message " + QString::number(messageId) + ": " + QString(e.what()));
         user->Disconnect();
     }
-}
-
-void SyncManager::HandleClientConnected(UserConnectedResponseData*)
-{
-    // Update the kNet connection to use for server communication now
-    serverConnection_->connection = owner_->GetClient()->GetConnection();
-}
-
-void SyncManager::HandleClientDisconnected()
-{
-    // Let go of the kNet connection
-    serverConnection_->connection = 0;
 }
 
 void SyncManager::NewUserConnected(const UserConnectionPtr &user)
