@@ -295,7 +295,14 @@ void KristalliProtocolModule::StopServer()
     if (server)
     {
         network.StopServer();
-        connections.clear();
+        // We may have connections registered by other server modules. Only clear native connections
+        for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end();)
+        {
+            if ((*iter)->connectionType == ConnectionNative)
+                iter = connections.erase(iter);
+            else
+                ++iter;
+        }
         ::LogInfo("Server stopped");
         server = 0;
     }

@@ -224,6 +224,55 @@ kNet::NetworkServer *Server::GetServer() const
     return owner_->GetKristalliModule()->GetServer();
 }
 
+bool Server::AddExternalUser(UserConnectionPtr user)
+{
+    if (!user)
+    {
+        ::LogError("Null UserConnection passed to Server::AddExternalUser()");
+        return false;
+    }
+
+    // Allocate user connection if not yet allocated
+    if (user->userID == 0)
+        user->userID = owner_->GetKristalliModule()->AllocateNewConnectionID();
+
+    UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
+    users.push_back(user);
+
+    // Try to login
+    if (FinalizeLogin(user))
+        return true;
+    else
+    {
+        users.remove(user);
+        return false;
+    }
+}
+
+void Server::RemoveExternalUser(UserConnectionPtr user)
+{
+    if (!user)
+        return;
+
+    UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
+
+    // If user had zero ID, was not logged in yet and does not need to be reported
+    if (user->userID)
+    {
+        // Tell everyone of the client leaving
+        MsgClientLeft left;
+        left.userID = user->userID;
+        foreach(const UserConnectionPtr &u, AuthenticatedUsers())
+            if (u->userID != user->userID)
+                u->Send(left);
+    
+        emit UserDisconnected(user->userID, user.get());
+    }
+
+    users.remove(user);
+}
+
+
 void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
 {
     if (!source)
@@ -278,10 +327,6 @@ void Server::HandleLogin(kNet::MessageConnection* source, const char* data, size
     if (dd.BytesLeft())
         user->protocolVersion = (NetworkProtocolVersion)dd.ReadVLE<kNet::VLE8_16_32>();
     
-    // Clamp version if not supported by server
-    if (user->protocolVersion > cHighestSupportedProtocolVersion)
-        user->protocolVersion = cHighestSupportedProtocolVersion;
-
     QDomDocument xml;
     bool success = xml.setContent(loginData);
     if (!success)
@@ -298,6 +343,15 @@ void Server::HandleLogin(kNet::MessageConnection* source, const char* data, size
         keyvalueElem = keyvalueElem.nextSiblingElement();
     }
     
+    FinalizeLogin(user);
+}
+
+bool Server::FinalizeLogin(UserConnectionPtr user)
+{
+    // Clamp version if not supported by server
+    if (user->protocolVersion > cHighestSupportedProtocolVersion)
+        user->protocolVersion = cHighestSupportedProtocolVersion;
+
     user->properties["authenticated"] = "true";
     emit UserAboutToConnect(user->userID, user.get());
     if (user->properties["authenticated"] != "true")
@@ -309,7 +363,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const char* data, size
         QByteArray responseByteData = user->properties["reason"].toAscii();
         reply.loginReplyData.insert(reply.loginReplyData.end(), responseByteData.data(), responseByteData.data() + responseByteData.size());
         user->Send(reply);
-        return;
+        return false;
     }
     
     ::LogInfo("User with connection ID " + QString::number(user->userID) + " and protocol version " + QString::number(user->protocolVersion) + " logged in.");
@@ -344,7 +398,11 @@ void Server::HandleLogin(kNet::MessageConnection* source, const char* data, size
     UserConnectedResponseData responseData;
     emit UserConnected(user->userID, user.get(), &responseData);
 
-    QByteArray responseByteData = responseData.responseData.toByteArray(-1);
+    // \todo Web clients need JSON, native clients use XML
+    QByteArray responseByteData;
+    if (user->connectionType == ConnectionNative)
+        responseByteData = responseData.responseData.toByteArray(-1);
+
     reply.loginReplyData.insert(reply.loginReplyData.end(), responseByteData.data(), responseByteData.data() + responseByteData.size());
 
     // Send login reply, with protocol version accepted by the server appended

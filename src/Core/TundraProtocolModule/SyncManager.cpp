@@ -866,10 +866,15 @@ void SyncManager::Update(f64 frametime)
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
             if ((*i)->syncState)
             {
-                // First send out all changes to rigid bodies.
-                // After processing this function, the bits related to rigid body states have been cleared,
-                // so the generic sync will not double-replicate the rigid body positions and velocities.
-                ReplicateRigidBodyChanges((*i).get());
+                // As of now only native clients understand the optimized rigid body sync message.
+                // This may change with future protocol versions
+                if ((*i)->connectionType == ConnectionNative)
+                { 
+                    // First send out all changes to rigid bodies.
+                    // After processing this function, the bits related to rigid body states have been cleared,
+                    // so the generic sync will not double-replicate the rigid body positions and velocities.
+                    ReplicateRigidBodyChanges((*i).get());
+                }
                 ProcessSyncState((*i).get());
             }
     }
@@ -1584,54 +1589,84 @@ void SyncManager::ProcessSyncState(UserConnection* user)
                         }
                         if (changedAttributes_.size())
                         {
-                            // If first component for which attribute changes are sent, write the entity ID first
-                            if (!editAttrsDs.BytesFilled())
+                            /// @todo HACK for web clients while ReplicateRigidBodyChanges() is not implemented! 
+                            /// Don't send out minuscule pos/rot/scale changes as it spams the network.
+                            bool sendChanges = true;
+                            if (user->connectionType != ConnectionNative)
                             {
-                                editAttrsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
-                                editAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
-                            }
-                            editAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
-                            
-                            // Create a nested dataserializer for the actual attribute data, so we can skip components
-                            kNet::DataSerializer attrDataDs(attrDataBuffer_, 16 * 1024);
-                            
-                            // There are changed attributes. Check if it is more optimal to send attribute indices, or the whole bitmask
-                            unsigned bitsMethod1 = (unsigned)changedAttributes_.size() * 8 + 8;
-                            unsigned bitsMethod2 = (unsigned)attrs.size();
-                            // Method 1: indices
-                            if (bitsMethod1 <= bitsMethod2)
-                            {
-                                attrDataDs.Add<kNet::bit>(0);
-                                attrDataDs.Add<u8>((u8)changedAttributes_.size());
-                                for (unsigned i = 0; i < changedAttributes_.size(); ++i)
+                                if (comp->TypeId() == EC_Placeable::TypeIdStatic() && changedAttributes_.size() == 1 && changedAttributes_[0] == 0)
                                 {
-                                    attrDataDs.Add<u8>(changedAttributes_[i]);
-                                    attrs[changedAttributes_[i]]->ToBinary(attrDataDs);
-                                }
-                            }
-                            // Method 2: bitmask
-                            else
-                            {
-                                attrDataDs.Add<kNet::bit>(1);
-                                for (unsigned i = 0; i < attrs.size(); ++i)
-                                {
-                                    if (compState.dirtyAttributes[i >> 3] & (1 << (i & 7)))
+                                    // EC_Placeable::Transform is the only change!
+                                    EC_Placeable *placeable = dynamic_cast<EC_Placeable*>(comp.get());
+                                    if (placeable)
                                     {
-                                        attrDataDs.Add<kNet::bit>(1);
-                                        attrs[i]->ToBinary(attrDataDs);
+                                        const Transform &t = placeable->transform.Get();
+                                        bool posChanged = (t.pos.DistanceSq(entityState.transform.pos) > 1e-3f);
+                                        bool rotChanged = (t.rot.DistanceSq(entityState.transform.rot) > 1e-1f);
+                                        bool scaleChanged = (t.scale.DistanceSq(entityState.transform.scale) > 1e-3f);
+                                
+                                        if (!posChanged && !rotChanged && !scaleChanged) // Dont send anything!
+                                        {
+                                            //qDebug() << "EC_Placeable too small changes: " << t.pos.DistanceSq(entityState.transform.pos) << t.rot.DistanceSq(entityState.transform.rot) << t.scale.DistanceSq(entityState.transform.scale);
+                                            sendChanges = false;
+                                        }
+                                        else
+                                            entityState.transform = t; // Lets send the update. Update transform for the next above comparison.
                                     }
-                                    else
-                                        attrDataDs.Add<kNet::bit>(0);
                                 }
                             }
+
+                            if (sendChanges)
+                            {
+                                // If first component for which attribute changes are sent, write the entity ID first
+                                if (!editAttrsDs.BytesFilled())
+                                {
+                                    editAttrsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
+                                    editAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                                }
+                                editAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                             
-                            // Add the attribute data array to the main serializer
-                            editAttrsDs.AddVLE<kNet::VLE8_16_32>((u32)attrDataDs.BytesFilled());
-                            editAttrsDs.AddArray<u8>((unsigned char*)attrDataBuffer_, (u32)attrDataDs.BytesFilled());
+                                // Create a nested dataserializer for the actual attribute data, so we can skip components
+                                kNet::DataSerializer attrDataDs(attrDataBuffer_, 16 * 1024);
                             
-                            // Now zero out all remaining dirty bits
-                            for (unsigned i = 0; i < numBytes; ++i)
-                                compState.dirtyAttributes[i] = 0;
+                                // There are changed attributes. Check if it is more optimal to send attribute indices, or the whole bitmask
+                                unsigned bitsMethod1 = (unsigned)changedAttributes_.size() * 8 + 8;
+                                unsigned bitsMethod2 = (unsigned)attrs.size();
+                                // Method 1: indices
+                                if (bitsMethod1 <= bitsMethod2)
+                                {
+                                    attrDataDs.Add<kNet::bit>(0);
+                                    attrDataDs.Add<u8>((u8)changedAttributes_.size());
+                                    for (unsigned i = 0; i < changedAttributes_.size(); ++i)
+                                    {
+                                        attrDataDs.Add<u8>(changedAttributes_[i]);
+                                        attrs[changedAttributes_[i]]->ToBinary(attrDataDs);
+                                    }
+                                }
+                                // Method 2: bitmask
+                                else
+                                {
+                                    attrDataDs.Add<kNet::bit>(1);
+                                    for (unsigned i = 0; i < attrs.size(); ++i)
+                                    {
+                                        if (compState.dirtyAttributes[i >> 3] & (1 << (i & 7)))
+                                        {
+                                            attrDataDs.Add<kNet::bit>(1);
+                                            attrs[i]->ToBinary(attrDataDs);
+                                        }
+                                        else
+                                            attrDataDs.Add<kNet::bit>(0);
+                                    }
+                                }
+                            
+                                // Add the attribute data array to the main serializer
+                                editAttrsDs.AddVLE<kNet::VLE8_16_32>((u32)attrDataDs.BytesFilled());
+                                editAttrsDs.AddArray<u8>((unsigned char*)attrDataBuffer_, (u32)attrDataDs.BytesFilled());
+                            
+                                // Now zero out all remaining dirty bits
+                                for (unsigned i = 0; i < numBytes; ++i)
+                                    compState.dirtyAttributes[i] = 0;
+                            }
                         }
                     }
                     

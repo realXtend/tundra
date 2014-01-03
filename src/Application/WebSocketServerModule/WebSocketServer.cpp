@@ -13,6 +13,8 @@
 #include "OgreMaterialUtils.h"
 #include "WebSocketScriptTypeDefines.h"
 #include "TundraMessages.h"
+#include "TundraLogicModule.h"
+#include "Server.h"
 #include "UserConnectedResponseData.h"
 #include "MsgLoginReply.h"
 
@@ -108,21 +110,28 @@ Server::~Server()
 
 void Server::Update(float frametime)
 {
+    TundraLogic::TundraLogicModule* tundraLogic = framework_->Module<TundraLogicModule>();
+    TundraLogic::Server* tundraServer = tundraLogic->GetServer().get();
+
     // Clean dead requestedConnections
     if (!connections_.empty())
     {
         WebSocket::UserConnectionList::iterator cleanupIter = connections_.begin();
         while (cleanupIter != connections_.end())
         {
-            WebSocket::UserConnection *connection = (*cleanupIter);
+            WebSocket::UserConnectionPtr connection = *cleanupIter;
             if (!connection)
             {
                 cleanupIter = connections_.erase(cleanupIter);
             }
-            else if (connection->connection.expired())
+            else if (connection->webSocketConnection.expired())
             {
-                OnUserDisconnected(connection);
-                delete connection;
+                // If user was already registered to the Tundra server, remove from there
+                tundraServer->RemoveExternalUser(static_pointer_cast<::UserConnection>(connection));
+                if (!connection->userID)
+                    LogDebug(LC + QString("Removing non-logged in WebSocket connection."));
+                else
+                    LogInfo(LC + QString("Removing expired WebSocket connection with ID %1").arg(connection->userID));
                 cleanupIter = connections_.erase(cleanupIter);
             }
             else
@@ -154,10 +163,11 @@ void Server::Update(float frametime)
         {
             if (!UserConnection(event->connection))
             {
-                WebSocket::UserConnection *userConnection = new WebSocket::UserConnection(NextFreeConnectionId(), event->connection);
+                WebSocket::UserConnectionPtr userConnection(new WebSocket::UserConnection(event->connection));
                 connections_.push_back(userConnection);
 
-                LogDebug(LC + QString("New connection: id=%1 Connection count: %2").arg(userConnection->connectionId).arg(connections_.size()));
+                // The connection does not yet have an ID assigned. Tundra server will assign on login
+                LogDebug(LC + QString("New WebSocket connection."));
             }
         }
         // User disconnected
@@ -165,40 +175,22 @@ void Server::Update(float frametime)
         {
             for(UserConnectionList::iterator iter = connections_.begin(); iter != connections_.end(); ++iter)
             {
-                if (!(*iter) || (*iter)->Connection() != event->connection)
-                    continue;
-
-                WebSocket::UserConnection *userConnection = (*iter);
-
-                // Tell everyone of the client leaving
-                /// @todo At some point we might want to notify the native requestedConnections about the web client join/leave.
-                kNet::DataSerializer ds;
-                ds.Add<u16>(static_cast<u16>(cClientLeftMessage));
-                ds.Add<u32>(userConnection->connectionId);
-
-                for(UserConnectionList::const_iterator iterInner = connections_.begin(); iterInner != connections_.end(); ++iterInner)
-                    if ((*iterInner)->connectionId != userConnection->connectionId)
-                        (*iterInner)->Send(ds);
-
-                emit UserDisconnected(userConnection);
-
-                LogDebug(LC + QString("Removing connection: id=%1 Connection count: %2").arg(userConnection->connectionId).arg(connections_.size()-1));
-                
-                QString connectedUsername = userConnection->properties.value("username", "").toString();
-                if (connectedUsername.isEmpty())
-                    LogInfo(QString("[WEBSOCKET] ID %1 client disconnected").arg(userConnection->connectionId));
-                else
-                    LogInfo(QString("[WEBSOCKET] ID %1 client '%2' disconnected").arg(userConnection->connectionId).arg(connectedUsername));
-
-                SAFE_DELETE(userConnection);
-                connections_.erase(iter);
-                break;
+                if ((*iter) && (*iter)->WebSocketConnection() == event->connection)
+                {
+                    tundraServer->RemoveExternalUser(static_pointer_cast<::UserConnection>(*iter));
+                    if (!(*iter)->userID)
+                        LogDebug(LC + QString("Removing non-logged in WebSocket connection."));
+                    else
+                        LogInfo(LC + QString("Removing WebSocket connection with ID %1").arg((*iter)->userID));
+                    connections_.erase(iter);
+                    break;
+                }
             }
         }
         // Data message
         else if (event->type == SocketEvent::Data && event->data.get())
         {
-            WebSocket::UserConnection *userConnection = UserConnection(event->connection);
+            WebSocket::UserConnectionPtr userConnection = UserConnection(event->connection);
             if (userConnection)
             {
                 kNet::DataDeserializer dd(event->data->GetData(), event->data->BytesFilled());
@@ -213,135 +205,25 @@ void Server::Update(float frametime)
                     if (ok)
                     {
                         foreach(const QString &key, map.keys())
-                            userConnection->properties[key] = map[key];
+                            userConnection->properties[key] = map[key].toString();
                         userConnection->properties["authenticated"] = true;
-                        
-                        QString connectedUsername = userConnection->properties.value("username", "").toString();
-                        emit UserAboutToConnect(userConnection);
-
-                        // Connection was granted
-                        if (userConnection->properties["authenticated"].toBool())
+                        bool success = tundraServer->AddExternalUser(static_pointer_cast<::UserConnection>(userConnection));
+                        if (!success)
                         {
-                            if (connectedUsername.isEmpty())
-                                LogInfo(QString("[WEBSOCKET] ID %1 client connected").arg(userConnection->connectionId));
-                            else
-                                LogInfo(QString("[WEBSOCKET] ID %1 client '%2' connected").arg(userConnection->connectionId).arg(connectedUsername));
-
-                            kNet::DataSerializer dsJoined;
-                            dsJoined.Add<u16>(static_cast<u16>(cClientJoinedMessage));
-                            dsJoined.Add<u32>(userConnection->connectionId);
-
-                            for(UserConnectionList::const_iterator iter = connections_.begin(); iter != connections_.end(); ++iter)
-                            {
-                                // Tell everyone of the client joining (also the user who joined)
-                                (*iter)->Send(dsJoined);
-
-                                // Advertise the users who already are in the world, to the new user
-                                if ((*iter)->connectionId != userConnection->connectionId)
-                                {
-                                    kNet::DataSerializer dsAlreadyIn;
-                                    dsAlreadyIn.Add<u16>(static_cast<u16>(cClientJoinedMessage));
-                                    dsAlreadyIn.Add<u32>((*iter)->connectionId);
-
-                                    userConnection->Send(dsAlreadyIn);
-                                }
-                            }
-
-                            // Send login reply
-                            QVariantMap replyData;
-                            emit UserConnected(userConnection, &replyData);
-                            
-                            // Add storage data into the map (until AssetAPI does this for us
-                            AssetStoragePtr defaultStorage = framework_->Asset()->GetDefaultAssetStorage();
-                            if (defaultStorage.get())
-                            {
-                                QVariantMap storageData;
-                                storageData["default"] = true;
-                                storageData["name"] = defaultStorage->Name();
-                                storageData["type"] = defaultStorage->Type();
-                                storageData["src"] = defaultStorage->BaseURL();
-                                replyData["storage"] = storageData;
-                            }
-                            
-                            QByteArray responseByteData = TundraJson::Serialize(replyData, TundraJson::IndentNone);
-                            
-                            std::vector<s8> loginReplyData;
-                            loginReplyData.insert(loginReplyData.end(), responseByteData.data(), responseByteData.data() + responseByteData.size());
-
-                            kNet::DataSerializer ds;
-                            ds.Add<u16>(static_cast<u16>(cLoginReplyMessage));
-                            ds.Add<u8>(1); // success
-                            ds.Add<u32>(userConnection->connectionId);
-                            ds.Add<u16>(responseByteData.size());
-                            if (responseByteData.size() > 0)
-                                ds.AddArray<s8>(&loginReplyData[0], loginReplyData.size());
-
-                            userConnection->Send(ds);
-                        }
-                        // Connection was denied
-                        else
-                        {
-                            QByteArray reason = userConnection->properties.value("reason", "").toString().toUtf8();
-                            QString reasonLogString = reason.isEmpty() ? "Authentication failed" : reason;
-
-                            if (connectedUsername.isEmpty())
-                                LogInfo(QString("[WEBSOCKET] ID %1 client was denied access: ").arg(userConnection->connectionId) + reasonLogString);
-                            else
-                                LogInfo(QString("[WEBSOCKET] ID %1 client '%2' was denied access: ").arg(userConnection->connectionId).arg(connectedUsername) + reasonLogString);
-
-                            std::vector<s8> loginReplyData;
-                            loginReplyData.insert(loginReplyData.end(), reason.data(), reason.data() + reason.size());
-
-                            kNet::DataSerializer ds;
-                            ds.Add<u16>(static_cast<u16>(cLoginReplyMessage));
-                            ds.Add<u8>(0); // failure
-                            ds.Add<u32>(0);
-                            ds.Add<u16>(loginReplyData.size());
-                            if (loginReplyData.size() > 0)
-                                ds.AddArray<s8>(&loginReplyData[0], loginReplyData.size());
-
-                            userConnection->Send(ds);
+                            LogInfo(LC + QString("Connection ID %1 login refused").arg(userConnection->userID));
                             userConnection->DisconnectDelayed();
                         }
+                        else
+                            LogInfo(LC + QString("Connection ID %1 login successful").arg(userConnection->userID));
                     }
                 }
                 else
                 {
                     // Signal network message. As per kNet tradition the message ID is given separately in addition with the rest of the data
-                    NetworkMessageReceived(userConnection, messageId, event->data->GetData() + sizeof(u16), event->data->BytesFilled() - sizeof(u16));
+                    NetworkMessageReceived(userConnection.get(), messageId, event->data->GetData() + sizeof(u16), event->data->BytesFilled() - sizeof(u16));
+                    // Signal network message on the connection itself so that SyncManager etc. pick it up
+                    userConnection->EmitNetworkMessageReceived(0, messageId, event->data->GetData() + sizeof(u16), event->data->BytesFilled() - sizeof(u16));
                 }
-
-                /*
-                else if (messageId == cEntityActionMessage)
-                {
-                    MsgEntityAction msg;
-                    
-                    // Read data
-                    msg.entityId = dd.Read<u32>();
-                    u8 nameLen = dd.Read<u8>();
-                    if (nameLen > 0)
-                    {
-                        msg.name.resize(nameLen);
-                        dd.ReadArray<s8>(&msg.name[0], msg.name.size());
-                    }
-                    msg.executionType = dd.Read<u8>();
-                    u8 paramCount = dd.Read<u8>();
-                    for (int i=0; i<paramCount; ++i)
-                    {
-                        /// @note This is not VLE from web clients... yet
-                        u32 paramLen = dd.Read<u32>(); 
-                        if (paramLen > 0)
-                        {
-                            MsgEntityAction::S_parameters p;
-                            p.parameter.resize(paramLen);
-                            dd.ReadArray<s8>(&p.parameter[0], p.parameter.size());
-                            msg.parameters.push_back(p);
-                        }
-                    }
-
-                    emit ClientEntityAction(userConnection, msg);
-                }
-                */
             }
             else
                 LogError(LC + "Received message from unauthorized connection, ignoring.");
@@ -355,95 +237,24 @@ void Server::Update(float frametime)
     }
 }
 
-void Server::OnUserDisconnected(WebSocket::UserConnection *userConnection)
-{
-    if (!userConnection)
-        return;
-
-    // Tell everyone of the client leaving
-    /// @todo At some point we might want to notify the native requestedConnections about the web client join/leave.
-    kNet::DataSerializer ds;
-    ds.Add<u16>(static_cast<u16>(cClientLeftMessage));
-    ds.Add<u32>(userConnection->connectionId);
-
-    for(UserConnectionList::const_iterator iterInner = connections_.begin(); iterInner != connections_.end(); ++iterInner)
-        if ((*iterInner)->connectionId != userConnection->connectionId)
-            (*iterInner)->Send(ds);
-
-    emit UserDisconnected(userConnection);
-
-    LogDebug(LC + QString("Removing connection: id=%1 Connection count: %2").arg(userConnection->connectionId).arg(connections_.size()-1));
-    
-    QString connectedUsername = userConnection->properties.value("username", "").toString();
-    if (connectedUsername.isEmpty())
-        LogInfo(QString("[WEBSOCKET] ID %1 client disconnected").arg(userConnection->connectionId));
-    else
-        LogInfo(QString("[WEBSOCKET] ID %1 client '%2' disconnected").arg(userConnection->connectionId).arg(connectedUsername));
-}
-
-uint Server::NextFreeConnectionId() const
-{
-    UniqueIdGenerator g;
-    while (true)
-    {
-        uint id = g.AllocateLocal();
-        for(UserConnectionList::const_iterator iter = connections_.begin(); iter != connections_.end(); ++iter)
-        {
-            if ((*iter)->connectionId == id)
-            {
-                id = 0;
-                break;
-            }
-        }
-        if (id > 0)
-            return id;
-    }
-    
-    LogError(LC + "Failed to generate a sensible connection id, returning 0!");
-    return 0;
-}
-
-WebSocket::UserConnectionList Server::AuthenticatedUsers() const
-{
-    WebSocket::UserConnectionList authenticated;
-    for(WebSocket::UserConnectionList::const_iterator iter = connections_.begin(); iter != connections_.end(); ++iter)
-        if ((*iter)->properties.value("authenticated", false).toBool())
-            authenticated.push_back((*iter));
-    return authenticated;
-}
-
-WebSocket::UserConnectionList &Server::UserConnections()
-{
-    return connections_;
-}
-
-WebSocket::UserConnection *Server::UserConnection(uint connectionId)
+WebSocket::UserConnectionPtr Server::UserConnection(uint connectionId)
 {
     for(UserConnectionList::iterator iter = connections_.begin(); iter != connections_.end(); ++iter)
-        if ((*iter)->connectionId == connectionId)
+        if ((*iter)->userID == connectionId)
             return (*iter);
+
     return 0;
 }
 
-WebSocket::UserConnection *Server::UserConnection(ConnectionPtr connection)
+WebSocket::UserConnectionPtr Server::UserConnection(ConnectionPtr connection)
 {
     if (!connection.get())
         return 0;
 
     for(UserConnectionList::iterator iter = connections_.begin(); iter != connections_.end(); ++iter)
-        if ((*iter)->Connection().get() == connection.get())
+        if ((*iter)->WebSocketConnection().get() == connection.get())
             return (*iter);
     return 0;
-}
-
-void Server::SetActionSender(WebSocket::UserConnection *user)
-{
-    actionSender_ = user;
-}
-
-WebSocket::UserConnection *Server::ActionSender() const
-{
-    return actionSender_;
 }
 
 bool Server::Start()
@@ -517,8 +328,6 @@ void Server::Stop()
 
 void Server::Reset()
 {
-    foreach(WebSocket::UserConnection *connection, connections_)
-        SAFE_DELETE(connection);
     connections_.clear();
 
     server_.reset();

@@ -20,6 +20,13 @@ enum NetworkProtocolVersion
     ProtocolOriginal = 0x1
 };
 
+// Client connection type enumeration.
+enum UserConnectionType
+{
+    ConnectionNative = 0,
+    ConnectionWebSocket
+};
+
 /// Highest supported protocol version in the build. Update this when a new protocol version is added
 const NetworkProtocolVersion cHighestSupportedProtocolVersion = ProtocolOriginal;
 
@@ -29,17 +36,21 @@ class TUNDRAPROTOCOL_MODULE_API UserConnection : public QObject, public enable_s
     Q_OBJECT
     Q_PROPERTY(int id READ ConnectionId)
     Q_PROPERTY(int protocolVersion READ ProtocolVersion)
+    Q_PROPERTY(int connectionType READ ConnectionType)
 
 public:
     UserConnection() : 
         userID(0),
-        protocolVersion(ProtocolOriginal)
+        protocolVersion(ProtocolOriginal),
+        connectionType(ConnectionNative)
     {}
 
     /// Returns the connection ID.
     u32 ConnectionId() const { return userID; }
     /// Returns the protocol version.
     NetworkProtocolVersion ProtocolVersion() const { return protocolVersion; }
+    /// Returns connection type.
+    UserConnectionType ConnectionType() const { return connectionType; }
 
     /// Message connection. Null if not a native connection
     Ptr(kNet::MessageConnection) connection;
@@ -53,6 +64,8 @@ public:
     shared_ptr<SceneSyncState> syncState;
     /// Network protocol version in use
     NetworkProtocolVersion protocolVersion;
+    /// Type of the connection. Native can also be inferred from a non-null MessageConnection ptr
+    UserConnectionType connectionType;
 
     /// Queue a network message to be sent to the client. All implementations may not use the reliable, inOrder, priority and contentID parameters.
     virtual void Send(kNet::message_id_t id, const char* data, size_t numBytes, bool reliable, bool inOrder, unsigned long priority = 100, unsigned long contentID = 0);

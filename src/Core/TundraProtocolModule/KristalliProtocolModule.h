@@ -76,6 +76,9 @@ public:
     /// What trasport layer to use. Read on startup from "--protocol <udp|tcp>". Defaults to UDP if no start param was given.
     kNet::SocketTransportLayer defaultTransport;
 
+    /// Allocate a connection ID for new connection
+    u32 AllocateNewConnectionID() const;
+
 public slots:
     void OpenKNetLogWindow();
 
@@ -100,9 +103,6 @@ private:
     int reconnectAttempts;
 
     void PerformConnection();
-
-    /// Allocate a  connection ID for new connection
-    u32 AllocateNewConnectionID() const;
     
     /// If true, the connection attempt we've started has not yet been established, but is waiting
     /// for a transition to OK state. When this happens, the MsgLogin message is sent.

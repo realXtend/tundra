@@ -12,66 +12,50 @@
 namespace WebSocket
 {
 
-UserConnection::UserConnection(uint connectionId_, ConnectionPtr connection_) :
-    connectionId(connectionId_)
+UserConnection::UserConnection(ConnectionPtr connection_)
 {
-    connection = ConnectionWeakPtr(connection_);
+    webSocketConnection = ConnectionWeakPtr(connection_);
 }
 
 UserConnection::~UserConnection()
 {
-    connection.reset();
+    webSocketConnection.reset();
     syncState.reset();
 }
 
-uint UserConnection::ConnectionId()
+void UserConnection::Send(kNet::message_id_t id, const char* data, size_t numBytes, bool reliable, bool inOrder, unsigned long priority, unsigned long contentID)
 {
-    return connectionId;
+    kNet::DataSerializer ds(numBytes + 2);
+    ds.Add<u16>(id);
+    if (numBytes)
+        ds.AddAlignedByteArray(data, numBytes);
+    Send(ds);
 }
 
-ConnectionPtr UserConnection::Connection() const
+ConnectionPtr UserConnection::WebSocketConnection() const
 {
-    return connection.lock();
+    return webSocketConnection.lock();
 }
 
 void UserConnection::Send(const kNet::DataSerializer &data)
 {
-    if (connection.expired())
+    if (webSocketConnection.expired())
         return;
     if (data.BytesFilled() == 0)
         return;
     
-    connection.lock()->send(static_cast<void*>(data.GetData()), static_cast<uint64_t>(data.BytesFilled()));
-}
-
-void UserConnection::Exec(Entity *entity, const QString &action, const QStringList &params)
-{
-    if (entity)
-        emit ActionTriggered(this, entity, action, params);
-    else
-        LogWarning("WebSocket::UserConnection::Exec: null entity passed!");
-}
-
-void UserConnection::Exec(Entity *entity, const QString &action, const QString &p1, const QString &p2, const QString &p3)
-{
-    Exec(entity, action, QStringList(QStringList() << p1 << p2 << p3));
-}
-
-QString UserConnection::Property(const QString &key)
-{
-    return properties.value(key, "").toString();
-}
-
-void UserConnection::DenyConnection(const QString &reason)
-{
-    properties["authenticated"] = false;
-    properties["reason"] = reason;
+    webSocketConnection.lock()->send(static_cast<void*>(data.GetData()), static_cast<uint64_t>(data.BytesFilled()));
 }
 
 void UserConnection::Disconnect()
 {
-    if (!connection.expired())
-        connection.lock()->close(websocketpp::close::status::normal, "ok");
+    if (!webSocketConnection.expired())
+        webSocketConnection.lock()->close(websocketpp::close::status::normal, "ok");
+}
+
+void UserConnection::Close()
+{
+    Disconnect();
 }
 
 void UserConnection::DisconnectDelayed(int msec)
