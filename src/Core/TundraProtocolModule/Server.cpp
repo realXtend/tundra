@@ -20,6 +20,7 @@
 #include "ConfigAPI.h"
 #include "LoggingFunctions.h"
 #include "QScriptEngineHelpers.h"
+#include "CoreJsonUtils.h"
 
 #include <QtScript>
 #include <QDomDocument>
@@ -173,7 +174,7 @@ UserConnectionList Server::AuthenticatedUsers() const
 {
     UserConnectionList ret;
     foreach(const UserConnectionPtr &user, UserConnections())
-        if (user->properties["authenticated"] == "true")
+        if (user->properties["authenticated"] == true)
             ret.push_back(user);
     return ret;
 }
@@ -289,9 +290,9 @@ void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packe
     }
 
     // If we are server, only allow the login message from an unauthenticated user
-    if (messageId != MsgLogin::messageID && user->properties["authenticated"] != "true")
+    if (messageId != MsgLogin::messageID && user->properties["authenticated"] != true)
     {
-        if (!user || user->properties["authenticated"] != "true")
+        if (!user || user->properties["authenticated"] != true)
         {
             ::LogWarning("Server: dropping message " + QString::number(messageId) + " from unauthenticated user.");
             /// \todo something more severe, like disconnecting the user
@@ -352,15 +353,15 @@ bool Server::FinalizeLogin(UserConnectionPtr user)
     if (user->protocolVersion > cHighestSupportedProtocolVersion)
         user->protocolVersion = cHighestSupportedProtocolVersion;
 
-    user->properties["authenticated"] = "true";
+    user->properties["authenticated"] = true;
     emit UserAboutToConnect(user->userID, user.get());
-    if (user->properties["authenticated"] != "true")
+    if (user->properties["authenticated"] != true)
     {
         ::LogInfo("User with connection ID " + QString::number(user->userID) + " was denied access.");
         MsgLoginReply reply;
         reply.success = 0;
         reply.userID = 0;
-        QByteArray responseByteData = user->properties["reason"].toAscii();
+        QByteArray responseByteData = user->properties["reason"].toString().toAscii();
         reply.loginReplyData.insert(reply.loginReplyData.end(), responseByteData.data(), responseByteData.data() + responseByteData.size());
         user->Send(reply);
         return false;
@@ -398,10 +399,11 @@ bool Server::FinalizeLogin(UserConnectionPtr user)
     UserConnectedResponseData responseData;
     emit UserConnected(user->userID, user.get(), &responseData);
 
-    // \todo Web clients need JSON, native clients use XML
     QByteArray responseByteData;
     if (user->connectionType == ConnectionNative)
         responseByteData = responseData.responseData.toByteArray(-1);
+    else
+        responseByteData = TundraJson::Serialize(responseData.responseDataJson, TundraJson::IndentNone);
 
     reply.loginReplyData.insert(reply.loginReplyData.end(), responseByteData.data(), responseByteData.data() + responseByteData.size());
 
@@ -410,6 +412,9 @@ bool Server::FinalizeLogin(UserConnectionPtr user)
     reply.SerializeTo(ds);
     ds.AddVLE<kNet::VLE8_16_32>(user->protocolVersion); 
     user->Send(reply.messageID, reply.reliable, reply.inOrder, ds, reply.priority);
+
+    // Successful login
+    return true;
 }
 
 void Server::HandleUserDisconnected(UserConnection* user)
@@ -468,7 +473,7 @@ QScriptValue qScriptValueFromLoginPropertyMap(QScriptEngine *engine, const Login
     // Expose the login properties as a JavaScript _associative_ array.
     QScriptValue v = engine->newObject();
     for(LoginPropertyMap::const_iterator iter = map.begin(); iter != map.end(); ++iter)
-        v.setProperty((*iter).first, (*iter).second);
+        v.setProperty(iter.key(), qScriptValueFromValue(engine, iter.value()));
     return v;
 }
 
@@ -479,7 +484,7 @@ void qScriptValueToLoginPropertyMap(const QScriptValue &value, LoginPropertyMap 
     while(it.hasNext())
     {
         it.next();
-        map[it.name()] = it.value().toString();
+        map[it.name()] = it.value().toVariant();
     }
 }
 

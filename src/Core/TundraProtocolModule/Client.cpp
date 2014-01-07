@@ -209,7 +209,7 @@ void Client::DoLogout(bool fail)
     
     if (fail)
     {
-        QString failreason = LoginProperty("LoginFailed");
+        QString failreason = LoginProperty("LoginFailed").toString();
         emit LoginFailed(failreason);
     }
     else // An user deliberately disconnected from the world, and not due to a connection error.
@@ -233,23 +233,23 @@ bool Client::IsConnected() const
     return loginstate_ == LoggedIn;
 }
 
-void Client::SetLoginProperty(QString key, QString value)
+void Client::SetLoginProperty(QString key, QVariant value)
 {
     key = key.trimmed();
-    value = value.trimmed();
-    if (value.isEmpty())
-        properties.erase(key);
-    properties[key] = value;
+    if (value.isNull())
+        properties.erase(properties.find(key));
+    else
+        properties[key] = value;
 }
 
-QString Client::LoginProperty(QString key) const
+QVariant Client::LoginProperty(QString key) const
 {
     key = key.trimmed();
     LoginPropertyMap::const_iterator i = properties.find(key);
     if (i != properties.end())
-        return i->second;
+        return i.value();
     else
-        return "";
+        return QVariant();
 }
 
 QString Client::LoginPropertiesAsXml() const
@@ -258,8 +258,8 @@ QString Client::LoginPropertiesAsXml() const
     QDomElement rootElem = xml.createElement("login");
     for(LoginPropertyMap::const_iterator iter = properties.begin(); iter != properties.end(); ++iter)
     {
-        QDomElement elem = xml.createElement(iter->first);
-        elem.setAttribute("value", iter->second);
+        QDomElement elem = xml.createElement(iter.key());
+        elem.setAttribute("value", iter.value().toString());
         rootElem.appendChild(elem);
     }
     xml.appendChild(rootElem);
@@ -372,9 +372,9 @@ kNet::MessageConnection* Client::GetConnection()
 void Client::OnConnectionAttemptFailed()
 {
     // Provide a reason why the connection failed.
-    QString address = LoginProperty("address");
-    QString port = LoginProperty("port");
-    QString protocol = LoginProperty("protocol");
+    QString address = LoginProperty("address").toString();
+    QString port = LoginProperty("port").toString();
+    QString protocol = LoginProperty("protocol").toString();
 
     QString failReason = "Could not connect to host";
     if (!address.isEmpty())

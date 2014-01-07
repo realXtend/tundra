@@ -15,8 +15,6 @@
 #include "TundraMessages.h"
 #include "TundraLogicModule.h"
 #include "Server.h"
-#include "UserConnectedResponseData.h"
-#include "MsgLoginReply.h"
 
 #include "kNet/DataDeserializer.h"
 
@@ -205,7 +203,7 @@ void Server::Update(float frametime)
                     if (ok)
                     {
                         foreach(const QString &key, map.keys())
-                            userConnection->properties[key] = map[key].toString();
+                            userConnection->properties[key] = map[key];
                         userConnection->properties["authenticated"] = true;
                         bool success = tundraServer->AddExternalUser(static_pointer_cast<::UserConnection>(userConnection));
                         if (!success)

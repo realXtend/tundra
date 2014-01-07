@@ -231,6 +231,17 @@ void AssetModule::ServerNewUserConnected(u32 /*connectionID*/, UserConnection *c
         if (!defaultStorage->IsReplicated())
             LogWarning("Server specified the client to use the storage \"" + defaultStorage->Name() + "\" as default, but it is not a replicated storage!");
     }
+
+    // Fill the same data as JSON for web clients
+    if (connection->connectionType == ConnectionWebSocket)
+    {
+        QVariantMap storageData;
+        storageData["default"] = true;
+        storageData["name"] = defaultStorage->Name();
+        storageData["type"] = defaultStorage->Type();
+        storageData["src"] = defaultStorage->BaseURL();
+        responseData->responseDataJson["storage"] = storageData;
+    }
 }
 
 void AssetModule::DetermineStorageTrustStatus(AssetStoragePtr storage)

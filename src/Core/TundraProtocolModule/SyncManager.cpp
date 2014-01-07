@@ -646,7 +646,7 @@ void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const
         msg.executionType = (u8)EntityAction::Local; // Propagate as local actions.
         foreach(UserConnectionPtr c, owner_->GetServer()->UserConnections())
         {
-            if (c->properties["authenticated"] == "true")
+            if (c->properties["authenticated"] == true)
                 c->Send(msg);
         }
     }
@@ -660,7 +660,7 @@ void SyncManager::OnUserActionTriggered(UserConnection* user, Entity *entity, co
     bool isServer = owner_->IsServer();
     if (!isServer)
         return; // Should never happen
-    if (user->properties["authenticated"] != "true")
+    if (user->properties["authenticated"] != true)
         return; // Not yet authenticated, do not receive actions
     
     // Craft EntityAction message.
@@ -1733,7 +1733,7 @@ bool SyncManager::ValidateAction(UserConnection* source, unsigned /*messageID*/,
         return true;
     
     // And for now, always also trust scene actions from clients, if they are known and authenticated
-    if (source->properties["authenticated"] != "true")
+    if (source->properties["authenticated"] != true)
         return false;
     
     return true;

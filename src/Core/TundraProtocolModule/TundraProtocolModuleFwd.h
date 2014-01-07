@@ -10,7 +10,7 @@
 
 #include <kNetFwd.h>
 
-#include <map>
+#include <QVariantMap>
 
 class KristalliProtocolModule;
 
@@ -34,7 +34,7 @@ struct EntitySyncState;
 struct ComponentSyncState;
 struct UserConnectedResponseData;
 
-typedef std::map<QString, QString> LoginPropertyMap; ///< propertyName-propertyValue map of login properties.
+typedef QVariantMap LoginPropertyMap; ///< propertyName-propertyValue map of login properties.
 
 struct MsgLogin;
 struct MsgLoginReply;

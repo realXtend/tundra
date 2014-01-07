@@ -98,7 +98,7 @@ public slots:
     void SetProperty(const QString& key, const QString& value);
 
     /// Returns a property
-    QString Property(const QString& key) const;
+    QVariant Property(const QString& key) const;
 
     /// Returns all the login properties that were used to login to the server.
     LoginPropertyMap LoginProperties() const { return properties; }
@@ -114,7 +114,7 @@ public slots:
 
     u32 GetConnectionID() const { return ConnectionId(); }  /**< @deprecated Use ConnectionId or 'id' @todo Add warning print */
     QString GetLoginData() const { return LoginData(); }  /**< @deprecated Use LoginData @todo Add warning print */
-    QString GetProperty(const QString& key) const { return Property(key); } /**< @deprecated Use Property @todo Add warning print */
+    QString GetProperty(const QString& key) const { return Property(key).toString(); } /**< @deprecated Use Property @todo Add warning print */
 
 signals:
     /// Emitted when action has been triggered for this specific user connection.

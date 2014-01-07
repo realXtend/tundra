@@ -62,20 +62,20 @@ void UserConnection::SetProperty(const QString& key, const QString& value)
     properties[key] = value;
 }
 
-QString UserConnection::Property(const QString& key) const
+QVariant UserConnection::Property(const QString& key) const
 {
     static QString empty;
     
     LoginPropertyMap::const_iterator i = properties.find(key);
     if (i != properties.end())
-        return i->second;
+        return i.value();
     else
         return empty;
 }
 
 void UserConnection::DenyConnection(const QString &reason)
 {
-    properties["authenticated"] = "false";
+    properties["authenticated"] = false;
     properties["reason"] = reason;
 }
 
