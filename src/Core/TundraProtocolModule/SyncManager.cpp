@@ -1662,11 +1662,11 @@ void SyncManager::ProcessSyncState(UserConnection* user)
                                 // Add the attribute data array to the main serializer
                                 editAttrsDs.AddVLE<kNet::VLE8_16_32>((u32)attrDataDs.BytesFilled());
                                 editAttrsDs.AddArray<u8>((unsigned char*)attrDataBuffer_, (u32)attrDataDs.BytesFilled());
-                            
-                                // Now zero out all remaining dirty bits
-                                for (unsigned i = 0; i < numBytes; ++i)
-                                    compState.dirtyAttributes[i] = 0;
                             }
+
+                            // Now zero out all remaining dirty bits
+                            for (unsigned i = 0; i < numBytes; ++i)
+                                compState.dirtyAttributes[i] = 0;
                         }
                     }
                     

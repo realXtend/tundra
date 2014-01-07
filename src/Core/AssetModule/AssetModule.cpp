@@ -199,8 +199,13 @@ void AssetModule::ServerNewUserConnected(u32 /*connectionID*/, UserConnection *c
     doc.appendChild(assetRoot);
     
     // Did we get a new user from the same computer the server is running at?
-    bool isLocalhostConnection = (connection->connection->RemoteEndPoint().IPToString() == "127.0.0.1" || 
-        connection->connection->LocalEndPoint().IPToString() == connection->connection->RemoteEndPoint().IPToString());
+    bool isLocalhostConnection = false;
+    // Web clients will have null connection
+    if (connection->connection)
+    {
+        isLocalhostConnection = (connection->connection->RemoteEndPoint().IPToString() == "127.0.0.1" || 
+            connection->connection->LocalEndPoint().IPToString() == connection->connection->RemoteEndPoint().IPToString());
+    }
 
     // Serialize all storages to the client. If the client is from the same computer than the server, we can also serialize the LocalAssetStorages.
     std::vector<AssetStoragePtr> storages = framework_->Asset()->GetAssetStorages();

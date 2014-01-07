@@ -15,6 +15,7 @@ namespace WebSocket
 UserConnection::UserConnection(ConnectionPtr connection_)
 {
     webSocketConnection = ConnectionWeakPtr(connection_);
+    connectionType = ConnectionWebSocket;
 }
 
 UserConnection::~UserConnection()
