@@ -20,7 +20,7 @@ function OnEntityCreated(entity, change)
 
 function OnInputMapAction()
 {
-    me.Exec(EntityAction.Local, PlaySound");
+    me.Exec(EntityAction.Local, "PlaySound");
 }
 
 scene.ComponentAdded.connect(OnComponentAdded);
