@@ -161,7 +161,7 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
     // Others may have been added before calling this function.
     SetLoginProperty("protocol", QString(SocketTransportLayerToString(protocol).c_str()).toLower());
     SetLoginProperty("address", address);
-    SetLoginProperty("port", QString::number(port));
+    SetLoginProperty("port", port);
     SetLoginProperty("client-version", Application::Version());
     SetLoginProperty("client-name", Application::ApplicationName());
     SetLoginProperty("client-organization", Application::OrganizationName());
