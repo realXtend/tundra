@@ -1,3 +1,6 @@
+// TODO This script can be considered deprecated and it will be removed at some point.
+// The logic this script performs should not be relied upon in any application script.
+
 var inputContext = input.RegisterInputContextRaw("fpsMouseLook", 150);
 inputContext.SetTakeMouseEventsOverQt(true);
 inputContext.MouseEventReceived.connect(MouseEvent);
@@ -26,11 +29,14 @@ function MouseEvent(event)
             avatarCameraActiveInFps = avatarCamera.camera.IsActive() && userAvatar.dynamicComponent.Attribute("cameraDistance") < 0;
     }
 
-    // RMB pressed
-    if (event.GetEventType() == 3 && event.GetMouseButton() == 2 && input.IsMouseCursorVisible())
+    if (event.eventType == MouseEvent.MousePressed && event.button == MouseEvent.RightButton &&
+        input.IsMouseCursorVisible())
+    {
         input.SetMouseCursorVisible(false);
-    // RMB released
-    else if (event.GetEventType() == 4 && event.GetMouseButton() == 2 && !input.IsMouseCursorVisible())
-        if (!avatarCameraActiveInFps)
-            input.SetMouseCursorVisible(true);
+    }
+    else if (event.eventType == MouseEvent.MouseReleased && event.button == MouseEvent.RightButton &&
+        !input.IsMouseCursorVisible() && !avatarCameraActiveInFps)
+    {
+        input.SetMouseCursorVisible(true);
+    }
 }
