@@ -32,7 +32,7 @@ if (server.IsRunning())
 else // client
 {
     inputContext = input.RegisterInputContextRaw("AvatarApplication", 102);
-    inputContext.KeyPressed.connect(function(e) { if (e.HasCtrlModifier() && e.keyCode == Qt.Key_Tab) me.Exec(1, "ToggleCamera") } );
+    inputContext.KeyPressed.connect(function(e) { if (e.HasCtrlModifier() && e.keyCode == Qt.Key_Tab) me.Exec(EntityAction.Local, "ToggleCamera") } );
     me.Action("ToggleCamera").Triggered.connect(ClientHandleToggleCamera);
 }
 
@@ -78,7 +78,7 @@ function ClientHandleToggleCamera() {
     }
     
     // Ask entity to check his camera state
-    avatarEnt.Exec(1, "CheckState");
+    avatarEnt.Exec(EntityAction.Local, "CheckState");
 }
 
 function ServerHandleUserAboutToConnect(connectionID, user) {

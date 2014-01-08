@@ -47,7 +47,7 @@ function collision (otherEntity, pos, normal, distance, impulse, newCollision) {
 
         // To play a sound clip stored to EC_Sound, do the following.
         me.sound.soundRef = "local://Collision.ogg";
-        me.Exec(1, "PlaySound");
+        me.Exec(EntityAction.Local, "PlaySound");
     }
 }
 
@@ -60,5 +60,5 @@ function entityClicked() {
     // To play a sound clip stored to EC_Sound, do the following.
     me.sound.soundRef = sndref;
     print(me.sound.soundRef.ref);
-    me.Exec(1, "PlaySound");
+    me.Exec(EntityAction.Local, "PlaySound");
 }
