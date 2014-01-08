@@ -59,6 +59,8 @@ public:
     bool AddExternalUser(UserConnectionPtr user);
     /// Remove a user from external networking subsystem
     void RemoveExternalUser(UserConnectionPtr user);
+    /// Emit network message received on behalf of an external networking subsystem. Packet id should be left zero if not supported.
+    void EmitNetworkMessageReceived(UserConnection *connection, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);
 
 public slots:
     /// Create server scene & start server

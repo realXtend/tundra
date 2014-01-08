@@ -304,8 +304,19 @@ void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packe
         HandleLogin(source, data, numBytes);
     }
 
-    emit MessageReceived(user.get(), packetId, messageId, data, numBytes);
-    user->EmitNetworkMessageReceived(packetId, messageId, data, numBytes);
+    EmitNetworkMessageReceived(user.get(), packetId, messageId, data, numBytes);
+}
+
+void Server::EmitNetworkMessageReceived(UserConnection* user, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
+{
+    if (user)
+    {
+        // Emit both global and user-specific message
+        emit MessageReceived(user, packetId, messageId, data, numBytes);
+        user->EmitNetworkMessageReceived(packetId, messageId, data, numBytes);
+    }
+    else
+        ::LogWarning("Server::EmitNetworkMessageReceived: null UserConnection pointer");
 }
 
 void Server::HandleLogin(kNet::MessageConnection* source, const char* data, size_t numBytes)
