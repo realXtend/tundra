@@ -253,7 +253,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     QScriptValue mathNamespace = engine->newObject();
     mathNamespace.setProperty("SetMathBreakOnAssume", engine->newFunction(math_SetMathBreakOnAssume, 1), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     mathNamespace.setProperty("MathBreakOnAssume", engine->newFunction(math_MathBreakOnAssume, 0), QScriptValue::Undeletable | QScriptValue::ReadOnly);
-    engine->globalObject().setProperty("math", mathNamespace);
+    engine->globalObject().setProperty("math", mathNamespace, QScriptValue::Undeletable | QScriptValue::ReadOnly);
 
     // Input metatypes.
     qScriptRegisterQObjectMetaType<MouseEvent*>(engine);
@@ -262,6 +262,33 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<InputContext*>(engine);
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<InputContext>, qScriptValueToBoostSharedPtr<InputContext>);
     qScriptRegisterMetaType<InputAPI::KeyBindingMap>(engine, qScriptValueFromKeyBindingMap, qScriptValueToKeyBindingMap);
+
+    /// @todo Investigate whether or not the enum name-value mapping can be auto-exposed to QtScript.
+    QScriptValue mouseEventNs = engine->newObject();
+    mouseEventNs.setProperty("NoButton", MouseEvent::NoButton, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    mouseEventNs.setProperty("LeftButton", MouseEvent::LeftButton, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    mouseEventNs.setProperty("RightButton", MouseEvent::RightButton, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    mouseEventNs.setProperty("MiddleButton", MouseEvent::MiddleButton, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    mouseEventNs.setProperty("Button4", MouseEvent::Button4, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    mouseEventNs.setProperty("Button5", MouseEvent::Button5, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    mouseEventNs.setProperty("MaxButtonMask", MouseEvent::MaxButtonMask, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    mouseEventNs.setProperty("MouseEventInvalid", MouseEvent::MouseEventInvalid, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    mouseEventNs.setProperty("MouseMove", MouseEvent::MouseMove, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    mouseEventNs.setProperty("MouseScroll", MouseEvent::MouseScroll, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    mouseEventNs.setProperty("MousePressed", MouseEvent::MousePressed, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    mouseEventNs.setProperty("MouseReleased", MouseEvent::MouseReleased, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    mouseEventNs.setProperty("MouseDoubleClicked", MouseEvent::MouseDoubleClicked, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    mouseEventNs.setProperty("PressOriginNone", MouseEvent::PressOriginNone, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    mouseEventNs.setProperty("PressOriginScene", MouseEvent::PressOriginScene, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    mouseEventNs.setProperty("PressOriginQtWidget", MouseEvent::PressOriginQtWidget, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("MouseEvent", mouseEventNs, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+
+    QScriptValue keyEventNs = engine->newObject();
+    keyEventNs.setProperty("KeyEventInvalid", KeyEvent::KeyEventInvalid, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    keyEventNs.setProperty("KeyPressed", KeyEvent::KeyPressed, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    keyEventNs.setProperty("KeyDown", KeyEvent::KeyDown, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    keyEventNs.setProperty("KeyReleased", KeyEvent::KeyReleased, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("KeyEvent", keyEventNs, QScriptValue::Undeletable | QScriptValue::ReadOnly);
 
     // Scene metatypes.
     qScriptRegisterQObjectMetaType<SceneAPI*>(engine);
@@ -273,9 +300,31 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<IComponent*>(engine);
     qScriptRegisterMetaType(engine, toScriptValueEnum<AttributeChange::Type>, fromScriptValueEnum<AttributeChange::Type>);
     qScriptRegisterMetaType(engine, toScriptValueEnum<EntityAction::ExecType>, fromScriptValueEnum<EntityAction::ExecType>);
-
     qScriptRegisterMetaType(engine, toScriptU32OrSmaller<entity_id_t>, fromScriptUInt<entity_id_t>);
     qScriptRegisterMetaType(engine, toScriptU32OrSmaller<component_id_t>, fromScriptUInt<component_id_t>);
+
+    // NOTE For some reason attribute change mode is exposed weirdly to QtScript, hence the 'value' property.
+    QScriptValue attributeChangeNs = engine->newObject();
+    QScriptValue attributeChange0 = engine->newObject();
+    attributeChange0.setProperty("value", AttributeChange::Default, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    QScriptValue attributeChange1 = engine->newObject();
+    attributeChange1.setProperty("value", AttributeChange::Disconnected, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    QScriptValue attributeChange2 = engine->newObject();
+    attributeChange2.setProperty("value", AttributeChange::LocalOnly, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    QScriptValue attributeChange3 = engine->newObject();
+    attributeChange3.setProperty("value", AttributeChange::Replicate, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    attributeChangeNs.setProperty("Default", attributeChange0, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    attributeChangeNs.setProperty("Disconnected", attributeChange1, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    attributeChangeNs.setProperty("LocalOnly", attributeChange2, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    attributeChangeNs.setProperty("Replicate", attributeChange3, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("AttributeChange", attributeChangeNs, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+
+    QScriptValue entityActionNs = engine->newObject();
+    entityActionNs.setProperty("Invalid", EntityAction::Invalid, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    entityActionNs.setProperty("Local", EntityAction::Local, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    entityActionNs.setProperty("Server", EntityAction::Server, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    entityActionNs.setProperty("Peers", EntityAction::Peers, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("EntityAction", entityActionNs, QScriptValue::Undeletable | QScriptValue::ReadOnly);
 
     // Framework metatypes.
     qScriptRegisterQObjectMetaType<Framework*>(engine);
@@ -302,19 +351,10 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAssetUploadTransfer>, qScriptValueToBoostSharedPtr<IAssetUploadTransfer>);
     qScriptRegisterQObjectMetaType<IAssetStorage*>(engine);
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAssetStorage>, qScriptValueToBoostSharedPtr<IAssetStorage>);
-/*
-    qRegisterMetaType<AssetStoragePtr>("ScriptAssetPtr");
-    qScriptRegisterQObjectMetaType<ScriptAsset*>(engine);
-    qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<ScriptAsset>, qScriptValueToBoostSharedPtr<ScriptAsset>);
-*/
     qScriptRegisterQObjectMetaType<AssetCache*>(engine);
-
     qScriptRegisterMetaType<AssetMap>(engine, qScriptValueFromAssetMap, qScriptValueToAssetMap);
-
     qScriptRegisterMetaType<AssetTransferMap>(engine, qScriptValueFromAssetTransferMap, qScriptValueToAssetTransferMap);
-
     qScriptRegisterMetaType<AssetStorageVector>(engine, qScriptValueFromAssetStoragePtrVector, qScriptValueToAssetStoragePtrVector);
-
     qScriptRegisterMetaType(engine, toScriptValueEnum<IAssetStorage::ChangeType>, fromScriptValueEnum<IAssetStorage::ChangeType>);
     qScriptRegisterMetaType(engine, toScriptValueEnum<IAssetStorage::TrustState>, fromScriptValueEnum<IAssetStorage::TrustState>);
 
