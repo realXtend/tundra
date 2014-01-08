@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in LICENSE
+
 // A startup script that hooks to scene added & scene cleared signals, and creates a local freelook camera upon either signal.
 // Also adds Locate functionality to the SceneStructureWindow.
 
@@ -7,7 +9,7 @@ if (!framework.IsHeadless())
     engine.ImportExtension("qt.gui");
     
     ui.ContextMenuAboutToOpen.connect(OnContextMenu);
-    framework.Scene().SceneAdded.connect(OnSceneAdded);
+    framework.Scene().SceneCreated.connect(OnSceneAdded);
 }
 
 var scene = null;
@@ -17,16 +19,12 @@ var entityLocatePosition = new float3(0, 0, 0);
 var entityLocateDistance = 0;
 var entityLocateMinDistance = 10.0; // Be at least this distance away from the object's bounding box when locating it
 
-function OnSceneAdded(scenename)
+function OnSceneAdded(newScene)
 {
-    // Get pointer to scene through framework
-    scene = framework.Scene().GetScene(scenename);
-    if (scene != null)
-    {
-        scene.SceneCleared.connect(OnSceneCleared);
-        scene.EntityCreated.connect(OnEntityCreated)
-        CreateCamera(scene);
-    }
+    scene = newScene;
+    scene.SceneCleared.connect(OnSceneCleared);
+    scene.EntityCreated.connect(OnEntityCreated)
+    CreateCamera(scene);
 }
 
 function OnSceneCleared(scene)

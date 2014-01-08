@@ -36,14 +36,12 @@ if (connectArg.length > 0)
     console.LogInfo("User '" + username + "' connecting to " + address + ":" + port + " using " + protocol);
 }
 
-framework.Scene().SceneAdded.connect(OnSceneAdded);
-
-var scene;
-function OnSceneAdded(scenename)
+var scene = null;
+framework.Scene().SceneCreated.connect(function(newScene)
 {
-    scene = framework.Scene().GetScene(scenename);
+    scene = newScene;
     scene.EntityCreated.connect(OnEntityCreated);
-}
+});
 
 function OnEntityCreated(entity, change)
 {

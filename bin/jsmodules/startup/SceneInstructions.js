@@ -37,7 +37,7 @@ if (!framework.IsHeadless())
         if ((!mainCameraScene && !input.ItemAtCoords(ui.GraphicsScene().sceneRect.toRect().center())) || sceneLoadFailed )
         {
             ShowSceneInstructions(sceneLoadFailed, startupScenes);
-            framework.Scene().SceneAdded.connect(HideSceneInstructions);
+            framework.Scene().SceneCreated.connect(HideSceneInstructions);
         }
     });
 

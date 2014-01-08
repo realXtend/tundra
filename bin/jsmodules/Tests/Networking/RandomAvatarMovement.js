@@ -1,14 +1,13 @@
-framework.Scene().SceneAdded.connect(OnSceneAdded);
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 var scene = null;
 var avatarEntityId = 0;
 
-function OnSceneAdded(scenename)
+framework.Scene().SceneCreated.connect(function(newScene)
 {
-    // Get pointer to scene through framework
-    scene = framework.Scene().GetScene(scenename);
+    scene = newScene;
     scene.EntityCreated.connect(OnEntityCreated);
-}
+});
 
 function OnEntityCreated(entity, change)
 {
