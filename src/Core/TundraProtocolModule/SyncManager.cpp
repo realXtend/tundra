@@ -1255,7 +1255,7 @@ void SyncManager::HandleRigidBodyChanges(UserConnection* source, kNet::packet_id
                 RigidBodyInterpolationState &interp = iter->second;
 
                 kNetUserConnection* kNetSource = dynamic_cast<kNetUserConnection*>(source);
-                kNet::MessageConnection* conn = kNetSource ? kNetSource->connection : 0;
+                kNet::MessageConnection* conn = kNetSource ? kNetSource->connection : (kNet::MessageConnection*)0;
                 if (conn && conn->GetSocket() && conn->GetSocket()->TransportLayer() == kNet::SocketOverUDP)
                 {
                     if (kNet::PacketIDIsNewerThan(interp.lastReceivedPacketCounter, packetId))
