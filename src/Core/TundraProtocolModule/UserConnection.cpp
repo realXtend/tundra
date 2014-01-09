@@ -55,17 +55,17 @@ void UserConnection::DenyConnection(const QString &reason)
     properties["reason"] = reason;
 }
 
-void kNetUserConnection::Send(kNet::message_id_t id, const char* data, size_t numBytes, bool reliable, bool inOrder, unsigned long priority, unsigned long contentID)
+void KNetUserConnection::Send(kNet::message_id_t id, const char* data, size_t numBytes, bool reliable, bool inOrder, unsigned long priority, unsigned long contentID)
 {
     if (!data && numBytes)
     {
-        LogError("kNetUserConnection::Send: can not queue message, null data pointer with nonzero data size specified");
+        LogError("KNetUserConnection::Send: can not queue message, null data pointer with nonzero data size specified");
         return;
     }
 
     if (!connection)
     {
-        LogError("kNetUserConnection::Send: can not queue message as MessageConnection is null");
+        LogError("KNetUserConnection::Send: can not queue message as MessageConnection is null");
         return;
     }
 
@@ -79,13 +79,13 @@ void kNetUserConnection::Send(kNet::message_id_t id, const char* data, size_t nu
     connection->EndAndQueueMessage(msg);
 }
 
-void kNetUserConnection::Disconnect()
+void KNetUserConnection::Disconnect()
 {
     if (connection)
         connection->Disconnect(0);
 }
 
-void kNetUserConnection::Close()
+void KNetUserConnection::Close()
 {
     if (connection)
         connection->Close(0);

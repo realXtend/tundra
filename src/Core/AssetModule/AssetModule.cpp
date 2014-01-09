@@ -200,7 +200,7 @@ void AssetModule::ServerNewUserConnected(u32 /*connectionID*/, UserConnection *c
     
     // Did we get a new user from the same computer the server is running at?
     bool isLocalhostConnection = false;
-    kNetUserConnection* kNetConn = dynamic_cast<kNetUserConnection*>(connection);
+    KNetUserConnection* kNetConn = dynamic_cast<KNetUserConnection*>(connection);
     if (kNetConn && kNetConn->connection)
     {
         isLocalhostConnection = (kNetConn->connection->RemoteEndPoint().IPToString() == "127.0.0.1" || 
@@ -333,7 +333,7 @@ void AssetModule::HandleAssetDiscovery(kNet::MessageConnection* source, MsgAsset
     if (tundra->IsServer())
         foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
         {
-            kNetUserConnection* kNetConn = dynamic_cast<kNetUserConnection*>(userConn.get());
+            KNetUserConnection* kNetConn = dynamic_cast<KNetUserConnection*>(userConn.get());
             if (kNetConn->connection != source)
                 userConn->Send(msg);
         }
@@ -356,7 +356,7 @@ void AssetModule::HandleAssetDeleted(kNet::MessageConnection* source, MsgAssetDe
     if (tundra->IsServer())
         foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
         {
-            kNetUserConnection* kNetConn = dynamic_cast<kNetUserConnection*>(userConn.get());
+            KNetUserConnection* kNetConn = dynamic_cast<KNetUserConnection*>(userConn.get());
             if (kNetConn->connection != source)
                 userConn->Send(msg);
         }

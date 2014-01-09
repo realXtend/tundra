@@ -194,7 +194,7 @@ private:
     bool firstCameraUpdateSent_;
 
     /// "Virtual" user connection representing the server and its syncstate (client only)
-    kNetUserConnectionPtr serverUserConnection_;
+    KNetUserConnectionPtr serverUserConnection_;
 };
 
 }

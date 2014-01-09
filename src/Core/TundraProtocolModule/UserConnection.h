@@ -112,7 +112,7 @@ signals:
 };
 
 /// A kNet user connection.
-class TUNDRAPROTOCOL_MODULE_API kNetUserConnection : public UserConnection
+class TUNDRAPROTOCOL_MODULE_API KNetUserConnection : public UserConnection
 {
     Q_OBJECT
 

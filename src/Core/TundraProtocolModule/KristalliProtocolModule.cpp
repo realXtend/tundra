@@ -298,7 +298,7 @@ void KristalliProtocolModule::StopServer()
         // We may have connections registered by other server modules. Only clear native connections
         for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end();)
         {
-            if (dynamic_cast<kNetUserConnection*>(iter->get()))
+            if (dynamic_cast<KNetUserConnection*>(iter->get()))
                 iter = connections.erase(iter);
             else
                 ++iter;
@@ -319,9 +319,9 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
 
     source->RegisterInboundMessageHandler(this);
     
-    UserConnectionPtr connection = MAKE_SHARED(kNetUserConnection);
+    UserConnectionPtr connection = MAKE_SHARED(KNetUserConnection);
     connection->userID = AllocateNewConnectionID();
-    static_cast<kNetUserConnection*>(connection.get())->connection = source;
+    static_cast<KNetUserConnection*>(connection.get())->connection = source;
     connections.push_back(connection);
 
     // For TCP mode sockets, set the TCP_NODELAY option to improve latency for the messages we send.
@@ -338,7 +338,7 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
     // Delete from connection list if it was a known user
     for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
     {
-        kNetUserConnection* kNetConn = dynamic_cast<kNetUserConnection*>(iter->get());
+        KNetUserConnection* kNetConn = dynamic_cast<KNetUserConnection*>(iter->get());
         if (kNetConn && kNetConn->connection == source)
         {
             emit ClientDisconnectedEvent(iter->get());
@@ -388,7 +388,7 @@ UserConnectionPtr KristalliProtocolModule::GetUserConnection(MessageConnection* 
 {
     for(UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
     {
-        kNetUserConnection* kNetConn = dynamic_cast<kNetUserConnection*>(iter->get());
+        KNetUserConnection* kNetConn = dynamic_cast<KNetUserConnection*>(iter->get());
         if (kNetConn && kNetConn->connection == source)
             return *iter;
     }

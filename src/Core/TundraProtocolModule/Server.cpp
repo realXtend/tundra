@@ -410,7 +410,7 @@ bool Server::FinalizeLogin(UserConnectionPtr user)
     UserConnectedResponseData responseData;
     emit UserConnected(user->userID, user.get(), &responseData);
 
-    bool isNativeConnection = dynamic_cast<kNetUserConnection*>(user.get()) != 0;
+    bool isNativeConnection = dynamic_cast<KNetUserConnection*>(user.get()) != 0;
     QByteArray responseByteData;
     /// \todo Native connections still encode reply data to XML. Unify to JSON in the future.
     if (isNativeConnection)
