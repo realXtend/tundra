@@ -21,11 +21,13 @@ namespace WebSocket
 {
     class WEBSOCKET_SERVER_MODULE_API UserConnection : public ::UserConnection
     {
-    Q_OBJECT
+        Q_OBJECT
 
     public:
         UserConnection(ConnectionPtr connection_);
         ~UserConnection();
+
+        virtual QString ConnectionType() const { return "websocket"; }
 
         ConnectionPtr WebSocketConnection() const;
 

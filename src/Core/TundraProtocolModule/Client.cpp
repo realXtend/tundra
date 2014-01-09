@@ -47,7 +47,7 @@ Client::Client(TundraLogicModule* owner) :
     client_id_(0)
 {
     // Create "virtual" client->server connection & syncstate. Used by SyncManager
-    serverUserConnection_ = MAKE_SHARED(UserConnection);
+    serverUserConnection_ = MAKE_SHARED(kNetUserConnection);
     serverUserConnection_->properties["authenticated"] = true;
     serverUserConnection_->syncState = MAKE_SHARED(SceneSyncState, 0, false);
 }
@@ -367,6 +367,11 @@ void Client::GetCameraOrientation()
 kNet::MessageConnection* Client::GetConnection()
 {
     return owner_->GetKristalliModule()->GetMessageConnection();
+}
+
+UserConnectionPtr Client::ServerUserConnection()
+{
+    return static_pointer_cast<UserConnection>(serverUserConnection_);
 }
 
 void Client::OnConnectionAttemptFailed()

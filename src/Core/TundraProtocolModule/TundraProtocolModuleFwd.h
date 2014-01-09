@@ -25,7 +25,9 @@ namespace TundraLogic
 using TundraLogic::TundraLogicModule;
 
 class UserConnection;
+class kNetUserConnection;
 typedef shared_ptr<UserConnection> UserConnectionPtr;
+typedef shared_ptr<kNetUserConnection> kNetUserConnectionPtr;
 typedef weak_ptr<UserConnection> UserConnectionWeakPtr;
 typedef std::list<UserConnectionPtr> UserConnectionList;
 

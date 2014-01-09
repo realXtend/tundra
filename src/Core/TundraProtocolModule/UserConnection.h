@@ -20,29 +20,21 @@ enum NetworkProtocolVersion
     ProtocolOriginal = 0x1
 };
 
-// Client connection type enumeration.
-enum UserConnectionType
-{
-    ConnectionNative = 0,
-    ConnectionWebSocket
-};
-
 /// Highest supported protocol version in the build. Update this when a new protocol version is added
 const NetworkProtocolVersion cHighestSupportedProtocolVersion = ProtocolOriginal;
 
-/// Represents a client connection on the server side. May be subclassed by other networking implementations.
+/// Represents a client connection on the server side. Subclassed by networking implementations.
 class TUNDRAPROTOCOL_MODULE_API UserConnection : public QObject, public enable_shared_from_this<UserConnection>
 {
     Q_OBJECT
     Q_PROPERTY(int id READ ConnectionId)
     Q_PROPERTY(int protocolVersion READ ProtocolVersion)
-    Q_PROPERTY(int connectionType READ ConnectionType)
+    Q_PROPERTY(QString connectionType READ ConnectionType)
 
 public:
     UserConnection() : 
         userID(0),
-        protocolVersion(ProtocolOriginal),
-        connectionType(ConnectionNative)
+        protocolVersion(ProtocolOriginal)
     {}
 
     /// Returns the connection ID.
@@ -50,10 +42,8 @@ public:
     /// Returns the protocol version.
     NetworkProtocolVersion ProtocolVersion() const { return protocolVersion; }
     /// Returns connection type.
-    UserConnectionType ConnectionType() const { return connectionType; }
+    virtual QString ConnectionType() const = 0;
 
-    /// Message connection. Null if not a native connection
-    Ptr(kNet::MessageConnection) connection;
     /// Connection ID
     u32 userID;
     /// Raw xml login data
@@ -64,11 +54,9 @@ public:
     shared_ptr<SceneSyncState> syncState;
     /// Network protocol version in use
     NetworkProtocolVersion protocolVersion;
-    /// Type of the connection. Native can also be inferred from a non-null MessageConnection ptr
-    UserConnectionType connectionType;
 
     /// Queue a network message to be sent to the client. All implementations may not use the reliable, inOrder, priority and contentID parameters.
-    virtual void Send(kNet::message_id_t id, const char* data, size_t numBytes, bool reliable, bool inOrder, unsigned long priority = 100, unsigned long contentID = 0);
+    virtual void Send(kNet::message_id_t id, const char* data, size_t numBytes, bool reliable, bool inOrder, unsigned long priority = 100, unsigned long contentID = 0) = 0;
 
     /// Queue a network message to be sent to the client, with the data to be sent in a DataSerializer. All implementations may not use the reliable, inOrder, priority and contentID parameters.
     void Send(kNet::message_id_t id, bool reliable, bool inOrder, kNet::DataSerializer& ds, unsigned long priority = 100, unsigned long contentID = 0);
@@ -107,10 +95,10 @@ public slots:
     void DenyConnection(const QString& reason);
 
     /// Starts a benign disconnect procedure (one which waits for the peer acknowledge procedure).
-    virtual void Disconnect();
+    virtual void Disconnect() = 0;
 
     /// Forcibly kills this connection without notifying the peer.
-    virtual void Close();
+    virtual void Close() = 0;
 
     u32 GetConnectionID() const { return ConnectionId(); }  /**< @deprecated Use ConnectionId or 'id' @todo Add warning print */
     QString GetLoginData() const { return LoginData(); }  /**< @deprecated Use LoginData @todo Add warning print */
@@ -121,4 +109,26 @@ signals:
     void ActionTriggered(UserConnection* connection, Entity* entity, const QString& action, const QStringList& params);
     /// Emitted when the client has sent a network message. PacketId will be 0 if not supported by the networking implementation.
     void NetworkMessageReceived(kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes);
+};
+
+/// A kNet user connection.
+class TUNDRAPROTOCOL_MODULE_API kNetUserConnection : public UserConnection
+{
+    Q_OBJECT
+
+public:
+    virtual QString ConnectionType() const { return "knet"; }
+
+    /// Message connection.
+    Ptr(kNet::MessageConnection) connection;
+
+    /// Queue a network message to be sent to the client. 
+    virtual void Send(kNet::message_id_t id, const char* data, size_t numBytes, bool reliable, bool inOrder, unsigned long priority = 100, unsigned long contentID = 0);
+
+public slots:
+    /// Starts a benign disconnect procedure (one which waits for the peer acknowledge procedure).
+    virtual void Disconnect();
+
+    /// Forcibly kills this connection without notifying the peer.
+    virtual void Close();
 };

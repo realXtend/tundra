@@ -200,11 +200,11 @@ void AssetModule::ServerNewUserConnected(u32 /*connectionID*/, UserConnection *c
     
     // Did we get a new user from the same computer the server is running at?
     bool isLocalhostConnection = false;
-    // Web clients will have null connection
-    if (connection->connection)
+    kNetUserConnection* kNetConn = dynamic_cast<kNetUserConnection*>(connection);
+    if (kNetConn && kNetConn->connection)
     {
-        isLocalhostConnection = (connection->connection->RemoteEndPoint().IPToString() == "127.0.0.1" || 
-            connection->connection->LocalEndPoint().IPToString() == connection->connection->RemoteEndPoint().IPToString());
+        isLocalhostConnection = (kNetConn->connection->RemoteEndPoint().IPToString() == "127.0.0.1" || 
+            kNetConn->connection->LocalEndPoint().IPToString() == kNetConn->connection->RemoteEndPoint().IPToString());
     }
 
     // Serialize all storages to the client. If the client is from the same computer than the server, we can also serialize the LocalAssetStorages.
@@ -233,15 +233,12 @@ void AssetModule::ServerNewUserConnected(u32 /*connectionID*/, UserConnection *c
     }
 
     // Fill the same data as JSON for web clients
-    if (connection->connectionType == ConnectionWebSocket)
-    {
-        QVariantMap storageData;
-        storageData["default"] = true;
-        storageData["name"] = defaultStorage->Name();
-        storageData["type"] = defaultStorage->Type();
-        storageData["src"] = defaultStorage->BaseURL();
-        responseData->responseDataJson["storage"] = storageData;
-    }
+    QVariantMap storageData;
+    storageData["default"] = true;
+    storageData["name"] = defaultStorage->Name();
+    storageData["type"] = defaultStorage->Type();
+    storageData["src"] = defaultStorage->BaseURL();
+    responseData->responseDataJson["storage"] = storageData;
 }
 
 void AssetModule::DetermineStorageTrustStatus(AssetStoragePtr storage)
@@ -335,8 +332,11 @@ void AssetModule::HandleAssetDiscovery(kNet::MessageConnection* source, MsgAsset
     KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
     if (tundra->IsServer())
         foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
-            if (userConn->connection != source)
+        {
+            kNetUserConnection* kNetConn = dynamic_cast<kNetUserConnection*>(userConn.get());
+            if (kNetConn->connection != source)
                 userConn->Send(msg);
+        }
 
     // Then let assetAPI handle locally
     framework_->Asset()->HandleAssetDiscovery(assetRef, assetType);
@@ -355,8 +355,11 @@ void AssetModule::HandleAssetDeleted(kNet::MessageConnection* source, MsgAssetDe
     KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
     if (tundra->IsServer())
         foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
-            if (userConn->connection != source)
+        {
+            kNetUserConnection* kNetConn = dynamic_cast<kNetUserConnection*>(userConn.get());
+            if (kNetConn->connection != source)
                 userConn->Send(msg);
+        }
 
     // Then let assetAPI handle locally
     framework_->Asset()->HandleAssetDeleted(assetRef);

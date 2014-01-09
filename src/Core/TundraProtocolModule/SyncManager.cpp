@@ -868,7 +868,7 @@ void SyncManager::Update(f64 frametime)
             {
                 // As of now only native clients understand the optimized rigid body sync message.
                 // This may change with future protocol versions
-                if ((*i)->connectionType == ConnectionNative)
+                if (dynamic_cast<kNetUserConnection*>(i->get()))
                 { 
                     // First send out all changes to rigid bodies.
                     // After processing this function, the bits related to rigid body states have been cleared,
@@ -881,7 +881,7 @@ void SyncManager::Update(f64 frametime)
     else
     {
         // If we are client and the connection is current, process just the server sync state
-        if (serverConnection_->connection)
+        if (static_cast<kNetUserConnection*>(serverConnection_.get())->connection)
             ProcessSyncState(serverConnection_.get());
     }
 }
@@ -1254,7 +1254,8 @@ void SyncManager::HandleRigidBodyChanges(UserConnection* source, kNet::packet_id
             {
                 RigidBodyInterpolationState &interp = iter->second;
 
-                kNet::MessageConnection* conn = source->connection;
+                kNetUserConnection* kNetSource = dynamic_cast<kNetUserConnection*>(source);
+                kNet::MessageConnection* conn = kNetSource ? kNetSource->connection : 0;
                 if (conn && conn->GetSocket() && conn->GetSocket()->TransportLayer() == kNet::SocketOverUDP)
                 {
                     if (kNet::PacketIDIsNewerThan(interp.lastReceivedPacketCounter, packetId))
@@ -1592,7 +1593,7 @@ void SyncManager::ProcessSyncState(UserConnection* user)
                             /// @todo HACK for web clients while ReplicateRigidBodyChanges() is not implemented! 
                             /// Don't send out minuscule pos/rot/scale changes as it spams the network.
                             bool sendChanges = true;
-                            if (user->connectionType != ConnectionNative)
+                            if (dynamic_cast<kNetUserConnection*>(user) == 0)
                             {
                                 if (comp->TypeId() == EC_Placeable::TypeIdStatic() && changedAttributes_.size() == 1 && changedAttributes_[0] == 0)
                                 {
