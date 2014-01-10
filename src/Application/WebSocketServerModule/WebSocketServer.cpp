@@ -218,7 +218,7 @@ void Server::Update(float frametime)
                 else
                 {
                     // Only signal messages from authenticated users
-                    if (userConnection->properties["authenticated"] == true)
+                    if (userConnection->properties["authenticated"].toBool() == true)
                     {
                         // Signal network message. As per kNet tradition the message ID is given separately in addition with the rest of the data
                         NetworkMessageReceived(userConnection.get(), messageId, event->data->GetData() + sizeof(u16), event->data->BytesFilled() - sizeof(u16));

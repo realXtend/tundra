@@ -174,7 +174,7 @@ UserConnectionList Server::AuthenticatedUsers() const
 {
     UserConnectionList ret;
     foreach(const UserConnectionPtr &user, UserConnections())
-        if (user->properties["authenticated"] == true)
+        if (user->properties["authenticated"].toBool() == true)
             ret.push_back(user);
     return ret;
 }
@@ -290,14 +290,11 @@ void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::packe
     }
 
     // If we are server, only allow the login message from an unauthenticated user
-    if (messageId != MsgLogin::messageID && user->properties["authenticated"] != true)
+    if (messageId != MsgLogin::messageID && user->properties["authenticated"].toBool() != true)
     {
-        if (!user || user->properties["authenticated"] != true)
-        {
-            ::LogWarning("Server: dropping message " + QString::number(messageId) + " from unauthenticated user.");
-            /// \todo something more severe, like disconnecting the user
-            return;
-        }
+        ::LogWarning("Server: dropping message " + QString::number(messageId) + " from unauthenticated user.");
+        /// \todo something more severe, like disconnecting the user
+        return;
     }
     else if (messageId == MsgLogin::messageID)
     {
@@ -366,7 +363,7 @@ bool Server::FinalizeLogin(UserConnectionPtr user)
 
     user->properties["authenticated"] = true;
     emit UserAboutToConnect(user->userID, user.get());
-    if (user->properties["authenticated"] != true)
+    if (user->properties["authenticated"].toBool() != true)
     {
         ::LogInfo("User with connection ID " + QString::number(user->userID) + " was denied access.");
         MsgLoginReply reply;
