@@ -81,27 +81,20 @@ namespace WebSocket
         void Stop();
         void Update(float frametime);
         
-        /// Returns all users.
-        WebSocket::UserConnectionList &UserConnections();
-        
         friend class Handler;
         
     public slots:
-        /// Returns all authenticated users.
-        WebSocket::UserConnectionList AuthenticatedUsers() const;
-        
         /// Returns client with id, null if not found.
-        WebSocket::UserConnection *UserConnection(uint connectionId);
-        
+        WebSocket::UserConnectionPtr UserConnection(uint connectionId);
+
         /// Returns client with websocket connection ptr, null if not found.
-        WebSocket::UserConnection *UserConnection(WebSocket::ConnectionPtr connection);
+        WebSocket::UserConnectionPtr UserConnection(WebSocket::ConnectionPtr connection);
         
         /// Mirror the Server object API.
-        WebSocket::UserConnection *GetUserConnection(uint connectionId) { return UserConnection(connectionId); }
-        
-        /// Entity action helpers.
-        void SetActionSender(WebSocket::UserConnection *user);
-        WebSocket::UserConnection *ActionSender() const;
+        WebSocket::UserConnectionPtr GetUserConnection(uint connectionId) { return UserConnection(connectionId); }
+
+        /// Returns all user connections
+        WebSocket::UserConnectionList UserConnections() { return connections_; }
         
     private slots:
         void OnScriptEngineCreated(QScriptEngine *engine);
@@ -113,45 +106,27 @@ namespace WebSocket
         /// The server has been stopped
         void ServerStopped();
         
-        /// A user is connecting. This is your chance to deny access.
-        /** Call connection->DenyConnection() to deny access. */
-        void UserAboutToConnect(WebSocket::UserConnection *connection);
-
-        /// A user has connected (and authenticated)
-        /** @param responseData The handler of this signal can add his own application-specific data to this structure.
-            This data is sent to the client and the applications on the client computer can read them as needed. */
-        void UserConnected(WebSocket::UserConnection *connection, QVariantMap *responseData);
-
-        /// A user has disconnected
-        void UserDisconnected(WebSocket::UserConnection *connection);
-        
         /// Network message received from client
         void NetworkMessageReceived(WebSocket::UserConnection *source, kNet::message_id_t id, const char* data, size_t numBytes);
 
-        /// Web client entity action
-        ///void ClientEntityAction(WebSocket::UserConnection *source, MsgEntityAction action);
-        
     protected:
         void Reset();
 
-        void OnUserDisconnected(WebSocket::UserConnection *userConnection);
         void OnConnected(WebSocket::ConnectionHandle connection);
         void OnDisconnected(WebSocket::ConnectionHandle connection);
         void OnMessage(WebSocket::ConnectionHandle connection, WebSocket::MessagePtr data);
         void OnHttpRequest(WebSocket::ConnectionHandle connection);
         
     private:
-        /// @note Does not lock the requestedConnections mutex
-        uint NextFreeConnectionId() const;
-
         QString LC;
         ushort port_;
         
         Framework *framework_;
         
         WebSocket::ServerPtr server_;
+
+        // Websocket connections. Once login is finalized, they are also added to TundraProtocolModule's connection list
         WebSocket::UserConnectionList connections_;
-        WebSocket::UserConnection *actionSender_;
 
         ServerThread thread_;
 

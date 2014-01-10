@@ -36,7 +36,6 @@ public:
 public slots:
     bool IsServer();
     
-    const WebSocketSyncManagerPtr& GetSyncManager();
     const WebSocketServerPtr& GetServer();
     
 signals:
@@ -46,13 +45,10 @@ private slots:
     void StartServer();
     void StopServer();
     
-    void OnSceneAdded(const QString &sceneName);
-
 private:
     QString LC;
 
     bool isServer_;
     
-    WebSocketSyncManagerPtr syncManager_;
     WebSocketServerPtr server_;
 };

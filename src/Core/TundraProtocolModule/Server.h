@@ -55,6 +55,13 @@ public:
     /** @return 'udp', tcp', or an empty string if server is not running. */
     QString Protocol() const;
 
+    /// Add a user from external networking subsystem such as WebSocket. Return true if the user was successfully authenticated according to the login properties.
+    bool AddExternalUser(UserConnectionPtr user);
+    /// Remove a user from external networking subsystem
+    void RemoveExternalUser(UserConnectionPtr user);
+    /// Emit network message received on behalf of an external networking subsystem. Packet id should be left zero if not supported.
+    void EmitNetworkMessageReceived(UserConnection *connection, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);
+
 public slots:
     /// Create server scene & start server
     /** @param protocol The server protocol to use, either "tcp" or "udp". If not specified, the default UDP will be used.
@@ -122,7 +129,9 @@ private slots:
 
 private:
     /// Handle a login message
-    void HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg);
+    void HandleLogin(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    /// Finalize the login of a user. Allow security plugins to inspect login credentials. Return true if allowed to log in
+    bool FinalizeLogin(UserConnectionPtr user);
 
     UserConnectionWeakPtr actionSender;
     TundraLogicModule* owner_;

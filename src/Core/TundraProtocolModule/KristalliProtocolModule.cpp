@@ -295,7 +295,14 @@ void KristalliProtocolModule::StopServer()
     if (server)
     {
         network.StopServer();
-        connections.clear();
+        // We may have connections registered by other server modules. Only clear native connections
+        for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end();)
+        {
+            if (dynamic_cast<KNetUserConnection*>(iter->get()))
+                iter = connections.erase(iter);
+            else
+                ++iter;
+        }
         ::LogInfo("Server stopped");
         server = 0;
     }
@@ -312,9 +319,9 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
 
     source->RegisterInboundMessageHandler(this);
     
-    UserConnectionPtr connection = MAKE_SHARED(UserConnection);
+    UserConnectionPtr connection = MAKE_SHARED(KNetUserConnection);
     connection->userID = AllocateNewConnectionID();
-    connection->connection = source;
+    static_cast<KNetUserConnection*>(connection.get())->connection = source;
     connections.push_back(connection);
 
     // For TCP mode sockets, set the TCP_NODELAY option to improve latency for the messages we send.
@@ -330,7 +337,9 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
 {
     // Delete from connection list if it was a known user
     for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
-        if ((*iter)->connection == source)
+    {
+        KNetUserConnection* kNetConn = dynamic_cast<KNetUserConnection*>(iter->get());
+        if (kNetConn && kNetConn->connection == source)
         {
             emit ClientDisconnectedEvent(iter->get());
             
@@ -338,8 +347,9 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
             connections.erase(iter);
             return;
         }
+    }
 
-        ::LogInfo("Unknown user disconnected");
+    ::LogInfo("Unknown user disconnected");
 }
 
 void KristalliProtocolModule::HandleMessage(kNet::MessageConnection *source, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char *data, size_t numBytes)
@@ -377,8 +387,11 @@ u32 KristalliProtocolModule::AllocateNewConnectionID() const
 UserConnectionPtr KristalliProtocolModule::GetUserConnection(MessageConnection* source) const
 {
     for(UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
-        if ((*iter)->connection == source)
+    {
+        KNetUserConnection* kNetConn = dynamic_cast<KNetUserConnection*>(iter->get());
+        if (kNetConn && kNetConn->connection == source)
             return *iter;
+    }
 
     return UserConnectionPtr();
 }

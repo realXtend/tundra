@@ -199,8 +199,13 @@ void AssetModule::ServerNewUserConnected(u32 /*connectionID*/, UserConnection *c
     doc.appendChild(assetRoot);
     
     // Did we get a new user from the same computer the server is running at?
-    bool isLocalhostConnection = (connection->connection->RemoteEndPoint().IPToString() == "127.0.0.1" || 
-        connection->connection->LocalEndPoint().IPToString() == connection->connection->RemoteEndPoint().IPToString());
+    bool isLocalhostConnection = false;
+    KNetUserConnection* kNetConn = dynamic_cast<KNetUserConnection*>(connection);
+    if (kNetConn && kNetConn->connection)
+    {
+        isLocalhostConnection = (kNetConn->connection->RemoteEndPoint().IPToString() == "127.0.0.1" || 
+            kNetConn->connection->LocalEndPoint().IPToString() == kNetConn->connection->RemoteEndPoint().IPToString());
+    }
 
     // Serialize all storages to the client. If the client is from the same computer than the server, we can also serialize the LocalAssetStorages.
     std::vector<AssetStoragePtr> storages = framework_->Asset()->GetAssetStorages();
@@ -226,6 +231,14 @@ void AssetModule::ServerNewUserConnected(u32 /*connectionID*/, UserConnection *c
         if (!defaultStorage->IsReplicated())
             LogWarning("Server specified the client to use the storage \"" + defaultStorage->Name() + "\" as default, but it is not a replicated storage!");
     }
+
+    // Fill the same data as JSON for web clients
+    QVariantMap storageData;
+    storageData["default"] = true;
+    storageData["name"] = defaultStorage->Name();
+    storageData["type"] = defaultStorage->Type();
+    storageData["src"] = defaultStorage->BaseURL();
+    responseData->responseDataJson["storage"] = storageData;
 }
 
 void AssetModule::DetermineStorageTrustStatus(AssetStoragePtr storage)
@@ -319,8 +332,11 @@ void AssetModule::HandleAssetDiscovery(kNet::MessageConnection* source, MsgAsset
     KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
     if (tundra->IsServer())
         foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
-            if (userConn->connection != source)
-                userConn->connection->Send(msg);
+        {
+            KNetUserConnection* kNetConn = dynamic_cast<KNetUserConnection*>(userConn.get());
+            if (kNetConn->connection != source)
+                userConn->Send(msg);
+        }
 
     // Then let assetAPI handle locally
     framework_->Asset()->HandleAssetDiscovery(assetRef, assetType);
@@ -339,8 +355,11 @@ void AssetModule::HandleAssetDeleted(kNet::MessageConnection* source, MsgAssetDe
     KristalliProtocolModule *kristalli = framework_->GetModule<KristalliProtocolModule>();
     if (tundra->IsServer())
         foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
-            if (userConn->connection != source)
-                userConn->connection->Send(msg);
+        {
+            KNetUserConnection* kNetConn = dynamic_cast<KNetUserConnection*>(userConn.get());
+            if (kNetConn->connection != source)
+                userConn->Send(msg);
+        }
 
     // Then let assetAPI handle locally
     framework_->Asset()->HandleAssetDeleted(assetRef);
@@ -363,7 +382,7 @@ void AssetModule::OnAssetUploaded(const QString& assetRef)
     if (tundra->IsServer())
     {
         foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
-            userConn->connection->Send(msg);
+            userConn->Send(msg);
     }
     // If we are client, send to server
     else
@@ -390,7 +409,7 @@ void AssetModule::OnAssetDeleted(const QString& assetRef)
     if (tundra->IsServer())
     {
         foreach(UserConnectionPtr userConn, kristalli->GetUserConnections())
-            userConn->connection->Send(msg);
+            userConn->Send(msg);
     }
     // If we are client, send to server
     else

@@ -64,6 +64,9 @@ public:
         @todo Rename to Connection */
     kNet::MessageConnection* GetConnection();
 
+    /// Returns the "virtual" user connection object representing the server. This object will exist always, but its MessageConnection is null when not connected.
+    UserConnectionPtr ServerUserConnection();
+
     /// Logout immediately and delete the client scene content
     /** @param fail Pass in true if the logout was due to connection/login failure. False, if the connection was aborted deliberately by the client. */
     void DoLogout(bool fail = false);
@@ -100,11 +103,11 @@ public slots:
     /** Call this function prior connecting to a scene to specify data that should be carried to the server as initial login data.
         @param key The name of the login property to set. If a previous login property with this name existed, it is overwritten.
         @param value The value to specify for this login property. If "", the login property is deleted and will not be sent. */
-    void SetLoginProperty(QString key, QString value);
+    void SetLoginProperty(QString key, QVariant value);
 
     /// Returns the login property value of the given name.
     /** @return value of the key, or an empty string if the key was not found. */
-    QString LoginProperty(QString key) const;
+    QVariant LoginProperty(QString key) const;
 
     /// Returns all the login properties that will be used to login to the server.
     LoginPropertyMap LoginProperties() const { return properties; }
@@ -119,7 +122,7 @@ public slots:
     /// @todo SyncManager/InterestManager functionality. Move away from here.
     void GetCameraOrientation();
 
-    QString GetLoginProperty(QString key) const { return LoginProperty(key); } /**< @deprecated Use LoginProperty. @todo Add warning print */
+    QString GetLoginProperty(QString key) const { return LoginProperty(key).toString(); } /**< @deprecated Use LoginProperty. @todo Add warning print */
     u32 GetConnectionID() const { return ConnectionId(); } /**< @deprecated Use ConnectionId. @todo Add warning print. */
 
 signals:
@@ -153,10 +156,6 @@ private slots:
     void DelayedLogout();
 
 private:
-    /// Send camera orientation to the server
-    /// @todo SyncManager/InterestManager functionality. Move away from here.
-    void SendCameraOrientation(kNet::DataSerializer ds, kNet::NetworkMessage *msg);
-
     /// Handles pending login to server
     void CheckLogin();
 
@@ -165,7 +164,7 @@ private:
     void HandleCameraOrientationRequest(kNet::MessageConnection* source, const MsgCameraOrientationRequest& msg);
 
     /// Handles a loginreply message
-    void HandleLoginReply(kNet::MessageConnection* source, const MsgLoginReply& msg);
+    void HandleLoginReply(kNet::MessageConnection* source, const char *data, size_t numBytes);
 
     /// Handles a client joined message
     void HandleClientJoined(kNet::MessageConnection* source, const MsgClientJoined& msg);
@@ -193,6 +192,9 @@ private:
     bool sendCameraUpdates_;
     /// @todo SyncManager/InterestManager functionality. Move away from here.
     bool firstCameraUpdateSent_;
+
+    /// "Virtual" user connection representing the server and its syncstate (client only)
+    KNetUserConnectionPtr serverUserConnection_;
 };
 
 }

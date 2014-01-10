@@ -79,6 +79,9 @@ signals:
     void SceneStateCreated(UserConnection *user, SceneSyncState *state);
     
 private slots:
+    /// Network message received from an user connection
+    void HandleNetworkMessage(kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes);
+
     /// Trigger EC sync because of component attributes changing
     void OnAttributeChanged(IComponent* comp, IAttribute* attr, AttributeChange::Type change);
 
@@ -109,64 +112,53 @@ private slots:
     /// Trigger sync of entity properties (temporary status) change
     void OnEntityPropertiesChanged(Entity* entity, AttributeChange::Type change);
     
-    /// Handle a Kristalli protocol message
-    void HandleKristalliMessage(kNet::MessageConnection* source, kNet::packet_id_t, kNet::message_id_t id, const char* data, size_t numBytes);
-
 private:
-    /// Queue a message to the receiver from a given DataSerializer.
-    void QueueMessage(kNet::MessageConnection* connection, kNet::message_id_t id, bool reliable, bool inOrder, kNet::DataSerializer& ds);
     /// Craft a component full update, with all static and dynamic attributes.
     void WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPtr comp);
     /// Handle entity action message.
-    void HandleEntityAction(kNet::MessageConnection* source, MsgEntityAction& msg);
+    void HandleEntityAction(UserConnection* source, MsgEntityAction& msg);
     /// Handle create entity message.
-    void HandleCreateEntity(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    void HandleCreateEntity(UserConnection* source, const char* data, size_t numBytes);
     /// Handle create components message.
-    void HandleCreateComponents(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    void HandleCreateComponents(UserConnection* source, const char* data, size_t numBytes);
     /// Handle a Camera Orientation Update message
-    void HandleCameraOrientation(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    void HandleCameraOrientation(UserConnection* source, const char* data, size_t numBytes);
     /// Handle create attributes message.
-    void HandleCreateAttributes(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    void HandleCreateAttributes(UserConnection* source, const char* data, size_t numBytes);
     /// Handle edit attributes message.
-    void HandleEditAttributes(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    void HandleEditAttributes(UserConnection* source, const char* data, size_t numBytes);
     /// Handle remove attributes message.
-    void HandleRemoveAttributes(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    void HandleRemoveAttributes(UserConnection* source, const char* data, size_t numBytes);
     /// Handle remove components message.
-    void HandleRemoveComponents(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    void HandleRemoveComponents(UserConnection* source, const char* data, size_t numBytes);
     /// Handle remove entities message.
-    void HandleRemoveEntity(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    void HandleRemoveEntity(UserConnection* source, const char* data, size_t numBytes);
     /// Handle create entity reply message.
-    void HandleCreateEntityReply(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    void HandleCreateEntityReply(UserConnection* source, const char* data, size_t numBytes);
     /// Handle create components reply message.
-    void HandleCreateComponentsReply(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    void HandleCreateComponentsReply(UserConnection* source, const char* data, size_t numBytes);
     /// Handle entity properties change message.
-    void HandleEditEntityProperties(kNet::MessageConnection* source, const char* data, size_t numBytes);
+    void HandleEditEntityProperties(UserConnection* source, const char* data, size_t numBytes);
+
+    void HandleRigidBodyChanges(UserConnection* source, kNet::packet_id_t packetId, const char* data, size_t numBytes);
     
-    void HandleRigidBodyChanges(kNet::MessageConnection* source, kNet::packet_id_t packetId, const char* data, size_t numBytes);
-    
-    void ReplicateRigidBodyChanges(kNet::MessageConnection* destination, SceneSyncState* state);
+    void ReplicateRigidBodyChanges(UserConnection* user);
 
     void InterpolateRigidBodies(f64 frametime, SceneSyncState* state);
 
     /// Read client extrapolation time parameter from command line and match it to the current sync period.
     void GetClientExtrapolationTime();
 
-    /// Process one sync state for changes in the scene
-    /** \todo For now, sends all changed entities/components. In the future, this shall be subject to interest management
-        @param destination MessageConnection where to send the messages
-        @param state Syncstate to process */
-    void ProcessSyncState(kNet::MessageConnection* destination, SceneSyncState* state);
+    /// Process one user connection's sync state for changes in the scene. Note that on the client the server is a "virtual" user
+    /** @param user User connection to process */
+    void ProcessSyncState(UserConnection* user);
     
     /// Validate the scene manipulation action. If returns false, it is ignored
     /** @param source Where the action came from
         @param messageID Network message id
         @param entityID What entity it affects */
-    bool ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID);
+    bool ValidateAction(UserConnection* source, unsigned messageID, entity_id_t entityID);
     
-    /// Get a syncstate that matches the messageconnection, for reflecting arrived changes back
-    /** For client, this will always be server_syncstate_. */
-    SceneSyncState* GetSceneSyncState(kNet::MessageConnection* connection);
-
     ScenePtr GetRegisteredScene() const { return scene_.lock(); }
 
     /// Owning module
@@ -188,8 +180,8 @@ private:
     /// Disable client physics handoff -flag
     bool noClientPhysicsHandoff_;
     
-    /// Server sync state (client only)
-    SceneSyncState server_syncstate_;
+    /// "User" representing the server connection (client only)
+    UserConnectionPtr serverConnection_;
     
     /// Fixed buffers for crafting messages
     char createEntityBuffer_[64 * 1024];
@@ -202,6 +194,7 @@ private:
     char removeAttrsBuffer_[1024];
     std::vector<u8> changedAttributes_;
 
+    /// Interest manager currently in use, null if none
     InterestManager *interestmanager_;
 };
 
