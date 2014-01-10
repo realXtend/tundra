@@ -125,7 +125,7 @@ void Server::Update(float frametime)
             else if (connection->webSocketConnection.expired())
             {
                 // If user was already registered to the Tundra server, remove from there
-                tundraServer->RemoveExternalUser(static_pointer_cast<::UserConnection>(connection));
+                tundraServer->RemoveExternalUser(static_pointer_cast< ::UserConnection>(connection));
                 if (!connection->userID)
                     LogDebug(LC + QString("Removing non-logged in WebSocket connection."));
                 else
@@ -175,7 +175,7 @@ void Server::Update(float frametime)
             {
                 if ((*iter) && (*iter)->WebSocketConnection() == event->connection)
                 {
-                    tundraServer->RemoveExternalUser(static_pointer_cast<::UserConnection>(*iter));
+                    tundraServer->RemoveExternalUser(static_pointer_cast< ::UserConnection>(*iter));
                     if (!(*iter)->userID)
                         LogDebug(LC + QString("Removing non-logged in WebSocket connection."));
                     else
@@ -205,7 +205,7 @@ void Server::Update(float frametime)
                         foreach(const QString &key, map.keys())
                             userConnection->properties[key] = map[key];
                         userConnection->properties["authenticated"] = true;
-                        bool success = tundraServer->AddExternalUser(static_pointer_cast<::UserConnection>(userConnection));
+                        bool success = tundraServer->AddExternalUser(static_pointer_cast< ::UserConnection>(userConnection));
                         if (!success)
                         {
                             LogInfo(LC + QString("Connection ID %1 login refused").arg(userConnection->userID));
@@ -245,18 +245,18 @@ WebSocket::UserConnectionPtr Server::UserConnection(uint connectionId)
         if ((*iter)->userID == connectionId)
             return (*iter);
 
-    return 0;
+    return WebSocket::UserConnectionPtr();
 }
 
 WebSocket::UserConnectionPtr Server::UserConnection(ConnectionPtr connection)
 {
     if (!connection.get())
-        return 0;
+        return WebSocket::UserConnectionPtr();
 
     for(UserConnectionList::iterator iter = connections_.begin(); iter != connections_.end(); ++iter)
         if ((*iter)->WebSocketConnection().get() == connection.get())
             return (*iter);
-    return 0;
+    return WebSocket::UserConnectionPtr();
 }
 
 bool Server::Start()

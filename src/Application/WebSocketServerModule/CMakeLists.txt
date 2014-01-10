@@ -21,9 +21,15 @@ add_definitions (-DWEBSOCKET_MODULE_EXPORTS)
 UseTundraCore ()
 use_core_modules (TundraCore Math Asset Scene Console OgreRenderingModule PhysicsModule TundraProtocolModule)
 
+if (WIN32)
 include_directories(
     ${ENV_TUNDRA_DEP_PATH}/websocketpp
 )
+else()
+include_directories(
+    ${ENV_TUNDRA_DEP_PATH}/include
+)
+endif()
 
 build_library (${TARGET_NAME} SHARED ${CPP_FILES} ${H_FILES} ${MOC_SRCS})
 
