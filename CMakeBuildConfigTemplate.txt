@@ -176,7 +176,9 @@ AddProject(Application DebugStatsModule)        # Enables a developer window for
 AddProject(Application SkyXHydrax)              # Provides photorealistic sky and water components by utilizing SkyX and Hydrax Ogre add-ons.
 AddProject(Application JavascriptModule)        # Allows QtScript-created scene script instances.
 AddProject(Application SceneWidgetComponents)   # Provides ECs for injecting various QWidgets to the 3D scene eg. EC_WebView.
-AddProject(Application WebSocketServerModule)   # Provides connectivity for WebSocket browser clients.
+if (NOT APPLE OR NOT TUNDRA_NO_BOOST)
+    AddProject(Application WebSocketServerModule)   # Provides connectivity for WebSocket browser clients. Requires non-c++11 / Boost build on OSX or will be disabled.
+endif()
 if (NOT ANDROID)
     AddProject(Application MumblePlugin)            # VOIP communication, implements a Mumble client for the Murmur server. Depends on JavascriptModule, OgreRenderingModule and TundraProtocolModule.
 endif()
