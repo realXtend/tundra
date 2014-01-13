@@ -29,6 +29,10 @@
 
 using namespace kNet;
 
+Q_DECLARE_METATYPE(UserConnectionPtr);
+Q_DECLARE_METATYPE(UserConnectionList);
+Q_DECLARE_METATYPE(LoginPropertyMap);
+
 namespace TundraLogic
 {
 
@@ -359,9 +363,9 @@ bool Server::FinalizeLogin(UserConnectionPtr user)
     if (user->properties["authenticated"].toBool() != true)
     {
         if (connectedUsername.isEmpty())
-            ::LogInfo(QString("[SERVER] ID %1 client was denied access [%2] ").arg(user->userID).arg(user->connection->RemoteEndPoint().ToString().c_str()));
+            ::LogInfo(QString("[SERVER] ID %1 client was denied access").arg(user->userID));
         else
-            ::LogInfo(QString("[SERVER] ID %1 client '%2' was denied access [%3] ").arg(user->userID).arg(connectedUsername).arg(user->connection->RemoteEndPoint().ToString().c_str()));
+            ::LogInfo(QString("[SERVER] ID %1 client '%2' was denied access").arg(user->userID).arg(connectedUsername));
             
         MsgLoginReply reply;
         reply.success = 0;
@@ -373,9 +377,9 @@ bool Server::FinalizeLogin(UserConnectionPtr user)
     }
     
     if (connectedUsername.isEmpty())
-        ::LogInfo(QString("[SERVER] ID %1 client connected - %2 ").arg(user->userID).arg(user->connection->RemoteEndPoint().ToString().c_str()));
+        ::LogInfo(QString("[SERVER] ID %1 client connected").arg(user->userID));
     else
-        ::LogInfo(QString("[SERVER] ID %1 client '%2' connected [%3] ").arg(user->userID).arg(connectedUsername).arg(user->connection->RemoteEndPoint().ToString().c_str()));
+        ::LogInfo(QString("[SERVER] ID %1 client '%2' connected").arg(user->userID).arg(connectedUsername));
     
     // Allow entityactions & EC sync from now on
     MsgLoginReply reply;
@@ -438,7 +442,7 @@ void Server::HandleUserDisconnected(UserConnection* user)
 
     emit UserDisconnected(user->userID, user);
 
-    QString username = user->GetProperty("username");
+    QString username = user->Property("username").toString();
     if (username.isEmpty())
         ::LogInfo(QString("[SERVER] ID %1 client disconnected").arg(user->userID));
     else
