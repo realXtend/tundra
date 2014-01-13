@@ -109,7 +109,7 @@ signals:
     /// Emitted when action has been triggered for this specific user connection.
     void ActionTriggered(UserConnection* connection, Entity* entity, const QString& action, const QStringList& params);
     /// Emitted when the client has sent a network message. PacketId will be 0 if not supported by the networking implementation.
-    void NetworkMessageReceived(kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes);
+    void NetworkMessageReceived(UserConnection* connection, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes);
 };
 
 /// A kNet user connection.

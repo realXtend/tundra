@@ -129,7 +129,7 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
 
     // Connect to network messages from the server
     serverConnection_ = owner_->GetClient()->ServerUserConnection();
-    connect(serverConnection_.get(), SIGNAL(NetworkMessageReceived(kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), this, SLOT(HandleNetworkMessage(kNet::packet_id_t, kNet::message_id_t, const char *, size_t)));
+    connect(serverConnection_.get(), SIGNAL(NetworkMessageReceived(UserConnection*, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), this, SLOT(HandleNetworkMessage(UserConnection*, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)));
 }
 
 SyncManager::~SyncManager()
@@ -304,9 +304,8 @@ void SyncManager::RegisterToScene(ScenePtr scene)
     connect(sceneptr, SIGNAL( EntityTemporaryStateToggled(Entity *, AttributeChange::Type) ), SLOT( OnEntityPropertiesChanged(Entity *, AttributeChange::Type) ));
 }
 
-void SyncManager::HandleNetworkMessage(kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
+void SyncManager::HandleNetworkMessage(UserConnection* user, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
 {
-    UserConnection* user = qobject_cast<UserConnection*>(sender());
     if (!user || !scene_.lock().get())
         return;
 
@@ -380,8 +379,8 @@ void SyncManager::NewUserConnected(const UserConnectionPtr &user)
     connect(user.get(), SIGNAL(ActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)),
         this, SLOT(OnUserActionTriggered(UserConnection*, Entity*, const QString&, const QStringList&)));
     // Connect to network messages from this user
-    connect(user.get(), SIGNAL(NetworkMessageReceived(kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), 
-        this, SLOT(HandleNetworkMessage(kNet::packet_id_t, kNet::message_id_t, const char *, size_t)));
+    connect(user.get(), SIGNAL(NetworkMessageReceived(UserConnection*, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), 
+        this, SLOT(HandleNetworkMessage(UserConnection*, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)));
 
     // Mark all entities in the sync state as new so we will send them
     user->syncState = MAKE_SHARED(SceneSyncState, user->ConnectionId(), owner_->IsServer());

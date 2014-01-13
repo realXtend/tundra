@@ -80,7 +80,7 @@ signals:
     
 private slots:
     /// Network message received from an user connection
-    void HandleNetworkMessage(kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes);
+    void HandleNetworkMessage(UserConnection* user, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes);
 
     /// Trigger EC sync because of component attributes changing
     void OnAttributeChanged(IComponent* comp, IAttribute* attr, AttributeChange::Type change);

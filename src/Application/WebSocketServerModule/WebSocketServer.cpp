@@ -221,7 +221,7 @@ void Server::Update(float frametime)
                     if (userConnection->properties["authenticated"].toBool() == true)
                     {
                         // Signal network message. As per kNet tradition the message ID is given separately in addition with the rest of the data
-                        NetworkMessageReceived(userConnection.get(), messageId, event->data->GetData() + sizeof(u16), event->data->BytesFilled() - sizeof(u16));
+                        emit NetworkMessageReceived(userConnection.get(), messageId, event->data->GetData() + sizeof(u16), event->data->BytesFilled() - sizeof(u16));
                         // Signal network message on the Tundra server so that it can be globally picked up
                         tundraServer->EmitNetworkMessageReceived(userConnection.get(), 0, messageId, event->data->GetData() + sizeof(u16), event->data->BytesFilled() - sizeof(u16));
                     }
