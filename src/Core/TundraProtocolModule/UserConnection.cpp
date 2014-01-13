@@ -17,7 +17,7 @@ void UserConnection::Send(kNet::message_id_t id, bool reliable, bool inOrder, kN
 
 void UserConnection::EmitNetworkMessageReceived(kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
 {
-    emit NetworkMessageReceived(packetId, messageId, data, numBytes);
+    emit NetworkMessageReceived(this, packetId, messageId, data, numBytes);
 }
 
 void UserConnection::Exec(Entity *entity, const QString &action, const QStringList &params)
