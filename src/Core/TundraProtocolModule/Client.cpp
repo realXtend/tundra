@@ -46,6 +46,10 @@ Client::Client(TundraLogicModule* owner) :
     firstCameraUpdateSent_(false),
     client_id_(0)
 {
+    // Create "virtual" client->server connection & syncstate. Used by SyncManager
+    serverUserConnection_ = MAKE_SHARED(KNetUserConnection);
+    serverUserConnection_->properties["authenticated"] = true;
+    serverUserConnection_->syncState = MAKE_SHARED(SceneSyncState, 0, false);
 }
 
 Client::~Client()
@@ -157,7 +161,7 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
     // Others may have been added before calling this function.
     SetLoginProperty("protocol", QString(SocketTransportLayerToString(protocol).c_str()).toLower());
     SetLoginProperty("address", address);
-    SetLoginProperty("port", QString::number(port));
+    SetLoginProperty("port", port);
     SetLoginProperty("client-version", Application::Version());
     SetLoginProperty("client-name", Application::ApplicationName());
     SetLoginProperty("client-organization", Application::OrganizationName());
@@ -193,6 +197,7 @@ void Client::DoLogout(bool fail)
             ::LogInfo("Disconnected");
         }
         
+        serverUserConnection_->connection = 0;
         loginstate_ = NotConnected;
         client_id_ = 0;
         
@@ -204,7 +209,7 @@ void Client::DoLogout(bool fail)
     
     if (fail)
     {
-        QString failreason = LoginProperty("LoginFailed");
+        QString failreason = LoginProperty("LoginFailed").toString();
         emit LoginFailed(failreason);
     }
     else // An user deliberately disconnected from the world, and not due to a connection error.
@@ -228,23 +233,23 @@ bool Client::IsConnected() const
     return loginstate_ == LoggedIn;
 }
 
-void Client::SetLoginProperty(QString key, QString value)
+void Client::SetLoginProperty(QString key, QVariant value)
 {
     key = key.trimmed();
-    value = value.trimmed();
-    if (value.isEmpty())
-        properties.erase(key);
-    properties[key] = value;
+    if (value.isNull())
+        properties.erase(properties.find(key));
+    else
+        properties[key] = value;
 }
 
-QString Client::LoginProperty(QString key) const
+QVariant Client::LoginProperty(QString key) const
 {
     key = key.trimmed();
     LoginPropertyMap::const_iterator i = properties.find(key);
     if (i != properties.end())
-        return i->second;
+        return i.value();
     else
-        return "";
+        return QVariant();
 }
 
 QString Client::LoginPropertiesAsXml() const
@@ -253,8 +258,8 @@ QString Client::LoginPropertiesAsXml() const
     QDomElement rootElem = xml.createElement("login");
     for(LoginPropertyMap::const_iterator iter = properties.begin(); iter != properties.end(); ++iter)
     {
-        QDomElement elem = xml.createElement(iter->first);
-        elem.setAttribute("value", iter->second);
+        QDomElement elem = xml.createElement(iter.key());
+        elem.setAttribute("value", iter.value().toString());
         rootElem.appendChild(elem);
     }
     xml.appendChild(rootElem);
@@ -274,7 +279,11 @@ void Client::CheckLogin()
             emit AboutToConnect(); // This signal is used as a 'function call'. Any interested party can fill in
             // new content to the login properties of the client object, which will then be sent out on the line below.
             msg.loginData = StringToBuffer(LoginPropertiesAsXml().toStdString());
-            connection->Send(msg);
+            DataSerializer ds(msg.Size() + 4);
+            msg.SerializeTo(ds);
+            // Add requested protocol version
+            ds.AddVLE<kNet::VLE8_16_32>(cHighestSupportedProtocolVersion);
+            connection->SendMessage(msg.messageID, msg.reliable, msg.inOrder, msg.priority, 0, ds.GetData(), ds.BytesFilled());
         }
         break;
     case LoggedIn:
@@ -349,17 +358,8 @@ void Client::GetCameraOrientation()
             cameraUpdateTimer->start(500);
     }
 
-    // Finally send the message
-    SendCameraOrientation(ds, msg);
-}
-
-void Client::SendCameraOrientation(kNet::DataSerializer ds, kNet::NetworkMessage *msg)
-{
-    Ptr(kNet::MessageConnection) connection = GetConnection();
-
     if (ds.BytesFilled() > 0)
         connection->EndAndQueueMessage(msg, ds.BytesFilled());
-
     else
         connection->FreeMessage(msg);
 }
@@ -369,12 +369,17 @@ kNet::MessageConnection* Client::GetConnection()
     return owner_->GetKristalliModule()->GetMessageConnection();
 }
 
+UserConnectionPtr Client::ServerUserConnection()
+{
+    return static_pointer_cast<UserConnection>(serverUserConnection_);
+}
+
 void Client::OnConnectionAttemptFailed()
 {
     // Provide a reason why the connection failed.
-    QString address = LoginProperty("address");
-    QString port = LoginProperty("port");
-    QString protocol = LoginProperty("protocol");
+    QString address = LoginProperty("address").toString();
+    QString port = LoginProperty("port").toString();
+    QString protocol = LoginProperty("protocol").toString();
 
     QString failReason = "Could not connect to host";
     if (!address.isEmpty())
@@ -408,8 +413,7 @@ void Client::HandleKristalliMessage(MessageConnection* source, packet_id_t packe
         break;
     case MsgLoginReply::messageID:
         {
-            MsgLoginReply msg(data, numBytes);
-            HandleLoginReply(source, msg);
+            HandleLoginReply(source, data, numBytes);
         }
         break;
     case MsgClientJoined::messageID:
@@ -425,7 +429,10 @@ void Client::HandleKristalliMessage(MessageConnection* source, packet_id_t packe
         }
         break;
     }
+
     emit NetworkMessageReceived(packetId, messageId, data, numBytes);
+    // SyncManager uses this route to handle messages
+    serverUserConnection_->EmitNetworkMessageReceived(packetId, messageId, data, numBytes);
 }
 
 void Client:: HandleCameraOrientationRequest(MessageConnection* /*source*/, const MsgCameraOrientationRequest& msg)
@@ -451,8 +458,18 @@ void Client:: HandleCameraOrientationRequest(MessageConnection* /*source*/, cons
     }
 }
 
-void Client::HandleLoginReply(MessageConnection* /*source*/, const MsgLoginReply& msg)
+void Client::HandleLoginReply(MessageConnection* /*source*/, const char *data, size_t numBytes)
 {
+    DataDeserializer dd(data, numBytes);
+    MsgLoginReply msg;
+    msg.DeserializeFrom(dd);
+
+    // Read optional protocol version
+    // Server can downgrade what we sent, but never upgrade
+    serverUserConnection_->protocolVersion = ProtocolOriginal;
+    if (dd.BytesLeft())
+        serverUserConnection_->protocolVersion = (NetworkProtocolVersion)dd.ReadVLE<kNet::VLE8_16_32>();
+
     if (msg.success)
     {
         loginstate_ = LoggedIn;
@@ -462,6 +479,9 @@ void Client::HandleLoginReply(MessageConnection* /*source*/, const MsgLoginReply
         // Note: create scene & send info of login success only on first connection, not on reconnect
         if (!reconnect_)
         {
+            // The connection is now live for use by eg. SyncManager
+            serverUserConnection_->connection = GetConnection();
+
             // Create a non-authoritative scene for the client
             ScenePtr scene = framework_->Scene()->CreateScene("TundraClient", true, false);
 

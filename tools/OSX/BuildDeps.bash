@@ -917,6 +917,8 @@ else
     git clone https://github.com/zaphoyd/websocketpp.git $what
     cd $what
     git checkout 0.3.0-alpha3
+    mkdir -p $prefix/include/$what
+    rsync -r $what/* $prefix/include/$what
     touch $tags/$what-done
 fi
 

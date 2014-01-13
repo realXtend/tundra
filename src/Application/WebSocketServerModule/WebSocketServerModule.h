@@ -9,7 +9,6 @@
 #include "CoreTypes.h"
 
 #include <QString>
-#include <QScriptEngine>
 
 /// WebSocketServerModule
 /** This module was originally developed by Adminotech Ltd. for the Meshmoon hosting platform.
@@ -37,7 +36,6 @@ public:
 public slots:
     bool IsServer();
     
-    const WebSocketSyncManagerPtr& GetSyncManager();
     const WebSocketServerPtr& GetServer();
     
 signals:
@@ -47,14 +45,10 @@ private slots:
     void StartServer();
     void StopServer();
     
-    void OnSceneAdded(const QString &sceneName);
-    void OnScriptEngineCreated(QScriptEngine *engine);
-
 private:
     QString LC;
 
     bool isServer_;
     
-    WebSocketSyncManagerPtr syncManager_;
     WebSocketServerPtr server_;
 };

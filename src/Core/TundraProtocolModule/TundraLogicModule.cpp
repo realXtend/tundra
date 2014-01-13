@@ -118,9 +118,9 @@ void TundraLogicModule::Load()
 
 void TundraLogicModule::Initialize()
 {
-    syncManager_ = MAKE_SHARED(SyncManager, this);
     client_ = MAKE_SHARED(Client, this);
     server_ = MAKE_SHARED(Server, this);
+    syncManager_ = MAKE_SHARED(SyncManager, this); // Syncmanager expects client & server to exist
     
     // Expose client and server to everyone
     framework_->RegisterDynamicObject("client", client_.get());

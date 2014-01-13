@@ -105,13 +105,16 @@ struct EC_RigidBody::Impl : public btMotionState
         {
             if (p->IsAttached())
             {
-                position = p->OgreSceneNode()->convertWorldToLocalPosition(position);
-                orientation = p->OgreSceneNode()->convertWorldToLocalOrientation(orientation);
-            
-                Transform newTrans = p->transform.Get();
-                newTrans.SetPos(position);
-                newTrans.SetOrientation(orientation);
-                p->transform.Set(newTrans, changeType);
+                Ogre::Node* parent = p->OgreSceneNode()->getParent();
+                if (parent)
+                {
+                    position = parent->convertWorldToLocalPosition(position);
+                    orientation = parent->convertWorldToLocalOrientation(orientation);
+                    Transform newTrans = p->transform.Get();
+                    newTrans.SetPos(position);
+                    newTrans.SetOrientation(orientation);
+                    p->transform.Set(newTrans, changeType);
+                }
             }
         }
         // Set linear & angular velocity
@@ -696,13 +699,13 @@ void EC_RigidBody::AttributesChanged()
         }
     }
     
-    if (linearVelocity.ValueChanged())
+    if (linearVelocity.ValueChanged() && !impl->disconnected)
     {
         impl->body->setLinearVelocity(linearVelocity.Get());
         impl->body->activate();
     }
     
-    if (angularVelocity.ValueChanged())
+    if (angularVelocity.ValueChanged() && !impl->disconnected)
     {
         impl->body->setAngularVelocity(DegToRad(angularVelocity.Get()));
         impl->body->activate();
@@ -721,7 +724,7 @@ void EC_RigidBody::PlaceableUpdated(IAttribute* attribute)
     EC_Placeable* placeable = impl->placeable.lock().get();
     if (!placeable)
         return;
-        
+    
     if (attribute == &placeable->transform)
     {
         // Important: when changing both transform and parent, always set parentref first, then transform

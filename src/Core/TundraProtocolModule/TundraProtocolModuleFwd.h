@@ -10,7 +10,7 @@
 
 #include <kNetFwd.h>
 
-#include <map>
+#include <QVariantMap>
 
 class KristalliProtocolModule;
 
@@ -25,19 +25,18 @@ namespace TundraLogic
 using TundraLogic::TundraLogicModule;
 
 class UserConnection;
+class KNetUserConnection;
 typedef shared_ptr<UserConnection> UserConnectionPtr;
-Q_DECLARE_METATYPE(UserConnectionPtr)
+typedef shared_ptr<KNetUserConnection> KNetUserConnectionPtr;
 typedef weak_ptr<UserConnection> UserConnectionWeakPtr;
 typedef std::list<UserConnectionPtr> UserConnectionList;
-Q_DECLARE_METATYPE(UserConnectionList)
 
 class SceneSyncState;
 struct EntitySyncState;
 struct ComponentSyncState;
 struct UserConnectedResponseData;
 
-typedef std::map<QString, QString> LoginPropertyMap; ///< propertyName-propertyValue map of login properties.
-Q_DECLARE_METATYPE(LoginPropertyMap)
+typedef QVariantMap LoginPropertyMap; ///< propertyName-propertyValue map of login properties.
 
 struct MsgLogin;
 struct MsgLoginReply;

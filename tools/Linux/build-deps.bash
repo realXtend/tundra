@@ -40,9 +40,9 @@ export CC="ccache gcc"
 export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 export TUNDRA_PYTHON_ENABLED=TRUE
-export BOOSTUSE148=false
+export BOOSTUSE148=true
 
-if $BOOSTUSE148 ; then
+if [ "$BOOSTUSE148" = "true" ] ; then
     boostpackage=libboost1.48-all-dev
 else
     boostpackage=libboost-all-dev
@@ -400,6 +400,8 @@ else
     git clone https://github.com/zaphoyd/websocketpp.git $what
     cd $what
     git checkout 0.3.0-alpha3
+    mkdir -p $prefix/include/$what
+    rsync -r $what/* $prefix/include/$what
     touch $tags/$what-done
 fi
 
@@ -413,5 +415,5 @@ cat > ccache-g++-wrapper <<EOF
 exec ccache g++ -O -g \$@
 EOF
 chmod +x ccache-g++-wrapper
-TUNDRA_DEP_PATH=$prefix cmake -DCMAKE_CXX_COMPILER="$viewer/ccache-g++-wrapper" . -DCMAKE_MODULE_PATH=$prefix/lib/SKYX/cmake
+TUNDRA_DEP_PATH=$prefix cmake -DCMAKE_CXX_COMPILER="$viewer/ccache-g++-wrapper" . -DINSTALL_BINARIES_ONLY=TRUE -DCMAKE_MODULE_PATH=$prefix/lib/SKYX/cmake
 make -j $nprocs VERBOSE=1

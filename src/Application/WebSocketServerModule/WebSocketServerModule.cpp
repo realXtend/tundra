@@ -3,8 +3,6 @@
 #include "WebSocketServerModule.h"
 
 #include "WebSocketServer.h"
-#include "WebSocketSyncManager.h"
-#include "WebSocketScriptTypeDefines.h"
 
 #include "Framework.h"
 #include "CoreDefines.h"
@@ -48,18 +46,11 @@ void WebSocketServerModule::Update(f64 frametime)
     
     if (server_.get())
         server_->Update(frametime);
-    if (syncManager_.get())
-        syncManager_->Update(frametime);
 }
 
 bool WebSocketServerModule::IsServer()
 {
     return isServer_;
-}
-
-const WebSocketSyncManagerPtr& WebSocketServerModule::GetSyncManager()
-{
-    return syncManager_;
 }
 
 const WebSocketServerPtr& WebSocketServerModule::GetServer()
@@ -81,25 +72,8 @@ void WebSocketServerModule::StartServer()
     server_ = WebSocketServerPtr(new WebSocket::Server(framework_));
     server_->Start();
 
-    // Sync Manager
-    syncManager_ = WebSocketSyncManagerPtr(new WebSocket::SyncManager(this));
-    
-    // Use or wait for the server scene registered by TundraProtocolModule
-    ScenePtr scene = framework_->Scene()->GetScene("TundraServer");
-    if (scene.get())
-        syncManager_->RegisterToScene(scene);
-    else
-        connect(framework_->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(OnSceneAdded(const QString &)), Qt::UniqueConnection);
-
-    // Connect new users for scene state creation in syncmanager.
-    connect(server_.get(), SIGNAL(UserConnected(WebSocket::UserConnection*, QVariantMap*)),
-            syncManager_.get(), SLOT(OnUserConnected(WebSocket::UserConnection*, QVariantMap*)));
-    connect(server_.get(), SIGNAL(ClientEntityAction(WebSocket::UserConnection*, MsgEntityAction)),
-            syncManager_.get(), SLOT(OnClientEntityAction(WebSocket::UserConnection*, MsgEntityAction)));
-
     framework_->RegisterDynamicObject("websocketserver", server_.get());
-    framework_->RegisterDynamicObject("websocketsyncmanager", syncManager_.get());
-                
+
     emit ServerStarted(server_);
 }
 
@@ -108,19 +82,6 @@ void WebSocketServerModule::StopServer()
     if (server_.get())
         server_->Stop();
     server_.reset();
-}
-
-void WebSocketServerModule::OnSceneAdded(const QString &sceneName)
-{
-    if (!syncManager_.get() || syncManager_->GetRegisteredScene().get())
-        return;
-    if (sceneName == "TundraServer")
-        syncManager_->RegisterToScene(framework_->Scene()->GetScene(sceneName));
-}
-
-void WebSocketServerModule::OnScriptEngineCreated(QScriptEngine *engine)
-{
-    RegisterWebSocketPluginMetaTypes(engine);
 }
 
 extern "C"

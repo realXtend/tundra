@@ -10,6 +10,16 @@
 
 #include "MemoryLeakCheck.h"
 
+void UserConnection::Send(kNet::message_id_t id, bool reliable, bool inOrder, kNet::DataSerializer& ds, unsigned long priority, unsigned long contentID)
+{
+    Send(id, ds.GetData(), ds.BytesFilled(), reliable, inOrder, priority, contentID);
+}
+
+void UserConnection::EmitNetworkMessageReceived(kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
+{
+    emit NetworkMessageReceived(packetId, messageId, data, numBytes);
+}
+
 void UserConnection::Exec(Entity *entity, const QString &action, const QStringList &params)
 {
     if (entity)
@@ -28,30 +38,54 @@ void UserConnection::SetProperty(const QString& key, const QString& value)
     properties[key] = value;
 }
 
-QString UserConnection::Property(const QString& key) const
+QVariant UserConnection::Property(const QString& key) const
 {
     static QString empty;
     
     LoginPropertyMap::const_iterator i = properties.find(key);
     if (i != properties.end())
-        return i->second;
+        return i.value();
     else
         return empty;
 }
 
 void UserConnection::DenyConnection(const QString &reason)
 {
-    properties["authenticated"] = "false";
+    properties["authenticated"] = false;
     properties["reason"] = reason;
 }
 
-void UserConnection::Disconnect()
+void KNetUserConnection::Send(kNet::message_id_t id, const char* data, size_t numBytes, bool reliable, bool inOrder, unsigned long priority, unsigned long contentID)
+{
+    if (!data && numBytes)
+    {
+        LogError("KNetUserConnection::Send: can not queue message, null data pointer with nonzero data size specified");
+        return;
+    }
+
+    if (!connection)
+    {
+        LogError("KNetUserConnection::Send: can not queue message as MessageConnection is null");
+        return;
+    }
+
+    kNet::NetworkMessage* msg = connection->StartNewMessage(id, numBytes);
+    if (numBytes)
+        memcpy(msg->data, data, numBytes); /// \todo Copy should be optimized out
+    msg->reliable = reliable;
+    msg->inOrder = inOrder;
+    msg->priority = priority;
+    msg->contentID = contentID;
+    connection->EndAndQueueMessage(msg);
+}
+
+void KNetUserConnection::Disconnect()
 {
     if (connection)
         connection->Disconnect(0);
 }
 
-void UserConnection::Close()
+void KNetUserConnection::Close()
 {
     if (connection)
         connection->Close(0);

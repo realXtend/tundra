@@ -19,17 +19,15 @@ namespace WebSocket
     class Server;
     class Handler;
     class UserConnection;
-    class SyncManager;
     
-    typedef std::vector<WebSocket::UserConnection*> UserConnectionList;
-    typedef QVariantHash LoginPropertyMap;
+    typedef shared_ptr<UserConnection> UserConnectionPtr;
+    typedef std::vector<UserConnectionPtr> UserConnectionList;
 }
 
 class Framework;
 
-struct UserConnectedResponseData;
 struct libwebsocket_context;
 
 typedef shared_ptr<WebSocket::Server> WebSocketServerPtr;
-typedef shared_ptr<WebSocket::SyncManager> WebSocketSyncManagerPtr;
 typedef shared_ptr<WebSocket::UserConnection> WebSocketUserConnectionPtr;
+

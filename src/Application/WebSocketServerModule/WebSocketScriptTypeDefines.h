@@ -4,7 +4,6 @@
 
 #include "WebSocketServer.h"
 #include "WebSocketUserConnection.h"
-#include "WebSocketSyncManager.h"
 
 #include "QScriptEngineHelpers.h"
 
@@ -15,11 +14,9 @@
 
 Q_DECLARE_METATYPE(WebSocket::Server*)
 Q_DECLARE_METATYPE(WebSocket::UserConnection*)
-Q_DECLARE_METATYPE(WebSocket::SyncManager*)
-Q_DECLARE_METATYPE(WebSocketServerPtr)
-Q_DECLARE_METATYPE(WebSocketSyncManagerPtr)
-Q_DECLARE_METATYPE(WebSocketUserConnectionPtr)
+Q_DECLARE_METATYPE(WebSocket::UserConnectionPtr)
 Q_DECLARE_METATYPE(WebSocket::UserConnectionList)
+Q_DECLARE_METATYPE(WebSocketServerPtr)
 Q_DECLARE_METATYPE(QVariantMap*)
 
 void fromScriptValueWebSocketUserConnectionList(const QScriptValue &obj, WebSocket::UserConnectionList &cons)
@@ -31,7 +28,7 @@ void fromScriptValueWebSocketUserConnectionList(const QScriptValue &obj, WebSock
         it.next();
         WebSocket::UserConnection *u = qobject_cast<WebSocket::UserConnection*>(it.value().toQObject());
         if (u)
-            cons.push_back(u);
+            cons.push_back(static_pointer_cast<WebSocket::UserConnection>(u->shared_from_this()));
     }
 }
 
@@ -41,7 +38,7 @@ QScriptValue toScriptValueWebSocketUserConnectionList(QScriptEngine *engine, con
     int i = 0;
     for(WebSocket::UserConnectionList::const_iterator iter = cons.begin(); iter != cons.end(); ++iter)
     {
-        scriptValue.setProperty(i, engine->newQObject((*iter)));
+        scriptValue.setProperty(i, engine->newQObject((*iter).get()));
         ++i;
     }
     return scriptValue;
@@ -63,11 +60,9 @@ void RegisterWebSocketPluginMetaTypes(QScriptEngine *engine)
     // Custom QObjects
     qScriptRegisterQObjectMetaType<WebSocket::Server*>(engine);
     qScriptRegisterQObjectMetaType<WebSocket::UserConnection*>(engine);
-    qScriptRegisterQObjectMetaType<WebSocket::SyncManager*>(engine);
     
     // Custom boost ptrs
     qScriptRegisterMetaType<WebSocketServerPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
-    qScriptRegisterMetaType<WebSocketSyncManagerPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
     qScriptRegisterMetaType<WebSocketUserConnectionPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
     
     // Custom std::vector of user connections
