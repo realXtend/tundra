@@ -13,6 +13,9 @@ const unsigned long cCameraOrientationUpdate = 104;
 const unsigned long cCameraOrientationRequest = 105;
 
 // Scenesync
+// IMPORTANT! At least two numbers from the range [106, 108] must be reserved for scene creation and removal messages!
+//const unsigned long cCreateSceneMessage = 107;
+//const unsigned long cRemoveSceneMessage = 108;
 const unsigned long cEditEntityPropertiesMessage = 109;
 const unsigned long cCreateEntityMessage = 110;
 const unsigned long cCreateComponentsMessage = 111;

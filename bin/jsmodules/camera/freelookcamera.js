@@ -145,12 +145,12 @@ function HandleMouse(e)
     if (!IsCameraActive())
         return;
 
-    if (e.eventType == 3 /*MousePress*/ && e.button == 2 && input.IsMouseCursorVisible())
+    if (e.eventType == MouseEvent.MousePressed && e.button == MouseEvent.RightButton && input.IsMouseCursorVisible())
         input.SetMouseCursorVisible(false);
-    if (e.eventType == 4 /*MouseRelease*/ && e.button == 2 && !input.IsMouseCursorVisible())
+    if (e.eventType == MouseEvent.MouseReleased && e.button == MouseEvent.RightButton && !input.IsMouseCursorVisible())
         input.SetMouseCursorVisible(true);
 
-    if (e.IsButtonDown(2) && !input.IsMouseCursorVisible())
+    if (e.IsButtonDown(MouseEvent.RightButton) && !input.IsMouseCursorVisible())
     {
         if (e.relativeX != 0)
             HandleMouseLookX(e.relativeX);

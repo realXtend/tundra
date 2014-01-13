@@ -47,9 +47,8 @@ ExampleAvatarAddon.prototype.ServerHandleWave = function()
 {
     // Play the wave animation by using the AnimationController component's action PlayAnimAutoStop
     // (parameters: animation name, fade-in time)
-    // Executiontype 7 (client, server & peers) means it gets replicated to all
     // AutoStop means that the animation is faded out automatically when finished, so that it doesn't disturb other animations
-    this.me.Exec(7, "PlayAnimAutoStop", "Wave", 0.25);
+    this.me.Exec(EntityAction.Local | EntityAction.Server | EntityAction.Peers, "PlayAnimAutoStop", "Wave", 0.25);
 }
 
 ExampleAvatarAddon.prototype.ServerHandleSit = function()
@@ -68,8 +67,6 @@ ExampleAvatarAddon.prototype.ServerHandleSit = function()
 
     // Then either play or stop the sitting animation, depending on the state
     // Like with the Wave gesture animation, use an AnimationController action that is replicated to all
-    if (this.sitting)
-        this.me.Exec(7, "PlayAnim", "SitOnGround", 0.25);
-    else
-        this.me.Exec(7, "StopAnim", "SitOnGround", 0.25);
+    this.me.Exec(EntityAction.Local | EntityAction.Server | EntityAction.Peers,
+        this.sitting ? "PlayAnim" : StopAnim, "SitOnGround", 0.25);
 }

@@ -23,11 +23,8 @@ function CheckComponent(entity, component, type) {
 function GetHoveringTextComponent() {
     if (comp == null) {
         comp = me.hoveringtext;
-        if (comp != null) {
-            var mode = comp.updateMode;
-            mode.value = 2;
-            comp.updateMode = mode;
-        }
+        if (comp)
+            comp.updateMode = AttributeChange.LocalOnly;
     }
 }
 

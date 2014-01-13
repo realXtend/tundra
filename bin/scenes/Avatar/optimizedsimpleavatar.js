@@ -408,7 +408,7 @@ SimpleAvatar.prototype.GestureStarted = function(gestureEvent) {
         if (attrs.Attribute("enableRotate")) {
             var x = new Number(gestureEvent.Gesture().offset.toPoint().x());
             this.yaw += x;
-            this.me.Exec(2, "SetRotation", this.yaw.toString());
+            this.me.Exec(EntityAction.Server, "SetRotation", this.yaw.toString());
         }
 
         gestureEvent.Accept();
@@ -426,7 +426,7 @@ SimpleAvatar.prototype.GestureUpdated = function(gestureEvent) {
         // Rotate avatar with X pan gesture
         delta = gestureEvent.Gesture().delta.toPoint();
         this.yaw += delta.x;
-        this.me.Exec(2, "SetRotation", this.yaw.toString());
+        this.me.Exec(EntityAction.Server, "SetRotation", this.yaw.toString());
 
         // Start walking or stop if total Y len of pan gesture is 100
         var walking = false;
@@ -436,19 +436,19 @@ SimpleAvatar.prototype.GestureUpdated = function(gestureEvent) {
         if (totalOffset.y() < -100)
         {
             if (walking) {
-                this.me.Exec(2, "Stop", "forward");
-                this.me.Exec(2, "Stop", "back");
+                this.me.Exec(EntityAction.Server, "Stop", "forward");
+                this.me.Exec(EntityAction.Server, "Stop", "back");
             } else
-                this.me.Exec(2, "Move", "forward");
+                this.me.Exec(EntityAction.Server, "Move", "forward");
             listenGesture = false;
         }
         else if (totalOffset.y() > 100)
         {
             if (walking) {
-                this.me.Exec(2, "Stop", "forward");
-                this.me.Exec(2, "Stop", "back");
+                this.me.Exec(EntityAction.Server, "Stop", "forward");
+                this.me.Exec(EntityAction.Server, "Stop", "back");
             } else
-                this.me.Exec(2, "Move", "back");
+                this.me.Exec(EntityAction.Server, "Move", "back");
             this.listenGesture = false;
         }
         gestureEvent.Accept();
@@ -533,7 +533,7 @@ SimpleAvatar.prototype.ClientUpdateRotation = function(frametime) {
 
     if (this.rotate != 0) {
         this.yaw -= this.rotateSpeed * this.rotate * frametime;
-        this.me.Exec(2, "SetRotation", this.yaw.toString());
+        this.me.Exec(EntityAction.Server, "SetRotation", this.yaw.toString());
     }
 }
 
@@ -648,7 +648,7 @@ SimpleAvatar.prototype.ClientHandleMouseMove = function(mouseevent) {
     {
         // Rotate avatar or camera
         this.yaw -= this.mouseRotateSensitivity * parseInt(mouseevent.relativeX);
-        this.me.Exec(2, "SetRotation", this.yaw.toString());
+        this.me.Exec(EntityAction.Server, "SetRotation", this.yaw.toString());
     }
 
     if (mouseevent.relativeY != 0 && (firstPerson || !this.isMouseLookLockedOnX))

@@ -87,16 +87,7 @@ void JavascriptModule::Initialize()
         "jsDumpInfo", "Dumps all EC_Script information to console",
         this, SLOT(DumpScriptInfo()));
 
-    // Initialize startup scripts
     LoadStartupScripts();
-
-    foreach(const QString &script, framework_->CommandLineParameters("--run"))
-    {
-        JavascriptInstance *jsInstance = new JavascriptInstance(script, this);
-        PrepareScriptInstance(jsInstance);
-        startupScripts_.push_back(jsInstance);
-        jsInstance->Run();
-    }
 }
 
 void JavascriptModule::Uninitialize()
@@ -591,6 +582,11 @@ void JavascriptModule::LoadStartupScripts()
     QStringList allScripts;
     allScripts.append(StartupScripts());
     allScripts.append(ParseStartupScriptConfig());
+    // Handling for to-be-deprecated --run.
+    const QStringList &runScripts = framework_->CommandLineParameters("--run");
+    if (!runScripts.empty())
+        LogWarning("JavascriptModule::LoadStartupScripts: --run will be deprecated, use --jsplugin instead.");
+    allScripts.append(runScripts);
 
     foreach (const QString &script, allScripts)
     {

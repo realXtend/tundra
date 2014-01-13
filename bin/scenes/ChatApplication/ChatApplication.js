@@ -28,15 +28,15 @@ function GetClientUsername(connection)
 ServerControl.prototype.UserConnected = function(cid, connection)
 {
     var msg = GetClientUsername(connection) + " connected.";
-    me.Exec(4, "ServerSendMessage", msg);
+    me.Exec(EntityAction.Peers, "ServerSendMessage", msg);
 }
 
 ServerControl.prototype.UserDisconnected = function(cid, connection)
 {
     var msg = GetClientUsername(connection) + " disconnected.";
     
-    me.Exec(4, "ServerSendMessage", msg);
-    me.Exec(4, "RemoveUserFromList", GetClientUsername(connection));
+    me.Exec(EntityAction.Peers, "ServerSendMessage", msg);
+    me.Exec(EntityAction.Peers, "RemoveUserFromList", GetClientUsername(connection));
 }
 
 //Receive incoming messages from client 
@@ -46,7 +46,7 @@ ServerControl.prototype.ClientMessage = function(sender, msg)
     if (msg.length > 0)
     {
         var message = (sender + ": " + msg);
-        me.Exec(4, "ServerSendMessage", message);
+        me.Exec(EntityAction.Peers, "ServerSendMessage", message);
     }
 }
 
@@ -64,7 +64,7 @@ ServerControl.prototype.PrivateClientMessage = function(sender, receiver, msg)
 
 ServerControl.prototype.ServerUpdateUserList = function(user)
 {
-    me.Exec(4, "UpdateUserList", user);
+    me.Exec(EntityAction.Peers, "UpdateUserList", user);
 }
 
 //Client side of the ChatApplication
@@ -123,7 +123,7 @@ ClientControl.prototype.SendMessage = function() {
         name = this.name;
 
     var msg = lineEdit.text;
-    me.Exec(2, "ClientSendMessage", client.LoginProperty("username"), msg);
+    me.Exec(EntityAction.Server, "ClientSendMessage", client.LoginProperty("username"), msg);
     lineEdit.text = "";
     if (this.hoveringText != null)
         this.hoveringText.text = msg;
@@ -143,7 +143,7 @@ ClientControl.prototype.SendPrivateMessage = function() {
     var msg = line.text;
     if (msg.length > 0) {
         ownPrivateLog.append("me: " + msg);
-        me.Exec(2, "ClientSendPrivateMessage", client.LoginProperty("username"), this.widget.windowTitle, msg);
+        me.Exec(EntityAction.Server, "ClientSendPrivateMessage", client.LoginProperty("username"), this.widget.windowTitle, msg);
         line.text = "";
     }
 }
@@ -167,7 +167,7 @@ ClientControl.prototype.ReceivePrivateServerMessage = function(msg)
 ClientControl.prototype.NewUserConnected = function(msg)
 {
     userListWidget.addItem(msg);
-    me.Exec(2, "ServerUpdateUserList", client.LoginProperty("username"));
+    me.Exec(EntityAction.Server, "ServerUpdateUserList", client.LoginProperty("username"));
 }
 
 ClientControl.prototype.UpdateUserList = function(user)
@@ -373,7 +373,7 @@ else
         chatControl = new ClientControl(username);
         chatControl.ToggleLog();
     }
-    me.Exec(4, "NewUserConnected", client.LoginProperty("username"));
+    me.Exec(EntityAction.Peers, "NewUserConnected", client.LoginProperty("username"));
 }
 
 function CreateUser()

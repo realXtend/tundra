@@ -1,14 +1,13 @@
-framework.Scene().SceneAdded.connect(OnSceneAdded);
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 var scene = null;
 var avatarEntityId = 0;
 
-function OnSceneAdded(scenename)
+framework.Scene().SceneCreated.connect(function(newScene)
 {
-    // Get pointer to scene through framework
-    scene = framework.Scene().GetScene(scenename);
+    scene = newScene;
     scene.EntityCreated.connect(OnEntityCreated);
-}
+});
 
 function OnEntityCreated(entity, change)
 {
@@ -30,19 +29,19 @@ function ProduceRandomMovement()
 
     var decision = Math.floor(Math.random() * 64);
     if (decision == 1)
-        entity.Exec(2, "Move", "forward");
+        entity.Exec(EntityAction.Server, "Move", "forward");
     if (decision == 2)
-        entity.Exec(2, "Move", "back");
+        entity.Exec(EntityAction.Server, "Move", "back");
     if (decision == 3)
-        entity.Exec(2, "Move", "right");
+        entity.Exec(EntityAction.Server, "Move", "right");
     if (decision == 4)
-        entity.Exec(2, "Move", "left");
+        entity.Exec(EntityAction.Server, "Move", "left");
     if (decision == 5)
-        entity.Exec(2, "Stop", "forward");
+        entity.Exec(EntityAction.Server, "Stop", "forward");
     if (decision == 6)
-        entity.Exec(2, "Stop", "back");
+        entity.Exec(EntityAction.Server, "Stop", "back");
     if (decision == 7)
-        entity.Exec(2, "Stop", "right");
+        entity.Exec(EntityAction.Server, "Stop", "right");
     if (decision == 8)
-        entity.Exec(2, "Stop", "left");
+        entity.Exec(EntityAction.Server, "Stop", "left");
 }
