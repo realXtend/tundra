@@ -72,8 +72,6 @@ public:
     /// Trigger a network message signal. Called by the networking implementation.
     void EmitNetworkMessageReceived(kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes);
 
-    NetworkProtocolVersion ProtocolVersion() { return protocolVersion; }
-
 public slots:
     /// Execute an action on an entity, sent only to the specific user
     void Exec(Entity *entity, const QString &action, const QStringList &params);
@@ -87,6 +85,9 @@ public slots:
 
     /// Returns a property
     QVariant Property(const QString& key) const;
+
+    /// Check whether has a property
+    bool HasProperty(const QString& key) const;
 
     /// Returns all the login properties that were used to login to the server.
     LoginPropertyMap LoginProperties() const { return properties; }

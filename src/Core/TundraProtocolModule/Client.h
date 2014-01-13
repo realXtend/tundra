@@ -109,6 +109,9 @@ public slots:
     /** @return value of the key, or an empty string if the key was not found. */
     QVariant LoginProperty(QString key) const;
 
+    /// Returns whether has a login property
+    bool HasLoginProperty(QString key) const;
+
     /// Returns all the login properties that will be used to login to the server.
     LoginPropertyMap LoginProperties() const { return properties; }
 

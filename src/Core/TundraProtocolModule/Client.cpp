@@ -252,6 +252,15 @@ QVariant Client::LoginProperty(QString key) const
         return QVariant();
 }
 
+bool Client::HasLoginProperty(QString key) const
+{
+    LoginPropertyMap::const_iterator i = properties.find(key);
+    if (i == properties.end())
+        return false;
+    else
+        return i->isValid();
+}
+
 QString Client::LoginPropertiesAsXml() const
 {
     QDomDocument xml;

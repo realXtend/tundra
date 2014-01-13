@@ -49,6 +49,15 @@ QVariant UserConnection::Property(const QString& key) const
         return empty;
 }
 
+bool UserConnection::HasProperty(const QString& key) const
+{
+    LoginPropertyMap::const_iterator i = properties.find(key);
+    if (i == properties.end())
+        return false;
+    else
+        return i->isValid();
+}
+
 void UserConnection::DenyConnection(const QString &reason)
 {
     properties["authenticated"] = false;
@@ -84,6 +93,7 @@ void KNetUserConnection::Disconnect()
     if (connection)
         connection->Disconnect(0);
 }
+
 
 void KNetUserConnection::Close()
 {
