@@ -74,9 +74,15 @@ public:
     /// light type enumeration
     enum Type
     {
-        LT_Point,
-        LT_Spot,
-        LT_Directional
+        PointLight,
+        Spotlight,
+        DirectionalLight,
+        // DEPRECATED
+        /// @cond PRIVATE
+        LT_Point = PointLight,
+        LT_Spot = Spotlight,
+        LT_Directional = DirectionalLight
+        /// @endcond
     };
 
     /// Returns  placeable component

@@ -112,14 +112,25 @@ public:
 
     enum ShapeType
     {
-        Shape_Box = 0, ///< Box
-        Shape_Sphere, ///< Sphere
-        Shape_Cylinder, ///< Cylinder
-        Shape_Capsule, ///< Capsule
-        Shape_TriMesh, ///< Triangle mesh
-        Shape_HeightField, ///< Heightfield
-        Shape_ConvexHull, ///< Convex hull
-        Shape_Cone ///< Cone
+        Box = 0, ///< Box
+        Sphere, ///< Sphere
+        Cylinder, ///< Cylinder
+        Capsule, ///< Capsule
+        TriMesh, ///< Triangle mesh
+        HeightField, ///< Heightfield
+        ConvexHull, ///< Convex hull
+        Cone, ///< Cone
+        // DEPRECATED
+        /// @cond PRIVATE
+        Shape_Box = Box,
+        Shape_Sphere = Sphere,
+        Shape_Cylinder = Cylinder,
+        Shape_Capsule = Capsule,
+        Shape_TriMesh = TriMesh,
+        Shape_HeightField = HeightField,
+        Shape_ConvexHull = ConvexHull,
+        Shape_Cone = Cone
+        /// @endcond
     };
 
     /// Mass of the body. Set to 0 to have a static (immovable) object

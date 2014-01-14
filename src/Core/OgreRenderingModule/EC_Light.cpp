@@ -26,7 +26,7 @@ EC_Light::EC_Light(Scene* scene) :
     IComponent(scene),
     light_(0),
     attached_(false),
-    INIT_ATTRIBUTE_VALUE(type, "Light type", LT_Point),
+    INIT_ATTRIBUTE_VALUE(type, "Light type", PointLight),
     INIT_ATTRIBUTE_VALUE(diffColor, "Diffuse color", Color(1.0f, 1.0f, 1.0f)),
     INIT_ATTRIBUTE_VALUE(specColor, "Specular color", Color(0.0f, 0.0f, 0.0f)),
     INIT_ATTRIBUTE_VALUE(castShadows, "Cast shadows", false),
@@ -42,9 +42,9 @@ EC_Light::EC_Light(Scene* scene) :
     static bool metadataInitialized = false;
     if(!metadataInitialized)
     {
-        typeAttrData.enums[LT_Point]       = "Point";
-        typeAttrData.enums[LT_Spot]        = "Spot";
-        typeAttrData.enums[LT_Directional] = "Directional";
+        typeAttrData.enums[PointLight] = "Point";
+        typeAttrData.enums[Spotlight] = "Spot";
+        typeAttrData.enums[DirectionalLight] = "Directional";
         metadataInitialized = true;
     }
     type.SetMetadata(&typeAttrData);
@@ -161,10 +161,10 @@ void EC_Light::AttributesChanged()
 
     switch(type.Get())
     {
-    case LT_Spot:
+    case Spotlight:
         ogreType = Ogre::Light::LT_SPOTLIGHT;
         break;
-    case LT_Directional:
+    case DirectionalLight:
         ogreType = Ogre::Light::LT_DIRECTIONAL;
         break;
     }

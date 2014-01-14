@@ -142,7 +142,7 @@ struct EC_RigidBody::Impl : public btMotionState
         if (m < 0.0f)
             m = 0.0f;
         // Trimesh shape can not move
-        if (rigidBody->shapeType.Get() == Shape_TriMesh)
+        if (rigidBody->shapeType.Get() == TriMesh)
             m = 0.0f;
         // On client, all server-side entities become static to not desync or try to send updates we should not
         //if (!HasAuthority())
@@ -203,7 +203,7 @@ struct EC_RigidBody::Impl : public btMotionState
 EC_RigidBody::EC_RigidBody(Scene* scene) :
     IComponent(scene),
     INIT_ATTRIBUTE_VALUE(mass, "Mass", 0.0f),
-    INIT_ATTRIBUTE_VALUE(shapeType, "Shape type", (int)Shape_Box),
+    INIT_ATTRIBUTE_VALUE(shapeType, "Shape type", (int)Box),
     INIT_ATTRIBUTE_VALUE(size, "Size", float3(1,1,1)),
     INIT_ATTRIBUTE_VALUE(collisionMeshRef, "Collision mesh ref", AssetReference("", "OgreMesh")),
     INIT_ATTRIBUTE_VALUE(friction, "Friction", 0.5f),
@@ -227,14 +227,14 @@ EC_RigidBody::EC_RigidBody(Scene* scene) :
     static bool metadataInitialized = false;
     if(!metadataInitialized)
     {
-        shapemetadata.enums[Shape_Box] = "Box";
-        shapemetadata.enums[Shape_Sphere] = "Sphere";
-        shapemetadata.enums[Shape_Cylinder] = "Cylinder";
-        shapemetadata.enums[Shape_Capsule] = "Capsule";
-        shapemetadata.enums[Shape_TriMesh] = "TriMesh";
-        shapemetadata.enums[Shape_HeightField] = "HeightField";
-        shapemetadata.enums[Shape_ConvexHull] = "ConvexHull";
-        shapemetadata.enums[Shape_Cone] = "Cone";
+        shapemetadata.enums[Box] = "Box";
+        shapemetadata.enums[Sphere] = "Sphere";
+        shapemetadata.enums[Cylinder] = "Cylinder";
+        shapemetadata.enums[Capsule] = "Capsule";
+        shapemetadata.enums[TriMesh] = "TriMesh";
+        shapemetadata.enums[HeightField] = "HeightField";
+        shapemetadata.enums[ConvexHull] = "ConvexHull";
+        shapemetadata.enums[Cone] = "Cone";
         metadataInitialized = true;
     }
     shapeType.SetMetadata(&shapemetadata);
@@ -260,7 +260,7 @@ bool EC_RigidBody::SetShapeFromVisibleMesh()
     if (!mesh)
         return false;
     mass.Set(0.0f, AttributeChange::Default);
-    shapeType.Set(Shape_TriMesh, AttributeChange::Default);
+    shapeType.Set(TriMesh, AttributeChange::Default);
     collisionMeshRef.Set(mesh->meshRef.Get(), AttributeChange::Default);
     return true;
 }
@@ -460,20 +460,20 @@ void EC_RigidBody::CreateCollisionShape()
         
     switch (shapeType.Get())
     {
-    case Shape_Box:
+    case Box:
         // Note: Bullet uses box halfsize
         impl->shape = new btBoxShape(btVector3(sizeVec.x * 0.5f, sizeVec.y * 0.5f, sizeVec.z * 0.5f));
         break;
-    case Shape_Sphere:
+    case Sphere:
         impl->shape = new btSphereShape(sizeVec.x * 0.5f);
         break;
-    case Shape_Cylinder:
+    case Cylinder:
         impl->shape = new btCylinderShape(btVector3(sizeVec.x * 0.5f, sizeVec.y * 0.5f, sizeVec.z * 0.5f));
         break;
-    case Shape_Capsule:
+    case Capsule:
         impl->shape = new btCapsuleShape(sizeVec.x * 0.5f, sizeVec.y * 0.5f);
         break;
-    case Shape_TriMesh:
+    case TriMesh:
         if (impl->triangleMesh)
         {
             // Need to first create a bvhTriangleMeshShape, then a scaled version of it to allow for individual scaling.
@@ -481,13 +481,13 @@ void EC_RigidBody::CreateCollisionShape()
             impl->shape = new btScaledBvhTriangleMeshShape(static_cast<btBvhTriangleMeshShape*>(impl->childShape), btVector3(1.0f, 1.0f, 1.0f));
         }
         break;
-    case Shape_HeightField:
+    case HeightField:
         CreateHeightFieldFromTerrain();
         break;
-    case Shape_ConvexHull:
+    case ConvexHull:
         CreateConvexHullSetShape();
         break;
-    case Shape_Cone:
+    case Cone:
         impl->shape = new btConeShape(sizeVec.x * 0.5f, sizeVec.y);
         break;
     }
@@ -584,13 +584,13 @@ btRigidBody* EC_RigidBody::BulletRigidBody() const
 
 void EC_RigidBody::OnTerrainRegenerated()
 {
-    if (shapeType.Get() == Shape_HeightField)
+    if (shapeType.Get() == HeightField)
         CreateCollisionShape();
 }
 
 void EC_RigidBody::OnCollisionMeshAssetLoaded(AssetPtr asset)
 {
-    OgreMeshAsset *meshAsset = dynamic_cast<OgreMeshAsset*>(asset.get());
+    OgreMeshAssetPtr meshAsset = dynamic_pointer_cast<OgreMeshAsset>(asset);
     if (!meshAsset || !meshAsset->ogreMesh.get())
         LogError("EC_RigidBody::OnCollisionMeshAssetLoaded: Mesh asset load finished for asset \"" +
             asset->Name() + "\", but Ogre::Mesh pointer was null!");
@@ -599,12 +599,12 @@ void EC_RigidBody::OnCollisionMeshAssetLoaded(AssetPtr asset)
 
     if (mesh)
     {
-        if (shapeType.Get() == Shape_TriMesh)
+        if (shapeType.Get() == TriMesh)
         {
             impl->triangleMesh = impl->owner->GetTriangleMeshFromOgreMesh(mesh);
             CreateCollisionShape();
         }
-        if (shapeType.Get() == Shape_ConvexHull)
+        if (shapeType.Get() == ConvexHull)
         {
             impl->convexHullSet = impl->owner->GetConvexHullSetFromOgreMesh(mesh);
             CreateCollisionShape();
@@ -654,7 +654,7 @@ void EC_RigidBody::AttributesChanged()
         if (shapeType.Get() != impl->cachedShapeType || size.Get() != impl->cachedSize)
         {
             // If shape does not involve mesh, can create it directly. Otherwise request the mesh
-            if (shapeType.Get() != Shape_TriMesh && shapeType.Get() != Shape_ConvexHull)
+            if (shapeType.Get() != TriMesh && shapeType.Get() != ConvexHull)
             {
                 CreateCollisionShape();
                 impl->cachedShapeType = shapeType.Get();
@@ -668,7 +668,7 @@ void EC_RigidBody::AttributesChanged()
     // Request mesh if its id changes
     if (collisionMeshRef.ValueChanged())
     {
-        if (shapeType.Get() == Shape_TriMesh || shapeType.Get() == Shape_ConvexHull)
+        if (shapeType.Get() == TriMesh || shapeType.Get() == ConvexHull)
             RequestMesh();
     }
     
@@ -854,9 +854,9 @@ bool EC_RigidBody::IsPrimitiveShape() const
 {
     switch(static_cast<ShapeType>(shapeType.Get()))
     {
-    case Shape_TriMesh:
-    case Shape_HeightField:
-    case Shape_ConvexHull:
+    case TriMesh:
+    case HeightField:
+    case ConvexHull:
         return false;
     default:
         return true;
@@ -875,7 +875,7 @@ void EC_RigidBody::TerrainUpdated(IAttribute* attribute)
     if (!terrain)
         return;
     /// \todo It is suboptimal to regenerate the whole heightfield when just the terrain's transform changes
-    if (attribute == &terrain->nodeTransformation && shapeType.Get() == Shape_HeightField)
+    if (attribute == &terrain->nodeTransformation && shapeType.Get() == HeightField)
         CreateCollisionShape();
 }
 
@@ -921,7 +921,7 @@ void EC_RigidBody::UpdateScale()
         // Note: for now, world scale is purposefully NOT used, because it would be problematic to change the scale when a parenting change occurs
         const float3& scale = placeable->transform.Get().scale;
         // Trianglemesh or convexhull does not have scaling of its own in the shape, so multiply with the size
-        if (shapeType.Get() != Shape_TriMesh && shapeType.Get() != Shape_ConvexHull)
+        if (shapeType.Get() != TriMesh && shapeType.Get() != ConvexHull)
             impl->shape->setLocalScaling(btVector3(scale.x, scale.y, scale.z));
         else
             impl->shape->setLocalScaling(btVector3(sizeVec.x * scale.x, sizeVec.y * scale.y, sizeVec.z * scale.z));
