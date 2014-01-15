@@ -42,6 +42,7 @@ option(TUNDRA_CPP11_ENABLED "Enables usage of certain C++11 features on Tundra."
 if (APPLE)
     set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvm.clang.1_0")
     set(CMAKE_XCODE_ATTRIBUTE_MACOSX_DEPLOYMENT_TARGET "10.6")
+    set(CMAKE_OSX_SYSROOT macosx)
 endif()
 
 if (APPLE AND TUNDRA_CPP11_ENABLED) # todo: Test if this works on Linux too
