@@ -8,6 +8,7 @@
 #include "DebugOperatorNew.h"
 
 #include "IAttribute.h"
+#include "Entity.h"
 #include "IComponent.h"
 #include "CoreTypes.h"
 #include "CoreDefines.h"
@@ -490,19 +491,104 @@ template<> void TUNDRACORE_API Attribute<float4>::FromQVariant(const QVariant &v
     Set(qvariant_cast<float4>(variant), change);
 }
 
+AssetReference AssetReferenceFromQVariant(const QVariant &variant)
+{
+    // String
+    if (variant.type() == QVariant::String)
+        return AssetReference(variant.toString());
+    // QMap/QHash { ref : "ref", type : "type" }
+    else if (variant.type() == QVariant::Map || variant.type() == QVariant::Hash)
+    {
+        AssetReference assetReference;
+        QVariantMap map = variant.toMap();
+        if (map.contains("ref") && map["ref"].type() == QVariant::String)
+            assetReference.ref = map["ref"].toString();
+        if (map.contains("type") && map["type"].type() == QVariant::String)
+            assetReference.type = map["type"].toString();
+        return assetReference;
+    }
+    // Otherwise assume its a AssetReference object.
+    else
+    {
+        AssetReference ref = qvariant_cast<AssetReference>(variant);
+        return qvariant_cast<AssetReference>(variant);
+    }
+}
+
 template<> void TUNDRACORE_API Attribute<AssetReference>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
 {
-    Set(qvariant_cast<AssetReference>(variant), change);
+    /// @bug The type is always ignored by Set() if already set. We need to figure out what to do about this.
+    /// Originally meant as a protection mechanism but this means the type can never be changed, from both C++ and JS.
+    Set(AssetReferenceFromQVariant(variant), change);
+}
+
+AssetReferenceList AssetReferenceListFromQVariant(const QVariant &variant)
+{
+    // QStringList
+    if (variant.type() == QVariant::StringList)
+    {
+        AssetReferenceList refs;
+        foreach(const QString &ref, variant.toStringList())
+            refs.Append(AssetReference(ref));
+        return refs;
+    }
+    // QVariantList
+    if (variant.type() == QVariant::List)
+    {
+        AssetReferenceList refs;
+        foreach(const QVariant &refVariant, variant.toList())
+            refs.Append(AssetReferenceFromQVariant(refVariant));
+        return refs;
+    }
+    // Otherwise assume its a AssetReferenceList object.
+    else
+        return qvariant_cast<AssetReferenceList>(variant);
 }
 
 template<> void TUNDRACORE_API Attribute<AssetReferenceList>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
 {
-    Set(qvariant_cast<AssetReferenceList>(variant), change);
+    Set(AssetReferenceListFromQVariant(variant), change);
+}
+
+EntityReference EntityReferenceFromQVariant(const QVariant &variant)
+{
+    // String
+    if (variant.type() == QVariant::String)
+        return EntityReference(variant.toString());
+    // Signed. Handle separately to avoid flipping to positive on negative numbers. 64bit LongLong will not work correctly, still handle for the lower range.
+    else if (variant.type() == QVariant::Int || variant.type() == QVariant::LongLong)
+        return EntityReference(QString::number(variant.toInt()));
+    // Unsigned. 64bit ULongLong will not work correctly, still handle for the lower range.
+    else if (variant.type() == QVariant::UInt || variant.type() == QVariant::ULongLong)
+        return EntityReference(QString::number(variant.toUInt()));
+    // QMap/QHash { ref : "ref" } or { ref : 10 }
+    else if (variant.type() == QVariant::Map || variant.type() == QVariant::Hash)
+    {
+        QVariantMap map = variant.toMap();
+        if (map.contains("ref"))
+            return EntityReferenceFromQVariant(map["ref"]);
+        return EntityReference();
+    }
+    // Entity*
+    if (dynamic_cast<Entity*>(qvariant_cast<QObject*>(variant)))
+    {
+        EntityReference ref;
+        ref.Set(dynamic_cast<Entity*>(qvariant_cast<QObject*>(variant)));
+        return ref;
+    }
+    else if (!variant.isValid() || variant.isNull())
+        return EntityReference();
+    // Otherwise assume its a AssetReference object.
+    else
+    {
+        EntityReference ref = qvariant_cast<EntityReference>(variant);
+        return qvariant_cast<EntityReference>(variant);
+    }
 }
 
 template<> void TUNDRACORE_API Attribute<EntityReference>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
 {
-    Set(qvariant_cast<EntityReference>(variant), change);
+    Set(EntityReferenceFromQVariant(variant), change);
 }
 
 template<> void TUNDRACORE_API Attribute<QVariant>::FromQVariant(const QVariant &variant, AttributeChange::Type change)

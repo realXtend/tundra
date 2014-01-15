@@ -23,11 +23,11 @@
 QScriptValue toScriptValueIAttribute(QScriptEngine *engine, IAttribute * const &s)
 {
     QScriptValue obj = engine->newObject();
-    if(s)
+    if (s)
     {
         obj.setProperty("name", QScriptValue(engine, s->Name()));
         obj.setProperty("typename", QScriptValue(engine, s->TypeName()));
-        obj.setProperty("value", QScriptValue(engine, s->ToString()));
+        obj.setProperty("value", engine->newVariant(s->ToQVariant()));
         obj.setProperty("owner", qScriptValueFromQObject(engine, s->Owner()));
     }
     else
@@ -39,15 +39,30 @@ QScriptValue toScriptValueIAttribute(QScriptEngine *engine, IAttribute * const &
 
 void fromScriptValueAssetReference(const QScriptValue &obj, AssetReference &s)
 {
+    // Directly a string type
     if (obj.isString())
         s.ref = obj.toString();
     else
     {
-        if (!obj.property("ref").isValid() || !obj.property("ref").isString())
-            LogError("Can't convert QScriptValue to AssetReference! QScriptValue is not a string and it doesn't contain a ref attribute!");
-        s.ref = obj.property("ref").toString();
-        s.type = obj.property("type").toString();
+        // Object must have a 'ref' property.
+        QScriptValue value = obj.property("ref");
+        if (value.isValid() && value.isString())
+        {
+            s.ref = value.toString();
+
+            // Optional 'type' property.
+            value = obj.property("type");
+            if (value.isValid() && value.isString())    
+                s.type = value.toString();
+        }
+        else
+            LogError("Can't convert QScriptValue to AssetReference! QScriptValue must be a string or an object with 'ref' string property.");
     }
+}
+
+QScriptValue AssetReference_prototype_toString(QScriptContext *ctx, QScriptEngine *engine)
+{
+    return QScriptValue(engine, QString("AssetReference(\"%1\", \"%2\")").arg(ctx->thisObject().property("ref").toString()).arg(ctx->thisObject().property("type").toString()));
 }
 
 QScriptValue toScriptValueAssetReference(QScriptEngine *engine, const AssetReference &s)
@@ -55,6 +70,7 @@ QScriptValue toScriptValueAssetReference(QScriptEngine *engine, const AssetRefer
     QScriptValue obj = engine->newObject();
     obj.setProperty("ref", QScriptValue(engine, s.ref));
     obj.setProperty("type", QScriptValue(engine, s.type));
+    obj.setProperty("toString", engine->newFunction(AssetReference_prototype_toString));
     return obj;
 }
 
@@ -67,56 +83,76 @@ void fromScriptValueAssetReferenceList(const QScriptValue &obj, AssetReferenceLi
     while(it.hasNext()) 
     {
         it.next();
-        if (it.value().isString())
-        {
-            AssetReference reference(it.value().toString());
-            s.Append(reference);
-        }
+
+        // Ignore the 'length' property of Array 
+        if (obj.isArray() && it.name() == "length")
+            continue;
+
+        QScriptValue iterObj = it.value();
+        if (iterObj.isFunction())
+            continue;
+        AssetReference ref;
+
+        // Accepts string or object. If anything else 
+        // (null, undefined etc.) we append a empty ref.
+        fromScriptValueAssetReference(iterObj, ref);
+        s.Append(ref);
     }
+}
+
+QScriptValue AssetReferenceList_prototype_toString(QScriptContext *ctx, QScriptEngine *engine)
+{
+    QStringList values;
+    for (qint32 i=0, len=ctx->thisObject().property("length").toInt32(); i<len; ++i)
+        values << "\"" + ctx->thisObject().property(i).toString() + "\"";
+    return QScriptValue(engine, "AssetReferenceList[" + values.join(", ") + "]");
 }
 
 QScriptValue toScriptValueAssetReferenceList(QScriptEngine *engine, const AssetReferenceList &s)
 {
-    QScriptValue obj = engine->newObject();
+    QScriptValue obj = engine->newArray(s.refs.size());
     for(int i = 0; i < s.refs.size(); ++i)
         obj.setProperty(i, QScriptValue(engine, s[i].ref));
+    // Override toString function in the Array, even if we are not actually passing AssetReference objects into it.
+    // We still want nice print that indicates the Attribute type.
+    obj.setProperty("toString", engine->newFunction(AssetReferenceList_prototype_toString));
     return obj;
 }
 
 QScriptValue EntityReference_prototype_Lookup(QScriptContext *ctx, QScriptEngine *engine);
 
+QScriptValue EntityReference_prototype_toString(QScriptContext *ctx, QScriptEngine *engine)
+{
+    return QScriptValue(engine, QString("EntityReference(\"%1\")").arg(ctx->thisObject().property("ref").toString()));
+}
+
 void createEntityReferenceFunctions(QScriptValue &value, QScriptEngine *engine)
 {
     // Expose native functions to script value.
     value.setProperty("Lookup", engine->newFunction(EntityReference_prototype_Lookup));
+    value.setProperty("toString", engine->newFunction(EntityReference_prototype_toString));
 }
 
 void fromScriptValueEntityReference(const QScriptValue &obj, EntityReference &s)
 {
-    if (obj.isString())
+    // Recurse detecting supported basic types for the 'ref' property (has priority over anything else)
+    if (obj.property("ref").isValid())
+        fromScriptValueEntityReference(obj.property("ref"), s);
+    // null/undefined
+    else if (obj.isNull() || obj.isUndefined())
+        s.ref = "";
+    // Entity name
+    else if (obj.isString())
         s.ref = obj.toString();
-    else
+    // Entity id. entity_id_t is uint, negative values are not allowed.
+    else if (obj.isNumber() || obj.isVariant())
+        s.ref = QString::number(obj.toUInt32());
+    // Check if its a Entity*
+    else if (obj.isQObject())
     {
-        if (!obj.property("ref").isValid())
-            LogError("Can't convert QScriptValue to EntityReference! QScriptValue does not contain ref attribute!");
-        else
-        {
-            QScriptValue ref = obj.property("ref");
-            if (ref.isNull())
-                s.ref = ""; // Empty the reference
-            else if (ref.isString())
-                s.ref = ref.toString();
-            else if (ref.isQObject())
-            {
-                // If the object is an Entity, call EntityReference::Set() with it
-                Entity* entity = dynamic_cast<Entity*>(ref.toQObject());
-                s.Set(entity);
-            }
-            else if (ref.isNumber() || ref.isVariant())
-                s.ref = QString::number(ref.toInt32());
-            else
-                LogError("Can't convert QScriptValue to EntityReference! Ref attribute is not null, string, a number, or an entity");
-        }
+        // If the object is an Entity, call EntityReference::Set() with it
+        Entity* entity = qobject_cast<Entity*>(obj.toQObject());
+        s.Set(entity);
     }
 }
 
@@ -128,24 +164,6 @@ QScriptValue toScriptValueEntityReference(QScriptEngine *engine, const EntityRef
     return obj;
 }
 
-QScriptValue EntityReference_prototype_Lookup(QScriptContext *ctx, QScriptEngine *engine)
-{
-    int argCount = ctx->argumentCount();
-    if (argCount != 1)
-        return ctx->throwError(QScriptContext::TypeError, "EntityReference Lookup(): Invalid number of arguments.");
-    
-    if (!ctx->argument(0).isQObject())
-        return ctx->throwError(QScriptContext::TypeError, "EntityReference Lookup(): Argument is not a QObject");
-    
-    Scene* scene = dynamic_cast<Scene*>(ctx->argument(0).toQObject());
-    
-    EntityReference s;
-    fromScriptValueEntityReference(ctx->thisObject(), s);
-    
-    EntityPtr entity = s.Lookup(scene);
-    return engine->newQObject(entity.get());
-}
-
 void fromScriptValueEntityList(const QScriptValue &obj, QList<Entity*> &ents)
 {
     ents.clear();
@@ -153,13 +171,10 @@ void fromScriptValueEntityList(const QScriptValue &obj, QList<Entity*> &ents)
     while(it.hasNext())
     {
         it.next();
-        QObject *qent = it.value().toQObject();
-        if (qent)
-        {
-            Entity *ent = qobject_cast<Entity*>(qent);
-            if (ent)
-                ents.append(ent);
-        }
+        QScriptValue value = it.value();
+        Entity *ent = qobject_cast<Entity*>(value.toQObject());
+        if (ent)
+            ents.append(ent);
     }
 }
 
@@ -173,6 +188,24 @@ QScriptValue toScriptValueEntityList(QScriptEngine *engine, const QList<Entity*>
             obj.setProperty(i, engine->newQObject(ent));
     }
     return obj;
+}
+
+QScriptValue EntityReference_prototype_Lookup(QScriptContext *ctx, QScriptEngine *engine)
+{
+    int argCount = ctx->argumentCount();
+    if (argCount != 1)
+        return ctx->throwError(QScriptContext::TypeError, "EntityReference Lookup(): Invalid number of arguments.");
+
+    if (!ctx->argument(0).isQObject())
+        return ctx->throwError(QScriptContext::TypeError, "EntityReference Lookup(): Argument is not a QObject");
+
+    Scene* scene = dynamic_cast<Scene*>(ctx->argument(0).toQObject());
+
+    EntityReference s;
+    fromScriptValueEntityReference(ctx->thisObject(), s);
+
+    EntityPtr entity = s.Lookup(scene);
+    return engine->newQObject(entity.get());
 }
 
 void fromScriptValueQObjectList(const QScriptValue &obj, QList<QObject*> &objs)
@@ -232,13 +265,10 @@ void fromScriptValueEntityStdList(const QScriptValue &obj, EntityList &ents)
     while(it.hasNext())
     {
         it.next();
-        QObject *qent = it.value().toQObject();
-        if (qent)
-        {
-            Entity *ent = qobject_cast<Entity*>(qent);
-            if (ent)
-                ents.push_back(ent->shared_from_this());
-        }
+        QScriptValue value = it.value();
+        Entity *ent = qobject_cast<Entity*>(value.toQObject());
+        if (ent)
+            ents.push_back(ent->shared_from_this());
     }
 }
 
@@ -365,12 +395,10 @@ void fromScriptValueIAttribute(const QScriptValue & /*obj*/, IAttribute *& /*s*/
 QScriptValue createAssetReference(QScriptContext *ctx, QScriptEngine *engine)
 {
     AssetReference newAssetRef;
-    if (ctx->argumentCount() >= 1)
-        if (ctx->argument(0).isString())
-            newAssetRef.ref = ctx->argument(0).toString();
-    if (ctx->argumentCount() == 2) // Both ref and it's type are given as arguments.
-        if (ctx->argument(1).isString())
-            newAssetRef.type = ctx->argument(0).toString();
+    if (ctx->argumentCount() >= 1 && ctx->argument(0).isString())
+        newAssetRef.ref = ctx->argument(0).toString();
+    if (ctx->argumentCount() == 2 && ctx->argument(1).isString()) // Both ref and it's type are given as arguments.
+        newAssetRef.type = ctx->argument(1).toString();
     return engine->toScriptValue(newAssetRef);
 }
 
@@ -394,6 +422,13 @@ QScriptValue createAssetReferenceList(QScriptContext *ctx, QScriptEngine *engine
     return engine->toScriptValue(newAssetRefList);
 }
 
+QScriptValue createEntityReference(QScriptContext *ctx, QScriptEngine *engine)
+{
+    EntityReference entRef;
+    if (ctx->argumentCount() >= 1)
+        fromScriptValueEntityReference(ctx->argument(0), entRef);
+    return engine->toScriptValue(entRef);
+}
 QScriptValue createIntegerTesterRunner(QScriptContext *ctx, QScriptEngine * /*engine*/)
 {
     if (!ctx->engine() || ctx->thisObject().isNull())
@@ -403,11 +438,9 @@ QScriptValue createIntegerTesterRunner(QScriptContext *ctx, QScriptEngine * /*en
 
 void ExposeCoreTypes(QScriptEngine *engine)
 {
-    qScriptRegisterMetaType(engine, toScriptValueAssetReference, fromScriptValueAssetReference);
-    qScriptRegisterMetaType(engine, toScriptValueAssetReferenceList, fromScriptValueAssetReferenceList);
-    qScriptRegisterMetaType(engine, toScriptValueEntityReference, fromScriptValueEntityReference);
-
-    qScriptRegisterMetaType<ComponentPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
+    qScriptRegisterMetaType<AssetReference>(engine, toScriptValueAssetReference, fromScriptValueAssetReference);
+    qScriptRegisterMetaType<AssetReferenceList>(engine, toScriptValueAssetReferenceList, fromScriptValueAssetReferenceList);
+    qScriptRegisterMetaType<EntityReference>(engine, toScriptValueEntityReference, fromScriptValueEntityReference);
 
     qScriptRegisterMetaType<IAttribute*>(engine, toScriptValueIAttribute, fromScriptValueIAttribute);
     qScriptRegisterMetaType<ScenePtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
@@ -427,6 +460,8 @@ void ExposeCoreTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("AssetReference", ctorAssetReference);
     QScriptValue ctorAssetReferenceList = engine->newFunction(createAssetReferenceList);
     engine->globalObject().setProperty("AssetReferenceList", ctorAssetReferenceList);
+    QScriptValue ctorEntityReference = engine->newFunction(createEntityReference);
+    engine->globalObject().setProperty("EntityReference", ctorEntityReference);
     
     // Test objects
     qScriptRegisterQObjectMetaType<IntegerTestRunner*>(engine);
