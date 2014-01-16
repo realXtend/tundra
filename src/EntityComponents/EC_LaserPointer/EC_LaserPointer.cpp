@@ -42,8 +42,6 @@ EC_LaserPointer::EC_LaserPointer(Scene *scene) :
     id_(""),
     tracking(false)
 {
-    world_ = scene->GetWorld<OgreWorld>();
-
     static AttributeMetadata nonDesignableAttrData;
     static bool metadataInitialized = false;
     if(!metadataInitialized)
@@ -74,7 +72,11 @@ void EC_LaserPointer::CreateLaser()
     if (!ViewEnabled())
         return;
     if (world_.expired())
-        return;
+    {
+        world_ = ParentScene() ? ParentScene()->GetWorld<OgreWorld>() : OgreWorldWeakPtr();
+        if (world_.expired())
+            return;
+    }
     if (laserObject_)
     {
         LogError("EC_LaserPointer::CreateLaser: Laser pointer already created.");
@@ -188,8 +190,6 @@ void EC_LaserPointer::Update(MouseEvent *e)
 void EC_LaserPointer::AttributesChanged()
 {
     if (!ViewEnabled())
-        return;
-    if (world_.expired())
         return;
     if (!laserObject_)
         return;

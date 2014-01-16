@@ -20,7 +20,7 @@ EC_ProximityTrigger::EC_ProximityTrigger(Scene *scene) :
     INIT_ATTRIBUTE_VALUE(thresholdDistance, "Threshold distance", 0.0f),
     INIT_ATTRIBUTE_VALUE(interval, "Trigger signal interval", 0.0f)
 {
-    SetUpdateMode();
+    connect(this, SIGNAL(ParentEntitySet()), this, SLOT(SetUpdateMode()));
 }
 
 EC_ProximityTrigger::~EC_ProximityTrigger()
@@ -99,4 +99,3 @@ void EC_ProximityTrigger::PeriodicUpdate()
     
     Update(intervalSec);
 }
-
