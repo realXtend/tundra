@@ -110,7 +110,8 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float, scaleUfactor);
 
     /// V Scale, factor which defines how many times the texture should be repeated in the v direction.
-    /** @note The current default value is so small 0.002, so it does not show up correctly in EC editor. */    Q_PROPERTY(float scaleVfactor READ getscaleVfactor WRITE setscaleVfactor);
+    /** @note The current default value is so small 0.002, so it does not show up correctly in EC editor. */
+    Q_PROPERTY(float scaleVfactor READ getscaleVfactor WRITE setscaleVfactor);
     DEFINE_QPROPERTY_ATTRIBUTE(float, scaleVfactor);
 
     /// The number of segments to the plane in the x direction.
