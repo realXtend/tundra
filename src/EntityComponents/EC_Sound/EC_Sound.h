@@ -121,6 +121,9 @@ public slots:
     /// Finds from the current scene the SoundListener that is currently active, or null if no SoundListener is active.
     EntityPtr GetActiveSoundListener();
 
+    /// Returns the current sound channel. Can be null if sound is not yet loaded.
+    SoundChannelPtr SoundChannel() const;
+
 private slots:
     /// Update signals to parents signals.
     void UpdateSignals();

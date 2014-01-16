@@ -189,6 +189,11 @@ void EC_Sound::UpdateSoundSettings()
     }
 }
 
+SoundChannelPtr EC_Sound::SoundChannel() const
+{
+    return soundChannel;
+}
+
 EntityPtr EC_Sound::GetActiveSoundListener()
 {
 #ifdef _DEBUG

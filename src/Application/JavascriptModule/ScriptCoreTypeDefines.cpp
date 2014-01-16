@@ -4,6 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "ScriptMetaTypeDefines.h"
+#include "QScriptEngineHelpers.h"
 
 #include "Color.h"
 #include "IAttribute.h"
@@ -12,8 +13,9 @@
 #include "EntityReference.h"
 #include "Entity.h"
 #include "Scene/Scene.h"
+#include "Audio/SoundChannel.h"
+
 #include "LoggingFunctions.h"
-#include "QScriptEngineHelpers.h"
 
 #include <QScriptEngine>
 #include <QScriptValueIterator>
@@ -438,10 +440,12 @@ QScriptValue createIntegerTesterRunner(QScriptContext *ctx, QScriptEngine * /*en
 
 void ExposeCoreTypes(QScriptEngine *engine)
 {
+    // Structs
     qScriptRegisterMetaType<AssetReference>(engine, toScriptValueAssetReference, fromScriptValueAssetReference);
     qScriptRegisterMetaType<AssetReferenceList>(engine, toScriptValueAssetReferenceList, fromScriptValueAssetReferenceList);
     qScriptRegisterMetaType<EntityReference>(engine, toScriptValueEntityReference, fromScriptValueEntityReference);
 
+    // Scene
     qScriptRegisterMetaType<IAttribute*>(engine, toScriptValueIAttribute, fromScriptValueIAttribute);
     qScriptRegisterMetaType<ScenePtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
     qScriptRegisterMetaType<EntityPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
@@ -454,6 +458,9 @@ void ExposeCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType<Entity::ComponentMap>(engine, toScriptValueComponentMap, fromScriptValueComponentMap);
     qScriptRegisterMetaType<Entity::ComponentVector>(engine, toScriptValueComponentVector, fromScriptValueComponentVector);
     qScriptRegisterMetaType<std::string>(engine, toScriptValueStdString, fromScriptValueStdString);
+
+    // Audio
+    qScriptRegisterMetaType<SoundChannelPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
 
     // Register constructors
     QScriptValue ctorAssetReference = engine->newFunction(createAssetReference);
