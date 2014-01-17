@@ -45,10 +45,10 @@ if (!framework.IsHeadless())
 
     // Register input context for listening fullscreen shortcut key
     // todo: Revert this when Mac OS X fullscreen issue is solved
-    if (framework.application.platform != "mac")
-    { 
-        var inputContext = input.RegisterInputContextRaw("RendererSettings", 90);
-        inputContext.KeyPressed.connect(HandleKeyPressed);
+    if (application.platform != "mac")
+    {
+        var ic = input.RegisterInputContextRaw("RendererSettings", 90);
+        ic.RegisterKeyEvent(new QKeySequence(Qt.ControlModifier + Qt.Key_F)).SequencePressed.connect(ToggleFullScreen);
     }
 
     // Shows renderer settings or hides it if it's already visible.
@@ -124,9 +124,9 @@ if (!framework.IsHeadless())
     // Loads window position from config.
     function LoadWindowPositionFromSettings()
     {
-        if (settingsWidget && config.HasValue(configFile, configUiSection, configWinPos))
+        if (settingsWidget && config.HasKey(configFile, configUiSection, configWinPos))
         {
-            var pos = config.Get(configFile, configUiSection, configWinPos);
+            var pos = config.Read(configFile, configUiSection, configWinPos);
             ui.MainWindow().EnsurePositionWithinDesktop(settingsWidget, pos);
         }
     }
@@ -135,21 +135,17 @@ if (!framework.IsHeadless())
     function SaveWindowPositionToSettings()
     {
         if (settingsWidget)
-            config.Set(configFile, configUiSection, configWinPos, settingsWidget.pos);
+            config.Write(configFile, configUiSection, configWinPos, settingsWidget.pos);
     }
 
-    // Looks for Ctrl+F and toggles fullscreen mode.
-    function HandleKeyPressed(e)
+    function ToggleFullScreen()
     {
-        if (e.HasCtrlModifier() && e.keyCode == Qt.Key_F)
+        renderer.fullScreen = !renderer.fullScreen;
+        if (settingsWidget)
         {
-            renderer.fullScreen = !renderer.fullScreen;
-            if (settingsWidget)
-            {
-                var fullscreenCheckBox = findChild(settingsWidget, "fullscreen_toggle");
-                if (fullscreenCheckBox)
-                    fullscreenCheckBox.setChecked(renderer.fullScreen);
-            }
+            var fullscreenCheckBox = findChild(settingsWidget, "fullscreen_toggle");
+            if (fullscreenCheckBox)
+                fullscreenCheckBox.setChecked(renderer.fullScreen);
         }
     }
 
@@ -195,7 +191,7 @@ if (!framework.IsHeadless())
         if (value < 0)
             return;
         application.targetFpsLimit = value;
-        config.Set(configFile, configRenderingSection, configFpsTargetName, application.targetFpsLimit);
+        config.Write(configFile, configRenderingSection, configFpsTargetName, application.targetFpsLimit);
     }
 
     function SetTargetFpsLimitWhenInactive(value)
