@@ -4,7 +4,7 @@
 
 #include "TundraCoreApi.h"
 #include "KeyEvent.h"
-#include "KeyEventSignal.h"
+
 #include "InputFwd.h"
 
 #include <map>
@@ -33,14 +33,15 @@ typedef std::map<Qt::Key, KeyPressInformation> HeldKeysMap;
 class TUNDRACORE_API InputContext : public QObject, public enable_shared_from_this<InputContext>
 {
     Q_OBJECT
+    Q_PROPERTY(QString name READ Name WRITE SetName) /**< @copybrief SetName */
+    Q_PROPERTY(int priority READ Priority WRITE SetPriority)
+    Q_PROPERTY(bool takeMouseEventsOverQt WRITE SetTakeMouseEventsOverQt READ TakesMouseEventsOverQt)
+    Q_PROPERTY(bool takeKeyboardEventsOverQt WRITE SetTakeKeyboardEventsOverQt READ TakesKeyboardEventsOverQt)
+    Q_PROPERTY(QCursor *mouseCursorOverride WRITE SetMouseCursorOverrideInternal READ MouseCursorOverride)
 
 public:
     InputContext(InputAPI *owner, const char *name, int priority);
-
     ~InputContext();
-
-    /// Updates the buffered key presses. Called by the input API to proceed on to the next input frame.
-    void UpdateFrame();
 
 signals:
     /// Emitted for each key code, for each event type.
@@ -102,22 +103,6 @@ public slots:
     /// This is optional. KeyEventSignals are freed properly when the context is destroyed.
     void UnregisterKeyEvent(QKeySequence keySequence);
 
-    /// This function is called by the InpuAPI whenever there is a new
-    /// key event for this context to handle. The event is emitted through
-    /// all relevant signals. You may call this function yourself to inject 
-    /// keyboard events to this context manually.
-    void TriggerKeyEvent(KeyEvent &key);
-
-    /// Constructs a key release event for the given key and calls TriggerKeyEvent for it.
-    /// Use to forcibly release a key that is being held down.
-    void TriggerKeyReleaseEvent(Qt::Key keyCode);
-
-    /// Same as TriggerKeyEvent, but for mouse events.
-    void TriggerMouseEvent(MouseEvent &mouse);
-
-    // Trigger gesture event signals
-    void TriggerGestureEvent(GestureEvent &gesture);
-
     /// Returns the user-defined name of this InputContext. The name cannot be used as an unique identifier, it is only
     /// present for human-readable purposes.
     QString Name() const { return name; }
@@ -148,6 +133,10 @@ public slots:
     /// this frame.
     bool IsKeyReleased(Qt::Key keyCode) const;
 
+    /// Constructs a key release event for the given key and calls TriggerKeyEvent for it.
+    /// Use to forcibly release a key that is being held down.
+    void TriggerKeyReleaseEvent(Qt::Key keyCode);
+
     /// Tells the InputContext whether the given keyCode is automatically
     /// suppressed. This can be used to avoid having to manually set the 
     /// handled-flag to true for each received event.
@@ -170,17 +159,13 @@ public slots:
     /// Forces all held down keys to be released, and the appropriate release events to be sent.
     void ReleaseAllKeys();
 
-    /// Returnts the priority value this context has with respect to the other input contexts. 
+    /// Returns the priority value this context has with respect to the other input contexts.
     /// Higher = more urgent. Used to determine the order in which input is received by the input contexts.
     /// The priority is assigned when the context is created and may not be changed afterwards.
     /// @note A lower priority context may still receive an event "over" a higher priority context,
     /// if that event is going to go to Qt and the higher priority context does not
     /// capture mouse/key events over Qt, but the lover priority context does.
     int Priority() const { return priority; }
-    
-    /// Convenience function to allow for simple
-    /// disconnecting of all signals from Python
-    void disconnectAll() { this->disconnect(); }
 
     /// Specifies the mouse cursor to use in with this input context.
     void SetMouseCursorOverride(QCursor cursor);
@@ -191,7 +176,30 @@ public slots:
     /// Removes mouse cursor from being set in this input context.
     void ClearMouseCursorOverride();
 
+    // DEPRECATED
+    /// @cond PRIVATE
+    void disconnectAll() { this->disconnect(); } ///< Convenience function to allow for simple disconnecting of all signals from Python
+    /// @endcond
+
 private:
+    /// Updates the buffered key presses. Called by the input API to proceed on to the next input frame.
+    void UpdateFrame();
+
+    /// Same as TriggerKeyEvent, but for mouse events.
+    void TriggerMouseEvent(MouseEvent &mouse);
+
+    // Trigger gesture event signals
+    void TriggerGestureEvent(GestureEvent &gesture);
+
+    /// This function is called by the InputAPI whenever there is a new
+    /// key event for this context to handle. The event is emitted through
+    /// all relevant signals. You may call this function yourself to inject 
+    /// keyboard events to this context manually.
+    void TriggerKeyEvent(KeyEvent &key);
+
+    /// QtScript property machinery.
+    void SetMouseCursorOverrideInternal(QCursor *cursor) { if (cursor) SetMouseCursorOverride(*cursor); else ClearMouseCursorOverride(); }
+
     typedef std::map<QKeySequence, KeyEventSignal*> KeyEventSignalMap;
     /// Stores a signal object for each keyboard key code that the user
     /// has registered a signal-slot connection for.
@@ -227,13 +235,8 @@ private:
     int priority;
 
     shared_ptr<QCursor> mouseCursorOverride;
-   
+
     InputAPI *inputApi;
-
-    // InputContexts are noncopyable.
-    InputContext(const InputContext &);
-    void operator=(const InputContext &);
-
     friend class InputAPI;
 };
 Q_DECLARE_METATYPE(InputContext*)
