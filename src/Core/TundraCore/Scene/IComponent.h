@@ -99,7 +99,8 @@ public:
     /// Constructor.
     /** @note scene - and consecutively framework - can be null if component is created unparented
         intentionally, so always remember to perform null checks for them even in the ctor. The ParentEntitySet
-        signal can used internally to know when accessing parent scene, parent entity, or framework is possible. */
+        signal can used internally to know when accessing parent scene, parent entity, or framework is possible.
+        This signal will always be emitted before attribute change signals for the component's attributes. */
     explicit IComponent(Scene* scene);
     /// @endcond PRIVATE
 
