@@ -24,17 +24,19 @@ InputContext::~InputContext()
 {
     for(KeyEventSignalMap::iterator iter = registeredKeyEventSignals.begin();
         iter != registeredKeyEventSignals.end(); ++iter)
+    {
         delete iter->second;
+    }
 }
 
-KeyEventSignal &InputContext::RegisterKeyEvent(QKeySequence keySequence)
+KeyEventSignal *InputContext::RegisterKeyEvent(QKeySequence keySequence)
 {
     KeyEventSignalMap::iterator iter = registeredKeyEventSignals.find(keySequence);
     if (iter != registeredKeyEventSignals.end())
-        return *iter->second;
+        return iter->second;
     KeyEventSignal *signal = new KeyEventSignal(keySequence);
     registeredKeyEventSignals[keySequence] = signal;
-    return *signal;
+    return signal;
 }
 
 void InputContext::UnregisterKeyEvent(QKeySequence keySequence)
@@ -49,7 +51,7 @@ void InputContext::UnregisterKeyEvent(QKeySequence keySequence)
 
 void InputContext::TriggerKeyEvent(KeyEvent &key)
 {
-    KeyEventSignalMap::iterator keySignal = registeredKeyEventSignals.find(key.keyCode);
+    KeyEventSignalMap::iterator keySignal = registeredKeyEventSignals.find(key.sequence);
     switch(key.eventType)
     {
     case KeyEvent::KeyPressed:
@@ -59,7 +61,7 @@ void InputContext::TriggerKeyEvent(KeyEvent &key)
         emit KeyPressed(&key);
         // 3. Emit the key code -specific signal for specific event.
         if (keySignal != registeredKeyEventSignals.end())
-            keySignal->second->OnKeyPressed(key);
+            keySignal->second->OnKeyPressed(&key);
         break;
     case KeyEvent::KeyDown:
         if (!IsKeyDownImmediate(key.keyCode))
@@ -77,7 +79,7 @@ void InputContext::TriggerKeyEvent(KeyEvent &key)
         emit KeyEventReceived(&key); // 1.
         emit KeyReleased(&key); // 2.
         if (keySignal != registeredKeyEventSignals.end())
-            keySignal->second->OnKeyReleased(key); // 3.
+            keySignal->second->OnKeyReleased(&key); // 3.
         break;
     default:
         assert(false);

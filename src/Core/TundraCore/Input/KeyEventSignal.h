@@ -13,27 +13,18 @@ class TUNDRACORE_API KeyEventSignal : public QObject
     Q_OBJECT
 
 signals:
-    void SequencePressed(KeyEvent &key);
-
-    void SequenceReleased(KeyEvent &key);
+    void SequencePressed(KeyEvent *key);
+    void SequenceReleased(KeyEvent *key);
+//    void SequenceDown(KeyEvent *key);
 
 public:
-    explicit KeyEventSignal(QKeySequence keySequence_)
-    :keySequence(keySequence_)
-    {}
+    explicit KeyEventSignal(QKeySequence sequence) : keySequence(sequence) {}
 
     /// This is the key sequence that this key signal is triggered for.
     const QKeySequence keySequence;
 
-public slots:
-    void OnKeyPressed(KeyEvent &key) { emit SequencePressed(key); }
-//    void OnKeyDown(KeyEvent &key) { emit KeyDown(key); }
-    void OnKeyReleased(KeyEvent &key) { emit SequenceReleased(key); }
-
-private:
-    // KeyEventSignal is noncopyable.
-    KeyEventSignal(const KeyEventSignal &);
-    void operator=(const KeyEventSignal &);
+    void OnKeyPressed(KeyEvent *key) { emit SequencePressed(key); }
+//    void OnKeyDown(KeyEvent *key) { emit SequenceDown(key); }
+    void OnKeyReleased(KeyEvent *key) { emit SequenceReleased(key); }
 };
-
-
+Q_DECLARE_METATYPE(KeyEventSignal*);

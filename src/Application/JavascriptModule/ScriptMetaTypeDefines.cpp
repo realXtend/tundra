@@ -39,6 +39,7 @@
 #include "Math/MathFunc.h"
 #include "QScriptEngineHelpers.h"
 #include "InputAPI.h"
+#include "KeyEventSignal.h"
 
 #include <QFile>
 #include <QFontDatabase>
@@ -256,6 +257,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("math", mathNamespace, QScriptValue::Undeletable | QScriptValue::ReadOnly);
 
     // Input metatypes.
+    qScriptRegisterQObjectMetaType<KeyEventSignal*>(engine);
     qScriptRegisterQObjectMetaType<MouseEvent*>(engine);
     qScriptRegisterQObjectMetaType<KeyEvent*>(engine);
     qScriptRegisterQObjectMetaType<GestureEvent*>(engine);

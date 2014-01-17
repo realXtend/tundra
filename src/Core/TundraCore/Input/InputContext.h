@@ -97,7 +97,7 @@ public slots:
     /// connect to one of the member signals of the returned object.
     /// You do not need to hold on to the received signal
     /// object, it will be remembered and freed along with the context.
-    KeyEventSignal &RegisterKeyEvent(QKeySequence keySequence);
+    KeyEventSignal *RegisterKeyEvent(QKeySequence keySequence);
 
     /// Stops signals from being triggered for the given key sequence in this context.
     /// This is optional. KeyEventSignals are freed properly when the context is destroyed.
