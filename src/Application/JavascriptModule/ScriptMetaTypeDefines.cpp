@@ -292,6 +292,14 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     keyEventNs.setProperty("KeyReleased", KeyEvent::KeyReleased, QScriptValue::Undeletable | QScriptValue::ReadOnly);
     engine->globalObject().setProperty("KeyEvent", keyEventNs, QScriptValue::Undeletable | QScriptValue::ReadOnly);
 
+    QScriptValue gestureEventNs = engine->newObject();
+    gestureEventNs.setProperty("GestureInvalid", GestureEvent::GestureInvalid, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    gestureEventNs.setProperty("GestureStarted", GestureEvent::GestureStarted, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    gestureEventNs.setProperty("GestureUpdated", GestureEvent::GestureUpdated, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    gestureEventNs.setProperty("GestureFinished", GestureEvent::GestureFinished, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    gestureEventNs.setProperty("GestureCanceled", GestureEvent::GestureCanceled, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("GestureEvent", gestureEventNs, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+
     // Scene metatypes.
     qScriptRegisterQObjectMetaType<SceneAPI*>(engine);
     qScriptRegisterQObjectMetaType<Scene*>(engine);
@@ -336,6 +344,16 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     // Console metatypes.
     qScriptRegisterQObjectMetaType<ConsoleAPI*>(engine);
     qScriptRegisterQObjectMetaType<ConsoleCommand*>(engine);
+    // enum LogChannel
+    engine->globalObject().setProperty("LogChannelError", LogChannelError, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("LogChannelWarning", LogChannelWarning, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("LogChannelInfo", LogChannelInfo, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("LogChannelDebug", LogChannelDebug, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("LogLevelQuiet", LogLevelQuiet, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("LogLevelErrorsOnly", LogLevelErrorsOnly, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("LogLevelErrorWarning", LogLevelErrorWarning, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("LogLevelErrorWarnInfo", LogLevelErrorWarnInfo, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("LogLevelErrorWarnInfoDebug",LogLevelErrorWarnInfoDebug, QScriptValue::Undeletable | QScriptValue::ReadOnly);
 
     // Frame metatypes.
     qScriptRegisterQObjectMetaType<FrameAPI*>(engine);
@@ -360,6 +378,39 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, toScriptValueEnum<IAssetStorage::ChangeType>, fromScriptValueEnum<IAssetStorage::ChangeType>);
     qScriptRegisterMetaType(engine, toScriptValueEnum<IAssetStorage::TrustState>, fromScriptValueEnum<IAssetStorage::TrustState>);
 
+    QScriptValue assetApiNs = engine->newObject();
+    //enum AssetAPI::FileQueryResult
+    assetApiNs.setProperty("FileQueryLocalFileFound", AssetAPI::FileQueryLocalFileFound, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    assetApiNs.setProperty("FileQueryLocalFileMissing", AssetAPI::FileQueryLocalFileMissing, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    assetApiNs.setProperty("FileQueryExternalFile", AssetAPI::FileQueryExternalFile, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    //enum AssetAPI::AssetRefType
+    assetApiNs.setProperty("AssetRefInvalid", AssetAPI::AssetRefInvalid, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    assetApiNs.setProperty("AssetRefLocalPath", AssetAPI::AssetRefLocalPath, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    assetApiNs.setProperty("AssetRefRelativePath", AssetAPI::AssetRefRelativePath, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    assetApiNs.setProperty("AssetRefLocalUrl", AssetAPI::AssetRefLocalUrl, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    assetApiNs.setProperty("AssetRefExternalUrl", AssetAPI::AssetRefExternalUrl, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    assetApiNs.setProperty("AssetRefNamedStorage", AssetAPI::AssetRefNamedStorage, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("AssetAPI", assetApiNs, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+
+    QScriptValue iassetNs = engine->newObject();
+    //enum IAsset::SourceType
+    iassetNs.setProperty("Original", IAsset::Original, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    iassetNs.setProperty("Cached", IAsset::Cached, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    iassetNs.setProperty("Programmatic", IAsset::Programmatic, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    iassetNs.setProperty("Bundle", IAsset::Bundle, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("IAsset", iassetNs, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+
+    QScriptValue iassetStorageNs = engine->newObject();
+    //enum IAssetStorage::ChangeType
+    iassetStorageNs.setProperty("AssetCreate", IAssetStorage::AssetCreate, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    iassetStorageNs.setProperty("AssetModify", IAssetStorage::AssetModify, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    iassetStorageNs.setProperty("AssetDelete", IAssetStorage::AssetDelete, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    //enum IAssetStorage::TrustState
+    iassetStorageNs.setProperty("StorageUntrusted", IAssetStorage::StorageUntrusted, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    iassetStorageNs.setProperty("StorageTrusted", IAssetStorage::StorageTrusted, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    iassetStorageNs.setProperty("StorageAskTrust", IAssetStorage::StorageAskTrust, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("IAssetStorage", iassetStorageNs, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+
     // Ui metatypes.
     qScriptRegisterQObjectMetaType<UiMainWindow*>(engine);
     qScriptRegisterQObjectMetaType<UiGraphicsView*>(engine);
@@ -374,6 +425,16 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, toScriptValueEnum<SoundChannel::SoundType>, fromScriptValueEnum<SoundChannel::SoundType>);
     qScriptRegisterQObjectMetaType<SoundChannel*>(engine);
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<SoundChannel>, qScriptValueToBoostSharedPtr<SoundChannel>);
+    QScriptValue soundChannelNs = engine->newObject();
+    // enum SoundChannel::SoundState
+    soundChannelNs.setProperty("Stopped", SoundChannel::Stopped, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    soundChannelNs.setProperty("Pending", SoundChannel::Pending, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    soundChannelNs.setProperty("Playing", SoundChannel::Playing, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    // enum SoundChannel::SoundType
+    soundChannelNs.setProperty("Triggered", SoundChannel::Triggered, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    soundChannelNs.setProperty("Ambient", SoundChannel::Ambient, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    soundChannelNs.setProperty("Voice", SoundChannel::Voice, QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    engine->globalObject().setProperty("SoundChannel", soundChannelNs, QScriptValue::Undeletable | QScriptValue::ReadOnly);
 
     // Renderer metatypes
     qScriptRegisterQObjectMetaType<RaycastResult*>(engine);

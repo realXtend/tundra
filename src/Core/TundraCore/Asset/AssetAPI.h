@@ -47,6 +47,8 @@ typedef std::map<QString, AssetBundleMonitorPtr, QStringLessThanNoCase> AssetBun
 class TUNDRACORE_API AssetAPI : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(FileQueryResult)
+    Q_ENUMS(AssetRefType)
 
 public:
     AssetAPI(Framework *fw, bool headless);
