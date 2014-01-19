@@ -9,7 +9,7 @@ if (!framework.IsHeadless())
     engine.ImportExtension("qt.gui");
     
     ui.ContextMenuAboutToOpen.connect(OnContextMenu);
-    framework.Scene().SceneCreated.connect(OnSceneAdded);
+    framework.Scene().SceneAdded.connect(OnSceneAdded);
 }
 
 var scene = null;
@@ -21,7 +21,7 @@ var entityLocateMinDistance = 10.0; // Be at least this distance away from the o
 
 function OnSceneAdded(newScene)
 {
-    scene = newScene;
+    scene = framework.Scene().SceneByName(newScene);
     scene.SceneCleared.connect(OnSceneCleared);
     scene.EntityCreated.connect(OnEntityCreated)
     CreateCamera(scene);
