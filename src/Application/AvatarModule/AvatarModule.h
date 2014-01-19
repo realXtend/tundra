@@ -6,8 +6,8 @@
 #include "AvatarModuleApi.h"
 
 #include <QPointer>
-#include <QScriptEngine>
 
+class QScriptEngine;
 class AvatarEditor;
 
 /// Provides EC_Avatar.

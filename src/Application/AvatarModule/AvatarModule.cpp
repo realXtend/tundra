@@ -18,14 +18,17 @@
 #include "IComponentFactory.h"
 #include "UiAPI.h"
 #include "UiMainWindow.h"
-#include "../JavascriptModule/JavascriptModule.h"
-#include "AvatarModuleScriptTypeDefines.h"
+#include "JavascriptModule.h"
 #include "StaticPluginRegistry.h"
+#include "QScriptEngineHelpers.h"
+
+#include <QScriptEngine>
 
 #include "MemoryLeakCheck.h"
 
 AvatarModule::AvatarModule() : IModule("Avatar")
 {
+    qRegisterMetaType<AvatarDescAssetPtr>("AvatarDescAssetPtr");
 }
 
 AvatarModule::~AvatarModule()
@@ -54,7 +57,7 @@ void AvatarModule::Initialize()
         "Edits the avatar in a specific entity. Usage: editAvatar(entityname)",
         this, SLOT(EditAvatarConsole(const QString &)));
 
-    JavascriptModule *javascriptModule = framework_->GetModule<JavascriptModule>();
+    JavascriptModule *javascriptModule = framework_->Module<JavascriptModule>();
     if (javascriptModule)
         connect(javascriptModule, SIGNAL(ScriptEngineCreated(QScriptEngine*)), SLOT(OnScriptEngineCreated(QScriptEngine*)));
     else
@@ -114,7 +117,7 @@ void AvatarModule::EditAvatarConsole(const QString &entityName)
 
 void AvatarModule::OnScriptEngineCreated(QScriptEngine *engine)
 {
-    RegisterAvatarModuleMetaTypes(engine);
+    qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<AvatarDescAsset>, qScriptValueToBoostSharedPtr<AvatarDescAsset>);
 }
 
 extern "C"
@@ -126,7 +129,6 @@ DEFINE_STATIC_PLUGIN_MAIN(AvatarModule)
 #endif
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
-    IModule *module = new AvatarModule();
-    fw->RegisterModule(module);
+    fw->RegisterModule(new AvatarModule());
 }
 }

@@ -124,4 +124,4 @@ public:
 };
 
 typedef shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
-
+Q_DECLARE_METATYPE(AvatarDescAssetPtr)

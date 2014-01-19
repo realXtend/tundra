@@ -23,7 +23,8 @@ add_definitions (-DAVATAR_MODULE_EXPORTS)
 
 # Includes
 UseTundraCore()
-use_core_modules(TundraCore Math OgreRenderingModule JavascriptModule)
+use_core_modules(TundraCore Math OgreRenderingModule)
+use_app_modules(JavascriptModule)
 if (NOT ANDROID)
     use_app_modules(ECEditorModule)
 endif ()
