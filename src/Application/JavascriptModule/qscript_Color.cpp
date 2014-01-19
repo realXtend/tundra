@@ -1,5 +1,6 @@
 #include "QtScriptBindingsHelpers.h"
 #include "Color.h"
+#include "Math/float4.h"
 
 void ToExistingScriptValue_Color(QScriptEngine *engine, const Color &value, QScriptValue obj)
 {

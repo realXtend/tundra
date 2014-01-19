@@ -1,3 +1,6 @@
+#include "Math/MathAll.h"
+#include "Geometry/GeometryAll.h"
+#include "Algorithm/Random/LCG.h"
 #include "QtScriptBindingsHelpers.h"
 
 void ToExistingScriptValue_Triangle(QScriptEngine *engine, const Triangle &value, QScriptValue obj)

@@ -1,3 +1,6 @@
+#include "Math/MathAll.h"
+#include "Geometry/GeometryAll.h"
+#include "Algorithm/Random/LCG.h"
 #include "QtScriptBindingsHelpers.h"
 
 void ToExistingScriptValue_ScaleOp(QScriptEngine *engine, const ScaleOp &value, QScriptValue obj)

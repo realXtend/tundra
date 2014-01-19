@@ -1,3 +1,6 @@
+#include "Math/MathAll.h"
+#include "Geometry/GeometryAll.h"
+#include "Algorithm/Random/LCG.h"
 #include "QtScriptBindingsHelpers.h"
 
 void ToExistingScriptValue_Sphere(QScriptEngine *engine, const Sphere &value, QScriptValue obj)

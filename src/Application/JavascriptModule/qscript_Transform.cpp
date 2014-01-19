@@ -1,3 +1,4 @@
+#include "Transform.h"
 #include "QtScriptBindingsHelpers.h"
 
 void ToExistingScriptValue_Transform(QScriptEngine *engine, const Transform &value, QScriptValue obj)

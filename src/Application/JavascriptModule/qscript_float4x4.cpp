@@ -1,3 +1,6 @@
+#include "Math/MathAll.h"
+#include "Geometry/GeometryAll.h"
+#include "Algorithm/Random/LCG.h"
 #include "QtScriptBindingsHelpers.h"
 
 void ToExistingScriptValue_float4x4(QScriptEngine *engine, const float4x4 &value, QScriptValue obj)

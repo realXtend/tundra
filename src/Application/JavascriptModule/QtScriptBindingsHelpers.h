@@ -8,39 +8,16 @@
 
 #include "Win.h"
 
+#include <QStringList>
 #include <QScriptValue>
 #include <QScriptContext>
 #include <QScriptEngine>
 #include <QVariant>
-
 #include <QScriptClass>
 Q_DECLARE_METATYPE(QScriptClass*)
 
-///\todo Remove these from here and move them to the programmatically generated files.
-#include "Geometry/AABB.h"
-#include "Geometry/Circle.h"
-#include "Geometry/Capsule.h"
-#include "Math/float2.h"
-#include "Math/float3.h"
-#include "Math/float3x3.h"
-#include "Math/float3x4.h"
-#include "Math/float4.h"
-#include "Math/float4x4.h"
-#include "Geometry/Frustum.h"
-#include "Geometry/HitInfo.h"
-#include "Algorithm/Random/LCG.h"
-#include "Geometry/Line.h"
-#include "Geometry/LineSegment.h"
-#include "Geometry/OBB.h"
-#include "Geometry/Plane.h"
-#include "Geometry/Polygon.h"
-#include "Geometry/Polyhedron.h"
-#include "Math/Quat.h"
-#include "Geometry/Ray.h"
-#include "Geometry/Sphere.h"
-#include "Math/TransformOps.h"
-#include "Geometry/Triangle.h"
-#include "Transform.h"
+class float3;
+class LineSegment;
 
 template<typename T>
 bool QSVIsOfType(const QScriptValue &value)
@@ -68,4 +45,3 @@ inline void PrintCallStack(const QStringList &callStack)
         printf("   %s\n", i.toStdString().c_str());
     }
 }
-

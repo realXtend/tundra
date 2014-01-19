@@ -1,3 +1,4 @@
+#include "Algorithm/Random/LCG.h"
 #include "QtScriptBindingsHelpers.h"
 
 void ToExistingScriptValue_LCG(QScriptEngine * /*engine*/, const LCG & /*value*/, QScriptValue /*obj*/)
