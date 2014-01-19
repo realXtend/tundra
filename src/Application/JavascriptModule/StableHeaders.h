@@ -9,4 +9,5 @@
 
 #include <QtCore>
 #include <QtGui>
+#include <QtScript>
 #endif
