@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   JavascriptInstance.h
- *  @brief  Javascript script instance used wit EC_Script.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   JavascriptInstance.h
+    @brief  Javascript script instance used wit EC_Script. */
 
 #pragma once
 
@@ -131,4 +130,3 @@ private:
 private slots:
     void OnSignalHandlerException(const QScriptValue& exception);
 };
-

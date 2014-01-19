@@ -1,11 +1,20 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   JavascriptModule.h
- *  @brief  Enables Javascript execution and scripting by using QtScript.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   JavascriptModule.h
+    @brief  Enables Javascript execution and scripting by using QtScript. */
 
 #pragma once
+
+#if defined (_WINDOWS)
+#if defined(JAVASCRIPT_MODULE_EXPORTS)
+#define JAVASCRIPT_MODULE_API __declspec(dllexport)
+#else
+#define JAVASCRIPT_MODULE_API __declspec(dllimport)
+#endif
+#else
+#define JAVASCRIPT_MODULE_API
+#endif
 
 #include "IModule.h"
 #include "AttributeChangeType.h"
@@ -18,17 +27,13 @@
 class JavascriptInstance;
 
 /// Enables Javascript execution and scripting by using QtScript.
-class JavascriptModule : public IModule
+class JAVASCRIPT_MODULE_API JavascriptModule : public IModule
 {
     Q_OBJECT
 
 public:
     JavascriptModule();
     ~JavascriptModule();
-
-    void Load();
-    void Initialize();
-    void Uninitialize();
 
     /// Prepares script instance by registering all needed services to it.
     /** If script is part of the scene, i.e. EC_Script component is present, we add some special services.
@@ -53,6 +58,10 @@ signals:
     void ScriptEngineCreated(QScriptEngine* engine);
 
 private:
+    void Load();
+    void Initialize();
+    void Uninitialize();
+
     /// Parses the plugin startup configuration file to detect which startup scripts should be run.
     /** @return Returns a QStringList of script paths */
     QStringList ParseStartupScriptConfig();

@@ -1,9 +1,8 @@
 /**
- *  For conditions of distribution and use, see copyright notice in LICENSE
- *
- *  @file   JavascriptInstance.cpp
- *  @brief  Javascript script instance used wit EC_Script.
- */
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   JavascriptInstance.cpp
+    @brief  Javascript script instance used wit EC_Script. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"

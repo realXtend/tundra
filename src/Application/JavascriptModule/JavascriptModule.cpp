@@ -274,7 +274,7 @@ void JavascriptModule::ComponentAdded(Entity* entity, IComponent* comp, Attribut
         connect(comp, SIGNAL(ClassNameChanged(const QString&)), this, SLOT(ScriptClassNameChanged(const QString&)), Qt::UniqueConnection);
         // Set the script component's isClient & isServer flags to determine run mode
         EC_Script* script = checked_static_cast<EC_Script*>(comp);
-        TundraLogic::TundraLogicModule *tundra = framework_->GetModule<TundraLogic::TundraLogicModule>();
+        TundraLogicModule *tundra = framework_->Module<TundraLogicModule>();
         bool isServer = tundra->IsServer();
         bool isClient = !isServer;
         /// \hack Currently we use the scene's name to recognize the single-user scene: it will have both client and server flags set
@@ -722,7 +722,6 @@ DEFINE_STATIC_PLUGIN_MAIN(JavascriptModule)
 #endif
 {
     Framework::SetInstance(fw); // Inside this DLL, remember the pointer to the global framework object.
-    IModule *module = new JavascriptModule();
-    fw->RegisterModule(module);
+    fw->RegisterModule(new JavascriptModule());
 }
 }
