@@ -252,7 +252,7 @@ T *Framework::Module() const
 {
     for(size_t i = 0; i < modules.size(); ++i)
     {
-        T *module = dynamic_cast<T*>(modules[i].get());
+        T *module = qobject_cast<T*>(modules[i].get());
         if (module)
             return module;
     }
