@@ -367,6 +367,25 @@ bool OgreMeshAsset::GenerateMeshData()
        DeserializeFromData - see https://github.com/realXtend/naali/blob/1806ea04057d447263dbd7cf66d5731c36f4d4a3/src/Core/OgreRenderingModule/OgreMeshAsset.cpp#L89
     */
     
+    // Check for manual LOD levels that reference to other meshes.
+    // These must be marked as dependencies.
+    // @todo getLodLevel() produces some nasty exception/error prints. This is the only way I can find to get the manual mesh name.
+    // And while returning it, it tries to load the mesh from the resource system, which naturally fails at this point!
+    // @note getNumLodLevels() includes the original model!
+    if (ogreMesh->isLodManual() && ogreMesh->getNumLodLevels() > 1)
+    {
+        references_.clear();
+        for(ushort i=1; i<ogreMesh->getNumLodLevels(); ++i)
+        {
+            const Ogre::MeshLodUsage &usage = ogreMesh->getLodLevel(i);
+            QString lodMeshRefAbsolute = assetAPI->ResolveAssetRef(Name(), QString::fromStdString(usage.manualName));
+            references_.push_back(AssetReference(lodMeshRefAbsolute, "OgreMesh"));
+
+            // Update the manual mesh name
+            ogreMesh->updateManualLodLevel(i, AssetAPI::SanitateAssetRef(lodMeshRefAbsolute).toStdString());
+        }
+    }
+
     // Generate tangents to mesh
     try
     {

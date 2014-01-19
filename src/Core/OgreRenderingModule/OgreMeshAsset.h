@@ -34,6 +34,9 @@ public:
     /// Ogre threaded load listener. Ogre::ResourceBackgroundQueue::Listener override.
     virtual void operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result);
 
+    /// Dependency references. This will include other meshes referenced by manual LOD levels, if defined.
+    virtual std::vector<AssetReference> FindReferences() const { return references_; }
+
     /// Loaded Ogre mesh asset, null if not loaded.
     Ogre::MeshPtr ogreMesh;
 
@@ -97,5 +100,8 @@ private:
 
     /// Triangle counts per submesh.
     std::vector<int> subMeshTriangleCounts;
+
+    /// Dependency references.
+    std::vector<AssetReference> references_;
 };
 Q_DECLARE_METATYPE(OgreMeshAsset*)
