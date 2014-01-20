@@ -32,6 +32,7 @@ InputAPI::InputAPI(Framework *framework_)
 lastMouseY(0),
 mouseCursorVisible(true),
 gesturesEnabled(false),
+releaseInputWhenApplicationInactive(true),
 //sceneMouseCapture(NoMouseCapture),
 mouseFPSModeEnterX(0),
 mouseFPSModeEnterY(0),
@@ -994,7 +995,7 @@ void InputAPI::Update(float /*frametime*/)
     // If at any time we don't have main application window focus, release all input
     // so that keys don't get stuck when the window is reactivated. (The key release might be passed
     // to another window instead and our app keeps thinking that the key is being held down.)
-    if (!QApplication::activeWindow())
+    if (releaseInputWhenApplicationInactive && !QApplication::activeWindow())
     {
         SceneReleaseAllKeys();
         SceneReleaseMouseButtons();
