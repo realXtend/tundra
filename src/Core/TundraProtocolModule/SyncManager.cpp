@@ -643,10 +643,12 @@ void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const
     if (isServer && (type & EntityAction::Peers) != 0)
     {
         msg.executionType = (u8)EntityAction::Local; // Propagate as local actions.
+        // On server, queue the actions and send after entity sync
+        /// \todo Making copy is inefficient, consider storing pointers
         foreach(UserConnectionPtr c, owner_->GetServer()->UserConnections())
         {
             if (c->properties["authenticated"].toBool() == true)
-                c->Send(msg);
+                c->syncState->queuedActions.push_back(msg);
         }
     }
 }
@@ -1720,6 +1722,16 @@ void SyncManager::ProcessSyncState(UserConnection* user)
         if (removeState)
             state->entities.erase(entityState.id);
     }
+
+    // Send queued entity actions after scene sync
+    if (state->queuedActions.size())
+    {
+        for (size_t i = 0; i < state->queuedActions.size(); ++i)
+            user->Send(state->queuedActions[i]);
+
+        state->queuedActions.clear();
+    }
+
     //if (numMessagesSent)
     //    std::cout << "Sent " << numMessagesSent << " scenesync messages" << std::endl;
 }
@@ -2670,7 +2682,7 @@ void SyncManager::HandleEntityAction(UserConnection* source, MsgEntityAction& ms
         msg.executionType = (u8)EntityAction::Local;
         foreach(UserConnectionPtr userConn, owner_->GetServer()->UserConnections())
             if (userConn.get() != source) // The EC action will not be sent to the machine that originated the request to send an action to all peers.
-                userConn->Send(msg);
+                userConn->syncState->queuedActions.push_back(msg);
         handled = true;
     }
     

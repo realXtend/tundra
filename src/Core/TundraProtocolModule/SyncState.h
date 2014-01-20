@@ -11,6 +11,7 @@
 #include "kNet/Types.h"
 #include "Transform.h"
 #include "Math/float3.h"
+#include "MsgEntityAction.h"
 
 #include <QObject>
 #include <QVariant>
@@ -298,6 +299,9 @@ public:
     float3 clientLocation;  //Clients current pos
     float3 initialLocation; //Clients initial pos
     bool locationInitialized;
+
+    /// Queued EntityAction messages. These will be sent to the user on the next network update tick.
+    std::vector<MsgEntityAction> queuedActions;
 
 signals:
     /// This signal is emitted when a entity is being added to the client sync state.
