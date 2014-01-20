@@ -324,25 +324,28 @@ fi
 
 cd $build
 
-# Always build boost due to websocketpp needing it
-what=boost
-urlbase=http://downloads.sourceforge.net/project/boost/boost/1.46.1
-pkgbase=boost_1_46_1
-dlurl=$urlbase/$pkgbase.tar.gz    
-if test -f $tags/$what-done; then
-    echoInfo "$what is done"
-else
-    rm -rf $pkgbase
-    zip=$tarballs/$pkgbase.tar.gz
-    test -f $zip || echoInfo "Fetching $what, this may take a while... " && curl -L -o $zip $dlurl
-    tar xzf $zip
+if [ $USE_BOOST == "ON" ]; then
+    what=boost
+    urlbase=http://downloads.sourceforge.net/project/boost/boost/1.49.0
+    pkgbase=boost_1_49_0
+    dlurl=$urlbase/$pkgbase.tar.gz    
+    if test -f $tags/$what-done; then
+        echoInfo "$what is done"
+    else
+        rm -rf $pkgbase
+        zip=$tarballs/$pkgbase.tar.gz
+        test -f $zip || echoInfo "Fetching $what, this may take a while... " && curl -L -o $zip $dlurl
+        tar xzf $zip
 
-    cd $pkgbase
-    echoInfo "Building $what"
-    ./bootstrap.sh --prefix=$prefix/$what
-    ./bjam toolset=darwin link=static threading=multi --with-thread --with-regex --with-system --with-date_time install
-    cp LICENSE_1_0.txt $prefix/$what
-    touch $tags/$what-done
+        cd $pkgbase
+        echoInfo "Building $what"
+        ./bootstrap.sh --prefix=$prefix/$what
+        ./bjam toolset=darwin link=static threading=multi --with-thread --with-regex --with-system --with-date_time install
+        cp LICENSE_1_0.txt $prefix/$what
+        touch $tags/$what-done
+    fi
+else
+    echoInfo "'--use-boost' or '-ub' was not specified. Skipping boost."
 fi
 
 cd $build
@@ -506,7 +509,7 @@ else
 
     make VERBOSE=1 -j$NPROCS
     make install
-    cp COPYING $prefix/$what
+    cp COPYING.txt $prefix/$what
     touch $tags/$what-done
 fi
 
@@ -614,7 +617,7 @@ else
     cd ..
     mkdir -p $viewer/bin/qtplugins $prefix/$what
     cp -Rf $build/$what/plugins/script $viewer/bin/qtplugins
-    cp $build/$what/LICENCE.LGPL $prefix/$what
+    cp $build/$what/LICENSE.LGPL $prefix/$what
     touch $tags/$what-done
 fi
 
@@ -647,7 +650,7 @@ else
     mkdir -p $prefix/$what/{lib,include}
     cp lib/libkNet.dylib $prefix/$what/lib/
     rsync -r include/* $prefix/$what/include/
-    cp LICENCE.txt $prefix/$what
+    cp LICENSE.txt $prefix/$what
     touch $tags/$what-done
 fi
 
@@ -777,7 +780,7 @@ else
     make -j$NPROCS
     make install
 
-    cp LICENCE $prefix/$what
+    cp LICENSE $prefix/$what
     touch $tags/$what-done
 fi
 

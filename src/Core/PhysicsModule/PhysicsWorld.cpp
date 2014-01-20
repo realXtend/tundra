@@ -38,8 +38,8 @@ namespace
 
 struct CollisionSignal
 {
-    EC_RigidBody *bodyA;
-    EC_RigidBody *bodyB;
+    weak_ptr<EC_RigidBody> bodyA;
+    weak_ptr<EC_RigidBody> bodyB;
     float3 position;
     float3 normal;
     float distance;
@@ -291,8 +291,8 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
                 btManifoldPoint& point = contactManifold->getContactPoint(j);
                 
                 CollisionSignal s;
-                s.bodyA = bodyA;
-                s.bodyB = bodyB;
+                s.bodyA = static_pointer_cast<EC_RigidBody>(bodyA->shared_from_this());
+                s.bodyB = static_pointer_cast<EC_RigidBody>(bodyB->shared_from_this());
                 s.position = point.m_positionWorldOnB;
                 s.normal = point.m_normalWorldOnB;
                 s.distance = point.m_distance1;
@@ -309,14 +309,22 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
         }
     }
 
-    // Now fire all collision signals.
+    // Now fire all collision signals. Safeguard for the body components expiring in case signal handlers delete them from the scene
     {
         PROFILE(PhysicsWorld_emit_PhysicsCollisions);
         for(size_t i = 0; i < collisions.size(); ++i)
         {
-            emit PhysicsCollision(collisions[i].bodyA->ParentEntity(), collisions[i].bodyB->ParentEntity(), collisions[i].position, collisions[i].normal, collisions[i].distance, collisions[i].impulse, collisions[i].newCollision);
-            collisions[i].bodyA->EmitPhysicsCollision(collisions[i].bodyB->ParentEntity(), collisions[i].position, collisions[i].normal, collisions[i].distance, collisions[i].impulse, collisions[i].newCollision);
-            collisions[i].bodyB->EmitPhysicsCollision(collisions[i].bodyA->ParentEntity(), collisions[i].position, collisions[i].normal, collisions[i].distance, collisions[i].impulse, collisions[i].newCollision);
+            if (collisions[i].bodyA.expired() || collisions[i].bodyB.expired())
+                continue;
+            emit PhysicsCollision(collisions[i].bodyA.lock()->ParentEntity(), collisions[i].bodyB.lock()->ParentEntity(), collisions[i].position, collisions[i].normal, collisions[i].distance, collisions[i].impulse, collisions[i].newCollision);
+            
+            if (collisions[i].bodyA.expired() || collisions[i].bodyB.expired())
+                continue;
+            collisions[i].bodyA.lock()->EmitPhysicsCollision(collisions[i].bodyB.lock()->ParentEntity(), collisions[i].position, collisions[i].normal, collisions[i].distance, collisions[i].impulse, collisions[i].newCollision);
+            
+            if (collisions[i].bodyA.expired() || collisions[i].bodyB.expired())
+                continue;
+            collisions[i].bodyB.lock()->EmitPhysicsCollision(collisions[i].bodyA.lock()->ParentEntity(), collisions[i].position, collisions[i].normal, collisions[i].distance, collisions[i].impulse, collisions[i].newCollision);
         }
     }
 

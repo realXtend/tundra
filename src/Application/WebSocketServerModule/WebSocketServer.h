@@ -129,6 +129,7 @@ namespace WebSocket
         void OnDisconnected(WebSocket::ConnectionHandle connection);
         void OnMessage(WebSocket::ConnectionHandle connection, WebSocket::MessagePtr data);
         void OnHttpRequest(WebSocket::ConnectionHandle connection);
+        void OnSocketInit(WebSocket::ConnectionHandle connection, boost::asio::ip::tcp::socket& s);
         
     private:
         QString LC;
