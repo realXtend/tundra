@@ -25,7 +25,7 @@ typedef shared_ptr<ScriptAsset> ScriptAssetPtr;
     is left empty, and instead the className attribute tells from which script application to instantiate a specific class.
     The syntax for className attribute is ApplicationName.ClassName . The EC_Script with the matching application will be
     looked up, and the constructor function ClassName will be called, with the entity and component as parameters.
-    If the classname changes, the previously created script object will be automatically destroyed. Script objects
+    If the className changes, the previously created script object will be automatically destroyed. Script objects
     may optionally define a destructor called OnScriptObjectDestroyed
 
     <b>Attributes</b>:
@@ -52,8 +52,8 @@ typedef shared_ptr<ScriptAsset> ScriptAssetPtr;
 
     <b>Reacts on the following actions:</b>
     <ul>
-    <li> "RunScript": Runs the script. Usage: RunScript [componentname]
-    <li> "UnloadScript": Stops and unloads the script. Usage: UnloadScript [componentname]
+    <li> "RunScript": Runs the script. Usage: RunScript [componentName]
+    <li> "UnloadScript": Stops and unloads the script. Usage: UnloadScript [componentName]
     </ul>
     </td>
     </tr>
@@ -71,9 +71,15 @@ public:
     /// Run mode enumeration
     enum RunMode
     {
-        RM_Both = 0,
-        RM_Client,
-        RM_Server
+        RunOnBoth = 0,
+        RunOnClient,
+        RunOnServer,
+        // DEPRECATED
+        /// @cond PRIVATE
+        RM_Both = RunOnBoth,
+        RM_Client = RunOnClient,
+        RM_Server = RunOnServer
+        /// @endcond
     };
 
     /// @cond PRIVATE
@@ -105,7 +111,7 @@ public:
     /// Sets new script instance.
     /** Unloads and deletes possible already existing script instance.
         @param instance Script instance.
-        @note Takes ownership of the script instace. */
+        @note Takes ownership of the script instance. */
     void SetScriptInstance(IScriptInstance *instance);
 
     /// Returns the current script instance.

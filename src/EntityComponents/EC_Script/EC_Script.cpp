@@ -54,11 +54,11 @@ EC_Script* EC_Script::ScriptApplication() const
 bool EC_Script::ShouldRun() const
 {
     int mode = runMode.Get();
-    if (mode == RM_Both)
+    if (mode == RunOnBoth)
         return true;
-    if (mode == RM_Client && isClient_)
+    if (mode == RunOnClient && isClient_)
         return true;
-    if (mode == RM_Server && isServer_)
+    if (mode == RunOnServer && isServer_)
         return true;
     return false;
 }
@@ -112,7 +112,7 @@ EC_Script::EC_Script(Scene* scene):
     IComponent(scene),
     INIT_ATTRIBUTE_VALUE(scriptRef, "Script ref", AssetReferenceList("Script")),
     INIT_ATTRIBUTE_VALUE(runOnLoad, "Run on load", false),
-    INIT_ATTRIBUTE_VALUE(runMode, "Run mode", RM_Both),
+    INIT_ATTRIBUTE_VALUE(runMode, "Run mode", RunOnBoth),
     INIT_ATTRIBUTE(applicationName, "Script application name"),
     INIT_ATTRIBUTE(className, "Script class name"),
     scriptInstance_(0),
@@ -129,9 +129,9 @@ EC_Script::EC_Script(Scene* scene):
         scriptRefButtons.push_back(AttributeMetadata::ButtonInfo("stopScriptButton", "S", "Unload"));
         scriptRefData.buttons = scriptRefButtons;
         scriptRefData.elementType = "AssetReference";
-        runModeData.enums[RM_Both] = "Both";
-        runModeData.enums[RM_Client] = "Client";
-        runModeData.enums[RM_Server] = "Server";
+        runModeData.enums[RunOnBoth] = "Both";
+        runModeData.enums[RunOnClient] = "Client";
+        runModeData.enums[RunOnServer] = "Server";
         metadataInitialized = true;
     }
     scriptRef.SetMetadata(&scriptRefData);
@@ -249,4 +249,3 @@ void EC_Script::RegisterActions()
         entity->ConnectAction("UnloadScript", this, SLOT(Unload(const QString &)));
     }
 }
-
