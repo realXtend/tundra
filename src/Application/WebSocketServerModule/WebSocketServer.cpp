@@ -274,6 +274,7 @@ bool Server::Start()
         server_->set_open_handler(boost::bind(&Server::OnConnected, this, ::_1));
         server_->set_close_handler(boost::bind(&Server::OnDisconnected, this, ::_1));
         server_->set_message_handler(boost::bind(&Server::OnMessage, this, ::_1, ::_2));
+        server_->set_socket_init_handler(boost::bind(&Server::OnSocketInit, this, ::_1, ::_2));
 
         // Setup logging
         server_->get_alog().clear_channels(websocketpp::log::alevel::all);
@@ -449,5 +450,12 @@ void Server::OnHttpRequest(WebSocket::ConnectionHandle connection)
     connection->replace_header("Content-Length", QString::number(data.size()).toStdString());
 }
 */
+
+void Server::OnSocketInit(ConnectionHandle connection, boost::asio::ip::tcp::socket& s)
+{
+    // Disable Nagle's algorithm from each connection to avoid delays in sync
+    boost::asio::ip::tcp::no_delay option(true);
+    s.set_option(option);
+}
 
 }
