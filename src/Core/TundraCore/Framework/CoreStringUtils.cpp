@@ -5,6 +5,7 @@
 
 #include <QTextStream>
 #include <QByteArray>
+#include <QRegExpValidator>
 
 #include <kNet/DataSerializer.h>
 #include <kNet/DataDeserializer.h>
@@ -243,4 +244,32 @@ void WriteUtf8String(kNet::DataSerializer& ds, const QString& str)
     ds.Add<u16>(utf8Bytes.size());
     if (!utf8Bytes.isEmpty())
         ds.AddArray<u8>((const u8*)utf8Bytes.data(), utf8Bytes.size());
+}
+
+QString CamelCase(const QString &str, bool lowerCase)
+{
+    QString out;
+    if (str.contains(" "))
+    {
+        foreach(QString part, str.split(" ", QString::SkipEmptyParts))
+        {
+            part[0] = part.at(0).toUpper();
+            out += part;
+        }
+    }
+    else
+    {
+        out = str;
+        if (!lowerCase)
+            out[0] = out.at(0).toUpper();
+    }
+    if (lowerCase && out.length() > 0)
+        out[0] = out.at(0).toLower();
+    return out;
+}
+
+bool IsAlphanumeric(QString &str, int &invalidCharPosition)
+{
+    static QRegExpValidator alphaNumericValidator(QRegExp("[A-Za-z0-9]"));
+    return (alphaNumericValidator.validate(str, invalidCharPosition) == QValidator::Acceptable);
 }

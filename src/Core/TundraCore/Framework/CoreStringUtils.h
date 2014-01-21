@@ -105,3 +105,13 @@ QString TUNDRACORE_API ReadUtf8String(kNet::DataDeserializer &dd);
 
 /// Writes QString to a data stream using UTF-8 encoding.
 void TUNDRACORE_API WriteUtf8String(kNet::DataSerializer &ds, const QString &str);
+
+/** Camel-case input string.
+    Examples: "My Cool Thing"  -> "myCoolThing"
+              "THis aTtribute" -> "tHisATtribute"
+    @param str String to convert to camel-case.
+    @param lowerCase True if the first character should be lower cased or not. */
+QString TUNDRACORE_API CamelCase(const QString &str, bool lowerCase = true);
+
+/// Returns if the string only contains alphanumeric characters with regexp "[A-Za-z0-9]".
+bool TUNDRACORE_API IsAlphanumeric(QString &str, int &invalidCharPosition);
