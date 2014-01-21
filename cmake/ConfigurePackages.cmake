@@ -44,6 +44,8 @@ set(Boost_ADDITIONAL_VERSIONS "1.39.0" "1.40.0" "1.41.0" "1.42.0" "1.43.0" "1.44
 
 if (APPLE OR MSVC)
    find_package(Boost 1.39.0 COMPONENTS system thread regex)
+else()
+   find_package(Boost 1.39.0 COMPONENTS system thread regex) # Some Ubuntu 12.10 installs require system, others do not. OSX fails with system. Not needed on MSVC
 endif()
 
 if (Boost_FOUND)
