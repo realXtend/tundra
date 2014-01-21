@@ -1,13 +1,24 @@
 
 var attrTypes   = framework.Scene().attributeTypes;
 var scene       = framework.Scene().CreateScene("DynamiComponentTestScene", false, true);
-var me          = scene.CreateLocalEntity();
+var me          = scene.CreateEntity(scene.NextFreeId());
+    me.name     = "DynamicComponent.js Test Suite";
 var dyn         = me.CreateComponent("DynamicComponent");
 var attrName    = undefined;
+
+// If the QObject property should be used to set the attribute value.
+// Note that in both cases the value will be asserted against both
+// EC_DynamicComponent.Attribute and the variable!
+var usePropertySetter = false;
 
 function run()
 {
     log.info("Running DynamicComponent.js\n");
+
+    log.info("**************************************")
+    log.info("Using EC_DynamicComponent.SetAttribute")
+    log.info("**************************************\n")
+    usePropertySetter = false;
 
     for (var i = 0; i < attrTypes.length; i++)
     {
@@ -17,6 +28,49 @@ function run()
             dumpAttribute(attr);
             setAttribute(attr);
         }
+        else
+            log.error("Failed to create attribute of type '" + attrTypes[i] + "'");
+    }
+
+    log.info("***************************************")
+    log.info("Using EC_DynamicComponent.attributeName")
+    log.info("***************************************\n")
+    usePropertySetter = true;
+
+    for (var i = 0; i < attrTypes.length; i++)
+    {
+        var attr = dyn.CreateAttribute(attrTypes[i], attrTypes[i] + " test");
+        if (attr !== undefined && attr !== null)
+        {
+            dumpAttribute(attr);
+            setAttribute(attr);
+        }
+        else
+            log.error("Failed to create attribute of type '" + attrTypes[i] + "'");
+    }
+
+    log.info("*************************************************")
+    log.info("Validating attribute id to QObject propery naming")
+    log.info("*************************************************\n")
+
+    // Test invalid attribute id:s that cant be made as dynamic property
+    var propertyNameTests = [
+        { name : "My String ****", propName : "myString****", expected : undefined },
+        { name : "1234 my string", propName : "1234MyString", expected : undefined },
+        { name : "ÖÄÅ",            propName : "öÄÅ",          expected : undefined },
+        { name : "My 123 Var 456", propName : "my123Var456",  expected : "test value" },
+        { name : "my_var",         propName : "my_var",       expected : "test value" },
+        { name : "_my var",        propName : "_myVar",       expected : "test value" }
+    ];
+    for (var i = 0; i < propertyNameTests.length; i++)
+    {
+        var test = propertyNameTests[i];
+        var attr = dyn.CreateAttribute("string", test.name);
+        dyn.SetAttribute(test.name, "test value");
+        if (dyn[test.propName] === test.expected && test.expected === undefined)
+            log.info('Validated that "' + test.name + '" WONT translate into dynamicComponent.' + test.propName + ' due to invalid characters');
+        else if (dyn[test.propName] === test.expected && test.expected !== undefined)
+            log.info('Validated that "' + test.name + '" WILL translate into dynamicComponent.' + test.propName);
     }
 }
 
@@ -24,7 +78,52 @@ function setAttribute(attr)
 {
     attrName = attr.name;
 
-    if (attr.typename === "AssetReference")
+    /// @note Real number test are done with single decimal precision.
+    /// More decimals will trigger a assert failure due to floating point comparisons.
+
+    if (attr.typename === "string")
+    {
+        setAttributeValue("this is a test - usePropertySetter = " + usePropertySetter);
+        setAttributeValue("");
+        setAttributeValue("meh - usePropertySetter = " + usePropertySetter);
+    }
+    else if (attr.typename === "int")
+    {
+        setAttributeValue(10);
+        setAttributeValue(-10);
+    }
+    else if (attr.typename === "real")
+    {
+        setAttributeValue(1);
+        setAttributeValue(2.5);
+    }
+    else if (attr.typename === "bool")
+    {
+        setAttributeValue(true);
+        setAttributeValue(false);
+    }
+    else if (attr.typename === "Color")
+    {
+        setAttributeValue(new Color(1.2, 3.4, 4.5, 1.0), ["r", "g", "b", "a"]);
+        setAttributeValue({ r : 1, g : 2, b : 3, a : 4 }, ["r", "g", "b", "a"]); // float issues when using decimals!
+    }
+    else if (attr.typename === "float2")
+    {
+        setAttributeValue(new float2(1.2, 3.4), ["x", "y"]);
+    }
+    else if (attr.typename === "float3")
+    {
+        setAttributeValue(new float3(1.2, 3.4, 4.5), ["x", "y", "z"]);
+    }
+    else if (attr.typename === "float4")
+    {
+        setAttributeValue(new float4(1.2, 3.4, 4.5, 6.7), ["x", "y", "z", "w"]);
+    }
+    else if (attr.typename === "Quat")
+    {
+        setAttributeValue(new Quat(1.2, 3.4, 4.5, 6.7), ["x", "y", "z", "w"]);
+    }
+    else if (attr.typename === "AssetReference")
     {
         /// @todo These test will fail when the asset type is changed.
         /// This is due to Attribute<AssetReference>::FromQVariant using
@@ -61,7 +160,7 @@ function setAttribute(attr)
         setAttributeValue(new EntityReference("TestEntity3"), "ref");
         setAttributeValue(new EntityReference(200), "ref");
 
-        var other = scene.CreateLocalEntity();
+        var other = scene.CreateEntity(scene.NextFreeId());
         other.name = "Parent1";
         setAttributeValue(other);
         if (assertAttribute(current("ref"), other.id.toString()))
@@ -84,7 +183,13 @@ function setAttribute(attr)
 
 function setAttributeValue(value, assertProperty)
 {
-    dyn.SetAttribute(attrName, value);
+    if (!usePropertySetter)
+        dyn.SetAttribute(attrName, value);
+    else
+    {
+        var dynPropName = dynamicPropertyName();
+        dyn[dynPropName] = value;
+    }
 
     var ok = false;
 
@@ -93,16 +198,16 @@ function setAttributeValue(value, assertProperty)
         (typeof assertProperty === "string" && value.hasOwnProperty(assertProperty) && value[assertProperty] === undefined))
     {
         if (typeof current(assertProperty) === "string")
-            ok = assertAttribute(current(assertProperty), "");
+            ok = assertAttribute(current(assertProperty), "", assertProperty, true);
     }
     else if (typeof value === "string" || typeof value === "number" || typeof value === "boolean")
     {
         // If the current value is a string and the set value is a number. Auto convert for assert.
         // This fixes the tests failing when setting EntityReference with a number.
         if (typeof value === "number" && typeof current(assertProperty) === "string")
-            ok = assertAttribute(current(assertProperty), value.toString());
+            ok = assertAttribute(current(assertProperty), value.toString(), assertProperty, true);
         else
-            ok = assertAttribute(current(assertProperty), value);
+            ok = assertAttribute(current(assertProperty), value, assertProperty, true);
     }
     else if (Array.isArray(value) && Array.isArray(current()))
     {
@@ -135,14 +240,19 @@ function setAttributeValue(value, assertProperty)
             var subProperty = assertProperty[i];
             if (typeof subProperty === "string")
             {
-                ok = assertAttribute(current(subProperty), value[subProperty]);
+                ok = assertAttribute(current(subProperty), value[subProperty], subProperty, true);
                 if (!ok) break;
             }
         }
     }
 
     if (ok)
-        log.info("    -- OK " + current());
+    {
+        if (typeof current() === "string")
+            log.info('    -- OK "' + current() + '"');
+        else
+            log.info("    -- OK " + current());
+    }
 }
 
 function current(subProperty)
@@ -165,12 +275,39 @@ function dumpAttribute(attr)
         log.error("  Owner component is invalid: " + attr.owner);
 }
 
-function assertAttribute(value, assertValue)
+function assertAttribute(value, assertValue, assertProperty, testDynamicProp)
 {
+    // EC_DynamicComponent.Attribute(..)
     if (assertValue !== value)
+    {
         return log.error("Test failed - Expected: " + assertValue + " (" + (typeof assertValue) + ")" + 
             " Current value: " + value + " (" + (typeof value) + ")\n" + current());
+    }
+    // dyn.attributePropertyName
+    if (testDynamicProp === true)
+    {
+        var dynPropName = dynamicPropertyName();
+        var dynPropValue = (assertProperty !== undefined && dyn[dynPropName] != null ? dyn[dynPropName][assertProperty] : dyn[dynPropName]);
+        if (assertValue !== dynPropValue)
+        {
+            // Special check for subproperties that are a empty string, this equals to "" real world value!
+            if (assertProperty !== undefined && assertProperty !== null && typeof assertValue === "string" && dynPropValue === undefined)
+                ; // ok
+            else
+                return log.error("Dynamic QObject property test failed - Expected: " + assertValue + " (" + (typeof assertValue) + ")" + 
+                    " Current value: " + dynPropValue + " (" + (typeof dynPropValue) + ")\n" + current());
+        }
+    }
     return true;
+}
+
+function dynamicPropertyName()
+{
+    var name = "";
+    var parts = attrName.split(" ");
+    for (var i = 0; i < parts.length; i++)
+        name += (parts[i].substring(0,1).toUpperCase() + parts[i].substring(1));
+    return name.substring(0,1).toLowerCase() + name.substring(1);
 }
 
 var log =
@@ -178,6 +315,24 @@ var log =
     info  : function(msg) { console.LogInfo(msg); return true; },
     error : function(msg) { console.LogError(msg); return false; }
 };
+
+// Support running the full sweep of tests also when a new server scene is created.
+// This will enable a client to connect and the test component being sent to him.
+framework.Scene().SceneCreated.connect(function(createdScene) {
+    log.info("Detected scene creation. Running test suite again.");
+
+    scene       = createdScene;
+    me          = scene.CreateEntity(scene.NextFreeId());
+    me.name     = "DynamicComponent.js Test Suite";
+    dyn         = me.CreateComponent("DynamicComponent");
+    attrName    = undefined;
+
+    print("");
+    run();
+    print("");
+
+    framework.Scene().RemoveScene("DynamiComponentTestScene")
+});
 
 print("");
 run();
