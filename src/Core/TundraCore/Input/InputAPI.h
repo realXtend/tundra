@@ -73,6 +73,20 @@ public:
     /// Sets new set of key bindings.
     void SetKeyBindings(const KeyBindingMap &actionMap) { keyboardMappings = actionMap; }
 
+    /// Sets if held keyboard and mouse keys are released automatically when application is not active (has no active window).
+    void SetReleaseInputWhenApplicationInactive(bool releaseInput) { releaseInputWhenApplicationInactive = releaseInput; }
+
+    /// Called internally for each generated KeyEvent.
+    /** This function passes the event forward to all registered input contexts. You may generate KeyEvent objects
+        yourself and call this function directly to inject a custom KeyEvent to the system. */
+    void TriggerKeyEvent(KeyEvent &key);
+
+    /// This is the same as TriggerKeyEvent, but for mouse events.
+    void TriggerMouseEvent(MouseEvent &mouse);
+
+    /// This emits gesture events to the input contexts
+    void TriggerGestureEvent(GestureEvent &gesture);
+
 public slots:
     /// Creates a new input context with the given name.
     /** The name is not an ID, i.e. it does not have to be unique with 
@@ -149,17 +163,6 @@ public slots:
 
     /// Returns the current mouse position in the main window coordinate space.
     QPoint MousePos() const;
-
-    /// Called internally for each generated KeyEvent.
-    /** This function passes the event forward to all registered input contexts. You may generate KeyEvent objects
-        yourself and call this function directly to inject a custom KeyEvent to the system. */
-    void TriggerKeyEvent(KeyEvent &key);
-
-    /// This is the same as TriggerKeyEvent, but for mouse events.
-    void TriggerMouseEvent(MouseEvent &mouse);
-
-    /// This emits gesture events to the input contexts
-    void TriggerGestureEvent(GestureEvent &gesture);
 
     /// Returns the highest-priority input context that gets all events first to handle (even before going to Qt widgets).
     /** You may register your own keyboard and mouse handlers in this context and block events from going to the main window
@@ -255,6 +258,10 @@ private:
     /// once we receive the first QEvent::Gesture type event. This needs to be fixed so that we ask the OS if it has a touch input device.
     /// If you find a way to do this, please fix and remove todo from IsGesturesEnabled() comments too.
     bool gesturesEnabled;
+
+    /// If true, all currently help keyboard and mouse buttons will be released if the application is inactive (no active window).
+    /// Set to false if you are implementing input event injection while the application is not guaranteed to be active.
+    bool releaseInputWhenApplicationInactive;
 
 /*  ///\todo This is currently disabled, since it would be problematic in drag-n-drop between scene and UI.
     /// Specifies which part of the system has mouse capture focus.

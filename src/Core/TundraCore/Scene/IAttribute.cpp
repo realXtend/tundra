@@ -466,9 +466,32 @@ template<> void TUNDRACORE_API Attribute<float>::FromQVariant(const QVariant &va
     Set(variant.toFloat(), change);
 }
 
+Color ColorFromQVariant(const QVariant &variant)
+{
+    // QMap/QHash { r : 0, g : 0, b : 0, a : 0 }
+    if (variant.type() == QVariant::Map || variant.type() == QVariant::Hash)
+    {
+        // Potential double -> float problems, but the range is [0.0,1.0]
+        // so outside of it, its already a programmer error.
+        Color color;
+        QVariantMap map = variant.toMap();
+        if (map.contains("r") && map["r"].type() == QVariant::Double || map["r"].type() == QVariant::Int)
+            color.r = map["r"].toFloat();
+        if (map.contains("g") && map["g"].type() == QVariant::Double || map["g"].type() == QVariant::Int)
+            color.g = map["g"].toFloat();
+        if (map.contains("b") && map["b"].type() == QVariant::Double || map["b"].type() == QVariant::Int)
+            color.b = map["b"].toFloat();
+        if (map.contains("a") && map["a"].type() == QVariant::Double || map["a"].type() == QVariant::Int)
+            color.a = map["a"].toFloat();
+        return color;
+    }
+    else
+        return qvariant_cast<Color>(variant);
+}
+
 template<> void TUNDRACORE_API Attribute<Color>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
 {
-    Set(qvariant_cast<Color>(variant), change);
+    Set(ColorFromQVariant(variant), change);
 }
 
 template<> void TUNDRACORE_API Attribute<Quat>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
@@ -509,10 +532,7 @@ AssetReference AssetReferenceFromQVariant(const QVariant &variant)
     }
     // Otherwise assume its a AssetReference object.
     else
-    {
-        AssetReference ref = qvariant_cast<AssetReference>(variant);
         return qvariant_cast<AssetReference>(variant);
-    }
 }
 
 template<> void TUNDRACORE_API Attribute<AssetReference>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
