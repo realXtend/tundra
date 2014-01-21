@@ -28,6 +28,7 @@ IComponent::IComponent(Scene* scene) :
     updateMode(AttributeChange::Replicate),
     replicated(true),
     temporary(false),
+    internalQObjectPropertyUpdateOngoing_(false),
     id(0)
 {
 }
@@ -280,7 +281,7 @@ void IComponent::AddAttribute(IAttribute* attr)
         attr->owner = this;
         attributes.push_back(attr);
     }
-    else
+    else if (SupportsDynamicAttributes())
     {
         // For dynamic attributes, need to scan for holes first, and then push_back if no holes
         for (unsigned i = 0; i < attributes.size(); ++i)
@@ -296,7 +297,12 @@ void IComponent::AddAttribute(IAttribute* attr)
         attr->index = (u8)attributes.size();
         attr->owner = this;
         attributes.push_back(attr);
+
+        // Create dynamic QObject property
+        CreateDynamicProperty(attr);
     }
+    else
+        LogError("[IComponent]: AddAttribute called with a dynamic IAttribute* but component does not support dynamic attributes. This is a logic error, please override IComponent::SupportsDynamicAttributes() correctly.");
 }
 
 bool IComponent::AddAttribute(IAttribute* attr, u8 index)
@@ -331,7 +337,122 @@ bool IComponent::AddAttribute(IAttribute* attr, u8 index)
     attr->index = index;
     attr->owner = this;
     attributes[index] = attr;
+
+    // Create dynamic QObject property
+    if (SupportsDynamicAttributes())
+        CreateDynamicProperty(attr);
+
     return true;
+}
+
+void IComponent::CreateDynamicProperty(IAttribute* attribute)
+{
+    if (!SupportsDynamicAttributes())
+        return;
+
+    // Connect to attribute change signal. We will update the QVariant dynamic property there.
+    // Adds a bit of overhead vs. a static component with an extra attr->ToQVariant() but will
+    // give us a nicer API. Lets try to only connect the signal when the first dynamic attribute
+    // is added. Although this can happen multiple times if all attributes are removed at some point,
+    // the Qt::UniqueConnection will protect against multiple connections.
+    if (dynamicPropertyNames_.isEmpty())
+    {
+        // Remove it first so that we wont add multiple filters if we end up
+        // here multiple times. Its a no-op if not yet added. See above notes.
+        removeEventFilter(this);
+        installEventFilter(this);
+
+        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
+            this, SLOT(UpdateDynamicProperty(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
+        connect(this, SIGNAL(AttributeAboutToBeRemoved(IAttribute*)),
+            this, SLOT(RemoveDynamicProperty(IAttribute*)), Qt::UniqueConnection);
+    }
+
+    // Dynamic attributes must be manually handled via QObject::setAttribute so that
+    // they are exposed correctly for scripting and QObject::dynamicPropertyNames().
+    QString dynamicPropertyName = CamelCase(attribute->Id());
+    if (!dynamicPropertyName.isEmpty())
+    {
+        // Needs to start with alphabet or _. Needs to end with any number of alphanumerics and _.
+        // Otherwise skip adding as a dynamic QObject property.
+        static QRegExpValidator propNameValidator(QRegExp("^[a-zA-Z_][a-zA-Z0-9_]*$"));
+        int errorPos = 0;
+        if (propNameValidator.validate(dynamicPropertyName, errorPos) == QValidator::Acceptable)
+        {
+            QByteArray asciiPropName = dynamicPropertyName.toAscii();
+            dynamicPropertyNames_[attribute->Id()] = asciiPropName;
+            setProperty(asciiPropName.data(), QVariant());
+        }
+    }
+}
+
+void IComponent::UpdateDynamicProperty(IAttribute* attribute, AttributeChange::Type /*change*/)
+{
+    if (!dynamicPropertyNames_.contains(attribute->Id()))
+        return;
+
+    if (internalQObjectPropertyUpdateOngoing_)
+        return;
+    internalQObjectPropertyUpdateOngoing_ = true;
+
+    QVariant variantValue = attribute->ToQVariant();
+    QByteArray dynamicPropertyName = dynamicPropertyNames_[attribute->Id()];
+    setProperty(dynamicPropertyName.data(), variantValue);
+
+    internalQObjectPropertyUpdateOngoing_ = false;
+}
+
+void IComponent::RemoveDynamicProperty(IAttribute* attribute)
+{
+    if (!dynamicPropertyNames_.contains(attribute->Id()))
+        return;
+
+    /// @bug Investigate why after when a attribute is removed from a dynamic component
+    /// the UpdateDynamicProperty slot will be invoked with the current values for all
+    /// the other attributes in the component! Potential perf issue and a bug.
+    internalQObjectPropertyUpdateOngoing_ = true;
+
+    QByteArray dynamicPropertyName = dynamicPropertyNames_[attribute->Id()];
+    setProperty(dynamicPropertyName.data(), QVariant());
+    dynamicPropertyNames_.remove(attribute->Id());
+
+    internalQObjectPropertyUpdateOngoing_ = false;
+}
+
+bool IComponent::eventFilter(QObject *obj, QEvent *e)
+{
+    if (!obj || !e || !SupportsDynamicAttributes())
+        return false;
+
+    // A dynamic QObject property has been modified, update the IAttribute* to match it.
+    // Note that this signal event is fired also when attribute is added, removed or
+    // set from a IAttribute update in UpdateDynamicProperty. There is a boolean flag
+    // we check that this change was done from outside the IComponent internals.
+    if (e->type() == QEvent::DynamicPropertyChange && obj == this)
+    {
+        // If a internal update is ongoing, don't update the IAttribute. This would
+        // result in infinite recursion via UpdateDynamicProperty!
+        if (!internalQObjectPropertyUpdateOngoing_)
+        {
+            QDynamicPropertyChangeEvent *changeEvent = static_cast<QDynamicPropertyChangeEvent*>(e);
+            QByteArray propertyName = changeEvent->propertyName();
+            QString attributeId = dynamicPropertyNames_.key(propertyName, "");
+            if (!attributeId.isEmpty())
+            {
+                IAttribute *attr = AttributeById(attributeId);
+                if (attr)
+                {
+                    // Mark the flag as true, the QObject property is already up to date.
+                    // There is no need to set it in UpdateDynamicProperty that FromQVariant will invoke.
+                    internalQObjectPropertyUpdateOngoing_ = true;
+                    attr->FromQVariant(property(propertyName.data()), AttributeChange::Default);
+                    internalQObjectPropertyUpdateOngoing_ = false;
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_element, bool serializeTemporary) const
