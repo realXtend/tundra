@@ -60,14 +60,16 @@ QFileDialog* OpenFileDialogNonModal(
     QWidget* parent,
     QObject* initiator,
     const char* slot,
-    bool multipleFiles)
+    bool multipleFiles,
+    bool show)
 {
     QFileDialog* dialog = new CustomFileDialog(parent, caption, dir, filter);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     if (multipleFiles)
         dialog->setFileMode(QFileDialog::ExistingFiles);
     QObject::connect(dialog, SIGNAL(finished(int)), initiator, slot);
-    dialog->show();
+    if (show)
+        dialog->show();
     dialog->resize(500, 300);
 
     if (dialog->graphicsProxyWidget())
@@ -82,7 +84,8 @@ QFileDialog *SaveFileDialogNonModal(
     const QString& dir,
     QWidget* parent,
     QObject* initiator,
-    const char* slot)
+    const char* slot,
+    bool show)
 {
     QFileDialog* dialog = new CustomFileDialog(parent, caption, dir, filter);
     dialog->setFileMode(QFileDialog::AnyFile);
@@ -94,7 +97,8 @@ QFileDialog *SaveFileDialogNonModal(
 #endif
 
     QObject::connect(dialog, SIGNAL(finished(int)), initiator, slot);
-    dialog->show();
+    if (show)
+        dialog->show();
     dialog->resize(500, 300);
 
     if (dialog->graphicsProxyWidget())
@@ -103,14 +107,16 @@ QFileDialog *SaveFileDialogNonModal(
     return dialog;
 }
 
-QFileDialog *DirectoryDialogNonModal(const QString &caption, const QString &dir, QWidget *parent, QObject* initiator, const char* slot)
+QFileDialog *DirectoryDialogNonModal(const QString &caption, const QString &dir,
+    QWidget *parent, QObject* initiator, const char* slot, bool show)
 {
     QFileDialog* dialog = new QFileDialog(parent, caption, dir, "");
     dialog->setFileMode(QFileDialog::Directory);
     dialog->setOption(QFileDialog::ShowDirsOnly, true);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     QObject::connect(dialog, SIGNAL(finished(int)), initiator, slot);
-    dialog->show();
+    if (show)
+        dialog->show();
     dialog->resize(500, 300);
 
     if (dialog->graphicsProxyWidget())

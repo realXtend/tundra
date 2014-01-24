@@ -17,21 +17,22 @@ class QFileDialog;
 /// Searches contents of directory.
 /** @param path Path to search.
     @param recursive Do we want to search contents of directory recursively i.e. include all subdirectories.
-    @param filters What is wanted to be found (directories, files, etc)
+    @param filters What is wanted to be found (directories, files, etc).
     @return List of absolute paths that match the filter. */
 QStringList TUNDRACORE_API DirectorySearch(const QString &path, bool recursive, QDir::Filters filters);
 
-/// Opens a non-modal file dialog
+/// Opens a non-modal file dialog.
 /** @param filter The files to be shown.
-    @param caption Dialog's caption
+    @param caption Dialog's caption.
     @param dir Working directory.
     @param parent Parent widget. If you give parent widget, the file dialog will be part of the UI scene.
         Give 0 if you want the dialog to be external.
-    @param initiator QObject that initiated the dialog and wants the results
-    @param slot Slot on initiator object, to which dialog's finished() signal will be 
-           connected. Result value will be 1 if OK was pressed. Use sender() and dynamic 
-           cast to QFileDialog to get to know the chosen file(s)
+    @param initiator QObject that initiated the dialog and wants the results.
+    @param slot Slot on initiator object, to which dialog's finished() signal will be
+           connected. Result value will be 1 if OK was pressed. Use sender() and dynamic
+           cast to QFileDialog to get to know the chosen file(s).
     @param multipleFiles Do we want to be able to select multiple files.
+    @param show Whether to show the dialog right away after creation.
     @return The created file dialog */
 QFileDialog TUNDRACORE_API *OpenFileDialogNonModal(
     const QString& filter,
@@ -40,42 +41,47 @@ QFileDialog TUNDRACORE_API *OpenFileDialogNonModal(
     QWidget* parent,
     QObject* initiator,
     const char* slot,
-    bool multipleFiles = false);
+    bool multipleFiles = false,
+    bool show = true);
 
 /// Opens a non-modal file save dialog
 /** @param filter The files to be shown.
-    @param caption Dialog's caption
+    @param caption Dialog's caption.
     @param dir Working directory.
     @param parent Parent widget. If you give parent widget, the file dialog will be part of the UI scene.
         Give 0 if you want the dialog to be external.
-    @param initiator QObject that initiated the dialog and wants the results
+    @param initiator QObject that initiated the dialog and wants the results.
     @param slot Slot on initiator object, to which dialog's finished() signal will be 
-           connected. Result value will be 1 if OK was pressed. Use sender() and dynamic 
-           cast to QFileDialog to get to know the chosen file(s)
-    @return The created file dialog */
+           connected. Result value will be 1 if OK was pressed. Use sender() and dynamic
+           cast to QFileDialog to get to know the chosen file(s).
+    @param show Whether to show the dialog right away after creation.
+    @return The created file dialog. */
 QFileDialog TUNDRACORE_API *SaveFileDialogNonModal(
     const QString& filter,
     const QString& caption,
     const QString& dir,
     QWidget* parent,
     QObject* initiator,
-    const char* slot);
+    const char* slot,
+    bool show = true);
 
 /// Opens non-modal select directory dialog.
 /** @note Differs from other functions in that this won't send a finished signal if user closes the dialog without
           selecting a directory.
-    @param caption Dialog's caption
+    @param caption Dialog's caption.
     @param dir Working directory.
     @param parent Parent widget. If you give parent widget, the file dialog will be part of the UI scene.
         Give 0 if you want the dialog to be external.
-    @param initiator QObject that initiated the dialog and wants the results
-    @param slot Slot on initiator object, to which dialog's finished() signal will be 
-           connected. Result value will be 1 if OK was pressed. Use sender() and dynamic 
-           cast to QFileDialog to get to know the chosen file(s)
-    @return The created file dialog */
+    @param initiator QObject that initiated the dialog and wants the results.
+    @param slot Slot on initiator object, to which dialog's finished() signal will be
+           connected. Result value will be 1 if OK was pressed. Use sender() and dynamic
+           cast to QFileDialog to get to know the chosen file(s).
+    @param show Whether to show the dialog right away after creation.
+    @return The created file dialog. */
 QFileDialog TUNDRACORE_API *DirectoryDialogNonModal(
     const QString &caption,
     const QString &dir,
     QWidget *parent,
     QObject* initiator,
-    const char* slot);
+    const char* slot,
+    bool show = true);
