@@ -17,6 +17,8 @@
 #include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
 
+int total_edge = 0;
+
 OgreMeshAsset::OgreMeshAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
     IAsset(owner, type_, name_),
     loadTicket_(0)
@@ -85,7 +87,6 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
         // Do not change this to do DiskCache() as that directory for local:// refs will not be a known resource location for ogre.
         QFileInfo fileInfo(cacheDiskSource);
         std::string sanitatedAssetRef = fileInfo.fileName().toStdString();
-        //! \todo - Should we set this somewhere for async path?: ogreMesh->setAutoBuildEdgeLists(false);
         loadTicket_ = Ogre::ResourceBackgroundQueue::getSingleton().load(Ogre::MeshManager::getSingleton().getResourceType(),
                           sanitatedAssetRef, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP, false, 0, 0, this);
         return true;
@@ -107,6 +108,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
             LogError("OgreMeshAsset::DeserializeFromData: Failed to create mesh " + Name());
             return false; 
         }
+        /// @note This is auto set to false by Ogre mesh serializer >=1.3
         ogreMesh->setAutoBuildEdgeLists(false);
     }
 
@@ -375,14 +377,29 @@ bool OgreMeshAsset::GenerateMeshData()
     if (ogreMesh->isLodManual() && ogreMesh->getNumLodLevels() > 1)
     {
         references_.clear();
-        for(ushort i=1; i<ogreMesh->getNumLodLevels(); ++i)
-        {
-            const Ogre::MeshLodUsage &usage = ogreMesh->getLodLevel(i);
-            QString lodMeshRefAbsolute = assetAPI->ResolveAssetRef(Name(), QString::fromStdString(usage.manualName));
-            references_.push_back(AssetReference(lodMeshRefAbsolute, "OgreMesh"));
 
-            // Update the manual mesh name
-            ogreMesh->updateManualLodLevel(i, AssetAPI::SanitateAssetRef(lodMeshRefAbsolute).toStdString());
+        // On a headless instance, we only need the original mesh level for physics etc.
+        // Remove LOD levels from the mesh so that it wont fail loading (in Ogre) due to missing dependencies.
+        if (!assetAPI->GetFramework()->IsHeadless())
+        {
+            for(ushort i=1; i<ogreMesh->getNumLodLevels(); ++i)
+            {
+                const Ogre::MeshLodUsage &usage = ogreMesh->getLodLevel(i);
+                QString lodMeshRefAbsolute = assetAPI->ResolveAssetRef(Name(), QString::fromStdString(usage.manualName));
+                references_.push_back(AssetReference(lodMeshRefAbsolute, "OgreMesh"));
+
+                // Update the manual mesh name
+                ogreMesh->updateManualLodLevel(i, AssetAPI::SanitateAssetRef(lodMeshRefAbsolute).toStdString());
+            }
+        }
+        else
+        {
+            ogreMesh->removeLodLevels();
+            // Above destroys any edge data, on the main mesh also.
+            // Note that the auto build boolean is set to false by Tundra
+            // in synchronous load path or by Ogre mesh serializer >=v1.3.
+            if (ogreMesh->getAutoBuildEdgeLists())
+                ogreMesh->buildEdgeList();
         }
     }
 
