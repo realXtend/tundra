@@ -100,6 +100,9 @@ else
         cd $what
     fi
 
+    sed -e "s/CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)/CMAKE_MINIMUM_REQUIRED(VERSION 2.8.7)/" < CMakeLists.txt > x
+    mv x CMakeLists.txt
+
     cmake . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DQJSON_BUILD_TESTS=no
     make -j $nprocs
     make install

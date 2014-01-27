@@ -1,3 +1,17 @@
+v2.5.2 https://github.com/realXtend/naali/compare/tundra2.5.1...tundra2.5.2
+------
+
+- Switch to JSON based configuration files.
+- Component ID's also saved in .txml files.
+- Scene editing usability improvements.
+- Dependency build fixes and improvements.
+- Installer fixes and improvements.
+- WebSocketServerModule contributed by AdminoTech for handling websocket clients.
+- Unified handling of websocket and native client connections.
+- Added concept of protocol version and protocol version negotiation to be able to support clients of multiple versions.
+- Crash fix for removing entities while physics collision signals are being fired for the frame.
+- Plus many more bugfixes and misc. improvements.
+
 v2.5.1 https://github.com/realXtend/naali/compare/tundra2.5...tundra2.5.1
 ------
 

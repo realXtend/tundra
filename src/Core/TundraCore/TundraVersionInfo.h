@@ -21,7 +21,7 @@
 /** @def TUNDRA_VERSION_MAJOR_PATCH
     The Tundra application's major patch version number. */
 #ifndef TUNDRA_VERSION_MAJOR_PATCH
-#define TUNDRA_VERSION_MAJOR_PATCH 1
+#define TUNDRA_VERSION_MAJOR_PATCH 2
 #endif
 
 /** @def TUNDRA_VERSION_MINOR_PATCH
@@ -47,7 +47,7 @@
     concatenated while omitting possible trailing zeros, f.ex. "2.5.1".
     @note This is the authoritative source of the Application's version information.*/
 #ifndef TUNDRA_VERSION_STRING
-#define TUNDRA_VERSION_STRING "2.5.1"
+#define TUNDRA_VERSION_STRING "2.5.2"
 #endif
 
 /** @def TUNDRA_VERSION_POSTFIX
