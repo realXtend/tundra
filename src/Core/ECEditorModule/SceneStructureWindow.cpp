@@ -196,9 +196,6 @@ void SceneStructureWindow::ShowGroups(bool show)
 {
     PROFILE(SceneStructureWindow_ShowGroups)
 
-//    if (show == showGroups)
-//        return;
-
     showGroups = show;
 
     treeWidget->setSortingEnabled(false);
@@ -399,6 +396,7 @@ void SceneStructureWindow::Populate()
         AddEntity((*it).second.get());
 
     Refresh();
+    ShowGroups(showGroups);
 
     treeWidget->setSortingEnabled(true);
 
