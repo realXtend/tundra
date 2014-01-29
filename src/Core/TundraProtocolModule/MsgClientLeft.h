@@ -40,7 +40,7 @@ struct MsgClientLeft
 
 	inline size_t Size() const
 	{
-		return 1;
+		return (size_t)kNet::VLE8_16_32::GetEncodedBitLength(userID);
 	}
 
 	inline void SerializeTo(kNet::DataSerializer &dst) const
@@ -52,6 +52,4 @@ struct MsgClientLeft
 	{
 		userID = src.ReadVLE<kNet::VLE8_16_32>();
 	}
-
 };
-

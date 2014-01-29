@@ -387,20 +387,27 @@ bool Server::FinalizeLogin(UserConnectionPtr user)
     reply.userID = user->userID;
     
     // Tell everyone of the client joining (also the user who joined)
-    UserConnectionList users = AuthenticatedUsers();
     MsgClientJoined joined;
     joined.userID = user->userID;
+    if (user->HasProperty("username"))
+        joined.username = user->Property("username").toString();
+    
+    UserConnectionList users = AuthenticatedUsers();
     foreach(const UserConnectionPtr &u, users)
         u->Send(joined);
     
     // Advertise the users who already are in the world, to the new user
     foreach(const UserConnectionPtr &u, users)
+    {
         if (u->userID != user->userID)
         {
             MsgClientJoined joined;
             joined.userID = u->userID;
+            if (u->HasProperty("username"))
+                joined.username = u->Property("username").toString();
             user->Send(joined);
         }
+    }
     
     // Tell syncmanager of the new user
     owner_->GetSyncManager()->NewUserConnected(user);
