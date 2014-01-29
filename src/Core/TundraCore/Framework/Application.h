@@ -173,6 +173,9 @@ public slots:
     /** @note Only use this function during Tundra startup. */
     void SetSplashMessage(const QString &message);
 
+    /// Returns if the applications version is greater or equals the given version.
+    bool VersionGreaterOrEquals(uint major, uint minor, uint majorPatch, uint minorPatch);
+
 signals:
     /// This signal is sent when QApplication language is changed, provided for convenience.
     void LanguageChanged();

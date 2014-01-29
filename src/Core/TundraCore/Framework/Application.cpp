@@ -232,6 +232,11 @@ void Application::SetSplashMessage(const QString &message)
     }
 }
 
+bool Application::VersionGreaterOrEquals(uint major, uint minor, uint majorPatch, uint minorPatch)
+{
+    return (MajorVersion() >= major && MinorVersion() >= minor && MajorPatchVersion() >= majorPatch && MinorPatchVersion() >= minorPatch);
+}
+
 QStringList Application::FindQmFiles(const QDir& dir)
 {
      QStringList fileNames = dir.entryList(QStringList("*.qm"), QDir::Files, QDir::Name);
