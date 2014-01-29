@@ -638,13 +638,13 @@ else
         mv x CMakeLists.txt
     else
         $LC_CTYPE_OVERRIDE
-        sed -e "s/kNet STATIC/kNet SHARED/" -e "s/COMPONENTS thread system/COMPONENTS thread/" < CMakeLists.txt > x
+        sed -e "s/kNet STATIC/kNet SHARED/" < CMakeLists.txt > x
         $LC_CTYPE_RESTORE
         mv x CMakeLists.txt
     fi
 
     echoInfo "Building $what:"
-    cmake . -DUSE_BOOST:BOOL=$USE_BOOST -DBOOST_ROOT=$prefix/boost -DUSE_TINYXML:BOOL=FALSE
+    cmake . -DUSE_BOOST:BOOL=FALSE -DUSE_TINYXML:BOOL=FALSE
     make VERBOSE=1
 
     mkdir -p $prefix/$what/{lib,include}
