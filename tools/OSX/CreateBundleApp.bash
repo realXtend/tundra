@@ -94,3 +94,7 @@ chmod -R u+w $frameworksdir/Cg.framework
 echo "Cleaning redundant files from bundle (*_debug*.dylib etc.)"
 debugdylibs=`find $bundledir -name "*_debug*.dylib"`
 rm $debugdylibs
+
+echo "Cleaning headers from frameworks"
+headers=`find $bundledir -name "Headers"`
+rm -rf $headers
