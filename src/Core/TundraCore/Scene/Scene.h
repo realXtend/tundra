@@ -227,10 +227,10 @@ public slots:
         @param replicated Whether entity is replicated. Default true.
         @param componentsReplicated Whether components will be replicated, true by default.
         @param temporary Will the entity be temporary i.e. it is no serialized to disk by default, false by default.
-        @note Setting temporary status of an entity when it's created is currently the only way to replicate this status properly.
-        @sa CreateLocalEntity */
+        @sa CreateLocalEntity, CreateLocalTemporaryEntity, CreateTemporaryEntity*/
     EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList(),
-        AttributeChange::Type change = AttributeChange::Default, bool replicated = true, bool componentsReplicated = true, bool temporary = false);
+        AttributeChange::Type change = AttributeChange::Default, bool replicated = true,
+        bool componentsReplicated = true, bool temporary = false);
 
     /// Creates new local entity that contains the specified components
     /** Entities should never be created directly, but instead created with this function.
@@ -241,10 +241,19 @@ public slots:
         @param change Notification/network replication mode
         @param componentsReplicated Whether components will be replicated, false by default, but components of local entities are not replicated so this has no effect.
         @param temporary Will the entity be temporary i.e. it is no serialized to disk by default.
-        @note Setting temporary status of an entity when it's created is currently the only way to replicate this status properly.
-        @sa CreateEntity */
+        @sa CreateEntity, CreateLocalTemporaryEntity, CreateTemporaryEntity */
     EntityPtr CreateLocalEntity(const QStringList &components = QStringList(),
         AttributeChange::Type change = AttributeChange::Default, bool componentsReplicated = false, bool temporary = false);
+
+    /// Convenience function for creating a temporary entity.
+    /** @sa CreateEntity, CreateLocalEntity, CreateLocalTemporaryEntity */
+    EntityPtr CreateTemporaryEntity(const QStringList &components = QStringList(),
+        AttributeChange::Type change = AttributeChange::Default, bool componentsReplicated = true);
+
+    /// Convenience function for creating a local temporary entity.
+    /** @sa CreateEntity, CreateLocalEntity, CreateTemporaryEntity */
+    EntityPtr CreateLocalTemporaryEntity(const QStringList &components = QStringList(),
+        AttributeChange::Type change = AttributeChange::Default);
 
     /// Returns scene up vector. For now it is a compile-time constant
     /** @sa RightVector,.ForwardVector */

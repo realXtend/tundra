@@ -114,6 +114,16 @@ EntityPtr Scene::CreateEntity(entity_id_t id, const QStringList &components, Att
     return entity;
 }
 
+EntityPtr Scene::CreateTemporaryEntity(const QStringList &components, AttributeChange::Type change, bool componentsReplicated)
+{
+    return CreateEntity(0, components, change, true, componentsReplicated, true);
+}
+
+EntityPtr Scene::CreateLocalTemporaryEntity(const QStringList &components, AttributeChange::Type change)
+{
+    return CreateEntity(0, components, change, false, false, true);
+}
+
 EntityPtr Scene::EntityById(entity_id_t id) const
 {
     EntityMap::const_iterator it = entities_.find(id);
