@@ -24,7 +24,7 @@ namespace WebSocket
         Q_OBJECT
 
     public:
-        UserConnection(ConnectionPtr connection_);
+        explicit UserConnection(const ConnectionPtr &connection);
         ~UserConnection();
 
         virtual QString ConnectionType() const { return "websocket"; }

@@ -1,9 +1,9 @@
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "WebSocketUserConnection.h"
-#include "LoggingFunctions.h"
 
-#include "kNet/DataDeserializer.h"
-#include "kNet/DataSerializer.h"
+#include <kNet/DataDeserializer.h>
+#include <kNet/DataSerializer.h>
 
 #include <websocketpp/frame.hpp>
 
@@ -12,9 +12,9 @@
 namespace WebSocket
 {
 
-UserConnection::UserConnection(ConnectionPtr connection_)
+UserConnection::UserConnection(const ConnectionPtr &connection) :
+    webSocketConnection(connection)
 {
-    webSocketConnection = ConnectionWeakPtr(connection_);
 }
 
 UserConnection::~UserConnection()
@@ -23,7 +23,8 @@ UserConnection::~UserConnection()
     syncState.reset();
 }
 
-void UserConnection::Send(kNet::message_id_t id, const char* data, size_t numBytes, bool reliable, bool inOrder, unsigned long priority, unsigned long contentID)
+void UserConnection::Send(kNet::message_id_t id, const char* data, size_t numBytes,
+    bool /*reliable*/, bool /*inOrder*/, unsigned long /*priority*/, unsigned long /*contentID*/)
 {
     kNet::DataSerializer ds(numBytes + 2);
     ds.Add<u16>(id);
