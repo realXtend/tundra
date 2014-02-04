@@ -21,18 +21,11 @@
 
 #include "MemoryLeakCheck.h"
 
-Entity::Entity(Framework* framework, Scene* scene) :
-    framework_(framework),
-    scene_(scene),
-    temporary_(false)
-{
-}
-
-Entity::Entity(Framework* framework, entity_id_t id, Scene* scene) :
+Entity::Entity(Framework* framework, entity_id_t id, bool temporary, Scene* scene) :
     framework_(framework),
     id_(id),
     scene_(scene),
-    temporary_(false)
+    temporary_(temporary)
 {
     connect(this, SIGNAL(TemporaryStateToggled(Entity *, AttributeChange::Type)), scene_, SIGNAL(EntityTemporaryStateToggled(Entity *, AttributeChange::Type)));
 }

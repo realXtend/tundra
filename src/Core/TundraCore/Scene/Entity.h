@@ -144,15 +144,11 @@ public:
 
     /// @cond PRIVATE
     /// Do not directly allocate new entities using operator new, but use the factory-based Scene::CreateEntity functions instead.
-    /** @param framework Framework
+    /** @param framework Framework.
+        @param id unique ID for the entity.
+        @param temporary Is the entity temporary.
         @param scene Scene this entity belongs to */
-    Entity(Framework* framework, Scene* scene);
-
-    /// Do not directly allocate new entities using operator new, but use the factory-based Scene::CreateEntity functions instead.
-    /** @param framework Framework
-        @param id unique id for the entity.
-        @param scene Scene this entity belongs to */
-    Entity(Framework* framework, entity_id_t id, Scene* scene);
+    Entity(Framework* framework, entity_id_t id, bool temporary, Scene* scene);
     /// @endcond
 
     // DEPRECATED
