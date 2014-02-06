@@ -27,7 +27,7 @@ const NetworkProtocolVersion cHighestSupportedProtocolVersion = ProtocolOriginal
 class TUNDRAPROTOCOL_MODULE_API UserConnection : public QObject, public enable_shared_from_this<UserConnection>
 {
     Q_OBJECT
-    Q_PROPERTY(int id READ ConnectionId)
+    Q_PROPERTY(u32 id READ ConnectionId)
     Q_PROPERTY(int protocolVersion READ ProtocolVersion)
     Q_PROPERTY(QString connectionType READ ConnectionType)
 
