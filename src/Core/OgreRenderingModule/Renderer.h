@@ -251,8 +251,14 @@ namespace OgreRenderer
         /// Returns the headless renderer for this platform specified by the Ogre config file, empty string if not defined.
         QString HeadlessRenderingPluginName(const QString &renderingConfig) const;
 
+        /// Returns the headless renderer dynamic library filename for this platform specified by the Ogre config file, empty string if not defined.
+        QString HeadlessRenderingPluginFilename(const QString &renderingConfig) const;
+
         /// Loads Ogre plugins specified by the Ogre config file in a manner which allows individual plugin loading to fail.
         QStringList LoadOgrePlugins(const QString &renderingConfig);
+
+        /// Loads Ogre plugin from the plugin dir specified in the Ogre config file.
+        bool LoadOgrePlugin(const QString &renderingConfig, const QString &pluginName);
 
         /// Load Ogre resource locations specified by the Ogre config file and initialize them.
         /** This does not actually load the assets, the files are just being recognized by the Ogre resource system. */

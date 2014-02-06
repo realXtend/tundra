@@ -58,7 +58,9 @@ static const int DEFAULT_TEXTURE_BUDGET = 512;
 static const int MINIMUM_TEXTURE_BUDGET = 1;
 
 static const char * const cD3D9RenderSystemName = "Direct3D9 Rendering Subsystem";
-static const char * const cOglRenderSystemName = "OpenGL Rendering Subsystem";
+static const char * const cD3D9RenderSystemFilename  = "RenderSystem_Direct3D9";
+static const char * const cOglRenderSystemName  = "OpenGL Rendering Subsystem";
+static const char * const cOglRenderSystemFilename  = "RenderSystem_GL";
 
 #if defined(DIRECTX_ENABLED) && !defined(WIN32)
 #undef DIRECTX_ENABLED
@@ -383,7 +385,24 @@ namespace OgreRenderer
         {
             const QString headlessRenderer = HeadlessRenderingPluginName(renderingConfig);
             if (!headlessRenderer.isEmpty())
-                renderSystemName = headlessRenderer.toStdString();
+            {
+                // Verify the headless renderer was actually loaded.
+                // If not, try force loading the operating system default renderer.
+                // Otherwise we will crash below as we cant find a valid renderer.
+                const QString headlessRendereFileName = HeadlessRenderingPluginFilename(renderingConfig);
+                if (!headlessRendereFileName.isEmpty() && !loadedPlugins.contains(headlessRendereFileName, Qt::CaseInsensitive))
+                {
+                    LogWarning(QString("Renderer: Failed to load headless render plugin %1, force loading system default renderer.").arg(headlessRendereFileName));
+#ifdef _WINDOWS
+                    if (!LoadOgrePlugin(renderingConfig, cD3D9RenderSystemFilename))
+                        LoadOgrePlugin(renderingConfig, cOglRenderSystemFilename);
+#else
+                    LoadOgrePlugin(renderingConfig, cOglRenderSystemFilename);
+#endif
+                }
+                else
+                    renderSystemName = headlessRenderer.toStdString();
+            }
         }
 
 #ifdef _WINDOWS
@@ -610,6 +629,33 @@ namespace OgreRenderer
         return TundraJson::Value(headlessRenderers, "Renderer", "").toString();
     }
 
+    QString Renderer::HeadlessRenderingPluginFilename(const QString &renderingConfig) const
+    {
+        bool ok = false;
+        QVariantMap configData = TundraJson::ParseFile(renderingConfig, true, &ok).toMap();
+        if (!ok)
+        {
+            LogError("HeadlessRenderingPluginName: Failed to parse Ogre config file: " + renderingConfig);
+            return "";
+        }
+        QVariantMap pluginsSection = TundraJson::Value(configData, "Plugins").toMap();
+        if (pluginsSection.isEmpty())
+        {
+            LogError("HeadlessRenderingPluginName: 'Plugins' section is empty in config file: " + renderingConfig);
+            return "";
+        }
+
+        QVariantMap platformSection = TundraJson::Value(pluginsSection, RenderingConfigPlatform(), QVariantMap()).toMap();
+        QVariantMap headlessSection = TundraJson::Value(platformSection, "Headless", QVariantMap()).toMap();
+        QStringList plugins = TundraJson::Value(headlessSection, "Plugins", QStringList()).toStringList();
+        // This is a semi hack, its just a list of Ogre plugins. Return the first
+        // that matches the Ogre naming convention "RenderSystem_X".
+        foreach(const QString pluginDllName, plugins)
+            if (pluginDllName.startsWith("RenderSystem_", Qt::CaseInsensitive))
+                return pluginDllName;
+        return "";
+    }
+
 #ifdef ANDROID
 
     QStringList Renderer::LoadOgrePlugins()
@@ -691,6 +737,8 @@ namespace OgreRenderer
         }
 
         // Common plugins for all platforms
+        /** @note Do not call LoadOgrePlugin here for each item, this might cleanup this code up but
+            that function re-reads the config every time so it would be slower. */
         plugins += TundraJson::Value(pluginsSection, "Common", QStringList()).toStringList();
         foreach(const QString &pluginName, plugins)
         {
@@ -713,6 +761,63 @@ namespace OgreRenderer
             }
         }
         return loadedPlugins;
+    }
+
+    bool Renderer::LoadOgrePlugin(const QString &renderingConfig, const QString &pluginName)
+    {
+        bool ok = false;
+        QVariantMap configData = TundraJson::ParseFile(renderingConfig, true, &ok).toMap();
+        if (!ok)
+        {
+            LogError("LoadOgrePlugin: Failed to parse Ogre config file: " + renderingConfig);
+            return false;
+        }
+        QVariantMap pluginsSection = TundraJson::Value(configData, "Plugins").toMap();
+        if (pluginsSection.isEmpty())
+        {
+            LogError("LoadOgrePlugin: 'Plugins' section is empty in config file: " + renderingConfig);
+            return false;
+        }
+
+        // Read platform specific section.
+        QVariantMap platformSection = TundraJson::Value(pluginsSection, RenderingConfigPlatform()).toMap();
+
+        // Plugin folder. Relative paths will resolved to the config file dir.
+        QString pluginFolder = TundraJson::Value(platformSection, "Folder", "./").toString();
+        if (QFileInfo(pluginFolder).isRelative())
+            pluginFolder = QFileInfo(renderingConfig).dir().absoluteFilePath(pluginFolder);
+        QDir pluginsDir(pluginFolder);
+        if (!pluginsDir.exists())
+        {
+            LogError(QString("LoadOgrePlugin: %1 platform plugins folder does not exist: %2")
+                .arg(RenderingConfigPlatform()).arg(pluginFolder));
+            return false;
+        }
+
+        // Platform plugin debug postfix.
+        QString pluginPostFix = "";
+#ifdef _DEBUG
+        pluginPostFix = TundraJson::Value(platformSection, "DebugPostfix", "").toString();
+#endif
+
+        QString absolutePluginPath = QDir::toNativeSeparators(pluginsDir.absoluteFilePath(pluginName + pluginPostFix));
+        try
+        {
+#ifndef Q_WS_MAC
+            ogreRoot->loadPlugin(absolutePluginPath.toStdString());
+#else
+            // On Mac, Ogre is hardcoded to look for frameworks inside <EXECUTABLE_PATH_HERE>/Contents/Frameworks
+            // Instead absolute paths, pass only the plugin names
+            ogreRoot->loadPlugin(pluginName.toStdString());
+#endif
+            return true;
+        }
+        catch(Ogre::Exception &e)
+        {
+            LogError(QString("LoadOgrePlugin: Plugin %1 failed to load: %2")
+                .arg(absolutePluginPath).arg(e.what()));
+        }
+        return false;
     }
 
 #endif
