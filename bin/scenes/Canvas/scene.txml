@@ -1,206 +1,214 @@
 <!DOCTYPE Scene>
 <scene>
- <entity id="1">
-  <component type="EC_Placeable" sync="true">
-   <attribute value="-66.685356,43.672966,-41.316483,-12.000015,-126.599899,0.000000,1.000000,1.000000,1.000000" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-   <attribute value="true" name="Visible"/>
-   <attribute value="1" name="Selection layer"/>
-   <attribute value="" name="Parent entity ref"/>
-   <attribute value="" name="Parent bone name"/>
+ <entity id="1" sync="true">
+  <component typeId="20" type="Placeable" sync="true">
+   <attribute value="-66.685356,43.672966,-41.316483,-12.000015,-126.599899,0.000000,1.000000,1.000000,1.000000" type="Transform" id="transform" name="Transform"/>
+   <attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
+   <attribute value="true" type="bool" id="visible" name="Visible"/>
+   <attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
+   <attribute value="" type="EntityReference" id="parentRef" name="Parent entity ref"/>
+   <attribute value="" type="string" id="parentBone" name="Parent bone name"/>
   </component>
-  <component type="EC_Name" sync="true">
-   <attribute value="FreeLookCameraSpawnPos" name="name"/>
-   <attribute value="" name="description"/>
-  </component>
- </entity>
- <entity id="2">
-  <component type="EC_Name" sync="true">
-   <attribute value="Instructions" name="name"/>
-   <attribute value="" name="description"/>
-  </component>
-  <component type="EC_Script" sync="true">
-   <attribute value="Instructions.js" name="Script ref"/>
-   <attribute value="true" name="Run on load"/>
-   <attribute value="0" name="Run mode"/>
-   <attribute value="" name="Script application name"/>
-   <attribute value="" name="Script class name"/>
+  <component typeId="26" type="Name" sync="true">
+   <attribute value="FreeLookCameraSpawnPos" type="string" id="name" name="Name"/>
+   <attribute value="" type="string" id="description" name="Description"/>
+   <attribute value="" type="string" id="group" name="Group"/>
   </component>
  </entity>
- <entity id="3">
-  <component type="EC_Name" sync="true">
-   <attribute value="Environment" name="name"/>
-   <attribute value="" name="description"/>
+ <entity id="2" sync="true">
+  <component typeId="26" type="Name" sync="true">
+   <attribute value="Instructions" type="string" id="name" name="Name"/>
+   <attribute value="" type="string" id="description" name="Description"/>
+   <attribute value="" type="string" id="group" name="Group"/>
   </component>
-  <component type="EC_EnvironmentLight" sync="true">
-   <attribute value="0.639000 0.639000 0.639000 1.000000" name="Sunlight color"/>
-   <attribute value="0.364000 0.364000 0.364000 1.000000" name="Ambient light color"/>
-   <attribute value="-1.000000 -1.000000 -1.000000" name="Sunlight direction vector"/>
-   <attribute value="true" name="Sunlight cast shadows"/>
-   <attribute value="1" name="Brightness"/>
-  </component>
-  <component type="EC_Terrain" sync="true">
-   <attribute value="-129.000000,-60.000000,-100.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" name="Transform"/>
-   <attribute value="24" name="Grid Width"/>
-   <attribute value="24" name="Grid Height"/>
-   <attribute value="0.129999995" name="Tex. U scale"/>
-   <attribute value="0.129999995" name="Tex. V scale"/>
-   <attribute value="Ogre Media:RexTerrainPCF.material" name="Material"/>
-   <attribute value="Terrain.ntf" name="Heightmap"/>
-  </component>
-  <component type="EC_Sky" sync="true">
-   <attribute value="local://RexSkyBox.material" name="Material"/>
-   <attribute value="" name="Texture"/>
-   <attribute value="50" name="Distance"/>
-   <attribute value="0.000000 0.000000 0.000000 1.000000" name="Orientation"/>
-   <attribute value="true" name="Draw first"/>
-  </component>
-  <component type="EC_RigidBody" sync="true">
-   <attribute value="0" name="Mass"/>
-   <attribute value="5" name="Shape type"/>
-   <attribute value="1.000000 1.000000 1.000000" name="Size"/>
-   <attribute value="" name="Collision mesh ref"/>
-   <attribute value="0.5" name="Friction"/>
-   <attribute value="0" name="Restitution"/>
-   <attribute value="0" name="Linear damping"/>
-   <attribute value="0" name="Angular damping"/>
-   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
-   <attribute value="1.000000 1.000000 1.000000" name="Angular factor"/>
-   <attribute value="false" name="Kinematic"/>
-   <attribute value="false" name="Phantom"/>
-   <attribute value="false" name="Draw Debug"/>
-   <attribute value="0.000000 0.000000 0.000000" name="Linear velocity"/>
-   <attribute value="0.000000 0.000000 0.000000" name="Angular velocity"/>
-   <attribute value="-1" name="Collision Layer"/>
-   <attribute value="-1" name="Collision Mask"/>
+  <component typeId="5" type="Script" sync="true">
+   <attribute value="Instructions.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+   <attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+   <attribute value="0" type="int" id="runMode" name="Run mode"/>
+   <attribute value="" type="string" id="applicationName" name="Script application name"/>
+   <attribute value="" type="string" id="className" name="Script class name"/>
   </component>
  </entity>
- <entity id="4" sync="1">
-  <component type="EC_Name" sync="1">
-   <attribute value="ControlPanel" name="name"/>
-   <attribute value="" name="description"/>
+ <entity id="3" sync="true">
+  <component typeId="26" type="Name" sync="true">
+   <attribute value="Environment" type="string" id="name" name="Name"/>
+   <attribute value="" type="string" id="description" name="Description"/>
+   <attribute value="" type="string" id="group" name="Group"/>
   </component>
-  <component type="EC_DynamicComponent" sync="1">
-   <attribute value="true" type="bool" name="spawningHammers"/>
+  <component typeId="8" type="EnvironmentLight" sync="true">
+   <attribute value="0.639000 0.639000 0.639000 1.000000" type="Color" id="sunColor" name="Sunlight color"/>
+   <attribute value="0.364000 0.364000 0.364000 1.000000" type="Color" id="ambientColor" name="Ambient light color"/>
+   <attribute value="-1.000000 -1.000000 -1.000000" type="float3" id="sunDirection" name="Sunlight direction vector"/>
+   <attribute value="true" type="bool" id="sunCastShadows" name="Sunlight cast shadows"/>
+   <attribute value="1.000000" type="real" id="brightness" name="Brightness"/>
   </component>
-  <component type="EC_Placeable" sync="true">
-   <attribute value="-41.409851,36.544533,-15.080575,0.000000,40.000000,0.000000,0.999984,0.999985,0.999984" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-   <attribute value="true" name="Visible"/>
-   <attribute value="1" name="Selection layer"/>
-   <attribute value="" name="Parent entity ref"/>
-   <attribute value="" name="Parent bone name"/>
+  <component typeId="11" type="Terrain" sync="true">
+   <attribute value="-129.000000,-60.000000,-100.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="nodeTransformation" name="Transform"/>
+   <attribute value="24" type="uint" id="xPatches" name="Grid Width"/>
+   <attribute value="24" type="uint" id="yPatches" name="Grid Height"/>
+   <attribute value="0.130000" type="real" id="uScale" name="Tex. U scale"/>
+   <attribute value="0.130000" type="real" id="vScale" name="Tex. V scale"/>
+   <attribute value="Ogre Media:RexTerrainPCF.material" type="AssetReference" id="material" name="Material"/>
+   <attribute value="Terrain.ntf" type="AssetReference" id="heightMap" name="Heightmap"/>
   </component>
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
-   <attribute value="local://Screen.mesh" name="Mesh ref"/>
-   <attribute value="" name="Skeleton ref"/>
-   <attribute value="local://Screen.material;local://Frame.material" name="Mesh materials"/>
-   <attribute value="0" name="Draw distance"/>
-   <attribute value="true" name="Cast shadows"/>
+  <component typeId="10" type="Sky" sync="true">
+   <attribute value="local://RexSkyBox.material" type="AssetReference" id="materialRef" name="Material"/>
+   <attribute value="" type="AssetReferenceList" id="textureRefs" name="Texture"/>
+   <attribute value="50.000000" type="real" id="distance" name="Distance"/>
+   <attribute value="0.000000 0.000000 0.000000 1.000000" type="Quat" id="orientation" name="Orientation"/>
+   <attribute value="true" type="bool" id="drawFirst" name="Draw first"/>
+   <attribute value="true" type="bool" id="enabled" name="Enabled"/>
   </component>
-  <component type="EC_Script" name="ControlPanel" sync="1">
-   <attribute value="ControlPanel.js" name="Script ref"/>
-   <attribute value="true" name="Run on load"/>
-   <attribute value="0" name="Run mode"/>
-   <attribute value="" name="Script application name"/>
-   <attribute value="" name="Script class name"/>
-  </component>
-  <component type="EC_GraphicsViewCanvas" sync="1">
-   <attribute value="LoadingScreen.png" name="Output texture"/>
-   <attribute value="400" name="Texture width"/>
-   <attribute value="400" name="Texture height"/>
-   <attribute value="0" name="Submesh"/>
-  </component>
-  <component type="EC_RigidBody" sync="1">
-   <attribute value="0" name="Mass"/>
-   <attribute value="6" name="Shape type"/>
-   <attribute value="1.000000 1.000000 1.000000" name="Size"/>
-   <attribute value="" name="Collision mesh ref"/>
-   <attribute value="0.5" name="Friction"/>
-   <attribute value="0" name="Restitution"/>
-   <attribute value="0" name="Linear damping"/>
-   <attribute value="0" name="Angular damping"/>
-   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
-   <attribute value="1.000000 1.000000 1.000000" name="Angular factor"/>
-   <attribute value="false" name="Kinematic"/>
-   <attribute value="false" name="Phantom"/>
-   <attribute value="false" name="Draw Debug"/>
-   <attribute value="0.000000 0.000000 0.000000" name="Linear velocity"/>
-   <attribute value="0.000000 0.000000 0.000000" name="Angular velocity"/>
-   <attribute value="-1" name="Collision Layer"/>
-   <attribute value="-1" name="Collision Mask"/>
-  </component>
-  <component type="EC_Script" name="Canvas" sync="1">
-   <attribute value="Canvas.js" name="Script ref"/>
-   <attribute value="true" name="Run on load"/>
-   <attribute value="0" name="Run mode"/>
-   <attribute value="" name="Script application name"/>
-   <attribute value="" name="Script class name"/>
+  <component typeId="23" type="RigidBody" sync="true">
+   <attribute value="0.000000" type="real" id="mass" name="Mass"/>
+   <attribute value="5" type="int" id="shapeType" name="Shape type"/>
+   <attribute value="1.000000 1.000000 1.000000" type="float3" id="size" name="Size"/>
+   <attribute value="" type="AssetReference" id="collisionMeshRef" name="Collision mesh ref"/>
+   <attribute value="0.500000" type="real" id="friction" name="Friction"/>
+   <attribute value="0.000000" type="real" id="restitution" name="Restitution"/>
+   <attribute value="0.000000" type="real" id="linearDamping" name="Linear damping"/>
+   <attribute value="0.000000" type="real" id="angularDamping" name="Angular damping"/>
+   <attribute value="1.000000 1.000000 1.000000" type="float3" id="linearFactor" name="Linear factor"/>
+   <attribute value="1.000000 1.000000 1.000000" type="float3" id="angularFactor" name="Angular factor"/>
+   <attribute value="false" type="bool" id="kinematic" name="Kinematic"/>
+   <attribute value="false" type="bool" id="phantom" name="Phantom"/>
+   <attribute value="false" type="bool" id="drawDebug" name="Draw Debug"/>
+   <attribute value="0.000000 0.000000 0.000000" type="float3" id="linearVelocity" name="Linear velocity"/>
+   <attribute value="0.000000 0.000000 0.000000" type="float3" id="angularVelocity" name="Angular velocity"/>
+   <attribute value="-1" type="int" id="collisionLayer" name="Collision Layer"/>
+   <attribute value="-1" type="int" id="collisionMask" name="Collision Mask"/>
+   <attribute value="0.500000" type="real" id="rollingFriction" name="Rolling friction"/>
+   <attribute value="true" type="bool" id="useGravity" name="Use gravity"/>
   </component>
  </entity>
- <entity id="5" sync="1">
-  <component type="EC_Name" sync="1">
-   <attribute value="ControlPanel" name="name"/>
-   <attribute value="" name="description"/>
+ <entity id="4" sync="true">
+  <component typeId="26" type="Name" sync="true">
+   <attribute value="ControlPanel" type="string" id="name" name="Name"/>
+   <attribute value="" type="string" id="description" name="Description"/>
+   <attribute value="" type="string" id="group" name="Group"/>
   </component>
-  <component type="EC_DynamicComponent" sync="1">
-   <attribute value="true" type="bool" name="spawningHammers"/>
+  <component typeId="20" type="Placeable" sync="true">
+   <attribute value="-41.409851,36.544533,-15.080575,0.000000,40.000000,0.000000,0.999984,0.999985,0.999984" type="Transform" id="transform" name="Transform"/>
+   <attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
+   <attribute value="true" type="bool" id="visible" name="Visible"/>
+   <attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
+   <attribute value="" type="EntityReference" id="parentRef" name="Parent entity ref"/>
+   <attribute value="" type="string" id="parentBone" name="Parent bone name"/>
   </component>
-  <component type="EC_Placeable" sync="true">
-   <attribute value="-31.308466,36.664974,-24.856361,0.000000,67.447609,0.000000,0.999991,0.999986,0.999987" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-   <attribute value="true" name="Visible"/>
-   <attribute value="1" name="Selection layer"/>
-   <attribute value="" name="Parent entity ref"/>
-   <attribute value="" name="Parent bone name"/>
+  <component typeId="17" type="Mesh" sync="true">
+   <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="nodeTransformation" name="Transform"/>
+   <attribute value="local://Screen.mesh" type="AssetReference" id="meshRef" name="Mesh ref"/>
+   <attribute value="" type="AssetReference" id="skeletonRef" name="Skeleton ref"/>
+   <attribute value="OgreMaterial_GraphicsViewCanvas_3;local://Frame.material" type="AssetReferenceList" id="materialRefs" name="Mesh materials"/>
+   <attribute value="0.000000" type="real" id="drawDistance" name="Draw distance"/>
+   <attribute value="true" type="bool" id="castShadows" name="Cast shadows"/>
+   <attribute value="false" type="bool" id="useInstancing" name="Use instancing"/>
   </component>
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
-   <attribute value="local://Screen.mesh" name="Mesh ref"/>
-   <attribute value="" name="Skeleton ref"/>
-   <attribute value="local://Screen.material;local://Frame.material" name="Mesh materials"/>
-   <attribute value="0" name="Draw distance"/>
-   <attribute value="true" name="Cast shadows"/>
+  <component typeId="5" type="Script" sync="true" name="ControlPanel">
+   <attribute value="ControlPanel.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+   <attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+   <attribute value="0" type="int" id="runMode" name="Run mode"/>
+   <attribute value="" type="string" id="applicationName" name="Script application name"/>
+   <attribute value="" type="string" id="className" name="Script class name"/>
   </component>
-  <component type="EC_Script" name="WebView" sync="1">
-   <attribute value="WebView.js" name="Script ref"/>
-   <attribute value="true" name="Run on load"/>
-   <attribute value="0" name="Run mode"/>
-   <attribute value="" name="Script application name"/>
-   <attribute value="" name="Script class name"/>
+  <component typeId="52" type="GraphicsViewCanvas" sync="true">
+   <attribute value="Texture_Canvas_1" type="string" id="outputTexture" name="Output texture"/>
+   <attribute value="400" type="uint" id="width" name="Texture width"/>
+   <attribute value="400" type="uint" id="height" name="Texture height"/>
+   <attribute value="0" type="uint" id="submesh" name="Submesh"/>
   </component>
-  <component type="EC_GraphicsViewCanvas" sync="1">
-   <attribute value="LoadingScreen.png" name="Output texture"/>
-   <attribute value="400" name="Texture width"/>
-   <attribute value="400" name="Texture height"/>
-   <attribute value="0" name="Submesh"/>
+  <component typeId="23" type="RigidBody" sync="true">
+   <attribute value="0.000000" type="real" id="mass" name="Mass"/>
+   <attribute value="6" type="int" id="shapeType" name="Shape type"/>
+   <attribute value="1.000000 1.000000 1.000000" type="float3" id="size" name="Size"/>
+   <attribute value="" type="AssetReference" id="collisionMeshRef" name="Collision mesh ref"/>
+   <attribute value="0.500000" type="real" id="friction" name="Friction"/>
+   <attribute value="0.000000" type="real" id="restitution" name="Restitution"/>
+   <attribute value="0.000000" type="real" id="linearDamping" name="Linear damping"/>
+   <attribute value="0.000000" type="real" id="angularDamping" name="Angular damping"/>
+   <attribute value="1.000000 1.000000 1.000000" type="float3" id="linearFactor" name="Linear factor"/>
+   <attribute value="1.000000 1.000000 1.000000" type="float3" id="angularFactor" name="Angular factor"/>
+   <attribute value="false" type="bool" id="kinematic" name="Kinematic"/>
+   <attribute value="false" type="bool" id="phantom" name="Phantom"/>
+   <attribute value="false" type="bool" id="drawDebug" name="Draw Debug"/>
+   <attribute value="0.000000 0.000000 0.000000" type="float3" id="linearVelocity" name="Linear velocity"/>
+   <attribute value="0.000000 0.000000 0.000000" type="float3" id="angularVelocity" name="Angular velocity"/>
+   <attribute value="-1" type="int" id="collisionLayer" name="Collision Layer"/>
+   <attribute value="-1" type="int" id="collisionMask" name="Collision Mask"/>
+   <attribute value="0.500000" type="real" id="rollingFriction" name="Rolling friction"/>
+   <attribute value="true" type="bool" id="useGravity" name="Use gravity"/>
   </component>
-  <component type="EC_RigidBody" sync="1">
-   <attribute value="0" name="Mass"/>
-   <attribute value="6" name="Shape type"/>
-   <attribute value="1.000000 1.000000 1.000000" name="Size"/>
-   <attribute value="" name="Collision mesh ref"/>
-   <attribute value="0.5" name="Friction"/>
-   <attribute value="0" name="Restitution"/>
-   <attribute value="0" name="Linear damping"/>
-   <attribute value="0" name="Angular damping"/>
-   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
-   <attribute value="1.000000 1.000000 1.000000" name="Angular factor"/>
-   <attribute value="false" name="Kinematic"/>
-   <attribute value="false" name="Phantom"/>
-   <attribute value="false" name="Draw Debug"/>
-   <attribute value="0.000000 0.000000 0.000000" name="Linear velocity"/>
-   <attribute value="0.000000 0.000000 0.000000" name="Angular velocity"/>
-   <attribute value="-1" name="Collision Layer"/>
-   <attribute value="-1" name="Collision Mask"/>
+  <component typeId="5" type="Script" sync="true" name="Canvas">
+   <attribute value="Canvas.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+   <attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+   <attribute value="0" type="int" id="runMode" name="Run mode"/>
+   <attribute value="" type="string" id="applicationName" name="Script application name"/>
+   <attribute value="" type="string" id="className" name="Script class name"/>
   </component>
-  <component type="EC_Script" name="Canvas" sync="1">
-   <attribute value="Canvas.js" name="Script ref"/>
-   <attribute value="true" name="Run on load"/>
-   <attribute value="0" name="Run mode"/>
-   <attribute value="" name="Script application name"/>
-   <attribute value="" name="Script class name"/>
+ </entity>
+ <entity id="5" sync="true">
+  <component typeId="26" type="Name" sync="true">
+   <attribute value="WebView" type="string" id="name" name="Name"/>
+   <attribute value="" type="string" id="description" name="Description"/>
+   <attribute value="" type="string" id="group" name="Group"/>
+  </component>
+  <component typeId="20" type="Placeable" sync="true">
+   <attribute value="-31.308466,36.664974,-24.856361,0.000000,67.447609,0.000000,0.999991,0.999986,0.999987" type="Transform" id="transform" name="Transform"/>
+   <attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
+   <attribute value="true" type="bool" id="visible" name="Visible"/>
+   <attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
+   <attribute value="" type="EntityReference" id="parentRef" name="Parent entity ref"/>
+   <attribute value="" type="string" id="parentBone" name="Parent bone name"/>
+  </component>
+  <component typeId="17" type="Mesh" sync="true">
+   <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="nodeTransformation" name="Transform"/>
+   <attribute value="local://Screen.mesh" type="AssetReference" id="meshRef" name="Mesh ref"/>
+   <attribute value="" type="AssetReference" id="skeletonRef" name="Skeleton ref"/>
+   <attribute value="OgreMaterial_GraphicsViewCanvas_4;local://Frame.material" type="AssetReferenceList" id="materialRefs" name="Mesh materials"/>
+   <attribute value="0.000000" type="real" id="drawDistance" name="Draw distance"/>
+   <attribute value="true" type="bool" id="castShadows" name="Cast shadows"/>
+   <attribute value="false" type="bool" id="useInstancing" name="Use instancing"/>
+  </component>
+  <component typeId="5" type="Script" sync="true" name="WebView">
+   <attribute value="WebView.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+   <attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+   <attribute value="0" type="int" id="runMode" name="Run mode"/>
+   <attribute value="" type="string" id="applicationName" name="Script application name"/>
+   <attribute value="" type="string" id="className" name="Script class name"/>
+  </component>
+  <component typeId="52" type="GraphicsViewCanvas" sync="true">
+   <attribute value="Texture_Canvas_2" type="string" id="outputTexture" name="Output texture"/>
+   <attribute value="400" type="uint" id="width" name="Texture width"/>
+   <attribute value="400" type="uint" id="height" name="Texture height"/>
+   <attribute value="0" type="uint" id="submesh" name="Submesh"/>
+  </component>
+  <component typeId="23" type="RigidBody" sync="true">
+   <attribute value="0.000000" type="real" id="mass" name="Mass"/>
+   <attribute value="6" type="int" id="shapeType" name="Shape type"/>
+   <attribute value="1.000000 1.000000 1.000000" type="float3" id="size" name="Size"/>
+   <attribute value="" type="AssetReference" id="collisionMeshRef" name="Collision mesh ref"/>
+   <attribute value="0.500000" type="real" id="friction" name="Friction"/>
+   <attribute value="0.000000" type="real" id="restitution" name="Restitution"/>
+   <attribute value="0.000000" type="real" id="linearDamping" name="Linear damping"/>
+   <attribute value="0.000000" type="real" id="angularDamping" name="Angular damping"/>
+   <attribute value="1.000000 1.000000 1.000000" type="float3" id="linearFactor" name="Linear factor"/>
+   <attribute value="1.000000 1.000000 1.000000" type="float3" id="angularFactor" name="Angular factor"/>
+   <attribute value="false" type="bool" id="kinematic" name="Kinematic"/>
+   <attribute value="false" type="bool" id="phantom" name="Phantom"/>
+   <attribute value="false" type="bool" id="drawDebug" name="Draw Debug"/>
+   <attribute value="0.000000 0.000000 0.000000" type="float3" id="linearVelocity" name="Linear velocity"/>
+   <attribute value="0.000000 0.000000 0.000000" type="float3" id="angularVelocity" name="Angular velocity"/>
+   <attribute value="-1" type="int" id="collisionLayer" name="Collision Layer"/>
+   <attribute value="-1" type="int" id="collisionMask" name="Collision Mask"/>
+   <attribute value="0.500000" type="real" id="rollingFriction" name="Rolling friction"/>
+   <attribute value="true" type="bool" id="useGravity" name="Use gravity"/>
+  </component>
+  <component typeId="5" type="Script" sync="true" name="Canvas">
+   <attribute value="Canvas.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+   <attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+   <attribute value="0" type="int" id="runMode" name="Run mode"/>
+   <attribute value="" type="string" id="applicationName" name="Script application name"/>
+   <attribute value="" type="string" id="className" name="Script class name"/>
   </component>
  </entity>
 </scene>
