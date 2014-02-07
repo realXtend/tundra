@@ -207,23 +207,46 @@ QPoint InputAPI::MousePos() const
     return QPoint(lastMouseX, lastMouseY);
 }
 
+static void DumpInputContext(int &idx, const InputContextPtr &ic)
+{
+    if (ic)
+        LogInfo(QString("Context %1: \"%2\", priority %3, takeMouseEventsOverQt %4, takeKeyboardEventsOverQt %5").
+            arg(idx++).arg(ic->Name()).arg(ic->Priority()).arg(BoolToString(ic->TakesMouseEventsOverQt())).
+            arg(BoolToString(ic->TakesKeyboardEventsOverQt())));
+    else
+        LogInfo("Context " + QString::number(idx++) + ": expired weak_ptr.");
+}
+
 void InputAPI::DumpInputContexts()
 {
-    int idx = 0;
+    LogInfo("TopLevelInputContext:");
+    LogInfo(QString("    KeyEventReceived: %1 receivers").arg(topLevelInputContext.receivers(SIGNAL(KeyEventReceived(KeyEvent *)))));
+    LogInfo(QString("    MouseEventReceived: %1 receivers").arg(topLevelInputContext.receivers(SIGNAL(MouseEventReceived(MouseEvent *)))));
+    LogInfo(QString("    KeyPressed: %1 receivers").arg(topLevelInputContext.receivers(SIGNAL(KeyPressed(KeyEvent *)))));
+    LogInfo(QString("    KeyDown: %1 receivers").arg(topLevelInputContext.receivers(SIGNAL(KeyDown(KeyEvent *)))));
+    LogInfo(QString("    KeyReleased: %1 receivers").arg(topLevelInputContext.receivers(SIGNAL(KeyReleased(KeyEvent *)))));
+    LogInfo(QString("    MouseMove: %1 receivers").arg(topLevelInputContext.receivers(SIGNAL(MouseMove(MouseEvent *)))));
+    LogInfo(QString("    MouseScroll: %1 receivers").arg(topLevelInputContext.receivers(SIGNAL(MouseScroll(MouseEvent *)))));
+    LogInfo(QString("    MouseDoubleClicked: %1 receivers").arg(topLevelInputContext.receivers(SIGNAL(MouseDoubleClicked(MouseEvent *)))));
+    LogInfo(QString("    MouseLeftPressed: %1 receivers").arg(topLevelInputContext.receivers(SIGNAL(MouseLeftPressed(MouseEvent *)))));
+    LogInfo(QString("    MouseMiddlePressed: %1 receivers").arg(topLevelInputContext.receivers(SIGNAL(MouseMiddlePressed(MouseEvent *)))));
+    LogInfo(QString("    MouseRightPressed: %1 receivers").arg(topLevelInputContext.receivers(SIGNAL(MouseRightPressed(MouseEvent *)))));
+    LogInfo(QString("    MouseLeftReleased: %1 receivers").arg(topLevelInputContext.receivers(SIGNAL(MouseLeftReleased(MouseEvent *)))));
+    LogInfo(QString("    MouseMiddleReleased: %1 receivers").arg(topLevelInputContext.receivers(SIGNAL(MouseMiddleReleased(MouseEvent *)))));
+    LogInfo(QString("    MouseRightReleased: %1 receivers").arg(topLevelInputContext.receivers(SIGNAL(MouseRightReleased(MouseEvent *)))));
+    // NOTE not interested in gesture events, at least for now.
 
+    int idx = 0;
     foreach(const weak_ptr<InputContext> &inputContext, registeredInputContexts)
     {
         InputContextPtr ic = inputContext.lock();
-        if (ic)
-            LogInfo("Context " + QString::number(idx++) + ": \"" + ic->Name() + "\", priority " + QString::number(ic->Priority()));
-        else
-            LogInfo("Context " + QString::number(idx++) + ": expired weak_ptr.");
+        DumpInputContext(idx, ic);
     }
 
     if (untrackedInputContexts.size() > 0 )
         LogInfo("Untracked input contexts: ");
     foreach(const InputContextPtr &ic, untrackedInputContexts)
-        LogInfo("Context " + QString::number(idx++) + ": \"" + ic->Name() + "\", priority " + QString::number(ic->Priority()));
+        DumpInputContext(idx, ic);
 }
 
 void InputAPI::SetPriority(InputContextPtr inputContext, int newPriority)
