@@ -166,6 +166,7 @@ void EC_VolumeTrigger::UpdateSignals()
     if (!parent)
         return;
     
+    CheckForRigidBody();
     connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForRigidBody()), Qt::UniqueConnection);
 
     Scene* scene = parent->ParentScene();
@@ -211,7 +212,7 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
             {
                 bool active = true;
                 shared_ptr<EC_RigidBody> rigidbody = entity->GetComponent<EC_RigidBody>();
-                if (rigidbody)
+                if (rigidbody && rigidbody->mass.Get() > 0.0f)
                     active = rigidbody->IsActive();
                 if (active)
                     remove = true;
