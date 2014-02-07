@@ -1,10 +1,11 @@
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 var attrTypes   = framework.Scene().attributeTypes;
 var scene       = framework.Scene().CreateScene("DynamiComponentTestScene", false, true);
-var me          = scene.CreateEntity(scene.NextFreeId());
-    me.name     = "DynamicComponent.js Test Suite";
+var me          = scene.CreateEntity();
+me.name         = "DynamicComponent.js Test Suite";
 var dyn         = me.CreateComponent("DynamicComponent");
-var attrName    = undefined;
+var attrId      = undefined;
 
 // If the QObject property should be used to set the attribute value.
 // Note that in both cases the value will be asserted against both
@@ -33,7 +34,7 @@ function run()
     }
 
     log.info("***************************************")
-    log.info("Using EC_DynamicComponent.attributeName")
+    log.info("Using EC_DynamicComponent.attributeId")
     log.info("***************************************\n")
     usePropertySetter = true;
 
@@ -50,80 +51,80 @@ function run()
     }
 
     log.info("*************************************************")
-    log.info("Validating attribute id to QObject propery naming")
+    log.info("Validating attribute id to QObject property naming")
     log.info("*************************************************\n")
 
-    // Test invalid attribute id:s that cant be made as dynamic property
+    // Test invalid attribute IDs that cant be made as dynamic property
     var propertyNameTests = [
-        { name : "My String ****", propName : "myString****", expected : undefined },
-        { name : "1234 my string", propName : "1234MyString", expected : undefined },
-        { name : "ÖÄÅ",            propName : "öÄÅ",          expected : undefined },
-        { name : "My 123 Var 456", propName : "my123Var456",  expected : "test value" },
-        { name : "my_var",         propName : "my_var",       expected : "test value" },
-        { name : "_my var",        propName : "_myVar",       expected : "test value" }
+        { id : "My String ****", propName : "myString****", expected : undefined },
+        { id : "1234 my string", propName : "1234MyString", expected : undefined },
+        { id : "ÖÄÅ",            propName : "öÄÅ",          expected : undefined },
+        { id : "My 123 Var 456", propName : "my123Var456",  expected : "test value" },
+        { id : "my_var",         propName : "my_var",       expected : "test value" },
+        { id : "_my var",        propName : "_myVar",       expected : "test value" }
     ];
     for (var i = 0; i < propertyNameTests.length; i++)
     {
         var test = propertyNameTests[i];
-        var attr = dyn.CreateAttribute("string", test.name);
-        dyn.SetAttribute(test.name, "test value");
+        var attr = dyn.CreateAttribute("string", test.id);
+        dyn.SetAttribute(test.id, "test value");
         if (dyn[test.propName] === test.expected && test.expected === undefined)
-            log.info('Validated that "' + test.name + '" WONT translate into dynamicComponent.' + test.propName + ' due to invalid characters');
+            log.info('Validated that "' + test.id + '" WON\'T translate into dynamicComponent.' + test.propName + ' due to invalid characters');
         else if (dyn[test.propName] === test.expected && test.expected !== undefined)
-            log.info('Validated that "' + test.name + '" WILL translate into dynamicComponent.' + test.propName);
+            log.info('Validated that "' + test.id + '" WILL translate into dynamicComponent.' + test.propName);
     }
 }
 
 function setAttribute(attr)
 {
-    attrName = attr.name;
+    attrId = attr.id;
 
     /// @note Real number test are done with single decimal precision.
     /// More decimals will trigger a assert failure due to floating point comparisons.
 
-    if (attr.typename === "string")
+    if (attr.typeName === "string")
     {
         setAttributeValue("this is a test - usePropertySetter = " + usePropertySetter);
         setAttributeValue("");
         setAttributeValue("meh - usePropertySetter = " + usePropertySetter);
     }
-    else if (attr.typename === "int")
+    else if (attr.typeName === "int")
     {
         setAttributeValue(10);
         setAttributeValue(-10);
     }
-    else if (attr.typename === "real")
+    else if (attr.typeName === "real")
     {
         setAttributeValue(1);
         setAttributeValue(2.5);
     }
-    else if (attr.typename === "bool")
+    else if (attr.typeName === "bool")
     {
         setAttributeValue(true);
         setAttributeValue(false);
     }
-    else if (attr.typename === "Color")
+    else if (attr.typeName === "Color")
     {
         setAttributeValue(new Color(1.2, 3.4, 4.5, 1.0), ["r", "g", "b", "a"]);
         setAttributeValue({ r : 1, g : 2, b : 3, a : 4 }, ["r", "g", "b", "a"]); // float issues when using decimals!
     }
-    else if (attr.typename === "float2")
+    else if (attr.typeName === "float2")
     {
         setAttributeValue(new float2(1.2, 3.4), ["x", "y"]);
     }
-    else if (attr.typename === "float3")
+    else if (attr.typeName === "float3")
     {
         setAttributeValue(new float3(1.2, 3.4, 4.5), ["x", "y", "z"]);
     }
-    else if (attr.typename === "float4")
+    else if (attr.typeName === "float4")
     {
         setAttributeValue(new float4(1.2, 3.4, 4.5, 6.7), ["x", "y", "z", "w"]);
     }
-    else if (attr.typename === "Quat")
+    else if (attr.typeName === "Quat")
     {
         setAttributeValue(new Quat(1.2, 3.4, 4.5, 6.7), ["x", "y", "z", "w"]);
     }
-    else if (attr.typename === "AssetReference")
+    else if (attr.typeName === "AssetReference")
     {
         /// @todo These test will fail when the asset type is changed.
         /// This is due to Attribute<AssetReference>::FromQVariant using
@@ -137,7 +138,7 @@ function setAttribute(attr)
         setAttributeValue(new AssetReference("test4.mesh", ""), [ "ref", "type" ]);
         setAttributeValue(new AssetReference("test5.mesh", "OgreMaterial"), [ "ref", "type" ]);
     }
-    else if (attr.typename === "AssetReferenceList")
+    else if (attr.typeName === "AssetReferenceList")
     {
         setAttributeValue(["test1.mesh", "", "test2.mesh"]);
         setAttributeValue([{ ref : "test1.material", type : "OgreMaterial" }, "test2.mesh", 
@@ -151,7 +152,7 @@ function setAttribute(attr)
 
         setAttributeValue(new AssetReferenceList(["1", { ref: "2" } , new AssetReference("3")]));
     }
-    else if (attr.typename === "EntityReference")
+    else if (attr.typeName === "EntityReference")
     {
         setAttributeValue("TestEntity1", "ref");
         setAttributeValue(100, "ref");
@@ -184,7 +185,7 @@ function setAttribute(attr)
 function setAttributeValue(value, assertProperty)
 {
     if (!usePropertySetter)
-        dyn.SetAttribute(attrName, value);
+        dyn.SetAttribute(attrId, value);
     else
     {
         var dynPropName = dynamicPropertyName();
@@ -257,7 +258,7 @@ function setAttributeValue(value, assertProperty)
 
 function current(subProperty)
 {
-    var value = dyn.Attribute(attrName);
+    var value = dyn.Attribute(attrId);
     if (subProperty !== undefined)
         return value[subProperty];
     return value;
@@ -265,9 +266,9 @@ function current(subProperty)
 
 function dumpAttribute(attr)
 {
-    var value = dyn.Attribute(attr.name);
-    log.info("Attribute (" + attr.name + ")");
-    log.info("  Type       : " + attr.typename);
+    var value = dyn.Attribute(attr.id);
+    log.info("Attribute (" + attr.id + ")");
+    log.info("  Type       : " + attr.typeName);
     log.info("  JS typeof  : " + typeof value + (Array.isArray(value) ? " (Array)" : ""));
     log.info("  Value      : " + value);
 
@@ -304,7 +305,7 @@ function assertAttribute(value, assertValue, assertProperty, testDynamicProp)
 function dynamicPropertyName()
 {
     var name = "";
-    var parts = attrName.split(" ");
+    var parts = attrId.split(" ");
     for (var i = 0; i < parts.length; i++)
         name += (parts[i].substring(0,1).toUpperCase() + parts[i].substring(1));
     return name.substring(0,1).toLowerCase() + name.substring(1);
@@ -325,7 +326,7 @@ framework.Scene().SceneCreated.connect(function(createdScene) {
     me          = scene.CreateEntity(scene.NextFreeId());
     me.name     = "DynamicComponent.js Test Suite";
     dyn         = me.CreateComponent("DynamicComponent");
-    attrName    = undefined;
+    attrId      = undefined;
 
     print("");
     run();
