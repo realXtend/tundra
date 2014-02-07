@@ -19,7 +19,7 @@
 Transform::operator QString() const
 {
     return "Transform(Pos:(" + QString::number(pos.x) + "," + QString::number(pos.y) + "," + QString::number(pos.z) + ") Rot:(" +
-        QString::number(rot.x) + "," + QString::number(rot.y) + "," + QString::number(rot.z) + " Scale:(" +
+        QString::number(rot.x) + "," + QString::number(rot.y) + "," + QString::number(rot.z) + ") Scale:(" +
         QString::number(scale.x) + "," + QString::number(scale.y) + "," + QString::number(scale.z) + "))";
 }
 
