@@ -1,12 +1,11 @@
 float4 main(
 		uniform float time,
-		uniform float4 colorModulate
-) : COLOR
+		uniform float4 colorModulate) : COLOR
 {
    float4 color;
-   color.x = colorModulate.x;
-   color.y = colorModulate.y;
-   color.z = colorModulate.z;
-   color.w = colorModulate.w * (abs(sin(time * 8.0)));
+   color.r = colorModulate.r;
+   color.g = colorModulate.g;
+   color.b = colorModulate.b;
+   color.a = colorModulate.a * (abs(sin(time * 4.0)));
    return color;
 }

@@ -15,10 +15,6 @@
 #include <Ogre.h>
 #include <OgreRenderQueueListener.h>
 
-// render queue groups
-#define STENCIL_GLOW_ENTITY Ogre::RENDER_QUEUE_MAIN + 1
-#define STENCIL_GLOW_OUTLINE Ogre::RENDER_QUEUE_OVERLAY - 1
-
 class EC_StencilGlow : public IComponent
 {
     Q_OBJECT
@@ -39,7 +35,7 @@ public:
 
 private slots:
     /// Called upon parent entity set
-    void Initialize();
+    void Initialize(); 
 
     /// Called when the mesh is changed so that the stencil be redrawn
     void OnMeshChanged();
@@ -47,10 +43,8 @@ private slots:
     /// Called when the mesh is destroyed, so that the stencil be destroyed first
     void OnMeshAboutToBeDestroyed();
 
-    /// Called when some of the attributes has been changed.
-    void OnAttributeUpdated(IAttribute *attribute);
-
 private:
+    void AttributesChanged();
 
     void CreateStencilGlow();
 

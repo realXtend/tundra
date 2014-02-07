@@ -11,6 +11,9 @@
 #include "Framework.h"
 #include "LoggingFunctions.h"
 
+#define STENCIL_GLOW_ENTITY Ogre::RENDER_QUEUE_MAIN + 1
+#define STENCIL_GLOW_OUTLINE Ogre::RENDER_QUEUE_OVERLAY - 1
+
 #define COLOR_CUSTOM_PARAM 1
 
 EC_StencilGlow::EC_StencilGlow(Scene *scene) :
@@ -45,7 +48,6 @@ void EC_StencilGlow::Initialize()
 
     connect(mesh, SIGNAL(MeshChanged()), this, SLOT(OnMeshChanged()));
     connect(mesh, SIGNAL(MeshAboutToBeDestroyed()), this, SLOT(OnMeshAboutToBeDestroyed()));
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(OnAttributeUpdated(IAttribute*)));
 
     if (enabled.Get())
     {
@@ -77,7 +79,14 @@ void EC_StencilGlow::CreateStencilGlow()
     {
         outlineEntity_ = entity->clone(entity->getName() + "_glow");
         outlineEntity_->setRenderQueueGroup(STENCIL_GLOW_OUTLINE);
-        outlineEntity_->setMaterialName("cg/stencil_glow");
+        outlineEntity_->setMaterialName("cg/stencil_alpha_glow");
+
+        Ogre::SubEntity *subEnt = outlineEntity_->getSubEntity(0);
+        if(subEnt)
+        {
+            Color newColor = color.Get();
+            subEnt->setCustomParameter(COLOR_CUSTOM_PARAM, Ogre::Vector4(newColor.r, newColor.g, newColor.b, newColor.a));
+        }
 
         if (entity->hasSkeleton())
             outlineEntity_->shareSkeletonInstanceWith(entity);
@@ -86,8 +95,11 @@ void EC_StencilGlow::CreateStencilGlow()
         if (mgr)
         {
             outlineSceneNode_ = entity->getParentSceneNode()->createChildSceneNode(entity->getName() + "_outlineGlowNode");
-            outlineSceneNode_->setScale(Ogre::Vector3(1.08f, 1.08f, 1.08f));
+            outlineSceneNode_->setScale(1.2f, 1.2f, 1.2f);
         }
+
+        isEnabled = false;
+        SetStencilGlowEnabled(enabled.Get());
     }
 }
 
@@ -139,22 +151,21 @@ void EC_StencilGlow::SetStencilGlowEnabled(bool enable)
     }
 }
 
-void EC_StencilGlow::OnAttributeUpdated(IAttribute *attribute)
+void EC_StencilGlow::AttributesChanged()
 {
-    if (attribute == &enabled)
+    if(enabled.ValueChanged())
     {
         CreateStencilGlow();
         SetStencilGlowEnabled(enabled.Get());
     }
-
-    else if (attribute == &color)
+    if(color.ValueChanged())
     {
-        if (outlineEntity_ && outlineSceneNode_)
+        if(outlineEntity_)
         {
             Ogre::SubEntity *subEnt = outlineEntity_->getSubEntity(0);
-            if (subEnt)
+            if(subEnt)
             {
-                Color newColor = getcolor();
+                Color newColor = color.Get();
                 subEnt->setCustomParameter(COLOR_CUSTOM_PARAM, Ogre::Vector4(newColor.r, newColor.g, newColor.b, newColor.a));
             }
         }
@@ -164,6 +175,7 @@ void EC_StencilGlow::OnAttributeUpdated(IAttribute *attribute)
 void EC_StencilGlow::OnMeshChanged()
 {
     CreateStencilGlow();
+    SetStencilGlowEnabled(enabled.Get());
 }
 
 void EC_StencilGlow::OnMeshAboutToBeDestroyed()

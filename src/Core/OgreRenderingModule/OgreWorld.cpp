@@ -43,7 +43,7 @@
 #define STENCIL_GLOW_ENTITY Ogre::RENDER_QUEUE_MAIN + 1
 #define STENCIL_GLOW_OUTLINE Ogre::RENDER_QUEUE_OVERLAY - 1
 
-#define STENCIL_VALUE_FOR_OUTLINE_GLOW 1
+#define STENCIL_VALUE_FOR_OUTLINE_GLOW 0xFFFFFFFF
 #define STENCIL_FULL_MASK 0xFFFFFFFF
 
 #ifdef ANDROID
@@ -69,7 +69,7 @@ public:
 	{
 		if (queueGroupId == STENCIL_GLOW_ENTITY) // outline glow object
 		{
-			Ogre::RenderSystem * rendersys = Ogre::Root::getSingleton().getRenderSystem();
+            Ogre::RenderSystem * rendersys = Ogre::Root::getSingleton().getRenderSystem();
 
 			rendersys->clearFrameBuffer(Ogre::FBT_STENCIL);
 			rendersys->setStencilCheckEnabled(true);
@@ -78,18 +78,19 @@ public:
                                               0U,
 #endif
                                               STENCIL_VALUE_FOR_OUTLINE_GLOW, STENCIL_FULL_MASK,
-                                              Ogre::SOP_KEEP,Ogre::SOP_KEEP,Ogre::SOP_REPLACE, false);
+                                              Ogre::SOP_KEEP, Ogre::SOP_KEEP, Ogre::SOP_INCREMENT, false);
 		}
 		if (queueGroupId == STENCIL_GLOW_OUTLINE)  // outline glow
 		{
 			Ogre::RenderSystem * rendersys = Ogre::Root::getSingleton().getRenderSystem();
 			rendersys->setStencilCheckEnabled(true);
-			rendersys->setStencilBufferParams(Ogre::CMPF_NOT_EQUAL,
+
+            rendersys->setStencilBufferParams(Ogre::CMPF_ALWAYS_PASS,
 #if OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 9
-                0U,
+                                            0U,
 #endif
-                                              STENCIL_VALUE_FOR_OUTLINE_GLOW, STENCIL_FULL_MASK,
-                                              Ogre::SOP_KEEP,Ogre::SOP_KEEP,Ogre::SOP_REPLACE,false);
+                                            STENCIL_VALUE_FOR_OUTLINE_GLOW, STENCIL_FULL_MASK,
+                                            Ogre::SOP_KEEP, Ogre::SOP_KEEP, Ogre::SOP_REPLACE, false);
 		}
 	}
 
