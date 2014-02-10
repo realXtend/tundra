@@ -400,7 +400,7 @@ QString OsDisplayString()
     if (endIdx == std::string::npos)
         return uname;
     std::string marketingVersion = Trim(systemVer.substr(idx, endIdx-idx));
-
+    /// @todo with Mountain Lion or newer the "Mac" prefix is no longer used.
     uname += " Mac OS X " + marketingVersion;
     int majorVer = 0, minorVer = 0;
     int n = sscanf(marketingVersion.c_str(), "%d.%d", &majorVer, &minorVer);
@@ -416,6 +416,7 @@ QString OsDisplayString()
     case 1006: uname = uname + " Snow Leopard"; break;
     case 1007: uname = uname + " Lion"; break;
     case 1008: uname = uname + " Mountain Lion"; break;
+    case 1009: uname = uname + " Maverick"; break;
     }
     return QString::fromStdString(uname);
 }
