@@ -376,6 +376,13 @@ unsigned long CpuSpeedFromRegistry(unsigned long /*dwCPU*/)
 
 #elif defined(__APPLE__)
 
+void OSXVersionInfo(s32 *majorVersion, s32 *minorVersion, s32 *bugfixVersion)
+{
+    Gestalt(gestaltSystemVersionMajor, majorVersion);
+    Gestalt(gestaltSystemVersionMinor, minorVersion);
+    Gestalt(gestaltSystemVersionBugFix, bugfixVersion);
+}
+
 QString OsDisplayString()
 {
     std::string uname = RunProcess("uname -mrs");
