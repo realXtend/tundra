@@ -18,25 +18,86 @@
 
 
 #include "StableHeaders.h"
+#include <string>
+
 #include "SystemInfo.h"
-#include "CoreStringUtils.h"
 
-#include <QString>
+#if defined(LINUX) || defined(__APPLE__) || defined(ANDROID)
+
+#include <string>
 #include <sstream>
-#include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
-#if defined(WIN32) && !defined(__MINGW32__) && !defined(WIN8RT)
+std::string TrimLeft(std::string str)
+{
+    return str.substr(str.find_first_not_of(" \n\r\t"));
+}
 
-#include "Win.h"
-#include <intrin.h>
+std::string TrimRight(std::string str)
+{
+    str.erase(str.find_last_not_of(" \n\r\t")+1);
+    return str;
+}
+
+std::string Trim(std::string str)
+{
+    return TrimLeft(TrimRight(str));
+}
+
+// http://stackoverflow.com/questions/646241/c-run-a-system-command-and-get-output
+std::string RunProcess(const char *cmd)
+{
+    FILE *fp = popen(cmd, "r");
+    if (!fp)
+        return std::string();
+
+    std::stringstream ss;
+    char str[1035];
+    while(fgets(str, sizeof(str)-1, fp))
+        ss << str;
+
+    pclose(fp);
+
+    return TrimRight(ss.str()); // Trim the end of the result to remove \n.
+}
+
+std::string FindLine(const std::string &inStr, const char *lineStart)
+{
+    int lineStartLen = strlen(lineStart);
+    size_t idx = inStr.find(lineStart);
+    if (idx == std::string::npos)
+        return std::string();
+    idx += lineStartLen;
+    size_t lineEnd = inStr.find("\n", idx);
+    if (lineEnd == std::string::npos)
+        return inStr.substr(idx);
+    else
+        return inStr.substr(idx, lineEnd-idx);
+}
+
+#endif
+
+#if defined(WIN32) && !defined(WIN8RT)
+
+#include <windows.h>
 #include <iphlpapi.h>
 
 #include <tchar.h>
 #include <stdio.h>
-#include <strsafe.h>
+
+#include <sstream>
+#include <iostream>
+
+#ifdef _MSC_VER
+#include <intrin.h>
 
 #pragma comment(lib, "User32.lib")
 #pragma comment(lib, "IPHLPAPI.lib")
+#elif defined (__GNUC__)
+#include <cpuid.h>
+#endif
 
 #if defined(DIRECTX_ENABLED)
 #if WINVER >= 0x0600
@@ -45,231 +106,53 @@ typedef HRESULT (WINAPI* DXGICREATEFACTORY)(REFIID, void**);
 #endif
 #endif
 
-#define BUFSIZE 256
-
-typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);
-typedef BOOL (WINAPI *PGPI)(DWORD, DWORD, DWORD, DWORD, PDWORD);
-
-BOOL GetOSDisplayString(LPTSTR pszOS)
+std::string ReadRegistryKeyString(const char *registryKey, const char *registryValue)
 {
-    OSVERSIONINFOEX osvi;
-    SYSTEM_INFO si;
-    PGNSI pGNSI;
-    PGPI pGPI;
-    BOOL bOsVersionInfoEx;
-    DWORD dwType;
+    // Open the key
+    HKEY hKey;
+    if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, registryKey, 0, KEY_QUERY_VALUE, &hKey) != ERROR_SUCCESS)
+        return 0;
 
-    ZeroMemory(&si, sizeof(SYSTEM_INFO));
-    ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+    char str[256] = {};
+    DWORD dwLen = 255;
+    LONG ret = RegQueryValueExA(hKey, registryValue, NULL, NULL, (LPBYTE)str, &dwLen);
+    RegCloseKey(hKey);
 
-    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-
-    bOsVersionInfoEx = GetVersionEx ((OSVERSIONINFO *) &osvi);
-    if (!bOsVersionInfoEx)
-        return 1;
-
-    // Call GetNativeSystemInfo if supported or GetSystemInfo otherwise.
-    pGNSI = (PGNSI) GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "GetNativeSystemInfo");
-    if (NULL != pGNSI)
-        pGNSI(&si);
+    if (ret == ERROR_SUCCESS)
+        return str;
     else
-        GetSystemInfo(&si);
+        return std::string();
+}
 
-    if ( VER_PLATFORM_WIN32_NT == osvi.dwPlatformId && osvi.dwMajorVersion > 4 )
-    {
-        StringCchCopy(pszOS, BUFSIZE, TEXT("Microsoft "));
+unsigned int ReadRegistryKeyU32(const char *registryKey, const char *registryValue)
+{
+    // Open the key
+    HKEY hKey;
+    if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, registryKey, 0, KEY_QUERY_VALUE, &hKey) != ERROR_SUCCESS)
+        return 0;
 
-        // Test for the specific product.
-        if (osvi.dwMajorVersion == 6)
-        {
-            if(osvi.dwMinorVersion == 0)
-            {
-                if(osvi.wProductType == VER_NT_WORKSTATION)
-                    StringCchCat(pszOS, BUFSIZE, TEXT("Windows Vista "));
-                else
-                    StringCchCat(pszOS, BUFSIZE, TEXT("Windows Server 2008 "));
-            }
+    unsigned int value = 0;
+    DWORD dwLen = 4;
+    LONG ret = RegQueryValueExA(hKey, registryValue, NULL, NULL, (LPBYTE)&value, &dwLen);
+    RegCloseKey(hKey);
 
-            if (osvi.dwMinorVersion == 1)
-            {
-                if (osvi.wProductType == VER_NT_WORKSTATION)
-                    StringCchCat(pszOS, BUFSIZE, TEXT("Windows 7 "));
-                else
-                    StringCchCat(pszOS, BUFSIZE, TEXT("Windows Server 2008 R2 "));
-            }
-         
-            if (osvi.dwMinorVersion == 2 && osvi.wProductType == VER_NT_WORKSTATION)
-                StringCchCat(pszOS, BUFSIZE, TEXT("Windows 8 "));
-
-            pGPI = (PGPI) GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "GetProductInfo");
-            pGPI(osvi.dwMajorVersion, osvi.dwMinorVersion, 0, 0, &dwType);
-
-            switch(dwType)
-            {
-            case PRODUCT_ULTIMATE:
-                StringCchCat(pszOS, BUFSIZE, TEXT("Ultimate Edition" ));
-                break;
-            case PRODUCT_HOME_PREMIUM:
-                StringCchCat(pszOS, BUFSIZE, TEXT("Home Premium Edition" ));
-                break;
-            case PRODUCT_HOME_BASIC:
-                StringCchCat(pszOS, BUFSIZE, TEXT("Home Basic Edition" ));
-                break;
-            case PRODUCT_ENTERPRISE:
-                StringCchCat(pszOS, BUFSIZE, TEXT("Enterprise Edition" ));
-                break;
-            case PRODUCT_BUSINESS:
-                StringCchCat(pszOS, BUFSIZE, TEXT("Business Edition" ));
-                break;
-            case PRODUCT_STARTER:
-                StringCchCat(pszOS, BUFSIZE, TEXT("Starter Edition" ));
-                break;
-            case PRODUCT_CLUSTER_SERVER:
-                StringCchCat(pszOS, BUFSIZE, TEXT("Cluster Server Edition" ));
-                break;
-            case PRODUCT_DATACENTER_SERVER:
-                StringCchCat(pszOS, BUFSIZE, TEXT("Datacenter Edition" ));
-                break;
-            case PRODUCT_DATACENTER_SERVER_CORE:
-                StringCchCat(pszOS, BUFSIZE, TEXT("Datacenter Edition (core installation)" ));
-                break;
-            case PRODUCT_ENTERPRISE_SERVER:
-                StringCchCat(pszOS, BUFSIZE, TEXT("Enterprise Edition" ));
-                break;
-            case PRODUCT_ENTERPRISE_SERVER_CORE:
-                StringCchCat(pszOS, BUFSIZE, TEXT("Enterprise Edition (core installation)" ));
-                break;
-            case PRODUCT_ENTERPRISE_SERVER_IA64:
-                StringCchCat(pszOS, BUFSIZE, TEXT("Enterprise Edition for Itanium-based Systems" ));
-                break;
-            case PRODUCT_SMALLBUSINESS_SERVER:
-                StringCchCat(pszOS, BUFSIZE, TEXT("Small Business Server" ));
-                break;
-            case PRODUCT_SMALLBUSINESS_SERVER_PREMIUM:
-                StringCchCat(pszOS, BUFSIZE, TEXT("Small Business Server Premium Edition" ));
-                break;
-            case PRODUCT_STANDARD_SERVER:
-                StringCchCat(pszOS, BUFSIZE, TEXT("Standard Edition" ));
-                break;
-            case PRODUCT_STANDARD_SERVER_CORE:
-                StringCchCat(pszOS, BUFSIZE, TEXT("Standard Edition (core installation)" ));
-                break;
-            case PRODUCT_WEB_SERVER:
-                StringCchCat(pszOS, BUFSIZE, TEXT("Web Server Edition" ));
-                break;
-            }
-        }
-
-        if ( osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 2 )
-        {
-            if ( GetSystemMetrics(SM_SERVERR2) )
-                StringCchCat(pszOS, BUFSIZE, TEXT( "Windows Server 2003 R2, "));
-            else if ( osvi.wSuiteMask==VER_SUITE_STORAGE_SERVER )
-                StringCchCat(pszOS, BUFSIZE, TEXT( "Windows Storage Server 2003"));
-            else if ( osvi.wSuiteMask==0x00008000 )
-                StringCchCat(pszOS, BUFSIZE, TEXT( "Windows Home Server"));
-            else if( osvi.wProductType == VER_NT_WORKSTATION && si.wProcessorArchitecture==PROCESSOR_ARCHITECTURE_AMD64)
-                StringCchCat(pszOS, BUFSIZE, TEXT( "Windows XP Professional x64 Edition"));
-            else
-                StringCchCat(pszOS, BUFSIZE, TEXT("Windows Server 2003, "));
-
-            // Test for the server type.
-            if ( osvi.wProductType != VER_NT_WORKSTATION )
-            {
-                if ( si.wProcessorArchitecture==PROCESSOR_ARCHITECTURE_IA64 )
-                {
-                    if( osvi.wSuiteMask & VER_SUITE_DATACENTER )
-                        StringCchCat(pszOS, BUFSIZE, TEXT( "Datacenter Edition for Itanium-based Systems" ));
-                    else if( osvi.wSuiteMask & VER_SUITE_ENTERPRISE )
-                        StringCchCat(pszOS, BUFSIZE, TEXT( "Enterprise Edition for Itanium-based Systems" ));
-                }
-                else if ( si.wProcessorArchitecture==PROCESSOR_ARCHITECTURE_AMD64 )
-                {
-                    if( osvi.wSuiteMask & VER_SUITE_DATACENTER )
-                        StringCchCat(pszOS, BUFSIZE, TEXT( "Datacenter x64 Edition" ));
-                    else if( osvi.wSuiteMask & VER_SUITE_ENTERPRISE )
-                        StringCchCat(pszOS, BUFSIZE, TEXT( "Enterprise x64 Edition" ));
-                    else StringCchCat(pszOS, BUFSIZE, TEXT( "Standard x64 Edition" ));
-                }
-                else
-                {
-                    if ( osvi.wSuiteMask & VER_SUITE_COMPUTE_SERVER )
-                        StringCchCat(pszOS, BUFSIZE, TEXT( "Compute Cluster Edition" ));
-                    else if( osvi.wSuiteMask & VER_SUITE_DATACENTER )
-                        StringCchCat(pszOS, BUFSIZE, TEXT( "Datacenter Edition" ));
-                    else if( osvi.wSuiteMask & VER_SUITE_ENTERPRISE )
-                        StringCchCat(pszOS, BUFSIZE, TEXT( "Enterprise Edition" ));
-                    else if ( osvi.wSuiteMask & VER_SUITE_BLADE )
-                        StringCchCat(pszOS, BUFSIZE, TEXT( "Web Edition" ));
-                    else StringCchCat(pszOS, BUFSIZE, TEXT( "Standard Edition" ));
-                }
-            }
-        }
-
-        if ( osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 1 )
-        {
-            StringCchCat(pszOS, BUFSIZE, TEXT("Windows XP "));
-            if( osvi.wSuiteMask & VER_SUITE_PERSONAL )
-                StringCchCat(pszOS, BUFSIZE, TEXT( "Home Edition" ));
-            else
-                StringCchCat(pszOS, BUFSIZE, TEXT( "Professional" ));
-        }
-
-        if ( osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 0 )
-        {
-            StringCchCat(pszOS, BUFSIZE, TEXT("Windows 2000 "));
-            if ( osvi.wProductType == VER_NT_WORKSTATION )
-            {
-                StringCchCat(pszOS, BUFSIZE, TEXT( "Professional" ));
-            }
-            else
-            {
-                if( osvi.wSuiteMask & VER_SUITE_DATACENTER )
-                    StringCchCat(pszOS, BUFSIZE, TEXT( "Datacenter Server" ));
-                else if( osvi.wSuiteMask & VER_SUITE_ENTERPRISE )
-                    StringCchCat(pszOS, BUFSIZE, TEXT( "Advanced Server" ));
-                else StringCchCat(pszOS, BUFSIZE, TEXT( "Server" ));
-            }
-        }
-
-        // Include service pack (if any) and build number.
-
-        if( _tcslen(osvi.szCSDVersion) > 0 )
-        {
-            StringCchCat(pszOS, BUFSIZE, TEXT(" ") );
-            StringCchCat(pszOS, BUFSIZE, osvi.szCSDVersion);
-        }
-
-        TCHAR buf[80];
-
-        StringCchPrintf( buf, 80, TEXT(" (build %d)"), osvi.dwBuildNumber);
-        StringCchCat(pszOS, BUFSIZE, buf);
-
-        if ( osvi.dwMajorVersion >= 6 )
-        {
-            if ( si.wProcessorArchitecture==PROCESSOR_ARCHITECTURE_AMD64 )
-            StringCchCat(pszOS, BUFSIZE, TEXT( ", 64-bit" ));
-            else if (si.wProcessorArchitecture==PROCESSOR_ARCHITECTURE_INTEL )
-            StringCchCat(pszOS, BUFSIZE, TEXT(", 32-bit"));
-        }
-
-        return TRUE;
-    }
-
+    if (ret == ERROR_SUCCESS)
+        return value;
     else
-    {
-        printf( "This sample does not support this version of Windows.\n");
-        return FALSE;
-    }
+        return 0;
 }
 
 QString OsDisplayString()
 {
-    TCHAR szOS[BUFSIZE];
-    if (GetOSDisplayString(szOS))
-         return WStringToQString(szOS).simplified();
-     else
-         return "Unknown OS";
+    std::string productName = ReadRegistryKeyString("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\", "ProductName");
+    std::string servicePack = ReadRegistryKeyString("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\", "CSDVersion");
+    std::string bitness = ReadRegistryKeyString("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\", "BuildLabEx");
+    if (bitness.find("amd64") != std::string::npos)
+        bitness = "64-bit";
+    else
+        bitness = "32-bit";
+
+    return QString::fromStdString(productName + " " + bitness + " " + servicePack);
 }
 
 unsigned long long TotalSystemPhysicalMemory()
@@ -281,120 +164,6 @@ unsigned long long TotalSystemPhysicalMemory()
         return 0;
 
     return (unsigned long long)statex.ullTotalPhys;
-}
-
-QString ProcessorBrandName()
-{
-    int CPUInfo[4] = {-1};
-
-    // Calling __cpuid with 0x80000000 as the InfoType argument
-    // gets the number of valid extended IDs.
-    __cpuid(CPUInfo, 0x80000000);
-    unsigned int nExIds = CPUInfo[0];
-
-    if (nExIds < 0x80000004)
-         return "Unknown";
-
-     char CPUBrandString[0x40];
-    memset(CPUBrandString, 0, sizeof(CPUBrandString));
-
-    // Get the information associated with each extended ID.
-    for (unsigned int i = 0x80000002; i <= nExIds && i <= 0x80000004; ++i)
-    {
-        __cpuid(CPUInfo, i);
-        // Interpret CPU brand string and cache information.
-        if  (i == 0x80000002)
-            memcpy(CPUBrandString, CPUInfo, sizeof(CPUInfo));
-        else if  (i == 0x80000003)
-            memcpy(CPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
-        else if  (i == 0x80000004)
-            memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
-    }
-
-    return QString(CPUBrandString).simplified();
-}
-
-QString ProcessorCpuIdString()
-{
-    int CPUInfo[4] = {-1};
-
-    // __cpuid with an InfoType argument of 0 returns the number of
-    // valid Ids in CPUInfo[0] and the CPU identification string in
-    // the other three array elements. The CPU identification string is
-    // not in linear order. The code below arranges the information 
-    // in a human readable form.
-    __cpuid(CPUInfo, 0);
-//    unsigned nIds = CPUInfo[0];
-    char CPUString[0x20];
-    memset(CPUString, 0, sizeof(CPUString));
-    *((int*)CPUString) = CPUInfo[1];
-    *((int*)(CPUString+4)) = CPUInfo[3];
-    *((int*)(CPUString+8)) = CPUInfo[2];
-
-    return CPUString;
-}
-
-QString ProcessorExtendedCpuIdInfo()
-{
-    int CPUInfo[4] = {-1};
-
-    // __cpuid with an InfoType argument of 0 returns the number of
-    // valid Ids in CPUInfo[0] and the CPU identification string in
-    // the other three array elements. The CPU identification string is
-    // not in linear order. The code below arranges the information 
-    // in a human readable form.
-    __cpuid(CPUInfo, 0);
-    unsigned nIds = CPUInfo[0];
-    char CPUString[0x20];
-    memset(CPUString, 0, sizeof(CPUString));
-    *((int*)CPUString) = CPUInfo[1];
-    *((int*)(CPUString+4)) = CPUInfo[3];
-    *((int*)(CPUString+8)) = CPUInfo[2];
-
-     if (nIds == 0)
-         return CPUString;
-
-    __cpuid(CPUInfo, 1);
-
-    int nSteppingID = CPUInfo[0] & 0xf;
-    int nModel = (CPUInfo[0] >> 4) & 0xf;
-    int nFamily = (CPUInfo[0] >> 8) & 0xf;
-//    int nProcessorType = (CPUInfo[0] >> 12) & 0x3;
-    int nExtendedmodel = (CPUInfo[0] >> 16) & 0xf;
-    int nExtendedfamily = (CPUInfo[0] >> 20) & 0xff;
-//    int nBrandIndex = CPUInfo[1] & 0xff;
-
-    std::stringstream ss;
-    ss << CPUString << ", " << "Stepping: " << nSteppingID << ", Model: " << nModel <<
-        ", Family: " << nFamily << ", Ext.model: " << nExtendedmodel << ", Ext.family: " << nExtendedfamily << ".";
-
-    return QString::fromStdString(ss.str());
-}
-
-unsigned long CpuSpeedFromRegistry(unsigned long dwCPU)
-{
-    HKEY hKey;
-    DWORD dwSpeed;
-
-    // Get the key name
-    TCHAR szKey[256];
-    _sntprintf_s(szKey, sizeof(szKey)/sizeof(TCHAR), TEXT("HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\%d\\"), dwCPU);
-
-    // Open the key
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,szKey, 0, KEY_QUERY_VALUE, &hKey) != ERROR_SUCCESS)
-        return 0;
-
-    // Read the value
-    DWORD dwLen = 4;
-    if(RegQueryValueEx(hKey, TEXT("~MHz"), NULL, NULL, (LPBYTE)&dwSpeed, &dwLen) != ERROR_SUCCESS)
-    {
-        RegCloseKey(hKey);
-        return 0;
-    }
-
-    // Cleanup and return
-    RegCloseKey(hKey);
-    return dwSpeed;
 }
 
 unsigned long TotalVideoMemory()
@@ -432,136 +201,382 @@ unsigned long TotalVideoMemory()
     return availableMemory;
 }
 
-#elif defined(__APPLE__)
-#include <CoreServices/CoreServices.h>
-#include <ApplicationServices/ApplicationServices.h>
-#include <sys/sysctl.h>
-
-void OSXVersionInfo(s32 *majorVersion, s32 *minorVersion, s32 *bugfixVersion)
+static void CpuId(int *outInfo, int infoType)
 {
-    Gestalt(gestaltSystemVersionMajor, majorVersion);
-    Gestalt(gestaltSystemVersionMinor, minorVersion);
-    Gestalt(gestaltSystemVersionBugFix, bugfixVersion);
-}
-
-QString OsDisplayString()
-{
-    s32 majorVersion, minorVersion, bugfixVersion;
-    OSXVersionInfo(&majorVersion, &minorVersion, &bugfixVersion);
-
-    QString codename;
-    switch(minorVersion)
-    {
-        case 5:
-            codename = "Leopard";
-            break;
-        case 6:
-            codename = "Snow Leopard";
-            break;
-        case 7:
-            codename = "Lion";
-            break;
-        case 8:
-            codename = "Mountain Lion";
-            break;
-        case 9:
-            codename = "Maverick";
-            break;
-        default:
-            codename = "";
-            break;
-    }
-    
-    return QString("Mac OS X %1.%2.%3 (%4)").arg(majorVersion).arg(minorVersion).arg(bugfixVersion).arg(codename);
-}
-
-u64 TotalSystemPhysicalMemory()
-{
-    u64 memory;
-    size_t len = sizeof(memory);
-    sysctlbyname("hw.memsize", &memory, &len, NULL, 0);
-    return memory;
+#ifdef _MSC_VER
+    __cpuid(outInfo, infoType);
+#elif defined(__GNUC__)
+    __get_cpuid((unsigned int)infoType, (unsigned int*)outInfo, (unsigned int*)outInfo+1, (unsigned int*)outInfo+2, (unsigned int*)outInfo+3);
+#else
+#warning CpuId not implemented for this compiler!
+#endif
 }
 
 QString ProcessorBrandName()
 {
-    char cpuBrandName[128];
-    size_t len = sizeof(cpuBrandName);
-    sysctlbyname("machdep.cpu.brand_string", cpuBrandName, &len, NULL, 0);
-    return cpuBrandName;
+    int CPUInfo[4] = {-1};
+
+    // Calling __cpuid with 0x80000000 as the InfoType argument
+    // gets the number of valid extended IDs.
+    CpuId(CPUInfo, 0x80000000);
+    unsigned int nExIds = CPUInfo[0];
+
+    if (nExIds < 0x80000004)
+         return "Unknown";
+
+    char CPUBrandString[0x40];
+    memset(CPUBrandString, 0, sizeof(CPUBrandString));
+
+    // Get the information associated with each extended ID.
+    for (unsigned int i = 0x80000002; i <= nExIds && i <= 0x80000004; ++i)
+    {
+        CpuId(CPUInfo, i);
+
+        // Interpret CPU brand string and cache information.
+        if  (i == 0x80000002)
+            memcpy(CPUBrandString, CPUInfo, sizeof(CPUInfo));
+        else if  (i == 0x80000003)
+            memcpy(CPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
+        else if  (i == 0x80000004)
+            memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
+    }
+
+    return QString(CPUBrandString).simplified();
 }
 
 QString ProcessorCpuIdString()
 {
-    char cpuIdString[128];
-    size_t len = sizeof(cpuIdString);
-    sysctlbyname("machdep.cpu.vendor", cpuIdString, &len, NULL, 0);
-    return cpuIdString;
+    int CPUInfo[4] = {-1};
+
+    // __cpuid with an InfoType argument of 0 returns the number of
+    // valid Ids in CPUInfo[0] and the CPU identification string in
+    // the other three array elements. The CPU identification string is
+    // not in linear order. The code below arranges the information 
+    // in a human readable form.
+    CpuId(CPUInfo, 0);
+    char CPUString[13] = {};
+    memcpy(CPUString, CPUInfo+1, sizeof(int));
+    memcpy(CPUString+4, CPUInfo+3, sizeof(int));
+    memcpy(CPUString+8, CPUInfo+2, sizeof(int));
+
+    return CPUString;
 }
 
 QString ProcessorExtendedCpuIdInfo()
 {
-    u32 stepping, extmodel, extfamily, model, family;
-    size_t len = sizeof(u32);
-    sysctlbyname("machdep.cpu.stepping", &stepping, &len, NULL, 0);
-    sysctlbyname("machdep.cpu.extmodel", &extmodel, &len, NULL, 0);
-    sysctlbyname("machdep.cpu.extfamily", &extfamily, &len, NULL, 0);
-    sysctlbyname("machdep.cpu.model", &model, &len, NULL, 0);
-    sysctlbyname("machdep.cpu.family", &family, &len, NULL, 0);
+    int CPUInfo[4] = {-1};
 
-    std::stringstream fullString;
-    fullString << ProcessorCpuIdString().toStdString() << ", Stepping: " << stepping << ", Model: " << model <<
-    ", Family: " << family << ", Ext.model: " << extmodel << ", Ext.family: " << extfamily << ". " << CpuSpeedFromRegistry(0);
-    return QString::fromStdString(fullString.str());
+    // __cpuid with an InfoType argument of 0 returns the number of
+    // valid Ids in CPUInfo[0] and the CPU identification string in
+    // the other three array elements. The CPU identification string is
+    // not in linear order. The code below arranges the information 
+    // in a human readable form.
+    CpuId(CPUInfo, 0);
+    unsigned nIds = CPUInfo[0];
+    char CPUString[13] = {};
+    memcpy(CPUString, CPUInfo+1, sizeof(int));
+    memcpy(CPUString+4, CPUInfo+3, sizeof(int));
+    memcpy(CPUString+8, CPUInfo+2, sizeof(int));
+
+    if (nIds == 0)
+        return CPUString;
+
+    CpuId(CPUInfo, 1);
+
+    int nSteppingID = CPUInfo[0] & 0xf;
+    int nModel = (CPUInfo[0] >> 4) & 0xf;
+    int nFamily = (CPUInfo[0] >> 8) & 0xf;
+    //    int nProcessorType = (CPUInfo[0] >> 12) & 0x3;
+    int nExtendedmodel = (CPUInfo[0] >> 16) & 0xf;
+    int nExtendedfamily = (CPUInfo[0] >> 20) & 0xff;
+    //    int nBrandIndex = CPUInfo[1] & 0xff;
+
+    std::stringstream ss;
+    ss << CPUString << ", " << "Stepping: " << nSteppingID << ", Model: " << nModel <<
+        ", Family: " << nFamily << ", Ext.model: " << nExtendedmodel << ", Ext.family: " << nExtendedfamily << ".";
+
+    return QString::fromStdString(ss.str());
+}
+
+int MaxSimultaneousThreads()
+{
+    SYSTEM_INFO sysinfo;
+    GetSystemInfo(&sysinfo);
+    return sysinfo.dwNumberOfProcessors;
+}
+
+unsigned long CpuSpeedFromRegistry(unsigned long dwCPU)
+{
+    char str[256];
+    sprintf(str, "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\%lu\\", dwCPU);
+    return (unsigned long)ReadRegistryKeyU32(str, "~MHz");
+}
+
+#elif defined(LINUX)
+
+QString OsDisplayString()
+{
+    return QString::fromStdString(RunProcess("lsb_release -ds") + " " + RunProcess("uname -mrs"));
+}
+
+unsigned long long TotalSystemPhysicalMemory()
+{
+    std::string r = RunProcess("cat /proc/meminfo");
+    std::string memTotal = FindLine(r, "MemTotal:");
+    int mem = 0;
+    int n = sscanf(memTotal.c_str(), "%d", &mem);
+    if (n == 1)
+        return (unsigned long long)mem * 1024;
+    else
+        return 0;
+}
+
+QString ProcessorBrandName()
+{
+    std::string r = RunProcess("cat /proc/cpuinfo");
+    return QString::fromStdString(Trim(FindLine(FindLine(r, "vendor_id"),":")));
+}
+
+QString ProcessorCpuIdString()
+{
+    std::string r = RunProcess("cat /proc/cpuinfo");
+    return QString::fromStdString(Trim(FindLine(FindLine(r, "model name"),":")));
+}
+
+QString ProcessorExtendedCpuIdInfo()
+{
+    std::string r = RunProcess("cat /proc/cpuinfo");
+    std::string stepping = Trim(FindLine(FindLine(r, "stepping"),":"));
+    std::string model = Trim(FindLine(FindLine(r, "model"),":"));
+    std::string family = Trim(FindLine(FindLine(r, "cpu family"),":"));
+
+    std::stringstream ss;
+    ss << ProcessorBrandName() << ", " << "Stepping: " << stepping << ", Model: " << model <<
+        ", Family: " << family;
+    return QString::fromStdString(ss.str());
+}
+
+int MaxSimultaneousThreads()
+{
+    std::string r = RunProcess("lscpu");
+    r = TrimRight(FindLine(r, "CPU(s):"));
+    int numCPUs = 0;
+    int n = sscanf(r.c_str(), "%d", &numCPUs);
+    return (n == 1) ? numCPUs : 0;
 }
 
 unsigned long CpuSpeedFromRegistry(unsigned long /*dwCPU*/)
 {
-    u64 speed;
-    size_t len = sizeof(speed);
-    sysctlbyname("hw.cpufrequency", &speed, &len, NULL, 0);
-    return speed;
+    std::string r = RunProcess("lscpu");
+    r = TrimRight(FindLine(r, "CPU MHz:"));
+    int mhz = 0;
+    int n = sscanf(r.c_str(), "%d", &mhz);
+    return (n == 1) ? (unsigned long)mhz : 0;
 }
 
-unsigned long TotalVideoMemory()
+#elif defined(__APPLE__)
+
+QString OsDisplayString()
 {
-    long *videoMemory;
-    CGError err = CGDisplayNoErr;
-    uint i = 0;
-    io_service_t *dspPorts = NULL;
-    CGDirectDisplayID *displays = NULL;
-    CGDisplayCount dspCount = 0;
-    CFTypeRef typeCode;
+    std::string uname = RunProcess("uname -mrs");
 
-    err = CGGetActiveDisplayList(0, NULL, &dspCount);
-    displays = static_cast<CGDirectDisplayID*>(calloc((size_t)dspCount, sizeof(CGDirectDisplayID)));
-    videoMemory = static_cast<long*>(calloc((size_t)dspCount, sizeof(long)));
-    dspPorts = static_cast<io_service_t*>(calloc((size_t)dspCount, sizeof(io_service_t)));
+    // http://stackoverflow.com/questions/11072804/mac-os-x-10-8-replacement-for-gestalt-for-testing-os-version-at-runtime/11697362#11697362
+    std::string systemVer = RunProcess("cat /System/Library/CoreServices/SystemVersion.plist");
+    size_t idx = systemVer.find("<key>ProductVersion</key>");
+    if (idx == std::string::npos)
+        return uname;
+    idx = systemVer.find("<string>", idx);
+    if (idx == std::string::npos)
+        return uname;
+    idx += strlen("<string>");
+    size_t endIdx = systemVer.find("</string>", idx);
+    if (endIdx == std::string::npos)
+        return uname;
+    std::string marketingVersion = Trim(systemVer.substr(idx, endIdx-idx));
 
-    err = CGGetActiveDisplayList(dspCount, displays, &dspCount);
-
-    for(i = 0; i < dspCount; i++)
+    uname += " Mac OS X " + marketingVersion;
+    int majorVer = 0, minorVer = 0;
+    int n = sscanf(marketingVersion.c_str(), "%d.%d", &majorVer, &minorVer);
+    if (n != 2)
+        return uname;
+    switch (majorVer * 100 + minorVer)
     {
-        dspPorts[i] = CGDisplayIOServicePort(displays[i]);
-        typeCode = IORegistryEntryCreateCFProperty(dspPorts[i], CFSTR(kIOFBMemorySizeKey), kCFAllocatorDefault, kNilOptions);
-
-        if(typeCode && CFGetTypeID(typeCode) == CFNumberGetTypeID())
-        {
-            CFNumberGetValue(static_cast<CFNumberRef>(typeCode), kCFNumberSInt32Type, videoMemory);
-            if(typeCode)
-                CFRelease(typeCode);
-        }
+    case 1001: uname = uname + " Puma"; break;
+    case 1002: uname = uname + " Jaguar"; break;
+    case 1003: uname = uname + " Panther"; break;
+    case 1004: uname = uname + " Tiger"; break;
+    case 1005: uname = uname + " Leopard"; break;
+    case 1006: uname = uname + " Snow Leopard"; break;
+    case 1007: uname = uname + " Lion"; break;
+    case 1008: uname = uname + " Mountain Lion"; break;
     }
-
-    return *videoMemory;
+    return QString::fromStdString(uname);
 }
-#else /// @todo Linux implementation
+
+#include <sys/types.h>
+#include <sys/sysctl.h>
+
+std::string sysctl_string(const char *sysctl_name)
+{
+    char str[128] = {};
+    size_t size = sizeof(str)-1;
+    sysctlbyname(sysctl_name, str, &size, NULL, 0);
+    return str;
+}
+
+int sysctl_int32(const char *sysctl_name)
+{
+    int32_t val = 0;
+    size_t size = sizeof(val);
+    sysctlbyname(sysctl_name, &val, &size, NULL, 0);
+    return (int)val;
+}
+
+int64_t sysctl_int64(const char *sysctl_name)
+{
+    int64_t val = 0;
+    size_t size = sizeof(val);
+    sysctlbyname(sysctl_name, &val, &size, NULL, 0);
+    return val;
+}
+
+unsigned long long TotalSystemPhysicalMemory()
+{
+    return (unsigned long long)sysctl_int64("hw.memsize");
+}
+
+QString ProcessorBrandName()
+{
+    return QString::fromStdString(sysctl_string("machdep.cpu.vendor"));
+}
+
+QString ProcessorCpuIdString()
+{
+    return QString::fromStdString(sysctl_string("machdep.cpu.brand_string"));
+}
+
+QString ProcessorExtendedCpuIdInfo()
+{
+    char str[1024];
+    sprintf(str, "%s, Stepping: %d, Model: %d, Family: %d, Ext.model: %d, Ext.family: %d.", ProcessorCpuIdString().c_str(), sysctl_int32("machdep.cpu.stepping"), sysctl_int32("machdep.cpu.model"), sysctl_int32("machdep.cpu.family"), sysctl_int32("machdep.cpu.extmodel"), sysctl_int32("machdep.cpu.extfamily"));
+    return str;
+}
+
+unsigned long CpuSpeedFromRegistry(unsigned long /*dwCPU*/)
+{
+    int64_t freq = sysctl_int64("hw.cpufrequency");
+    return (unsigned long)(freq / 1000 / 1000);
+}
+
+// Returns the maximum number of threads the CPU can simultaneously accommodate.
+// E.g. for dualcore hyperthreaded Intel CPUs, this returns 4.
+int MaxSimultaneousThreads()
+{
+    return (int)sysctl_int32("machdep.cpu.thread_count");
+}
+
+#elif defined(ANDROID)
+
+unsigned long long TotalSystemPhysicalMemory()
+{
+    std::string r = RunProcess("cat /proc/meminfo");
+    std::string memTotal = FindLine(r, "MemTotal:");
+    int mem = 0;
+    int n = sscanf(memTotal.c_str(), "%d", &mem);
+    if (n == 1)
+        return (unsigned long long)mem * 1024;
+    else
+        return 0;
+}
+
+QString OsDisplayString()
+{
+    std::string ver = Trim(RunProcess("getprop ro.build.version.release"));
+    std::string apiLevel = Trim(RunProcess("getprop ro.build.version.sdk"));
+    if (apiLevel.empty())
+        apiLevel = Trim(RunProcess("getprop ro.build.version.sdk_int"));
+
+    std::string os;
+    if (!ver.empty())
+        os = "Android " + ver + " ";
+    if (!apiLevel.empty())
+        os += "SDK API Level " + apiLevel + " ";
+    os += Trim(RunProcess("getprop ro.build.description"));
+    return QString::fromStdString(os);
+}
+
+QString ProcessorBrandName()
+{
+    std::string r = RunProcess("cat /proc/cpuinfo");
+    return QString::fromStdString(Trim(FindLine(FindLine(r, "Processor"),":")));
+}
+
+QString ProcessorCpuIdString()
+{
+    // Note: This is actually HW identifier, not CPU ID.
+    std::string manufacturer = RunProcess("getprop ro.product.manufacturer");
+    std::string brand = RunProcess("getprop ro.product.brand");
+    std::string model = RunProcess("getprop ro.product.model");
+    std::string board = RunProcess("getprop ro.product.board");
+    std::string device = RunProcess("getprop ro.product.device");
+    std::string name = RunProcess("getprop ro.product.name");
+    return QString::fromStdString(manufacturer + " " + brand + " " + model + " " + board + " " + device + " " + name);
+}
+
+QString ProcessorExtendedCpuIdInfo()
+{
+    std::string r = RunProcess("cat /proc/cpuinfo");
+    std::string implementer = Trim(FindLine(FindLine(r, "CPU implementer"),":"));
+    std::string arch = Trim(FindLine(FindLine(r, "CPU architecture"),":"));
+    std::string variant = Trim(FindLine(FindLine(r, "CPU variant"),":"));
+    std::string part = Trim(FindLine(FindLine(r, "CPU part"),":"));
+    std::string rev = Trim(FindLine(FindLine(r, "CPU revision"),":"));
+    std::string hw = Trim(FindLine(FindLine(r, "Hardware"),":"));
+
+    std::stringstream ss;
+    ss << "Hardware: " << hw << ", CPU implementer: " << implementer << ", arch: " << arch << ", variant: " << variant 
+        << ", part: " << part << ", revision: " << rev;
+    return QString::fromStdString(ss.str());
+}
+
+unsigned long CpuSpeedFromRegistry(unsigned long dwCPU)
+{
+    std::stringstream ss;
+    ss << "cat /sys/devices/system/cpu/cpu" << dwCPU << "/cpufreq/cpuinfo_max_freq";
+    std::string r = RunProcess(ss.str().c_str());
+    int freq = 0;
+    int n = sscanf(r.c_str(), "%d", &freq);
+    if (n == 1)
+        return freq / 1000; // cpuinfo_max_freq seems to be in kHz. Output MHz.
+    else
+        return 0;
+}
+
+int MaxSimultaneousThreads()
+{
+    std::string r = RunProcess("cat /sys/devices/system/cpu/present");
+    int nCoresMin = 0, nCoresMax = 0;
+    int n = sscanf(r.c_str(), "%d-%d", &nCoresMin, &nCoresMax);
+    if (n == 2)
+        return nCoresMax - nCoresMin + 1; // The min-max numbers are indices to cpu cores, so +1 for the count.
+    else
+        return 1;
+}
+
+#else
+
+#ifdef _MSC_VER
+#pragma WARNING("SystemInfo.cpp not implemented for the current platform!")
+#else
+#warning SystemInfo.cpp not implemented for the current platform!
+#endif
+
 QString OsDisplayString() { return ""; }
 unsigned long long TotalSystemPhysicalMemory() { return 0; }
 QString ProcessorBrandName() { return ""; }
 QString ProcessorCpuIdString() { return ""; }
 QString ProcessorExtendedCpuIdInfo() { return ""; }
-unsigned long CpuSpeedFromRegistry(unsigned long dwCPU) { return 0; }
-unsigned long TotalVideoMemory() { return 0; }
-#endif
+unsigned long CpuSpeedFromRegistry(unsigned long /*dwCPU*/) { return 0; }
+int MaxSimultaneousThreads() { return 0; }
 
+#endif

@@ -27,7 +27,6 @@
 /** @param majorVersion OSX major version
     @param minorVersion OSX minor version
     @param bugfixVersion OSX bugfix version */
-
 void TUNDRACORE_API OSXVersionInfo(s32 *majorVersion, s32 *minorVersion, s32 *bugfixVersion);
 #endif
 
@@ -55,3 +54,6 @@ unsigned long TUNDRACORE_API CpuSpeedFromRegistry(unsigned long coreIndex);
 /** @note Currently only implemented on Windows.
  ** @note Windows implementation will return 0 if DIRECTX_ENABLED is not defined or if platform < Windows Vista. */
 unsigned long TUNDRACORE_API TotalVideoMemory();
+
+/// Returns the maximum number of threads the CPU can simultaneously accommodate.
+int TUNDRACORE_API MaxSimultaneousThreads();
