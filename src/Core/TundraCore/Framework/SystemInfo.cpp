@@ -375,6 +375,8 @@ unsigned long CpuSpeedFromRegistry(unsigned long /*dwCPU*/)
 }
 
 #elif defined(__APPLE__)
+#include <CoreServices/CoreServices.h>
+#include <ApplicationServices/ApplicationServices.h>
 
 void OSXVersionInfo(s32 *majorVersion, s32 *minorVersion, s32 *bugfixVersion)
 {
@@ -391,21 +393,21 @@ QString OsDisplayString()
     std::string systemVer = RunProcess("cat /System/Library/CoreServices/SystemVersion.plist");
     size_t idx = systemVer.find("<key>ProductVersion</key>");
     if (idx == std::string::npos)
-        return uname;
+        return uname.c_str();
     idx = systemVer.find("<string>", idx);
     if (idx == std::string::npos)
-        return uname;
+        return uname.c_str();
     idx += strlen("<string>");
     size_t endIdx = systemVer.find("</string>", idx);
     if (endIdx == std::string::npos)
-        return uname;
+        return uname.c_str();
     std::string marketingVersion = Trim(systemVer.substr(idx, endIdx-idx));
     /// @todo with Mountain Lion or newer the "Mac" prefix is no longer used.
     uname += " Mac OS X " + marketingVersion;
     int majorVer = 0, minorVer = 0;
     int n = sscanf(marketingVersion.c_str(), "%d.%d", &majorVer, &minorVer);
     if (n != 2)
-        return uname;
+        return uname.c_str();
     switch (majorVer * 100 + minorVer)
     {
     case 1001: uname = uname + " Puma"; break;
@@ -466,7 +468,7 @@ QString ProcessorCpuIdString()
 QString ProcessorExtendedCpuIdInfo()
 {
     char str[1024];
-    sprintf(str, "%s, Stepping: %d, Model: %d, Family: %d, Ext.model: %d, Ext.family: %d.", ProcessorCpuIdString().c_str(), sysctl_int32("machdep.cpu.stepping"), sysctl_int32("machdep.cpu.model"), sysctl_int32("machdep.cpu.family"), sysctl_int32("machdep.cpu.extmodel"), sysctl_int32("machdep.cpu.extfamily"));
+    sprintf(str, "%s, Stepping: %d, Model: %d, Family: %d, Ext.model: %d, Ext.family: %d.", ProcessorCpuIdString().toStdString().c_str(), sysctl_int32("machdep.cpu.stepping"), sysctl_int32("machdep.cpu.model"), sysctl_int32("machdep.cpu.family"), sysctl_int32("machdep.cpu.extmodel"), sysctl_int32("machdep.cpu.extfamily"));
     return str;
 }
 
@@ -474,6 +476,37 @@ unsigned long CpuSpeedFromRegistry(unsigned long /*dwCPU*/)
 {
     int64_t freq = sysctl_int64("hw.cpufrequency");
     return (unsigned long)(freq / 1000 / 1000);
+}
+
+unsigned long TotalVideoMemory()
+{
+    long *videoMemory;
+    CGError err = CGDisplayNoErr;
+    uint i = 0;
+    io_service_t *dspPorts = NULL;
+    CGDirectDisplayID *displays = NULL;
+    CGDisplayCount dspCount = 0;
+    CFTypeRef typeCode;
+
+    err = CGGetActiveDisplayList(0, NULL, &dspCount);
+    displays = static_cast<CGDirectDisplayID*>(calloc((size_t)dspCount, sizeof(CGDirectDisplayID)));
+    videoMemory = static_cast<long*>(calloc((size_t)dspCount, sizeof(long)));
+    dspPorts = static_cast<io_service_t*>(calloc((size_t)dspCount, sizeof(io_service_t)));
+    err = CGGetActiveDisplayList(dspCount, displays, &dspCount);
+
+    for(i = 0; i < dspCount; i++)
+    {
+        dspPorts[i] = CGDisplayIOServicePort(displays[i]);
+        typeCode = IORegistryEntryCreateCFProperty(dspPorts[i], CFSTR(kIOFBMemorySizeKey), kCFAllocatorDefault, kNilOptions);
+        if(typeCode && CFGetTypeID(typeCode) == CFNumberGetTypeID())
+        {
+            CFNumberGetValue(static_cast<CFNumberRef>(typeCode), kCFNumberSInt32Type, videoMemory);
+            if(typeCode)
+                CFRelease(typeCode);
+        }
+    }
+
+    return *videoMemory;
 }
 
 // Returns the maximum number of threads the CPU can simultaneously accommodate.
