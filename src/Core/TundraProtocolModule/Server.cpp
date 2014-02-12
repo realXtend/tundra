@@ -460,13 +460,13 @@ namespace
 {
 
 template<typename T>
-QScriptValue qScriptValueFromNull(QScriptEngine *engine, const T &/*v*/)
+QScriptValue qScriptValueFromNull(QScriptEngine * /*engine*/, const T &/*v*/)
 {
     return QScriptValue();
 }
 
 template<typename T>
-void qScriptValueToNull(const QScriptValue &value, T &/*v*/)
+void qScriptValueToNull(const QScriptValue & /*value*/, T &/*v*/)
 {
 }
 

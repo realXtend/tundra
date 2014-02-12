@@ -7,7 +7,7 @@
 #include "Math/MathFwd.h"
 #include "CoreDefines.h"
 
-#include <QtCore>
+#include <kNet.h>
 
-#include <Ogre.h>
+#include <QtCore>
 #endif
