@@ -1,6 +1,8 @@
+// For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "WebSocketServer.h"
 #include "WebSocketUserConnection.h"
+#include "WebSocketScriptTypeDefines.h"
 #include "WebSocketScriptTypeDefines.h"
 
 #include "Framework.h"
@@ -8,21 +10,14 @@
 #include "CoreJsonUtils.h"
 #include "CoreStringUtils.h"
 #include "LoggingFunctions.h"
-#include "Profiler.h"
-#include "UniqueIdGenerator.h"
-#include "OgreMaterialUtils.h"
-#include "WebSocketScriptTypeDefines.h"
 #include "TundraMessages.h"
 #include "TundraLogicModule.h"
 #include "Server.h"
+#include "MsgEntityAction.h"
 
-#include "kNet/DataDeserializer.h"
+#include <kNet/DataDeserializer.h>
 
 #include <websocketpp/frame.hpp>
-
-#include "AssetAPI.h"
-#include "IAssetStorage.h"
-#include "IAsset.h"
 
 #include <QMutexLocker>
 #include <QByteArray>
@@ -104,9 +99,10 @@ Server::Server(Framework *framework) :
 Server::~Server()
 {
     Reset();
+    /// @todo 12.02.2014 Memory leak: dynamically allocated SocketEvents are not freed.
 }
 
-void Server::Update(float frametime)
+void Server::Update(float /*frametime*/)
 {
     TundraLogic::TundraLogicModule* tundraLogic = framework_->Module<TundraLogicModule>();
     TundraLogic::Server* tundraServer = tundraLogic->GetServer().get();
@@ -239,21 +235,21 @@ void Server::Update(float frametime)
     }
 }
 
-WebSocket::UserConnectionPtr Server::UserConnection(uint connectionId)
+WebSocket::UserConnectionPtr Server::UserConnection(uint connectionId) const
 {
-    for(UserConnectionList::iterator iter = connections_.begin(); iter != connections_.end(); ++iter)
+    for(UserConnectionList::const_iterator iter = connections_.begin(); iter != connections_.end(); ++iter)
         if ((*iter)->userID == connectionId)
             return (*iter);
 
     return WebSocket::UserConnectionPtr();
 }
 
-WebSocket::UserConnectionPtr Server::UserConnection(ConnectionPtr connection)
+WebSocket::UserConnectionPtr Server::UserConnection(ConnectionPtr connection) const
 {
     if (!connection.get())
         return WebSocket::UserConnectionPtr();
 
-    for(UserConnectionList::iterator iter = connections_.begin(); iter != connections_.end(); ++iter)
+    for(UserConnectionList::const_iterator iter = connections_.begin(); iter != connections_.end(); ++iter)
         if ((*iter)->WebSocketConnection().get() == connection.get())
             return (*iter);
     return WebSocket::UserConnectionPtr();
@@ -364,7 +360,7 @@ void Server::OnConnected(ConnectionHandle connection)
         removeItems.clear();
     }
 
-    events_ << new SocketEvent(connectionPtr, SocketEvent::Connected);
+    events_ << new SocketEvent(connectionPtr, SocketEvent::Connected); /**< @todo 12.02.2014 no need to dynamically allocate these */
         
     mutexEvents_.unlock();
 }
@@ -396,7 +392,7 @@ void Server::OnDisconnected(ConnectionHandle connection)
         removeItems.clear();
     }
 
-    events_ << new SocketEvent(connectionPtr, SocketEvent::Disconnected);
+    events_ << new SocketEvent(connectionPtr, SocketEvent::Disconnected); /**< @todo 12.02.2014 no need to dynamically allocate these */
 }
 
 void Server::OnMessage(ConnectionHandle connection, MessagePtr data)
@@ -418,7 +414,7 @@ void Server::OnMessage(ConnectionHandle connection, MessagePtr data)
             LogError("[WebSocketServer]: Received 0 sized payload, ignoring");
             return;
         }
-        SocketEvent *event = new SocketEvent(connectionPtr, SocketEvent::Data);
+        SocketEvent *event = new SocketEvent(connectionPtr, SocketEvent::Data); /**< @todo 12.02.2014 no need to dynamically allocate these */
         event->data = DataSerializerPtr(new kNet::DataSerializer(payload.size()));
         event->data->AddAlignedByteArray(&payload[0], payload.size());
 

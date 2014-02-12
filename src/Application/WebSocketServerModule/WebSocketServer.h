@@ -3,24 +3,13 @@
 #pragma once
 
 #include "WebSocketServerModuleApi.h"
-#include "Win.h"
-
 #include "FrameworkFwd.h"
 #include "WebSocketFwd.h"
-#include "kNetFwd.h"
-#include "AssetFwd.h"
-#include "AssetReference.h"
 
-#include "SyncState.h"
-#include "MsgEntityAction.h"
-#include "EntityAction.h"
+#include <kNetFwd.h>
 
 #include <QObject>
 #include <QThread>
-#include <QString>
-#include <QStringList>
-#include <QFileInfo>
-#include <QDateTime>
 #include <QMutex>
 
 #ifdef _MSC_VER
@@ -73,6 +62,8 @@ namespace WebSocket
     /// Server run thread
     class ServerThread : public QThread
     {
+        Q_OBJECT
+
     public:
         virtual void run();
 
@@ -84,10 +75,10 @@ namespace WebSocket
         All signals emitted by this object will be in the main thread. */
     class WEBSOCKET_SERVER_MODULE_API Server : public QObject, public enable_shared_from_this<Server>
     {
-    Q_OBJECT
+        Q_OBJECT
 
     public:
-        Server(Framework *framework);
+        explicit Server(Framework *framework);
         ~Server();
         
         bool Start();
@@ -98,16 +89,16 @@ namespace WebSocket
         
     public slots:
         /// Returns client with id, null if not found.
-        WebSocket::UserConnectionPtr UserConnection(uint connectionId);
+        WebSocket::UserConnectionPtr UserConnection(uint connectionId) const;
 
         /// Returns client with websocket connection ptr, null if not found.
-        WebSocket::UserConnectionPtr UserConnection(WebSocket::ConnectionPtr connection);
+        WebSocket::UserConnectionPtr UserConnection(WebSocket::ConnectionPtr connection) const;
         
         /// Mirror the Server object API.
-        WebSocket::UserConnectionPtr GetUserConnection(uint connectionId) { return UserConnection(connectionId); }
+        WebSocket::UserConnectionPtr GetUserConnection(uint connectionId) const { return UserConnection(connectionId); }
 
         /// Returns all user connections
-        WebSocket::UserConnectionList UserConnections() { return connections_; }
+        WebSocket::UserConnectionList UserConnections() const { return connections_; }
         
     private slots:
         void OnScriptEngineCreated(QScriptEngine *engine);
@@ -132,7 +123,7 @@ namespace WebSocket
         void OnSocketInit(WebSocket::ConnectionHandle connection, boost::asio::ip::tcp::socket& s);
         
     private:
-        QString LC;
+        const QString LC;
         ushort port_;
         
         Framework *framework_;
