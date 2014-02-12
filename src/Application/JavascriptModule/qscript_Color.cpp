@@ -1,6 +1,8 @@
-#include "QtScriptBindingsHelpers.h"
+// For conditions of distribution and use, see copyright notice in LICENSE
+#include "StableHeaders.h"
 #include "Color.h"
 #include "Math/float4.h"
+#include "QtScriptBindingsHelpers.h"
 
 void ToExistingScriptValue_Color(QScriptEngine *engine, const Color &value, QScriptValue obj)
 {

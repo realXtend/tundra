@@ -6,6 +6,7 @@
 #ifdef PCH_ENABLED
 #include "Math/MathFwd.h"
 #include "CoreDefines.h"
+#include "MathGeoLib.h"
 
 #include <QtCore>
 #include <QtGui>

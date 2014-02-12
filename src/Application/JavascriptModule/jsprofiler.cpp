@@ -24,6 +24,8 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "StableHeaders.h"
+
 #ifndef _WINDOWS
 
 #include "jsprofiler.h"

@@ -1,6 +1,6 @@
-#include "Math/MathAll.h"
-#include "Geometry/GeometryAll.h"
-#include "Algorithm/Random/LCG.h"
+// For conditions of distribution and use, see copyright notice in LICENSE
+#include "StableHeaders.h"
+#include "MathGeoLib.h"
 #include "QtScriptBindingsHelpers.h"
 
 void ToExistingScriptValue_Line(QScriptEngine *engine, const Line &value, QScriptValue obj)

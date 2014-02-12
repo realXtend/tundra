@@ -30,7 +30,7 @@ link_ogre()
 link_modules(TundraCore Math TundraProtocolModule)
 link_entity_components(EC_Script)
 
-SetupCompileFlags()
+SetupCompileFlagsWithPCH()
 
 final_target ()
 
