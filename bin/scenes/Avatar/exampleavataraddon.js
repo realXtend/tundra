@@ -1,4 +1,5 @@
-// Avatar addon script. Adds wave gesture & sitting -features
+// For conditions of distribution and use, see copyright notice in LICENSE
+// ExampleAvatarAddon.js - Avatar addon script. Adds wave gesture & sitting -features
 
 // A simple walking avatar with physics & 1st/3rd person camera
 function ExampleAvatarAddon(entity, comp)
@@ -21,7 +22,7 @@ function ExampleAvatarAddon(entity, comp)
 
 ExampleAvatarAddon.prototype.ServerInitialize = function()
 {
-    // Connect actions. These come from the client inputmapper
+    // Connect to actions that come from the client.
     // Note: use "Addon" prefix in the actions, so that we don't confuse with other actions
     this.me.Action("AddonWave").Triggered.connect(this, this.ServerHandleWave);
     this.me.Action("AddonSit").Triggered.connect(this, this.ServerHandleSit);
@@ -30,16 +31,36 @@ ExampleAvatarAddon.prototype.ServerInitialize = function()
 ExampleAvatarAddon.prototype.ClientInitialize = function()
 {
     // Initialization is only necessary for own avatar. Do nothing with others' avatars
-    if (this.me.name == "Avatar" + client.connectionId) {
+    if (this.me.name == "Avatar" + client.connectionId)
+    {
         ownAvatar = true;
+        engine.ImportExtension("qt.core");
+        // Handle key presses using InputContext.
+        var ic = input.RegisterInputContextRaw("ExampleAvatarAddon", 90);
+        ic.KeyPressed.connect(this, this.ClientHandleKeyPress);
+    }
+}
 
-        // Connect keys to the inputmapper actions
-        // If simpleavatar.js has not yet run, create the inputmapper here
-        var inputmapper = this.me.GetOrCreateComponent("InputMapper", 2, false);
-        inputmapper.modifiersEnabled = true; // Don't ignore modifiers, but take them into account (e.g. don't trigger on Shift+E or Ctrl+E, but require a plain E).
-        inputmapper.suppressKeyEvents = true; // Suppress the handled 'Q' and 'E' from going further.
-        inputmapper.RegisterMapping("Q", "AddonWave()", 1); // 1 = Keypress
-        inputmapper.RegisterMapping("E", "AddonSit()", 1); // 1 = Keypress
+SimpleAvatar.prototype.OnScriptObjectDestroyed = function()
+{
+    // Remember to unregister our input context.
+    input.UnregisterInputContextRaw("ExampleAvatarAddon");
+}
+
+ExampleAvatarAddon.prototype.ClientHandleKeyPress = function(e)
+{
+    if (e.modifiers == 0) // Require plain key without modifiers.
+    {
+        if (e.keyCode == Qt.Key_E)
+        {
+            this.me.Exec(EntityAction.Server, "AddonSit");
+            e.Suppress(); // Suppress the handled press going further.
+        }
+        else if (e.keyCode == Qt.Key_Q)
+        {
+            this.me.Exec(EntityAction.Server, "AddonWave");
+            e.Suppress();
+        }
     }
 }
 
@@ -68,5 +89,5 @@ ExampleAvatarAddon.prototype.ServerHandleSit = function()
     // Then either play or stop the sitting animation, depending on the state
     // Like with the Wave gesture animation, use an AnimationController action that is replicated to all
     this.me.Exec(EntityAction.Local | EntityAction.Server | EntityAction.Peers,
-        this.sitting ? "PlayAnim" : StopAnim, "SitOnGround", 0.25);
+        this.sitting ? "PlayAnim" : "StopAnim", "SitOnGround", 0.25);
 }
