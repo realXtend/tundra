@@ -486,7 +486,7 @@ void Entity::SerializeToXML(QDomDocument &doc, QDomElement &base_element, bool s
         entity_elem.setAttribute("temporary", BoolToString(IsTemporary()));
 
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
-            i->second->SerializeTo(doc, entity_elem, serializeTemporary);
+        i->second->SerializeTo(doc, entity_elem, serializeTemporary);
 
     // Serialize child entities
     if (serializeChildren)
@@ -510,11 +510,11 @@ QString Entity::SerializeToXMLString(bool serializeTemporary, bool serializeChil
 {
     if (createSceneElement)
     {
-        QDomDocument scene_doc("Scene");
-        QDomElement scene_elem = scene_doc.createElement("scene");
-    
-        SerializeToXML(scene_doc, scene_elem, serializeTemporary, serializeChildren);
-        return scene_doc.toString();
+        QDomDocument sceneDoc("Scene");
+        QDomElement sceneElem = sceneDoc.createElement("scene");
+        SerializeToXML(sceneDoc, sceneElem, serializeTemporary);
+        sceneDoc.appendChild(sceneElem);
+        return sceneDoc.toString();
     }
     else
     {
