@@ -7,6 +7,7 @@
 #include "CoreTypes.h"
 #include "CoreStringUtils.h"
 #include "AttributeChangeType.h"
+#include "SceneDesc.h"
 
 #include <QObject>
 
@@ -142,7 +143,7 @@ public slots:
     void RegisterPlaceholderComponentType(QDomElement& element);
 
     /// Register a placeholder component type by using a ComponentDesc
-    void RegisterPlaceholderComponentType(const ComponentDesc& desc);
+    void RegisterPlaceholderComponentType(ComponentDesc desc);
 
     // DEPRECATED
     /// @cond PRIVATE

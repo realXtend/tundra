@@ -304,11 +304,6 @@ const QStringList &SceneAPI::AttributeTypes()
 void SceneAPI::RegisterPlaceholderComponentType(QDomElement& element)
 {
     ComponentDesc desc;
-    if (!element.hasAttribute("typeId"))
-    {
-        LogError("Component XML element is missing typeId attribute, can not register placeholder component type");
-        return;
-    }
     if (!element.hasAttribute("type"))
     {
         LogError("Component XML element is missing type attribute, can not register placeholder component type");
@@ -343,25 +338,29 @@ void SceneAPI::RegisterPlaceholderComponentType(QDomElement& element)
     RegisterPlaceholderComponentType(desc);
 }
 
-void SceneAPI::RegisterPlaceholderComponentType(const ComponentDesc& desc)
+void SceneAPI::RegisterPlaceholderComponentType(ComponentDesc desc)
 {
+    // If no typeid defined, generate from the name
+    // (eg. if script is registering a type, do not require it to invent a typeID)
+    if (desc.typeId == 0 || desc.typeId == 0xffffffff)
+        desc.typeId = (qHash(desc.typeName) & 0xffff) | 0x10000;
+
     if (GetFactory(desc.typeId))
     {
         LogError("Component factory for component typeId " + QString::number(desc.typeId) + " already exists, can not register placeholder component type");
         return;
     }
-    if (desc.typeId == 0xffffffff || desc.typeName.isEmpty())
+    if (desc.typeName.isEmpty())
     {
-        LogError("Invalid typeId or typeName in placeholder component description, can not register");
+        LogError("Empty typeName in placeholder component description, can not register");
         return;
     }
 
     QString sanitatedTypeName = IComponent::EnsureTypeNameWithPrefix(desc.typeName);
 
     placeholderComponentTypes[desc.typeId] = desc;
-    placeholderComponentTypes[desc.typeId].typeName = sanitatedTypeName;
     placeholderComponentTypeIds[sanitatedTypeName] = desc.typeId;
-    LogInfo("Registered placeholder component type " + sanitatedTypeName);
+    LogInfo("Registered placeholder component type " + desc.typeName);
 }
 
 ComponentPtr SceneAPI::CreatePlaceholderComponentById(Scene* scene, u32 componentTypeid, const QString &newComponentName) const
