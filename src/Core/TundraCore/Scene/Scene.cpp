@@ -645,6 +645,12 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
                 const bool compReplicated = ParseBool(comp_elem.attribute("sync"), true);
                 const bool temporary = ParseBool(comp_elem.attribute("temporary"), false);
 
+                // If we encounter an unknown component type, now is the time to register a placeholder type for it
+                // The XML holds all needed data for it, while binary doesn't
+                SceneAPI* sceneAPI = framework_->Scene();
+                if (!sceneAPI->IsComponentFactoryRegistered(typeName) && !sceneAPI->IsPlaceholderComponentRegistered(typeName) && typeId != 0xffffffff)
+                    sceneAPI->RegisterPlaceholderComponentType(comp_elem);
+
                 ComponentPtr new_comp = (!typeName.isEmpty() ? entity->GetOrCreateComponent(typeName, name, AttributeChange::Default, compReplicated) :
                     entity->GetOrCreateComponent(typeId, name, AttributeChange::Default, compReplicated));
                 if (new_comp)
@@ -899,6 +905,13 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
             {
                 if (c.typeName.isNull())
                     continue;
+
+                // If we encounter an unknown component type, now is the time to register a placeholder type for it
+                // The componentdesc holds all needed data for it
+                SceneAPI* sceneAPI = framework_->Scene();
+                if (!sceneAPI->IsComponentFactoryRegistered(c.typeName) && !sceneAPI->IsPlaceholderComponentRegistered(c.typeName) && c.typeId != 0xffffffff)
+                    sceneAPI->RegisterPlaceholderComponentType(c);
+
                 ComponentPtr comp = entity->GetOrCreateComponent(c.typeName, c.name);
                 assert(comp);
                 if (!comp)

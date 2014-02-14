@@ -11,6 +11,7 @@
 #include <QObject>
 
 class Framework;
+class QDomElement;
 
 /// Gives access to the scenes in the system.
 /** With this API you can create, remove, query scenes and listen to scene additions and removals.
@@ -94,6 +95,9 @@ public slots:
     /// Return if a component factory has been registered for a type name.
     bool IsComponentFactoryRegistered(const QString &typeName) const;
 
+    /// Return if a placeholder component type has been registered for a type name.
+    bool IsPlaceholderComponentRegistered(const QString &typeName) const;
+
     /// Registers a new factory to create new components of type name IComponentFactory::TypeName and ID IComponentFactory::TypeId.
     void RegisterComponentFactory(const ComponentFactoryPtr &factory);
 
@@ -133,6 +137,12 @@ public slots:
 
     /// Returns a list of all component type names that can be used in the CreateComponentByName function to create a component.
     QStringList ComponentTypes() const;
+
+    /// Register a placeholder component type by using an XML dump of the component's data
+    void RegisterPlaceholderComponentType(QDomElement& element);
+
+    /// Register a placeholder component type by using a ComponentDesc
+    void RegisterPlaceholderComponentType(const ComponentDesc& desc);
 
     // DEPRECATED
     /// @cond PRIVATE
@@ -178,14 +188,22 @@ private:
     /** Called by Framework during application shutdown. */
     void Reset();
 
+    /// Creates a placeholder component when the real component is not available
+    ComponentPtr CreatePlaceholderComponentById(Scene* scene, u32 componentTypeid, const QString &newComponentName = "") const;
+
     ComponentFactoryPtr GetFactory(const QString &typeName) const;
     ComponentFactoryPtr GetFactory(u32 typeId) const;
 
     typedef std::map<QString, ComponentFactoryPtr, QStringLessThanNoCase> ComponentFactoryMap;
     typedef std::map<u32, weak_ptr<IComponentFactory> > ComponentFactoryWeakMap;
+    typedef std::map<u32, ComponentDesc> PlaceholderComponentTypeMap;
+    typedef std::map<QString, u32> PlaceholderComponentTypeIdMap;
 
     ComponentFactoryMap componentFactories;
     ComponentFactoryWeakMap componentFactoriesByTypeid;
+    PlaceholderComponentTypeMap placeholderComponentTypes;
+    PlaceholderComponentTypeIdMap placeholderComponentTypeIds;
+
     Framework *framework;
     SceneMap scenes; ///< All currently created scenes.
     static const QStringList attributeTypeNames;
