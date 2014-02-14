@@ -222,15 +222,20 @@ ComponentPtr SceneAPI::CloneComponent(const ComponentPtr &component, const QStri
 }
 */
 
-IAttribute *SceneAPI::CreateAttribute(const QString &attributeTypename, const QString &newAttributeId)
+IAttribute *SceneAPI::CreateAttribute(const QString &attributeTypeName, const QString &newAttributeId)
 {
-    return CreateAttribute(GetAttributeTypeId(attributeTypename), newAttributeId);
+    IAttribute *attr = CreateAttribute(AttributeTypeIdForTypeName(attributeTypeName), newAttributeId);
+    // CreateAttribute(u32) already logs error, but AttributeTypeIdForTypeName returns 0 for
+    // invalid type names and hence we have no idea what the user has inputted here so log the type name.
+    if (!attr)
+        LogError("Erroneous attribute type name \"" + attributeTypeName + "\".");
+    return attr;
 }
 
-IAttribute* SceneAPI::CreateAttribute(u32 attributeTypeid, const QString& newAttributeId)
+IAttribute* SceneAPI::CreateAttribute(u32 attributeTypeId, const QString& newAttributeId)
 {
     IAttribute *attribute = 0;
-    switch(attributeTypeid)
+    switch(attributeTypeId)
     {
     case cAttributeString:
         attribute = new Attribute<QString>(0, newAttributeId.toStdString().c_str()); break;
@@ -267,7 +272,8 @@ IAttribute* SceneAPI::CreateAttribute(u32 attributeTypeid, const QString& newAtt
     case cAttributeQPoint:
         attribute = new Attribute<QPoint>(0, newAttributeId.toStdString().c_str()); break;
     default:
-        LogError("Cannot create attribute of type \"" + QString::number(attributeTypeid) + "\"! This type is not known to SceneAPI::CreateAttribute!");
+        LogError(QString("SceneAPI::CreateAttribute: unknown attribute type ID \"%1\" when creating attribute \"%2\")!")
+            .arg(attributeTypeId).arg(newAttributeId));
         break;
     }
 
