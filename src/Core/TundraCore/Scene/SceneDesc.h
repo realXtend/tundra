@@ -94,8 +94,8 @@ struct TUNDRACORE_API AttributeDesc
 {
     QString typeName; ///< Attribute type name, f.ex. "Color".
     QString name; ///< Human-readable attribute name, f.ex. "Ambient light color".
-    QString value; ///< Value of the attribute serialized to string, f.ex. "ambientLightColor".
-    QString id; ///< Unique ID (within the parent component), i.e. the variable name, of the attribute.
+    QString value; ///< Value of the attribute serialized to string, f.ex. "0.333 0.667 0.333 1.0".
+    QString id; ///< Unique ID (within the parent component), i.e. the variable name, of the attribute, f.ex. "ambientLightColor".
 
 #define LEX_CMP(a, b, sensitivity) if (a.compare(b, sensitivity) < 0) return true; else if (a.compare(b, sensitivity) > 0) return false;
 
