@@ -249,7 +249,7 @@ entity_id_t Scene::NextFreeIdLocal()
 
 EntityList Scene::EntitiesWithComponent(const QString &typeName, const QString &name) const
 {
-    return EntitiesWithComponent(framework_->Scene()->GetComponentTypeId(typeName), name);
+    return EntitiesWithComponent(framework_->Scene()->ComponentTypeIdForTypeName(typeName), name);
 }
 
 EntityList Scene::EntitiesWithComponent(u32 typeId, const QString &name) const
@@ -276,7 +276,7 @@ EntityList Scene::EntitiesOfGroup(const QString &groupName) const
 
 Entity::ComponentVector Scene::Components(const QString &typeName, const QString &name) const
 {
-    return Components(framework_->Scene()->GetComponentTypeId(typeName), name);
+    return Components(framework_->Scene()->ComponentTypeIdForTypeName(typeName), name);
 }
 
 Entity::ComponentVector Scene::Components(u32 typeId, const QString &name) const
@@ -295,7 +295,7 @@ Entity::ComponentVector Scene::Components(u32 typeId, const QString &name) const
     {
         for(const_iterator it = begin(); it != end(); ++it)
         {
-            ComponentPtr component = it->second->GetComponent(typeId, name);
+            ComponentPtr component = it->second->Component(typeId, name);
             if (component)
                 ret.push_back(component);
         }
@@ -439,7 +439,7 @@ QList<Entity *> Scene::LoadSceneXML(const QString& filename, bool clearScene, bo
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly))
     {
-        LogError("Failed to open file " + filename + " when loading scene xml.");
+        LogError("Scene::LoadSceneXML: Failed to open file " + filename + ".");
         return ret;
     }
 
@@ -450,7 +450,8 @@ QList<Entity *> Scene::LoadSceneXML(const QString& filename, bool clearScene, bo
     int errorLine, errorColumn;
     if (!scene_doc.setContent(stream.readAll(), &errorMsg, &errorLine, &errorColumn))
     {
-        LogError(QString("Parsing scene XML from %1 failed when loading Scene XML: %2 at line %3 column %4.").arg(filename).arg(errorMsg).arg(errorLine).arg(errorColumn));
+        LogError(QString("Scene::LoadSceneXML: Parsing scene XML from %1 failed when loading Scene XML: %2 at line %3 column %4.")
+            .arg(filename).arg(errorMsg).arg(errorLine).arg(errorColumn));
         file.close();
         return ret;
     }
@@ -491,7 +492,7 @@ bool Scene::SaveSceneXML(const QString& filename, bool saveTemporary, bool saveL
     }
     else
     {
-        LogError("Failed to open file " + filename + " for writing when saving scene xml.");
+        LogError("SaveSceneXML: Failed to open file " + filename + " for writing.");
         return false;
     }
 }
@@ -502,7 +503,7 @@ QList<Entity *> Scene::LoadSceneBinary(const QString& filename, bool clearScene,
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly))
     {
-        LogError("Failed to open file " + filename + " when loading scene binary.");
+        LogError("Scene::LoadSceneBinary: Failed to open file " + filename + " for reading.");
         return ret;
     }
 
@@ -512,7 +513,7 @@ QList<Entity *> Scene::LoadSceneBinary(const QString& filename, bool clearScene,
 
     if (!bytes.size())
     {
-        LogError("File " + filename + " contained 0 bytes when loading scene binary.");
+        LogError("Scene::LoadSceneBinary: File " + filename + " contained 0 bytes when loading scene binary.");
         return ret;
     }
 
@@ -565,7 +566,7 @@ bool Scene::SaveSceneBinary(const QString& filename, bool getTemporary, bool get
     }
     else
     {
-        LogError("Could not open file " + filename + " for writing when saving scene binary");
+        LogError("Scene::SaveSceneBinary: Could not open file " + filename + " for writing when saving scene binary.");
         return false;
     }
 }
@@ -578,7 +579,8 @@ QList<Entity *> Scene::CreateContentFromXml(const QString &xml,  bool useEntityI
     int errorLine, errorColumn;
     if (!scene_doc.setContent(xml, false, &errorMsg, &errorLine, &errorColumn))
     {
-        LogError(QString("Parsing scene XML from text failed when loading Scene XML: %1 at line %2 column %3.").arg(errorMsg).arg(errorLine).arg(errorColumn));
+        LogError(QString("Scene::CreateContentFromXml: Parsing scene XML from text failed when loading Scene XML: %1 at line %2 column %3.")
+            .arg(errorMsg).arg(errorLine).arg(errorColumn));
         return ret;
     }
 
@@ -589,7 +591,7 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
 {
     /// @todo Make server fix any broken parenting when it changes the entity IDs from unacked to replicated!
     if (!IsAuthority() && !useEntityIDsFromFile)
-        LogWarning("Scene: The created entitity IDs need to be verified from the server. This will break EC_Placeable parenting.");
+        LogWarning("Scene::CreateContentFromXml: The created entitity IDs need to be verified from the server. This will break EC_Placeable parenting.");
 
     std::vector<EntityWeakPtr> entities;
     
@@ -597,7 +599,7 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
     QDomElement scene_elem = xml.firstChildElement("scene");
     if (scene_elem.isNull())
     {
-        LogError("Could not find 'scene' element from XML.");
+        LogError("Scene::CreateContentFromXml: Could not find 'scene' element from XML.");
         return QList<Entity*>();
     }
 
@@ -637,14 +639,12 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
         {
             LogDebug("Scene::CreateContentFromXml: Destroying previous entity with id " + QString::number(id) + " to avoid conflict with new created entity with the same id.");
             LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id) +" might not replicate properly!");
-            RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
+            RemoveEntity(id, AttributeChange::Replicate); /**<@todo Consider do we want to always use Replicate */
         }
 
-        EntityPtr entity = CreateEntity(id);
+        EntityPtr entity = CreateEntity(id, QStringList(), AttributeChange::Default, replicated, replicated, temporary);
         if (entity)
         {
-            entity->SetTemporary(temporary);
-
             QDomElement comp_elem = ent_elem.firstChildElement("component");
             while(!comp_elem.isNull())
             {
@@ -718,11 +718,10 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
 
 QList<Entity *> Scene::CreateContentFromBinary(const QString &filename, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
-
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly))
     {
-        LogError("Failed to open file " + filename + " when loading scene binary.");
+        LogError("Scene::CreateContentFromBinary: Failed to open file " + filename + " when loading scene binary.");
         return QList<Entity*>();
     }
 
@@ -731,7 +730,7 @@ QList<Entity *> Scene::CreateContentFromBinary(const QString &filename, bool use
     
     if (!bytes.size())
     {
-        LogError("File " + filename + "contained 0 bytes when loading scene binary.");
+        LogError("Scene::CreateContentFromBinary: File " + filename + "contained 0 bytes when loading scene binary.");
         return QList<Entity*>();
     }
 
@@ -742,7 +741,7 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
 {
     /// @todo Make server fix any broken parenting when it changes the entity IDs from unacked to replicated!
     if (!IsAuthority() && !useEntityIDsFromFile)
-        LogWarning("Scene: The created entitity IDs need to be verified from the server. This will break EC_Placeable parenting.");
+        LogWarning("Scene::CreateContentFromBinary: The created entitity IDs need to be verified from the server. This will break EC_Placeable parenting.");
 
     std::vector<EntityWeakPtr> entities;
     assert(data);
@@ -774,20 +773,20 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
             {
                 LogDebug("Scene::CreateContentFromBinary: Destroying previous entity with id " + QString::number(id) + " to avoid conflict with new created entity with the same id.");
                 LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id) + "might not replicate properly!");
-                RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
+                RemoveEntity(id, AttributeChange::Replicate); /** <@todo Consider do we want to always use Replicate */
             }
 
             EntityPtr entity = CreateEntity(id);
             if (!entity)
             {
-                LogError("Failed to create entity, stopping scene load!");
+                LogError("Scene::CreateContentFromBinary: Failed to create entity, stopping scene load!");
                 return QList<Entity*>(); // If entity creation fails, stream desync is more than likely so stop right here
             }
             
             uint num_components = source.Read<u32>();
             for(uint i = 0; i < num_components; ++i)
             {
-                u32 typeId = source.Read<u32>(); ///\todo VLE this!
+                u32 typeId = source.Read<u32>(); /**< @todo VLE this! */
                 QString name = QString::fromStdString(source.ReadString());
                 bool compReplicated = source.Read<u8>() ? true : false;
                 uint data_size = source.Read<u32>();
@@ -812,11 +811,11 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
                         }
                     }
                     else
-                        LogError("Failed to load component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"!");
+                        LogError("Scene::CreateContentFromBinary: Failed to load component \"" + framework_->Scene()->ComponentTypeNameForTypeId(typeId) + "\"!");
                 }
                 catch(...)
                 {
-                    LogError("Failed to load component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"!");
+                    LogError("Scene::CreateContentFromBinary: Failed to load component \"" + framework_->Scene()->ComponentTypeNameForTypeId(typeId) + "\"!");
                 }
             }
 
@@ -875,7 +874,7 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
 
     if (desc.entities.empty())
     {
-        LogError("Empty scene description.");
+        LogError("CreateContentFromSceneDesc:: Empty scene description.");
         return ret;
     }
 
@@ -895,36 +894,38 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
 
         if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
         {
-            LogDebug("Scene::CreateContentFromSceneDescription: Destroying previous entity with id " + QString::number(id) + " to avoid conflict with new created entity with the same id.");
+            LogDebug("Scene::CreateContentFromSceneDescription: Destroying previous entity with id " + QString::number(id) +
+                " to avoid conflict with new created entity with the same id.");
             LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id) + " might not replicate properly!");
-            RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
+            RemoveEntity(id, AttributeChange::Replicate); /**< @todo Consider do we want to always use Replicate */
         }
 
-        EntityPtr entity = CreateEntity(id);
+        EntityPtr entity = CreateEntity(id, QStringList(), AttributeChange::Default, !e.local, !e.local, e.temporary);
         assert(entity);
         if (entity)
         {
             foreach(const ComponentDesc &c, e.components)
             {
-                if (c.typeName.isNull())
-                    continue;
-                ComponentPtr comp = entity->GetOrCreateComponent(c.typeName, c.name);
+                ComponentPtr comp = (c.typeId != 0xffffffff ? entity->GetOrCreateComponent(c.typeId, c.name) :
+                    entity->GetOrCreateComponent(c.typeName, c.name));
                 assert(comp);
                 if (!comp)
                 {
-                    LogError(QString("Scene::CreateContentFromSceneDesc: failed to create component %1 %2 .").arg(c.typeName).arg(c.name));
+                    LogError(QString("Scene::CreateContentFromSceneDesc: failed to create component %1 %2.").arg(c.typeName).arg(c.name));
                     continue;
                 }
                 if (comp->TypeId() == 25 /*EC_DynamicComponent*/)
                 {
                     QDomDocument temp_doc;
                     QDomElement root_elem = temp_doc.createElement("component");
+                    root_elem.setAttribute("typeId", c.typeId);
                     root_elem.setAttribute("type", c.typeName);
                     root_elem.setAttribute("name", c.name);
                     root_elem.setAttribute("sync", c.sync);
                     foreach(const AttributeDesc &a, c.attributes)
                     {
                         QDomElement child_elem = temp_doc.createElement("attribute");
+                        child_elem.setAttribute("id", a.id);
                         child_elem.setAttribute("value", a.value);
                         child_elem.setAttribute("type", a.typeName);
                         child_elem.setAttribute("name", a.name);
@@ -937,12 +938,15 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
                     foreach(IAttribute *attr, comp->Attributes())
                         if (attr)
                             foreach(const AttributeDesc &a, c.attributes)
-                                if (attr->TypeName() == a.typeName && attr->Name() == a.name)
+                                if ((attr->TypeName().compare(a.typeName, Qt::CaseInsensitive) == 0 &&
+                                    (attr->Id().compare(a.id, Qt::CaseInsensitive) == 0 ||
+                                    attr->Name().compare(a.name, Qt::CaseInsensitive)) == 0))
+                                {
                                     attr->FromString(a.value, AttributeChange::Disconnected); // Trigger no signal yet when scene is in incoherent state
+                                }
                 }
             }
 
-            entity->SetTemporary(e.temporary);
             ret.append(entity.get());
         }
     }
@@ -982,9 +986,9 @@ SceneDesc Scene::CreateSceneDescFromXml(const QString &filename) const
     if (!filename.endsWith(".txml", Qt::CaseInsensitive))
     {
         if (filename.endsWith(".tbin", Qt::CaseInsensitive))
-            LogError("Try using CreateSceneDescFromBinary() instead for " + filename);
+            LogError("Scene::CreateSceneDescFromXml: Try using CreateSceneDescFromBinary() instead for " + filename);
         else
-            LogError("Unsupported file extension : " + filename + " when trying to create scene description.");
+            LogError("Scene::CreateSceneDescFromXml: Unsupported file extension " + filename + " when trying to create scene description.");
         return sceneDesc;
     }
 
@@ -993,7 +997,7 @@ SceneDesc Scene::CreateSceneDescFromXml(const QString &filename) const
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly))
     {
-        LogError("Failed to open file " + filename + " when trying to create scene description.");
+        LogError("Scene::CreateSceneDescFromXml: Failed to open file " + filename + " when trying to create scene description.");
         return sceneDesc;
     }
 
@@ -1012,7 +1016,8 @@ SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) 
     int errorLine, errorColumn;
     if (!scene_doc.setContent(stream.readAll(), &errorMsg, &errorLine, &errorColumn))
     {
-        LogError(QString("Parsing scene XML from %1 failed when loading Scene XML: %2 at line %3 column %4.").arg(sceneDesc.filename).arg(errorMsg).arg(errorLine).arg(errorColumn));
+        LogError(QString("Scene::CreateSceneDescFromXml: Parsing scene XML from %1 failed when loading Scene XML: %2 at line %3 column %4.")
+            .arg(sceneDesc.filename).arg(errorMsg).arg(errorLine).arg(errorColumn));
         return sceneDesc;
     }
 
@@ -1020,7 +1025,7 @@ SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) 
     QDomElement scene_elem = scene_doc.firstChildElement("scene");
     if (scene_elem.isNull())
     {
-        LogError("Could not find 'scene' element from XML.");
+        LogError("Scene::CreateSceneDescFromXml: Could not find 'scene' element from XML.");
         return sceneDesc;
     }
 
@@ -1040,27 +1045,27 @@ SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) 
             {
                 ComponentDesc compDesc;
                 compDesc.typeName = comp_elem.attribute("type");
-                compDesc.typeId = ParseUInt(comp_elem.attribute("id"), 0xffffffff);
+                compDesc.typeId = ParseUInt(comp_elem.attribute("typeId"), 0xffffffff);
                 /// @todo 27.09.2013 assert that typeName and typeId match
                 /// @todo 27.09.2013 If mismatch, show warning, and use SceneAPI's
                 /// ComponentTypeNameForTypeId and ComponentTypeIdForTypeName to resolve one or the other?
                 compDesc.name = comp_elem.attribute("name");
                 compDesc.sync = ParseBool(comp_elem.attribute("sync"));
-                const bool hasTypeName = !compDesc.typeName.isEmpty();
+                const bool hasTypeId = compDesc.typeId != 0xffffffff;
 
                 // A bit of a hack to get the name from EC_Name.
                 if (entityDesc.name.isEmpty() && (compDesc.typeName == EC_Name::TypeNameStatic() || compDesc.typeId == EC_Name::ComponentTypeId))
                 {
-                    ComponentPtr comp = (hasTypeName ? framework_->Scene()->CreateComponentByName(0, compDesc.typeName, compDesc.name) :
-                        framework_->Scene()->CreateComponentById(0, compDesc.typeId, compDesc.name));
+                    ComponentPtr comp = (hasTypeId ? framework_->Scene()->CreateComponentById(0, compDesc.typeId, compDesc.name) :
+                        framework_->Scene()->CreateComponentByName(0, compDesc.typeName, compDesc.name));
                     EC_Name *ecName = checked_static_cast<EC_Name*>(comp.get());
                     ecName->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
                     entityDesc.name = ecName->name.Get();
                     entityDesc.group = ecName->group.Get();
                 }
 
-                ComponentPtr comp = (hasTypeName ? framework_->Scene()->CreateComponentByName(0, compDesc.typeName, compDesc.name) :
-                    framework_->Scene()->CreateComponentById(0, compDesc.typeId, compDesc.name));
+                ComponentPtr comp = (hasTypeId ? framework_->Scene()->CreateComponentById(0, compDesc.typeId, compDesc.name) :
+                    framework_->Scene()->CreateComponentByName(0, compDesc.typeName, compDesc.name));
                 if (!comp) // Move to next element if component creation fails.
                 {
                     comp_elem = comp_elem.nextSiblingElement("component");
@@ -1186,9 +1191,9 @@ SceneDesc Scene::CreateSceneDescFromBinary(const QString &filename) const
     if (!filename.endsWith(".tbin", Qt::CaseInsensitive))
     {
         if (filename.endsWith(".txml", Qt::CaseInsensitive))
-            LogError("Try using CreateSceneDescFromXml() instead for " + filename);
+            LogError("Scene::CreateSceneDescFromBinary: Try using CreateSceneDescFromXml() instead for " + filename);
         else
-            LogError("Unsupported file extension : " + filename + " when trying to create scene description.");
+            LogError("Scene::CreateSceneDescFromBinary: Unsupported file extension : " + filename + " when trying to create scene description.");
         return sceneDesc;
     }
 
@@ -1197,7 +1202,7 @@ SceneDesc Scene::CreateSceneDescFromBinary(const QString &filename) const
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly))
     {
-        LogError("Failed to open file " + filename + " when trying to create scene description.");
+        LogError("Scene::CreateSceneDescFromBinary: Failed to open file " + filename + " when trying to create scene description.");
         return sceneDesc;
     }
 
@@ -1212,7 +1217,7 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
     QByteArray bytes = data;
     if (!bytes.size())
     {
-        LogError("File " + sceneDesc.filename + " contained 0 bytes when trying to create scene description.");
+        LogError("Scene::CreateSceneDescFromBinary: File " + sceneDesc.filename + " contained 0 bytes when trying to create scene description.");
         return sceneDesc;
     }
 
@@ -1292,11 +1297,11 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
                         entityDesc.components.append(compDesc);
                     }
                     else
-                        LogError("Failed to load component " + compDesc.typeName);
+                        LogError("Scene::CreateSceneDescFromBinary: Failed to load component " + compDesc.typeName);
                 }
                 catch(...)
                 {
-                    LogError("Failed to load component " + compDesc.typeName);
+                    LogError("Scene::CreateSceneDescFromBinary: Failed to load component " + compDesc.typeName);
                 }
             }
 
