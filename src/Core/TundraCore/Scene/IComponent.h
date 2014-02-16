@@ -86,7 +86,7 @@ class TUNDRACORE_API IComponent : public QObject, public enable_shared_from_this
     Q_PROPERTY(u32 typeId READ TypeId) /**< @copybrief TypeId */
     Q_PROPERTY(bool replicated READ IsReplicated)  /**< @copybrief IsReplicated */
     Q_PROPERTY(bool local READ IsLocal) /**< @copybrief IsLocal */
-    /// @note Use "component.updateMode = { value : <AttributeChange::Type value as int> };" syntax when settings updateMode from QtScript.
+    /// @note Use the AttributeChange enum values, f.ex. "comp.updateMode = AttributeChange.Disconnected;".
     Q_PROPERTY(AttributeChange::Type updateMode READ UpdateMode WRITE SetUpdateMode) /**< @copybrief UpdateMode */
     Q_PROPERTY (uint id READ Id) /**< @copybrief Id */
     Q_PROPERTY (bool unacked READ IsUnacked) /**< @copybrief IsUnacked */
