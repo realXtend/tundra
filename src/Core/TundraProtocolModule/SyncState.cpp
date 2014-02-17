@@ -19,6 +19,7 @@ SceneSyncState::SceneSyncState(u32 userConnectionID, bool isServer) :
     userConnectionID_(userConnectionID),
     changeRequest_(userConnectionID),
     isServer_(isServer),
+    placeholderComponentsSent_(false),
     locationInitialized(false),
     clientLocation(float3::nan),
     initialLocation(float3::nan)
@@ -138,6 +139,7 @@ void SceneSyncState::Clear()
     pendingEntities_.clear();
     changeRequest_.Reset();
     scene_.reset();
+    placeholderComponentsSent_ = false;
 }
 
 void SceneSyncState::RemoveFromQueue(entity_id_t id)

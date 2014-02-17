@@ -283,7 +283,7 @@ public slots:
     int NumAttributes() const;
 
     /// Returns the number of static (i.e. not dynamically allocated) attributes in this component. These are always in the beginning of the attribute vector.
-    int NumStaticAttributes() const;
+    virtual int NumStaticAttributes() const;
 
     /// Informs this component that the value of a member Attribute of this component has changed.
     /** You may call this function manually to force Attribute change signal to

@@ -130,6 +130,9 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     // Connect to network messages from the server
     serverConnection_ = owner_->GetClient()->ServerUserConnection();
     connect(serverConnection_.get(), SIGNAL(NetworkMessageReceived(UserConnection*, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), this, SLOT(HandleNetworkMessage(UserConnection*, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)));
+
+    // Connect to SceneAPI's PlaceholderComponentTypeRegistered signal
+    connect(framework_->Scene(), SIGNAL(PlaceholderComponentTypeRegistered(u32, const QString&, AttributeChange::Type)), this, SLOT(OnPlaceholderComponentTypeRegistered(u32, const QString&, AttributeChange::Type)));
 }
 
 SyncManager::~SyncManager()
@@ -354,6 +357,9 @@ void SyncManager::HandleNetworkMessage(UserConnection* user, kNet::packet_id_t p
                 MsgEntityAction msg(data, numBytes);
                 HandleEntityAction(user, msg);
             }
+            break;
+        case cRegisterComponentTypeMessage:
+            HandleRegisterComponentType(user, data, numBytes);
             break;
         }
     }
@@ -698,6 +704,56 @@ void SyncManager::OnEntityPropertiesChanged(Entity* entity, AttributeChange::Typ
     {
         serverConnection_->syncState->MarkEntityDirty(entity->Id(), true);
     }
+}
+
+void SyncManager::OnPlaceholderComponentTypeRegistered(u32 typeId, const QString& typeName, AttributeChange::Type change)
+{
+    if (change == AttributeChange::Default)
+        change = AttributeChange::Replicate;
+    if (change != AttributeChange::Replicate)
+        return;
+    ReplicateComponentType(typeId);
+}
+
+void SyncManager::ReplicateComponentType(u32 typeId, UserConnection* connection)
+{
+    SceneAPI* sceneAPI = framework_->Scene();
+    const SceneAPI::PlaceholderComponentTypeMap& descs = sceneAPI->GetPlaceholderComponentTypes();
+    SceneAPI::PlaceholderComponentTypeMap::const_iterator it = descs.find(typeId);
+    if (it == descs.end())
+    {
+        LogWarning("SyncManager::SendComponentTypeDescription: unknown component type " + QString::number(typeId));
+        return;
+    }
+
+    const ComponentDesc& desc = it->second;
+
+    kNet::DataSerializer ds(64 * 1024);
+    ds.AddVLE<kNet::VLE8_16_32>(desc.typeId);
+    ds.AddString(desc.typeName.toStdString());
+    ds.AddVLE<kNet::VLE8_16_32>(desc.attributes.size());
+    for (int i = 0; i < desc.attributes.size(); ++i)
+    {
+        const AttributeDesc& attrDesc = desc.attributes[i];
+        ds.Add<u8>(sceneAPI->GetAttributeTypeId(attrDesc.typeName));
+        /// \todo Use UTF-8 encoding
+        ds.AddString(attrDesc.id.toStdString());
+        ds.AddString(attrDesc.name.toStdString());
+    }
+
+    if (!connection)
+    {
+        if (owner_->IsServer())
+        {
+            UserConnectionList users = owner_->GetServer()->AuthenticatedUsers();
+            for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+                (*i)->Send(cRegisterComponentTypeMessage, true, true, ds);
+        }   
+        else if (serverConnection_)
+            serverConnection_->Send(cRegisterComponentTypeMessage, true, true, ds);
+    }
+    else
+        connection->Send(cRegisterComponentTypeMessage, true, true, ds);
 }
 
 /// Interpolates from (pos0, vel0) to (pos1, vel1) with a C1 curve (continuous in position and velocity)
@@ -1361,6 +1417,41 @@ void SyncManager::HandleEditEntityProperties(UserConnection* source, const char*
     state->entities[entityID].hasPropertyChanges = false;
 }
 
+void SyncManager::HandleRegisterComponentType(UserConnection* source, const char* data, size_t numBytes)
+{
+    assert(source);
+    
+    bool isServer = owner_->IsServer();
+    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
+    
+    if (!ValidateAction(source, cRegisterComponentTypeMessage, 0))
+        return;
+
+    kNet::DataDeserializer ds(data, numBytes);
+    ComponentDesc desc;
+    desc.typeId = ds.ReadVLE<kNet::VLE8_16_32>();
+    desc.typeName = QString::fromStdString(ds.ReadString());
+
+    // If component type already exists either as actual C++ component or an already registered placeholder, no action necessary
+    SceneAPI* sceneAPI = framework_->Scene();
+    if (sceneAPI->IsComponentFactoryRegistered(desc.typeName) || sceneAPI->IsPlaceholderComponentRegistered(desc.typeName))
+        return;
+
+    size_t numAttrs = ds.ReadVLE<kNet::VLE8_16_32>();
+    for (size_t i = 0; i < numAttrs; ++i)
+    {
+        AttributeDesc attrDesc;
+        attrDesc.typeName = sceneAPI->GetAttributeTypeName(ds.Read<u8>());
+        /// \todo Use UTF-8 encoding
+        attrDesc.id = QString::fromStdString(ds.ReadString());
+        attrDesc.name = QString::fromStdString(ds.ReadString());
+        desc.attributes.push_back(attrDesc);
+    }
+
+    sceneAPI->RegisterPlaceholderComponentType(desc, change);
+}
+
 void SyncManager::ProcessSyncState(UserConnection* user)
 {
     PROFILE(SyncManager_ProcessSyncState);
@@ -1373,6 +1464,16 @@ void SyncManager::ProcessSyncState(UserConnection* user)
     UNREFERENCED_PARAM(isServer)
     SceneSyncState* state = user->syncState.get();
     
+    // Send knowledge of registered placeholder components to the remote peer
+    if (state->NeedSendPlaceholderComponents())
+    {
+        SceneAPI* sceneAPI = framework_->Scene();
+        const SceneAPI::PlaceholderComponentTypeMap& descs = sceneAPI->GetPlaceholderComponentTypes();
+        for (SceneAPI::PlaceholderComponentTypeMap::const_iterator i = descs.begin(); i != descs.end(); ++i)
+            ReplicateComponentType(i->first, user);
+        state->MarkPlaceholderComponentsSent();
+    }
+
     // Process the state's dirty entity queue.
     /// \todo Limit and prioritize the data sent. For now the whole queue is processed, regardless of whether the connection is being saturated.
     while (!state->dirtyQueue.empty())

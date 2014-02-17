@@ -366,6 +366,9 @@ public:
     // Removes entity from pending lists.
     void RemovePendingEntity(entity_id_t id);
 
+    bool NeedSendPlaceholderComponents() const { return !placeholderComponentsSent_; }
+    void MarkPlaceholderComponentsSent() { placeholderComponentsSent_ = true; }
+
 private:
     // Returns if entity with id should be added to the sync state.
     bool ShouldMarkAsDirty(entity_id_t id);
@@ -383,6 +386,7 @@ private:
 
     StateChangeRequest changeRequest_;
     bool isServer_;
+    bool placeholderComponentsSent_;
     u32 userConnectionID_;
 
     SceneWeakPtr scene_;

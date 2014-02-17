@@ -24,6 +24,9 @@ class TUNDRACORE_API SceneAPI : public QObject
     Q_PROPERTY(SceneMap scenes READ Scenes) /**< @copydoc Scenes */
 
 public:
+    typedef std::map<u32, ComponentDesc> PlaceholderComponentTypeMap;
+    typedef std::map<QString, u32> PlaceholderComponentTypeIdMap;
+
     ~SceneAPI();
 
     /// Creates new component of the type @c T.
@@ -44,6 +47,15 @@ public:
     /// Returns the scene map for self reflection / introspection.
     SceneMap &Scenes();
     const SceneMap &Scenes() const;
+
+    /// Register a placeholder component type by using an XML dump of the component's data
+    void RegisterPlaceholderComponentType(QDomElement& element, AttributeChange::Type change = AttributeChange::Default);
+
+    /// Register a placeholder component type by using a ComponentDesc
+    void RegisterPlaceholderComponentType(ComponentDesc desc, AttributeChange::Type change = AttributeChange::Default);
+
+    /// Returns the registered placeholder component descs.
+    const PlaceholderComponentTypeMap& GetPlaceholderComponentTypes() const { return placeholderComponentTypes; }
 
 public slots:
     /// Returns a pointer to a scene
@@ -139,11 +151,11 @@ public slots:
     /// Returns a list of all component type names that can be used in the CreateComponentByName function to create a component.
     QStringList ComponentTypes() const;
 
-    /// Register a placeholder component type by using an XML dump of the component's data
-    void RegisterPlaceholderComponentType(QDomElement& element);
-
-    /// Register a placeholder component type by using a ComponentDesc
-    void RegisterPlaceholderComponentType(ComponentDesc desc);
+    /// Register a custom static-attribute component type by using an existing component (EC_DynamicComponent) as a blueprint.
+    /** This is the same mechanism as the RegisterPlaceholderComponent above, but meant to be used from scripts.
+        @param typeName The typename that is to be registered
+        @param component The EC_DynamicComponent that is used as a blueprint */
+    void RegisterCustomComponentType(const QString& typeName, IComponent* component);
 
     // DEPRECATED
     /// @cond PRIVATE
@@ -178,6 +190,11 @@ signals:
     void SceneAdded(const QString &name); /**< @deprecated Use SceneCreated instead. */
     /// @endcond
 
+    /// Emitted after a new placeholder (custom) component type has been registered.
+    /** @param typeId Id of new component type
+        @param typeName Name of new component type */
+    void PlaceholderComponentTypeRegistered(u32 typeId, const QString& typeName, AttributeChange::Type change);
+
 private:
     friend class Framework;
 
@@ -197,8 +214,6 @@ private:
 
     typedef std::map<QString, ComponentFactoryPtr, QStringLessThanNoCase> ComponentFactoryMap;
     typedef std::map<u32, weak_ptr<IComponentFactory> > ComponentFactoryWeakMap;
-    typedef std::map<u32, ComponentDesc> PlaceholderComponentTypeMap;
-    typedef std::map<QString, u32> PlaceholderComponentTypeIdMap;
 
     ComponentFactoryMap componentFactories;
     ComponentFactoryWeakMap componentFactoriesByTypeid;

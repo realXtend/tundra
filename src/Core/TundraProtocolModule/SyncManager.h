@@ -94,7 +94,7 @@ private slots:
     /// Trigger EC sync because of component added to entity
     void OnComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
     
-    /// Trigger EC sync because of component removed from entity
+    /// Trigger EC sync because of component removed from entity    
     void OnComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change);
     
     /// Trigger sync of entity creation
@@ -112,6 +112,9 @@ private slots:
     /// Trigger sync of entity properties (temporary status) change
     void OnEntityPropertiesChanged(Entity* entity, AttributeChange::Type change);
     
+    /// Trigger sync of a custom component type
+    void OnPlaceholderComponentTypeRegistered(u32 typeId, const QString& typeName, AttributeChange::Type change);
+
 private:
     /// Craft a component full update, with all static and dynamic attributes.
     void WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPtr comp);
@@ -139,12 +142,16 @@ private:
     void HandleCreateComponentsReply(UserConnection* source, const char* data, size_t numBytes);
     /// Handle entity properties change message.
     void HandleEditEntityProperties(UserConnection* source, const char* data, size_t numBytes);
+    /// Handle component type registration message.
+    void HandleRegisterComponentType(UserConnection* source, const char* data, size_t numBytes);
 
     void HandleRigidBodyChanges(UserConnection* source, kNet::packet_id_t packetId, const char* data, size_t numBytes);
     
     void ReplicateRigidBodyChanges(UserConnection* user);
 
     void InterpolateRigidBodies(f64 frametime, SceneSyncState* state);
+
+    void ReplicateComponentType(u32 typeId, UserConnection* connection = 0);
 
     /// Read client extrapolation time parameter from command line and match it to the current sync period.
     void GetClientExtrapolationTime();

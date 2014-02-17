@@ -41,6 +41,10 @@ public:
     /// IComponent override
     virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
+    /// IComponent override
+    /** PlaceholderComponent attributes need to be treated as static for the network protocol, though they are dynamically allocated */
+    virtual int NumStaticAttributes() const { return attributes.size(); }
+
     void SetTypeId(u32 newTypeId);
     void SetTypeName(const QString& newTypeName);
     IAttribute *CreateAttribute(const QString &typeName, const QString &id, const QString &name, AttributeChange::Type change = AttributeChange::Default);

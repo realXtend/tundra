@@ -301,7 +301,7 @@ const QStringList &SceneAPI::AttributeTypes()
     return attributeTypeNames;
 }
 
-void SceneAPI::RegisterPlaceholderComponentType(QDomElement& element)
+void SceneAPI::RegisterPlaceholderComponentType(QDomElement& element, AttributeChange::Type change)
 {
     ComponentDesc desc;
     if (!element.hasAttribute("type"))
@@ -335,15 +335,17 @@ void SceneAPI::RegisterPlaceholderComponentType(QDomElement& element)
         child = child.nextSiblingElement("attribute");
     }
 
-    RegisterPlaceholderComponentType(desc);
+    RegisterPlaceholderComponentType(desc, change);
 }
 
-void SceneAPI::RegisterPlaceholderComponentType(ComponentDesc desc)
+void SceneAPI::RegisterPlaceholderComponentType(ComponentDesc desc, AttributeChange::Type change)
 {
     // If no typeid defined, generate from the name
     // (eg. if script is registering a type, do not require it to invent a typeID)
     if (desc.typeId == 0 || desc.typeId == 0xffffffff)
         desc.typeId = (qHash(desc.typeName) & 0xffff) | 0x10000;
+
+    desc.typeName = IComponent::EnsureTypeNameWithPrefix(desc.typeName);
 
     if (GetFactory(desc.typeId))
     {
@@ -355,12 +357,41 @@ void SceneAPI::RegisterPlaceholderComponentType(ComponentDesc desc)
         LogError("Empty typeName in placeholder component description, can not register");
         return;
     }
-
-    QString sanitatedTypeName = IComponent::EnsureTypeNameWithPrefix(desc.typeName);
+    if (placeholderComponentTypes.find(desc.typeId) != placeholderComponentTypes.end())
+    {
+        LogWarning("Placeholder component type " + desc.typeName + " already registered, re-registering skipped");
+        return;
+    }
 
     placeholderComponentTypes[desc.typeId] = desc;
-    placeholderComponentTypeIds[sanitatedTypeName] = desc.typeId;
+    placeholderComponentTypeIds[desc.typeName] = desc.typeId;
     LogInfo("Registered placeholder component type " + desc.typeName);
+
+    emit PlaceholderComponentTypeRegistered(desc.typeId, desc.typeName, change);
+}
+
+void SceneAPI::RegisterCustomComponentType(const QString& typeName, IComponent* component)
+{
+    if (!component)
+        return;
+
+    ComponentDesc desc;
+    desc.typeName = typeName;
+    desc.typeId = 0xffffffff; // Calculate from hash in RegisterPlaceholderComponentType()
+    const AttributeVector& attrs = component->Attributes();
+    for (size_t i = 0; i < attrs.size(); ++i)
+    {
+        IAttribute* attr = attrs[i];
+        if (!attr)
+            continue;
+        AttributeDesc attrDesc;
+        attrDesc.id = attr->Id();
+        attrDesc.name = attr->Name();
+        attrDesc.typeName = attr->TypeName();
+        desc.attributes.push_back(attrDesc);
+    }
+
+    RegisterPlaceholderComponentType(desc);
 }
 
 ComponentPtr SceneAPI::CreatePlaceholderComponentById(Scene* scene, u32 componentTypeid, const QString &newComponentName) const
