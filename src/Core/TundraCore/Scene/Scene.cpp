@@ -874,7 +874,7 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
 
     if (desc.entities.empty())
     {
-        LogError("CreateContentFromSceneDesc:: Empty scene description.");
+        LogError("Scene::CreateContentFromSceneDesc: Empty scene description.");
         return ret;
     }
 
