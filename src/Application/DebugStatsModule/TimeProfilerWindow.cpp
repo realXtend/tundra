@@ -1927,8 +1927,6 @@ void TimeProfilerWindow::RefreshOgreSceneComplexityPage()
     text << "<br>";
     
     uint entities = 0;
-    uint prims = 0;
-    uint invisible_prims = 0;
     uint meshentities = 0;
     uint animated = 0;
     
@@ -2038,8 +2036,6 @@ void TimeProfilerWindow::RefreshOgreSceneComplexityPage()
     
     text << "<b>Scene</b>" << "<br>";
     text << QString("  %1").arg("# of entities in the scene ", -45).toStdString() << entities << "<br>";
-    text << QString("  %1").arg("# of prims with geometry in the scene ", -45).toStdString() << prims << "<br>";
-    text << QString("  %1").arg("# of invisible prims in the scene ", -45).toStdString() << invisible_prims << "<br>";
     text << QString("  %1").arg("# of mesh entities in the scene ", -45).toStdString() << meshentities << "<br>";
     text << QString("  %1").arg("# of animated entities in the scene ", -45).toStdString() << animated << "<br>";
     text << "<br>";
