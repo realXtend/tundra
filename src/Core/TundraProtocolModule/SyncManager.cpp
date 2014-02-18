@@ -747,13 +747,19 @@ void SyncManager::ReplicateComponentType(u32 typeId, UserConnection* connection)
         {
             UserConnectionList users = owner_->GetServer()->AuthenticatedUsers();
             for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
-                (*i)->Send(cRegisterComponentTypeMessage, true, true, ds);
+            {
+                if ((*i)->ProtocolVersion() >= ProtocolCustomComponents)
+                    (*i)->Send(cRegisterComponentTypeMessage, true, true, ds);
+            }
         }   
-        else if (serverConnection_)
+        else if (serverConnection_ && serverConnection_->ProtocolVersion() >= ProtocolCustomComponents)
             serverConnection_->Send(cRegisterComponentTypeMessage, true, true, ds);
     }
     else
-        connection->Send(cRegisterComponentTypeMessage, true, true, ds);
+    {
+        if (connection->ProtocolVersion() >= ProtocolCustomComponents)
+            connection->Send(cRegisterComponentTypeMessage, true, true, ds);
+    }
 }
 
 /// Interpolates from (pos0, vel0) to (pos1, vel1) with a C1 curve (continuous in position and velocity)
@@ -1465,7 +1471,7 @@ void SyncManager::ProcessSyncState(UserConnection* user)
     SceneSyncState* state = user->syncState.get();
     
     // Send knowledge of registered placeholder components to the remote peer
-    if (state->NeedSendPlaceholderComponents())
+    if (user->ProtocolVersion() >= ProtocolCustomComponents && state->NeedSendPlaceholderComponents())
     {
         SceneAPI* sceneAPI = framework_->Scene();
         const SceneAPI::PlaceholderComponentTypeMap& descs = sceneAPI->GetPlaceholderComponentTypes();

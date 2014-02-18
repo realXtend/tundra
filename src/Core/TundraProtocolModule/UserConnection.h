@@ -17,11 +17,12 @@ class SceneSyncState;
 /// Protocol versioning for client connections.
 enum NetworkProtocolVersion
 {
-    ProtocolOriginal = 0x1
+    ProtocolOriginal = 0x1,         // Original
+    ProtocolCustomComponents = 0x2  // Adds support for transmitting new static-structured component types without actual C++ implementation, using EC_PlaceholderComponent
 };
 
 /// Highest supported protocol version in the build. Update this when a new protocol version is added
-const NetworkProtocolVersion cHighestSupportedProtocolVersion = ProtocolOriginal;
+const NetworkProtocolVersion cHighestSupportedProtocolVersion = ProtocolCustomComponents;
 
 /// Represents a client connection on the server side. Subclassed by networking implementations.
 class TUNDRAPROTOCOL_MODULE_API UserConnection : public QObject, public enable_shared_from_this<UserConnection>
