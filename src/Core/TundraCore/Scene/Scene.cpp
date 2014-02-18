@@ -786,11 +786,11 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
             uint num_components = source.Read<u32>();
             for(uint i = 0; i < num_components; ++i)
             {
-                u32 typeId = source.Read<u32>(); /**< @todo VLE this! */
-                QString name = QString::fromStdString(source.ReadString());
-                bool compReplicated = source.Read<u8>() ? true : false;
-                uint data_size = source.Read<u32>();
-                
+                const u32 typeId = source.Read<u32>(); /**< @todo VLE this! */
+                const QString name = QString::fromStdString(source.ReadString());
+                const bool compReplicated = source.Read<u8>() ? true : false;
+                const uint data_size = source.Read<u32>();
+
                 // Read the component data into a separate byte array, then deserialize from there.
                 // This way the whole stream should not desync even if something goes wrong
                 QByteArray comp_bytes;
@@ -811,11 +811,15 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
                         }
                     }
                     else
-                        LogError("Scene::CreateContentFromBinary: Failed to load component \"" + framework_->Scene()->ComponentTypeNameForTypeId(typeId) + "\"!");
+                    {
+                        LogError(QString("Scene::CreateContentFromBinary: Failed to load component %1 %2!").
+                            arg(framework_->Scene()->ComponentTypeNameForTypeId(typeId)).arg(!name.isEmpty() ? "\"" + name + "\"" : ""));
+                    }
                 }
                 catch(...)
                 {
-                    LogError("Scene::CreateContentFromBinary: Failed to load component \"" + framework_->Scene()->ComponentTypeNameForTypeId(typeId) + "\"!");
+                    LogError(QString("Scene::CreateContentFromBinary: Exception while trying to load component %1 %2!").
+                        arg(framework_->Scene()->ComponentTypeNameForTypeId(typeId)).arg(!name.isEmpty() ? "\"" + name + "\"" : ""));
                 }
             }
 
@@ -1225,14 +1229,13 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
     {
         DataDeserializer source(bytes.data(), bytes.size());
         
-        uint num_entities = source.Read<u32>();
+        const uint num_entities = source.Read<u32>();
         for(uint i = 0; i < num_entities; ++i)
         {
             EntityDesc entityDesc;
-            entity_id_t id = source.Read<u32>();
-            entityDesc.id = QString::number((int)id);
+            entityDesc.id = source.Read<u32>();
 
-            uint num_components = source.Read<u32>();
+            const uint num_components = source.Read<u32>();
             for(uint i = 0; i < num_components; ++i)
             {
                 SceneAPI *sceneAPI = framework_->Scene();
@@ -1297,11 +1300,15 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
                         entityDesc.components.append(compDesc);
                     }
                     else
-                        LogError("Scene::CreateSceneDescFromBinary: Failed to load component " + compDesc.typeName);
+                    {
+                        LogError(QString("Scene::CreateSceneDescFromBinary: Failed to load component %1 %2!").
+                            arg(compDesc.typeName).arg(!compDesc.name.isEmpty() ? "\"" + compDesc.name + "\"" : ""));
+                    }
                 }
                 catch(...)
                 {
-                    LogError("Scene::CreateSceneDescFromBinary: Failed to load component " + compDesc.typeName);
+                    LogError(QString("Scene::CreateSceneDescFromBinary: Exception while trying to load component %1 %2!").
+                        arg(compDesc.typeName).arg(!compDesc.name.isEmpty() ? "\"" + compDesc.name + "\"" : ""));
                 }
             }
 
