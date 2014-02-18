@@ -23,6 +23,7 @@ file(GLOB MOC_FILES
     Input/GestureEvent.h Input/EC_InputMapper.h
     Scene/SceneAPI.h Scene/Scene.h Scene/Entity.h Scene/IComponent.h Scene/EntityAction.h
     Scene/EC_Name.h Scene/EC_DynamicComponent.h Scene/AttributeChangeType.h Scene/ChangeRequest.h
+    Scene/EC_PlaceholderComponent.h
     Ui/UiAPI.h Ui/UiGraphicsView.h Ui/UiMainWindow.h Ui/UiProxyWidget.h Ui/QtUiAsset.h Ui/RedirectedPaintWidget.h
 )
 

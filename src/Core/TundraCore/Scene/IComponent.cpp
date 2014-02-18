@@ -281,7 +281,7 @@ void IComponent::AddAttribute(IAttribute* attr)
         attr->owner = this;
         attributes.push_back(attr);
     }
-    else if (SupportsDynamicAttributes())
+    else
     {
         // For dynamic attributes, need to scan for holes first, and then push_back if no holes
         for (unsigned i = 0; i < attributes.size(); ++i)
@@ -301,8 +301,6 @@ void IComponent::AddAttribute(IAttribute* attr)
         // Create dynamic QObject property
         CreateDynamicProperty(attr);
     }
-    else
-        LogError("[IComponent]: AddAttribute called with a dynamic IAttribute* but component does not support dynamic attributes. This is a logic error, please override IComponent::SupportsDynamicAttributes() correctly.");
 }
 
 bool IComponent::AddAttribute(IAttribute* attr, u8 index)
@@ -339,7 +337,7 @@ bool IComponent::AddAttribute(IAttribute* attr, u8 index)
     attributes[index] = attr;
 
     // Create dynamic QObject property
-    if (SupportsDynamicAttributes())
+    if (attr->IsDynamic())
         CreateDynamicProperty(attr);
 
     return true;
@@ -347,9 +345,6 @@ bool IComponent::AddAttribute(IAttribute* attr, u8 index)
 
 void IComponent::CreateDynamicProperty(IAttribute* attribute)
 {
-    if (!SupportsDynamicAttributes())
-        return;
-
     // Connect to attribute change signal. We will update the QVariant dynamic property there.
     // Adds a bit of overhead vs. a static component with an extra attr->ToQVariant() but will
     // give us a nicer API. Lets try to only connect the signal when the first dynamic attribute
@@ -381,7 +376,7 @@ void IComponent::CreateDynamicProperty(IAttribute* attribute)
         {
             QByteArray asciiPropName = dynamicPropertyName.toAscii();
             dynamicPropertyNames_[attribute->Id()] = asciiPropName;
-            setProperty(asciiPropName.data(), QVariant());
+            setProperty(asciiPropName.data(), attribute->ToQVariant());
         }
     }
 }
@@ -421,7 +416,7 @@ void IComponent::RemoveDynamicProperty(IAttribute* attribute)
 
 bool IComponent::eventFilter(QObject *obj, QEvent *e)
 {
-    if (!obj || !e || !SupportsDynamicAttributes())
+    if (!obj || !e)
         return false;
 
     // A dynamic QObject property has been modified, update the IAttribute* to match it.

@@ -7,8 +7,10 @@
 #include "IAttribute.h"
 
 /// Placeholder/fallback for components that don't currently have a registered C++ implementation.
-class EC_PlaceholderComponent : public IComponent
+class TUNDRACORE_API EC_PlaceholderComponent : public IComponent
 {
+    Q_OBJECT
+
 public:
      /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
