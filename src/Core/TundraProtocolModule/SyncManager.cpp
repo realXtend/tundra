@@ -1441,7 +1441,7 @@ void SyncManager::HandleRegisterComponentType(UserConnection* source, const char
 
     // If component type already exists either as actual C++ component or an already registered placeholder, no action necessary
     SceneAPI* sceneAPI = framework_->Scene();
-    if (sceneAPI->IsComponentFactoryRegistered(desc.typeName) || sceneAPI->IsPlaceholderComponentRegistered(desc.typeName))
+    if (sceneAPI->IsComponentTypeRegistered(desc.typeName))
         return;
 
     size_t numAttrs = ds.ReadVLE<kNet::VLE8_16_32>();

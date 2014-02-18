@@ -111,6 +111,9 @@ public slots:
     /// Return if a placeholder component type has been registered for a type name.
     bool IsPlaceholderComponentRegistered(const QString &typeName) const;
 
+    /// Return if a component type has been registered either as a C++ component factory or a placeholder type.
+    bool IsComponentTypeRegistered(const QString &typeName) const;
+
     /// Registers a new factory to create new components of type name IComponentFactory::TypeName and ID IComponentFactory::TypeId.
     void RegisterComponentFactory(const ComponentFactoryPtr &factory);
 
@@ -155,7 +158,7 @@ public slots:
     /** This is the same mechanism as the RegisterPlaceholderComponent above, but meant to be used from scripts.
         @param typeName The typename that is to be registered
         @param component The EC_DynamicComponent that is used as a blueprint */
-    void RegisterCustomComponentType(const QString& typeName, IComponent* component);
+    void RegisterComponentType(const QString& typeName, IComponent* component);
 
     // DEPRECATED
     /// @cond PRIVATE

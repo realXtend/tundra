@@ -648,7 +648,7 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
                 // If we encounter an unknown component type, now is the time to register a placeholder type for it
                 // The XML holds all needed data for it, while binary doesn't
                 SceneAPI* sceneAPI = framework_->Scene();
-                if (!sceneAPI->IsComponentFactoryRegistered(typeName) && !sceneAPI->IsPlaceholderComponentRegistered(typeName))
+                if (!sceneAPI->IsComponentTypeRegistered(typeName))
                     sceneAPI->RegisterPlaceholderComponentType(comp_elem);
 
                 ComponentPtr new_comp = (!typeName.isEmpty() ? entity->GetOrCreateComponent(typeName, name, AttributeChange::Default, compReplicated) :
@@ -909,7 +909,7 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
                 // If we encounter an unknown component type, now is the time to register a placeholder type for it
                 // The componentdesc holds all needed data for it
                 SceneAPI* sceneAPI = framework_->Scene();
-                if (!sceneAPI->IsComponentFactoryRegistered(c.typeName) && !sceneAPI->IsPlaceholderComponentRegistered(c.typeName))
+                if (!sceneAPI->IsComponentTypeRegistered(c.typeName))
                     sceneAPI->RegisterPlaceholderComponentType(c);
 
                 ComponentPtr comp = entity->GetOrCreateComponent(c.typeName, c.name);

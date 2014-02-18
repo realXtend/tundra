@@ -122,6 +122,13 @@ bool SceneAPI::IsPlaceholderComponentRegistered(const QString &typeName) const
     return placeholderComponentTypeIds.find(IComponent::EnsureTypeNameWithPrefix(typeName)) != placeholderComponentTypeIds.end();
 }
 
+bool SceneAPI::IsComponentTypeRegistered(const QString& typeName) const
+{
+    QString nameWithPrefix = IComponent::EnsureTypeNameWithPrefix(typeName);
+    return componentFactories.find(nameWithPrefix) != componentFactories.end() ||
+        placeholderComponentTypeIds.find(nameWithPrefix) != placeholderComponentTypeIds.end();
+}
+
 void SceneAPI::RegisterComponentFactory(const ComponentFactoryPtr &factory)
 {
     if (factory->TypeName().trimmed() != factory->TypeName() || factory->TypeName().isEmpty() || factory->TypeId() == 0)
@@ -370,7 +377,7 @@ void SceneAPI::RegisterPlaceholderComponentType(ComponentDesc desc, AttributeCha
     emit PlaceholderComponentTypeRegistered(desc.typeId, desc.typeName, change);
 }
 
-void SceneAPI::RegisterCustomComponentType(const QString& typeName, IComponent* component)
+void SceneAPI::RegisterComponentType(const QString& typeName, IComponent* component)
 {
     if (!component)
         return;
