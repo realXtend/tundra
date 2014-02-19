@@ -216,13 +216,11 @@ public:
 
     btRigidBody* BulletRigidBody() const;
 
-    /// Constructs axis-aligned bounding box from bullet collision shape
-    /** @param outMin The minimum corner of the box
-        @param outMax The maximum corner of the box */
-    void GetAabbox(float3 &outAabbMin, float3 &outAabbMax);
-
     // DEPRECATED
+    /// @cond PRIVATE
+    void GetAabbox(float3 &outAabbMin, float3 &outAabbMax); /**< @deprecated use ShapeAABB instead. @todo Remove. */
     btRigidBody* GetRigidBody() const { return BulletRigidBody(); } /**< @deprecated use BulletRigidBody instead. @todo Remove. */
+    /// @endcond
 
 signals:
     /// A physics collision has happened between this rigid body and another entity
@@ -308,14 +306,19 @@ public slots:
     bool HasAuthority() const;
 
     /// Returns the minimal axis-aligned bounding box that encloses the collision shape of this rigid body.
-    /// Note that this function may be called even if the shape of this rigid body is not AABB.
+    /** Note that this function may be called even if the shape of this rigid body is not AABB.
+        @note For the sake of script-safety, a negatively infinite bounding box (AABB::SetNegativeInfinity),
+        for which IsDegenerate == true and IsFinite == false, is returned instead of an uninitialized bounding box,
+        if the rigid body is not initalized yet. */
     AABB ShapeAABB() const;
 
     /// Returns true if the currently used shape is a primitive shape (box et al.), false otherwise.
     bool IsPrimitiveShape() const;
 
     // DEPRECATED
+    /// @cond PRIVATE
     PhysicsWorld* GetPhysicsWorld() const; /**< @deprecated use World instead. @todo Remove at some point. */
+    /// @endcond
 
 private slots:
     /// Called when the parent entity has been set.

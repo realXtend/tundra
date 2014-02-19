@@ -829,10 +829,9 @@ float3 EC_RigidBody::GetAngularVelocity()
 
 void EC_RigidBody::GetAabbox(float3 &outAabbMin, float3 &outAabbMax)
 {
-    btVector3 aabbMin, aabbMax;
-    impl->body->getAabb(aabbMin, aabbMax);
-    outAabbMin.Set(aabbMin.x(), aabbMin.y(), aabbMin.z());
-    outAabbMax.Set(aabbMax.x(), aabbMax.y(), aabbMax.z());
+    AABB aabb = ShapeAABB();
+    outAabbMin = aabb.minPoint;
+    outAabbMax = aabb.maxPoint;
 }
 
 bool EC_RigidBody::HasAuthority() const
@@ -845,9 +844,16 @@ bool EC_RigidBody::HasAuthority() const
 
 AABB EC_RigidBody::ShapeAABB() const
 {
-    btVector3 aabbMin, aabbMax;
-    impl->body->getAabb(aabbMin, aabbMax);
-    return AABB(aabbMin, aabbMax);
+    AABB aabb;
+    aabb.SetNegativeInfinity();
+    if (impl->body)
+    {
+        btVector3 aabbMin, aabbMax;
+        impl->body->getAabb(aabbMin, aabbMax);
+        aabb.minPoint = aabbMin;
+        aabb.maxPoint = aabbMax;
+    }
+    return aabb;
 }
 
 bool EC_RigidBody::IsPrimitiveShape() const
