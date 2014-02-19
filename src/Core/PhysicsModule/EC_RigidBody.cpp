@@ -829,7 +829,7 @@ float3 EC_RigidBody::GetAngularVelocity()
 
 void EC_RigidBody::GetAabbox(float3 &outAabbMin, float3 &outAabbMax)
 {
-    AABB aabb = ShapeAABB();
+    const AABB aabb = ShapeAABB();
     outAabbMin = aabb.minPoint;
     outAabbMax = aabb.maxPoint;
 }
@@ -846,7 +846,7 @@ AABB EC_RigidBody::ShapeAABB() const
 {
     AABB aabb;
     aabb.SetNegativeInfinity();
-    if (impl->body)
+    if (impl->body && impl->shape)
     {
         btVector3 aabbMin, aabbMax;
         impl->body->getAabb(aabbMin, aabbMax);
