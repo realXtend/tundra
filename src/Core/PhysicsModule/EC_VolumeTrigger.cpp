@@ -32,11 +32,11 @@ EC_VolumeTrigger::~EC_VolumeTrigger()
 {
 }
 
-QList<EntityWeakPtr> EC_VolumeTrigger::GetEntitiesInside() const
+EntityList EC_VolumeTrigger::EntitiesInside() const
 {
-    QList<EntityWeakPtr> ret;
+    EntityList ret;
     for(EntitiesWithinVolumeMap::const_iterator it = entities_.begin(); it != entities_.end(); ++it)
-        ret.push_back(it->first);
+        ret.push_back(it->first.lock());
     return ret;
 }
 
@@ -45,11 +45,11 @@ size_t EC_VolumeTrigger::GetNumEntitiesInside() const
     return entities_.size();
 }
 
-Entity* EC_VolumeTrigger::GetEntityInside(int idx) const
+Entity* EC_VolumeTrigger::EntityInside(size_t idx) const
 {
-    if (idx >=0 && (size_t)idx < entities_.size())
+    if (idx < entities_.size())
     {
-        int currentIndex = 0;
+        size_t currentIndex = 0;
         for(EntitiesWithinVolumeMap::const_iterator it = entities_.begin(); it != entities_.end(); ++it)
         {
             if (currentIndex == idx)
@@ -69,7 +69,7 @@ QStringList EC_VolumeTrigger::GetEntityNamesInside() const
     return entitynames;
 }
 
-float EC_VolumeTrigger::GetEntityInsidePercent(const Entity *entity) const
+float EC_VolumeTrigger::EntityInsidePercent(const Entity *entity) const
 {
     if (entity)
     {
@@ -87,11 +87,11 @@ float EC_VolumeTrigger::GetEntityInsidePercent(const Entity *entity) const
     return 0.0f;
 }
 
-float EC_VolumeTrigger::GetEntityInsidePercentByName(const QString &name) const
+float EC_VolumeTrigger::EntityInsidePercentByName(const QString &name) const
 {
     for(EntitiesWithinVolumeMap::const_iterator it = entities_.begin(); it != entities_.end(); ++it)
         if (!it->first.expired() && it->first.lock()->Name().compare(name) == 0)
-            return GetEntityInsidePercent(it->first.lock().get());
+            return EntityInsidePercent(it->first.lock().get());
     return 0.f;
 }
 
@@ -99,31 +99,27 @@ bool EC_VolumeTrigger::IsInterestingEntity(const QString &name) const
 {
     PROFILE(EC_VolumeTrigger_IsInterestingEntity); ///\todo The performance of this function feels really fishy - on each physics collision, we iterate through a list performing string comparisons.
 
-    QVariantList interestingEntities = entities.Get();
+    const QVariantList &interestingEntities = entities.Get();
     if (interestingEntities.isEmpty())
         return true;
 
-    foreach (QVariant intname, interestingEntities)
-    {
+    foreach(const QVariant &intname, interestingEntities)
         if (intname.toString().compare(name) == 0)
-        {
             return true;
-        }
-    }
     return false;
 }
 
 bool EC_VolumeTrigger::IsPivotInside(Entity *entity) const
 {
-    shared_ptr<EC_Placeable> placeable = entity->GetComponent<EC_Placeable>();
+    shared_ptr<EC_Placeable> placeable = entity->Component<EC_Placeable>();
     shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
     if (placeable && rigidbody)
     {
         const Transform& trans = placeable->transform.Get();
         const float3& pivot = trans.pos;
 
-        return ( RayTestSingle(float3(pivot.x, pivot.y - 1e7f, pivot.z), pivot, rigidbody->GetRigidBody()) &&
-                 RayTestSingle(float3(pivot.x, pivot.y + 1e7f, pivot.z), pivot, rigidbody->GetRigidBody()) );
+        return ( RayTestSingle(float3(pivot.x, pivot.y - 1e7f, pivot.z), pivot, rigidbody->BulletRigidBody()) &&
+                 RayTestSingle(float3(pivot.x, pivot.y + 1e7f, pivot.z), pivot, rigidbody->BulletRigidBody()) );
     }
     LogWarning("EC_VolumeTrigger::IsPivotInside(): entity has no EC_Placeable or volume has no EC_RigidBody.");
     return false;
@@ -173,7 +169,7 @@ void EC_VolumeTrigger::CheckForRigidBody()
     
     if (!rigidbody_.lock())
     {
-        shared_ptr<EC_RigidBody> rigidbody = parent->GetComponent<EC_RigidBody>();
+        shared_ptr<EC_RigidBody> rigidbody = parent->Component<EC_RigidBody>();
         if (rigidbody)
         {
             rigidbody_ = rigidbody;
@@ -201,7 +197,7 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
             if (!it->second)
             {
                 bool active = true;
-                shared_ptr<EC_RigidBody> rigidbody = entity->GetComponent<EC_RigidBody>();
+                shared_ptr<EC_RigidBody> rigidbody = entity->Component<EC_RigidBody>();
                 if (rigidbody && rigidbody->mass.Get() > 0.0f)
                     active = rigidbody->IsActive();
                 if (active)

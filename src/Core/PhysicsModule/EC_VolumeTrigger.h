@@ -28,11 +28,10 @@
 
     <b>Exposes the following scriptable functions:</b>
     <ul>
-    <li> GetEntitiesInside: @copydoc GetEntitiesInside
-    <li> "GetNumEntitiesInside": @copydoc GetNumEntitiesInside
-    <li> "GetEntityInside": @copydoc GetEntityInside
-    <li> "GetEntityInsidePercent": @copydoc GetEntityInsidePercent
-    <li> "GetEntityInsidePercentByName": @copydoc GetEntityInsidePercentByName
+    <li> "EntitiesInside": @copydoc EntitiesInside
+    <li> "EntityInside": @copydoc EntityInside
+    <li> "EntityInsidePercent": @copydoc EntityInsidePercent
+    <li> "EntityInsidePercentByName": @copydoc EntityInsidePercentByName
     <li> "IsInterestingEntity": @copydoc IsInterestingEntity
     <li> "IsPivotInside": @copydoc IsPivotInside
     <li> "IsInsideVolume":@copydoc IsInsideVolume
@@ -77,7 +76,8 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(bool, byPivot)
 
     /// List of interesting entities by name.
-    /** Events are dispatched only for entities in this list, other entities are ignored. Leave empty to get events for all entities in the scene */
+    /** Events are dispatched only for entities in this list, other entities are ignored. Leave empty to get events for all entities in the scene.
+        @todo 19.02.2014 Because this is QVariantList, we could also support having entity IDs here. */
     Q_PROPERTY(QVariantList entities READ getentities WRITE setentities);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, entities);
 
@@ -86,32 +86,21 @@ signals:
     void EntityLeave(Entity *entity);
 
     // DEPRECATED
+    /// @cond PRIVATE
     void entityEnter(Entity* entity/*, const float3& position*/); /**< @deprecated Use EntityEnter instead. @todo Add warning print. */
     void entityLeave(Entity* entity/*, const float3& position*/);/**< @deprecated Use EntityLeave instead. @todo Add warning print. */
+    /// @endcond
 
 public slots:
-    /// Get a list of entities currently residing inside the volume.
-    /** @note Return value is invalidated by physics update.
-        @return list of entities */
-    QList<EntityWeakPtr> GetEntitiesInside() const;
+    /// Returns a list of entities currently residing inside the volume.
+    /** @note Return value is invalidated by physics update so the list might contain null pointers. */
+    EntityList EntitiesInside() const;
 
-    /// Returns number of entities inside this volume trigger. 
-    /** Use with GetEntityInside() to get all entities inside this volume.
-        @note Return value is invalidated by physics update.
-        @return Number of entities inside this volume */
-    size_t GetNumEntitiesInside() const;
-
-    /// Gets entity that is inside this volume trigger with specified index.
-    /** Use with GetNumEntitiesInside() to get all entities inside this volume.
-        @note Use together with GetNumEntitiesInside() during the same physics
-              update frame, because physics update may change the number of 
-              entities inside the volume. */
-    Entity* GetEntityInside(int idx) const;
-
-    /// Returns a list of entities by name which currently reside inside the volume.
-    /** @note Return value is invalidated by physics update.
-        @return list of entity names */
-    QStringList GetEntityNamesInside() const;
+    /// Returns an entity that is inside this volume trigger with specified index.
+    /** Use with EntitiesInside() (.size() or .length in script) to get all entities inside this volume.
+        @note Use together with EntitiesInside() during the same physics update frame, because physics
+        update may change the number of entities inside the volume. */
+    Entity* EntityInside(size_t idx) const;
 
     /// Returns an approximate percent of how much of the entity is inside this volume, [0,1]
     /** If entity is not inside this volume at all, returns 0, if entity is completely inside this volume, returns 1.
@@ -120,7 +109,7 @@ public slots:
 
         @param entity entity
         @return approximated percent of how much of the entity is inside this volume */
-    float GetEntityInsidePercent(const Entity* entity) const;
+    float EntityInsidePercent(const Entity* entity) const;
 
     /// Returns an approximate percent of how much of the entity is inside this volume, [0,1]
     /** If entity is not inside this volume at all, returns 0, if entity is completely inside this volume, returns 1.
@@ -128,13 +117,12 @@ public slots:
         @note Return value is invalidated by physics update.
         @param name entity name
         @return approximated percent of how much of the entity is inside this volume */
-    float GetEntityInsidePercentByName(const QString &name) const;
+    float EntityInsidePercentByName(const QString &name) const;
 
     /// Returns true if specified entity can be found in the 'interesting entities' list
     /** If list of entities for this volume trigger is empty, returns always true for any entity name
         (even non-existing ones)
-        @param name entity name
-        @return true if events are triggered for the names entity, false otherwise */
+        @param name entity name */
     bool IsInterestingEntity(const QString &name) const;
 
     /// Returns true if the pivot point of the specified entity is inside this volume trigger
@@ -144,6 +132,15 @@ public slots:
 
     /// Returns true if given world coordinate point is inside volume. 
     bool IsInsideVolume(const float3& point) const;
+
+    // DEPRECATED
+    /// @cond PRIVATE
+    float GetEntityInsidePercent(const Entity* entity) const { return EntityInsidePercent(entity); } /**< @deprecated Use EntityInsidePercent instead. @todo 19.02.2014 Add deprecation warning, remove at some point. */
+    float GetEntityInsidePercentByName(const QString &name) const { return EntityInsidePercentByName(name); } /**< @deprecated Use EntityInsidePercentByName instead. @todo 19.02.2014 Add deprecation warning, remove at some point. */
+    Entity* GetEntityInside(size_t idx) const { return EntityInside(idx); } /**< @deprecated Use EntityInside instead. @todo 19.02.2014 Add deprecation warning, remove at some point. */
+    QStringList GetEntityNamesInside() const; /**< @deprecated Use EntitiesInside and iterate the list it returns instead. @todo 19.02.2014 Add deprecation print, remove at some point.*/
+    size_t GetNumEntitiesInside() const; /**< @deprecated Use EntitiesInside().size() (or .length from script) instead. @todo 19.02.2014 Add deprecation print, remove at some point. */
+    /// @endcond
 
 private slots:
     void UpdateSignals();
