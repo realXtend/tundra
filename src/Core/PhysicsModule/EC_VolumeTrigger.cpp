@@ -5,17 +5,15 @@
 
 #include "EC_VolumeTrigger.h"
 #include "EC_RigidBody.h"
+#include "PhysicsWorld.h"
+#include "PhysicsUtils.h"
+
 #include "EC_Placeable.h"
 #include "Entity.h"
 #include "Scene/Scene.h"
-#include "PhysicsModule.h"
-#include "PhysicsWorld.h"
-#include "PhysicsUtils.h"
 #include "LoggingFunctions.h"
 #include "Profiler.h"
 
-#include <OgreAxisAlignedBox.h>
-#include <QMap>
 #include <btBulletDynamicsCommon.h>
 
 #include "MemoryLeakCheck.h"
@@ -75,27 +73,19 @@ float EC_VolumeTrigger::GetEntityInsidePercent(const Entity *entity) const
 {
     if (entity)
     {
-        shared_ptr<EC_RigidBody> otherRigidbody = entity->GetComponent<EC_RigidBody>();
-
+        shared_ptr<EC_RigidBody> otherRigidbody = entity->Component<EC_RigidBody>();
         shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
         if (rigidbody && otherRigidbody)
         {
-            float3 thisBoxMin, thisBoxMax;
-            rigidbody->GetAabbox(thisBoxMin, thisBoxMax);
-
-            float3 otherBoxMin, otherBoxMax;
-            otherRigidbody->GetAabbox(otherBoxMin, otherBoxMax);
-
-            Ogre::AxisAlignedBox thisBox(thisBoxMin.x, thisBoxMin.y, thisBoxMin.z, thisBoxMax.x, thisBoxMax.y, thisBoxMax.z);
-            Ogre::AxisAlignedBox otherBox(otherBoxMin.x, otherBoxMin.y, otherBoxMin.z, otherBoxMax.x, otherBoxMax.y, otherBoxMax.z);
-
-            return (thisBox.intersection(otherBox).volume() / otherBox.volume());
-        } else
+            const AABB thisBox = rigidbody->ShapeAABB();
+            const AABB otherBox = otherRigidbody->ShapeAABB();
+            return (thisBox.Intersection(otherBox).Volume() / otherBox.Volume());
+        }
+        else
             LogWarning("EC_VolumeTrigger: no EC_RigidBody for entity or volume.");
     }
     return 0.0f;
 }
-
 
 float EC_VolumeTrigger::GetEntityInsidePercentByName(const QString &name) const
 {
