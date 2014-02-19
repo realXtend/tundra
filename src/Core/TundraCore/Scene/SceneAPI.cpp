@@ -347,10 +347,10 @@ void SceneAPI::RegisterPlaceholderComponentType(QDomElement& element, AttributeC
 
 void SceneAPI::RegisterPlaceholderComponentType(ComponentDesc desc, AttributeChange::Type change)
 {
-    // If no typeid defined, generate from the name
+    // If no typeid defined, generate from the name without prefix
     // (eg. if script is registering a type, do not require it to invent a typeID)
     if (desc.typeId == 0 || desc.typeId == 0xffffffff)
-        desc.typeId = (qHash(desc.typeName) & 0xffff) | 0x10000;
+        desc.typeId = (ComputeHash(IComponent::EnsureTypeNameWithoutPrefix(desc.typeName)) & 0xffff) | 0x10000;
 
     desc.typeName = IComponent::EnsureTypeNameWithPrefix(desc.typeName);
 
