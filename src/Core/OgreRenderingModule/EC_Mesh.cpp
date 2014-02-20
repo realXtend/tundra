@@ -1447,9 +1447,13 @@ AABB EC_Mesh::LocalAABB() const
 
 OgreMeshAssetPtr EC_Mesh::MeshAsset() const
 {
-    if (!meshAsset)
-        return OgreMeshAssetPtr();
-    return dynamic_pointer_cast<OgreMeshAsset>(meshAsset->Asset());
+    // View enabled, use the mesh asset listener that loads our mesh.
+    if (ViewEnabled() && meshAsset)
+        return dynamic_pointer_cast<OgreMeshAsset>(meshAsset->Asset());
+    // Headless mode, query AssetAPI for the mesh. Another components might 
+    // have loaded the mesh without us knowing about it, eg. physics.
+    else
+        return dynamic_pointer_cast<OgreMeshAsset>(framework->Asset()->GetAsset(meshRef.Get().ref));
 }
 
 OgreMaterialAssetPtr EC_Mesh::MaterialAsset(int materialIndex) const
