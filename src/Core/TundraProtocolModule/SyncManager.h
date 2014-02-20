@@ -203,6 +203,9 @@ private:
 
     /// Interest manager currently in use, null if none
     InterestManager *interestmanager_;
+
+    /// The sender of a component type. Used to avoid sending component description back to sender
+    UserConnection* componentTypeSender_;
 };
 
 }

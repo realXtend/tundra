@@ -364,11 +364,6 @@ void SceneAPI::RegisterPlaceholderComponentType(ComponentDesc desc, AttributeCha
         LogError("Empty typeName in placeholder component description, can not register");
         return;
     }
-    if (placeholderComponentTypes.find(desc.typeId) != placeholderComponentTypes.end())
-    {
-        LogWarning("Placeholder component type " + desc.typeName + " already registered, re-registering skipped");
-        return;
-    }
 
     placeholderComponentTypes[desc.typeId] = desc;
     placeholderComponentTypeIds[desc.typeName] = desc.typeId;
@@ -376,7 +371,7 @@ void SceneAPI::RegisterPlaceholderComponentType(ComponentDesc desc, AttributeCha
 
     emit PlaceholderComponentTypeRegistered(desc.typeId, desc.typeName, change);
 }
-
+ 
 void SceneAPI::RegisterComponentType(const QString& typeName, IComponent* component)
 {
     if (!component)

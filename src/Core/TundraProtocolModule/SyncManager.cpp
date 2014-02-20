@@ -76,7 +76,8 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     interestmanager_(0),
     updateAcc_(0.0),
     maxLinExtrapTime_(3.0f),
-    noClientPhysicsHandoff_(false)
+    noClientPhysicsHandoff_(false),
+    componentTypeSender_(0)
 {
     if (framework_->HasCommandLineParameter("--noclientphysics"))
         noClientPhysicsHandoff_ = true;
@@ -748,7 +749,7 @@ void SyncManager::ReplicateComponentType(u32 typeId, UserConnection* connection)
             UserConnectionList users = owner_->GetServer()->AuthenticatedUsers();
             for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
             {
-                if ((*i)->ProtocolVersion() >= ProtocolCustomComponents)
+                if ((*i)->ProtocolVersion() >= ProtocolCustomComponents && (*i).get() != componentTypeSender_)
                     (*i)->Send(cRegisterComponentTypeMessage, true, true, ds);
             }
         }   
@@ -1439,9 +1440,10 @@ void SyncManager::HandleRegisterComponentType(UserConnection* source, const char
     desc.typeId = ds.ReadVLE<kNet::VLE8_16_32>();
     desc.typeName = QString::fromStdString(ds.ReadString());
 
-    // If component type already exists either as actual C++ component or an already registered placeholder, no action necessary
+    // If component type already exists as actual C++ component, no action necessary
+    // However, allow to update an earlier custom component description
     SceneAPI* sceneAPI = framework_->Scene();
-    if (sceneAPI->IsComponentTypeRegistered(desc.typeName))
+    if (sceneAPI->IsComponentFactoryRegistered(desc.typeName))
         return;
 
     size_t numAttrs = ds.ReadVLE<kNet::VLE8_16_32>();
@@ -1455,7 +1457,10 @@ void SyncManager::HandleRegisterComponentType(UserConnection* source, const char
         desc.attributes.push_back(attrDesc);
     }
 
+    // Do not send back to sender
+    componentTypeSender_ = source;
     sceneAPI->RegisterPlaceholderComponentType(desc, change);
+    componentTypeSender_ = 0;
 }
 
 void SyncManager::ProcessSyncState(UserConnection* user)
