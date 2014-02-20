@@ -845,7 +845,6 @@ bool EC_RigidBody::HasAuthority() const
 AABB EC_RigidBody::ShapeAABB() const
 {
     AABB aabb;
-    aabb.SetNegativeInfinity();
     if (impl->body && impl->shape)
     {
         btVector3 aabbMin, aabbMax;
@@ -853,6 +852,8 @@ AABB EC_RigidBody::ShapeAABB() const
         aabb.minPoint = aabbMin;
         aabb.maxPoint = aabbMax;
     }
+    else
+        aabb.SetNegativeInfinity();
     return aabb;
 }
 
