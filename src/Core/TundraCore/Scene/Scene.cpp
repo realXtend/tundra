@@ -922,7 +922,7 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
                 {
                     QDomDocument temp_doc;
                     QDomElement root_elem = temp_doc.createElement("component");
-                    root_elem.setAttribute("typeId", c.typeId);
+                    root_elem.setAttribute("typeId", QString::number(c.typeId)); // Ambiguous on VC9 as u32
                     root_elem.setAttribute("type", c.typeName);
                     root_elem.setAttribute("name", c.name);
                     root_elem.setAttribute("sync", c.sync);
