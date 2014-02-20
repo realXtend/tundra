@@ -1,5 +1,5 @@
-// TODO This script can be considered deprecated and it will be removed at some point.
-// The logic this script performs should not be relied upon in any application script.
+// NOTE This script is deprecated and not included in the startup by default.
+// TODO Remove this for good.
 
 var inputContext = input.RegisterInputContextRaw("fpsMouseLook", 150);
 inputContext.SetTakeMouseEventsOverQt(true);
@@ -15,7 +15,7 @@ function FindUserAvatar()
         return null;
 }
 
-// Hides and shows mourse cursor when RMB is pressed and released
+// Hides and shows mouse cursor when RMB is pressed and released
 function MouseEvent(event)
 {
     // Never show mouse cursor, if avatar camera is active and in first-person mode.
