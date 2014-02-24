@@ -66,7 +66,7 @@ void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr)
     hull.position_ = float3(0,0,0);
     /// \todo StanHull always produces only 1 hull. Therefore using a hull set is unnecessary and could be optimized away
 #include "DisableMemoryLeakCheck.h"
-    hull.hull_ = MAKE_SHARED(btConvexHullShape, (const btScalar*)&result.mOutputVertices[0], result.mNumOutputVertices, 3 * sizeof(float));
+    hull.hull_ = MAKE_SHARED(btConvexHullShape, (const btScalar*)&result.mOutputVertices[0], result.mNumOutputVertices, static_cast<int>(3 * sizeof(float)));
 #include "EnableMemoryLeakCheck.h"
     ptr->hulls_.push_back(hull);
     
