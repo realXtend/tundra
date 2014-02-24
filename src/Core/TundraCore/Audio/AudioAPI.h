@@ -15,6 +15,8 @@ class Framework;
 class TUNDRACORE_API AudioAPI : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(float3 listenerPosition READ ListenerPosition WRITE SetListenerPosition)
+    Q_PROPERTY(Quat listenerOrientation READ ListenerOrientation WRITE SetListenerOrientation)
 
 public:
     /// The Audio API constructor initializes OpenAL audio using default device.
@@ -66,6 +68,12 @@ public:
 
     /// Loads and applies sound settings from config.
     void LoadSoundSettingsFromConfig();
+
+    const float3 &ListenerPosition() const;
+    void SetListenerPosition(const float3 &position);
+
+    const Quat &ListenerOrientation() const;
+    void SetListenerOrientation(const Quat &orientation);
 
     // DEPRECATED
     uint GetRecordedSoundData(void* buffer, uint size) { return RecordedSoundData(buffer, size); } /**< @deprecated Use RecordedSoundData instead @todo Add warning print. */
@@ -165,7 +173,7 @@ private:
 
     AssetAPI *assetAPI;
 
-    struct AudioApiImpl;
-    AudioApiImpl *impl;
+    struct Impl;
+    Impl *impl;
 };
 Q_DECLARE_METATYPE(AudioAPI*)

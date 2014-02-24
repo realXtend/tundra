@@ -36,10 +36,9 @@ struct ALCdevice;
 
 using namespace std;
 
-struct AudioAPI::AudioApiImpl
+struct AudioAPI::Impl
 {
-public:
-    AudioApiImpl() :
+    Impl() :
         listenerPosition(0,0,0),
         listenerOrientation(Quat::identity),
         initialized(false),
@@ -48,8 +47,11 @@ public:
         captureDevice(0),
         captureSampleSize(0),
         nextChannelId(0),
-        masterGain(0.0f)
+        masterGain(1.f)
     {
+        soundMasterGain[SoundChannel::Triggered] = 1.f;
+        soundMasterGain[SoundChannel::Ambient] = 1.f;
+        soundMasterGain[SoundChannel::Voice] = 1.f;
     }
 
     /// Initialized flag
@@ -78,28 +80,17 @@ public:
     std::map<SoundChannel::SoundType, float> soundMasterGain;
 };
 
-AudioAPI::AudioAPI(Framework *fw, AssetAPI *assetAPI_)
-:impl(new AudioApiImpl),
-assetAPI(assetAPI_)
+AudioAPI::AudioAPI(Framework *fw, AssetAPI *assetAPI_) :
+    impl(new Impl),
+    assetAPI(assetAPI_)
 {
     assert(assetAPI);
-    impl->initialized = false;
-    impl->masterGain = 1.f;
-    impl->context = 0;
-    impl->device = 0;
-    impl->captureDevice = 0;
-    impl->captureSampleSize = 0;
-    impl->nextChannelId = 1;
-    impl->soundMasterGain[SoundChannel::Triggered] = 1.f;
-    impl->soundMasterGain[SoundChannel::Ambient] = 1.f;
-    impl->soundMasterGain[SoundChannel::Voice] = 1.f;
-    impl->listenerPosition = float3(0.0, 0.0, 0.0);
-    
+
     QStringList devices = fw->CommandLineParameters("--audioDevice"); /**< @todo document to help */
     if (devices.size() > 1)
         LogWarning("[AudioAPI]: Specified multiple --audioDevice parameters. Using \"" + devices.last() + "\".");
 
-    Initialize(!devices.isEmpty() ? devices.last() : "");    
+    Initialize(!devices.isEmpty() ? devices.last() : "");
     LoadSoundSettingsFromConfig();
 
     QStringList audioTypeExtensions(QStringList() << ".wav" << ".ogg");
@@ -114,17 +105,17 @@ assetAPI(assetAPI_)
 
 AudioAPI::~AudioAPI()
 {
+    SAFE_DELETE(impl);
 }
 
 void AudioAPI::Reset()
 {
     Uninitialize();
-    SAFE_DELETE(impl);
 }
 
 bool AudioAPI::Initialize(const QString &playbackDeviceName)
 {
-    if (impl && impl->initialized)
+    if (impl->initialized)
         Uninitialize();
     
 #ifndef TUNDRA_NO_AUDIO
@@ -190,9 +181,8 @@ AudioAssetPtr AudioAPI::CreateAudioAssetFromSoundBuffer(const SoundBuffer &buffe
 
 void AudioAPI::Uninitialize()
 {
-    if (!impl)
+    if (!impl->initialized)
         return;
-
     StopRecording();
 
     impl->channels.clear();
@@ -231,7 +221,7 @@ std::vector<SoundChannelPtr> AudioAPI::ActiveSounds() const
 
 void AudioAPI::Update(f64 /*frametime*/)
 {
-    if (!impl || !impl->initialized)
+    if (!impl->initialized)
         return;
     
 #ifndef TUNDRA_NO_AUDIO
@@ -270,7 +260,7 @@ void AudioAPI::Update(f64 /*frametime*/)
 
 bool AudioAPI::IsInitialized() const
 {
-    return impl && impl->initialized;
+    return impl->initialized;
 }
 
 void AudioAPI::SaveSoundSettingsToConfig()
@@ -322,18 +312,35 @@ void AudioAPI::LoadSoundSettingsFromConfig()
     }
 }
 
+const float3 &AudioAPI::ListenerPosition() const
+{
+    return impl->listenerPosition;
+}
+
+void AudioAPI::SetListenerPosition(const float3 &position)
+{
+    impl->listenerPosition = position;
+}
+
+const Quat &AudioAPI::ListenerOrientation() const
+{
+    return impl->listenerOrientation;
+}
+
+void AudioAPI::SetListenerOrientation(const Quat &orientation)
+{
+    impl->listenerOrientation = orientation;
+}
+
 void AudioAPI::SetListener(const float3 &position, const Quat &orientation)
 {
-    if (!impl || !impl->initialized)
-        return;
-
-    impl->listenerPosition = position;
-    impl->listenerOrientation = orientation;
+    SetListenerPosition(position);
+    SetListenerOrientation(orientation);
 }
 
 SoundChannelPtr AudioAPI::PlaySound(const AssetPtr &audioAsset, SoundChannel::SoundType type, SoundChannelPtr channel)
 {
-    if (!impl || !impl->initialized)
+    if (!impl->initialized)
         return SoundChannelPtr();
 
     if (!channel)
@@ -352,7 +359,7 @@ SoundChannelPtr AudioAPI::PlaySound(const AssetPtr &audioAsset, SoundChannel::So
 
 SoundChannelPtr AudioAPI::PlaySound3D(const float3 &position, const AssetPtr &audioAsset, SoundChannel::SoundType type, SoundChannelPtr channel)
 {
-    if (!impl || !impl->initialized)
+    if (!impl->initialized)
         return SoundChannelPtr();
 
     if (!channel)
@@ -421,10 +428,6 @@ void AudioAPI::Stop(const SoundChannelPtr &channel) const
 
 sound_id_t AudioAPI::NextSoundChannelID() const
 {
-    assert(impl);
-    if (!impl)
-        return 0;
-
     for(;;)
     {
         impl->nextChannelId++;
@@ -491,7 +494,7 @@ QStringList AudioAPI::RecordingDevices() const
 
 bool AudioAPI::StartRecording(const QString &name, uint frequency, bool sixteenbit, bool stereo, uint buffer_size)
 {
-    if (!impl || !impl->initialized)
+    if (!impl->initialized)
         return false;
     
 #ifndef TUNDRA_NO_AUDIO
@@ -541,7 +544,7 @@ bool AudioAPI::StartRecording(const QString &name, uint frequency, bool sixteenb
 void AudioAPI::StopRecording()
 {
 #ifndef TUNDRA_NO_AUDIO
-    if (impl && impl->captureDevice)
+    if (impl->captureDevice)
     {
         alcCaptureStop(impl->captureDevice);
         alcCaptureCloseDevice(impl->captureDevice);
@@ -552,7 +555,7 @@ void AudioAPI::StopRecording()
 
 uint AudioAPI::RecordedSoundSize() const
 {
-    if (!impl || !impl->captureDevice)
+    if (!impl->captureDevice)
         return 0;
 
 #ifndef TUNDRA_NO_AUDIO
@@ -564,7 +567,7 @@ uint AudioAPI::RecordedSoundSize() const
 
 uint AudioAPI::RecordedSoundData(void* buffer, uint size)
 {
-    if (!impl || !impl->captureDevice)
+    if (!impl->captureDevice)
         return 0;
     
 #ifndef TUNDRA_NO_AUDIO
