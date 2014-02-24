@@ -223,6 +223,7 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
         cmdLineDescs.commands["--acceptUnknownLocalSources"] = "If specified, assets outside any known local storages are allowed. Otherwise, requests to them will fail."; // AssetModule
         cmdLineDescs.commands["--acceptUnknownHttpSources"] = "If specified, asset requests outside any registered HTTP storages are also accepted, and will appear as assets with no storage. "
             "Otherwise, all requests to assets outside any registered storage will fail."; // AssetModule
+        cmdLineDescs.commands["--audioDevice"] = "Specifies the name of a specific audio device to be used for audio playback."; // AudioAPI
 
         LogInfo("Supported command line arguments (case-insensitive):");
         std::cout << cmdLineDescs.ToString();

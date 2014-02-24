@@ -86,7 +86,7 @@ AudioAPI::AudioAPI(Framework *fw, AssetAPI *assetAPI_) :
 {
     assert(assetAPI);
 
-    QStringList devices = fw->CommandLineParameters("--audioDevice"); /**< @todo document to help */
+    QStringList devices = fw->CommandLineParameters("--audioDevice");
     if (devices.size() > 1)
         LogWarning("[AudioAPI]: Specified multiple --audioDevice parameters. Using \"" + devices.last() + "\".");
 
