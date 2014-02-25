@@ -26,24 +26,24 @@ public:
     virtual ~IModule() {}
 
     /// Called when module is loaded into memory.
-    /** Override in your own module. Do not call.
+    /** Override and make private in your own module. Do not call.
         Components and asset types exposed by the module should be registered here using SceneAPI and AssetAPI respectively. */
     virtual void Load() {}
 
     /// Called when module is taken in use.
-    /** Override in your own module. Do not call. */
+    /** Override and make private in your own module. Do not call. */
     virtual void Initialize() {}
 
     /// Called when module is removed from use.
-    /** Override in your own module. Do not call. */
+    /** Override and make private in your own module. Do not call. */
     virtual void Uninitialize() {}
 
     /// Called when module is unloaded from memory.
-    /** Override in your own module. Do not call. */
+    /** Override and make private in your own module. Do not call. */
     virtual void Unload() {}
 
     /// Synchronized update for the module
-    /** Override in your own module if you want to perform synchronized update. Do not call.
+    /** Override and make private in your own module if you want to perform synchronized update. Do not call.
         @param frametime elapsed time in seconds since last frame */
     virtual void Update(f64 UNUSED_PARAM(frametime)) {}
 
@@ -52,6 +52,7 @@ public:
 
     /// Returns parent framework.
     Framework *GetFramework() const { return framework_; }
+    Framework *Fw() const { return framework_; } ///< Convenience shortcut for GetFramework.
 
 protected:
     Framework *framework_; ///< Parent framework
@@ -59,7 +60,7 @@ protected:
 private:
     friend class Framework;
 
-    /// Only for internal use.
+    /// Only for internal use, called by Framework.
     void SetFramework(Framework *framework) { framework_ = framework; assert (framework_); }
 
     const QString name; ///< Name of the module
