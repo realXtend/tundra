@@ -2,7 +2,7 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   EC_InputMapper.h
-    @brief  Translates given set of key and mouse sequences to Entity Actions on the entity the component is part of. */
+    @brief  EC_InputMapper translates given set of key sequences to Entity Actions on the entity the component is part of. */
 
 #pragma once
 
@@ -16,8 +16,26 @@
 #include <QKeySequence>
 #include <QVariant>
 
-/// Translates given set of key and mouse sequences to Entity Actions on the entity the component is part of.
-/** <table class="header">
+/// Translates given set of key sequences to Entity Actions on the entity the component is part of.
+/** @note This component is deprecated and should not be used. Use InputContext instead.
+    Simple conversion example:
+    @code
+    // Old InputMapper code:
+    var im = me.GetOrCreateComponent("InputMapper", 2, false);
+    im.contextPriority = 101;
+    im.keyrepeatTrigger = false; // Not needed; would flood network
+    im.executionType = EntityAction.Server;
+    im.RegisterMapping("W", "Move(forward)", KeyEvent.KeyPressed);
+    im.RegisterMapping("W", "Stop(forward)", KeyEvent.KeyReleased);
+
+    // New InputContext equivalent:
+    var ic = input.RegisterInputContextRaw("MyContext", 101);
+    // Remember to unregister input context when you don't need it anymore (f.ex. OnScritpDestroyed is a good place to do so).
+    ic.KeyPressed.connect(function(e) { if (e.keyCode == Qt.Key_W) me.Exec(EntityAction.Server, "Move(forward)"); });
+    ic.KeyReleased.connect(function(e) { if (e.keyCode == Qt.Key_W) me.Exec(EntityAction.Server, "Stop(forward)"); });
+    // Note: could also connect to KeyEventReceived and handle all of the functionality in single function
+    @endcode
+    <table class="header">
     <tr>
     <td>
     <h2>InputMapper</h2>
@@ -56,17 +74,14 @@
     <li>"GetInputContext": @copydoc GetInputContext
     </ul>
 
-    <b>Reacts on the following actions:</b>
-    <ul>
-    <li>...
-    </ul>
+    <b>Does not react on any actions:</b>
 
     </td>
     </tr>
 
     <b>Can emit anykind of user-defined/registered actions.</b>
 
-    <b>Doesn't depend on any components</b>
+    <b>Doesn't depend on any components.</b>
 
     </table> */
 class TUNDRACORE_API EC_InputMapper : public IComponent
@@ -110,7 +125,6 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
 
     /// Trigger on keyrepeats, if it is off input mapper does not repeat keypressed actions. Default is on.
-    ///\todo Rename to keyRepeatTrigger
     Q_PROPERTY(bool keyrepeatTrigger READ getkeyrepeatTrigger WRITE setkeyrepeatTrigger)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, keyrepeatTrigger);
 
@@ -161,12 +175,11 @@ private:
     shared_ptr<InputContext> inputContext; ///< Input context for this EC.
 
     /// Alters input context's parameters when attributes are changed.
-    /** @param attribute Changed attribute.
-     @param change Change type. */
     void AttributesChanged();
 
 private slots:
     void Initialize();
+
     /// Handles key events from the input system.
     /** Performs entity action for for the parent entity if action mapping is registered for the key event.
         @param e Key event. */

@@ -2,7 +2,7 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   EC_InputMapper.cpp
-    @brief  Translates given set of key and mouse sequences to Entity Actions on the entity the component is part of. */
+    @brief  EC_InputMapper translates given set of key sequences to Entity Actions on the entity the component is part of. */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -31,6 +31,7 @@ EC_InputMapper::EC_InputMapper(Scene* scene):
     INIT_ATTRIBUTE_VALUE(suppressKeyEvents, "Suppress used keyboard events", false),
     INIT_ATTRIBUTE_VALUE(suppressMouseEvents, "Suppress used mouse events", false)
 {
+    LogWarning("EC_InputMapper is deprecated and should not be used. Use InputContext instead.");
     static AttributeMetadata executionAttrData;
     static bool metadataInitialized = false;
     if(!metadataInitialized)
