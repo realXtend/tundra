@@ -29,28 +29,6 @@ ConsoleWidget::ConsoleWidget(Framework *fw) :
     commandHistoryIndex(-1),
     lineEdit(0)
 {
-    setStyleSheet(
-        "QPlainTextEdit {"
-            "border: 0px;"
-            "padding: 0px;"
-            "background-color: rgb(0,0,0);"
-            "font-size: 12px;"
-            "color: #33CC00;"
-            "margin: 0px;"
-        "}"
-        "QLineEdit {"
-            "border: 0px;"
-            "border-top: 1px solid rgba(255,255,255,100);"
-            "border-bottom: 1px rgba(255,255,255,100);"
-            "padding: 0px;"
-            "padding-left: 3px;"
-            "background-color: rgb(0,0,0);"
-            "font-size: 12px;"
-            "color:#33CC00;"
-        "}"
-        "QScrollBar{"
-            "background-color: rgb(0,0,0);"
-        "}");
 
     // Console UI settings.
     /// @todo Settings for colors?
@@ -58,6 +36,7 @@ ConsoleWidget::ConsoleWidget(Framework *fw) :
     const float defaultHeight = 0.5f;
     const float defaultOpacity = 0.8f;
     const int defaultAnimationSpeed = 300;
+    const int defaultBufferSize = 5000;
 
     ConfigAPI &cfg = *framework->Config();
     ConfigData consoleUi(ConfigAPI::FILE_FRAMEWORK, "console_ui");
@@ -69,15 +48,40 @@ ConsoleWidget::ConsoleWidget(Framework *fw) :
         cfg.Set(consoleUi, "relative_height", (double)defaultHeight);
         cfg.Set(consoleUi, "opacity", (double)defaultOpacity);
         cfg.Set(consoleUi, "animation_speed", defaultAnimationSpeed);
+        cfg.Set(consoleUi, "buffer_size", defaultBufferSize);
     }
 
     bool inputEnabled = cfg.Get(consoleUi, "input_enabled", defaultInputEnabled).toBool();
     height = Clamp(cfg.Get(consoleUi, "relative_height", defaultHeight).toFloat(), 0.f, 1.f);
     float opacity = Clamp(cfg.Get(consoleUi, "opacity", defaultOpacity).toFloat(), 0.f, 1.f);
     int animationSpeed = cfg.Get(consoleUi, "animation_speed", defaultAnimationSpeed).toInt();
+    int bufferSize = cfg.Get(consoleUi, "buffer_size", defaultBufferSize).toInt();
 
     if (fw->HasCommandLineParameter("--noconsoleguiinput"))
         inputEnabled = false; // Command line parameter authorative.
+
+    setStyleSheet(QString(
+        "QWidget {"
+            "background-color: transparent;"
+        "}"
+        "QPlainTextEdit, QLineEdit {"
+            "background-color: rgba(0,0,0,%1);"
+            "font-family: \"Courier New\";"
+            "font-size: 10pt;"
+            "color: rgb(230,230,230);"
+            "border: 0px;"
+            "padding: 0px;"
+            "margin: 0px;"
+            "white-space: pre;"
+        "}"
+        "QLineEdit {"
+            "border-top: 1px solid rgba(230,230,230,%1);"
+            "border-bottom: 1px solid rgba(230,230,230,%1);"
+            "padding-left: 3px;"
+        "}"
+        "QScrollBar{"
+            "background-color: rgba(0,0,0,%1);"
+        "}").arg(static_cast<int>(opacity*255.0)));
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -87,7 +91,6 @@ ConsoleWidget::ConsoleWidget(Framework *fw) :
     proxyWidget = framework->Ui()->AddWidgetToScene(this, Qt::Widget);
     proxyWidget->setMinimumHeight(0);
     proxyWidget->setGeometry(QRect(0, 0, graphicsView->width(), 0));
-    proxyWidget->setOpacity(opacity);
     proxyWidget->setZValue(20000);
 
     connect(framework->Ui()->GraphicsScene(), SIGNAL(sceneRectChanged(const QRectF&)), SLOT(AdjustToSceneRect(const QRectF&)));
@@ -98,7 +101,8 @@ ConsoleWidget::ConsoleWidget(Framework *fw) :
     slideAnimation->setDuration(animationSpeed);
 
     textEdit = new QPlainTextEdit(this);
-    textEdit->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    textEdit->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    textEdit->setMaximumBlockCount(bufferSize);
     layout->addWidget(textEdit);
 
     if (inputEnabled)
@@ -259,70 +263,22 @@ bool ConsoleWidget::eventFilter(QObject *obj, QEvent *e)
 
 void ConsoleWidget::DecorateString(QString &str)
 {
-    // Make all timestamp + module name blocks white
-    int blockEndIndex = 0;
-    // Code below disabled as we no longer have module+timestamp block.
-/*
-    int blockEndIndex = str.indexOf("]");
-    if (blockEndIndex != -1)
-    {
-        QString span_start("<span style='color:white;'>");
-        QString span_end("</span>");
-        blockEndIndex += span_start.length() + 1;
-        str.insert(0, "<span style='color:white;'>");
-        str.insert(blockEndIndex, "</span>");
-        blockEndIndex += span_end.length();
-    }
+    static QString preStart = "<pre>";
+    static QString preEnd = "</pre>";
+    static QString preStartError = "<pre style=\"color:#FF3300\">";
+    static QString preStartWarning = "<pre style=\"color:#FFFF00\">";
+    static QString preStartDebug = "<pre style=\"color:#999999\">";
+    static QRegExp regExpError = QRegExp(".*Error:.*");
+    static QRegExp regExpWarning = QRegExp(".*Warning:.*");
+    static QRegExp regExpDebug = QRegExp(".*Debug:.*");
+
+    if (regExpError.exactMatch(str))
+        str.prepend(preStartError);
+    else if (regExpWarning.exactMatch(str))
+        str.prepend(preStartWarning);
+    else if (regExpDebug.exactMatch(str))
+        str.prepend(preStartDebug);
     else
-        blockEndIndex = 0;
-*/
-    QRegExp regexp;
-    regexp.setPattern(".*Debug:.*");
-    if (regexp.exactMatch(str))
-    {
-        str.insert(blockEndIndex, "<FONT COLOR=\"#999999\">");
-        str.push_back("</FONT>");
-        return;
-    }
-/*
-    regexp.setPattern(".*Notice:.*");
-    if (regexp.exactMatch(str))
-    {
-        str.insert(blockEndIndex, "<FONT COLOR=\"#0000FF\">");
-        str.push_back("</FONT>");
-        return;
-    }
-*/
-    regexp.setPattern(".*Warning:.*");
-    if (regexp.exactMatch(str))
-    {
-        str.insert(blockEndIndex, "<FONT COLOR=\"#FFFF00\">");
-        str.push_back("</FONT>");
-        return;
-    }
-
-    regexp.setPattern(".*Error:.*");
-    if (regexp.exactMatch(str))
-    {
-        str.insert(blockEndIndex, "<FONT COLOR=\"#FF3300\">");
-        str.push_back("</FONT>");
-        return;
-    }
-/*
-    regexp.setPattern(".*Critical:.*");
-    if (regexp.exactMatch(str))
-    {
-        str.insert(blockEndIndex, "<FONT COLOR=\"#FF0000\">");
-        str.push_back("</FONT>");
-        return;
-    }
-
-    regexp.setPattern(".*Fatal:.*");
-    if (regexp.exactMatch(str))
-    {
-        str.insert(blockEndIndex, "<FONT COLOR=\"#9933CC\">");
-        str.push_back("</FONT>");
-        return;
-    }
-*/
+        str.prepend(preStart);
+    str.append(preEnd);
 }
