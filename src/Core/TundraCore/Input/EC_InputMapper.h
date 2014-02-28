@@ -30,10 +30,17 @@
 
     // New InputContext equivalent:
     var ic = input.RegisterInputContextRaw("MyContext", 101);
-    // Remember to unregister input context when you don't need it anymore (f.ex. OnScritpDestroyed is a good place to do so).
-    ic.KeyPressed.connect(function(e) { if (e.keyCode == Qt.Key_W) me.Exec(EntityAction.Server, "Move(forward)"); });
-    ic.KeyReleased.connect(function(e) { if (e.keyCode == Qt.Key_W) me.Exec(EntityAction.Server, "Stop(forward)"); });
     // Note: could also connect to KeyEventReceived and handle all of the functionality in single function
+    ic.KeyPressed.connect(function(e) { if (e.keyCode == Qt.Key_W) me.Exec(EntityAction.Server, "Move" "forward); });
+    ic.KeyReleased.connect(function(e) { if (e.keyCode == Qt.Key_W) me.Exec(EntityAction.Server, "Stop" ,forward); });
+
+    // RegisterKeyEvent can be handy also, especially for key sequences.
+    var moveFwd = ic.RegisterKeyEvent(new QKeySequence(Qt.Key_W));
+    moveFwd.SequencePressed.connect(function() { me.Exec(EntityAction.Server, "Move", "forward"); });
+    moveFwd.SequenceReleased.connect(function() { me.Exec(EntityAction.Server, "Stop", "forward"); });
+
+    // Remember to unregister input context when you don't need it anymore (f.ex. OnScritpDestroyed is a good place to do so).
+    input.UnregisterInputContextRaw("MyContext");
     @endcode
     <table class="header">
     <tr>
