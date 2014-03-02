@@ -112,6 +112,14 @@ void JavascriptModule::RunString(const QString &codestr, const QVariantMap &cont
         engine->globalObject().setProperty(i.key(), engine->newQObject(i.value().value<QObject*>()));
     }
 
+    const QScriptSyntaxCheckResult syntaxResult = engine->checkSyntax(codestr);
+    if (syntaxResult.state() != QScriptSyntaxCheckResult::Valid)
+    {
+        LogError(QString("JavascriptModule::RunString: Syntax error %1, line %2.")
+            .arg(syntaxResult.errorMessage()).arg(syntaxResult.errorLineNumber()));
+        return;
+    }
+
     const QScriptValue result = engine->evaluate(codestr);
     if (engine->hasUncaughtException())
         LogError("JavascriptModule::RunString: " + result.toString() + ".");
@@ -163,12 +171,7 @@ void JavascriptModule::RunScript(const QString &scriptFileName)
     const QByteArray script = scriptFile.readAll();
     scriptFile.close();
 
-    const QScriptSyntaxCheckResult syntaxResult = engine->checkSyntax(script);
-    if (syntaxResult.state() == QScriptSyntaxCheckResult::Valid)
-        RunString(script);
-    else
-        LogError(QString("JavascriptModule::RunScript: Syntax error %1, line %2.")
-            .arg(syntaxResult.errorMessage()).arg(syntaxResult.errorLineNumber()));
+    RunString(script);
 }
 
 void JavascriptModule::OnSceneCreated(Scene *scene) const
