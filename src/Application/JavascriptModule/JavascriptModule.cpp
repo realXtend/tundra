@@ -95,6 +95,9 @@ void JavascriptModule::Initialize()
     foreach(const QByteArray &prop, Fw()->dynamicPropertyNames())
         engine->globalObject().setProperty(QString(prop), engine->newQObject(Fw()->property(prop).value<QObject*>()));
 
+    /// @todo 03.03.2013 "engine" (JavascriptInstance) is missing from the context.
+    /// It would crucial f.ex. if wanting to load some startup jsplugin after startup using jsLoad.
+
     LoadStartupScripts();
 }
 
