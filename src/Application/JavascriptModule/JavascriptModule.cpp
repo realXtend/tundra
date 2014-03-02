@@ -44,6 +44,9 @@ JavascriptModule::JavascriptModule() :
     engine(new QScriptEngine())
 {
     qRegisterMetaType<IntegerTestRunner*>("IntegerTestRunner");
+    ExposeCoreTypes(engine);
+    ExposeCoreApiMetaTypes(engine);
+    ExposeQtMetaTypes(engine);
 }
 
 JavascriptModule::~JavascriptModule()
@@ -69,7 +72,7 @@ void JavascriptModule::Load()
 
 void JavascriptModule::Initialize()
 {
-    connect(GetFramework()->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(SceneAdded(const QString&)));
+    connect(Fw()->Scene(), SIGNAL(SceneCreated(Scene *, AttributeChange::Type)), SLOT(OnSceneCreated(Scene *)));
 
     framework_->Console()->RegisterCommand(
         "jsExec", "Execute given code in the embedded Javascript interpreter. Usage: jsExec(mycodestring)",
@@ -82,10 +85,15 @@ void JavascriptModule::Initialize()
     framework_->Console()->RegisterCommand(
         "jsReloadScripts", "Reloads and re-executes startup scripts.",
         this, SLOT(LoadStartupScripts()));
-        
+
     framework_->Console()->RegisterCommand(
         "jsDumpInfo", "Dumps all EC_Script information to console",
         this, SLOT(DumpScriptInfo()));
+
+    // Expose Framework and company for the script context.
+    engine->globalObject().setProperty("framework", engine->newQObject(Fw()));
+    foreach(const QByteArray &prop, Fw()->dynamicPropertyNames())
+        engine->globalObject().setProperty(QString(prop), engine->newQObject(Fw()->property(prop).value<QObject*>()));
 
     LoadStartupScripts();
 }
@@ -104,7 +112,9 @@ void JavascriptModule::RunString(const QString &codestr, const QVariantMap &cont
         engine->globalObject().setProperty(i.key(), engine->newQObject(i.value().value<QObject*>()));
     }
 
-    engine->evaluate(codestr);
+    const QScriptValue result = engine->evaluate(codestr);
+    if (engine->hasUncaughtException())
+        LogError("JavascriptModule::RunString: " + result.toString() + ".");
 }
 
 void JavascriptModule::DumpScriptInfo()
@@ -123,7 +133,7 @@ void JavascriptModule::DumpScriptInfo()
     }
     for(unsigned i = 0; i < scripts.size(); ++i)
     {
-        JavascriptInstance *jsInstance = dynamic_cast<JavascriptInstance*>(scripts[i]->ScriptInstance());
+        JavascriptInstance *jsInstance = qobject_cast<JavascriptInstance*>(scripts[i]->ScriptInstance());
         if (!jsInstance)
             continue;
         if (!jsInstance->IsEvaluated())
@@ -150,16 +160,22 @@ void JavascriptModule::RunScript(const QString &scriptFileName)
         return;
     }
 
-    engine->evaluate(scriptFile.readAll(), scriptFileName);
+    const QByteArray script = scriptFile.readAll();
     scriptFile.close();
+
+    const QScriptSyntaxCheckResult syntaxResult = engine->checkSyntax(script);
+    if (syntaxResult.state() == QScriptSyntaxCheckResult::Valid)
+        RunString(script);
+    else
+        LogError(QString("JavascriptModule::RunScript: Syntax error %1, line %2.")
+            .arg(syntaxResult.errorMessage()).arg(syntaxResult.errorLineNumber()));
 }
 
-void JavascriptModule::SceneAdded(const QString &name)
+void JavascriptModule::OnSceneCreated(Scene *scene) const
 {
-    ScenePtr scene = GetFramework()->Scene()->GetScene(name);
-    connect(scene.get(), SIGNAL(ComponentAdded(Entity*, IComponent*, AttributeChange::Type)),
+    connect(scene, SIGNAL(ComponentAdded(Entity*, IComponent*, AttributeChange::Type)),
             SLOT(ComponentAdded(Entity*, IComponent*, AttributeChange::Type)));
-    connect(scene.get(), SIGNAL(ComponentRemoved(Entity*, IComponent*, AttributeChange::Type)),
+    connect(scene, SIGNAL(ComponentRemoved(Entity*, IComponent*, AttributeChange::Type)),
             SLOT(ComponentRemoved(Entity*, IComponent*, AttributeChange::Type)));
 }
 
@@ -167,7 +183,7 @@ void JavascriptModule::ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& ne
 {
     PROFILE(JSModule_ScriptAssetsChanged);
 
-    EC_Script *sender = dynamic_cast<EC_Script*>(this->sender());
+    EC_Script *sender = qobject_cast<EC_Script*>(this->sender());
     assert(sender && "JavascriptModule::ScriptAssetsChanged needs to be invoked from EC_Script!");
     if (!sender)
         return;
@@ -179,23 +195,13 @@ void JavascriptModule::ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& ne
 
     // First clean up any previous running script from EC_Script, if any exists.
 
-    if (dynamic_cast<JavascriptInstance*>(sender->ScriptInstance()))
+    if (qobject_cast<JavascriptInstance*>(sender->ScriptInstance()))
         sender->SetScriptInstance(0);
 
     if (newScripts[0]->Name().endsWith(".js")) // We're positively using QtScript.
     {
         JavascriptInstance *jsInstance = new JavascriptInstance(newScripts, this);
-        ComponentPtr comp;
-        try
-        {
-            comp = sender->shared_from_this();
-        } catch(...)
-        {
-            LogError("Couldn't update component name, cause parent entity was null.");
-            return;
-        }
-
-        jsInstance->SetOwner(comp);
+        jsInstance->SetOwner(sender->shared_from_this());
         sender->SetScriptInstance(jsInstance);
 
         // Register all core APIs and names to this script engine.
@@ -218,15 +224,15 @@ void JavascriptModule::ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& ne
     }
 }
 
-void JavascriptModule::ScriptAppNameChanged(const QString& /*newAppName*/)
+void JavascriptModule::ScriptAppNameChanged(const QString& /*newAppName*/) const
 {
     /// \todo Currently we do not react to changing the script app name on the fly.
 }
 
-void JavascriptModule::ScriptClassNameChanged(const QString& newClassName)
+void JavascriptModule::ScriptClassNameChanged(const QString& newClassName) const
 {
     UNREFERENCED_PARAM(newClassName) /**< @todo Do we want to do something with this? */
-    EC_Script *sender = dynamic_cast<EC_Script*>(this->sender());
+    EC_Script *sender = qobject_cast<EC_Script*>(this->sender());
     assert(sender && "JavascriptModule::ScriptClassNameChanged needs to be invoked from EC_Script!");
     if (!sender)
         return;
@@ -244,30 +250,28 @@ void JavascriptModule::ScriptClassNameChanged(const QString& newClassName)
     else
         // If we did not find the class yet, delete the existing object in any case
         RemoveScriptObject(sender);
-    
 }
 
-void JavascriptModule::ScriptEvaluated()
+void JavascriptModule::ScriptEvaluated() const
 {
-    JavascriptInstance* sender = dynamic_cast<JavascriptInstance*>(this->sender());
+    JavascriptInstance* sender = qobject_cast<JavascriptInstance*>(this->sender());
     if (!sender)
         return;
-    EC_Script* app = dynamic_cast<EC_Script*>(sender->Owner().lock().get());
+    EC_Script* app = qobject_cast<EC_Script*>(sender->Owner().lock().get());
     if (app)
         CreateScriptObjects(app);
 }
 
-void JavascriptModule::ScriptUnloading()
+void JavascriptModule::ScriptUnloading() const
 {
-    JavascriptInstance* sender = dynamic_cast<JavascriptInstance*>(this->sender());
-    if (!sender)
-        return;
-    RemoveScriptObjects(sender);
+    JavascriptInstance* sender = qobject_cast<JavascriptInstance*>(this->sender());
+    if (sender)
+        RemoveScriptObjects(sender);
 }
 
-void JavascriptModule::ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type /*change*/)
+void JavascriptModule::ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type /*change*/) const
 {
-    if (comp->TypeName() == EC_Script::TypeNameStatic())
+    if (comp->TypeId() == EC_Script::TypeIdStatic())
     {
         connect(comp, SIGNAL(ScriptAssetsChanged(const std::vector<ScriptAssetPtr>&)), this, SLOT(ScriptAssetsChanged(const std::vector<ScriptAssetPtr>&)), Qt::UniqueConnection);
         connect(comp, SIGNAL(ApplicationNameChanged(const QString&)), this, SLOT(ScriptAppNameChanged(const QString&)), Qt::UniqueConnection);
@@ -288,7 +292,7 @@ void JavascriptModule::ComponentAdded(Entity* entity, IComponent* comp, Attribut
     }
 }
 
-void JavascriptModule::ComponentRemoved(Entity* /*entity*/, IComponent* comp, AttributeChange::Type /*change*/)
+void JavascriptModule::ComponentRemoved(Entity* /*entity*/, IComponent* comp, AttributeChange::Type /*change*/) const
 {
     if (comp->TypeName() == EC_Script::TypeNameStatic())
     {
@@ -301,7 +305,7 @@ void JavascriptModule::ComponentRemoved(Entity* /*entity*/, IComponent* comp, At
     }
 }
 
-EC_Script* JavascriptModule::FindScriptApplication(EC_Script* instance, const QString& appName)
+EC_Script* JavascriptModule::FindScriptApplication(EC_Script* instance, const QString& appName) const
 {
     if (!instance || appName.isEmpty())
         return 0;
@@ -323,7 +327,7 @@ EC_Script* JavascriptModule::FindScriptApplication(EC_Script* instance, const QS
     return 0;
 }
 
-void JavascriptModule::ParseAppAndClassName(EC_Script* instance, QString& appName, QString& className)
+void JavascriptModule::ParseAppAndClassName(EC_Script* instance, QString& appName, QString& className) const
 {
     if (!instance)
     {
@@ -346,7 +350,7 @@ void JavascriptModule::ParseAppAndClassName(EC_Script* instance, QString& appNam
     }
 }
 
-void JavascriptModule::CreateScriptObject(EC_Script* app, EC_Script* instance, const QString& className)
+void JavascriptModule::CreateScriptObject(EC_Script* app, EC_Script* instance, const QString& className) const
 {
     // Delete any existing object instance, possibly in another script application
     RemoveScriptObject(instance);
@@ -355,7 +359,7 @@ void JavascriptModule::CreateScriptObject(EC_Script* app, EC_Script* instance, c
     if (!instance->ShouldRun())
         return;
     
-    JavascriptInstance* jsInstance = dynamic_cast<JavascriptInstance*>(app->ScriptInstance());
+    JavascriptInstance* jsInstance = qobject_cast<JavascriptInstance*>(app->ScriptInstance());
     if (!jsInstance || !jsInstance->IsEvaluated())
         return;
     
@@ -404,13 +408,13 @@ void JavascriptModule::CreateScriptObject(EC_Script* app, EC_Script* instance, c
     instance->SetScriptApplication(app);
 }
 
-void JavascriptModule::RemoveScriptObject(EC_Script* instance)
+void JavascriptModule::RemoveScriptObject(EC_Script* instance) const
 {
     EC_Script* app = instance->ScriptApplication();
     if (!app)
         return;
     
-    JavascriptInstance* jsInstance = dynamic_cast<JavascriptInstance*>(app->ScriptInstance());
+    JavascriptInstance* jsInstance = qobject_cast<JavascriptInstance*>(app->ScriptInstance());
     if (!jsInstance || !jsInstance->IsEvaluated())
         return;
     
@@ -444,7 +448,7 @@ void JavascriptModule::RemoveScriptObject(EC_Script* instance)
     instance->SetScriptApplication(0);
 }
 
-void JavascriptModule::CreateScriptObjects(EC_Script* app)
+void JavascriptModule::CreateScriptObjects(EC_Script* app) const
 {
     // If application has an empty name, we can not create script objects out of it. Skip the expensive
     // entity/scriptcomponent scan in that case.
@@ -452,7 +456,7 @@ void JavascriptModule::CreateScriptObjects(EC_Script* app)
     if (thisAppName.isEmpty())
         return;
 
-    JavascriptInstance* jsInstance = dynamic_cast<JavascriptInstance*>(app->ScriptInstance());
+    JavascriptInstance* jsInstance = qobject_cast<JavascriptInstance*>(app->ScriptInstance());
     if (!jsInstance || !jsInstance->IsEvaluated())
     {
         LogError("CreateScriptObjects: the application EC_Script does not have a script engine that has already evaluated its code");
@@ -477,7 +481,7 @@ void JavascriptModule::CreateScriptObjects(EC_Script* app)
         }
 }
 
-void JavascriptModule::RemoveScriptObjects(JavascriptInstance* jsInstance)
+void JavascriptModule::RemoveScriptObjects(JavascriptInstance* jsInstance) const
 {
     QScriptEngine* appEngine = jsInstance->Engine();
     if (!appEngine)
@@ -513,7 +517,7 @@ void JavascriptModule::RemoveScriptObjects(JavascriptInstance* jsInstance)
     globalObject.setProperty("scriptObjects", QScriptValue());
 }
 
-QStringList JavascriptModule::ParseStartupScriptConfig()
+QStringList JavascriptModule::ParseStartupScriptConfig() const
 {
     /// This is the old style XML js plugin loading.
     /// @todo Remove this function at some point. It has not been used in a while and
@@ -565,7 +569,7 @@ QStringList JavascriptModule::ParseStartupScriptConfig()
     return pluginsToLoad;
 }
 
-QStringList JavascriptModule::StartupScripts()
+QStringList JavascriptModule::StartupScripts() const
 {
     return framework_->CommandLineParameters("--jsplugin");
 }
@@ -665,14 +669,14 @@ void JavascriptModule::LoadStartupScripts()
 void JavascriptModule::UnloadStartupScripts()
 {
     // Stop the startup scripts, if any running
-    for(uint i = 0; i < startupScripts_.size(); ++i)
+    for(size_t i = 0; i < startupScripts_.size(); ++i)
         startupScripts_[i]->Unload();
-    for(uint i = 0; i < startupScripts_.size(); ++i)
+    for(size_t i = 0; i < startupScripts_.size(); ++i)
         delete startupScripts_[i];
     startupScripts_.clear();
 }
 
-void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Script *comp)
+void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Script *comp) const
 {
     PROFILE(JSModule_PrepareScriptInstance);
     static std::set<QObject*> checked;
@@ -700,7 +704,7 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
     instance->RegisterService(framework_, "framework");
     instance->RegisterService(instance, "engine");
     
-    for(uint i = 0; i < (uint)properties.size(); ++i)
+    for(int i = 0; i < properties.size(); ++i)
         instance->RegisterService(framework_->property(properties[i]).value<QObject*>(), properties[i]);
 
     if (comp)

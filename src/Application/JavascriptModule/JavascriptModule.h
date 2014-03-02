@@ -26,7 +26,8 @@
 
 class JavascriptInstance;
 
-/// Enables Javascript execution and scripting by using QtScript.
+/// Enables JavaScript execution and scripting by using QtScript.
+/** http://qt-project.org/doc/qt-4.8/ecmascript.html */
 class JAVASCRIPT_MODULE_API JavascriptModule : public IModule
 {
     Q_OBJECT
@@ -39,7 +40,7 @@ public:
     /** If script is part of the scene, i.e. EC_Script component is present, we add some special services.
         @param instance Script istance.
         @param comp Script component, null by default. */
-    void PrepareScriptInstance(JavascriptInstance* instance, EC_Script *comp = 0);
+    void PrepareScriptInstance(JavascriptInstance* instance, EC_Script *comp = 0) const;
 
 public slots:
     void DumpScriptInfo();
@@ -55,7 +56,7 @@ signals:
     /** The purpose of this is to allow dynamic service objects (registered with Framework::RegisterDynamicObject)
         to perform further scriptengine initialization, such as registration of new datatypes. The slot
         OnScriptEngineCreated() will be invoked on the dynamic service object, if it exists. */
-    void ScriptEngineCreated(QScriptEngine* engine);
+    void ScriptEngineCreated(QScriptEngine* engine) const;
 
 private:
     void Load();
@@ -64,32 +65,32 @@ private:
 
     /// Parses the plugin startup configuration file to detect which startup scripts should be run.
     /** @return Returns a QStringList of script paths */
-    QStringList ParseStartupScriptConfig();
+    QStringList ParseStartupScriptConfig() const;
 
     /// Startup js scripts specified on the command line via --jsplugin
     /** @return List of script paths relative to bin/jsplugins */
-    QStringList StartupScripts();
+    QStringList StartupScripts() const;
 
     /// Stops and deletes startup scripts
     void UnloadStartupScripts();
 
     /// Parse the appname and classname from an EC_Script
-    void ParseAppAndClassName(EC_Script* instance, QString& appName, QString& className);
+    void ParseAppAndClassName(EC_Script* instance, QString& appName, QString& className) const;
 
     /// Find a named script application
-    EC_Script* FindScriptApplication(EC_Script* instance, const QString& appName);
+    EC_Script* FindScriptApplication(EC_Script* instance, const QString& appName) const;
 
     /// Create a script class instance into a script application
-    void CreateScriptObject(EC_Script* app, EC_Script* instance, const QString& className);
+    void CreateScriptObject(EC_Script* app, EC_Script* instance, const QString& className)  const;
 
     /// Remove a script class instance from an EC_Script
-    void RemoveScriptObject(EC_Script* instance);
+    void RemoveScriptObject(EC_Script* instance)  const;
     
     /// Create script class instances for all EC_Scripts depending on this script application
-    void CreateScriptObjects(EC_Script* app);
+    void CreateScriptObjects(EC_Script* app)  const;
 
     /// Remove script class instances for all EC_Scripts depending on this script application
-    void RemoveScriptObjects(JavascriptInstance* jsInstance);
+    void RemoveScriptObjects(JavascriptInstance* jsInstance) const;
 
     /// Default engine for console & commandline script execution
     QScriptEngine *engine;
@@ -100,13 +101,13 @@ private:
 private slots:
     /// (Re)loads and executes startup scripts.
     void LoadStartupScripts();
-    void ScriptEvaluated();
-    void ScriptUnloading();
+    void ScriptEvaluated() const;
+    void ScriptUnloading() const;
 
-    void SceneAdded(const QString &name);
-    void ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change);
-    void ComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change);
+    void OnSceneCreated(Scene *scene) const;
+    void ComponentAdded(Entity* entity, IComponent* comp, AttributeChange::Type change) const;
+    void ComponentRemoved(Entity* entity, IComponent* comp, AttributeChange::Type change) const;
     void ScriptAssetsChanged(const std::vector<ScriptAssetPtr>& newScripts);
-    void ScriptAppNameChanged(const QString& newAppName);
-    void ScriptClassNameChanged(const QString& newClassName);
+    void ScriptAppNameChanged(const QString& newAppName) const;
+    void ScriptClassNameChanged(const QString& newClassName) const;
 };
