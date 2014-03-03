@@ -942,9 +942,9 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
                     foreach(IAttribute *attr, comp->Attributes())
                         if (attr)
                             foreach(const AttributeDesc &a, c.attributes)
-                                if ((attr->TypeName().compare(a.typeName, Qt::CaseInsensitive) == 0 &&
+                                if (attr->TypeName().compare(a.typeName, Qt::CaseInsensitive) == 0 &&
                                     (attr->Id().compare(a.id, Qt::CaseInsensitive) == 0 ||
-                                    attr->Name().compare(a.name, Qt::CaseInsensitive)) == 0))
+                                    attr->Name().compare(a.name, Qt::CaseInsensitive) == 0))
                                 {
                                     attr->FromString(a.value, AttributeChange::Disconnected); // Trigger no signal yet when scene is in incoherent state
                                 }
