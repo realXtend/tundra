@@ -1058,7 +1058,8 @@ SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) 
                 const bool hasTypeId = compDesc.typeId != 0xffffffff;
 
                 // A bit of a hack to get the name from EC_Name.
-                if (entityDesc.name.isEmpty() && (compDesc.typeName == EC_Name::TypeNameStatic() || compDesc.typeId == EC_Name::ComponentTypeId))
+                if (entityDesc.name.isEmpty() && (compDesc.typeId == EC_Name::ComponentTypeId ||
+                    IComponent::EnsureTypeNameWithPrefix(compDesc.typeName) == EC_Name::TypeNameStatic()))
                 {
                     ComponentPtr comp = (hasTypeId ? framework_->Scene()->CreateComponentById(0, compDesc.typeId, compDesc.name) :
                         framework_->Scene()->CreateComponentByName(0, compDesc.typeName, compDesc.name));
