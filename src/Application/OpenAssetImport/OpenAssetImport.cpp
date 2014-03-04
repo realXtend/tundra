@@ -18,6 +18,10 @@ Licensed under the MIT license:
 #include "IAssetTransfer.h"
 #include "IAsset.h"
 
+#include <QFileInfo>
+#include <QFile>
+#include <QDir>
+
 #include <Ogre.h>
 
 #include <assimp/DefaultLogger.hpp>
@@ -65,7 +69,8 @@ void OpenAssetImport::OnConversionRequest(OgreMeshAsset *asset, const u8 *data, 
 OpenAssetConverter::OpenAssetConverter(Framework *fw) :
     assetAPI(fw->Asset()),
     meshCreated(false),
-    texCount(0)
+    texCount(0),
+    mAnimationSpeedModifier(1.0f)
 {
 }
 
@@ -94,81 +99,115 @@ return value is http://.../texture.jpg
 
 QString OpenAssetConverter::GetPathToTexture(const QString &meshFileName, const QString &meshFileDiskSource, QString &texturePath)
 {
+    if (texturePath.isEmpty())
+        return "";
+    LogDebug("GetPathToTexture: " + texturePath);
+
     texturePath.replace("\\", "/"); // Normalize all path separators to use forward slashes.
     QString path;
 
     // When the texture path in .dae file is a http address there is no need to parse it.
-    if(texturePath.startsWith("http:", Qt::CaseInsensitive) || texturePath.startsWith("https:", Qt::CaseInsensitive))
+    if (texturePath.startsWith("http:", Qt::CaseInsensitive) || texturePath.startsWith("https:", Qt::CaseInsensitive))
+        return texturePath;
+
+    // Parent ref is a URL, resolve base and add the relative texturePath to it
+    if (meshFileName.startsWith("http:", Qt::CaseInsensitive) || meshFileName.startsWith("https:", Qt::CaseInsensitive))
     {
-        path = texturePath;
-        return path;
+        QString base = meshFileName.left(meshFileName.lastIndexOf("/")+1).trimmed();
+
+        QFileInfo fi(texturePath);
+        if (fi.isAbsolute())
+        {
+            LogWarning("Assimp Import: Cannot resolve texture ref from an absolute disk path: " + texturePath + " with base: " + base);
+            return "";
+        }
+
+        QString endPart = texturePath.trimmed();
+        if (endPart.startsWith("/"))
+            endPart = endPart.mid(1);
+        return base + endPart;
+    }
+
+    QFileInfo fi(texturePath);
+    if (fi.isAbsolute())
+    {
+        if (QFile::exists(fi.absoluteFilePath()))
+            return fi.absoluteFilePath();
+        else
+        {
+            LogWarning("Assimp Import: Failed to find texture from absolute disk path: " + fi.absoluteFilePath());
+            return "";
+        }
+    }
+    else if (fi.isRelative())
+    {
+        QFileInfo mfi(meshFileDiskSource);
+        QDir parentDir = mfi.absoluteDir();
+        if (parentDir.exists(fi.filePath()))
+            return parentDir.absoluteFilePath(fi.filePath());
+        LogWarning("Assimp Import: Failed to find texture from relative disk path: " + fi.filePath());
+        return "";
+    }
+    
+    LogWarning("Assimp Import: Failed to find texture with reference: " + texturePath);
+    return "";
+    
+    // Below code is all around the place, it may iterate the whole freaking hard drive recursively, trying to find a suiting filename.
+    // @todo Remove below code when can verify it has no use cases left, the top code should handle relative refs.
+    
+    /*
+    // I cant follow this code and what it should do. It just gives an empty string as a result for cases like:
+    // Parent http://assets.com/path/my.dae Texture: textures/my.jpg or my.jpg.
+    // @todo Remove below code when can verify it has no use cases left, the top code should handle relative refs.
+    QStringList parsedMeshPath;
+    if(meshFileName.startsWith("http:") || meshFileName.startsWith("https:"))
+    {
+        parsedMeshPath = meshFileName.split("/");
     }
     else
     {
-        // Parent ref is a URL, resolve base and add the relative texturePath to it
-        if (meshFileName.startsWith("http:", Qt::CaseInsensitive) || meshFileName.startsWith("https:", Qt::CaseInsensitive))
-        {
-            QString endPart = texturePath.trimmed();
-            if (endPart.startsWith("/"))
-                endPart = endPart.mid(1);
-
-            QString base = meshFileName.left(meshFileName.lastIndexOf("/")+1).trimmed();
-            return base + endPart;
-        }
-
-        // I cant follow this code and what it should do. It just gives an empty string as a result for cases like:
-        // Parent http://assets.com/path/my.dae Texture: textures/my.jpg or my.jpg.
-        // @todo Remove below code when can verify it has no use cases left, the top code should handle relative refs.
-        QStringList parsedMeshPath;
-        if(meshFileName.startsWith("http:") || meshFileName.startsWith("https:"))
-        {
-            parsedMeshPath = meshFileName.split("/");
-        }
-        else
-        {
-            parsedMeshPath = meshFileDiskSource.split("/");
-        }
-		
-        int index = texturePath.indexOf("/");
-        int dots=0;
-
-        for(int i=0; i<index; i++)
-        {
-            if(texturePath[i]=='.')
-            {
-                dots++;
-                parsedMeshPath.takeLast();
-            }
-        }
-
-        if (dots!=0)
-        {
-            texturePath = texturePath.remove(0, dots);
-            path = parsedMeshPath.join("/");
-            path.append(texturePath);
-        }
-
-        //The texturePath is not always a path from the .dae file to the textures
-        //It might be just texture.jpg or /images/texture.jpg, etc.
-        //In that case the correct texture file is searched using a top-down search.   
-        else
-        {
-            //int length = parsedMeshPath.length();
-            QString base;
-
-            for(int j=0; j<4/*length*/; j++)
-            {
-                parsedMeshPath.removeLast();
-                base = parsedMeshPath.join("/");
-                path = AssetAPI::RecursiveFindFile(base,texturePath);
-			
-                if(!path.isEmpty())
-                    break;
-            }
-        }
-
-        return path;
+        parsedMeshPath = meshFileDiskSource.split("/");
     }
+	
+    int index = texturePath.indexOf("/");
+    int dots=0;
+
+    for(int i=0; i<index; i++)
+    {
+        if(texturePath[i]=='.')
+        {
+            dots++;
+            parsedMeshPath.takeLast();
+        }
+    }
+
+    if (dots!=0)
+    {
+        texturePath = texturePath.remove(0, dots);
+        path = parsedMeshPath.join("/");
+        path.append(texturePath);
+    }
+    //The texturePath is not always a path from the .dae file to the textures
+    //It might be just texture.jpg or /images/texture.jpg, etc.
+    //In that case the correct texture file is searched using a top-down search.   
+    else
+    {
+        //int length = parsedMeshPath.length();
+        QString base;
+
+        for(int j=0; j<4; j++)
+        {
+            parsedMeshPath.removeLast();
+            base = parsedMeshPath.join("/");
+            path = AssetAPI::RecursiveFindFile(base,texturePath);
+		
+            if(!path.isEmpty())
+                break;
+        }
+    }
+
+    return path;
+    */
 }
 
 //Loads texture file from disk or from http asset server.
@@ -231,9 +270,10 @@ void OpenAssetConverter::OnTextureLoaded(IAssetTransfer* assetTransfer)
 
 void OpenAssetConverter::OnTextureLoadFailed(IAssetTransfer* assetTransfer, QString reason)
 {
-    QString textureRef = assetTransfer->Asset()->Name();
-    LogError("AssimpImporter: createMaterial() Failed to load texture " + textureRef + ": " + reason);
+    QString textureRef = assetTransfer->SourceUrl();
     texMatMap.erase(textureRef);
+
+    LogError("AssimpImporter: createMaterial() Failed to load texture " + textureRef + ": " + reason);
 
     if (meshCreated && !HasPendingTextures())
         emit ConversionDone(true); //mesh created succesfully without textures
@@ -432,9 +472,13 @@ void GetBasePose(const aiScene * sc, const aiNode * nd)
 void OpenAssetConverter::Convert(const u8 *data_, size_t numBytes, const QString &fileName, const QString &diskSource, Ogre::MeshPtr mesh)
 {
     meshCreated = false;
-    LogInfo("AssImp importer: Converting file:" +fileName.toStdString());
-    Assimp::DefaultLogger::create("asslogger.log",Assimp::Logger::VERBOSE);
-    mAnimationSpeedModifier = 1.0f;
+    
+    if (IsLogChannelEnabled(LogChannelDebug))
+    {
+        LogDebug("OpenAssetConverter::Convert: " + fileName.toStdString());
+        Assimp::DefaultLogger::create("assimp-import.log", Assimp::Logger::VERBOSE);
+    }
+
     Assimp::Importer importer;
 //    bool searchFromIndex = false;
 
@@ -483,9 +527,9 @@ void OpenAssetConverter::Convert(const u8 *data_, size_t numBytes, const QString
 
     if(!scene)
     {
-        LogInfo("AssImp importer::convert: Failed to read file:" +fileName.toStdString()+ " from memory: ");
+        LogInfo("AssImp importer::convert: Failed to read file: " + fileName.toStdString() + " from memory: ");
         LogInfo(importer.GetErrorString());
-        LogInfo("AssImp importer::convert: Trying to load data from file:" +fileName.toStdString());
+        LogInfo("AssImp importer::convert: Trying to load data from file:" + fileName.toStdString());
 		
         // If the importer failed to read the file from memory,
         // try to read the file again.
@@ -536,7 +580,7 @@ void OpenAssetConverter::Convert(const u8 *data_, size_t numBytes, const QString
 
     LoadDataFromNode(scene, scene->mRootNode, diskSource, fileName, mesh);
 
-    Ogre::LogManager::getSingleton().logMessage("*** Finished loading ass file ***");
+    LogDebug("*** Finished loading file with Assimp");
     Assimp::DefaultLogger::kill();
 
 #ifdef SKELETON_ENABLED
@@ -637,10 +681,13 @@ void OpenAssetConverter::ParseAnimation (const aiScene* mScene, int index, aiAni
         animName = "Animation" + Ogre::StringConverter::toString(index);
     }
 
-    Ogre::LogManager::getSingleton().logMessage("Animation name = '" + animName + "'");
-    Ogre::LogManager::getSingleton().logMessage("duration = " + Ogre::StringConverter::toString(Ogre::Real(anim->mDuration)));
-    Ogre::LogManager::getSingleton().logMessage("tick/sec = " + Ogre::StringConverter::toString(Ogre::Real(anim->mTicksPerSecond)));
-    Ogre::LogManager::getSingleton().logMessage("channels = " + Ogre::StringConverter::toString(anim->mNumChannels));
+    if (IsLogChannelEnabled(LogChannelDebug))
+    {
+        LogDebug("Animation name = '" + animName + "'");
+        LogDebug("duration = " + QString::number(anim->mDuration));
+        LogDebug("tick/sec = " + QString::number(anim->mTicksPerSecond));
+        LogDebug("channels = " + QString::number(anim->mNumChannels));
+    }
 
     Ogre::Animation* animation;
     mTicksPerSecond = 1;
@@ -716,8 +763,7 @@ void OpenAssetConverter::GrabNodeNamesFromNode(const aiScene* mScene, const aiNo
     boneMap.insert(std::pair<Ogre::String, boneNode>(Ogre::String(pNode->mName.data), bNode));
     mBoneNodesByName[pNode->mName.data] = pNode;
 
-    Ogre::LogManager::getSingleton().logMessage("Node " + Ogre::String(pNode->mName.data) + " found.");
-
+    LogDebug("  - Found node " + std::string(pNode->mName.data));
 
     // Traverse all child nodes of the current node instance
     for (unsigned int childIdx=0; childIdx<pNode->mNumChildren; ++childIdx)
@@ -760,7 +806,7 @@ void OpenAssetConverter::CreateBonesFromNode(const aiScene* mScene,  const aiNod
             bone->setOrientation(rot.w, rot.x, rot.y, rot.z);
         }
 
-        Ogre::LogManager::getSingleton().logMessage(Ogre::StringConverter::toString(msBoneCount) + ") Creating bone '" + Ogre::String(pNode->mName.data) + "'");
+        LogDebug("Creating bone '" + QString(pNode->mName.data) + "' at index " + QString::number(msBoneCount));
 
         msBoneCount++;
     }
@@ -823,7 +869,6 @@ bool OpenAssetConverter::IsNodeNeeded(const char* name)
 
 void OpenAssetConverter::GrabBoneNamesFromNode(const aiScene* mScene,  const aiNode *pNode)
 {
-
     if(pNode->mNumMeshes > 0)
     {
         for(unsigned int idx=0; idx<pNode->mNumMeshes; ++idx)
@@ -839,7 +884,7 @@ void OpenAssetConverter::GrabBoneNamesFromNode(const aiScene* mScene,  const aiN
                     {
                         mBonesByName[pAIBone->mName.data] = pAIBone;
 
-                        Ogre::LogManager::getSingleton().logMessage(Ogre::StringConverter::toString(i) + ") REAL BONE with name : " + Ogre::String(pAIBone->mName.data));
+                        LogDebug("REAL BONE with name '" + QString(pAIBone->mName.data)+ "' at index " + QString::number(i));
 
                         // flag this node and all parents of this node as needed, until we reach the node holding the mesh, or the parent.
                         aiNode* node = mScene->mRootNode->FindNode(pAIBone->mName.data);
@@ -914,11 +959,8 @@ Ogre::MaterialPtr OpenAssetConverter::CreateMaterial(Ogre::String& matName, cons
 
     aiString szPath;
 
-    if(AI_SUCCESS == aiGetMaterialString(mat, AI_MATKEY_TEXTURE_DIFFUSE(0), &szPath))
-    {
-	    Ogre::LogManager::getSingleton().logMessage("File: " + meshFileName.toStdString() + ". Texture " + Ogre::String(szPath.data) + " for channel " + Ogre::StringConverter::toString(uvindex));
-        //LogInfo("File: " + meshFileName.toStdString() + ". Texture " + Ogre::String(szPath.data) + " for channel " + Ogre::StringConverter::toString(uvindex));
-    }
+    if (AI_SUCCESS == aiGetMaterialString(mat, AI_MATKEY_TEXTURE_DIFFUSE(0), &szPath))
+        LogDebug("CreateMaterial: Mesh '" + meshFileName + "' texture '" + QString(szPath.data) + "' for channel " + QString::number(uvindex));
 
     Ogre::MaterialPtr ogreMaterial = ogreMaterialMgr->create(matName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, true);
 
@@ -970,8 +1012,11 @@ Ogre::MaterialPtr OpenAssetConverter::CreateMaterial(Ogre::String& matName, cons
         {
             QString tex = QString::fromStdString(szPath.data);
             QString texPath = GetPathToTexture(meshFileName, meshFileDiskSource, tex);
-            texMatMap.insert(TexMatPair(texPath, ogreMaterial));
-            LoadTextureFile(texPath);
+            if (!texPath.isEmpty())
+            {
+                texMatMap.insert(TexMatPair(texPath, ogreMaterial));
+                LoadTextureFile(texPath);
+            }
         }
     }
     else
@@ -983,9 +1028,9 @@ Ogre::MaterialPtr OpenAssetConverter::CreateMaterial(Ogre::String& matName, cons
 bool OpenAssetConverter::CreateVertexData(const Ogre::String& name, const aiNode* pNode, const aiMesh *mesh, Ogre::SubMesh* submesh, Ogre::AxisAlignedBox& mAAB)
 {
     // if animated all submeshes must have bone weights
-    if(mBonesByName.size() && !mesh->HasBones())
+    if (mBonesByName.size() && !mesh->HasBones())
     {
-        Ogre::LogManager::getSingleton().logMessage("Skipping Mesh " + Ogre::String(mesh->mName.data) + "with no bone weights");
+        LogDebug("Skipping Mesh '" + QString(mesh->mName.data) + "', does not have bone weights");
         return false;
     }
     
@@ -997,6 +1042,8 @@ bool OpenAssetConverter::CreateVertexData(const Ogre::String& name, const aiNode
     submesh->vertexData->vertexStart = 0;
     submesh->vertexData->vertexCount = mesh->mNumVertices;
     Ogre::VertexData *data = submesh->vertexData;
+
+    LogDebug("  - Creating vertex buffer with " + QString::number(data->vertexCount) + " vertexes");
 
     // Vertex declarations
     size_t offset = 0;
@@ -1090,6 +1137,7 @@ bool OpenAssetConverter::CreateVertexData(const Ogre::String& name, const aiNode
 
     if (mesh->HasTextureCoords(0))
     {
+        LogDebug("    - Processing Texture coords");
         vbuf = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
                 decl->getVertexSize(1), // This value is the size of a vertex in memory
                 data->vertexCount, // The number of vertices you'll put into this buffer
@@ -1134,6 +1182,8 @@ bool OpenAssetConverter::CreateVertexData(const Ogre::String& name, const aiNode
 
     if(mesh->HasVertexColors(0))
     {
+        LogDebug("    - Processing vertex colors");
+
         Ogre::HardwareVertexBufferSharedPtr vbufColor= Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
                 decl->getVertexSize(2), // This value is the size of a vertex in memory
                 data->vertexCount, // The number of vertices you'll put into this buffer
@@ -1185,6 +1235,8 @@ bool OpenAssetConverter::CreateVertexData(const Ogre::String& name, const aiNode
     // set bone weigths
     if(mesh->HasBones())
     {
+        LogDebug("    - Processing bone weights");
+        
         for(Ogre::uint32 i=0; i < mesh->mNumBones; i++ )
         {
             aiBone *pAIBone = mesh->mBones[ i ];
@@ -1205,6 +1257,8 @@ bool OpenAssetConverter::CreateVertexData(const Ogre::String& name, const aiNode
             }
         }
     } // if mesh has bones
+    
+    LogDebug("  - Done");
 
     return true;
 }
@@ -1215,7 +1269,7 @@ void OpenAssetConverter::LoadDataFromNode(const aiScene* mScene,  const aiNode *
     {
         Ogre::AxisAlignedBox mAAB;
 
-        if(mMeshes.size() == 0)
+        if (mMeshes.size() == 0)
         {
             mMeshes.push_back(mesh);
         }
@@ -1228,8 +1282,7 @@ void OpenAssetConverter::LoadDataFromNode(const aiScene* mScene,  const aiNode *
         for (unsigned int idx=0; idx<pNode->mNumMeshes; ++idx )
         {
             aiMesh *pAIMesh = mScene->mMeshes[ pNode->mMeshes[ idx ] ];
-            //if pAIMesh->
-            Ogre::LogManager::getSingleton().logMessage("SubMesh " + Ogre::StringConverter::toString(idx) + " for mesh '" + Ogre::String(pNode->mName.data) + "'");
+            LogDebug("SubMesh at index " + QString::number(idx) + " '" + QString(pNode->mName.data) + "'");
 
             const aiMaterial *pAIMaterial = mScene->mMaterials[ pAIMesh->mMaterialIndex ];
             Ogre::MaterialPtr matptr;
@@ -1241,10 +1294,10 @@ void OpenAssetConverter::LoadDataFromNode(const aiScene* mScene,  const aiNode *
 
             if(matptr.isNull())
             {
-                if(pAIMesh->HasVertexColors(0))
+                if (pAIMesh->HasVertexColors(0))
                     matptr = CreateVertexColorMaterial();
                 else
-                   matptr = CreateMaterial(matName, pAIMaterial, meshFileDiskSource, meshFileName);
+                    matptr = CreateMaterial(matName, pAIMaterial, meshFileDiskSource, meshFileName);
 
                 //we must create an OgreMaterialAsset through assetAPI and put the just created
                 //ogre material pointer to it
