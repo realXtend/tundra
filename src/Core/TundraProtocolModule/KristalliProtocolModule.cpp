@@ -114,9 +114,16 @@ void KristalliProtocolModule::Load()
     // For 'info' that is the most usable mode remove some of the spam from kNet.
     // If the log level is not given default to more information (even if default is 'info').
     // @todo Remove kNet::LogInfo from the default mode when the info is no longer needed for tundra console.
-    if (GetFramework()->HasCommandLineParameter("--loglevel"))
+    if (GetFramework()->HasCommandLineParameter("--loglevel") || GetFramework()->HasCommandLineParameter("--loglevelnetwork"))
     {
-        QString logLevel = GetFramework()->CommandLineParameters("--loglevel").first().toLower();
+        // --loglevelnetwork overrides --loglevel.
+        QStringList params = GetFramework()->CommandLineParameters("--loglevel");
+        QString logLevel = (!params.isEmpty() ? params.first().toLower() : "info");
+        if (GetFramework()->HasCommandLineParameter("--loglevelnetwork"))
+        {
+            params = GetFramework()->CommandLineParameters("--loglevelnetwork");
+            logLevel = (!params.isEmpty() ? params.first().toLower() : logLevel);
+        }
         if (logLevel == "info")
             kNet::SetLogChannels(kNet::LogError | kNet::LogUser);
         else if (logLevel == "debug")

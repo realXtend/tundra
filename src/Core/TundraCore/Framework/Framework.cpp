@@ -197,6 +197,7 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
         cmdLineDescs.commands["--assetCacheDir"] = "Specify asset cache directory to use."; // Framework
         cmdLineDescs.commands["--clearAssetCache"] = "At the start of Tundra, remove all data and metadata files from asset cache."; // AssetCache
         cmdLineDescs.commands["--logLevel"] = "Sets the current log level: 'error', 'warning', 'info', 'debug'."; // ConsoleAPI
+        cmdLineDescs.commands["--logLevelNetwork"] = "Sets the current networking log level: 'info', 'debug'. Overrides --logLevel for networking."; // KristalliProtocolModule
         cmdLineDescs.commands["--logFile"] = "Sets logging file, '--logfile <filename>'."; // ConsoleAPI
         cmdLineDescs.commands["--physicsRate"] = "Specifies the number of physics simulation steps per second. Default: 60."; // PhysicsModule
         cmdLineDescs.commands["--physicsMaxSteps"] = "Specifies the maximum number of physics simulation steps in one frame to limit CPU usage. If the limit would be exceeded, physics will appear to slow down. Default: 6."; // PhysicsModule
