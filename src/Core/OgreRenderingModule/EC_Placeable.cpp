@@ -21,6 +21,7 @@
 
 #include <Ogre.h>
 #include <OgreTagPoint.h>
+#include <OgreAnimationState.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -143,6 +144,13 @@ public:
                 attachments_.erase(i);
             }
         }
+    }
+    
+    void ForceUpdate(Ogre::Bone* bone)
+    {
+        std::map<Ogre::Bone*, BoneAttachment>::iterator i = attachments_.find(bone);
+        if (i != attachments_.end())
+            i->second.tagPoint_->FirstFrameUpdate();
     }
     
     std::map<Ogre::Bone*, BoneAttachment> attachments_;
@@ -309,6 +317,12 @@ void EC_Placeable::AttachNode()
                             attachmentListener.AddAttachment(parentMesh->OgreEntity(), bone, this);
                             boneAttachmentNode_->addChild(sceneNode_);
                             
+                            // We also need to listen to the parent placeable's transform changes, in case there are no animations playing in the parent skeletal mesh
+                            // (in that case bones don't get automatically updated)
+                            EC_Placeable* parentPlaceable = parentEntity->GetComponent<EC_Placeable>().get();
+                            parentPlaceable_ = parentPlaceable;
+                            connect(parentPlaceable_, SIGNAL(TransformChanged()), this, SLOT(OnParentPlaceableTransformChanged()), Qt::UniqueConnection);
+
                             parentBone_ = bone;
                             parentMesh_ = parentMesh;
                             connect(parentMesh, SIGNAL(MeshAboutToBeDestroyed()), this, SLOT(OnParentMeshDestroyed()), Qt::UniqueConnection);
@@ -405,11 +419,14 @@ void EC_Placeable::DetachNode()
         // 3) attached to a bone via manual tracking
         if (parentBone_)
         {
+            // Stop listening to parent placeable's transform changes for manual non-animating update
+            disconnect(parentPlaceable_, SIGNAL(TransformChanged()), this, SLOT(OnParentPlaceableTransformChanged()));
             disconnect(parentMesh_, SIGNAL(MeshAboutToBeDestroyed()), this, SLOT(OnParentMeshDestroyed()));
             attachmentListener.RemoveAttachment(parentBone_, this);
             boneAttachmentNode_->removeChild(sceneNode_);
             parentBone_ = 0;
             parentMesh_ = 0;
+            parentPlaceable_ = 0;
         }
         else if (parentPlaceable_)
         {
@@ -695,6 +712,8 @@ void EC_Placeable::AttributesChanged()
             scale.z = 0.0000001f;
 
         sceneNode_->setScale(scale);
+
+        emit TransformChanged();
     }
     if (drawDebug.ValueChanged())
     {
@@ -736,6 +755,37 @@ void EC_Placeable::OnComponentAdded(IComponent* component, AttributeChange::Type
 {
     if (!attached_)
         AttachNode();
+}
+
+void EC_Placeable::OnParentPlaceableTransformChanged()
+{
+    if (parentPlaceable_ && parentBone_ && parentMesh_)
+    {
+        Ogre::Entity* ogreEntity = parentMesh_->GetEntity();
+        if (ogreEntity)
+        {
+            // We only need to update animation manually if the entity is not playing any animations
+            Ogre::AnimationStateSet* anims = ogreEntity->getAllAnimationStates();
+            bool hasEnabledAnim = false;
+            if (anims)
+            {
+                Ogre::AnimationStateIterator it = anims->getAnimationStateIterator();
+                while (it.hasMoreElements())
+                {
+                    Ogre::AnimationState* state = it.getNext();
+                    if (state->getEnabled())
+                    {
+                        hasEnabledAnim = true;
+                        break;
+                    }
+                }
+            }
+            
+            // Force update of the bone's transform
+            if (!hasEnabledAnim)
+                attachmentListener.ForceUpdate(parentBone_);
+        }
+    }
 }
 
 void EC_Placeable::SetPosition(float x, float y, float z)
