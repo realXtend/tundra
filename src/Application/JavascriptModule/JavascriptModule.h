@@ -42,9 +42,13 @@ public:
         @param comp Script component, null by default. */
     void PrepareScriptInstance(JavascriptInstance* instance, EC_Script *comp = 0) const;
 
+    /// Sets whether or not the the script engine used for RunString (and RunScript) will have access to the Tundra core APIs.
+     /** The access is enabled by default.*/
+    void SetDefaultEngineCoreApiAccessEnabled(bool enabled);
+
 public slots:
     void DumpScriptInfo();
-    
+
     /// Executes js file.
     void RunScript(const QString &scriptFilename);
 

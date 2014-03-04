@@ -54,6 +54,15 @@ JavascriptModule::~JavascriptModule()
     SAFE_DELETE(engine);
 }
 
+void JavascriptModule::SetDefaultEngineCoreApiAccessEnabled(bool enabled)
+{
+    engine->globalObject().setProperty("framework", enabled ? engine->newQObject(Fw()) : QScriptValue());
+    foreach(const QByteArray &prop, Fw()->dynamicPropertyNames())
+        engine->globalObject().setProperty(QString(prop), enabled ? engine->newQObject(Fw()->property(prop).value<QObject*>()) : QScriptValue());
+    /// @todo 03.03.2013 "engine" (JavascriptInstance) is missing from the context.
+    /// It would crucial f.ex. if wanting to load some startup jsplugin after startup using jsLoad.
+}
+
 void JavascriptModule::Load()
 {
     if (!framework_->Scene()->IsComponentFactoryRegistered(EC_Script::TypeNameStatic()))
@@ -75,28 +84,22 @@ void JavascriptModule::Initialize()
     connect(Fw()->Scene(), SIGNAL(SceneCreated(Scene *, AttributeChange::Type)), SLOT(OnSceneCreated(Scene *)));
 
     framework_->Console()->RegisterCommand(
-        "jsExec", "Execute given code in the embedded Javascript interpreter. Usage: jsExec(mycodestring)",
+        "jsExec", "Executes JavaScript code in the embedded JavasSript interpreter. Usage: jsExec(mycodestring)",
         this, SLOT(RunString(const QString &)));
 
     framework_->Console()->RegisterCommand(
-        "jsLoad", "Execute a javascript file. jsLoad(myJsFile.js)",
+        "jsLoad", "Executes a JavaScript file in the embedded JavasSript interpreter. Usage: jsLoad(Path/To/MyJsFile.js)",
         this, SLOT(RunScript(const QString &)));
 
     framework_->Console()->RegisterCommand(
-        "jsReloadScripts", "Reloads and re-executes startup scripts.",
+        "jsReloadScripts", "Reloads and re-executes startup JavaScript plugins.",
         this, SLOT(LoadStartupScripts()));
 
     framework_->Console()->RegisterCommand(
-        "jsDumpInfo", "Dumps all EC_Script information to console",
+        "jsDumpInfo", "Dumps all EC_Script information to the console.",
         this, SLOT(DumpScriptInfo()));
 
-    // Expose Framework and company for the script context.
-    engine->globalObject().setProperty("framework", engine->newQObject(Fw()));
-    foreach(const QByteArray &prop, Fw()->dynamicPropertyNames())
-        engine->globalObject().setProperty(QString(prop), engine->newQObject(Fw()->property(prop).value<QObject*>()));
-
-    /// @todo 03.03.2013 "engine" (JavascriptInstance) is missing from the context.
-    /// It would crucial f.ex. if wanting to load some startup jsplugin after startup using jsLoad.
+    SetDefaultEngineCoreApiAccessEnabled(true);
 
     LoadStartupScripts();
 }
