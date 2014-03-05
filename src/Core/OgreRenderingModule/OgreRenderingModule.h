@@ -6,6 +6,7 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "SceneFwd.h"
+#include <OgreRenderSystem.h>
 
 namespace OgreRenderer
 {
@@ -40,6 +41,16 @@ namespace OgreRenderer
         const RendererPtr &GetRenderer() const { return Renderer(); } /**< @deprecated Use Renderer() instead. @todo Remove. */
         /// @endcond
 
+    signals:
+        /// DirectX device lost signal.
+        void DeviceLost();
+        /// DirectX device restored signal.
+        void DeviceRestored();
+        /// DirectX device created signal.
+        void DeviceCreated();
+        /// DirectX device released signal.
+        void DeviceReleased();
+
     public slots:
         /// Prints renderer stats to console.
         void ConsoleStats();
@@ -57,7 +68,32 @@ namespace OgreRenderer
         /// Removes OgreWorld from a Scene.
         void RemoveOgreWorld(Scene *scene);
 
+    protected:
+        /// Emit DeviceLost signal.
+        void EmitDeviceLost();
+        /// Emit DeviceRestored signal.
+        void EmitDeviceRestored();
+        /// Emit DeviceCreated signal.
+        void EmitDeviceCreated();
+        /// Emit DeviceReleased signal.
+        void EmitDeviceReleased();
+
     private:
         RendererPtr renderer;  ///< Renderer
+
+        OgreRenderSystemListener* renderSystemListener;
+        friend class OgreRenderSystemListener;
+    };
+
+    class OgreRenderSystemListener : public Ogre::RenderSystem::Listener
+    {
+    public:
+        OgreRenderSystemListener(OgreRenderer::OgreRenderingModule* renderingModule);
+        ~OgreRenderSystemListener();
+
+        void eventOccurred(const Ogre::String& eventName, const Ogre::NameValuePairList* parameters = 0);
+
+    private:
+        OgreRenderer::OgreRenderingModule* _renderingModule;
     };
 }

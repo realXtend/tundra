@@ -55,6 +55,10 @@ public slots:
 
     int Height() const;
 
+private slots:
+    /// Recreate resources when DirectX device is released.
+    void OnDeviceReleased();
+
 private:
     void CreateRenderTargetOverlay(int width, int height);
     Ogre::RenderWindow *renderWindow;

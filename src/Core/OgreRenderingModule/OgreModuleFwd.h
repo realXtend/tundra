@@ -41,6 +41,7 @@ typedef shared_ptr<Ogre::Root> OgreRootPtr;
 namespace OgreRenderer
 {
     class OgreRenderingModule;
+    class OgreRenderSystemListener;
     class Renderer;
     typedef shared_ptr<Renderer> RendererPtr;
     typedef weak_ptr<Renderer> RendererWeakPtr;

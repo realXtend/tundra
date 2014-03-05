@@ -202,6 +202,12 @@ void OgreRenderingModule::Initialize()
 #endif
     framework_->Console()->RegisterCommand("setMaterialAttribute", "Sets an attribute on a material asset",
         this, SLOT(SetMaterialAttribute(const QStringList &)));
+
+    // Create and add Ogre rendersystem listener.
+    renderSystemListener = new OgreRenderSystemListener(this);
+    if(!renderSystemListener)
+        return;
+    Ogre::Root::getSingleton().getRenderSystem()->addListener(renderSystemListener);
 }
 
 void OgreRenderingModule::Uninitialize()
@@ -212,6 +218,12 @@ void OgreRenderingModule::Uninitialize()
 
     // Clear up the renderer object, so that it will not be left dangling.
     framework_->RegisterRenderer(0);
+
+    // Destroy Ogre rendersystem listener.
+    if(!renderSystemListener)
+        return;
+    Ogre::Root::getSingleton().getRenderSystem()->removeListener(renderSystemListener);
+    delete renderSystemListener;
 }
 
 void OgreRenderingModule::ConsoleStats()
@@ -284,6 +296,48 @@ void OgreRenderingModule::SetMaterialAttribute(const QStringList &params)
         return;
     }
     matAsset->SetAttribute(params[1], params[2]);
+}
+
+void OgreRenderingModule::EmitDeviceLost()
+{
+    emit DeviceLost();
+}
+
+void OgreRenderingModule::EmitDeviceRestored()
+{
+    emit DeviceRestored();
+}
+
+void OgreRenderingModule::EmitDeviceCreated()
+{
+    emit DeviceCreated();
+}
+
+void OgreRenderingModule::EmitDeviceReleased()
+{
+    emit DeviceReleased();
+}
+
+OgreRenderSystemListener::OgreRenderSystemListener(OgreRenderingModule* renderingModule) :
+    _renderingModule(renderingModule)
+{}
+
+OgreRenderSystemListener::~OgreRenderSystemListener()
+{}
+
+void OgreRenderSystemListener::eventOccurred(const Ogre::String& eventName, const Ogre::NameValuePairList* parameters)
+{
+    if (!_renderingModule)
+        return;
+
+    if (eventName == "DeviceLost")
+        _renderingModule->EmitDeviceLost();
+    else if (eventName == "DeviceRestored") 
+        _renderingModule->EmitDeviceRestored();
+    else if(eventName == "DeviceCreated")
+        _renderingModule->EmitDeviceCreated();
+    else if(eventName == "DeviceReleased")
+        _renderingModule->EmitDeviceReleased();
 }
 
 } // ~namespace OgreRenderer

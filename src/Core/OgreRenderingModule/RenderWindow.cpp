@@ -7,6 +7,7 @@
 #include "RenderWindow.h"
 #include "CoreStringUtils.h"
 #include "ConfigAPI.h"
+#include "OgreRenderingModule.h"
 
 #include <QWidget>
 #include <QImage>
@@ -199,6 +200,12 @@ void RenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name
 #ifndef ANDROID
     CreateRenderTargetOverlay(width, height);
 #endif
+
+    // Hook to DeviceRestored signal
+    OgreRenderer::OgreRenderingModule* ogreRenderingModule = fw->GetModule<OgreRenderer::OgreRenderingModule>();
+    if(!ogreRenderingModule)
+        return;
+    connect(ogreRenderingModule, SIGNAL(DeviceReleased()), this, SLOT(OnDeviceReleased()));
 }
 
 void RenderWindow::CreateRenderTargetOverlay(int width, int height)
@@ -206,11 +213,18 @@ void RenderWindow::CreateRenderTargetOverlay(int width, int height)
     width = max(1, width);
     height = max(1, height);
 
-    Ogre::TexturePtr renderTarget = Ogre::TextureManager::getSingleton().createManual(
+    Ogre::TexturePtr renderTarget = Ogre::TextureManager::getSingleton().getByName(rttTextureName);
+    if(renderTarget.get())
+        Ogre::TextureManager::getSingleton().remove(renderTarget->getName());
+
+    renderTarget = Ogre::TextureManager::getSingleton().createManual(
         rttTextureName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
         Ogre::TEX_TYPE_2D, width, height, 0, Ogre::PF_A8R8G8B8, Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
-    Ogre::MaterialPtr rttMaterial = Ogre::MaterialManager::getSingleton().create(
+    Ogre::MaterialPtr rttMaterial = Ogre::MaterialManager::getSingleton().getByName(rttMaterialName);
+    if(rttMaterial.get())
+        Ogre::MaterialManager::getSingleton().remove(rttMaterial->getName());
+    rttMaterial = Ogre::MaterialManager::getSingleton().create(
         rttMaterialName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
     Ogre::TextureUnitState *rttTuState = rttMaterial->getTechnique(0)->getPass(0)->createTextureUnitState();
@@ -230,6 +244,8 @@ void RenderWindow::CreateRenderTargetOverlay(int width, int height)
     rttMaterial->getTechnique(0)->getPass(0)->setLightingEnabled(false);
     rttMaterial->getTechnique(0)->getPass(0)->setCullingMode(Ogre::CULL_NONE);
 
+    if(Ogre::OverlayManager::getSingleton().hasOverlayElement("MainWindow Overlay Panel"))
+        Ogre::OverlayManager::getSingleton().destroyOverlayElement("MainWindow Overlay Panel");
     overlayContainer = Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", "MainWindow Overlay Panel");
     overlayContainer->setMaterialName(rttMaterialName);
     overlayContainer->setMetricsMode(Ogre::GMM_PIXELS);
@@ -237,6 +253,9 @@ void RenderWindow::CreateRenderTargetOverlay(int width, int height)
     overlayContainer->setDimensions((Ogre::Real)width, (Ogre::Real)height);
     overlayContainer->setPosition(0,0);
 
+    overlay = Ogre::OverlayManager::getSingleton().getByName("MainWindow Overlay");
+    if(overlay)
+        Ogre::OverlayManager::getSingleton().destroy(overlay);
     overlay = Ogre::OverlayManager::getSingleton().create("MainWindow Overlay");
     overlay->add2D(static_cast<Ogre::OverlayContainer *>(overlayContainer));
     overlay->setZOrder(500);
@@ -345,6 +364,13 @@ int RenderWindow::Width() const
 int RenderWindow::Height() const
 {
     return renderWindow->getHeight();
+}
+
+void RenderWindow::OnDeviceReleased()
+{
+    int width = renderWindow->getWidth();
+    int height = renderWindow->getHeight();
+    CreateRenderTargetOverlay(width, height);
 }
 
 #ifdef ANDROID
