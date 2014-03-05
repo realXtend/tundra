@@ -250,9 +250,12 @@ LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(QString directory, 
     storage->provider = shared_from_this();
 // On Android, we get spurious file change notifications. Disable watcher for now.
 #ifndef ANDROID
-    storage->SetupWatcher(); // Start listening on file change notifications. Note: it's important that recursive is set before calling this!
-    connect(storage->changeWatcher, SIGNAL(directoryChanged(const QString&)), SLOT(OnDirectoryChanged(const QString &)), Qt::UniqueConnection);
-    connect(storage->changeWatcher, SIGNAL(fileChanged(const QString &)), SLOT(OnFileChanged(const QString &)), Qt::UniqueConnection);
+    if (!framework->HasCommandLineParameter("--noFileWatcher"))
+    {
+        storage->SetupWatcher(); // Start listening on file change notifications. Note: it's important that recursive is set before calling this!
+        connect(storage->changeWatcher, SIGNAL(directoryChanged(const QString&)), SLOT(OnDirectoryChanged(const QString &)), Qt::UniqueConnection);
+        connect(storage->changeWatcher, SIGNAL(fileChanged(const QString &)), SLOT(OnFileChanged(const QString &)), Qt::UniqueConnection);
+    }
 #endif
     storages.push_back(storage);
 
