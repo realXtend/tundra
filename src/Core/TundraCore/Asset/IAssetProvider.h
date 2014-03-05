@@ -21,12 +21,12 @@ public:
     virtual ~IAssetProvider() {}
 
     /// Returns name of asset provider for identification purposes
-    virtual QString Name() = 0;
+    virtual QString Name() const = 0;
 
     /// Queries this asset provider whether the assetRef is a valid assetRef this provider can handle.
     /** @param assetType The type of the asset. This field is optional, and the ref itself can specify the type,
                or if the provider in question does not need the type information, this can be left blank. */
-    virtual bool IsValidRef(QString assetRef, QString assetType) = 0;
+    virtual bool IsValidRef(QString assetRef, QString assetType) const = 0;
 
     /// Request asset with assetRef and assetType from this provider.
     /** @return Initiated asset transfer. Note that this can be null. */
@@ -50,11 +50,11 @@ public:
     virtual bool RemoveAssetStorage(QString UNUSED_PARAM(storageName)) { return false; }
 
     /// Returns the list of all asset storages registered into this asset provider.
-    virtual std::vector<AssetStoragePtr> GetStorages() const = 0;
+    virtual std::vector<AssetStoragePtr> Storages() const = 0;
 
-    virtual AssetStoragePtr GetStorageByName(const QString &name) const = 0;
+    virtual AssetStoragePtr StorageByName(const QString &name) const = 0;
 
-    virtual AssetStoragePtr GetStorageForAssetRef(const QString &assetRef) const = 0;
+    virtual AssetStoragePtr StorageForAssetRef(const QString &assetRef) const = 0;
 
     /// Starts an asset upload from the given file in memory to the given storage.
     /** The default implementation fails all upload attempts and returns 0 immediately. */
@@ -67,4 +67,8 @@ public:
     /// Reads the given storage string and tries to deserialize it to an asset storage in this provider.
     /** Returns a pointer to the newly created storage, or 0 if the storage string is not of the type of this asset provider. */
     virtual AssetStoragePtr TryDeserializeStorageFromString(const QString &storage, bool fromNetwork) = 0;
+
+    std::vector<AssetStoragePtr> GetStorages() const { return Storages(); }
+    AssetStoragePtr GetStorageByName(const QString &name) const { return StorageByName(name); }
+    AssetStoragePtr GetStorageForAssetRef(const QString &assetRef) const { return StorageForAssetRef(assetRef); }
 };

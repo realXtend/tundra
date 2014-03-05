@@ -39,13 +39,13 @@ LocalAssetProvider::~LocalAssetProvider()
 {
 }
 
-QString LocalAssetProvider::Name()
+QString LocalAssetProvider::Name() const
 {
     static const QString name("Local");
     return name;
 }
 
-bool LocalAssetProvider::IsValidRef(QString assetRef, QString)
+bool LocalAssetProvider::IsValidRef(QString assetRef, QString) const
 {
     AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(assetRef.trimmed());
     if (refType == AssetAPI::AssetRefLocalPath || refType == AssetAPI::AssetRefLocalUrl)
@@ -74,7 +74,8 @@ AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString asse
         AssetStoragePtr storage = GetStorageForAssetRef(assetRef);
         if (!storage)
         {
-            LogError("LocalAssetProvider::RequestAsset: Discarding asset request to path \"" + assetRef + "\" because requests to sources outside registered LocalAssetStorages have been forbidden. (See --accept_unknown_local_sources).");
+            LogError("LocalAssetProvider::RequestAsset: Discarding asset request to path \"" + assetRef +
+                "\" because requests to sources outside registered LocalAssetStorages have been forbidden. (See --acceptUnknownLocalSources).");
             return AssetTransferPtr();
         }
     }
@@ -269,7 +270,7 @@ LocalAssetStoragePtr LocalAssetProvider::AddStorageDirectory(QString directory, 
     return storage;
 }
 
-std::vector<AssetStoragePtr> LocalAssetProvider::GetStorages() const
+std::vector<AssetStoragePtr> LocalAssetProvider::Storages() const
 {
     std::vector<AssetStoragePtr> stores;
     for(size_t i = 0; i < storages.size(); ++i)
@@ -452,7 +453,7 @@ LocalAssetStoragePtr LocalAssetProvider::FindStorageForPath(const QString &path)
     return LocalAssetStoragePtr();
 }
 
-AssetStoragePtr LocalAssetProvider::GetStorageByName(const QString &name) const
+AssetStoragePtr LocalAssetProvider::StorageByName(const QString &name) const
 {
     for(size_t i = 0; i < storages.size(); ++i)
         if (storages[i]->name.compare(name, Qt::CaseInsensitive) == 0)
@@ -461,7 +462,7 @@ AssetStoragePtr LocalAssetProvider::GetStorageByName(const QString &name) const
     return AssetStoragePtr();
 }
 
-AssetStoragePtr LocalAssetProvider::GetStorageForAssetRef(const QString &assetRef) const
+AssetStoragePtr LocalAssetProvider::StorageForAssetRef(const QString &assetRef) const
 {
     PROFILE(LocalAssetProvider_GetStorageForAssetRef);
 

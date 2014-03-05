@@ -33,11 +33,11 @@ public:
     virtual void Update(f64 frametime);
 
     /// Returns the name of this asset provider.
-    virtual QString Name();
+    virtual QString Name() const;
     
     /// Checks an asset id for validity
     /** @return true if this asset provider can handle the id */
-    virtual bool IsValidRef(QString assetRef, QString assetType = "");
+    virtual bool IsValidRef(QString assetRef, QString assetType = "") const;
     
     /// Request a http asset, returns resulted transfer.
     virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType);
@@ -53,11 +53,11 @@ public:
     /// @param liveUpload Whether assets modified in cache will be re-uploaded. \todo Not implemented
     HttpAssetStoragePtr AddStorageAddress(const QString &address, const QString &storageName, bool liveUpdate = true, bool autoDiscoverable = false, bool liveUpload = false);
 
-    virtual std::vector<AssetStoragePtr> GetStorages() const;
+    virtual std::vector<AssetStoragePtr> Storages() const;
 
-    virtual AssetStoragePtr GetStorageByName(const QString &name) const;
+    virtual AssetStoragePtr StorageByName(const QString &name) const;
 
-    virtual AssetStoragePtr GetStorageForAssetRef(const QString &assetRef) const;
+    virtual AssetStoragePtr StorageForAssetRef(const QString &assetRef) const;
 
     /// Starts an asset upload from the given file in memory to the given storage.
     virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const QString &assetName);
@@ -95,9 +95,6 @@ private slots:
     
 private:
     Framework *framework;
-    
-    /// Creates our QNetworkAccessManager
-    void CreateAccessManager();
 
     /// Add assetref to http storage(s) after successful upload or discovery
     void AddAssetRefToStorages(const QString& ref);

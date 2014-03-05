@@ -33,9 +33,9 @@ int HttpAssetProvider::AsyncCacheWriteThreshold = 0 * 1024;
 
 HttpAssetProvider::HttpAssetProvider(Framework *framework_) :
     framework(framework_),
-    networkAccessManager(0)
+    networkAccessManager(new QNetworkAccessManager)
 {
-    CreateAccessManager();
+    connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), SLOT(OnHttpTransferFinished(QNetworkReply*)));
     connect(framework->App(), SIGNAL(ExitRequested()), SLOT(AboutToExit()));
 
     enableRequestsOutsideStorages = (framework_->HasCommandLineParameter("--acceptUnknownHttpSources") ||
@@ -44,33 +44,22 @@ HttpAssetProvider::HttpAssetProvider(Framework *framework_) :
 
 HttpAssetProvider::~HttpAssetProvider()
 {
-}
-
-void HttpAssetProvider::CreateAccessManager()
-{
-    if (!networkAccessManager)
-    {
-        networkAccessManager = new QNetworkAccessManager();
-        connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), SLOT(OnHttpTransferFinished(QNetworkReply*)));
-    }
+    SAFE_DELETE(networkAccessManager);
 }
 
 void HttpAssetProvider::AboutToExit()
 {
     // Check if someone has canceled the exit command.
-    if (!framework->IsExiting())
-        return;
-
-    if (networkAccessManager)
+    if (framework->IsExiting())
         SAFE_DELETE(networkAccessManager);
 }
 
-QString HttpAssetProvider::Name()
+QString HttpAssetProvider::Name() const
 {
     return "HttpAssetProvider";
 }
 
-bool HttpAssetProvider::IsValidRef(QString assetRef, QString)
+bool HttpAssetProvider::IsValidRef(QString assetRef, QString) const
 {
     QString protocol;
     AssetAPI::AssetRefType refType = AssetAPI::ParseAssetRef(assetRef.trimmed(), &protocol);
@@ -111,15 +100,14 @@ void HttpAssetProvider::Update(f64 /*frametime*/)
 AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString assetType)
 {
     PROFILE(HttpAssetProvider_RequestAsset);
-    if (!networkAccessManager)
-        CreateAccessManager();
 
     if (!enableRequestsOutsideStorages)
     {
         AssetStoragePtr storage = GetStorageForAssetRef(assetRef);
         if (!storage)
         {
-            LogError("HttpAssetProvider::RequestAsset: Discarding asset request to URL \"" + assetRef + "\" because requests to sources outside HttpAssetStorages have been forbidden. (See --accept_unknown_http_sources).");
+            LogError("HttpAssetProvider::RequestAsset: Discarding asset request to URL \"" + assetRef +
+                "\" because requests to sources outside HttpAssetStorages have been forbidden. (See --acceptUnknownHttpSources).");
             return AssetTransferPtr();
         }
     }
@@ -199,9 +187,6 @@ bool HttpAssetProvider::AbortTransfer(IAssetTransfer *transfer)
 
 AssetUploadTransferPtr HttpAssetProvider::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const QString &assetName)
 {
-    if (!networkAccessManager)
-        CreateAccessManager();
-
     QString dstUrl = destination->GetFullAssetURL(assetName);
     QNetworkRequest request;
     request.setUrl(QUrl(dstUrl));
@@ -222,9 +207,6 @@ AssetUploadTransferPtr HttpAssetProvider::UploadAssetFromFileInMemory(const u8 *
 
 void HttpAssetProvider::DeleteAssetFromStorage(QString assetRef)
 {
-    if (!networkAccessManager)
-        CreateAccessManager();
-
     assetRef = assetRef.trimmed();
     if (!IsValidRef(assetRef))
     {
@@ -541,7 +523,7 @@ HttpAssetStoragePtr HttpAssetProvider::AddStorageAddress(const QString &address,
     return storage;
 }
 
-std::vector<AssetStoragePtr> HttpAssetProvider::GetStorages() const
+std::vector<AssetStoragePtr> HttpAssetProvider::Storages() const
 {
     std::vector<AssetStoragePtr> s;
     for(size_t i = 0; i < storages.size(); ++i)
@@ -550,7 +532,7 @@ std::vector<AssetStoragePtr> HttpAssetProvider::GetStorages() const
     return s;
 }
 
-AssetStoragePtr HttpAssetProvider::GetStorageByName(const QString &name) const
+AssetStoragePtr HttpAssetProvider::StorageByName(const QString &name) const
 {
     for(size_t i = 0; i < storages.size(); ++i)
         if (storages[i]->storageName.compare(name, Qt::CaseInsensitive) == 0)
@@ -559,7 +541,7 @@ AssetStoragePtr HttpAssetProvider::GetStorageByName(const QString &name) const
     return AssetStoragePtr();
 }
 
-AssetStoragePtr HttpAssetProvider::GetStorageForAssetRef(const QString &assetRef) const
+AssetStoragePtr HttpAssetProvider::StorageForAssetRef(const QString &assetRef) const
 {
     QString namedStorage;
     QString protocolPath;

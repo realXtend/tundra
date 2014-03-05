@@ -23,11 +23,11 @@ public:
     virtual ~LocalAssetProvider();
     
     /// Returns name of asset provider
-    virtual QString Name();
+    virtual QString Name() const;
     
     /// Checks an asset id for validity
     /** @return true if this asset provider can handle the id */
-    virtual bool IsValidRef(QString assetRef, QString assetType);
+    virtual bool IsValidRef(QString assetRef, QString assetType) const;
      
     /// Requests a local asset, returns resulted transfer.
     virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType);
@@ -55,11 +55,11 @@ public:
         Returns the newly created storage, or 0 if a storage with the given name already existed, or if some other error occurred. */
     LocalAssetStoragePtr AddStorageDirectory(QString directory, QString storageName, bool recursive, bool writable = true, bool liveUpdate = true, bool autoDiscoverable = true);
 
-    virtual std::vector<AssetStoragePtr> GetStorages() const;
+    virtual std::vector<AssetStoragePtr> Storages() const;
 
-    virtual AssetStoragePtr GetStorageByName(const QString &name) const;
+    virtual AssetStoragePtr StorageByName(const QString &name) const;
 
-    virtual AssetStoragePtr GetStorageForAssetRef(const QString &assetRef) const;
+    virtual AssetStoragePtr StorageForAssetRef(const QString &assetRef) const;
 
     virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const QString &assetName);
 
