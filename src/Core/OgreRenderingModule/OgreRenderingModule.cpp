@@ -204,6 +204,8 @@ void OgreRenderingModule::Initialize()
         this, SLOT(SetMaterialAttribute(const QStringList &)));
 
     // Create and add Ogre rendersystem listener.
+    if(!Ogre::Root::getSingleton().getRenderSystem())
+        return;
     renderSystemListener = new OgreRenderSystemListener(this);
     if(!renderSystemListener)
         return;
