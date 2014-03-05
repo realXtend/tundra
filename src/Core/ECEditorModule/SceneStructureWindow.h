@@ -24,6 +24,8 @@ class QLineEdit;
 class QPushButton;
 class QTreeWidgetItem;
 class QToolButton;
+class QCheckBox;
+class QComboBox;
 
 /// Window with tree view showing every entity in a scene.
 /** This class will only handle adding and removing of entities and components and updating
@@ -140,6 +142,9 @@ private:
     QToolButton * undoButton_; ///< Undo button with drop-down menu
     QToolButton * redoButton_; ///< Redo button with drop-down menu
     SortCriteria sortingCriteria;
+    QCheckBox *groupCheckBox;
+    QCheckBox *componentCheckBox;
+    QComboBox *attributeComboBox;
 
     /// @todo 15.09.2013 Profile if unordered_(multi)map would give better performance
     typedef std::map<entity_id_t, EntityItem *> EntityItemIdMap;

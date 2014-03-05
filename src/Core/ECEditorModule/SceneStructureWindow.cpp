@@ -81,14 +81,14 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     sortComboBox->addItem(tr("Name"));
     sortComboBox->setFixedHeight(20);
 
-    QCheckBox *groupCheckBox = new QCheckBox(tr("Groups"), this);
+    groupCheckBox = new QCheckBox(tr("Groups"), this);
     groupCheckBox->setChecked(showGroups);
 
-    QCheckBox *compCheckBox = new QCheckBox(tr("Components"), this);
-    compCheckBox->setChecked(showComponents);
+    componentCheckBox = new QCheckBox(tr("Components"), this);
+    componentCheckBox->setChecked(showComponents);
 
     QLabel *attributeLabel = new QLabel(tr("Attributes"), this);
-    QComboBox *attributeComboBox = new QComboBox(this);
+    attributeComboBox = new QComboBox(this);
     attributeComboBox->addItem(tr("None"), DoNotShowAttributes);
     attributeComboBox->addItem(tr("Assets"), ShowAssetReferences);
     attributeComboBox->addItem(tr("Dynamic"), ShowDynamicAttributes);
@@ -122,7 +122,7 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     layoutSettingsVisibility->addWidget(redoButton_);
     layoutSettingsVisibility->addSpacerItem(new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
     layoutSettingsVisibility->addWidget(groupCheckBox);
-    layoutSettingsVisibility->addWidget(compCheckBox);
+    layoutSettingsVisibility->addWidget(componentCheckBox);
     layoutSettingsVisibility->addWidget(attributeLabel);
     layoutSettingsVisibility->addWidget(attributeComboBox);
 
@@ -133,7 +133,7 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     // Connect to widget signals
     connect(attributeComboBox, SIGNAL(currentIndexChanged(int)), SLOT(SetAttributeVisibilityInternal(int)));
     connect(groupCheckBox, SIGNAL(toggled(bool)), SLOT(ShowGroups(bool)));
-    connect(compCheckBox, SIGNAL(toggled(bool)), SLOT(ShowComponents(bool)));
+    connect(componentCheckBox, SIGNAL(toggled(bool)), SLOT(ShowComponents(bool)));
     connect(sortComboBox, SIGNAL(currentIndexChanged(int)), SLOT(Sort(int)));
     connect(searchField, SIGNAL(textEdited(const QString &)), SLOT(Search(const QString &)));
     connect(expandAndCollapseButton, SIGNAL(clicked()), SLOT(ExpandOrCollapseAll()));
@@ -390,6 +390,14 @@ void SceneStructureWindow::Populate()
     attributeItems.rehash(std::ceil(numAttrs / attributeItems.max_load_factor()));
     */
 
+    // If we have a huge amount of entities in the scene, do not create component and attribute
+    // items by default.That could freeze the applications for tens of seconds or even for minutes.
+    if (s->Entities().size() > 4000)
+    {
+        showComponents = false;
+        attributeVisibility = DoNotShowAttributes;
+    }
+
     treeWidget->setSortingEnabled(false);
 
     for(Scene::iterator it = s->begin(); it != s->end(); ++it)
@@ -407,6 +415,9 @@ void SceneStructureWindow::Clear()
 {
     PROFILE(SceneStructureWindow_Clear)
     treeWidget->setSortingEnabled(false);
+
+    // Show component items before deleting them. Makes the removal of all items a lot cheaper operation.
+    ShowComponents(true);
 
     /// @todo 28.08.2013 Check memory leak report for this file!
 
@@ -541,6 +552,18 @@ void SceneStructureWindow::Refresh()
 {
     expandAndCollapseButton->setEnabled((!entityGroupItems.empty() && showGroups) || showComponents || attributeVisibility != DoNotShowAttributes);
 
+    attributeComboBox->blockSignals(true);
+    componentCheckBox->blockSignals(true);
+    groupCheckBox->blockSignals(true);
+
+    attributeComboBox->setCurrentIndex(attributeVisibility);
+    componentCheckBox->setChecked(showComponents);
+    groupCheckBox->setChecked(showGroups);
+
+    attributeComboBox->blockSignals(false);
+    componentCheckBox->blockSignals(false);
+    groupCheckBox->blockSignals(false);
+
     // If we have an ongoing search, make sure that changes are takeng into account.
     if (!searchField->text().isEmpty())
         TreeWidgetSearch(treeWidget, 0, searchField->text());
@@ -571,6 +594,7 @@ void SceneStructureWindow::AddEntity(Entity* entity)
     else
         treeWidget->addTopLevelItem(entityItem);
 
+    /// @todo 05.03.2014 Create component items only if showComponents true?
     //if (showComponents)
     {
         const Entity::ComponentMap &components = entity->Components();
