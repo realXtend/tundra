@@ -206,6 +206,9 @@ private:
 
     /// The sender of a component type. Used to avoid sending component description back to sender
     UserConnection* componentTypeSender_;
+
+    /// Set of custom component type id's that were received from the server, to avoid echoing them back in ProcessSyncState
+    std::set<u32> componentTypesFromServer_;
 };
 
 }

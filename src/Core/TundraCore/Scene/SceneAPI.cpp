@@ -365,9 +365,21 @@ void SceneAPI::RegisterPlaceholderComponentType(ComponentDesc desc, AttributeCha
         return;
     }
 
+    if (placeholderComponentTypes.find(desc.typeId) == placeholderComponentTypes.end())
+        LogInfo("Registering placeholder component type " + desc.typeName);
+    else
+    {
+        // Check for hash collision
+        /// \todo Is not yet resolved in any meaningful way, the old desc is still overwritten
+        if (placeholderComponentTypes[desc.typeId].typeName != desc.typeName)
+            LogError("Placeholder component typeId hash collision! Old name " + placeholderComponentTypes[desc.typeId].typeName + " new name " + desc.typeName);
+        else
+            LogWarning("Re-registering placeholder component type " + desc.typeName);
+    }
+
     placeholderComponentTypes[desc.typeId] = desc;
     placeholderComponentTypeIds[desc.typeName] = desc.typeId;
-    LogInfo("Registered placeholder component type " + desc.typeName);
+
 
     emit PlaceholderComponentTypeRegistered(desc.typeId, desc.typeName, change);
 }

@@ -279,6 +279,7 @@ void SyncManager::RegisterToScene(ScenePtr scene)
     serverConnection_->syncState->Clear();
     serverConnection_->syncState->SetParentScene(SceneWeakPtr(scene));
     scene_.reset();
+    componentTypesFromServer_.clear();
     
     if (!scene)
     {
@@ -1440,6 +1441,10 @@ void SyncManager::HandleRegisterComponentType(UserConnection* source, const char
     desc.typeId = ds.ReadVLE<kNet::VLE8_16_32>();
     desc.typeName = QString::fromStdString(ds.ReadString());
 
+    // On client, remember the component types server has sent, so that we don't unnecessarily echo them back
+    if (!isServer)
+        componentTypesFromServer_.insert(desc.typeId);
+
     // If component type already exists as actual C++ component, no action necessary
     // However, allow to update an earlier custom component description
     SceneAPI* sceneAPI = framework_->Scene();
@@ -1481,7 +1486,10 @@ void SyncManager::ProcessSyncState(UserConnection* user)
         SceneAPI* sceneAPI = framework_->Scene();
         const SceneAPI::PlaceholderComponentTypeMap& descs = sceneAPI->GetPlaceholderComponentTypes();
         for (SceneAPI::PlaceholderComponentTypeMap::const_iterator i = descs.begin(); i != descs.end(); ++i)
-            ReplicateComponentType(i->first, user);
+        {
+            if (isServer || componentTypesFromServer_.find(i->first) == componentTypesFromServer_.end())
+                ReplicateComponentType(i->first, user);
+        }
         state->MarkPlaceholderComponentsSent();
     }
 
