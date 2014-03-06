@@ -42,13 +42,18 @@ namespace OgreRenderer
         /// @endcond
 
     signals:
-        /// DirectX device lost signal.
+        /// Rendering device lost signal.
         void DeviceLost();
-        /// DirectX device restored signal.
+
+        /// Rendering device restored signal.
         void DeviceRestored();
-        /// DirectX device created signal.
+
+        /// Rendering device created signal.
         void DeviceCreated();
-        /// DirectX device released signal.
+
+        /// Rendering device released signal.
+        /** @note Released signal will occurs after DeviceCreated.
+            If you intend to re-create resources, listen to this signal. */
         void DeviceReleased();
 
     public slots:
@@ -68,17 +73,12 @@ namespace OgreRenderer
         /// Removes OgreWorld from a Scene.
         void RemoveOgreWorld(Scene *scene);
 
-    protected:
-        /// Emit DeviceLost signal.
+    private:
         void EmitDeviceLost();
-        /// Emit DeviceRestored signal.
         void EmitDeviceRestored();
-        /// Emit DeviceCreated signal.
         void EmitDeviceCreated();
-        /// Emit DeviceReleased signal.
         void EmitDeviceReleased();
 
-    private:
         RendererPtr renderer;  ///< Renderer
 
         OgreRenderSystemListener* renderSystemListener;
@@ -94,6 +94,6 @@ namespace OgreRenderer
         void eventOccurred(const Ogre::String& eventName, const Ogre::NameValuePairList* parameters = 0);
 
     private:
-        OgreRenderer::OgreRenderingModule* _renderingModule;
+        OgreRenderer::OgreRenderingModule* renderingModule_;
     };
 }

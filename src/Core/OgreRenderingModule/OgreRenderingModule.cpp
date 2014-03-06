@@ -88,7 +88,8 @@ void Profiler_EndBlock()
 #endif
 
 OgreRenderingModule::OgreRenderingModule() :
-    IModule("OgreRendering")
+    IModule("OgreRendering"),
+    renderSystemListener(0)
 {
 #ifdef OGRE_HAS_PROFILER_HOOKS
 #ifdef WIN32
@@ -204,12 +205,11 @@ void OgreRenderingModule::Initialize()
         this, SLOT(SetMaterialAttribute(const QStringList &)));
 
     // Create and add Ogre rendersystem listener.
-    if(!Ogre::Root::getSingleton().getRenderSystem())
-        return;
-    renderSystemListener = new OgreRenderSystemListener(this);
-    if(!renderSystemListener)
-        return;
-    Ogre::Root::getSingleton().getRenderSystem()->addListener(renderSystemListener);
+    if (!framework_->IsHeadless() && Ogre::Root::getSingleton().getRenderSystem())
+    {
+        renderSystemListener = new OgreRenderSystemListener(this);
+        Ogre::Root::getSingleton().getRenderSystem()->addListener(renderSystemListener);
+    }
 }
 
 void OgreRenderingModule::Uninitialize()
@@ -222,10 +222,9 @@ void OgreRenderingModule::Uninitialize()
     framework_->RegisterRenderer(0);
 
     // Destroy Ogre rendersystem listener.
-    if(!renderSystemListener)
-        return;
-    Ogre::Root::getSingleton().getRenderSystem()->removeListener(renderSystemListener);
-    delete renderSystemListener;
+    if (renderSystemListener && Ogre::Root::getSingleton().getRenderSystem())
+        Ogre::Root::getSingleton().getRenderSystem()->removeListener(renderSystemListener);
+    SAFE_DELETE(renderSystemListener);
 }
 
 void OgreRenderingModule::ConsoleStats()
@@ -320,26 +319,29 @@ void OgreRenderingModule::EmitDeviceReleased()
     emit DeviceReleased();
 }
 
+// OgreRenderSystemListener
+
 OgreRenderSystemListener::OgreRenderSystemListener(OgreRenderingModule* renderingModule) :
-    _renderingModule(renderingModule)
-{}
+    renderingModule_(renderingModule)
+{
+}
 
 OgreRenderSystemListener::~OgreRenderSystemListener()
-{}
-
-void OgreRenderSystemListener::eventOccurred(const Ogre::String& eventName, const Ogre::NameValuePairList* parameters)
 {
-    if (!_renderingModule)
-        return;
+}
 
+void OgreRenderSystemListener::eventOccurred(const Ogre::String& eventName, const Ogre::NameValuePairList* /*parameters*/)
+{
+    if (!renderingModule_)
+        return;
     if (eventName == "DeviceLost")
-        _renderingModule->EmitDeviceLost();
+        renderingModule_->EmitDeviceLost();
     else if (eventName == "DeviceRestored") 
-        _renderingModule->EmitDeviceRestored();
+        renderingModule_->EmitDeviceRestored();
     else if(eventName == "DeviceCreated")
-        _renderingModule->EmitDeviceCreated();
+        renderingModule_->EmitDeviceCreated();
     else if(eventName == "DeviceReleased")
-        _renderingModule->EmitDeviceReleased();
+        renderingModule_->EmitDeviceReleased();
 }
 
 } // ~namespace OgreRenderer

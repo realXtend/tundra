@@ -202,10 +202,9 @@ void RenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name
 #endif
 
     // Hook to DeviceRestored signal
-    OgreRenderer::OgreRenderingModule* ogreRenderingModule = fw->GetModule<OgreRenderer::OgreRenderingModule>();
-    if(!ogreRenderingModule)
-        return;
-    connect(ogreRenderingModule, SIGNAL(DeviceReleased()), this, SLOT(OnDeviceReleased()));
+    OgreRenderer::OgreRenderingModule* ogreRenderingModule = fw->Module<OgreRenderer::OgreRenderingModule>();
+    if (ogreRenderingModule)
+        connect(ogreRenderingModule, SIGNAL(DeviceReleased()), this, SLOT(OnDeviceReleased()));
 }
 
 void RenderWindow::CreateRenderTargetOverlay(int width, int height)
