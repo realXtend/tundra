@@ -56,8 +56,8 @@ public slots:
     int Height() const;
 
 private slots:
-    /// Recreate resources when DirectX device is released.
-    void OnDeviceReleased();
+    /// Recreate resources a new rendering device is created.
+    void OnDeviceCreated();
 
 private:
     void CreateRenderTargetOverlay(int width, int height);

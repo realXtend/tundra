@@ -299,26 +299,6 @@ void OgreRenderingModule::SetMaterialAttribute(const QStringList &params)
     matAsset->SetAttribute(params[1], params[2]);
 }
 
-void OgreRenderingModule::EmitDeviceLost()
-{
-    emit DeviceLost();
-}
-
-void OgreRenderingModule::EmitDeviceRestored()
-{
-    emit DeviceRestored();
-}
-
-void OgreRenderingModule::EmitDeviceCreated()
-{
-    emit DeviceCreated();
-}
-
-void OgreRenderingModule::EmitDeviceReleased()
-{
-    emit DeviceReleased();
-}
-
 // OgreRenderSystemListener
 
 OgreRenderSystemListener::OgreRenderSystemListener(OgreRenderingModule* renderingModule) :
@@ -332,16 +312,16 @@ OgreRenderSystemListener::~OgreRenderSystemListener()
 
 void OgreRenderSystemListener::eventOccurred(const Ogre::String& eventName, const Ogre::NameValuePairList* /*parameters*/)
 {
-    if (!renderingModule_)
+    if (!renderingModule_ || !renderingModule_->Renderer())
         return;
     if (eventName == "DeviceLost")
-        renderingModule_->EmitDeviceLost();
+        renderingModule_->Renderer()->EmitDeviceLost();
     else if (eventName == "DeviceRestored") 
-        renderingModule_->EmitDeviceRestored();
+        renderingModule_->Renderer()->EmitDeviceRestored();
     else if(eventName == "DeviceCreated")
-        renderingModule_->EmitDeviceCreated();
+        renderingModule_->Renderer()->EmitDeviceCreated();
     else if(eventName == "DeviceReleased")
-        renderingModule_->EmitDeviceReleased();
+        renderingModule_->Renderer()->EmitDeviceReleased();
 }
 
 } // ~namespace OgreRenderer

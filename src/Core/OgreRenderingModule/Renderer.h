@@ -238,12 +238,26 @@ namespace OgreRenderer
             If the specified entity is non-zero, it is guaranteed to have an EC_Camera component, and it is attached to some scene. */
         void MainCameraChanged(Entity *newMainWindowCamera);
 
+        /// Rendering device was created.
+        /** @note If you intend to re-create resources, listen to this signal. */
+        void DeviceCreated();
+
+        /// Rendering device was released.
+        void DeviceReleased();
+
+        /// Rendering device was lost.
+        void DeviceLost();
+
+        /// Rendering device was restored.
+        void DeviceRestored();
+
     private slots:
         /// Embeds the Renderer types to the given script engine.
         void OnScriptEngineCreated(QScriptEngine* engine);
 
     private:
         friend class OgreRenderingModule;
+        friend class OgreRenderSystemListener;
 
         /// Sleeps the main thread to throttle the main loop execution speed.
         void DoFrameTimeLimiting();
@@ -269,6 +283,12 @@ namespace OgreRenderer
 
         /// Returns platform string that is used in --ogreConfig files.
         QString RenderingConfigPlatform() const;
+
+        /// Emits renderer device loss/restore signals.
+        void EmitDeviceLost();
+        void EmitDeviceRestored();
+        void EmitDeviceCreated();
+        void EmitDeviceReleased();
 
         /// Successfully initialized flag
         bool initialized;

@@ -8,6 +8,7 @@
 #include "OgreWorld.h"
 #include "TextureAsset.h"
 #include "OgreRenderingModule.h"
+#include "Renderer.h"
 #include "OgreMaterialAsset.h"
 
 #include "Framework.h"
@@ -118,9 +119,9 @@ void EC_Sky::Update()
     if (!world_.lock()->OgreSceneManager())
         return;
 
-    OgreRenderer::OgreRenderingModule *renderModule = framework->Module<OgreRenderer::OgreRenderingModule>();
-    if (renderModule)
-        connect(renderModule, SIGNAL(DeviceReleased()), SLOT(Update()), Qt::UniqueConnection);
+    OgreRenderer::OgreRenderingModule *ogreRenderingModule = framework->Module<OgreRenderer::OgreRenderingModule>();
+    if (ogreRenderingModule && ogreRenderingModule->Renderer())
+        connect(ogreRenderingModule->Renderer().get(), SIGNAL(DeviceCreated()), SLOT(Update()), Qt::UniqueConnection);
 
     try
     {

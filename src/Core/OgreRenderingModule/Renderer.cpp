@@ -953,6 +953,33 @@ namespace OgreRenderer
 #endif
     }
 
+    void Renderer::EmitDeviceCreated()
+    {
+        LogDebug("[Renderer]: Emitting DeviceCreated");
+        emit DeviceCreated();
+
+        // The UI overlay has been recreated, do a full update.
+        DoFullUIRedraw();
+    }
+
+    void Renderer::EmitDeviceReleased()
+    {
+        LogDebug("[Renderer]: Emitting DeviceReleased");
+        emit DeviceReleased();
+    }
+
+    void Renderer::EmitDeviceLost()
+    {
+        LogDebug("[Renderer]: Emitting DeviceLost");
+        emit DeviceLost();
+    }
+
+    void Renderer::EmitDeviceRestored()
+    {
+        LogDebug("[Renderer]: Emitting DeviceRestored");
+        emit DeviceRestored();
+    }
+
     void Renderer::CreateInstancingShaders()
     {
         Ogre::ResourceManager::ResourceMapIterator shader_iter = ((Ogre::ResourceManager*)Ogre::HighLevelGpuProgramManager::getSingletonPtr())->getResourceIterator();

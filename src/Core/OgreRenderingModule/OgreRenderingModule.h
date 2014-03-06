@@ -41,21 +41,6 @@ namespace OgreRenderer
         const RendererPtr &GetRenderer() const { return Renderer(); } /**< @deprecated Use Renderer() instead. @todo Remove. */
         /// @endcond
 
-    signals:
-        /// Rendering device lost signal.
-        void DeviceLost();
-
-        /// Rendering device restored signal.
-        void DeviceRestored();
-
-        /// Rendering device created signal.
-        void DeviceCreated();
-
-        /// Rendering device released signal.
-        /** @note Released signal will occurs after DeviceCreated.
-            If you intend to re-create resources, listen to this signal. */
-        void DeviceReleased();
-
     public slots:
         /// Prints renderer stats to console.
         void ConsoleStats();
@@ -74,15 +59,8 @@ namespace OgreRenderer
         void RemoveOgreWorld(Scene *scene);
 
     private:
-        void EmitDeviceLost();
-        void EmitDeviceRestored();
-        void EmitDeviceCreated();
-        void EmitDeviceReleased();
-
         RendererPtr renderer;  ///< Renderer
-
-        OgreRenderSystemListener* renderSystemListener;
-        friend class OgreRenderSystemListener;
+        OgreRenderSystemListener *renderSystemListener;
     };
 
     class OgreRenderSystemListener : public Ogre::RenderSystem::Listener

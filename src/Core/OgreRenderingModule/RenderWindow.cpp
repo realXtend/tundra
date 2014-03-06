@@ -8,6 +8,7 @@
 #include "CoreStringUtils.h"
 #include "ConfigAPI.h"
 #include "OgreRenderingModule.h"
+#include "Renderer.h"
 
 #include <QWidget>
 #include <QImage>
@@ -202,9 +203,9 @@ void RenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name
 #endif
 
     // Hook to DeviceRestored signal
-    OgreRenderer::OgreRenderingModule* ogreRenderingModule = fw->Module<OgreRenderer::OgreRenderingModule>();
-    if (ogreRenderingModule)
-        connect(ogreRenderingModule, SIGNAL(DeviceReleased()), this, SLOT(OnDeviceReleased()));
+    OgreRenderer::OgreRenderingModule *ogreRenderingModule = fw->Module<OgreRenderer::OgreRenderingModule>();
+    if (ogreRenderingModule && ogreRenderingModule->Renderer())
+        connect(ogreRenderingModule->Renderer().get(), SIGNAL(DeviceCreated()), this, SLOT(OnDeviceCreated()));
 }
 
 void RenderWindow::CreateRenderTargetOverlay(int width, int height)
@@ -365,7 +366,7 @@ int RenderWindow::Height() const
     return renderWindow->getHeight();
 }
 
-void RenderWindow::OnDeviceReleased()
+void RenderWindow::OnDeviceCreated()
 {
     int width = renderWindow->getWidth();
     int height = renderWindow->getHeight();

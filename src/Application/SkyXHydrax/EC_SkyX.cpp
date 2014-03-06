@@ -253,6 +253,10 @@ void EC_SkyX::Create()
         return;
     }
 
+    OgreRenderer::OgreRenderingModule *ogreRenderingModule = framework->Module<OgreRenderer::OgreRenderingModule>();
+    if (ogreRenderingModule && ogreRenderingModule->Renderer())
+        connect(ogreRenderingModule->Renderer().get(), SIGNAL(DeviceCreated()), SLOT(Create()), Qt::UniqueConnection);
+
     // Init internals
     try
     {
