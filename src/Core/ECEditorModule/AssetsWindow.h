@@ -61,6 +61,8 @@ public slots:
     /** @param asset Asset to be removed. */
     void RemoveAsset(AssetPtr asset);
 
+    /// @todo 06.03.2014 RemoveBundle?
+
     /// Searches for items containing @c filter (case-insensitive) and toggles their visibility.
     /** If match is found the item is set visible and expanded, otherwise it's hidden.
         @param filter Text used as a filter. */
@@ -126,6 +128,7 @@ private:
     QLineEdit *searchField;
     QPushButton *expandAndCollapseButton;
     QString assetType;
+    std::set<QString> addedItemNames; /**< @todo 06.03.2014 Merge with alreadyAdded? */
 
 private slots:
     /// Expands or collapses the whole tree view, depending on the previous action.

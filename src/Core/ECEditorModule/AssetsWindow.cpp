@@ -18,6 +18,7 @@
 #include "IAssetBundle.h"
 #include "IAssetStorage.h"
 #include "UiAPI.h"
+#include "Profiler.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -88,6 +89,7 @@ AssetsWindow::~AssetsWindow()
 
 void AssetsWindow::PopulateTreeWidget()
 {
+    PROFILE(AssetsWindow_PopulateTreeWidget)
     treeWidget->clear();
     alreadyAdded.clear();
 
@@ -118,6 +120,7 @@ void AssetsWindow::PopulateTreeWidget()
 
 void AssetsWindow::AddAsset(const AssetPtr &asset)
 {
+    PROFILE(AssetsWindow_AddAsset)
     if (alreadyAdded.find(asset) != alreadyAdded.end())
         return;
     if (!assetType.isEmpty() && assetType != asset->Type())
@@ -157,6 +160,7 @@ void AssetsWindow::RemoveAsset(AssetPtr asset)
             parent->removeChild(item);
             SAFE_DELETE(item);
             alreadyAdded.erase(asset);
+            addedItemNames.erase(asset->Name());
         }
 
         ++it;
@@ -224,6 +228,7 @@ void AssetsWindow::Initialize()
 
 void AssetsWindow::AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent)
 {
+    PROFILE(AssetsWindow_AddChildren)
     foreach(const AssetReference &ref, asset->FindReferences())
     {
         AssetPtr asset = framework->Asset()->GetAsset(ref.ref);
@@ -278,23 +283,18 @@ void AssetsWindow::AssetDoubleClicked(QTreeWidgetItem *item, int /*column*/)
     AssetItem* assItem = dynamic_cast<AssetItem*>(item);
     if (!assItem || !assItem->Asset())
         return;
-    
-    QMenu* dummyMenu = new QMenu(this);
-    dummyMenu->hide();
+
+    QMenu dummyMenu;
     QList<QObject*> targets;
     targets.push_back(assItem->Asset().get());
-    
-    framework->Ui()->EmitContextMenuAboutToOpen(dummyMenu, targets);
-    const QList<QAction*>& actions = dummyMenu->actions();
-    for (int i = 0; i < actions.size(); ++i)
-    {
-        if (actions[i]->text() == "Open")
+
+    framework->Ui()->EmitContextMenuAboutToOpen(&dummyMenu, targets);
+    foreach(QAction *action, dummyMenu.actions())
+        if (action->text() == "Open")
         {
-            actions[i]->activate(QAction::ActionEvent());
+            action->activate(QAction::ActionEvent());
             break;
         }
-    }
-    dummyMenu->deleteLater();
 }
 
 void AssetsWindow::ChangeSelectedAsset(QTreeWidgetItem *current)
@@ -349,9 +349,13 @@ AssetStorageItem *AssetsWindow::CreateStorageItem(const AssetStoragePtr &storage
 
 AssetBundleItem *AssetsWindow::CreateBundleItem(const AssetBundlePtr &bundle)
 {
-    for (int i=0; i<treeWidget->topLevelItemCount(); ++i)
-        if (FindBundleItemRecursive(treeWidget->topLevelItem(i), bundle))
-            return 0;
+    if (addedItemNames.find(bundle->Name()) != addedItemNames.end())
+        return 0;
+//    for (int i=0; i<treeWidget->topLevelItemCount(); ++i)
+//        if (FindBundleItemRecursive(treeWidget->topLevelItem(i), bundle))
+//            return 0;
+
+    addedItemNames.insert(bundle->Name());
 
     QTreeWidgetItem *p = FindParentItem(bundle);
     AssetBundleItem *item = new AssetBundleItem(bundle, p);
@@ -361,9 +365,13 @@ AssetBundleItem *AssetsWindow::CreateBundleItem(const AssetBundlePtr &bundle)
 
 AssetItem *AssetsWindow::CreateAssetItem(const AssetPtr &asset)
 {
-    for (int i=0; i<treeWidget->topLevelItemCount(); ++i)
-        if (FindAssetItemRecursive(treeWidget->topLevelItem(i), asset))
-            return 0;
+    if (addedItemNames.find(asset->Name()) != addedItemNames.end())
+        return 0;
+//    for (int i=0; i<treeWidget->topLevelItemCount(); ++i)
+//        if (FindAssetItemRecursive(treeWidget->topLevelItem(i), asset))
+//            return 0;
+
+    addedItemNames.insert(asset->Name());
 
     QTreeWidgetItem *p = FindParentItem(asset);
     AssetItem *item = new AssetItem(asset, p);
@@ -373,8 +381,9 @@ AssetItem *AssetsWindow::CreateAssetItem(const AssetPtr &asset)
 
 AssetBundleItem *AssetsWindow::FindBundleItemRecursive(QTreeWidgetItem *parent, const AssetBundlePtr &bundle)
 {
+    PROFILE(AssetsWindow_FindBundleItemRecursive_bundle)
     if (!parent || parent->childCount() == 0)
-        return false;
+        return 0;
 
     AssetBundleItem *result = 0;
     for (int i=0; i<parent->childCount(); ++i)
@@ -392,8 +401,9 @@ AssetBundleItem *AssetsWindow::FindBundleItemRecursive(QTreeWidgetItem *parent, 
 
 AssetBundleItem *AssetsWindow::FindBundleItemRecursive(QTreeWidgetItem *parent, const QString &subAssetRef)
 {
+    PROFILE(AssetsWindow_FindBundleItemRecursive_subAssetRef)
     if (!parent || parent->childCount() == 0)
-        return false;
+        return 0;
 
     AssetBundleItem *result = 0;
     for (int i=0; i<parent->childCount(); ++i)
@@ -411,6 +421,7 @@ AssetBundleItem *AssetsWindow::FindBundleItemRecursive(QTreeWidgetItem *parent, 
 
 AssetItem *AssetsWindow::FindAssetItemRecursive(QTreeWidgetItem *parent, const AssetPtr &asset)
 {
+    PROFILE(AssetsWindow_FindAssetItemRecursive)
     if (!parent || parent->childCount() == 0)
         return false;
 
@@ -431,6 +442,7 @@ AssetItem *AssetsWindow::FindAssetItemRecursive(QTreeWidgetItem *parent, const A
 template <typename T>
 QTreeWidgetItem *AssetsWindow::FindParentItem(const T &item)
 {
+    PROFILE(AssetsWindow_FindParentItem)
     QString subAssetPart;
     AssetAPI::ParseAssetRef(item->Name(), 0, 0, 0, 0, 0, 0, 0, &subAssetPart);
 
