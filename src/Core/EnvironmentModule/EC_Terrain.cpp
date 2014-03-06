@@ -67,6 +67,7 @@ void EC_Terrain::UpdateSignals()
         connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(AttachTerrainRootNode()), Qt::UniqueConnection); // The Attach function also handles detaches.
 
         world_ = ParentScene()->Subsystem<OgreWorld>();
+        connect(world_.lock()->Renderer(), SIGNAL(DeviceCreated()), SLOT(Recreate()), Qt::UniqueConnection);
     }
 }
 
@@ -1421,6 +1422,13 @@ void EC_Terrain::DirtyAllTerrainPatches()
 {
     for(size_t i = 0; i < patches.size(); ++i)
         patches[i].patch_geometry_dirty = true;
+}
+
+void EC_Terrain::Recreate()
+{
+    Destroy();
+    DirtyAllTerrainPatches();
+    RegenerateDirtyTerrainPatches();
 }
 
 void EC_Terrain::RegenerateDirtyTerrainPatches()

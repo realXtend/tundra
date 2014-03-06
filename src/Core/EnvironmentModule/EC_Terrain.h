@@ -370,6 +370,7 @@ signals:
 private slots:
     /// Emitted when the parrent entity has been set.
     void UpdateSignals();
+    void Recreate();
 
     void MaterialAssetLoaded(AssetPtr asset);
     void TerrainAssetLoaded(AssetPtr asset);
