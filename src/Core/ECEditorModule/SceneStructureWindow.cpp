@@ -967,25 +967,7 @@ void SceneStructureWindow::ExpandOrCollapseAll()
 
 void SceneStructureWindow::CheckTreeExpandStatus(QTreeWidgetItem * /*item*/)
 {
-    bool anyExpanded = false;
-    QTreeWidgetItemIterator iter(treeWidget, QTreeWidgetItemIterator::HasChildren);
-    while(*iter)
-    {
-        QTreeWidgetItem *iterItem = (*iter);
-        if (iterItem->isExpanded())
-        {
-            if (iterItem->parent() && !iterItem->parent()->isExpanded())
-                anyExpanded = false;
-            else
-            {
-                anyExpanded = true;
-                break;
-            }
-        }
-        ++iter;
-    }
-
-    expandAndCollapseButton->setText(anyExpanded ? tr("Collapse All") : tr("Expand All"));
+    expandAndCollapseButton->setText(TreeWidgetIsAnyExpanded(treeWidget) ? tr("Collapse All") : tr("Expand All"));
 }
 
 void SceneStructureWindow::SetUndoEnabled(bool canUndo)

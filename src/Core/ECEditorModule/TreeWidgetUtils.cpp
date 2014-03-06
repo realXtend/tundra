@@ -159,3 +159,17 @@ void TreeWidgetSetCheckStateForAllItems(QTreeWidget *treeWidget, int column, Qt:
     treeWidget->setSortingEnabled(true);
     treeWidget->setUpdatesEnabled(true);
 }
+
+bool ECEDITOR_MODULE_API TreeWidgetIsAnyExpanded(QTreeWidget *treeWidget)
+{
+    QTreeWidgetItemIterator iter(treeWidget, QTreeWidgetItemIterator::HasChildren);
+    while(*iter)
+    {
+        QTreeWidgetItem *item = (*iter);
+        if (item->isExpanded() && (!(item->parent() && !item->parent()->isExpanded())))
+            return true;
+        ++iter;
+    }
+
+    return false;
+}

@@ -38,3 +38,6 @@ bool ECEDITOR_MODULE_API TreeWidgetExpandOrCollapseAll(QTreeWidget *treeWidget);
     @param column Column for which the @c state is set.
     @param state Check state. */
 void ECEDITOR_MODULE_API TreeWidgetSetCheckStateForAllItems(QTreeWidget *treeWidget, int column, Qt::CheckState state);
+
+/// Checks whether any item in the in the @c treeWidget is expanded.
+bool ECEDITOR_MODULE_API TreeWidgetIsAnyExpanded(QTreeWidget *treeWidget);

@@ -137,7 +137,7 @@ private slots:
     /// Checks the expand status to mark it to the expand/collapse button
     void CheckTreeExpandStatus(QTreeWidgetItem *item);
 
-    void AssetDoubleClicked(QTreeWidgetItem *item, int column);
+    void OnItemDoubleClicked(QTreeWidgetItem *item, int column);
     void ChangeSelectedAsset(QTreeWidgetItem *);
     void PickAssetAndClose();
     void Cancel();
