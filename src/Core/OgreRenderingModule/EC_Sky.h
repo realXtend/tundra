@@ -72,9 +72,11 @@ public:
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
 
+private slots:
+    void Update();
+
 private:
     void AttributesChanged();
-    void Update();
 
     AssetRefListenerPtr materialAsset;
     std::vector<AssetRefListenerPtr> textureAssets;
