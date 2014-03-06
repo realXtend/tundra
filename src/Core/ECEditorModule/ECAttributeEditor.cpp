@@ -1927,7 +1927,7 @@ void AssetReferenceAttributeEditor::RestoreOriginalValue()
     if (!assetRef)
         return;
 
-    for(std::map<ComponentWeakPtr, AssetReference, ComponentWeakPtrLessThan>::iterator it =  originalValues.begin(); it != originalValues.end(); ++it)
+    for(OriginalValueMap::const_iterator it =  originalValues.begin(); it != originalValues.end(); ++it)
         if (!it->first.expired())
             SetValue(it->first.lock(), it->second);
 
@@ -2281,7 +2281,7 @@ void AssetReferenceListAttributeEditor::RestoreOriginalValue()
 {
     Attribute<AssetReferenceList> *refList = FindAttribute<AssetReferenceList>(components_[0].lock());
     if (refList)
-        for(std::map<ComponentWeakPtr, AssetReferenceList, ComponentWeakPtrLessThan>::iterator it = originalValues.begin(); it != originalValues.end(); ++it)
+        for(OriginalValueMap::const_iterator it = originalValues.begin(); it != originalValues.end(); ++it)
             if (!it->first.expired())
                 SetValue(it->first.lock(), it->second);
 

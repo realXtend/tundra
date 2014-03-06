@@ -114,6 +114,13 @@ using CORETYPES_NAMESPACE::unordered_multimap;
     #define WEAK_PTR_LESS_THAN(a, b) a < b
 #endif
 
+/// Utility struct for providing less than operator for C++ standard weak_ptr.
+template <typename T>
+struct WeakPtrLessThan
+{
+    bool operator() (const weak_ptr<T> &a, const weak_ptr<T> &b) const { return WEAK_PTR_LESS_THAN(a, b); }
+};
+
 typedef std::vector<std::string> StringVector;
 typedef shared_ptr<StringVector> StringVectorPtr;
 
