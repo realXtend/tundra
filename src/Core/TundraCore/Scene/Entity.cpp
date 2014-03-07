@@ -673,10 +673,181 @@ QString Entity::ToString() const
 
 QObjectList Entity::ComponentsList() const
 {
-    LogWarning("Entity::ComponentsLis: this function is deprecated and will be removed. Use Entity::Components instead");
+    LogWarning("Entity::ComponentsList: this function is deprecated and will be removed. Use Entity::Components instead");
     QObjectList compList;
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
         if (i->second.get())
             compList << i->second.get();
     return compList;
+}
+
+void Entity::AddChild(Entity* child, AttributeChange::Type change)
+{
+    if (!child)
+    {
+        LogWarning("Entity::AddChild: null child entity specified");
+        return;
+    }
+
+    child->SetParent(this, change);
+}
+
+void Entity::RemoveChild(Entity* child, AttributeChange::Type change)
+{
+    if (child->Parent().get() != this)
+    {
+        LogWarning("Entity::RemoveChild: the specified entity is not parented to this entity");
+        return;
+    }
+
+    // RemoveEntity does a silent SetParent(0) to remove the child from the parent's child vector
+    if (scene_)
+        scene_->RemoveEntity(child->Id(), change);
+    else
+        LogError("Entity::RemoveChild: null parent scene, can not remove the entity from scene");
+}
+
+void Entity::DetachChild(Entity* child, AttributeChange::Type change)
+{
+    if (!child)
+    {
+        LogWarning("Entity::DetachChild: null child entity specified");
+        return;
+    }
+    if (child->Parent().get() != this)
+    {
+        LogWarning("Entity::DetachChild: the specified entity is not parented to this entity");
+        return;
+    }
+
+    child->SetParent(0, change);
+}
+
+void Entity::SetParent(Entity* parent, AttributeChange::Type change)
+{
+    Entity* oldParent = parent_.lock().get();
+    if (oldParent == parent)
+        return; // Nothing to do
+
+    // Prevent self assignment
+    if (parent == this)
+    {
+        LogError("Entity::SetParent: self parenting attempted.");
+        return;
+    }
+
+    // Prevent cyclic assignment
+    if (parent)
+    {
+        Entity* parentCheck = parent;
+        while (parentCheck)
+        {
+            if (parentCheck == this)
+            {
+                LogError("Entity::SetParent: Cyclic parenting attempted.");
+                return;
+            }
+            parentCheck = parentCheck->Parent().get();
+        }
+    }
+
+    // Remove from old parent's child vector
+    if (oldParent)
+    {
+        ChildEntityVector& children = oldParent->children_;
+        for (size_t i = 0; i < children.size(); ++i)
+        {
+            if (children[i].lock().get() == this)
+            {
+                children.erase(children.begin() + i);
+                break;
+            }
+        }
+    }
+
+    // Add to new parent's child vector
+    if (parent)
+        parent->children_.push_back(shared_from_this());
+
+    parent_ = parent ? parent->shared_from_this() : EntityPtr();
+
+    // Emit change signals
+    if (change != AttributeChange::Disconnected)
+    {
+        if (change == AttributeChange::Default)
+            change = IsLocal() ? AttributeChange::LocalOnly : AttributeChange::Replicate;
+        emit ParentChanged(this, parent, change);
+        if (scene_)
+            scene_->EmitEntityParentChanged(this, parent, change);
+    }
+}
+
+EntityPtr Entity::CreateChild(entity_id_t id, const QStringList &components, AttributeChange::Type change, bool replicated, bool componentsReplicated, bool temporary)
+{
+    if (!scene_)
+    {
+        LogError("Entity::CreateChild: not attached to a scene, can not create a child entity");
+        return EntityPtr();
+    }
+
+    EntityPtr child = scene_->CreateEntity(id, components, change, replicated, componentsReplicated, temporary);
+    if (child)
+        child->SetParent(this, change);
+    return child;
+}
+
+EntityPtr Entity::CreateLocalChild(const QStringList &components, AttributeChange::Type change, bool componentsReplicated, bool temporary)
+{
+    if (!scene_)
+    {
+        LogError("Entity::CreateLocalChild: not attached to a scene, can not create a child entity");
+        return EntityPtr();
+    }
+
+    EntityPtr child = scene_->CreateLocalEntity(components, change, componentsReplicated, temporary);
+    if (child)
+        child->SetParent(this, change);
+    return child;
+}
+
+EntityPtr Entity::Child(size_t index) const
+{
+    return index < children_.size() ? children_[index].lock() : EntityPtr();
+}
+
+EntityPtr Entity::Child(const QString& name, bool recursive) const
+{
+    for (size_t i = 0; i < children_.size(); ++i)
+    {
+        // Safeguard in case the entity has become null without us knowing
+        EntityPtr child = children_[i].lock();
+        if (child)
+        {
+            if (QString::compare(name, child->Name(), Qt::CaseInsensitive) == 0)
+                return child;
+            if (recursive)
+            {
+                EntityPtr childResult = child->Child(name, true);
+                if (childResult)
+                    return childResult;
+            }
+        }
+    }
+
+    return EntityPtr();
+}
+
+EntityList Entity::Children() const
+{
+    EntityList ret;
+
+    for (size_t i = 0; i < children_.size(); ++i)
+    {
+        // Safeguard in case the entity has become null without us knowing
+        EntityPtr child = children_[i].lock();
+        if (child)
+            ret.push_back(child);
+    }
+
+    return ret;
 }

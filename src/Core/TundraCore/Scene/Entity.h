@@ -61,6 +61,7 @@ public:
     typedef std::map<component_id_t, ComponentPtr> ComponentMap; ///< Component container.
     typedef std::vector<ComponentPtr> ComponentVector; ///< Component vector container.
     typedef QMap<QString, EntityAction *> ActionMap; ///< Action container
+    typedef std::vector<EntityWeakPtr> ChildEntityVector; ///< Child entity vector container.
 
     /// If entity has components that are still alive, they become free-floating.
     ~Entity();
@@ -381,6 +382,68 @@ public slots:
     /// Returns parent scene of this entity.
     Scene* ParentScene() const { return scene_; }
 
+    /// Add an entity as a child.
+    /** When an entity is added as a child, its rendering transform in the EC_Placeable component will automatically follow the parent entity,
+        unless the EC_Placeable component specifies an alternate parent (such as a bone) to follow. Child entities are also 
+        automatically removed from the scene when the parent entity is removed.
+        If the child already is parented to another entity, the existing parent assignment is removed.
+        @param entity Entity to add as a child.
+        @param change Change signaling mode. Normally this should be Default or Replicate, so that parent assignment is propagated over the network. */
+    void AddChild(Entity* child, AttributeChange::Type change = AttributeChange::Default);
+
+    /// Remove a child entity.
+    /** Will remove the child entity from the whole scene. If the intention is to re-parent the entity, AddChild() to the new parent
+        should be called instead. 
+        @param child Child entity to remove.
+        @param change Change signaling mode. */
+    void RemoveChild(Entity* child, AttributeChange::Type change = AttributeChange::Default);
+
+    /// Detach a child entity to the scene root level (make it parentless) without removing it from the scene.
+    /** @param child Child entity to detach.
+        @param change Change signaling mode. */
+    void DetachChild(Entity* child, AttributeChange::Type change = AttributeChange::Default);
+
+    /// Set the parent entity of the entity. Null parent will set to the scene root level (default.)
+    /** Same as calling AddChild() on the new parent entity, or DetachChild() in case of setting a null parent.
+        @param parent New parent entity.
+        @param change Change signaling mode. */
+    void SetParent(Entity* parent, AttributeChange::Type change = AttributeChange::Default);
+
+    /// Creates new child entity that contains the specified components.
+    /** To create an empty entity, omit the components parameter.
+        @param id Id of the new entity. Specify 0 to use the next free (replicated) ID, see also NextFreeId and NextFreeIdLocal.
+        @param components Optional list of component names ("EC_" prefix can be omitted) the entity will use. If omitted or the list is empty, creates an empty entity.
+        @param change Notification/network replication mode
+        @param replicated Whether entity is replicated. Default true.
+        @param componentsReplicated Whether components will be replicated, true by default.
+        @param temporary Will the entity be temporary i.e. it is no serialized to disk by default, false by default. */
+    EntityPtr CreateChild(entity_id_t id = 0, const QStringList &components = QStringList(),
+        AttributeChange::Type change = AttributeChange::Default, bool replicated = true, bool componentsReplicated = true, bool temporary = false);
+
+    /// Creates new local child entity that contains the specified components
+    /** To create an empty entity omit components parameter.
+        @param components Optional list of component names ("EC_" prefix can be omitted) the entity will use. If omitted or the list is empty, creates an empty entity.
+        @param change Notification/network replication mode
+        @param componentsReplicated Whether components will be replicated, false by default, but components of local entities are not replicated so this has no effect.
+        @param temporary Will the entity be temporary i.e. it is no serialized to disk by default. */
+    EntityPtr CreateLocalChild(const QStringList &components = QStringList(),
+        AttributeChange::Type change = AttributeChange::Default, bool componentsReplicated = false, bool temporary = false);
+
+    /// Returns parent entity of this entity, or null if entity is on the root level.
+    EntityPtr Parent() const { return parent_.lock(); }
+
+    /// Returns number of child entities.
+    size_t NumChildren() const { return children_.size(); }
+
+    /// Returns child entity by index.
+    EntityPtr Child(size_t index) const;
+
+    /// Returns child entity by name. Optionally recursive.
+    EntityPtr Child(const QString& name, bool recursive = false) const;
+
+    /// Returns immediate child entities.
+    EntityList Children() const;
+
     // DEPRECATED:
     /// @cond PRIVATE
     ComponentPtr GetComponentById(component_id_t id) const { return ComponentById(id); } /**< @deprecated Use ComponentById instead. @todo Add deprecation warning print. @todo Remove. */
@@ -415,6 +478,9 @@ signals:
     /// The entity has left a camera's view. Triggered by the rendering subsystem.
     void LeaveView(IComponent* camera);
 
+    /// The entity's parent has changed.
+    void ParentChanged(Entity* entity, Entity* newParent, AttributeChange::Type change);
+
 private:
     friend class Scene;
 
@@ -437,6 +503,9 @@ private:
     Scene* scene_; ///< Pointer to scene
     ActionMap actions_; ///< Map of registered entity actions.
     bool temporary_; ///< Temporary-flag
+
+    ChildEntityVector children_; ///< Child entities. Note that the entities are authoritatively owned by the scene; the child reference is weak intentionally.
+    EntityWeakPtr parent_; ///< Parent entity. Note that the entities are authoritatively owned by the scene; the parent reference is weak intentionally.
 };
 
 #include "Entity.inl"

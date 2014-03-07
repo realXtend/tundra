@@ -180,6 +180,10 @@ bool Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
         // Then make the entity remove all of its components, so that their individual removals are signaled properly
         del_entity->RemoveAllComponents(change);
         
+        // If the entity is parented, remove from the parent. No signaling is necessary
+        if (del_entity->Parent())
+            del_entity->SetParent(0, AttributeChange::Disconnected);
+
         entities_.erase(it);
         
         // If entity somehow manages to live, at least it doesn't belong to the scene anymore
@@ -371,6 +375,15 @@ void Scene::EmitEntityCreated(Entity *entity, AttributeChange::Type change)
     ///@note This is not enough, it might be that entity is deleted after this call so we have dangling pointer in queue. 
     if (entity)
         emit EntityCreated(entity, change);
+}
+
+void Scene::EmitEntityParentChanged(Entity* entity, Entity* newParent, AttributeChange::Type change)
+{
+    if (!entity || change == AttributeChange::Disconnected)
+        return;
+    if (change == AttributeChange::Default)
+        change = entity->IsLocal() ? AttributeChange::LocalOnly : AttributeChange::Replicate;
+    emit EntityParentChanged(entity, newParent, change);
 }
 
 void Scene::EmitEntityRemoved(Entity* entity, AttributeChange::Type change)

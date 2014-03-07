@@ -317,6 +317,9 @@ private slots:
     /// Handle parent placeable's transform changing. Used when skeletally attached; handle manual position update when the parent skeletal mesh does not animate
     void OnParentPlaceableTransformChanged();
 
+    /// Handle the entity reparenting itself
+    void OnEntityParentChanged();
+
 private:
     /// Handle attributechange
     void AttributesChanged();

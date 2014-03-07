@@ -227,7 +227,6 @@ public slots:
         @param replicated Whether entity is replicated. Default true.
         @param componentsReplicated Whether components will be replicated, true by default.
         @param temporary Will the entity be temporary i.e. it is no serialized to disk by default, false by default.
-        @note Setting temporary status of an entity when it's created is currently the only way to replicate this status properly.
         @sa CreateLocalEntity */
     EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList(),
         AttributeChange::Type change = AttributeChange::Default, bool replicated = true, bool componentsReplicated = true, bool temporary = false);
@@ -241,7 +240,6 @@ public slots:
         @param change Notification/network replication mode
         @param componentsReplicated Whether components will be replicated, false by default, but components of local entities are not replicated so this has no effect.
         @param temporary Will the entity be temporary i.e. it is no serialized to disk by default.
-        @note Setting temporary status of an entity when it's created is currently the only way to replicate this status properly.
         @sa CreateEntity */
     EntityPtr CreateLocalEntity(const QStringList &components = QStringList(),
         AttributeChange::Type change = AttributeChange::Default, bool componentsReplicated = false, bool temporary = false);
@@ -415,6 +413,12 @@ public slots:
         @param change Change signaling mode */
     void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
 
+    /// Emits a notification of entity reparenting
+    /** @param entity Entity that is being reparented
+        @paran newParent New parent entity
+        @param change Change signaling mode */
+    void EmitEntityParentChanged(Entity *entity, Entity *newParent, AttributeChange::Type change = AttributeChange::Default);
+
     /// @cond PRIVATE
     // DEPRECATED function signatures
     EntityPtr GetEntity(entity_id_t id) const { return EntityById(id); } /**< @deprecated Use EntityById @todo Add warning print, remove in some distant future */
@@ -484,6 +488,9 @@ signals:
 
     /// Signal when the whole scene is cleared
     void SceneCleared(Scene* scene);
+
+    /// An entity's parent has changed.
+    void EntityParentChanged(Entity* entity, Entity* newParent, AttributeChange::Type change);
 
 private slots:
     /// Handle frame update. Signal this frame's entity creations.

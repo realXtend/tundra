@@ -281,12 +281,12 @@ void EC_Placeable::AttachNode()
         // Try to attach to another entity if the parent ref is non-empty
         // Make sure we're not trying to attach to ourselves as the parent
         const EntityReference& parent = parentRef.Get();
-        if (!parent.IsEmpty())
+        if (!parent.IsEmpty() || (ownEntity && ownEntity->Parent()))
         {
             if (!ownEntity || !scene)
                 return;
             
-            Entity* parentEntity = parent.Lookup(scene).get();
+            Entity* parentEntity = parent.LookupParent(ownEntity).get();
             if (parentEntity == ownEntity)
             {
                 // If we refer to self, attach to the root
@@ -679,6 +679,9 @@ void EC_Placeable::RegisterActions()
         entity->ConnectAction("ShowEntity", this, SLOT(Show()));
         entity->ConnectAction("HideEntity", this, SLOT(Hide()));
         entity->ConnectAction("ToggleEntity", this, SLOT(ToggleVisibility()));
+
+        // Connect to entity reparenting to switch the parent in the graphical scene
+        connect(entity, SIGNAL(ParentChanged(Entity*, Entity*, AttributeChange::Type)), this, SLOT(OnEntityParentChanged()), Qt::UniqueConnection);
     }
 }
 
@@ -786,6 +789,13 @@ void EC_Placeable::OnParentPlaceableTransformChanged()
                 attachmentListener.ForceUpdate(parentBone_);
         }
     }
+}
+
+void EC_Placeable::OnEntityParentChanged()
+{
+    // The entity's parent change matters only when the parent ref is empty (ie. we are not overriding the parent)
+    if (parentRef.Get().IsEmpty())
+        AttachNode();
 }
 
 void EC_Placeable::SetPosition(float x, float y, float z)
