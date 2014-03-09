@@ -59,7 +59,7 @@ void AvatarModule::Initialize()
 
     JavascriptModule *javascriptModule = framework_->Module<JavascriptModule>();
     if (javascriptModule)
-        connect(javascriptModule, SIGNAL(ScriptEngineCreated(QScriptEngine*)), SLOT(OnScriptEngineCreated(QScriptEngine*)));
+        connect(javascriptModule, SIGNAL(ScriptEngineCreated(QScriptEngine*)), this, SLOT(OnScriptEngineCreated(QScriptEngine*)), Qt::UniqueConnection);
     else
         LogWarning("AvatarModule: JavascriptModule not present, AvatarModule usage from scripts will be limited!");
 }

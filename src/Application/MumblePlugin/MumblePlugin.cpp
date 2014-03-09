@@ -78,15 +78,8 @@ void MumblePlugin::Initialize()
 
     RegisterMumblePluginMetaTypes();
 
-    // Register custom QObject and enum meta types to created script engines.
-    JavascriptModule *javascriptModule = framework_->GetModule<JavascriptModule>();
-    if (javascriptModule)
-        connect(javascriptModule, SIGNAL(ScriptEngineCreated(QScriptEngine*)), SLOT(OnScriptEngineCreated(QScriptEngine*)));
-    else
-        LogWarning(LC + "JavascriptModule not present, MumblePlugin usage from scripts will be limited!");
-
     framework_->RegisterDynamicObject("mumble", this);
-    
+
     framework_->Console()->RegisterCommand("mumblePackets", "Set MumbleVoip amount of frames per network packet, eg. mumblepackets(6).", 
         this, SLOT(OnFramesPerPacketChanged(const QStringList&)));
 

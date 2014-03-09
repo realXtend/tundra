@@ -700,11 +700,10 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
         {
             if (checked.find(serviceobject) == checked.end())
             {
-                // Check if the service object has an OnScriptEngineCreated() slot, and give it a chance to perform further actions
+                // Check if the service object has an OnScriptEngineCreated() slot, and give it a chance to perform further actions.
                 const QMetaObject* meta = serviceobject->metaObject();
                 if (meta->indexOfSlot("OnScriptEngineCreated(QScriptEngine*)") != -1)
-                    QObject::connect(this, SIGNAL(ScriptEngineCreated(QScriptEngine*)), serviceobject, SLOT(OnScriptEngineCreated(QScriptEngine*)));
-                
+                    connect(this, SIGNAL(ScriptEngineCreated(QScriptEngine*)), serviceobject, SLOT(OnScriptEngineCreated(QScriptEngine*)), Qt::UniqueConnection);                
                 checked.insert(serviceobject);
             }
         }
