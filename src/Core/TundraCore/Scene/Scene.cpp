@@ -542,12 +542,15 @@ bool Scene::SaveSceneBinary(const QString& filename, bool getTemporary, bool get
     
     // Count number of entities we accept
     uint num_entities = 0;
-    for(const_iterator iter = begin(); iter != end(); ++iter)
+    EntityList rootLevel = RootLevelEntities();
+
+    for(EntityList::const_iterator iter = rootLevel.begin(); iter != rootLevel.end(); ++iter)
     {
         bool serialize = true;
-        if (iter->second->IsLocal() && !getLocal)
+        EntityPtr ent = *iter;
+        if (ent->IsLocal() && !getLocal)
             serialize = false;
-        if (iter->second->IsTemporary() && !getTemporary)
+        if (ent->IsTemporary() && !getTemporary)
             serialize = false;
         if (serialize)
             ++num_entities;
@@ -555,15 +558,16 @@ bool Scene::SaveSceneBinary(const QString& filename, bool getTemporary, bool get
     
     dest.Add<u32>(num_entities);
 
-    for(const_iterator iter = begin(); iter != end(); ++iter)
+    for(EntityList::const_iterator iter = rootLevel.begin(); iter != rootLevel.end(); ++iter)
     {
         bool serialize = true;
-        if (iter->second->IsLocal() && !getLocal)
+        EntityPtr ent = *iter;
+        if (ent->IsLocal() && !getLocal)
             serialize = false;
-        if (iter->second->IsTemporary() && !getTemporary)
+        if (ent->IsTemporary() && !getTemporary)
             serialize = false;
         if (serialize)
-            iter->second->SerializeToBinary(dest);
+            ent->SerializeToBinary(dest, getTemporary);
     }
     
     bytes.resize((int)dest.BytesFilled());
@@ -789,74 +793,7 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
 
         uint num_entities = source.Read<u32>();
         for(uint i = 0; i < num_entities; ++i)
-        {
-            entity_id_t id = source.Read<u32>();
-            bool replicated = source.Read<u8>() ? true : false;
-            if (!useEntityIDsFromFile || id == 0)
-            {
-                entity_id_t originalId = id;
-                id = replicated ? NextFreeId() : NextFreeIdLocal();
-                if (originalId != 0 && !oldToNewIds.contains(originalId))
-                    oldToNewIds[originalId] = id;
-            }
-            else if (useEntityIDsFromFile && HasEntity(id))
-            {
-                entity_id_t newID = replicated ? NextFreeId() : NextFreeIdLocal();
-                ChangeEntityId(id, newID);
-            }
-
-            if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
-            {
-                LogDebug("Scene::CreateContentFromBinary: Destroying previous entity with id " + QString::number(id) + " to avoid conflict with new created entity with the same id.");
-                LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id) + "might not replicate properly!");
-                RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
-            }
-
-            EntityPtr entity = CreateEntity(id);
-            if (!entity)
-            {
-                LogError("Failed to create entity, stopping scene load!");
-                return QList<Entity*>(); // If entity creation fails, stream desync is more than likely so stop right here
-            }
-            
-            uint num_components = source.Read<u32>();
-            for(uint i = 0; i < num_components; ++i)
-            {
-                u32 typeId = source.Read<u32>(); ///\todo VLE this!
-                QString name = QString::fromStdString(source.ReadString());
-                bool compReplicated = source.Read<u8>() ? true : false;
-                uint data_size = source.Read<u32>();
-                
-                // Read the component data into a separate byte array, then deserialize from there.
-                // This way the whole stream should not desync even if something goes wrong
-                QByteArray comp_bytes;
-                comp_bytes.resize(data_size);
-                if (data_size)
-                    source.ReadArray<u8>((u8*)comp_bytes.data(), comp_bytes.size());
-                
-                try
-                {
-                    ComponentPtr new_comp = entity->GetOrCreateComponent(typeId, name, AttributeChange::Default, compReplicated);
-                    if (new_comp)
-                    {
-                        if (data_size)
-                        {
-                            DataDeserializer comp_source(comp_bytes.data(), comp_bytes.size());
-                            // Trigger no signal yet when scene is in incoherent state
-                            new_comp->DeserializeFromBinary(comp_source, AttributeChange::Disconnected);
-                        }
-                    }
-                    else
-                        LogError("Failed to load component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"!");
-                }
-                catch(...)
-                {
-                    LogError("Failed to load component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"!");
-                }
-            }
-
-            entities.push_back(entity);
-        }
+            CreateEntityFromBinary(EntityPtr(), source, useEntityIDsFromFile, change, entities, oldToNewIds);
     }
     catch(...)
     {
@@ -902,6 +839,87 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
             ret.append(entities[i].lock().get());
 
     return ret;
+}
+
+void Scene::CreateEntityFromBinary(EntityPtr parent, kNet::DataDeserializer& source, bool useEntityIDsFromFile, AttributeChange::Type change, std::vector<EntityWeakPtr>& entities, QHash<entity_id_t, entity_id_t>& oldToNewIds)
+{
+    entity_id_t id = source.Read<u32>();
+    bool replicated = source.Read<u8>() ? true : false;
+    if (!useEntityIDsFromFile || id == 0)
+    {
+        entity_id_t originalId = id;
+        id = replicated ? NextFreeId() : NextFreeIdLocal();
+        if (originalId != 0 && !oldToNewIds.contains(originalId))
+            oldToNewIds[originalId] = id;
+    }
+    else if (useEntityIDsFromFile && HasEntity(id))
+    {
+        entity_id_t newID = replicated ? NextFreeId() : NextFreeIdLocal();
+        ChangeEntityId(id, newID);
+    }
+
+    if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
+    {
+        LogDebug("Scene::CreateContentFromBinary: Destroying previous entity with id " + QString::number(id) + " to avoid conflict with new created entity with the same id.");
+        LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id) + "might not replicate properly!");
+        RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
+    }
+
+    EntityPtr entity;
+    if (!parent)
+        entity = CreateEntity(id);
+    else
+        entity = parent->CreateChild(id);
+
+    if (!entity)
+    {
+        LogError("Failed to create entity, stopping scene load!");
+        return;
+    }
+    
+    uint num_components = source.Read<u32>();
+    uint num_childEntities = num_components >> 16;
+    num_components &= 0xffff;
+
+    for(uint i = 0; i < num_components; ++i)
+    {
+        u32 typeId = source.Read<u32>(); ///\todo VLE this!
+        QString name = QString::fromStdString(source.ReadString());
+        bool compReplicated = source.Read<u8>() ? true : false;
+        uint data_size = source.Read<u32>();
+                
+        // Read the component data into a separate byte array, then deserialize from there.
+        // This way the whole stream should not desync even if something goes wrong
+        QByteArray comp_bytes;
+        comp_bytes.resize(data_size);
+        if (data_size)
+            source.ReadArray<u8>((u8*)comp_bytes.data(), comp_bytes.size());
+                
+        try
+        {
+            ComponentPtr new_comp = entity->GetOrCreateComponent(typeId, name, AttributeChange::Default, compReplicated);
+            if (new_comp)
+            {
+                if (data_size)
+                {
+                    DataDeserializer comp_source(comp_bytes.data(), comp_bytes.size());
+                    // Trigger no signal yet when scene is in incoherent state
+                    new_comp->DeserializeFromBinary(comp_source, AttributeChange::Disconnected);
+                }
+            }
+            else
+                LogError("Failed to load component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"!");
+        }
+        catch(...)
+        {
+            LogError("Failed to load component \"" + framework_->Scene()->GetComponentTypeName(typeId) + "\"!");
+        }
+    }
+
+    entities.push_back(entity);
+
+    for (uint i = 0; i < num_childEntities; ++i)
+        CreateEntityFromBinary(entity, source, useEntityIDsFromFile, change, entities, oldToNewIds);
 }
 
 QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool useEntityIDsFromFile, AttributeChange::Type change)

@@ -421,17 +421,31 @@ QObjectList Entity::GetComponentsRaw(const QString &type_name) const
     return ret;
 }
 
-void Entity::SerializeToBinary(kNet::DataSerializer &dst) const
+void Entity::SerializeToBinary(kNet::DataSerializer &dst, bool serializeTemporary, bool serializeChildren) const
 {
     dst.Add<u32>(Id());
     dst.Add<u8>(IsReplicated() ? 1 : 0);
     uint num_serializable = 0;
+    uint num_serializable_children = 0;
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
-        if (!i->second->IsTemporary())
+        if (serializeTemporary || !i->second->IsTemporary())
             num_serializable++;
-    dst.Add<u32>(num_serializable);
+    if (serializeChildren)
+    {
+        for (ChildEntityVector::const_iterator i = children_.begin(); i != children_.end(); ++i)
+            if (serializeTemporary || !i->lock()->IsTemporary())
+                num_serializable_children++;
+    }
+
+    /// \hack Retain binary compatibility with earlier scene format, at the cost of max. 65535 components or child entities
+    if (num_serializable > 0xffff)
+        LogError("Entity::SerializeToBinary: entity contains more than 65535 components, binary save will be erroneous");
+    if (num_serializable_children > 0xffff)
+        LogError("Entity::SerializeToBinary: entity contains more than 65535 child entities, binary save will be erroneous");
+
+    dst.Add<u32>(num_serializable | (num_serializable_children << 16));
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
-        if (!i->second->IsTemporary())
+        if (serializeTemporary || !i->second->IsTemporary())
         {
             dst.Add<u32>(i->second->TypeId()); ///\todo VLE this!
             dst.AddString(i->second->Name().toStdString());
@@ -448,6 +462,14 @@ void Entity::SerializeToBinary(kNet::DataSerializer &dst) const
             dst.Add<u32>(comp_bytes.size());
             dst.AddArray<u8>((const u8*)comp_bytes.data(), comp_bytes.size());
         }
+
+    // Serialize child entities
+    if (serializeChildren)
+    {
+        for (ChildEntityVector::const_iterator i = children_.begin(); i != children_.end(); ++i)
+            if (serializeTemporary || !i->lock()->IsTemporary())
+                i->lock()->SerializeToBinary(dst, serializeTemporary, true);
+    }
 }
 
 /* Disabled for now, since have to decide how entityID conflicts are handled.

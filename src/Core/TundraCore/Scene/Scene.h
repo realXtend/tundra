@@ -502,8 +502,10 @@ private slots:
 private:
     friend class ::SceneAPI;
 
-    /// Create entity from an XML element and recurse into child elements. Called internally.
+    /// Create entity from an XML element and recurse into child entities. Called internally.
     void CreateEntityFromXml(EntityPtr parent, const QDomElement& ent_elem, bool useEntityIDsFromFile, AttributeChange::Type change, std::vector<EntityWeakPtr>& entities, QHash<entity_id_t, entity_id_t>& oldToNewIds);
+    /// Create entity from binary data and recurse into child entities. Called internally.
+    void CreateEntityFromBinary(EntityPtr parent, kNet::DataDeserializer& source, bool useEntityIDsFromFile, AttributeChange::Type change, std::vector<EntityWeakPtr>& entities, QHash<entity_id_t, entity_id_t>& oldToNewIds);
 
     /// Container for an ongoing attribute interpolation
     struct AttributeInterpolation

@@ -102,7 +102,7 @@ public:
     /// @todo Implement a deserialization flow that takes that into account. In the meanwhile, use Scene
     /// functions for achieving the same.
 
-    void SerializeToBinary(kNet::DataSerializer &dst) const;
+    void SerializeToBinary(kNet::DataSerializer &dst, bool saveTemporary = false, bool saveChildren = true) const;
 //        void DeserializeFromBinary(kNet::DataDeserializer &src, AttributeChange::Type change);
 
     /// Emit EnterView signal. Called by the rendering subsystem
