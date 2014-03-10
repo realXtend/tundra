@@ -184,6 +184,9 @@ bool Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
         if (del_entity->Parent())
             del_entity->SetParent(0, AttributeChange::Disconnected);
 
+        // Remove all child entities. This may be recursive
+        del_entity->RemoveAllChildren(change);
+
         entities_.erase(it);
         
         // If entity somehow manages to live, at least it doesn't belong to the scene anymore
@@ -208,7 +211,8 @@ void Scene::RemoveAllEntities(bool signal, AttributeChange::Type change)
     std::list<entity_id_t> entIds;
     for (EntityMap::iterator it = entities_.begin(); it != entities_.end(); ++it)
     {
-        if (it->second.get())
+        // Only root-level entities need to be removed, the rest clean themselves up automatically
+        if (it->second.get() && !it->second->Parent())
             entIds.push_back(it->second->Id());
     }
     while(entIds.size() > 0)
@@ -471,11 +475,14 @@ QByteArray Scene::SerializeToXmlString(bool serializeTemporary, bool serializeLo
     QDomDocument sceneDoc("Scene");
     QDomElement sceneElem = sceneDoc.createElement("scene");
 
-    for(const_iterator iter = begin(); iter != end(); ++iter)
+    EntityList rootLevel = RootLevelEntities();
+
+    for(EntityList::const_iterator iter = rootLevel.begin(); iter != rootLevel.end(); ++iter)
     {
-        if ((iter->second->IsLocal() && !serializeLocal) || (iter->second->IsTemporary() && !serializeTemporary))
+        EntityPtr ent = *iter;
+        if ((ent->IsLocal() && !serializeLocal) || (ent->IsTemporary() && !serializeTemporary))
             continue;
-        iter->second->SerializeToXML(sceneDoc, sceneElem, serializeTemporary);
+        ent->SerializeToXML(sceneDoc, sceneElem, serializeTemporary);
     }
 
     sceneDoc.appendChild(sceneElem);
@@ -619,68 +626,7 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
     QDomElement ent_elem = scene_elem.firstChildElement("entity");
     while(!ent_elem.isNull())
     {
-        const bool replicated = ParseBool(ent_elem.attribute("sync"), true);
-        const bool temporary = ParseBool(ent_elem.attribute("temporary"), false);
-
-        QString id_str = ent_elem.attribute("id");
-        entity_id_t id = !id_str.isEmpty() ? static_cast<entity_id_t>(id_str.toInt()) : 0;
-        if (!useEntityIDsFromFile || id == 0) // If we don't want to use entity IDs from file, or if file doesn't contain one, generate a new one.
-        {
-            entity_id_t originaId = id;
-            id = replicated ? NextFreeId() : NextFreeIdLocal();
-            if (originaId != 0 && !oldToNewIds.contains(originaId))
-                oldToNewIds[originaId] = id;
-        }
-        else if (useEntityIDsFromFile && HasEntity(id)) // If we use IDs from file and they conflict with some of the existing IDs, change the ID of the old entity
-        {
-            entity_id_t newID = replicated ? NextFreeId() : NextFreeIdLocal();
-            ChangeEntityId(id, newID);
-        }
-
-        if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene, delete the old entity.
-        {
-            LogDebug("Scene::CreateContentFromXml: Destroying previous entity with id " + QString::number(id) + " to avoid conflict with new created entity with the same id.");
-            LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id) +" might not replicate properly!");
-            RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
-        }
-
-        EntityPtr entity = CreateEntity(id);
-        if (entity)
-        {
-            entity->SetTemporary(temporary);
-
-            QDomElement comp_elem = ent_elem.firstChildElement("component");
-            while(!comp_elem.isNull())
-            {
-                const QString typeName = comp_elem.attribute("type");
-                const u32 typeId = ParseUInt(comp_elem.attribute("typeId"), 0xffffffff);
-                const QString name = comp_elem.attribute("name");
-                const bool compReplicated = ParseBool(comp_elem.attribute("sync"), true);
-                const bool temporary = ParseBool(comp_elem.attribute("temporary"), false);
-
-                // If we encounter an unknown component type, now is the time to register a placeholder type for it
-                // The XML holds all needed data for it, while binary doesn't
-                SceneAPI* sceneAPI = framework_->Scene();
-                if (!sceneAPI->IsComponentTypeRegistered(typeName))
-                    sceneAPI->RegisterPlaceholderComponentType(comp_elem);
-
-                ComponentPtr new_comp = (!typeName.isEmpty() ? entity->GetOrCreateComponent(typeName, name, AttributeChange::Default, compReplicated) :
-                    entity->GetOrCreateComponent(typeId, name, AttributeChange::Default, compReplicated));
-                if (new_comp)
-                {
-                    new_comp->SetTemporary(temporary);
-                    new_comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);// Trigger no signal yet when scene is in incoherent state
-                }
-
-                comp_elem = comp_elem.nextSiblingElement("component");
-            }
-            entities.push_back(entity);
-        }
-        else
-        {
-            LogError("Scene::CreateContentFromXml: Failed to create entity with id " + QString::number(id) + "!");
-        }
-
+        CreateEntityFromXml(EntityPtr(), ent_elem, useEntityIDsFromFile, change, entities, oldToNewIds);
         ent_elem = ent_elem.nextSiblingElement("entity");
     }
 
@@ -725,6 +671,85 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
     
     return ret;
 }
+
+void Scene::CreateEntityFromXml(EntityPtr parent, const QDomElement& ent_elem, bool useEntityIDsFromFile, AttributeChange::Type change, std::vector<EntityWeakPtr>& entities, QHash<entity_id_t, entity_id_t>& oldToNewIds)
+{
+    const bool replicated = ParseBool(ent_elem.attribute("sync"), true);
+    const bool temporary = ParseBool(ent_elem.attribute("temporary"), false);
+
+    QString id_str = ent_elem.attribute("id");
+    entity_id_t id = !id_str.isEmpty() ? static_cast<entity_id_t>(id_str.toInt()) : 0;
+    if (!useEntityIDsFromFile || id == 0) // If we don't want to use entity IDs from file, or if file doesn't contain one, generate a new one.
+    {
+        entity_id_t originaId = id;
+        id = replicated ? NextFreeId() : NextFreeIdLocal();
+        if (originaId != 0 && !oldToNewIds.contains(originaId))
+            oldToNewIds[originaId] = id;
+    }
+    else if (useEntityIDsFromFile && HasEntity(id)) // If we use IDs from file and they conflict with some of the existing IDs, change the ID of the old entity
+    {
+        entity_id_t newID = replicated ? NextFreeId() : NextFreeIdLocal();
+        ChangeEntityId(id, newID);
+    }
+
+    if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene, delete the old entity.
+    {
+        LogDebug("Scene::CreateContentFromXml: Destroying previous entity with id " + QString::number(id) + " to avoid conflict with new created entity with the same id.");
+        LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id) +" might not replicate properly!");
+        RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
+    }
+
+    EntityPtr entity;
+    if (!parent)
+        entity = CreateEntity(id);
+    else
+        entity = parent->CreateChild(id);
+
+    if (entity)
+    {
+        entity->SetTemporary(temporary);
+
+        QDomElement comp_elem = ent_elem.firstChildElement("component");
+        while(!comp_elem.isNull())
+        {
+            const QString typeName = comp_elem.attribute("type");
+            const u32 typeId = ParseUInt(comp_elem.attribute("typeId"), 0xffffffff);
+            const QString name = comp_elem.attribute("name");
+            const bool compReplicated = ParseBool(comp_elem.attribute("sync"), true);
+            const bool temporary = ParseBool(comp_elem.attribute("temporary"), false);
+
+            // If we encounter an unknown component type, now is the time to register a placeholder type for it
+            // The XML holds all needed data for it, while binary doesn't
+            SceneAPI* sceneAPI = framework_->Scene();
+            if (!sceneAPI->IsComponentTypeRegistered(typeName))
+                sceneAPI->RegisterPlaceholderComponentType(comp_elem);
+            
+            ComponentPtr new_comp = (!typeName.isEmpty() ? entity->GetOrCreateComponent(typeName, name, AttributeChange::Default, compReplicated) :
+                entity->GetOrCreateComponent(typeId, name, AttributeChange::Default, compReplicated));
+            if (new_comp)
+            {
+                new_comp->SetTemporary(temporary);
+                new_comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);// Trigger no signal yet when scene is in incoherent state
+            }
+
+            comp_elem = comp_elem.nextSiblingElement("component");
+        }
+        entities.push_back(entity);
+    }
+    else
+    {
+        LogError("Scene::CreateContentFromXml: Failed to create entity with id " + QString::number(id) + "!");
+    }
+
+    // Spawn any child entities
+    QDomElement childEnt_elem = ent_elem.firstChildElement("entity");
+    while (!childEnt_elem.isNull())
+    {
+        CreateEntityFromXml(entity, childEnt_elem, useEntityIDsFromFile, change, entities, oldToNewIds);
+        childEnt_elem = childEnt_elem.nextSiblingElement("entity");
+    }
+}
+
 
 QList<Entity *> Scene::CreateContentFromBinary(const QString &filename, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
@@ -1525,6 +1550,19 @@ EntityList Scene::FindEntitiesContaining(const QString &substring) const
     {
         EntityPtr entity = it->second;
         if (entity->Name().contains(substring, Qt::CaseSensitive))
+            entities.push_back(entity);
+    }
+
+    return entities;
+}
+
+EntityList Scene::RootLevelEntities() const
+{
+    EntityList entities;
+    for(const_iterator it = begin(); it != end(); ++it)
+    {
+        EntityPtr entity = it->second;
+        if (!entity->Parent())
             entities.push_back(entity);
     }
 

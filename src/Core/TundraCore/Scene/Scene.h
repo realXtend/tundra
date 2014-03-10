@@ -341,6 +341,9 @@ public slots:
     /** @param substring String to be searched. */
     EntityList FindEntitiesContaining(const QString &substring) const;
 
+    /// Return root-level entities, ie. those that have no parent.
+    EntityList RootLevelEntities() const;
+
     /// Loads the scene from XML.
     /** @param filename File name
         @param clearScene Do we want to clear the existing scene.
@@ -498,6 +501,9 @@ private slots:
 
 private:
     friend class ::SceneAPI;
+
+    /// Create entity from an XML element and recurse into child elements. Called internally.
+    void CreateEntityFromXml(EntityPtr parent, const QDomElement& ent_elem, bool useEntityIDsFromFile, AttributeChange::Type change, std::vector<EntityWeakPtr>& entities, QHash<entity_id_t, entity_id_t>& oldToNewIds);
 
     /// Container for an ongoing attribute interpolation
     struct AttributeInterpolation

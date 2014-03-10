@@ -282,14 +282,16 @@ public slots:
     /// Serializes this entity and its' components to the given XML document
     /** @param doc The XML document to serialize this entity to.
         @param base_element Points to the <scene> element of this XML document. This entity will be serialized as a child to base_element.
-        @param serializeTemporary Serialize temporary entities for application-specific purposes. The default value is false. */
-    void SerializeToXML(QDomDocument& doc, QDomElement& base_element, bool serializeTemporary = false) const;
+        @param serializeTemporary Serialize temporary entities for application-specific purposes. The default value is false. 
+        @param serializeChildren Serialize child entities. Default true. */
+    void SerializeToXML(QDomDocument& doc, QDomElement& base_element, bool serializeTemporary = false, bool serializeChildren = true) const;
 //        void DeserializeFromXML(QDomElement& element, AttributeChange::Type change);
 
     /// Serializes this entity, and returns the generated XML as a string
     /** @param serializeTemporary Serialize temporary entities for application-specific purposes. The default value is false.
+        @param serializeChildren Serialize child entities. Default true.
         @sa SerializeToXML */
-    QString SerializeToXMLString(bool serializeTemporary = false) const;
+    QString SerializeToXMLString(bool serializeTemporary = false, bool serializeChildren = true) const;
 //        bool DeserializeFromXMLString(const QString &src, AttributeChange::Type change);
 
     /// Sets name of the entity to EC_Name component. If the component doesn't exist, it will be created.
@@ -392,11 +394,14 @@ public slots:
     void AddChild(Entity* child, AttributeChange::Type change = AttributeChange::Default);
 
     /// Remove a child entity.
-    /** Will remove the child entity from the whole scene. If the intention is to re-parent the entity, AddChild() to the new parent
+    /** Will remove the child entity from the scene. If the intention is to re-parent the entity, AddChild() to the new parent
         should be called instead. 
         @param child Child entity to remove.
         @param change Change signaling mode. */
     void RemoveChild(Entity* child, AttributeChange::Type change = AttributeChange::Default);
+
+    /// Remove all child entities.
+    void RemoveAllChildren(AttributeChange::Type change = AttributeChange::Default);
 
     /// Detach a child entity to the scene root level (make it parentless) without removing it from the scene.
     /** @param child Child entity to detach.

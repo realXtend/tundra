@@ -455,7 +455,7 @@ void Entity::DeserializeFromBinary(kNet::DataDeserializer &src, AttributeChange:
 {
 }*/
 
-void Entity::SerializeToXML(QDomDocument &doc, QDomElement &base_element, bool serializeTemporary) const
+void Entity::SerializeToXML(QDomDocument &doc, QDomElement &base_element, bool serializeTemporary, bool serializeChildren) const
 {
     QDomElement entity_elem = doc.createElement("entity");
     entity_elem.setAttribute("id", QString::number(Id()));
@@ -466,6 +466,13 @@ void Entity::SerializeToXML(QDomDocument &doc, QDomElement &base_element, bool s
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
             i->second->SerializeTo(doc, entity_elem, serializeTemporary);
 
+    // Serialize child entities
+    if (serializeChildren)
+    {
+        for(ChildEntityVector::const_iterator i = children_.begin(); i != children_.end(); ++i)
+            i->lock()->SerializeToXML(doc, entity_elem, serializeTemporary, true);
+    }
+
     base_element.appendChild(entity_elem);
 }
 
@@ -474,12 +481,12 @@ void Entity::DeserializeFromXML(QDomElement& element, AttributeChange::Type chan
 {
 }*/
 
-QString Entity::SerializeToXMLString(bool serializeTemporary) const
+QString Entity::SerializeToXMLString(bool serializeTemporary, bool serializeChildren) const
 {
     QDomDocument scene_doc("Scene");
     QDomElement scene_elem = scene_doc.createElement("scene");
 
-    SerializeToXML(scene_doc, scene_elem, serializeTemporary);
+    SerializeToXML(scene_doc, scene_elem, serializeTemporary, serializeChildren);
     return scene_doc.toString();
 }
 
@@ -519,6 +526,10 @@ EntityPtr Entity::Clone(bool local, bool temporary, const QString &cloneName, At
             cloneNameWritten = true;
         }
     }
+    // Serialize child entities
+    for(ChildEntityVector::const_iterator i = children_.begin(); i != children_.end(); ++i)
+        i->lock()->SerializeToXML(doc, entityElem, true, true);
+
     sceneElem.appendChild(entityElem);
     doc.appendChild(sceneElem);
 
@@ -705,6 +716,12 @@ void Entity::RemoveChild(Entity* child, AttributeChange::Type change)
         scene_->RemoveEntity(child->Id(), change);
     else
         LogError("Entity::RemoveChild: null parent scene, can not remove the entity from scene");
+}
+
+void Entity::RemoveAllChildren(AttributeChange::Type change)
+{
+    while (children_.size())
+        RemoveChild(children_[0].lock().get(), change);
 }
 
 void Entity::DetachChild(Entity* child, AttributeChange::Type change)
