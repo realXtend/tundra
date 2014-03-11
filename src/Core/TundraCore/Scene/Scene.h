@@ -506,6 +506,10 @@ private:
     void CreateEntityFromXml(EntityPtr parent, const QDomElement& ent_elem, bool useEntityIDsFromFile, AttributeChange::Type change, std::vector<EntityWeakPtr>& entities, QHash<entity_id_t, entity_id_t>& oldToNewIds);
     /// Create entity from binary data and recurse into child entities. Called internally.
     void CreateEntityFromBinary(EntityPtr parent, kNet::DataDeserializer& source, bool useEntityIDsFromFile, AttributeChange::Type change, std::vector<EntityWeakPtr>& entities, QHash<entity_id_t, entity_id_t>& oldToNewIds);
+    /// Create entity from entity desc and recurse into child entities. Called internally.
+    void CreateEntityFromDesc(EntityPtr parent, const EntityDesc& source, bool useEntityIDsFromFile, AttributeChange::Type change, QList<Entity *>& entities, QHash<entity_id_t, entity_id_t>& oldToNewIds);
+    /// Create entity desc from an XML element and recurse into child entities. Called internally.
+    void CreateEntityDescFromXml(SceneDesc& sceneDesc, QList<EntityDesc>& dest, const QDomElement& ent_elem) const;
 
     /// Container for an ongoing attribute interpolation
     struct AttributeInterpolation

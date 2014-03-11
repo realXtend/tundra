@@ -935,77 +935,7 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
     QHash<entity_id_t, entity_id_t> oldToNewIds;
 
     foreach(const EntityDesc &e, desc.entities)
-    {
-        entity_id_t id = static_cast<entity_id_t>(e.id.toInt());
-
-        if (e.id.isEmpty() || !useEntityIDsFromFile)
-        {
-            entity_id_t originaId = id;
-            id = e.local ? NextFreeIdLocal() : NextFreeId();
-            if (originaId != 0 && !oldToNewIds.contains(originaId))
-                oldToNewIds[originaId] = id;
-        }
-
-        if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
-        {
-            LogDebug("Scene::CreateContentFromSceneDescription: Destroying previous entity with id " + QString::number(id) + " to avoid conflict with new created entity with the same id.");
-            LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id) + " might not replicate properly!");
-            RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
-        }
-
-        EntityPtr entity = CreateEntity(id);
-        assert(entity);
-        if (entity)
-        {
-            foreach(const ComponentDesc &c, e.components)
-            {
-                if (c.typeName.isNull())
-                    continue;
-
-                // If we encounter an unknown component type, now is the time to register a placeholder type for it
-                // The componentdesc holds all needed data for it
-                SceneAPI* sceneAPI = framework_->Scene();
-                if (!sceneAPI->IsComponentTypeRegistered(c.typeName))
-                    sceneAPI->RegisterPlaceholderComponentType(c);
-
-                ComponentPtr comp = entity->GetOrCreateComponent(c.typeName, c.name);
-                assert(comp);
-                if (!comp)
-                {
-                    LogError(QString("Scene::CreateContentFromSceneDesc: failed to create component %1 %2 .").arg(c.typeName).arg(c.name));
-                    continue;
-                }
-                if (comp->TypeId() == 25 /*EC_DynamicComponent*/)
-                {
-                    QDomDocument temp_doc;
-                    QDomElement root_elem = temp_doc.createElement("component");
-                    root_elem.setAttribute("type", c.typeName);
-                    root_elem.setAttribute("name", c.name);
-                    root_elem.setAttribute("sync", c.sync);
-                    foreach(const AttributeDesc &a, c.attributes)
-                    {
-                        QDomElement child_elem = temp_doc.createElement("attribute");
-                        child_elem.setAttribute("value", a.value);
-                        child_elem.setAttribute("type", a.typeName);
-                        child_elem.setAttribute("name", a.name);
-                        root_elem.appendChild(child_elem);
-                    }
-                    comp->DeserializeFrom(root_elem, AttributeChange::Default);
-                }
-                else
-                {
-                    foreach(IAttribute *attr, comp->Attributes())
-                        if (attr)
-                            foreach(const AttributeDesc &a, c.attributes)
-                                if (attr->TypeName() == a.typeName && attr->Name() == a.name)
-                                    attr->FromString(a.value, AttributeChange::Disconnected); // Trigger no signal yet when scene is in incoherent state
-                }
-            }
-
-            entity->SetTemporary(e.temporary);
-            ret.append(entity.get());
-        }
-    }
+        CreateEntityFromDesc(EntityPtr(), e, useEntityIDsFromFile, change, ret, oldToNewIds);
 
     // All entities & components have been loaded. Trigger change for them now.
     foreach(Entity *entity, ret)
@@ -1034,6 +964,88 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
     }
 
     return ret;
+}
+
+void Scene::CreateEntityFromDesc(EntityPtr parent, const EntityDesc& e, bool useEntityIDsFromFile, AttributeChange::Type change, QList<Entity *>& entities, QHash<entity_id_t, entity_id_t>& oldToNewIds)
+{
+    entity_id_t id = static_cast<entity_id_t>(e.id.toInt());
+
+    if (e.id.isEmpty() || !useEntityIDsFromFile)
+    {
+        entity_id_t originaId = id;
+        id = e.local ? NextFreeIdLocal() : NextFreeId();
+        if (originaId != 0 && !oldToNewIds.contains(originaId))
+            oldToNewIds[originaId] = id;
+    }
+
+    if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
+    {
+        LogDebug("Scene::CreateContentFromSceneDescription: Destroying previous entity with id " + QString::number(id) + " to avoid conflict with new created entity with the same id.");
+        LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id) + " might not replicate properly!");
+        RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
+    }
+
+    EntityPtr entity;
+    if (!parent)
+        entity = CreateEntity(id);
+    else
+        entity = parent->CreateChild(id);
+
+    assert(entity);
+    if (entity)
+    {
+        foreach(const ComponentDesc &c, e.components)
+        {
+            if (c.typeName.isNull())
+                continue;
+
+            // If we encounter an unknown component type, now is the time to register a placeholder type for it
+            // The componentdesc holds all needed data for it
+            SceneAPI* sceneAPI = framework_->Scene();
+            if (!sceneAPI->IsComponentTypeRegistered(c.typeName))
+                sceneAPI->RegisterPlaceholderComponentType(c);
+
+            ComponentPtr comp = entity->GetOrCreateComponent(c.typeName, c.name);
+            assert(comp);
+            if (!comp)
+            {
+                LogError(QString("Scene::CreateContentFromSceneDesc: failed to create component %1 %2 .").arg(c.typeName).arg(c.name));
+                continue;
+            }
+            if (comp->TypeId() == 25 /*EC_DynamicComponent*/)
+            {
+                QDomDocument temp_doc;
+                QDomElement root_elem = temp_doc.createElement("component");
+                root_elem.setAttribute("type", c.typeName);
+                root_elem.setAttribute("name", c.name);
+                root_elem.setAttribute("sync", c.sync);
+                foreach(const AttributeDesc &a, c.attributes)
+                {
+                    QDomElement child_elem = temp_doc.createElement("attribute");
+                    child_elem.setAttribute("value", a.value);
+                    child_elem.setAttribute("type", a.typeName);
+                    child_elem.setAttribute("name", a.name);
+                    root_elem.appendChild(child_elem);
+                }
+                comp->DeserializeFrom(root_elem, AttributeChange::Default);
+            }
+            else
+            {
+                foreach(IAttribute *attr, comp->Attributes())
+                    if (attr)
+                        foreach(const AttributeDesc &a, c.attributes)
+                            if (attr->TypeName() == a.typeName && attr->Name() == a.name)
+                                attr->FromString(a.value, AttributeChange::Disconnected); // Trigger no signal yet when scene is in incoherent state
+            }
+        }
+
+        entity->SetTemporary(e.temporary);
+        entities.append(entity.get());
+
+        // Create child entities recursively
+        foreach(const EntityDesc &ce, e.children)
+            CreateEntityFromDesc(entity, ce, useEntityIDsFromFile, change, entities, oldToNewIds);
+    }
 }
 
 SceneDesc Scene::CreateSceneDescFromXml(const QString &filename) const
@@ -1087,97 +1099,109 @@ SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) 
     QDomElement ent_elem = scene_elem.firstChildElement("entity");
     while(!ent_elem.isNull())
     {
-        QString id_str = ent_elem.attribute("id");
-        if (!id_str.isEmpty())
-        {
-            EntityDesc entityDesc;
-            entityDesc.id = id_str;
-            entityDesc.local = !ParseBool(ent_elem.attribute("sync"), true); /**< @todo if no "sync"* attr, deduct from the ID. */
-            entityDesc.temporary = ParseBool(ent_elem.attribute("temporary"), false);
-
-            QDomElement comp_elem = ent_elem.firstChildElement("component");
-            while(!comp_elem.isNull())
-            {
-                ComponentDesc compDesc;
-                compDesc.typeName = comp_elem.attribute("type");
-                compDesc.typeId = ParseUInt(comp_elem.attribute("id"), 0xffffffff);
-                /// @todo 27.09.2013 assert that typeName and typeId match
-                /// @todo 27.09.2013 If mismatch, show warning, and use SceneAPI's
-                /// ComponentTypeNameForTypeId and ComponentTypeIdForTypeName to resolve one or the other?
-                compDesc.name = comp_elem.attribute("name");
-                compDesc.sync = ParseBool(comp_elem.attribute("sync"));
-                const bool hasTypeName = !compDesc.typeName.isEmpty();
-
-                // A bit of a hack to get the name from EC_Name.
-                if (entityDesc.name.isEmpty() && (compDesc.typeName == EC_Name::TypeNameStatic() || compDesc.typeId == EC_Name::ComponentTypeId))
-                {
-                    ComponentPtr comp = (hasTypeName ? framework_->Scene()->CreateComponentByName(0, compDesc.typeName, compDesc.name) :
-                        framework_->Scene()->CreateComponentById(0, compDesc.typeId, compDesc.name));
-                    EC_Name *ecName = checked_static_cast<EC_Name*>(comp.get());
-                    ecName->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
-                    entityDesc.name = ecName->name.Get();
-                    entityDesc.group = ecName->group.Get();
-                }
-
-                ComponentPtr comp = (hasTypeName ? framework_->Scene()->CreateComponentByName(0, compDesc.typeName, compDesc.name) :
-                    framework_->Scene()->CreateComponentById(0, compDesc.typeId, compDesc.name));
-                if (!comp) // Move to next element if component creation fails.
-                {
-                    comp_elem = comp_elem.nextSiblingElement("component");
-                    continue;
-                }
-
-                // Find asset references.
-                comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
-                foreach(IAttribute *a,comp->Attributes())
-                {
-                    if (!a)
-                        continue;
-                    
-                    const QString typeName = a->TypeName();
-                    AttributeDesc attrDesc = { typeName, a->Name(), a->ToString(), a->Id() };
-                    compDesc.attributes.append(attrDesc);
-
-                    QString attrValue = a->ToString();
-                    if ((typeName.compare("AssetReference", Qt::CaseInsensitive) == 0 || typeName.compare("AssetReferenceList", Qt::CaseInsensitive) == 0|| 
-                        (a->Metadata() && a->Metadata()->elementType.compare("AssetReference", Qt::CaseInsensitive) == 0)) &&
-                        !attrValue.isEmpty())
-                    {
-                        // We might have multiple references, ";" used as a separator.
-                        QStringList values = attrValue.split(";");
-                        foreach(QString value, values)
-                        {
-                            AssetDesc ad;
-                            ad.typeName = a->Name();
-                            ad.dataInMemory = false;
-
-                            // Rewrite source refs for asset descs, if necessary.
-                            QString basePath = QFileInfo(sceneDesc.filename).dir().path();
-                            framework_->Asset()->ResolveLocalAssetPath(value, basePath, ad.source);
-                            ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
-
-                            sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
-
-                            // If this is a script, look for dependecies
-                            if (ad.source.toLower().endsWith(".js"))
-                                SearchScriptAssetDependencies(ad.source, sceneDesc);
-                        }
-                    }
-                }
-
-                entityDesc.components.append(compDesc);
-
-                comp_elem = comp_elem.nextSiblingElement("component");
-            }
-
-            sceneDesc.entities.append(entityDesc);
-        }
-
+        CreateEntityDescFromXml(sceneDesc, sceneDesc.entities, ent_elem);
         // Process siblings.
         ent_elem = ent_elem.nextSiblingElement("entity");
     }
 
     return sceneDesc;
+}
+
+void Scene::CreateEntityDescFromXml(SceneDesc& sceneDesc, QList<EntityDesc>& dest, const QDomElement& ent_elem) const
+{
+    QString id_str = ent_elem.attribute("id");
+    if (!id_str.isEmpty())
+    {
+        EntityDesc entityDesc;
+        entityDesc.id = id_str;
+        entityDesc.local = !ParseBool(ent_elem.attribute("sync"), true); /**< @todo if no "sync"* attr, deduct from the ID. */
+        entityDesc.temporary = ParseBool(ent_elem.attribute("temporary"), false);
+
+        QDomElement comp_elem = ent_elem.firstChildElement("component");
+        while(!comp_elem.isNull())
+        {
+            ComponentDesc compDesc;
+            compDesc.typeName = comp_elem.attribute("type");
+            compDesc.typeId = ParseUInt(comp_elem.attribute("id"), 0xffffffff);
+            /// @todo 27.09.2013 assert that typeName and typeId match
+            /// @todo 27.09.2013 If mismatch, show warning, and use SceneAPI's
+            /// ComponentTypeNameForTypeId and ComponentTypeIdForTypeName to resolve one or the other?
+            compDesc.name = comp_elem.attribute("name");
+            compDesc.sync = ParseBool(comp_elem.attribute("sync"));
+            const bool hasTypeName = !compDesc.typeName.isEmpty();
+
+            // A bit of a hack to get the name from EC_Name.
+            if (entityDesc.name.isEmpty() && (compDesc.typeName == EC_Name::TypeNameStatic() || compDesc.typeId == EC_Name::ComponentTypeId))
+            {
+                ComponentPtr comp = (hasTypeName ? framework_->Scene()->CreateComponentByName(0, compDesc.typeName, compDesc.name) :
+                    framework_->Scene()->CreateComponentById(0, compDesc.typeId, compDesc.name));
+                EC_Name *ecName = checked_static_cast<EC_Name*>(comp.get());
+                ecName->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+                entityDesc.name = ecName->name.Get();
+                entityDesc.group = ecName->group.Get();
+            }
+
+            ComponentPtr comp = (hasTypeName ? framework_->Scene()->CreateComponentByName(0, compDesc.typeName, compDesc.name) :
+                framework_->Scene()->CreateComponentById(0, compDesc.typeId, compDesc.name));
+            if (!comp) // Move to next element if component creation fails.
+            {
+                comp_elem = comp_elem.nextSiblingElement("component");
+                continue;
+            }
+
+            // Find asset references.
+            comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+            foreach(IAttribute *a,comp->Attributes())
+            {
+                if (!a)
+                    continue;
+                    
+                const QString typeName = a->TypeName();
+                AttributeDesc attrDesc = { typeName, a->Name(), a->ToString(), a->Id() };
+                compDesc.attributes.append(attrDesc);
+
+                QString attrValue = a->ToString();
+                if ((typeName.compare("AssetReference", Qt::CaseInsensitive) == 0 || typeName.compare("AssetReferenceList", Qt::CaseInsensitive) == 0|| 
+                    (a->Metadata() && a->Metadata()->elementType.compare("AssetReference", Qt::CaseInsensitive) == 0)) &&
+                    !attrValue.isEmpty())
+                {
+                    // We might have multiple references, ";" used as a separator.
+                    QStringList values = attrValue.split(";");
+                    foreach(QString value, values)
+                    {
+                        AssetDesc ad;
+                        ad.typeName = a->Name();
+                        ad.dataInMemory = false;
+
+                        // Rewrite source refs for asset descs, if necessary.
+                        QString basePath = QFileInfo(sceneDesc.filename).dir().path();
+                        framework_->Asset()->ResolveLocalAssetPath(value, basePath, ad.source);
+                        ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
+
+                        sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
+
+                        // If this is a script, look for dependecies
+                        if (ad.source.toLower().endsWith(".js"))
+                            SearchScriptAssetDependencies(ad.source, sceneDesc);
+                    }
+                }
+            }
+
+            entityDesc.components.append(compDesc);
+
+            comp_elem = comp_elem.nextSiblingElement("component");
+        }
+
+        // Process child entities
+        QDomElement childEnt_elem = ent_elem.firstChildElement("entity");
+        while (!childEnt_elem.isNull())
+        {
+            CreateEntityDescFromXml(sceneDesc, entityDesc.children, childEnt_elem);
+            childEnt_elem = childEnt_elem.nextSiblingElement("entity");
+        }
+
+        dest.append(entityDesc);
+    }
 }
 
 ///\todo This function is a redundant duplicate copy of void ScriptAsset::ParseReferences(). Delete this code. -jj.
