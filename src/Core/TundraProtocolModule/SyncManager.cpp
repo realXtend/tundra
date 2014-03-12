@@ -307,6 +307,7 @@ void SyncManager::RegisterToScene(ScenePtr scene)
     connect(sceneptr, SIGNAL( ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecTypeField) ),
         SLOT( OnActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecTypeField)));
     connect(sceneptr, SIGNAL( EntityTemporaryStateToggled(Entity *, AttributeChange::Type) ), SLOT( OnEntityPropertiesChanged(Entity *, AttributeChange::Type) ));
+    connect(sceneptr, SIGNAL( EntityParentChanged(Entity *, Entity*, AttributeChange::Type) ), SLOT( OnEntityParentChanged(Entity *, Entity *, AttributeChange::Type) ));
 }
 
 void SyncManager::HandleNetworkMessage(UserConnection* user, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
@@ -353,6 +354,9 @@ void SyncManager::HandleNetworkMessage(UserConnection* user, kNet::packet_id_t p
             break;
         case cEditEntityPropertiesMessage:
             HandleEditEntityProperties(user, data, numBytes);
+            break;
+        case cSetEntityParentMessage:
+            HandleSetEntityParent(user, data, numBytes);
             break;
         case cEntityActionMessage:
             {
@@ -705,6 +709,34 @@ void SyncManager::OnEntityPropertiesChanged(Entity* entity, AttributeChange::Typ
     else
     {
         serverConnection_->syncState->MarkEntityDirty(entity->Id(), true);
+    }
+}
+
+void SyncManager::OnEntityParentChanged(Entity* entity, Entity* newParent, AttributeChange::Type change)
+{
+    assert(entity);
+    if (!entity)
+        return;
+    if ((change != AttributeChange::Replicate) || (entity->IsLocal()))
+        return;
+    if (newParent && newParent->IsLocal())
+    {
+        LogError("Replicated entity " + QString::number(entity->Id()) + " is parented to a local entity, can not replicate parenting properly over the network");
+        return;
+    }
+
+    if (owner_->IsServer())
+    {
+        UserConnectionList& users = owner_->GetServer()->UserConnections();
+        for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        {
+            if ((*i)->syncState)
+                (*i)->syncState->MarkEntityDirty(entity->Id(), false, true);
+        }
+    }
+    else
+    {
+        serverConnection_->syncState->MarkEntityDirty(entity->Id(), false, true);
     }
 }
 
@@ -1403,7 +1435,7 @@ void SyncManager::HandleEditEntityProperties(UserConnection* source, const char*
     UNREFERENCED_PARAM(sceneID)
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     
-    if (!ValidateAction(source, cRemoveAttributesMessage, entityID))
+    if (!ValidateAction(source, cEditEntityPropertiesMessage, entityID))
         return;
         
     EntityPtr entity = scene->GetEntity(entityID);
@@ -1421,8 +1453,57 @@ void SyncManager::HandleEditEntityProperties(UserConnection* source, const char*
     bool newTemporary = ds.Read<u8>() ? true : false;
     entity->SetTemporary(newTemporary, change);
     
-    // Remove the properties dirty bit from sender's syncstate so that we do not echo the change bac
+    // Remove the properties dirty bit from sender's syncstate so that we do not echo the change back
     state->entities[entityID].hasPropertyChanges = false;
+}
+
+void SyncManager::HandleSetEntityParent(UserConnection* source, const char* data, size_t numBytes)
+{
+    assert(source);
+    // Get matching syncstate for reflecting the changes
+    SceneSyncState* state = source->syncState.get();
+    ScenePtr scene = GetRegisteredScene();
+    if (!scene || !state)
+    {
+        LogWarning("Null scene or sync state, disregarding SetEntityParent message");
+        return;
+    }
+    
+    bool isServer = owner_->IsServer();
+    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
+    
+    kNet::DataDeserializer ds(data, numBytes);
+    unsigned sceneID = ds.ReadVLE<kNet::VLE8_16_32>(); ///\todo Dummy ID. Lookup scene once multiscene is properly supported
+    UNREFERENCED_PARAM(sceneID)
+    entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
+    entity_id_t parentEntityID = ds.ReadVLE<kNet::VLE8_16_32>();
+    
+    if (!ValidateAction(source, cSetEntityParentMessage, entityID))
+        return;
+    
+    EntityPtr entity = scene->GetEntity(entityID);
+    EntityPtr parentEntity = parentEntityID ? scene->GetEntity(parentEntityID) : EntityPtr();
+
+    if (entity && !scene->AllowModifyEntity(source, entity.get())) // check if allowed to modify this entity.
+        return;
+
+    if (!entity)
+    {
+        LogWarning("Entity " + QString::number(entityID) + " not found for SetEntityParent message");
+        return;
+    }
+
+    if (parentEntityID && !parentEntity)
+    {
+        LogWarning("Parent entity " + QString::number(parentEntityID) + " not found for SetEntityParent message");
+        return;
+    }
+    
+    entity->SetParent(parentEntity.get(), change);
+    
+    // Remove the properties dirty bit from sender's syncstate so that we do not echo the change back
+    state->entities[entityID].hasParentChange = false;
 }
 
 void SyncManager::HandleRegisterComponentType(UserConnection* source, const char* data, size_t numBytes)
@@ -1549,6 +1630,14 @@ void SyncManager::ProcessSyncState(UserConnection* user)
             ds.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
             // Do not write the temporary flag as a bit to not desync the byte alignment at this point, as a lot of data potentially follows
             ds.Add<u8>(entity->IsTemporary() ? 1 : 0);
+            // If hierarchic scene is supported, send parent entity ID or 0 if unparented
+            if (user->ProtocolVersion() >= ProtocolHierarchicScene)
+            {
+                if (entity->Parent() && entity->Parent()->IsLocal())
+                    LogError("Replicated entity " + QString::number(entityState.id) + " is parented to a local entity, can not replicate parenting properly over the network");
+
+                ds.AddVLE<kNet::VLE8_16_32>(entity->Parent() ? (entity->Parent()->Id() & UniqueIdGenerator::LAST_REPLICATED_ID) : 0);
+            }
             
             const Entity::ComponentMap& components = entity->Components();
             // Count the amount of replicated components
@@ -1834,6 +1923,16 @@ void SyncManager::ProcessSyncState(UserConnection* user)
                 user->Send(cEditEntityPropertiesMessage, true, true, editPropertiesDs);
                 ++numMessagesSent;
             }
+            if (entityState.hasParentChange && user->ProtocolVersion() >= ProtocolHierarchicScene)
+            {
+                EntityPtr parent = entity->Parent();
+                kNet::DataSerializer editParentDs(editAttrsBuffer_, 1024);
+                editParentDs.AddVLE<kNet::VLE8_16_32>(sceneId);
+                editParentDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                editParentDs.AddVLE<kNet::VLE8_16_32>(parent ? (parent->Id() & UniqueIdGenerator::LAST_REPLICATED_ID) : 0);
+                user->Send(cSetEntityParentMessage, true, true, editParentDs);
+                ++numMessagesSent;
+            }
             
             // The entity has been processed fully. Clear dirty flags.
             state->MarkEntityProcessed(entity->Id());
@@ -1967,12 +2066,22 @@ void SyncManager::HandleCreateEntity(UserConnection* source, const char* data, s
     
     std::vector<std::pair<component_id_t, component_id_t> > componentIdRewrites;
 
+    entity_id_t parentEntityID = 0;
+
     try
     {    
         // Read the temporary flag
         bool temporary = ds.Read<u8>() != 0;
         entity->SetTemporary(temporary);
-        
+
+        // In hierarchic scene protocol, read the parent entity ID
+        if (source->ProtocolVersion() >= ProtocolHierarchicScene)
+        {
+            parentEntityID = ds.ReadVLE<kNet::VLE8_16_32>();
+            if (parentEntityID)
+                entity->SetParent(scene->EntityById(parentEntityID).get(), change);
+        }
+
         // Read the components
         unsigned numComponents = ds.ReadVLE<kNet::VLE8_16_32>();
         for(uint i = 0; i < numComponents; ++i)

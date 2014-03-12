@@ -111,6 +111,9 @@ private slots:
 
     /// Trigger sync of entity properties (temporary status) change
     void OnEntityPropertiesChanged(Entity* entity, AttributeChange::Type change);
+
+    /// Trigger sync of entity parent change
+    void OnEntityParentChanged(Entity* entity, Entity* newParent, AttributeChange::Type change);
     
     /// Trigger sync of a custom component type
     void OnPlaceholderComponentTypeRegistered(u32 typeId, const QString& typeName, AttributeChange::Type change);
@@ -144,6 +147,8 @@ private:
     void HandleEditEntityProperties(UserConnection* source, const char* data, size_t numBytes);
     /// Handle component type registration message.
     void HandleRegisterComponentType(UserConnection* source, const char* data, size_t numBytes);
+    /// Handle entity parent change message.
+    void HandleSetEntityParent(UserConnection* source, const char* data, size_t numBytes);
 
     void HandleRigidBodyChanges(UserConnection* source, kNet::packet_id_t packetId, const char* data, size_t numBytes);
     

@@ -35,6 +35,9 @@ const unsigned long cAssetDeletedMessage = 122;
 // Custom component types
 const unsigned long cRegisterComponentTypeMessage = 123;
 
+// Entity parenting
+const unsigned long cSetEntityParentMessage = 124;
+
 // In case of network message structs are regenerated and descriptions get deleted., saving their descriptions here.
 // MsgAssetDeleted: Network message informing that asset has been deleted from storage.
 // MsgAssetDiscovery: Network message informing that new asset has been discovered in storage.

@@ -1183,7 +1183,7 @@ void Scene::CreateEntityDescFromXml(SceneDesc& sceneDesc, QList<EntityDesc>& des
                         // If this is a script, look for dependecies
                         if (ad.source.toLower().endsWith(".js"))
                             SearchScriptAssetDependencies(ad.source, sceneDesc);
-                    }
+                    } 
                 }
             }
 

@@ -72,6 +72,7 @@ struct EntitySyncState
         isNew(true),
         isInQueue(false),
         hasPropertyChanges(false),
+        hasParentChange(false),
         id(0),
         avgUpdateInterval(0.0f)
     {
@@ -141,6 +142,7 @@ struct EntitySyncState
         dirtyQueue.clear();
         isNew = false;
         hasPropertyChanges = false;
+        hasParentChange = false;
     }
     
     void UpdateReceived()
@@ -164,6 +166,7 @@ struct EntitySyncState
     bool isNew; ///< The client does not have the entity and it must be serialized in full
     bool isInQueue; ///< The entity is already in the scene's dirty queue
     bool hasPropertyChanges; ///< The entity has changes into its other properties, such as temporary flag
+    bool hasParentChange; ///> The entity's parent has changed
     
     kNet::PolledTimer updateTimer; ///< Last update received timer
     float avgUpdateInterval; ///< Average network update interval in seconds
@@ -350,7 +353,7 @@ public:
     void MarkEntityProcessed(entity_id_t id);
     void MarkComponentProcessed(entity_id_t id, component_id_t compId);
 
-    void MarkEntityDirty(entity_id_t id, bool hasPropertyChanges = false);
+    void MarkEntityDirty(entity_id_t id, bool hasPropertyChanges = false, bool hasParentChange = false);
     void MarkEntityRemoved(entity_id_t id);
 
     void MarkComponentDirty(entity_id_t id, component_id_t compId);
