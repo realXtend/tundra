@@ -1476,8 +1476,33 @@ void SyncManager::HandleSetEntityParent(UserConnection* source, const char* data
     kNet::DataDeserializer ds(data, numBytes);
     unsigned sceneID = ds.ReadVLE<kNet::VLE8_16_32>(); ///\todo Dummy ID. Lookup scene once multiscene is properly supported
     UNREFERENCED_PARAM(sceneID)
-    entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
-    entity_id_t parentEntityID = ds.ReadVLE<kNet::VLE8_16_32>();
+    entity_id_t entityID = ds.Read<u32>();
+    entity_id_t parentEntityID = ds.Read<u32>();
+    
+    // If either entity ID is an unacked range ID, try to convert
+    if (isServer)
+    {
+        if (entityID >= UniqueIdGenerator::FIRST_UNACKED_ID && entityID < UniqueIdGenerator::FIRST_LOCAL_ID)
+        {
+            if (source->unackedIdsToRealIds.find(entityID) != source->unackedIdsToRealIds.end())
+                entityID = source->unackedIdsToRealIds[entityID];
+            else
+            {
+                LogWarning("Client sent unknown unacked entity ID " + QString::number(entityID) + " in SetEntityParent message");
+                return;
+            }
+        }
+        if (parentEntityID >= UniqueIdGenerator::FIRST_UNACKED_ID && parentEntityID < UniqueIdGenerator::FIRST_LOCAL_ID)
+        {
+            if (source->unackedIdsToRealIds.find(parentEntityID) != source->unackedIdsToRealIds.end())
+                parentEntityID = source->unackedIdsToRealIds[parentEntityID];
+            else
+            {
+                LogWarning("Client sent unknown unacked parent entity ID " + QString::number(parentEntityID) + " in SetEntityParent message");
+                return;
+            }
+        }
+    }    
     
     if (!ValidateAction(source, cSetEntityParentMessage, entityID))
         return;
@@ -1630,13 +1655,13 @@ void SyncManager::ProcessSyncState(UserConnection* user)
             ds.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
             // Do not write the temporary flag as a bit to not desync the byte alignment at this point, as a lot of data potentially follows
             ds.Add<u8>(entity->IsTemporary() ? 1 : 0);
-            // If hierarchic scene is supported, send parent entity ID or 0 if unparented
+            // If hierarchic scene is supported, send parent entity ID or 0 if unparented. Note that this is a full 32bit ID to handle the unacked range if necessary
             if (user->ProtocolVersion() >= ProtocolHierarchicScene)
             {
                 if (entity->Parent() && entity->Parent()->IsLocal())
-                    LogError("Replicated entity " + QString::number(entityState.id) + " is parented to a local entity, can not replicate parenting properly over the network");
+                    LogWarning("Replicated entity " + QString::number(entityState.id) + " is parented to a local entity, can not replicate parenting properly over the network");
 
-                ds.AddVLE<kNet::VLE8_16_32>(entity->Parent() ? (entity->Parent()->Id() & UniqueIdGenerator::LAST_REPLICATED_ID) : 0);
+                ds.Add<u32>(entity->Parent() ? entity->Parent()->Id() : 0);
             }
             
             const Entity::ComponentMap& components = entity->Components();
@@ -1928,8 +1953,8 @@ void SyncManager::ProcessSyncState(UserConnection* user)
                 EntityPtr parent = entity->Parent();
                 kNet::DataSerializer editParentDs(editAttrsBuffer_, 1024);
                 editParentDs.AddVLE<kNet::VLE8_16_32>(sceneId);
-                editParentDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
-                editParentDs.AddVLE<kNet::VLE8_16_32>(parent ? (parent->Id() & UniqueIdGenerator::LAST_REPLICATED_ID) : 0);
+                editParentDs.Add<u32>(entityState.id);
+                editParentDs.Add<u32>(parent ? parent->Id() : 0);
                 user->Send(cSetEntityParentMessage, true, true, editParentDs);
                 ++numMessagesSent;
             }
@@ -2043,6 +2068,8 @@ void SyncManager::HandleCreateEntity(UserConnection* source, const char* data, s
     {
         // Server never uses the client's entityID.
         entityID = scene->NextFreeId();
+        // Store the unacked-to-real mapping in the UserConnection, in case it refers to the pending ID in later messages
+        source->unackedIdsToRealIds[senderEntityID | UniqueIdGenerator::FIRST_UNACKED_ID] = entityID;
     }
     
     EntityPtr entity = scene->CreateEntity(entityID);
@@ -2077,9 +2104,25 @@ void SyncManager::HandleCreateEntity(UserConnection* source, const char* data, s
         // In hierarchic scene protocol, read the parent entity ID
         if (source->ProtocolVersion() >= ProtocolHierarchicScene)
         {
-            parentEntityID = ds.ReadVLE<kNet::VLE8_16_32>();
+            parentEntityID = ds.Read<u32>();
+            
+            // Convert unacked ID if we can
+            if (isServer && parentEntityID >= UniqueIdGenerator::FIRST_UNACKED_ID && parentEntityID < UniqueIdGenerator::FIRST_LOCAL_ID)
+            {
+                if (source->unackedIdsToRealIds.find(parentEntityID) != source->unackedIdsToRealIds.end())
+                    parentEntityID = source->unackedIdsToRealIds[parentEntityID];
+                else
+                    LogWarning("Client sent unknown unacked parent entity ID " + QString::number(parentEntityID) + " in CreateEntity message");
+            }
+
             if (parentEntityID)
-                entity->SetParent(scene->EntityById(parentEntityID).get(), change);
+            {
+                EntityPtr parentEntity = scene->EntityById(parentEntityID);
+                if (parentEntity)
+                    entity->SetParent(parentEntity.get(), change);
+                else
+                    LogWarning("Parent entity id " + QString::number(parentEntityID) + " not found from scene when handling CreateEntity message");
+            }
         }
 
         // Read the components
