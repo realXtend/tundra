@@ -191,6 +191,7 @@ AssetUploadTransferPtr HttpAssetProvider::UploadAssetFromFileInMemory(const u8 *
     QNetworkRequest request;
     request.setUrl(QUrl(dstUrl));
     request.setRawHeader("User-Agent", Application::FullIdentifier().toUtf8());
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/octet-stream");
 
     QByteArray dataArray((const char*)data, (int)numBytes);
     QNetworkReply *reply = networkAccessManager->put(request, dataArray);
