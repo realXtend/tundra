@@ -148,7 +148,7 @@ AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString asset
     {
         QNetworkRequest request;
         request.setUrl(QUrl(assetRef));
-        request.setRawHeader("User-Agent", "realXtend Tundra");
+        request.setRawHeader("User-Agent", Application::FullIdentifier().toUtf8());
     
         // Fill 'If-Modified-Since' header if we have a valid cache item.
         // Server can then reply with 304 Not Modified.
@@ -190,7 +190,7 @@ AssetUploadTransferPtr HttpAssetProvider::UploadAssetFromFileInMemory(const u8 *
     QString dstUrl = destination->GetFullAssetURL(assetName);
     QNetworkRequest request;
     request.setUrl(QUrl(dstUrl));
-    request.setRawHeader("User-Agent", "realXtend Tundra");
+    request.setRawHeader("User-Agent", Application::FullIdentifier().toUtf8());
 
     QByteArray dataArray((const char*)data, (int)numBytes);
     QNetworkReply *reply = networkAccessManager->put(request, dataArray);
@@ -216,7 +216,7 @@ void HttpAssetProvider::DeleteAssetFromStorage(QString assetRef)
     QUrl assetUrl(assetRef);
     QNetworkRequest request;
     request.setUrl(QUrl(assetRef));
-    request.setRawHeader("User-Agent", "realXtend Tundra");
+    request.setRawHeader("User-Agent", Application::FullIdentifier().toUtf8());
 
     networkAccessManager->deleteResource(request);
 }
@@ -326,7 +326,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
                 // Add new mapping to the asset transfer for the new redirect URL.
                 QNetworkRequest redirectRequest;
                 redirectRequest.setUrl(QUrl(redirectUrl));
-                redirectRequest.setRawHeader("User-Agent", "realXtend Tundra");
+                redirectRequest.setRawHeader("User-Agent", Application::FullIdentifier().toUtf8());
 
                 QNetworkReply *redirectReply = networkAccessManager->get(redirectRequest);
                 transfers[QPointer<QNetworkReply>(redirectReply)] = transfer;

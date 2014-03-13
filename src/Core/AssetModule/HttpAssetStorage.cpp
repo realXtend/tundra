@@ -1,13 +1,18 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "HttpAssetProvider.h"
 #include "HttpAssetStorage.h"
 #include "LoggingFunctions.h"
+#include "Application.h"
 
 #include <QNetworkReply>
 #include <QBuffer>
 #include <QDomDocument>
+
+#include "MemoryLeakCheck.h"
 
 HttpAssetStorage::HttpAssetStorage()
 {
@@ -83,7 +88,7 @@ void HttpAssetStorage::PerformSearch(QString path)
     
     QNetworkRequest request;
     request.setUrl(searchUrl);
-    request.setRawHeader("User-Agent", "realXtend Tundra");
+    request.setRawHeader("User-Agent", Application::FullIdentifier().toUtf8());
     request.setRawHeader("Depth", "1");
     
     SearchRequest newSearch;
