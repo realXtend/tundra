@@ -56,6 +56,7 @@ class TUNDRACORE_API Entity : public QObject, public enable_shared_from_this<Ent
     Q_PROPERTY(bool unacked READ IsUnacked) /**< @copydoc IsUnacked */
     Q_PROPERTY(bool temporary READ IsTemporary WRITE SetTemporary) /**< @copydoc IsTemporary */
     Q_PROPERTY(ComponentMap components READ Components) /**< @copydoc Components */
+    Q_PROPERTY(Entity* parent READ ParentRaw WRITE SetParent); /**< @copydoc Parent */
 
 public:
     typedef std::map<component_id_t, ComponentPtr> ComponentMap; ///< Component container.
@@ -142,6 +143,9 @@ public:
         @param receiver Receiver object.
         @param member Member slot. */
     void ConnectAction(const QString &name, const QObject *receiver, const char *member);
+
+    /// Return parent entity raw pointer for the parent property
+    Entity* ParentRaw() { return Parent().get(); }
 
     /// @cond PRIVATE
     /// Do not directly allocate new entities using operator new, but use the factory-based Scene::CreateEntity functions instead.
@@ -444,10 +448,10 @@ public slots:
     EntityPtr Child(size_t index) const;
 
     /// Returns child entity by name. Optionally recursive.
-    EntityPtr Child(const QString& name, bool recursive = false) const;
+    EntityPtr ChildByName(const QString& name, bool recursive = false) const;
 
-    /// Returns immediate child entities.
-    EntityList Children() const;
+    /// Returns child entities. Optionally recursive
+    EntityList Children(bool recursive = false) const;
 
     // DEPRECATED:
     /// @cond PRIVATE
@@ -500,6 +504,9 @@ private:
 
     /// Remove a component by iterator. Called internally
     void RemoveComponent(ComponentMap::iterator iter, AttributeChange::Type change);
+
+    /// Collect child entities into an entity list, optionally recursive.
+    void CollectChildren(EntityList& children, bool recursive) const;
 
     UniqueIdGenerator idGenerator_; ///< Component ID generator
     ComponentMap components_; ///< a list of all components

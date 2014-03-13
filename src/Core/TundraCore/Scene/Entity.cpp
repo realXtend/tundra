@@ -854,7 +854,7 @@ EntityPtr Entity::Child(size_t index) const
     return index < children_.size() ? children_[index].lock() : EntityPtr();
 }
 
-EntityPtr Entity::Child(const QString& name, bool recursive) const
+EntityPtr Entity::ChildByName(const QString& name, bool recursive) const
 {
     for (size_t i = 0; i < children_.size(); ++i)
     {
@@ -866,7 +866,7 @@ EntityPtr Entity::Child(const QString& name, bool recursive) const
                 return child;
             if (recursive)
             {
-                EntityPtr childResult = child->Child(name, true);
+                EntityPtr childResult = child->ChildByName(name, true);
                 if (childResult)
                     return childResult;
             }
@@ -876,17 +876,24 @@ EntityPtr Entity::Child(const QString& name, bool recursive) const
     return EntityPtr();
 }
 
-EntityList Entity::Children() const
+EntityList Entity::Children(bool recursive) const
 {
     EntityList ret;
+    CollectChildren(ret, recursive);
+    return ret;
+}
 
+void Entity::CollectChildren(EntityList& children, bool recursive) const
+{
     for (size_t i = 0; i < children_.size(); ++i)
     {
         // Safeguard in case the entity has become null without us knowing
         EntityPtr child = children_[i].lock();
         if (child)
-            ret.push_back(child);
+        {
+            children.push_back(child);
+            if (recursive)
+                child->CollectChildren(children, true);
+        }
     }
-
-    return ret;
 }
