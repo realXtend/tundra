@@ -202,7 +202,7 @@ std::vector<AssetStoragePtr> AssetAPI::AssetStorages() const
 AssetAPI::FileQueryResult AssetAPI::ResolveLocalAssetPath(QString ref, QString baseDirectoryContext, QString &outFilePath, QString *subAssetName) const
 {
     // Make sure relative paths are turned into local paths.
-    QString refLocal = ResolveAssetRef("local://", ref);
+    QString refLocal = ResolveAssetRef("local://" + GuaranteeTrailingSlash(baseDirectoryContext), ref);
 
     QString pathFilename;
     QString protocol;
