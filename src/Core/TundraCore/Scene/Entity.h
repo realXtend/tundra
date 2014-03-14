@@ -56,7 +56,7 @@ class TUNDRACORE_API Entity : public QObject, public enable_shared_from_this<Ent
     Q_PROPERTY(bool unacked READ IsUnacked) /**< @copydoc IsUnacked */
     Q_PROPERTY(bool temporary READ IsTemporary WRITE SetTemporary) /**< @copydoc IsTemporary */
     Q_PROPERTY(ComponentMap components READ Components) /**< @copydoc Components */
-    Q_PROPERTY(Entity* parent READ ParentRaw WRITE SetParent); /**< @copydoc Parent */
+    Q_PROPERTY(EntityPtr parent READ Parent WRITE SetParent); /**< @copydoc Parent */
 
 public:
     typedef std::map<component_id_t, ComponentPtr> ComponentMap; ///< Component container.
@@ -143,9 +143,6 @@ public:
         @param receiver Receiver object.
         @param member Member slot. */
     void ConnectAction(const QString &name, const QObject *receiver, const char *member);
-
-    /// Return parent entity raw pointer for the parent property
-    Entity* ParentRaw() { return Parent().get(); }
 
     /// @cond PRIVATE
     /// Do not directly allocate new entities using operator new, but use the factory-based Scene::CreateEntity functions instead.
@@ -395,14 +392,14 @@ public slots:
         If the child already is parented to another entity, the existing parent assignment is removed.
         @param entity Entity to add as a child.
         @param change Change signaling mode. Normally this should be Default or Replicate, so that parent assignment is propagated over the network. */
-    void AddChild(Entity* child, AttributeChange::Type change = AttributeChange::Default);
+    void AddChild(EntityPtr child, AttributeChange::Type change = AttributeChange::Default);
 
     /// Remove a child entity.
     /** Will remove the child entity from the scene. If the intention is to re-parent the entity, AddChild() to the new parent
         should be called instead. 
         @param child Child entity to remove.
         @param change Change signaling mode. */
-    void RemoveChild(Entity* child, AttributeChange::Type change = AttributeChange::Default);
+    void RemoveChild(EntityPtr child, AttributeChange::Type change = AttributeChange::Default);
 
     /// Remove all child entities.
     void RemoveAllChildren(AttributeChange::Type change = AttributeChange::Default);
@@ -410,13 +407,13 @@ public slots:
     /// Detach a child entity to the scene root level (make it parentless) without removing it from the scene.
     /** @param child Child entity to detach.
         @param change Change signaling mode. */
-    void DetachChild(Entity* child, AttributeChange::Type change = AttributeChange::Default);
+    void DetachChild(EntityPtr child, AttributeChange::Type change = AttributeChange::Default);
 
     /// Set the parent entity of the entity. Null parent will set to the scene root level (default.)
     /** Same as calling AddChild() on the new parent entity, or DetachChild() in case of setting a null parent.
         @param parent New parent entity.
         @param change Change signaling mode. */
-    void SetParent(Entity* parent, AttributeChange::Type change = AttributeChange::Default);
+    void SetParent(EntityPtr parent, AttributeChange::Type change = AttributeChange::Default);
 
     /// Creates new child entity that contains the specified components.
     /** To create an empty entity, omit the components parameter.

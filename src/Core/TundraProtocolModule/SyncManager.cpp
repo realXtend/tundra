@@ -1525,7 +1525,7 @@ void SyncManager::HandleSetEntityParent(UserConnection* source, const char* data
         return;
     }
     
-    entity->SetParent(parentEntity.get(), change);
+    entity->SetParent(parentEntity, change);
     
     // Remove the properties dirty bit from sender's syncstate so that we do not echo the change back
     state->entities[entityID].hasParentChange = false;
@@ -2119,7 +2119,7 @@ void SyncManager::HandleCreateEntity(UserConnection* source, const char* data, s
             {
                 EntityPtr parentEntity = scene->EntityById(parentEntityID);
                 if (parentEntity)
-                    entity->SetParent(parentEntity.get(), change);
+                    entity->SetParent(parentEntity, change);
                 else
                     LogWarning("Parent entity id " + QString::number(parentEntityID) + " not found from scene when handling CreateEntity message");
             }

@@ -714,7 +714,7 @@ QObjectList Entity::ComponentsList() const
     return compList;
 }
 
-void Entity::AddChild(Entity* child, AttributeChange::Type change)
+void Entity::AddChild(EntityPtr child, AttributeChange::Type change)
 {
     if (!child)
     {
@@ -722,10 +722,10 @@ void Entity::AddChild(Entity* child, AttributeChange::Type change)
         return;
     }
 
-    child->SetParent(this, change);
+    child->SetParent(this->shared_from_this(), change);
 }
 
-void Entity::RemoveChild(Entity* child, AttributeChange::Type change)
+void Entity::RemoveChild(EntityPtr child, AttributeChange::Type change)
 {
     if (child->Parent().get() != this)
     {
@@ -743,10 +743,10 @@ void Entity::RemoveChild(Entity* child, AttributeChange::Type change)
 void Entity::RemoveAllChildren(AttributeChange::Type change)
 {
     while (children_.size())
-        RemoveChild(children_[0].lock().get(), change);
+        RemoveChild(children_[0].lock(), change);
 }
 
-void Entity::DetachChild(Entity* child, AttributeChange::Type change)
+void Entity::DetachChild(EntityPtr child, AttributeChange::Type change)
 {
     if (!child)
     {
@@ -759,17 +759,17 @@ void Entity::DetachChild(Entity* child, AttributeChange::Type change)
         return;
     }
 
-    child->SetParent(0, change);
+    child->SetParent(EntityPtr(), change);
 }
 
-void Entity::SetParent(Entity* parent, AttributeChange::Type change)
+void Entity::SetParent(EntityPtr parent, AttributeChange::Type change)
 {
-    Entity* oldParent = parent_.lock().get();
+    EntityPtr oldParent = parent_.lock();
     if (oldParent == parent)
         return; // Nothing to do
 
     // Prevent self assignment
-    if (parent == this)
+    if (parent.get() == this)
     {
         LogError("Entity::SetParent: self parenting attempted.");
         return;
@@ -778,7 +778,7 @@ void Entity::SetParent(Entity* parent, AttributeChange::Type change)
     // Prevent cyclic assignment
     if (parent)
     {
-        Entity* parentCheck = parent;
+        Entity* parentCheck = parent.get();
         while (parentCheck)
         {
             if (parentCheck == this)
@@ -808,16 +808,16 @@ void Entity::SetParent(Entity* parent, AttributeChange::Type change)
     if (parent)
         parent->children_.push_back(shared_from_this());
 
-    parent_ = parent ? parent->shared_from_this() : EntityPtr();
+    parent_ = parent;
 
     // Emit change signals
     if (change != AttributeChange::Disconnected)
     {
         if (change == AttributeChange::Default)
             change = IsLocal() ? AttributeChange::LocalOnly : AttributeChange::Replicate;
-        emit ParentChanged(this, parent, change);
+        emit ParentChanged(this, parent.get(), change);
         if (scene_)
-            scene_->EmitEntityParentChanged(this, parent, change);
+            scene_->EmitEntityParentChanged(this, parent.get(), change);
     }
 }
 
@@ -831,7 +831,7 @@ EntityPtr Entity::CreateChild(entity_id_t id, const QStringList &components, Att
 
     EntityPtr child = scene_->CreateEntity(id, components, change, replicated, componentsReplicated, temporary);
     if (child)
-        child->SetParent(this, change);
+        child->SetParent(this->shared_from_this(), change);
     return child;
 }
 
@@ -845,7 +845,7 @@ EntityPtr Entity::CreateLocalChild(const QStringList &components, AttributeChang
 
     EntityPtr child = scene_->CreateLocalEntity(components, change, componentsReplicated, temporary);
     if (child)
-        child->SetParent(this, change);
+        child->SetParent(this->shared_from_this(), change);
     return child;
 }
 
