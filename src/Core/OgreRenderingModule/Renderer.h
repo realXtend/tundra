@@ -124,6 +124,9 @@ namespace OgreRenderer
         /// Is window fullscreen?
         bool IsFullScreen() const;
 
+        /// Allow asynchronous Ogre asset loading.
+        bool AllowAsynchronousLoading() const;
+
         /// Sets shadow quality.
         /** @note Changes need application restart to take effect due to Ogre resource system */
         void SetShadowQuality(ShadowQualitySetting newquality);

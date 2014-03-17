@@ -16,10 +16,7 @@ class OGRE_MODULE_API OgreSkeletonAsset : public IAsset, Ogre::ResourceBackgroun
 
 public:
     /// Constructor.
-    OgreSkeletonAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
-        IAsset(owner, type_, name_), loadTicket_(0)
-    {
-    }
+    OgreSkeletonAsset(AssetAPI *owner, const QString &type_, const QString &name_);
 
     /// Deconstructor.
     virtual ~OgreSkeletonAsset();
@@ -32,9 +29,9 @@ public:
 
     /// IAsset override.
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "") const;
-
-    /// IAsset override.
-    bool IsLoaded() const;
+   
+    /// Returns if the asset can be asynchronously loaded via Ogre::ResourceBackgroundQueue.
+    bool AllowAsynchronousLoading() const;
 
     /// Ogre Skeleton ptr.
     Ogre::SkeletonPtr ogreSkeleton;
@@ -44,6 +41,10 @@ public:
 
     /// Ticket for ogres threaded loading operation.
     Ogre::BackgroundProcessTicket loadTicket_;
+
+public slots:
+    /// IAsset override.
+    virtual bool IsLoaded() const;
 
 private:
     /// IAsset override.

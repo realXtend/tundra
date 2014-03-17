@@ -5,6 +5,7 @@
 #include "DebugOperatorNew.h"
 #include "OgreMeshAsset.h"
 #include "OgreRenderingModule.h"
+#include "Renderer.h"
 #include "AssetAPI.h"
 #include "AssetCache.h"
 #include "Profiler.h"
@@ -32,27 +33,22 @@ OgreMeshAsset::~OgreMeshAsset()
 
 bool OgreMeshAsset::AllowAsynchronousLoading() const
 {
-    /// @todo Duplicate allowAsynchronous code in OgreMeshAsset and TextureAsset.
-    if ((OGRE_THREAD_SUPPORT == 0) || !assetAPI->Cache() || assetAPI->IsHeadless() || IsAssimpFileType() ||
-        assetAPI->GetFramework()->HasCommandLineParameter("--noAsyncAssetLoad") ||
-        assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load"))
-        return false;
-    return true;
+    OgreRenderer::OgreRenderingModule *renderingModule = assetAPI->GetFramework()->Module<OgreRenderer::OgreRenderingModule>();
+    OgreRenderer::Renderer *renderer = (renderingModule ? renderingModule->Renderer().get() : 0);
+    bool allow = (renderer ? renderer->AllowAsynchronousLoading() : false);
+
+    // Asset cache must have this asset.
+    if (allow && assetAPI->Cache()->FindInCache(Name()).isEmpty())
+        allow = false;
+    // Assimp mesh types do not have threaded loading.
+    if (allow && IsAssimpFileType())
+        allow = false;
+    return allow;
 }
 
 bool OgreMeshAsset::LoadFromFile(QString filename)
-{
-    bool allowAsynchronous = AllowAsynchronousLoading();
-
-    QString cacheDiskSource;
-    if (allowAsynchronous)
-    {
-        cacheDiskSource = assetAPI->Cache()->FindInCache(Name());
-        if (cacheDiskSource.isEmpty())
-            allowAsynchronous = false;
-    }
-    
-    if (allowAsynchronous)
+{   
+    if (AllowAsynchronousLoading())
         return DeserializeFromData(0, 0, true);
     else
         return IAsset::LoadFromFile(filename);
@@ -65,27 +61,10 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bool a
     /// Force an unload of this data first.
     Unload();
 
-    if (!AllowAsynchronousLoading())
-        allowAsynchronous = false;
-
-    QString cacheDiskSource;
-    if (allowAsynchronous)
+    // Async loading.
+    if (allowAsynchronous && AllowAsynchronousLoading())
     {
-        cacheDiskSource = assetAPI->Cache()->FindInCache(Name());
-        if (cacheDiskSource.isEmpty())
-            allowAsynchronous = false;
-    }
-    
-    // Asynchronous loading
-    // 1. AssetAPI allows a asynch load. This is false when called from LoadFromFile(), LoadFromCache() etc.
-    // 2. We have a rendering window for Ogre as Ogre::ResourceBackgroundQueue does not work otherwise. Its not properly initialized without a rendering window.
-    // 3. The Ogre we are building against has thread support.
-    if (allowAsynchronous)
-    {
-        // We can only do threaded loading from disk, and not any disk location but only from asset cache.
-        // local:// refs will return empty string here and those will fall back to the non-threaded loading.
-        // Do not change this to do DiskCache() as that directory for local:// refs will not be a known resource location for ogre.
-        QFileInfo fileInfo(cacheDiskSource);
+        QFileInfo fileInfo(assetAPI->Cache()->FindInCache(Name()));
         std::string sanitatedAssetRef = fileInfo.fileName().toStdString();
         loadTicket_ = Ogre::ResourceBackgroundQueue::getSingleton().load(Ogre::MeshManager::getSingleton().getResourceType(),
                           sanitatedAssetRef, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP, false, 0, 0, this);

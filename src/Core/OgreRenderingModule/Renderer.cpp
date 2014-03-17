@@ -584,6 +584,27 @@ namespace OgreRenderer
         else
             return false;
     }
+    
+    bool Renderer::AllowAsynchronousLoading() const
+    {
+        /** Base conditions for threaded loading. Must be applied in all Ogre IAsset implementations.
+            1. Ogre is built with thread support
+            2. Asset cache is valid.
+            3. Not a --headless run. Ogre::ResourceBackgroundQueue does not work without a rendering window.
+            4. Disabling command line param --noAsyncAssetLoad not defined.
+        */
+        bool allow = true;
+        if ((OGRE_THREAD_SUPPORT == 0) || !framework->Asset()->Cache() || framework->IsHeadless() ||
+            framework->HasCommandLineParameter("--noAsyncAssetLoad") ||
+            framework->HasCommandLineParameter("--no_async_asset_load")) /**< @todo Remove support for the deprecated underscore version at some point. */
+            allow = false;
+#ifdef _WINDOWS
+        /// @todo OpenGL threaded loading  on windows is broken for an unknown reason, investigate.
+        if (allow && ogreRoot->getRenderSystem() && ogreRoot->getRenderSystem()->getName() == cOglRenderSystemName)
+            allow = false;
+#endif
+        return allow;
+    }
 
     void Renderer::SetShadowQuality(ShadowQualitySetting quality)
     {

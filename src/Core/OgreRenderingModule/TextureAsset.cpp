@@ -56,17 +56,7 @@ TextureAsset::~TextureAsset()
 
 bool TextureAsset::LoadFromFile(QString filename)
 {
-    bool allowAsynchronous = AllowAsyncLoading();
-
-    QString cacheDiskSource;
-    if (allowAsynchronous)
-    {
-        cacheDiskSource = assetAPI->Cache()->FindInCache(Name());
-        if (cacheDiskSource.isEmpty())
-            allowAsynchronous = false;
-    }
-    
-    if (allowAsynchronous)
+    if (AllowAsynchronousLoading())
         return DeserializeFromData(0, 0, true);
     else
         return IAsset::LoadFromFile(filename);
@@ -210,19 +200,13 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
     // We should never be here in headless mode.
     assert(!assetAPI->IsHeadless());
 
-    allowAsynchronous &= AllowAsyncLoading();
-    
-    QString cacheDiskSource;
-    if (allowAsynchronous)
-    {
-        cacheDiskSource = assetAPI->Cache()->FindInCache(Name());
-        if (cacheDiskSource.isEmpty())
-            allowAsynchronous = false;
-    }
+    if (allowAsynchronous && !AllowAsynchronousLoading())
+        allowAsynchronous = false;
 
+    QString cacheDiskSource = assetAPI->Cache()->FindInCache(Name());
     QString nameSuffix = NameSuffix();
     bool isCompressed = nameSuffix == "crn" || nameSuffix == "dds";
-    
+
     // Check if this is a crunch library CRN file and we need to decompress to DDS.
     std::vector<u8> crnUncompressData;
     if (nameSuffix == "crn")
@@ -291,7 +275,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes, bool all
     // 1. AssetAPI allows a asynch load. This is false when called from LoadFromFile(), LoadFromCache() etc.
     // 2. We have a rendering window for Ogre as Ogre::ResourceBackgroundQueue does not work otherwise. Its not properly initialized without a rendering window.
     // 3. The Ogre we are building against has thread support.
-    if (allowAsynchronous)
+    if (allowAsynchronous && !cacheDiskSource.isEmpty())
     {
         // We can only do threaded loading from disk, and not any disk location but only from asset cache.
         // local:// refs will return empty string here and those will fall back to the non-threaded loading.
@@ -902,16 +886,22 @@ void TextureAsset::CompressTexture()
 #endif
 }
 
-bool TextureAsset::AllowAsyncLoading() const
+bool TextureAsset::AllowAsynchronousLoading() const
 {
-    /// \todo NeedSizeModification() does not take into account the current texture's data size, in which case we may go on the threaded loading path
-    /// without a possibility to resize the texture smaller. This means that potentially one texture may go in unresized and increase the texture load
-    /// significantly over the budget.
-    if (NeedSizeModification() || assetAPI->GetFramework()->IsHeadless() || assetAPI->GetFramework()->HasCommandLineParameter("--no_async_asset_load") ||
-        assetAPI->GetFramework()->HasCommandLineParameter("--noAsyncAssetLoad") || !assetAPI->GetAssetCache() || (OGRE_THREAD_SUPPORT == 0))
-        return false;
-    else
-        return true;
+    OgreRenderer::OgreRenderingModule *renderingModule = assetAPI->GetFramework()->Module<OgreRenderer::OgreRenderingModule>();
+    OgreRenderer::Renderer *renderer = (renderingModule ? renderingModule->Renderer().get() : 0);
+    bool allow = (renderer ? renderer->AllowAsynchronousLoading() : false);
+
+    // Asset cache must have this asset.
+    if (allow && assetAPI->Cache()->FindInCache(Name()).isEmpty())
+        allow = false;
+    // No runtime size modifications will be executed.
+    /** @todo NeedSizeModification() does not take into account the current texture's data size, in which case we may go on the threaded loading path
+        without a possibility to resize the texture smaller. This means that potentially one texture may go in unresized and increase the texture load
+        significantly over the budget. */
+    if (allow && NeedSizeModification())
+        allow = false;
+    return allow;
 }
 
 bool TextureAsset::NeedSizeModification() const

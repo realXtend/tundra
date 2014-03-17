@@ -20,6 +20,7 @@ public:
     TextureAsset(AssetAPI *owner, const QString &type, const QString &name);
     ~TextureAsset();
 
+    /// Load texture from file. IAsset override.
     virtual bool LoadFromFile(QString filename);
 
     /// Load texture from memory
@@ -31,7 +32,8 @@ public:
     /// Ogre threaded load listener. Ogre::ResourceBackgroundQueue::Listener override.
     virtual void operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult &result);
 
-    bool IsLoaded() const;
+    /// Returns if the asset can be asynchronously loaded via Ogre::ResourceBackgroundQueue.
+    bool AllowAsynchronousLoading() const;
 
     /// Sets the contents of this texture asset from raw pixel data.
     /** @param newWidth The desired pixel width for this texture.
@@ -102,6 +104,9 @@ public:
     bool DecompressCRNtoDDS(const u8 *crnData, size_t crnNumBytes, std::vector<u8> &ddsData);
 
 public slots:
+    /// IAsset override.
+    virtual bool IsLoaded() const;
+
     /// Convert texture to QImage
     QImage ToQImage(size_t faceIndex = 0, size_t mipmapLevel = 0) const;
 
@@ -120,10 +125,7 @@ private:
     
     /// Check whether we may need texture size modification (texture budget exceeded or the maximum texture size parameter specified).
     bool NeedSizeModification() const;
-    
-    /// Check whether asynchronous loading can be supported
-    bool AllowAsyncLoading() const;
-    
+
     /// Strip the top level mips from a DDS image if it is too large. Overwrite memory stream with modified one as necessary. Needs a temp vector for the modified data.
     void ProcessDDSImage(Ogre::DataStreamPtr& stream, std::vector<u8>& modifiedDDSData);
 };
