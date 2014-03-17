@@ -476,11 +476,6 @@ namespace OgreRenderer
             // Initialize but don't create rendering window yet
             ogreRoot->initialise(false);
 
-#ifdef _WINDOWS
-            // When on Windows with OpenGL, Ogre's auto generation of mipmaps doesn't work.
-            if (renderSystem->getName() == cOglRenderSystemName)
-                Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(0);
-#endif
             try
             {
                 renderWindow = new RenderWindow();
