@@ -57,20 +57,13 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes, bo
     /// Force an unload of this data first.
     Unload();
 
-    if (allowAsynchronous && !AllowAsynchronousLoading())
-        allowAsynchronous = false;
-
     // Async loading.
-    if (allowAsynchronous)
+    if (allowAsynchronous && AllowAsynchronousLoading())
     {
-        QString cacheDiskSource = assetAPI->Cache()->FindInCache(Name());
-        if (!cacheDiskSource.isEmpty())
-        {
-            QFileInfo fileInfo(cacheDiskSource);
-            std::string sanitatedAssetRef = fileInfo.fileName().toStdString(); 
-            loadTicket_ = Ogre::ResourceBackgroundQueue::getSingleton().load(Ogre::SkeletonManager::getSingleton().getResourceType(),
-                              sanitatedAssetRef, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP, false, 0, 0, this);
-        }
+        QFileInfo fileInfo(assetAPI->Cache()->FindInCache(Name()));
+        std::string sanitatedAssetRef = fileInfo.fileName().toStdString();
+        loadTicket_ = Ogre::ResourceBackgroundQueue::getSingleton().load(Ogre::SkeletonManager::getSingleton().getResourceType(),
+                          sanitatedAssetRef, OgreRenderer::OgreRenderingModule::CACHE_RESOURCE_GROUP, false, 0, 0, this);
         return true;
     }
 
