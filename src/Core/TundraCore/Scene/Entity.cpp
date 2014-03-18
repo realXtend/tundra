@@ -556,6 +556,10 @@ EntityPtr Entity::Clone(bool local, bool temporary, const QString &cloneName, At
     doc.appendChild(sceneElem);
 
     QList<Entity *> newEntities = scene_->CreateContentFromXml(doc, true, changeType);
+    // Set same parent for the new entity as the original has
+    if (newEntities.size())
+        newEntities[0]->SetParent(Parent(), changeType);
+
     return (!newEntities.isEmpty() && newEntities.first() ? newEntities.first()->shared_from_this() : EntityPtr());
 }
 
@@ -830,8 +834,9 @@ EntityPtr Entity::CreateChild(entity_id_t id, const QStringList &components, Att
     }
 
     EntityPtr child = scene_->CreateEntity(id, components, change, replicated, componentsReplicated, temporary);
+    // Set the parent silently to match entity creation signaling, which is only done at the end of the frame
     if (child)
-        child->SetParent(this->shared_from_this(), change);
+        child->SetParent(this->shared_from_this(), AttributeChange::Disconnected);
     return child;
 }
 

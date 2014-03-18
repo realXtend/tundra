@@ -161,7 +161,7 @@ private slots:
     void Clear();
 
     /// Adds the item represeting the @c entity to the tree widget.
-    void AddEntity(Entity *entity);
+    void AddEntity(Entity *entity, bool setParent = true);
 
     /// Removes item representing @c entity from the tree widget.
     void RemoveEntity(Entity *entity);

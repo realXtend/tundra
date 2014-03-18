@@ -396,10 +396,11 @@ void SceneStructureWindow::Populate()
 
     treeWidget->setSortingEnabled(false);
 
+    // First add entities without updating parents, as the order isn't guaranteed
     for(Scene::iterator it = s->begin(); it != s->end(); ++it)
-        AddEntity((*it).second.get());
+        AddEntity((*it).second.get(), false);
 
-    /// \todo Set correct parents already on first pass
+    // Now do second pass to update parents
     for(Scene::iterator it = s->begin(); it != s->end(); ++it)
     {
         if (it->second->Parent())
@@ -420,20 +421,27 @@ void SceneStructureWindow::Clear()
 
     /// @todo 28.08.2013 Check memory leak report for this file!
 
+    treeWidget->clear(); // This deletes all Attribute, Component, Entity
+
+    /*
     for(AttributeItemMap::const_iterator it = attributeItems.begin(); it != attributeItems.end(); ++it)
     {
         AttributeItem *item = it->second;
         SAFE_DELETE(item);
     }
+    */
     attributeItems.clear();
 
+    /*
     for(ComponentItemMap::const_iterator it = componentItems.begin(); it != componentItems.end(); ++it)
     {
         ComponentItem *item = it->second;
         SAFE_DELETE(item);
     }
+    */
     componentItems.clear();
 
+    /*
     for(EntityItemMap::const_iterator it = entityItems.begin(); it != entityItems.end(); ++it)
     {
         EntityItem *item = it->second;
@@ -443,16 +451,20 @@ void SceneStructureWindow::Clear()
             item->parent()->removeChild(item);
         SAFE_DELETE(item);
     }
+    */
     entityItems.clear();
 
     // entityItemsById holds only "weak" refs to EntityItems.
     entityItemsById.clear();
 
+    /*
     for(EntityGroupItemMap::const_iterator it = entityGroupItems.begin(); it != entityGroupItems.end(); ++it)
     {
         EntityGroupItem *item = *it;
         SAFE_DELETE(item);
     }
+    */
+
     entityGroupItems.clear();
 
     treeWidget->setSortingEnabled(true);
@@ -556,7 +568,7 @@ void SceneStructureWindow::Refresh()
         TreeWidgetSearch(treeWidget, 0, searchField->text());
 }
 
-void SceneStructureWindow::AddEntity(Entity* entity)
+void SceneStructureWindow::AddEntity(Entity* entity, bool setParent)
 {
     PROFILE(SceneStructureWindow_AddEntity)
 
@@ -587,6 +599,9 @@ void SceneStructureWindow::AddEntity(Entity* entity)
         for(Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
             AddComponent(entityItem, entity, i->second.get());
     }
+
+    if (setParent)
+        UpdateEntityParent(entity);
 
     Refresh();
 }
