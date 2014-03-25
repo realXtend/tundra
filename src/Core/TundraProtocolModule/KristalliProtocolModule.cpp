@@ -352,7 +352,7 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
     // Delete from connection list if it was a known user
     for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
     {
-        if (static_pointer_cast<KNetUserConnection>(*iter)->connection == source)
+        if ((*iter)->ConnectionType() == "knet" && static_pointer_cast<KNetUserConnection>(*iter)->connection == source)
         {
             emit ClientDisconnectedEvent(iter->get());
             
@@ -404,7 +404,7 @@ u32 KristalliProtocolModule::AllocateNewConnectionID() const
 UserConnectionPtr KristalliProtocolModule::GetUserConnection(MessageConnection* source) const
 {
     for(UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
-        if (static_pointer_cast<KNetUserConnection>(*iter)->connection == source)
+        if ((*iter)->ConnectionType() == "knet" && static_pointer_cast<KNetUserConnection>(*iter)->connection == source)
             return *iter;
 
     return UserConnectionPtr();
