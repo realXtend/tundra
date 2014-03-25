@@ -421,7 +421,7 @@ void SceneStructureWindow::Clear()
 
     /// @todo 28.08.2013 Check memory leak report for this file!
 
-    treeWidget->clear(); // This deletes all Attribute, Component, Entity
+    treeWidget->clear(); // This deletes all child items
 
     /*
     for(AttributeItemMap::const_iterator it = attributeItems.begin(); it != attributeItems.end(); ++it)
