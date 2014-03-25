@@ -51,9 +51,7 @@ public:
     /// Invoked by the Network library for disconnected client
     void ClientDisconnected(kNet::MessageConnection* source);
 
-    bool Connected() const { return serverConnection != 0; }
-
-    void SubscribeToNetworkEvents();
+    bool Connected() const;
 
     /// Return message connection, for use by other modules (null if no connection made)
     kNet::MessageConnection *GetMessageConnection() { return serverConnection.ptr(); }

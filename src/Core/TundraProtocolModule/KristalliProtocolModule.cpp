@@ -92,7 +92,6 @@ KristalliProtocolModule::KristalliProtocolModule() :
     serverConnection(0),
     server(0),
     reconnectAttempts(0),
-    connectionPending(false),
     serverPort(0)
 #ifdef KNET_USE_QT
     ,networkDialog(0)
@@ -241,7 +240,7 @@ void KristalliProtocolModule::Update(f64 /*frametime*/)
 
 void KristalliProtocolModule::Connect(const char *ip, unsigned short port, SocketTransportLayer transport)
 {
-    if (Connected() && serverConnection && serverConnection->RemoteEndPoint().IPToString() != serverIp)
+    if (Connected() && serverConnection->RemoteEndPoint().IPToString() != serverIp)
         Disconnect();
     
     serverIp = ip;
@@ -255,12 +254,8 @@ void KristalliProtocolModule::Connect(const char *ip, unsigned short port, Socke
 
 void KristalliProtocolModule::PerformConnection()
 {
-    if (Connected() && serverConnection)
-    {
+    if (serverConnection) // Make sure connection is fully closed before doing a potential reconnection.
         serverConnection->Close();
-//        network.CloseMessageConnection(serverConnection);
-        serverConnection = 0;
-    }
 
     // Connect to the server.
     serverConnection = network.Connect(serverIp.c_str(), serverPort, serverTransport, this);
@@ -271,7 +266,7 @@ void KristalliProtocolModule::PerformConnection()
     }
 
     if (serverTransport == kNet::SocketOverUDP)
-        dynamic_cast<kNet::UDPMessageConnection*>(serverConnection.ptr())->SetDatagramSendRate(500);
+        static_cast<kNet::UDPMessageConnection*>(serverConnection.ptr())->SetDatagramSendRate(500);
 
     // For TCP mode sockets, set the TCP_NODELAY option to improve latency for the messages we send.
     if (serverConnection->GetSocket() && serverConnection->GetSocket()->TransportLayer() == kNet::SocketOverTCP)
@@ -284,13 +279,8 @@ void KristalliProtocolModule::Disconnect()
     serverIp = "";
     reconnectTimer.Stop();
     
-    if (serverConnection)
-    {
+    if (Connected())
         serverConnection->Disconnect();
-//        network.CloseMessageConnection(serverConnection);
-        ///\todo Wait? This closes the connection.
-        serverConnection = 0;
-    }
 }
 
 bool KristalliProtocolModule::StartServer(unsigned short port, SocketTransportLayer transport)
@@ -339,7 +329,7 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
         return;
 
     if (dynamic_cast<kNet::UDPMessageConnection*>(source))
-        dynamic_cast<kNet::UDPMessageConnection*>(source)->SetDatagramSendRate(500);
+        static_cast<kNet::UDPMessageConnection*>(source)->SetDatagramSendRate(500);
 
     source->RegisterInboundMessageHandler(this);
     
@@ -362,8 +352,7 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
     // Delete from connection list if it was a known user
     for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
     {
-        KNetUserConnection* kNetConn = dynamic_cast<KNetUserConnection*>(iter->get());
-        if (kNetConn && kNetConn->connection == source)
+        if (static_pointer_cast<KNetUserConnection>(*iter)->connection == source)
         {
             emit ClientDisconnectedEvent(iter->get());
             
@@ -373,6 +362,11 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
         }
     }
     ::LogInfo("Unknown user disconnected");
+}
+
+bool KristalliProtocolModule::Connected() const
+{
+    return serverConnection != 0 && serverConnection->Connected();
 }
 
 void KristalliProtocolModule::HandleMessage(kNet::MessageConnection *source, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char *data, size_t numBytes)
@@ -402,7 +396,7 @@ u32 KristalliProtocolModule::AllocateNewConnectionID() const
 {
     u32 newID = 1;
     for(UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
-        newID = std::max((u32)newID, (u32)((*iter)->userID+1));
+        newID = std::max(newID, (*iter)->userID+1);
     
     return newID;
 }
@@ -410,11 +404,8 @@ u32 KristalliProtocolModule::AllocateNewConnectionID() const
 UserConnectionPtr KristalliProtocolModule::GetUserConnection(MessageConnection* source) const
 {
     for(UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
-    {
-        KNetUserConnection* kNetConn = dynamic_cast<KNetUserConnection*>(iter->get());
-        if (kNetConn && kNetConn->connection == source)
+        if (static_pointer_cast<KNetUserConnection>(*iter)->connection == source)
             return *iter;
-    }
 
     return UserConnectionPtr();
 }

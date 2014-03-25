@@ -65,7 +65,7 @@ public:
     kNet::MessageConnection* GetConnection();
 
     /// Returns the "virtual" user connection object representing the server. This object will exist always, but its MessageConnection is null when not connected.
-    UserConnectionPtr ServerUserConnection();
+    UserConnectionPtr ServerUserConnection() const;
 
     /// Logout immediately and delete the client scene content
     /** @param fail Pass in true if the logout was due to connection/login failure. False, if the connection was aborted deliberately by the client. */

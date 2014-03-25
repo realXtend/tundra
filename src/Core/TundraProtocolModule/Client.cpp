@@ -378,7 +378,7 @@ kNet::MessageConnection* Client::GetConnection()
     return owner_->GetKristalliModule()->GetMessageConnection();
 }
 
-UserConnectionPtr Client::ServerUserConnection()
+UserConnectionPtr Client::ServerUserConnection() const
 {
     return static_pointer_cast<UserConnection>(serverUserConnection_);
 }

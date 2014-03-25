@@ -75,7 +75,7 @@ public:
 public slots:
     /// Execute an action on an entity, sent only to the specific user
     void Exec(Entity *entity, const QString &action, const QStringList &params);
-    void Exec(Entity *entity, const QString &action, const QString &p1 = "", const QString &p2 = "", const QString &p3 = "");  ///< @overload
+    void Exec(Entity *entity, const QString &action, const QString &p1 = "", const QString &p2 = "", const QString &p3 = "");  /**< @overload */
 
     /// Returns raw login data
     QString LoginData() const { return loginData; }
