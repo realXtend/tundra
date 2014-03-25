@@ -1,0 +1,36 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="1" sync="1">
+  <component type="EC_Script" sync="1">
+   <attribute value="CreateChildEntity.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="CreateChildEntity" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+ </entity>
+ <entity id="2" sync="1">
+  <component type="EC_Name" sync="1">
+   <attribute value="Environment" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_EnvironmentLight" sync="1">
+   <attribute value="0.638999999 0.638999999 0.638999999 1" name="Sunlight color"/>
+   <attribute value="0.363999993 0.363999993 0.363999993 1" name="Ambient light color"/>
+   <attribute value="0.930000007 0.930000007 0.930000007 1" name="Sunlight diffuse color"/>
+   <attribute value="-1.000000 -1.000000 -1.000000" name="Sunlight direction vector"/>
+   <attribute value="true" name="Sunlight cast shadows"/>
+  </component>
+  <component type="EC_Sky" sync="1">
+   <attribute value="local://RexSkyBox.material" name="Material"/>
+   <attribute value="" name="Texture"/>
+   <attribute value="50" name="Distance"/>
+   <attribute value="0.000000 0.000000 0.000000 1.000000" name="Orientation"/>
+   <attribute value="true" name="Draw first"/>
+  </component>
+ </entity>
+</scene>
