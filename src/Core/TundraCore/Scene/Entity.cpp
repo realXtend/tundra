@@ -625,6 +625,8 @@ void Entity::EmitEntityRemoved(AttributeChange::Type change)
 {
     if (change == AttributeChange::Disconnected)
         return;
+    if (change == AttributeChange::Default)
+        change = AttributeChange::Replicate;
     emit EntityRemoved(this, change);
 }
 
@@ -636,11 +638,6 @@ void Entity::EmitEnterView(IComponent* camera)
 void Entity::EmitLeaveView(IComponent* camera)
 {
     emit LeaveView(camera);
-}
-
-void Entity::SetTemporary(bool enable)
-{
-    SetTemporary(enable, AttributeChange::Default);
 }
 
 void Entity::SetTemporary(bool enable, AttributeChange::Type change)
