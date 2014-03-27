@@ -3,6 +3,7 @@
 #pragma once
 
 #include "FrameworkFwd.h"
+#include "AudioFwd.h"
 #include "MumbleFwd.h"
 #include "MumbleDefines.h"
 
@@ -16,14 +17,6 @@
 #include <QMutex>
 #include <QReadWriteLock>
 #include <QTimer>
-
-#ifdef Q_WS_MAC
-#include <al.h>
-#include <alc.h>
-#else
-#include <AL/al.h>
-#include <AL/alc.h>
-#endif
 
 /// @cond PRIVATE
 namespace MumbleAudio

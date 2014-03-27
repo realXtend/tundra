@@ -27,9 +27,6 @@
 #include <al.h>
 #include <alc.h>
 #endif
-#else
-struct ALCcontext;
-struct ALCdevice;
 #endif
 
 #include "MemoryLeakCheck.h"
@@ -538,6 +535,8 @@ bool AudioAPI::StartRecording(const QString &name, uint frequency, bool sixteenb
 
     LogInfo("Opened OpenAL recording device " + name);
     return true;
+#else
+    return false;
 #endif
 }
 
@@ -562,6 +561,8 @@ uint AudioAPI::RecordedSoundSize() const
     ALCint samples;
     alcGetIntegerv(impl->captureDevice, ALC_CAPTURE_SAMPLES, 1, &samples);
     return samples * impl->captureSampleSize;
+#else
+    return 0;
 #endif
 }
 
@@ -579,5 +580,7 @@ uint AudioAPI::RecordedSoundData(void* buffer, uint size)
     
     alcCaptureSamples(impl->captureDevice, buffer, samples);
     return samples * impl->captureSampleSize;
+#else
+    return 0;
 #endif
 }

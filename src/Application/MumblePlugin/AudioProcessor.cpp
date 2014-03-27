@@ -15,6 +15,16 @@
 
 #include <QMutexLocker>
 
+#ifndef TUNDRA_NO_AUDIO
+#ifndef Q_WS_MAC
+#include <AL/al.h>
+#include <AL/alc.h>
+#else
+#include <al.h>
+#include <alc.h>
+#endif
+#endif
+
 namespace MumbleAudio
 {
     AudioRecorder::AudioRecorder() :
@@ -32,6 +42,7 @@ namespace MumbleAudio
     {
         StopRecording();
 
+#ifndef TUNDRA_NO_AUDIO
         ALenum format;
         captureSampleSize_ = 1;
         if (stereo)
@@ -69,16 +80,21 @@ namespace MumbleAudio
 
         LogInfo("Opened recorder: " + name);
         return true;
+#else
+        return false;
+#endif
     }
 
     void AudioRecorder::StopRecording()
     {
+#ifndef TUNDRA_NO_AUDIO
         if (captureDevice_)
         {
             alcCaptureStop(captureDevice_);
             alcCaptureCloseDevice(captureDevice_);
             captureDevice_ = 0;
         }
+#endif
     }
 
     uint AudioRecorder::RecordedSoundSize() const
@@ -86,9 +102,13 @@ namespace MumbleAudio
         if (!captureDevice_)
             return 0;
 
+#ifndef TUNDRA_NO_AUDIO
         ALCint samples;
         alcGetIntegerv(captureDevice_, ALC_CAPTURE_SAMPLES, 1, &samples);
         return samples * captureSampleSize_;
+#else
+        return 0;
+#endif
     }
 
     uint AudioRecorder::RecordedSoundData(void *buffer, uint size)
@@ -96,6 +116,7 @@ namespace MumbleAudio
         if (!captureDevice_)
             return 0;
 
+#ifndef TUNDRA_NO_AUDIO
         ALCint samples = size / captureSampleSize_;
         ALCint maxSamples = 0;
         alcGetIntegerv(captureDevice_, ALC_CAPTURE_SAMPLES, 1, &maxSamples);
@@ -104,6 +125,9 @@ namespace MumbleAudio
 
         alcCaptureSamples(captureDevice_, buffer, samples);
         return samples * captureSampleSize_;
+#else
+        return 0;
+#endif
     }
 
     AudioProcessor::AudioProcessor(Framework *framework_, MumbleAudio::AudioSettings settings, MumbleNetworkHandler *networkHandler) :
