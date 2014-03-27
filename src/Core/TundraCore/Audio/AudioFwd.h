@@ -25,7 +25,9 @@ typedef weak_ptr<AudioAsset> AudioAssetWeakPtr;
 /** unsigned 32-bit integer */
 typedef unsigned int ALuint;
 
+#ifdef TUNDRA_NO_AUDIO
 struct ALCcontext;
 struct ALCdevice;
+#endif
 
 Q_DECLARE_METATYPE(SoundChannelPtr)
