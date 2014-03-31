@@ -250,7 +250,7 @@ public slots:
         @sa RemoveComponentById */
     void RemoveComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default); /**< @overload */
     void RemoveComponent(const QString &typeName, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(Component(typeName), change); } /**< @overload @param typeName The component type name, the "EC_" prefix is not required. */
-    void RemoveComponent(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(typeName, name), change); }  /**< @overload */
+    void RemoveComponent(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(Component(typeName, name), change); }  /**< @overload */
     /// Removes component by ID.
     /** @sa RemoveComponent */
     void RemoveComponentById(component_id_t id, AttributeChange::Type change = AttributeChange::Default);
