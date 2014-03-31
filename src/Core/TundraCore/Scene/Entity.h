@@ -291,8 +291,9 @@ public slots:
     /// Serializes this entity, and returns the generated XML as a string
     /** @param serializeTemporary Serialize temporary entities for application-specific purposes. The default value is false.
         @param serializeChildren Serialize child entities. Default true.
+        @param createSceneElement Whether to wrap the entity XML element in a scene XML element. Default true.
         @sa SerializeToXML */
-    QString SerializeToXMLString(bool serializeTemporary = false, bool serializeChildren = true) const;
+    QString SerializeToXMLString(bool serializeTemporary = false, bool serializeChildren = true, bool createSceneElement = true) const;
 //        bool DeserializeFromXMLString(const QString &src, AttributeChange::Type change);
 
     /// Sets name of the entity to EC_Name component. If the component doesn't exist, it will be created.

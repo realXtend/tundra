@@ -495,7 +495,10 @@ void Entity::SerializeToXML(QDomDocument &doc, QDomElement &base_element, bool s
             i->lock()->SerializeToXML(doc, entity_elem, serializeTemporary, true);
     }
 
-    base_element.appendChild(entity_elem);
+    if (!base_element.isNull())
+        base_element.appendChild(entity_elem);
+    else
+        doc.appendChild(entity_elem);
 }
 
 /* Disabled for now, since have to decide how entityID conflicts are handled.
@@ -503,13 +506,23 @@ void Entity::DeserializeFromXML(QDomElement& element, AttributeChange::Type chan
 {
 }*/
 
-QString Entity::SerializeToXMLString(bool serializeTemporary, bool serializeChildren) const
+QString Entity::SerializeToXMLString(bool serializeTemporary, bool serializeChildren, bool createSceneElement) const
 {
-    QDomDocument scene_doc("Scene");
-    QDomElement scene_elem = scene_doc.createElement("scene");
-
-    SerializeToXML(scene_doc, scene_elem, serializeTemporary, serializeChildren);
-    return scene_doc.toString();
+    if (createSceneElement)
+    {
+        QDomDocument scene_doc("Scene");
+        QDomElement scene_elem = scene_doc.createElement("scene");
+    
+        SerializeToXML(scene_doc, scene_elem, serializeTemporary, serializeChildren);
+        return scene_doc.toString();
+    }
+    else
+    {
+        QDomDocument entity_doc("Entity");
+        QDomElement null_elem;
+        SerializeToXML(entity_doc, null_elem, serializeTemporary, serializeChildren);
+        return entity_doc.toString();
+    }
 }
 
 /* Disabled for now, since have to decide how entityID conflicts are handled.
