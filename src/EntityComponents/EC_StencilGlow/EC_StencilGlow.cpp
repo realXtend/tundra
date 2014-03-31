@@ -85,7 +85,8 @@ void EC_StencilGlow::CreateStencilGlow()
 
     if (!outlineEntity_ && !outlineSceneNode_)
     {
-        outlineEntity_ = entity->clone(entity->getName() + "_glow");
+        OgreWorldPtr w = world_.lock();
+        outlineEntity_ = entity->clone(w->GenerateUniqueObjectName(entity->getName() + "_glow"));
         outlineEntity_->setRenderQueueGroup(STENCIL_GLOW_OUTLINE);
         outlineEntity_->setMaterialName("cg/stencil_alpha_glow");
 
@@ -95,13 +96,9 @@ void EC_StencilGlow::CreateStencilGlow()
 
         if (entity->hasSkeleton())
             outlineEntity_->shareSkeletonInstanceWith(entity);
-        
-        Ogre::SceneManager* mgr = world_.lock()->OgreSceneManager();
-        if (mgr)
-        {
-            outlineSceneNode_ = entity->getParentSceneNode()->createChildSceneNode(entity->getName() + "_outlineGlowNode");
-            outlineSceneNode_->setScale(scale.Get());
-        }
+
+        outlineSceneNode_ = entity->getParentSceneNode()->createChildSceneNode(w->GenerateUniqueObjectName(entity->getName() + "_outlineGlowNode"));
+        outlineSceneNode_->setScale(scale.Get());
 
         isEnabled = false;
         SetStencilGlowEnabled(enabled.Get());
