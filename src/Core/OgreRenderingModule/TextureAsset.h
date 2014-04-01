@@ -24,6 +24,11 @@ public:
     virtual bool LoadFromFile(QString filename);
 
     /// Load texture from memory
+    /** @bug Loading invalid texture data asynchronously will never invoke operationCompleted.
+        This will leave the transfer of this asset in a infinite limbo. To replicated
+        rename any file eg. .mesh to .jpg and request it. This is a Ogre bug that should be fixed in our fork.
+        One fix would be to create a timer that if the threaded load takes more than lets say 30 seconds
+        it will be aborted and failed. */
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes, bool allowAsynchronous);
 
     /// Load texture into memory
