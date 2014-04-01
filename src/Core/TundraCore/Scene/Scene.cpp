@@ -182,7 +182,7 @@ bool Scene::RemoveEntity(entity_id_t id, AttributeChange::Type change)
         
         // If the entity is parented, remove from the parent. No signaling is necessary
         if (del_entity->Parent())
-            del_entity->SetParent(0, AttributeChange::Disconnected);
+            del_entity->SetParent(EntityPtr(), AttributeChange::Disconnected);
 
         // Remove all child entities. This may be recursive
         del_entity->RemoveAllChildren(change);
