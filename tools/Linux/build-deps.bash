@@ -400,9 +400,8 @@ if test -f $tags/$what-done; then
 else
     rm -rf $what
     echo Fetching $what, this may take a while...
-    git clone https://github.com/zaphoyd/websocketpp.git $what
+    git clone https://github.com/realXtend/websocketpp.git $what
     cd $what
-    git checkout 0.3.0-alpha3
     mkdir -p $prefix/include/$what
     rsync -r $what/* $prefix/include/$what
     touch $tags/$what-done
