@@ -96,9 +96,9 @@ public slots:
     IAttribute *CreateAttribute(const QString &typeName, const QString &id, AttributeChange::Type change = AttributeChange::Default);
 
     /// Returns attribute's value as QVariant.
-    /** In C++ use QVariant::isValid()to check if the variant value is valid. In QtScript checking whether the value is null can be used.
-        @param id ID of the attribute, case-insensitive. Note that for attributes of dynamic components attributes ID equals its name.
-        @return Return attribute value as QVariant if attribute has been found, else return null QVariant. */
+    /** In C++ use QVariant::isValid()to check whether the attribute was found. In QtScript check the return value against 'undefined'.
+        @param id ID of the attribute, case-insensitive. Note that for attributes of dynamic components, the attributes' IDs equal their names.
+        @return The value of the attribute as QVariant, or an invalid QVariant (QVariant::isValid() == false, 'undefined' in QtScript) if not. */
     QVariant Attribute(const QString &id) const;
     QVariant Attribute(int index) const; /**< @overload @param index Index to attribute list. */
 
