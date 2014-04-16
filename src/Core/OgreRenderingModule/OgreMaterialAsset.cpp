@@ -2254,9 +2254,9 @@ QVariant OgreMaterialAsset::TextureUnitAttribute(Ogre::TextureUnitState* texUnit
     else if (attr == "tex_address_mode")
     {
         const Ogre::TextureUnitState::UVWAddressingMode &mode = texUnit->getTextureAddressingMode();
-        return float3(mode.u, mode.v, mode.w);
+        return QVariant::fromValue<float3>(float3(mode.u, mode.v, mode.w));
     }
-    else if (attr == "tex_border_colour") return Color(texUnit->getTextureBorderColour());
+    else if (attr == "tex_border_colour") return QVariant::fromValue<Color>(Color(texUnit->getTextureBorderColour()));
     else if (attr == "filtering")
     {
         using namespace Ogre;
@@ -2273,7 +2273,7 @@ QVariant OgreMaterialAsset::TextureUnitAttribute(Ogre::TextureUnitState* texUnit
     else if (attr == "max_anisotropy") return texUnit->getTextureAnisotropy();
     else if (attr == "mipmap_bias") return texUnit->getTextureMipmapBias();
     else if (attr == "env_map") return texUnit->getEffects().find(Ogre::TextureUnitState::ET_ENVIRONMENT_MAP) != texUnit->getEffects().end();
-    else if (attr == "scroll") return float2(texUnit->getTextureUScroll(), texUnit->getTextureVScroll());
+    else if (attr == "scroll") return QVariant::fromValue<float2>(float2(texUnit->getTextureUScroll(), texUnit->getTextureVScroll()));
     else if (attr == "scroll_anim")
     {
         float2 ret(0,0);
@@ -2287,7 +2287,7 @@ QVariant OgreMaterialAsset::TextureUnitAttribute(Ogre::TextureUnitState* texUnit
         it = effects.find(Ogre::TextureUnitState::ET_VSCROLL);
         if (it != effects.end())
             ret.y = it->second.arg1;
-        return ret;
+        return QVariant::fromValue<float2>(ret);
     }
     else if (attr == "rotate") return texUnit->getTextureRotate().valueRadians();
     else if (attr == "rotate_anim")
@@ -2295,7 +2295,7 @@ QVariant OgreMaterialAsset::TextureUnitAttribute(Ogre::TextureUnitState* texUnit
         Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find(Ogre::TextureUnitState::ET_ROTATE);
         return (it != texUnit->getEffects().end() ? it->second.arg1 : 0.f);
     }
-    else if (attr == "scale") return float2(texUnit->getTextureUScale(), texUnit->getTextureVScale());
+    else if (attr == "scale") return QVariant::fromValue<float2>(float2(texUnit->getTextureUScale(), texUnit->getTextureVScale()));
     else if (attr == "wave_xform")
     {
         Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find(Ogre::TextureUnitState::ET_TRANSFORM);
@@ -2311,7 +2311,21 @@ QVariant OgreMaterialAsset::TextureUnitAttribute(Ogre::TextureUnitState* texUnit
         ret.push_back(it->second.amplitude);
         return ret;
     }
-    else if (attr == "colour_op" || attr == "colour_op_ex") return texUnit->getColourBlendMode().operation;
+    else if (attr == "colour_op") return texUnit->getColourBlendMode().operation;
+    else if (attr == "colour_op_ex")
+    {
+        // Mirror the "colour_op_ex <operation> <source1> <source2> [<manual_factor>] [<manual_colour1>] [<manual_colour2>]"
+        // syntax on return value.
+        const Ogre::LayerBlendModeEx &mode = texUnit->getColourBlendMode();
+        QVariantList ret;
+        ret.push_back(mode.operation);
+        ret.push_back(mode.source1);
+        ret.push_back(mode.source2);
+        ret.push_back(mode.factor);
+        ret.push_back(QVariant::fromValue<Color>(mode.colourArg1));
+        ret.push_back(QVariant::fromValue<Color>(mode.colourArg2));
+        return ret;
+    }
     else return QVariant();
 }
 
