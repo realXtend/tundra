@@ -72,3 +72,15 @@ EntityPtr EntityReference::Lookup(Scene* scene) const
     // Then get by name
     return scene->GetEntityByName(ref.trimmed());
 }
+
+bool EntityReference::Matches(Entity *entity) const
+{
+    if (!entity || ref.isEmpty())
+        return false;
+    // If ref looks like an ID, lookup by ID first
+    bool ok = false;
+    entity_id_t id = ref.toInt(&ok);
+    if (ok)
+        return (entity->Id() == id);
+    return (entity->Name().compare(ref, Qt::CaseSensitive) == 0);
+}
