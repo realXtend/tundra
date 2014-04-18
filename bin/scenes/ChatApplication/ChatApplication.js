@@ -10,19 +10,19 @@ engine.ImportExtension("qt.gui");
 //Server shows the ChatWidget, but it's not able to use it to send own messages
 function ServerControl()
 {
-  me.Action("ClientSendMessage").Triggered.connect(this, this.ClientMessage);
-  me.Action("ClientSendPrivateMessage").Triggered.connect(this, this.PrivateClientMessage);
-  me.Action("ServerUpdateUserList").Triggered.connect(this, this.ServerUpdateUserList);
-  server.UserConnected.connect(this, this.UserConnected);
-  server.UserDisconnected.connect(this, this.UserDisconnected);
+    me.Action("ClientSendMessage").Triggered.connect(this, this.ClientMessage);
+    me.Action("ClientSendPrivateMessage").Triggered.connect(this, this.PrivateClientMessage);
+    me.Action("ServerUpdateUserList").Triggered.connect(this, this.ServerUpdateUserList);
+    server.UserConnected.connect(this, this.UserConnected);
+    server.UserDisconnected.connect(this, this.UserDisconnected);
 }
 
 function GetClientUsername(connection)
 {
-  var username = connection.GetProperty("username");
-  if (username.length == 0)
-    username = "Unnamed user";
-  return username;
+    var username = connection.Property("username");
+    if (username === undefined || username.length == 0)
+        username = "Unnamed user";
+    return username;
 }
 
 ServerControl.prototype.UserConnected = function(cid, connection)
@@ -57,8 +57,8 @@ ServerControl.prototype.PrivateClientMessage = function(sender, receiver, msg)
         var userIDs = new Array();
         users = server.AuthenticatedUsers();
         for(var i = 0; i < users.length; i++)
-            if (users[i].GetProperty("username") == receiver)
-                users[i].Exec(scene.GetEntityByName("ChatApplication"), "ServerSendPrivateMessage", sender + ": " + msg);
+            if (users[i].Property("username") === receiver)
+                users[i].Exec(scene.EntityByName("ChatApplication"), "ServerSendPrivateMessage", sender + ": " + msg);
     }
 }
 
@@ -87,7 +87,7 @@ function ClientControl(userName)
 
     if (this.hoveringText == null) {
         var name = "Avatar" + client.connectionId;
-        var entity = scene.GetEntityByName(name);
+        var entity = scene.EntityByName(name);
         if (entity != null) {
             this.hoveringText = entity.CreateComponent("HoveringText");
             this.hoveringText.text = " ";
@@ -97,8 +97,6 @@ function ClientControl(userName)
             pos.y = 2.0;
       
             this.hoveringText.position = pos;
-            
-            
         }
         else {
             print("Error: Avatar not found");
@@ -351,7 +349,7 @@ else
     // properties when connecting, use that field as the username. Otherwise,
     // we show the login screen and ask the username from there.
     var username = client.LoginProperty("username");
-    if (username.length == 0)
+    if (username === undefined || username.length == 0)
     {
         var joinWidget = ui.LoadFromFile("local://JoinWidget.ui", false);
         var btn = findChild(joinWidget, "pushJoin");
