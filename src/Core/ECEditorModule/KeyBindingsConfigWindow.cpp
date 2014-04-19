@@ -76,7 +76,7 @@ void KeyBindingsConfigWindow::ApplyKeyConfig()
         InputAPI::KeyBindingMap::const_iterator jt = it;
         ++jt;
         for(;jt != editedActions.end(); ++jt)
-            if(it != jt && it.value() == jt.value() && it.value() == jt.value() && !conflictingSequences.contains(it.value()))
+            if(it != jt && it.value() == jt.value() && !conflictingSequences.contains(it.value()))
             {
                 conflictingSequences.append(it.value());
                 break;

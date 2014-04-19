@@ -129,7 +129,7 @@ void UiGraphicsView::resizeEvent(QResizeEvent *e)
 
     QMainWindow *parentMainWin = dynamic_cast<QMainWindow*>(parentWidget());
     int parentWidth = max(1, parentMainWin ? parentMainWin->geometry().width() : 0);
-    int parentHeight = max(1, parentWidget() ? parentMainWin->geometry().height() : 0);
+    int parentHeight = max(1, parentMainWin ? parentMainWin->geometry().height() : 0);
     parentHeight -= (parentMainWin && parentMainWin->menuBar()) ? parentMainWin->menuBar()->geometry().height() : 0;
 
     QRect newGeom(0, 0, max(parentWidth, e->size().width()), max(parentHeight, e->size().height()));

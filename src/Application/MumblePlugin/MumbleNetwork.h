@@ -257,7 +257,7 @@ namespace MumbleNetwork
             if (other.hasHash)
             {
                 hasHash = true;
-                hash = other.hasHash;
+                hash = other.hash;
             }
             if (other.hasSelfMute)
             {

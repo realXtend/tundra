@@ -1159,7 +1159,7 @@ QString OgreMaterialAsset::PixelShader(int techIndex, int passIndex) const
     return pass->getFragmentProgramName().c_str();
 }
 
-bool OgreMaterialAsset::SetVertexShaderParameter(int techIndex, int passIndex, const QString& name, const QVariantList &value)
+bool OgreMaterialAsset::SetVertexShaderParameter(int techIndex, int passIndex, const QString& paramName, const QVariantList &value)
 {
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
@@ -1182,11 +1182,11 @@ bool OgreMaterialAsset::SetVertexShaderParameter(int techIndex, int passIndex, c
     Ogre::GpuConstantDefinitionIterator mapIter = verPtr->getConstantDefinitionIterator();
     while(mapIter.hasMoreElements())
     {
-        QString paramName(mapIter.peekNextKey().c_str());
+        QString iterName(mapIter.peekNextKey().c_str());
         const Ogre::GpuConstantDefinition &paramDef = mapIter.getNext();
-        if (paramName.lastIndexOf("[0]") != -1) // Filter names that end with '[0]'
+        if (iterName.lastIndexOf("[0]") != -1) // Filter names that end with '[0]'
             continue;
-        if (paramName != name)
+        if (iterName != paramName)
             continue;
 
         bool isFloat = paramDef.isFloat();
@@ -1236,7 +1236,7 @@ bool OgreMaterialAsset::SetVertexShaderParameter(int techIndex, int passIndex, c
         }
         else
         {
-            LogError(QString("OgreMaterialAsset::SetVertexShaderParameter: Invalid value count %1 for %2: %3 expected.").arg(value.size()).arg(name).arg(size));
+            LogError(QString("OgreMaterialAsset::SetVertexShaderParameter: Invalid value count %1 for %2: %3 expected.").arg(value.size()).arg(paramName).arg(size));
             return false;
         }
     }
@@ -1244,7 +1244,7 @@ bool OgreMaterialAsset::SetVertexShaderParameter(int techIndex, int passIndex, c
     return false;
 }
 
-bool OgreMaterialAsset::SetPixelShaderParameter(int techIndex, int passIndex, const QString& name, const QVariantList &value)
+bool OgreMaterialAsset::SetPixelShaderParameter(int techIndex, int passIndex, const QString& paramName, const QVariantList &value)
 {
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
@@ -1267,11 +1267,11 @@ bool OgreMaterialAsset::SetPixelShaderParameter(int techIndex, int passIndex, co
     Ogre::GpuConstantDefinitionIterator mapIter = fragPtr->getConstantDefinitionIterator();
     while(mapIter.hasMoreElements())
     {
-        QString paramName(mapIter.peekNextKey().c_str());
+        QString iterName(mapIter.peekNextKey().c_str());
         const Ogre::GpuConstantDefinition &paramDef = mapIter.getNext();
-        if (paramName.lastIndexOf("[0]") != -1) // Filter names that end with '[0]'
+        if (iterName.lastIndexOf("[0]") != -1) // Filter names that end with '[0]'
             continue;
-        if (paramName != name)
+        if (iterName != paramName)
             continue;
 
         bool isFloat = paramDef.isFloat();
@@ -1321,7 +1321,7 @@ bool OgreMaterialAsset::SetPixelShaderParameter(int techIndex, int passIndex, co
         }
         else
         {
-            LogError(QString("OgreMaterialAsset::SetPixelShaderParameter: Invalid value count %1 for %2: %3 expected.").arg(value.size()).arg(name).arg(size));
+            LogError(QString("OgreMaterialAsset::SetPixelShaderParameter: Invalid value count %1 for %2: %3 expected.").arg(value.size()).arg(paramName).arg(size));
             return false;
         }
     }
@@ -1846,7 +1846,7 @@ bool OgreMaterialAsset::HasTextureEffect(int techIndex, int passIndex, int texUn
     if (!texUnit)
     {
         LogError(QString("OgreMaterialAsset::HasTextureEffect: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
-        false;
+        return false;
     }
 
     const Ogre::TextureUnitState::EffectMap &effects = texUnit->getEffects();

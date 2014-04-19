@@ -549,7 +549,7 @@ void EC_Placeable::DumpNodeHierarhy()
         p = p->parentPlaceable_;
     }
 
-    for(size_t i = parents.size()-1; i >= 0; --i)
+    for(int i = static_cast<int>(parents.size())-1; i >= 0; --i)
         LogInfo(parents[i]->ParentEntity()->ToString().toStdString() + " at local->parent: " + 
             parents[i]->LocalToParent().ToString() + ", world space: " + parents[i]->LocalToWorld().ToString());
 

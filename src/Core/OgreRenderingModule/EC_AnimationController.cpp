@@ -253,13 +253,13 @@ void EC_AnimationController::Update(float frametime)
                 while(it.hasMoreElements())
                 {
                     Ogre::NodeAnimationTrack* track = it.getNext();
-                    unsigned id = track->getHandle();
+                    unsigned trackId = track->getHandle();
                     // For each active track, reduce corresponding bone weight in lowpriority-blendmask 
                     // by this animation's weight
-                    if (id < lowpriority_mask_.size())
+                    if (trackId < lowpriority_mask_.size())
                     {
-                        lowpriority_mask_[id] -= i->second.weight_;
-                        if (lowpriority_mask_[id] < 0.0) lowpriority_mask_[id] = 0.0;
+                        lowpriority_mask_[trackId] -= i->second.weight_;
+                        if (lowpriority_mask_[trackId] < 0.0) lowpriority_mask_[trackId] = 0.0;
                     }
                 }
             }

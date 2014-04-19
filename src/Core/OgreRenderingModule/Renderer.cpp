@@ -1096,11 +1096,6 @@ namespace OgreRenderer
         QSize viewsize(view->viewport()->size());
         QRect viewrect(QPoint(0, 0), viewsize);
 
-        QSize gviewsize(view->size());
-
-        QSize mainwindowSize(framework->Ui()->MainWindow()->size());
-        QSize renderWindowSize(renderWindow->OgreRenderWindow()->getWidth(), renderWindow->OgreRenderWindow()->getHeight());
-
         {
             PROFILE(Renderer_DoFullUIRedraw_backbufferfill);
             backBuffer->fill(Qt::transparent);

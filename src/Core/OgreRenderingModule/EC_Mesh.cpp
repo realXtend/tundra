@@ -1022,8 +1022,7 @@ void EC_Mesh::AttributesChanged()
     {
         if (entity_)
         {
-            if (entity_)
-                entity_->setCastShadows(castShadows.Get());
+            entity_->setCastShadows(castShadows.Get());
             /// \todo might want to disable shadows for some attachments
             for(uint i = 0; i < attachmentEntities_.size(); ++i)
             {

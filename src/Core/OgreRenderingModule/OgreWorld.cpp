@@ -458,7 +458,6 @@ QString OgreWorld::PrepareInstancingMaterial(OgreMaterialAsset *material)
     static QString InstancingHWBasic_PS = "Tundra/Instancing/HWBasicPS";
 
     QString VS = material->VertexShader(0, 0).trimmed();
-    QString PS = material->PixelShader(0, 0).trimmed();
     QString newVS;
     QString newPS;
     
