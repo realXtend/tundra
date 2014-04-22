@@ -138,7 +138,8 @@ public:
                   If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity IDs from the files are ignored,
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
-        @return List of created entities. */
+        @return List of created entities.
+        @todo Return list of EntityPtrs instead of raw pointers. Could also consider EntityList ,though QList[] has the nice operator [] accessor. */
     QList<Entity *> CreateContentFromSceneDesc(const SceneDesc &desc, bool useEntityIDsFromFile, AttributeChange::Type change);
 
     /// Emits notification of an attribute changing. Called by IComponent.
@@ -359,7 +360,8 @@ public slots:
                   If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity IDs from the files are ignored,
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
-        @return List of created entities. */
+        @return List of created entities.
+        @todo Return list of EntityPtrs instead of raw pointers. Could also consider EntityList ,though QList[] has the nice operator [] accessor. */
     QList<Entity *> LoadSceneXML(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
 
     /// Returns scene content as an XML string.
@@ -382,7 +384,8 @@ public slots:
                   If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity IDs from the files are ignored,
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
-        @return List of created entities. */
+        @return List of created entities.
+        @todo Return list of EntityPtrs instead of raw pointers. Could also consider EntityList ,though QList[] has the nice operator [] accessor. */
     QList<Entity *> LoadSceneBinary(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
 
     /// Save the scene to binary
@@ -398,7 +401,8 @@ public slots:
                   If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity IDs from the files are ignored,
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
-        @return List of created entities. */
+        @return List of created entities.
+        @todo Return list of EntityPtrs instead of raw pointers. Could also consider EntityList ,though QList[] has the nice operator [] accessor. */
     QList<Entity *> CreateContentFromXml(const QString &xml, bool useEntityIDsFromFile, AttributeChange::Type change);
     QList<Entity *> CreateContentFromXml(const QDomDocument &xml, bool useEntityIDsFromFile, AttributeChange::Type change); /**< @overload @param xml XML document. */
 
@@ -408,7 +412,8 @@ public slots:
                   If the scene contains any previous entities with conflicting IDs, those are removed. If false, the entity IDs from the files are ignored,
                   and new IDs are generated for the created entities.
         @param change Change type that will be used, when removing the old scene, and deserializing the new
-        @return List of created entities. */
+        @return List of created entities.
+        @todo Return list of EntityPtrs instead of raw pointers. Could also consider EntityList ,though QList[] has the nice operator [] accessor. */
     QList<Entity *> CreateContentFromBinary(const QString &filename, bool useEntityIDsFromFile, AttributeChange::Type change);
     QList<Entity *> CreateContentFromBinary(const char *data, int numBytes, bool useEntityIDsFromFile, AttributeChange::Type change); /**< @overload @param data Data buffer @param numBytes Data size. */
 
