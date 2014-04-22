@@ -286,7 +286,7 @@ bool Server::Start()
         server_->get_elog().set_channels(websocketpp::log::elevel::rerror);
         server_->get_elog().set_channels(websocketpp::log::elevel::fatal);
 
-        server_->listen(port_);
+        server_->listen(boost::asio::ip::tcp::v4(), port_);
 
         // Start the server accept loop
         server_->start_accept();
