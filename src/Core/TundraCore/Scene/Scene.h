@@ -33,10 +33,13 @@ class QDomDocument;
 class TUNDRACORE_API Scene : public QObject, public enable_shared_from_this<Scene>
 {
     Q_OBJECT
-    Q_PROPERTY(QString name READ Name)
-    Q_PROPERTY(bool viewEnabled READ ViewEnabled)
-    Q_PROPERTY(bool authority READ IsAuthority)
-    Q_PROPERTY(EntityMap entities READ Entities)
+    Q_PROPERTY(QString name READ Name) /**< @copydoc Name */
+    Q_PROPERTY(bool viewEnabled READ ViewEnabled) /**< @copydoc ViewEnabled */
+    Q_PROPERTY(bool authority READ IsAuthority) /**< @copydoc IsAuthority */
+    Q_PROPERTY(EntityMap entities READ Entities) /**< @copydoc Entities */
+    Q_PROPERTY(float3 up READ UpVector) /**< @copydoc UpVector */
+    Q_PROPERTY(float3 right READ RightVector) /**< @copydoc RightVector */
+    Q_PROPERTY(float3 forward READ ForwardVector) /**< @copydoc ForwardVector */
 
 public:
     ~Scene();
