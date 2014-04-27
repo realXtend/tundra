@@ -545,9 +545,21 @@ bool Application::eventFilter(QObject *obj, QEvent *event)
         if (obj == this)
         {
             if (event->type() == QEvent::ApplicationActivate)
-                appActivated = true;
+            {
+                if (!appActivated)
+                {
+                    appActivated = true;
+                    emit ApplicationActiveChanged(appActivated);
+                }
+            }
             else if (event->type() == QEvent::ApplicationDeactivate)
-                appActivated = false;
+            {
+                if (appActivated)
+                {
+                    appActivated = false;
+                    emit ApplicationActiveChanged(appActivated);
+                }
+            }
         }
 
         return QObject::eventFilter(obj, event);
