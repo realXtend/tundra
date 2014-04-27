@@ -8,9 +8,9 @@ macro (setup_clean_install_step)
     # Never do the recursive remove to the install dir on other systems than windows.
     # This might do horrible things if you set CMAKE_INSTALL_PREFIX to /usr or similar.
     if (WIN32)
-        install (CODE "message(\"\nCleaning target directory ${CMAKE_INSTALL_PREFIX}\")")
+        install (CODE "message(STATUS \"Cleaning target directory\")")
+        install (CODE "message(\"               ${CMAKE_INSTALL_PREFIX}\")")
         install (CODE "file (REMOVE_RECURSE ${CMAKE_INSTALL_PREFIX})")
-        install (CODE "message(\" \")")
     endif()
 endmacro ()
 
@@ -33,9 +33,10 @@ function (setup_install_directory)
         set (DATA_DEST_DIR_PATH_FINAL "bin/${ARGV1}")
     endif ()
     # Install directory
-    install (CODE "message(\"\nCopying directory ${ARGV0} to ${CMAKE_INSTALL_PREFIX}/${DATA_DEST_DIR_PATH_FINAL}\")")
+    install (CODE "message(STATUS \"Copying directory\")")
+    install (CODE "message(\"          from ${ARGV0}\")")
+    install (CODE "message(\"          to   ${CMAKE_INSTALL_PREFIX}/${DATA_DEST_DIR_PATH_FINAL}\")")
     install (DIRECTORY ${ARGV0} DESTINATION ${DATA_DEST_DIR_PATH_FINAL})
-    install (CODE "message(\" \")")
 endfunction ()
 
 # Macro for installing a file into the install prefix.
@@ -91,11 +92,12 @@ function (setup_install_files_find FIND_DIR FIND_GLOB)
         endif ()
     
         # Install file
-        install (CODE "message(\"\nCopying files with ${FIND_DIR}/${FIND_GLOB} to ${CMAKE_INSTALL_PREFIX}/${DATA_DEST_PATH_FINAL}\")")
+        install (CODE "message(STATUS \"Copying files\")")
+        install (CODE "message(\"          from ${FIND_DIR}/${FIND_GLOB}\")")
+        install (CODE "message(\"          to   ${CMAKE_INSTALL_PREFIX}/${DATA_DEST_PATH_FINAL}\")")
         install (FILES ${FOUND_INSTALL_FILES} 
                  DESTINATION ${DATA_DEST_PATH_FINAL}
                  CONFIGURATIONS ${FIND_INSTALL_CONFIGURATION})
-        install (CODE "message(\" \")")
     endif ()
 endfunction ()
 
@@ -159,9 +161,28 @@ endfunction ()
 # Example: setup_remove_file ("data/assets/dummy.txt")
 #
 function (setup_remove_file FILE_PATH)
-    install (CODE "message(\"\nRemoving file ${CMAKE_INSTALL_PREFIX}/bin/${FILE_PATH}\")")
+    install (CODE "message(STATUS \"Removing:   ${CMAKE_INSTALL_PREFIX}/bin/${FILE_PATH}\")")
     install (CODE "file (REMOVE ${CMAKE_INSTALL_PREFIX}/bin/${FILE_PATH})")
-    install (CODE "message(\" \")")
+endfunction ()
+
+# Removes files from the install directory with GLOB expressions. Supports multiple GLOB defines separated by ;.
+#
+# Example: setup_remove_files_glob ("QtCLucene*.dll" FALSE)
+#          setup_remove_files_glob ("QtCLucene*.dll;QtDesigner*.dll" FALSE)
+#          setup_remove_files_glob ("data/assets/*" TRUE)
+#
+function (setup_remove_files_glob GLOB_STATEMENTS USE_RECURSE)
+    set (REMOVE_OP "REMOVE")
+    if (USE_RECURSE)
+        set (REMOVE_OP "REMOVE_RECURSE")
+    endif ()
+
+    install (CODE "message(STATUS \"Removing files with GLOB\")")
+    foreach (GLOB_STATEMENT ${GLOB_STATEMENTS})
+        install (CODE "message(\"               ${CMAKE_INSTALL_PREFIX}/bin/${GLOB_STATEMENT}\")")
+        install (CODE "file (GLOB FILE_PATHS \"${CMAKE_INSTALL_PREFIX}/bin/${GLOB_STATEMENT}\")")
+        install (CODE "file (${REMOVE_OP} \${FILE_PATHS})")
+    endforeach ()
 endfunction ()
 
 # Removes directory and its content recursively from install <prefix>
@@ -170,9 +191,8 @@ endfunction ()
 # Example: setup_remove_directory("data/assets/translations")
 #
 function(setup_remove_directory FILE_PATH)
-    install(CODE "message(\"\nRemoving directory ${CMAKE_INSTALL_PREFIX}/bin/${FILE_PATH}\")")
+    install(CODE "message(STATUS \"Removing:   ${CMAKE_INSTALL_PREFIX}/bin/${FILE_PATH}\")")
     install(CODE "file (REMOVE_RECURSE ${CMAKE_INSTALL_PREFIX}/bin/${FILE_PATH})")
-    install(CODE "message(\" \")")
 endfunction()
 
 # Macro for installing the target build results into the install prefix.

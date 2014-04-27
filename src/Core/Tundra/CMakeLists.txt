@@ -77,3 +77,8 @@ endif()
 setup_install_windows_deps_regexp ("" qt/bin/ "[/][Q][t][A-Z].*[^d][4][.]dll$" Release|RelWithDebInfo qt/bin/ "[/][Q][t][A-Z].*[d][4][.]dll$" Debug)
 setup_install_windows_deps_regexp (qtplugins qt/plugins/ "[/]plugins[/].*[/][q].*[^d][4][.]dll$" Release|RelWithDebInfo qt/plugins/ "[/]plugins[/].*[/][q].*[d][4][.]dll$" Debug)
 setup_install_windows_deps ("libeay32.dll;ssleay32.dll" Release|RelWithDebInfo|Debug) # OpenSSL DLLs for SSL support in QNetwork
+
+# Remove unnessary Windows DLLs
+if (MSVC)
+    setup_remove_files_glob ("QtCLucene*.dll;QtDesigner*.dll;QtHelp*.dll;QtScriptTools*.dll;QtSql*.dll;QtSvg*.dll;QtTest*.dll" FALSE)
+endif ()
