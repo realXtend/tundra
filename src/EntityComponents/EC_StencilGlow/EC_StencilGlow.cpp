@@ -22,12 +22,14 @@
 #define STENCIL_GLOW_OUTLINE Ogre::RENDER_QUEUE_OVERLAY - 1
 
 #define COLOR_CUSTOM_PARAM 1
+#define BLINK_FREQUENCY_CUSTOM_PARAM 2
 
 EC_StencilGlow::EC_StencilGlow(Scene *scene) :
     IComponent(scene),
     INIT_ATTRIBUTE_VALUE(enabled, "Enabled", true),
     INIT_ATTRIBUTE_VALUE(color, "Color", Color(1.f, 1.f, 1.f, 0.4f)),
     INIT_ATTRIBUTE_VALUE(scale, "Scale", float3::FromScalar(1.2f)),
+    INIT_ATTRIBUTE_VALUE(blinkFrequency, "Blink frequency", 1.5f),
     isEnabled(false),
     outlineEntity_(0),
     outlineSceneNode_(0)
@@ -91,8 +93,11 @@ void EC_StencilGlow::CreateStencilGlow()
         outlineEntity_->setMaterialName("cg/stencil_alpha_glow");
 
         Ogre::SubEntity *subEnt = outlineEntity_->getSubEntity(0);
-        if(subEnt)
+        if (subEnt)
+        {
             subEnt->setCustomParameter(COLOR_CUSTOM_PARAM, color.Get().ToFloat4());
+            subEnt->setCustomParameter(BLINK_FREQUENCY_CUSTOM_PARAM, Ogre::Vector4(blinkFrequency.Get()));
+        }
 
         if (entity->hasSkeleton())
             outlineEntity_->shareSkeletonInstanceWith(entity);
@@ -155,23 +160,26 @@ void EC_StencilGlow::SetStencilGlowEnabled(bool enable)
 
 void EC_StencilGlow::AttributesChanged()
 {
-    if(enabled.ValueChanged())
+    if (enabled.ValueChanged())
     {
         CreateStencilGlow();
         SetStencilGlowEnabled(enabled.Get());
     }
-    if(color.ValueChanged())
+
+    if (color.ValueChanged() && outlineEntity_)
     {
-        if(outlineEntity_)
-        {
-            Ogre::SubEntity *subEnt = outlineEntity_->getSubEntity(0);
-            if(subEnt)
-            {
-                Color newColor = color.Get();
-                subEnt->setCustomParameter(COLOR_CUSTOM_PARAM, Ogre::Vector4(newColor.r, newColor.g, newColor.b, newColor.a));
-            }
-        }
+        Ogre::SubEntity *subEnt = outlineEntity_->getSubEntity(0);
+        if(subEnt)
+            subEnt->setCustomParameter(COLOR_CUSTOM_PARAM, color.Get().ToFloat4());
     }
+
+    if (blinkFrequency.ValueChanged() && outlineEntity_)
+    {
+        Ogre::SubEntity *subEnt = outlineEntity_->getSubEntity(0);
+        if (subEnt)
+            subEnt->setCustomParameter(BLINK_FREQUENCY_CUSTOM_PARAM, Ogre::Vector4(blinkFrequency.Get()));
+    }
+
     if (scale.ValueChanged() && outlineSceneNode_)
         outlineSceneNode_->setScale(scale.Get());
 }
