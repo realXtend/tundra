@@ -5,6 +5,8 @@
 #include "TundraCoreApi.h"
 #include "IAssetTypeFactory.h"
 
+#include <cassert>
+
 /// A factory that always returns a null pointer for creating assets.
 /** This factory is used to ignore certain asset types when they are supposed to never be used in the system.
     Another way to disable the use of certain assets is to not register a factory at all for that type.
@@ -12,6 +14,8 @@
     we are ok that the assets of the given type are not loaded. */
 class TUNDRACORE_API NullAssetFactory : public IAssetTypeFactory
 {
+    Q_OBJECT
+
 public:
     explicit NullAssetFactory(const QString &assetType_, const QString &assetTypeExtension) :
         assetType(assetType_.trimmed()),

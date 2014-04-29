@@ -11,6 +11,8 @@
 /// A common interface for factories which instantiate assets of different types.
 class TUNDRACORE_API IAssetTypeFactory : public QObject
 {
+    Q_OBJECT
+
 public:
     virtual ~IAssetTypeFactory() {}
 
@@ -24,4 +26,3 @@ public:
     /// @param name The name to give for this asset.
     virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const QString &name) = 0;
 };
-
