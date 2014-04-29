@@ -73,6 +73,23 @@ function run()
         else if (dyn[test.propName] === test.expected && test.expected !== undefined)
             log.info('Validated that "' + test.id + '" WILL translate into dynamicComponent.' + test.propName);
     }
+
+    log.info("");
+    log.info("**************************************************************");
+    log.info("Testing creating attribute with an invalid attribute type name");
+    log.info("**************************************************************");
+    log.info("");
+    var attr = dyn.CreateAttribute("foo", "test");
+    if (attr === null)
+        log.info("EC_DynamicComponent::CreateAttribute('foo') returned null as expected.");
+    else
+        log.error("EC_DynamicComponent::CreateAttribute('foo') did not return null as expected.");
+    log.info("");
+    var attr = framework.Scene().CreateAttribute("foo", "test");
+    if (attr === null)
+        log.info("SceneAPI::CreateAttribute('foo') returned null as expected.");
+    else
+        log.error("SceneAPI::CreateAttribute('foo') did not return null as expected.");
 }
 
 function setAttribute(attr)
