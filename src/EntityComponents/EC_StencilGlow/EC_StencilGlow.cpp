@@ -28,8 +28,8 @@ EC_StencilGlow::EC_StencilGlow(Scene *scene) :
     IComponent(scene),
     INIT_ATTRIBUTE_VALUE(enabled, "Enabled", true),
     INIT_ATTRIBUTE_VALUE(color, "Color", Color(1.f, 1.f, 1.f, 0.4f)),
-    INIT_ATTRIBUTE_VALUE(scale, "Scale", float3::FromScalar(1.2f)),
-    INIT_ATTRIBUTE_VALUE(blinkFrequency, "Blink frequency", 1.5f),
+    INIT_ATTRIBUTE_VALUE(scale, "Scale", float3::FromScalar(1.05f)),
+    INIT_ATTRIBUTE_VALUE(blinkFrequency, "Blink frequency", 0.f),
     isEnabled(false),
     outlineEntity_(0),
     outlineSceneNode_(0)

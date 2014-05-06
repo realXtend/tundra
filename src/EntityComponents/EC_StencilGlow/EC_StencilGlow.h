@@ -32,11 +32,11 @@ public:
     Q_PROPERTY(Color color READ getcolor WRITE setcolor)
     DEFINE_QPROPERTY_ATTRIBUTE(Color, color);
 
-    /// Defines the scale of the outline, (1.2, 1.2, 1.2) by default.
+    /// Defines the scale of the outline, (1.05, 1.05, 1.05) by default.
     Q_PROPERTY(float3 scale READ getscale WRITE setscale)
     DEFINE_QPROPERTY_ATTRIBUTE(float3, scale);
 
-    /// Blink frequency (Hz) of the glow effect, 0 disables, 1.5 by default.
+    /// Blink frequency (Hz) of the glow effect, 0 disables, 0 by default.
     Q_PROPERTY(float blinkFrequency READ getblinkFrequency WRITE setblinkFrequency)
     DEFINE_QPROPERTY_ATTRIBUTE(float, blinkFrequency);
 
