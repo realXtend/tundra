@@ -303,6 +303,7 @@ fragment_program rex/DiffShadowFP_DX cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -325,6 +326,7 @@ fragment_program rex/DiffShadowFP_OGL cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -381,6 +383,7 @@ fragment_program rex/DiffShadowVColFP_DX cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -403,6 +406,7 @@ fragment_program rex/DiffShadowVColFP_OGL cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -463,6 +467,7 @@ fragment_program rex/DiffSpecflatNormalShadowLumFP_DX cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -485,6 +490,7 @@ fragment_program rex/DiffSpecflatNormalShadowLumFP_OGL cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -591,6 +597,7 @@ fragment_program rex/DiffSpecflatShadowFP_DX cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -613,6 +620,7 @@ fragment_program rex/DiffSpecflatShadowFP_OGL cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -670,7 +678,8 @@ fragment_program rex/DiffSpecmapNormalShadowLumFP_DX cg
 				
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
-		shared_params_ref params_shadowParams	
+		shared_params_ref params_shadowParams
+		param_named jitterSize float 1	
 	}
 }
 
@@ -692,7 +701,8 @@ fragment_program rex/DiffSpecmapNormalShadowLumFP_OGL cg
 				
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
-		shared_params_ref params_shadowParams	
+		shared_params_ref params_shadowParams
+		param_named jitterSize float 1	
 	}
 }
 
@@ -752,6 +762,7 @@ fragment_program rex/DiffSpecmapNormalShadowFP_DX cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -774,6 +785,7 @@ fragment_program rex/DiffSpecmapNormalShadowFP_OGL cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -878,6 +890,7 @@ fragment_program rex/DiffSpecmapNormalShadowLightmapFP_DX cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 		
 		// Light mapping parameters.
 		param_named lightMapFactor float 1
@@ -901,6 +914,7 @@ fragment_program rex/DiffSpecmapNormalShadowLightmapFP_OGL cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 		
 		// Light mapping parameters.
 		param_named lightMapFactor float 1
@@ -1009,7 +1023,8 @@ fragment_program rex/DiffSpecmapNormalShadowLumOpaFP_DX cg
 				
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
-		shared_params_ref params_shadowParams	
+		shared_params_ref params_shadowParams
+		param_named jitterSize float 1	
 	}
 }
 
@@ -1031,7 +1046,8 @@ fragment_program rex/DiffSpecmapNormalShadowLumOpaFP_OGL cg
 				
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
-		shared_params_ref params_shadowParams	
+		shared_params_ref params_shadowParams
+		param_named jitterSize float 1	
 	}
 }
 
@@ -1136,6 +1152,7 @@ fragment_program rex/DiffSpecmapShadowLumOpaFP_DX cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -1158,6 +1175,7 @@ fragment_program rex/DiffSpecmapShadowLumOpaFP_OGL cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -1215,7 +1233,8 @@ fragment_program rex/DiffSpecmapShadowLumFP_DX cg
 				
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
-		shared_params_ref params_shadowParams	
+		shared_params_ref params_shadowParams
+		param_named jitterSize float 1	
 	}
 }
 
@@ -1237,7 +1256,8 @@ fragment_program rex/DiffSpecmapShadowLumFP_OGL cg
 				
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
-		shared_params_ref params_shadowParams	
+		shared_params_ref params_shadowParams
+		param_named jitterSize float 1	
 	}
 }
 
@@ -1296,6 +1316,7 @@ fragment_program rex/DiffSpecmapShadowOpaFP_DX cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -1318,6 +1339,7 @@ fragment_program rex/DiffSpecmapShadowOpaFP_OGL cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -1376,6 +1398,7 @@ fragment_program rex/DiffSpecmapShadowFP_DX cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -1398,6 +1421,7 @@ fragment_program rex/DiffSpecmapShadowFP_OGL cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -1546,6 +1570,7 @@ fragment_program rex/DiffSpecmapShadowReflFP_DX cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -1568,6 +1593,7 @@ fragment_program rex/DiffSpecmapShadowReflFP_OGL cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -1667,6 +1693,7 @@ fragment_program rex/DiffShadowLightmapFP_DX cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 		
 		// Light mapping parameters.
 		param_named lightMapFactor float 1
@@ -1690,6 +1717,7 @@ fragment_program rex/DiffShadowLightmapFP_OGL cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 		
 		// Light mapping parameters.
 		param_named lightMapFactor float 1
@@ -1747,6 +1775,7 @@ fragment_program rex/DiffAlphamaskShadowLightmapFP_DX cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 		
 		// Light mapping parameters.
 		param_named lightMapFactor float 1
@@ -1770,6 +1799,7 @@ fragment_program rex/DiffAlphamaskShadowLightmapFP_OGL cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 		
 		// Light mapping parameters.
 		param_named lightMapFactor float 1
@@ -1828,6 +1858,7 @@ fragment_program rex/DiffNormalShadowLightmapFP_DX cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 		
 		// Light mapping parameters.
 		param_named lightMapFactor float 1		
@@ -1851,6 +1882,7 @@ fragment_program rex/DiffNormalShadowLightmapFP_OGL cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 		
 		// Light mapping parameters.
 		param_named lightMapFactor float 1		
@@ -1909,6 +1941,7 @@ fragment_program rex/DiffAlphamaskNormalShadowLightmapFP_DX cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 		
 		// Light mapping parameters.
 		param_named lightMapFactor float 1		
@@ -1932,6 +1965,7 @@ fragment_program rex/DiffAlphamaskNormalShadowLightmapFP_OGL cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 		
 		// Light mapping parameters.
 		param_named lightMapFactor float 1		
@@ -1992,6 +2026,7 @@ fragment_program rex/DiffNormalShadowFP_DX cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 
@@ -2014,6 +2049,7 @@ fragment_program rex/DiffNormalShadowFP_OGL cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		shared_params_ref params_shadowMatrixScaleBias
 		shared_params_ref params_shadowParams
+		param_named jitterSize float 1
 	}
 }
 

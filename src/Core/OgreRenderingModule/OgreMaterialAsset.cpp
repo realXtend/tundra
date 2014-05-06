@@ -872,6 +872,10 @@ bool OgreMaterialAsset::CreateOgreMaterial(const std::string &materialData)
 
             if (!hasKernelRotationUnit)
             {
+                Ogre::TexturePtr kernelRotationTexture = Ogre::TextureManager::getSingleton().getByName("KernelRotation.png");
+                if (!kernelRotationTexture.get())
+                    kernelRotationTexture = Ogre::TextureManager::getSingleton().load("KernelRotation.png", "General");
+
                 // Replace first shadow texture unit with kernel rotation texture.
                 Ogre::Pass::TextureUnitStateIterator kernelTexiterator = pass->getTextureUnitStateIterator();
                 if (shadowmaps > 0)
@@ -881,10 +885,6 @@ bool OgreMaterialAsset::CreateOgreMaterial(const std::string &materialData)
                         Ogre::TextureUnitState* state = kernelTexiterator.getNext();
                         if (state->getContentType() == Ogre::TextureUnitState::CONTENT_SHADOW)
                         {
-                            Ogre::TexturePtr kernelRotationTexture = Ogre::TextureManager::getSingleton().getByName("KernelRotation.png");
-                            if (!kernelRotationTexture.get())
-                                kernelRotationTexture = Ogre::TextureManager::getSingleton().load("KernelRotation.png", "General");
-
                             state->setTexture(kernelRotationTexture);
                             state->setContentType(Ogre::TextureUnitState::CONTENT_NAMED);
                             state->setTextureFiltering(Ogre::TFO_NONE);
@@ -896,10 +896,6 @@ bool OgreMaterialAsset::CreateOgreMaterial(const std::string &materialData)
                 else // Create new texture unit for kernel rotation texture.
                 {
                     Ogre::TextureUnitState* state = pass->createTextureUnitState();
-
-                    Ogre::TexturePtr kernelRotationTexture = Ogre::TextureManager::getSingleton().getByName("KernelRotation.png");
-                    if (!kernelRotationTexture.get())
-                        kernelRotationTexture = Ogre::TextureManager::getSingleton().load("KernelRotation.png", "General");
                     state->setTexture(kernelRotationTexture);
                     state->setContentType(Ogre::TextureUnitState::CONTENT_NAMED);
                     state->setTextureFiltering(Ogre::TFO_NONE);

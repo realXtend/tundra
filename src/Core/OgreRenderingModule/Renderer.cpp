@@ -545,6 +545,7 @@ namespace OgreRenderer
                 params->addConstantDefinition("invShadowMapSize", Ogre::GCT_FLOAT4);
                 params->addConstantDefinition("shadowFadeDist", Ogre::GCT_FLOAT1);
                 params->addConstantDefinition("shadowMaxDist", Ogre::GCT_FLOAT1);
+                params->addConstantDefinition("jitterSize", Ogre::GCT_FLOAT1);
 
                 // Set default values. Can be changed during runtime with EC_OgreShadowSetup.
                 params->setNamedConstant("fixedDepthBias", Ogre::Vector4(0.00005f, 0.00005f, 0.00005f, 0.00005f));
