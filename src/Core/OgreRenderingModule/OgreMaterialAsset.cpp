@@ -864,17 +864,17 @@ bool OgreMaterialAsset::CreateOgreMaterial(const std::string &materialData)
             while(texiterator.hasMoreElements())
             {
                 Ogre::TextureUnitState* state = texiterator.getNext();
-                if(QString::fromStdString(state->getTextureName()).contains("KernelRotation"))
+                if (QString::fromStdString(state->getTextureName()).contains("KernelRotation"))
                     hasKernelRotationUnit = true;
-                if(state->getContentType() == Ogre::TextureUnitState::CONTENT_SHADOW)
+                if (state->getContentType() == Ogre::TextureUnitState::CONTENT_SHADOW)
                     ++shadowmaps;
             }
 
             if (!hasKernelRotationUnit)
             {
-                Ogre::TexturePtr kernelRotationTexture = Ogre::TextureManager::getSingleton().getByName("KernelRotation.png");
+                Ogre::TexturePtr kernelRotationTexture = Ogre::TextureManager::getSingleton().getByName("KernelRotation.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
                 if (!kernelRotationTexture.get())
-                    kernelRotationTexture = Ogre::TextureManager::getSingleton().load("KernelRotation.png", "General");
+                    kernelRotationTexture = Ogre::TextureManager::getSingleton().load("KernelRotation.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
                 // Replace first shadow texture unit with kernel rotation texture.
                 Ogre::Pass::TextureUnitStateIterator kernelTexiterator = pass->getTextureUnitStateIterator();
@@ -888,12 +888,13 @@ bool OgreMaterialAsset::CreateOgreMaterial(const std::string &materialData)
                             state->setTexture(kernelRotationTexture);
                             state->setContentType(Ogre::TextureUnitState::CONTENT_NAMED);
                             state->setTextureFiltering(Ogre::TFO_NONE);
-                            ++shadowmaps;
+                            --shadowmaps;
                             break;
                         }
                     }
                 }
-                else // Create new texture unit for kernel rotation texture.
+                // Create new texture unit for kernel rotation texture.
+                else
                 {
                     Ogre::TextureUnitState* state = pass->createTextureUnitState();
                     state->setTexture(kernelRotationTexture);
@@ -902,14 +903,11 @@ bool OgreMaterialAsset::CreateOgreMaterial(const std::string &materialData)
                 }
             }
 
-            if (shadowmaps < shadowMapsToInject)
+            while (shadowmaps < shadowMapsToInject)
             {
-                while (shadowmaps < shadowMapsToInject)
-                {
-                    Ogre::TextureUnitState* shadowMapUnit = pass->createTextureUnitState();
-                    shadowMapUnit->setContentType(Ogre::TextureUnitState::CONTENT_SHADOW);
-                    ++shadowmaps;
-                }
+                Ogre::TextureUnitState* shadowMapUnit = pass->createTextureUnitState();
+                shadowMapUnit->setContentType(Ogre::TextureUnitState::CONTENT_SHADOW);
+                ++shadowmaps;
             }
         }
     }

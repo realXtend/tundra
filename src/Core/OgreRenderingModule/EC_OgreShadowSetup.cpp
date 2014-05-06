@@ -79,7 +79,7 @@ void EC_OgreShadowSetup::AttributesChanged()
 
     if (fadeDist.ValueChanged())
     {
-        if (fadeDist.Get() < 0.00001f)
+        if (fadeDist.Get() < 0.0f)
             fadeDist.Set(0.0f, AttributeChange::LocalOnly);
         else if (fadeDist.Get() >= farDist.Get())
             fadeDist.Set(farDist.Get() * 0.04, AttributeChange::LocalOnly);
