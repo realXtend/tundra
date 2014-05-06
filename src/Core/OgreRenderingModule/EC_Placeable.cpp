@@ -9,6 +9,7 @@
 #include "OgreRenderingModule.h"
 #include "OgreWorld.h"
 #include "Renderer.h"
+#include "Profiler.h"
 
 #include "AttributeMetadata.h"
 #include "EC_Mesh.h"
@@ -251,7 +252,9 @@ void EC_Placeable::AttachNode()
         return;
     }
     OgreWorldPtr world = world_.lock();
-    
+
+    PROFILE(EC_Placeable_AttachNode)
+
     try
     {
         // If already attached, detach first
@@ -550,7 +553,7 @@ void EC_Placeable::DumpNodeHierarhy()
         p = p->parentPlaceable_;
     }
 
-    for(size_t i = parents.size()-1; i >= 0; --i)
+    for(int i = static_cast<int>(parents.size())-1; i >= 0; --i)
         LogInfo(parents[i]->ParentEntity()->ToString().toStdString() + " at local->parent: " + 
             parents[i]->LocalToParent().ToString() + ", world space: " + parents[i]->LocalToWorld().ToString());
 
@@ -719,10 +722,14 @@ void EC_Placeable::OnParentPlaceableDestroyed()
 
 void EC_Placeable::CheckParentEntityCreated(Entity* entity, AttributeChange::Type change)
 {
-    if ((!attached_) && (entity))
+    if (!attached_ && entity)
     {
-        // Check if the entity is the one we should use as parent
-        if (entity == parentRef.Get().Lookup(entity->ParentScene()).get())
+        PROFILE(EC_Placeable_CheckParentEntityCreated)
+        /** @note EntityReference::Lookup was replaced here by Matches that does
+            not iterate the whole scene (worst case scenario, parented by name).
+            This freezes Tundra for quite badly if there are thousands of Entities
+            and the parent has a late id (as in arrives ~last from network). */
+        if (parentRef.Get().Matches(entity))
             AttachNode();
     }
 }
@@ -735,6 +742,7 @@ void EC_Placeable::OnParentMeshChanged()
 
 void EC_Placeable::OnComponentAdded(IComponent* component, AttributeChange::Type change)
 {
+    /// @todo Should only go to AttachNode if EC_Placeable or EC_Mesh?
     if (!attached_)
         AttachNode();
 }

@@ -36,6 +36,10 @@ public:
     Q_PROPERTY(float3 scale READ getscale WRITE setscale)
     DEFINE_QPROPERTY_ATTRIBUTE(float3, scale);
 
+    /// Blink frequency (Hz) of the glow effect, 0 disables, 1.5 by default.
+    Q_PROPERTY(float blinkFrequency READ getblinkFrequency WRITE setblinkFrequency)
+    DEFINE_QPROPERTY_ATTRIBUTE(float, blinkFrequency);
+
 private slots:
     /// Called upon parent entity set
     void Initialize(); 

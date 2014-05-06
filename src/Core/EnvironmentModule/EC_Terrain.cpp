@@ -176,7 +176,7 @@ void EC_Terrain::AttributesChanged()
     if (heightMap.ValueChanged())
     {
         QString refBody;
-        std::map<QString, QString> args = ParseAssetRefArgs(heightMap.Get().ref, &refBody);
+        ParseAssetRefArgs(heightMap.Get().ref, &refBody);
         heightMapAsset->HandleAssetRefChange(framework->Asset(), refBody);
     }
 }

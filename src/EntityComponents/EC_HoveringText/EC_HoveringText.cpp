@@ -57,7 +57,7 @@ EC_HoveringText::EC_HoveringText(Scene* scene) :
     INIT_ATTRIBUTE_VALUE(material, "Material", AssetReference("local://HoveringText.material", ""))
 {
     if (scene)
-        world_ = scene->GetWorld<OgreWorld>();
+        world_ = scene->Subsystem<OgreWorld>();
 
     connect(&materialAsset, SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     connect(&materialAsset, SIGNAL(TransferFailed(IAssetTransfer*, QString)), this, SLOT(OnMaterialAssetFailed(IAssetTransfer*, QString)), Qt::UniqueConnection);
@@ -208,7 +208,7 @@ void EC_HoveringText::ShowMessage(const QString &text)
     if (!entity)
         return;
 
-    EC_Placeable *node = entity->GetComponent<EC_Placeable>().get();
+    EC_Placeable *node = entity->Component<EC_Placeable>().get();
     if (!node)
         return;
 
@@ -277,15 +277,11 @@ void EC_HoveringText::Redraw()
             brush = QBrush(bg_grad_);
         }
 
-        QColor borderCol;
-        Color col = borderColor.Get();
-        borderCol.setRgbF(col.r, col.g, col.b, col.a);
-
         QPen borderPen;
-        borderPen.setColor(borderCol);
+        borderPen.setColor(borderColor.Get());
         borderPen.setWidthF(borderThickness.Get());
         
-        float2 corners =  cornerRadius.Get();
+        const float2 &corners =  cornerRadius.Get();
 
         texture_->SetContentsDrawText(texWidth.Get(), 
                                 texHeight.Get(), 
@@ -314,31 +310,24 @@ void EC_HoveringText::Redraw()
 
 void EC_HoveringText::AttributesChanged()
 {
+    if (!ViewEnabled())
+        return;
+
     if (font.ValueChanged() || fontSize.ValueChanged())
-    {
         SetFont(QFont(font.Get(), fontSize.Get()));
-    }
+
     if (fontColor.ValueChanged())
-    {
-        Color col = fontColor.Get();
-        textColor_.setRgbF(col.r, col.g, col.b, col.a);
-    }
+        textColor_ = fontColor.Get();
+
     if (position.ValueChanged())
-    {
         SetPosition(position.Get());
-    }
+
     if (gradStart.ValueChanged() || gradEnd.ValueChanged())
-    {
-        QColor colStart;
-        QColor colEnd;
-        Color col = gradStart.Get();
-        colStart.setRgbF(col.r, col.g, col.b);
-        col = gradEnd.Get();
-        colEnd.setRgbF(col.r, col.g, col.b);
-        SetBackgroundGradient(colStart, colEnd);
-    }
+        SetBackgroundGradient(gradStart.Get(), gradEnd.Get());
+
     if (overlayAlpha.ValueChanged())
         SetOverlayAlpha(overlayAlpha.Get());
+
     if (width.ValueChanged() || height.ValueChanged())
         SetBillboardSize(width.Get(), height.Get());
 
@@ -346,10 +335,7 @@ void EC_HoveringText::AttributesChanged()
     {
         // Don't render the HoveringText if it's not using a material.
         if (billboardSet_)
-        {
-            bool isVisible = !material.Get().ref.isEmpty();
-            billboardSet_->setVisible(isVisible);
-        }
+            billboardSet_->setVisible(!material.Get().ref.isEmpty());
 
         // If the material was cleared, erase the material from Ogre billboard as well. (we might be deleting the material in Tundra Asset API)
         if (material.Get().ref.isEmpty() && billboardSet_)
@@ -378,8 +364,7 @@ void EC_HoveringText::AttributesChanged()
 
 void EC_HoveringText::OnMaterialAssetLoaded(AssetPtr asset)
 {
-    OgreMaterialAsset *ogreMaterial = dynamic_cast<OgreMaterialAsset*>(asset.get());
-    if (!ogreMaterial)
+    if (!dynamic_pointer_cast<OgreMaterialAsset>(asset))
     {
         LogError("OnMaterialAssetLoaded: Material asset load finished for asset \"" +
             asset->Name() + "\", but downloaded asset was not of type OgreMaterialAsset!");
@@ -401,15 +386,13 @@ void EC_HoveringText::OnMaterialAssetFailed(IAssetTransfer* transfer, QString re
 
 void EC_HoveringText::RecreateMaterial()
 {
-    shared_ptr<OgreMaterialAsset> materialAsset = dynamic_pointer_cast<OgreMaterialAsset>(framework->Asset()->GetAsset(material.Get().ref));
+    OgreMaterialAssetPtr materialAsset = framework->Asset()->FindAsset<OgreMaterialAsset>(material.Get().ref);
     if (!materialAsset)
         return;
 
     DeleteMaterial(); // If we had an old material, free it up to not leak in Ogre.
 
-    OgreRenderer::RendererPtr renderer = framework->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer();
-
-    materialName_ = renderer->GetUniqueObjectName("EC_HoveringText_material");
+    materialName_ = framework->Module<OgreRenderingModule>()->Renderer()->GenerateUniqueObjectName("EC_HoveringText_material");
     try
     {
         OgreRenderer::CloneMaterial(materialAsset->ogreAssetName.toStdString(), materialName_);

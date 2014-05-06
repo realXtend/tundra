@@ -21,8 +21,11 @@ class AudioAsset;
 typedef shared_ptr<AudioAsset> AudioAssetPtr;
 typedef weak_ptr<AudioAsset> AudioAssetWeakPtr;
 
-// We don't want to include the OpenAL headers here directly (<AL/al.h>, <AL/alc.h>). Pulled the necessary declarations here directly.
-/** unsigned 32-bit integer */
+// Forward declare needed OpenAL constructs for header usage.
+struct ALCcontext_struct;
+struct ALCdevice_struct;
+typedef struct ALCcontext_struct ALCcontext;
+typedef struct ALCdevice_struct ALCdevice;
 typedef unsigned int ALuint;
 
 Q_DECLARE_METATYPE(SoundChannelPtr)

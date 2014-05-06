@@ -36,7 +36,11 @@ public:
     }
 
     /// Returns a list of all attribute type names that can be used in the CreateAttribute function to create an attribute.
-    /** @note Unlike the available component types, the available attribute type set is static and cannot change at runtime. */
+    /** @note Unlike the available component types, the available attribute type set is static and cannot change at runtime.
+        The available attribute types types are:
+        "string", "int", "real", "Color", "float2", "float3", "float4", "bool", "uint", "Quat",
+        "AssetReference", "AssetReferenceList", "EntityReference", "QVariant", "QVariantList",
+        "Transform", and "QPoint" (can be considered somewhat deprecated). */
     static const QStringList &AttributeTypes();
 
     /// Returns the scene map for self reflection / introspection.

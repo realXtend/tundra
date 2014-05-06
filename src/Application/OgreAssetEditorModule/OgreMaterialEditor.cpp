@@ -1020,7 +1020,6 @@ void OgreMaterialEditor::PopulateTextureUnits(int techIndex, int passIndex)
 
         const QString techniquePassTuId = QString(";%1;%2;%3").arg(techIndex).arg(passIndex).arg(tuIndex);
 
-        QString assetRef = AssetAPI::DesanitateAssetRef(tu->getTextureName()).c_str();
         uint texCoordSet = mat->TextureCoordSet(techIndex, passIndex, tuIndex);
         unsigned addrModeU = mat->TextureAddressingModeU(techIndex, passIndex, tuIndex);
         unsigned addrModeV = mat->TextureAddressingModeV(techIndex, passIndex, tuIndex);

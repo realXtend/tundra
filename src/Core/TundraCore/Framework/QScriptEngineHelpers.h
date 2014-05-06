@@ -1,4 +1,11 @@
-// For conditions of distribution and use, see copyright notice in LICENSE
+/**
+    For conditions of distribution and use, see copyright notice in LICENSE
+
+    @file   QScriptEngineHelpers.h
+    @brief  QtScript conversion helpers.
+    @todo   QtScript-specific functionality doesn't belong to TundraCore, move these elsewhere. */
+
+#pragma once
 
 #include "LoggingFunctions.h"
 
@@ -16,6 +23,7 @@ QScriptValue qScriptValueFromQObject(QScriptEngine *engine, Tp const &qobject)
 template <typename Tp>
 void qScriptValueToQObject(const QScriptValue &value, Tp &qobject)
 {
+    /// @todo qobject_cast should be totally safe here, esp. for something like Entity* and have better performance.
     qobject = dynamic_cast<Tp>(value.toQObject());
     if (!qobject)
     {
@@ -57,11 +65,26 @@ void qScriptValueToBoostSharedPtr(const QScriptValue &value, shared_ptr<T> &ptr)
         return;
     }
 
+    /// @todo qobject_cast should be safe and have better performance here.
     T *obj = dynamic_cast<T*>(value.toQObject());
     if (!obj)
     {
         ptr.reset();
         return;
     }
-    ptr = dynamic_pointer_cast<T>(obj->shared_from_this());
+    ptr = static_pointer_cast<T>(obj->shared_from_this());
+}
+
+template<class T>
+void qScriptRegisterQEnums(QScriptEngine *engine)
+{
+    QScriptValue enums = engine->newObject();
+    const QMetaObject &mo = T::staticMetaObject;
+    for(int i = mo.enumeratorOffset(); i < mo.enumeratorCount(); ++i)
+    {
+        const QMetaEnum enumerator = mo.enumerator(i);
+        for(int j = 0 ; j < enumerator.keyCount(); ++j)
+            enums.setProperty(enumerator.key(j), enumerator.value(j), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+    }
+    engine->globalObject().setProperty(mo.className(), enums, QScriptValue::Undeletable | QScriptValue::ReadOnly);
 }

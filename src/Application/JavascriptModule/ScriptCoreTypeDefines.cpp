@@ -24,12 +24,16 @@
 
 QScriptValue toScriptValueIAttribute(QScriptEngine *engine, IAttribute * const &attr)
 {
+    if (!attr)
+        return engine->nullValue();
+
     QScriptValue obj = engine->newObject();
     obj.setProperty("id", QScriptValue(engine, attr->Id()), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     obj.setProperty("name", QScriptValue(engine, attr->Name()), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     obj.setProperty("typeName", QScriptValue(engine, attr->TypeName()), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     obj.setProperty("value", engine->newVariant(attr->ToQVariant()), QScriptValue::Undeletable | QScriptValue::ReadOnly);
     obj.setProperty("owner", qScriptValueFromQObject(engine, attr->Owner()), QScriptValue::Undeletable | QScriptValue::ReadOnly);
+
     return obj;
 }
 

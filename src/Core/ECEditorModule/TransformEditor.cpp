@@ -463,7 +463,7 @@ void TransformEditor::HandleKeyEvent(KeyEvent *e)
     const QKeySequence translate= inputApi->KeyBinding("TransformEditor.SetTranslateGizmo", QKeySequence(Qt::Key_1));
     const QKeySequence rotate = inputApi->KeyBinding("TransformEditor.SetRotateGizmo", QKeySequence(Qt::Key_2));
     const QKeySequence scale = inputApi->KeyBinding("TransformEditor.SetScaleGizmo", QKeySequence(Qt::Key_3));
-    QComboBox* modeCombo = editorSettings ? editorSettings->findChild<QComboBox*>("modeComboBox") : 0;
+    QComboBox* modeCombo = !editorSettings.isNull() ? editorSettings->findChild<QComboBox*>("modeComboBox") : 0;
     if (modeCombo)
     {
         if (e->sequence == translate)

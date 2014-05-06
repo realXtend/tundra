@@ -1615,6 +1615,7 @@ template<> void ECAttributeEditor<QVariantList>::Initialize()
         if(rootProperty_)
         {
             rootProperty_->setPropertyName(name_);
+
             QtProperty *childProperty = 0;
             // Get number of elements in attribute array and create for property for each array element.
             Attribute<QVariantList > *attribute = FindAttribute<QVariantList>(components_[0].lock());
@@ -2031,9 +2032,10 @@ template<> void ECAttributeEditor<AssetReferenceList>::Initialize()
         optionalPropertyManagers_.push_back(stringManager);
 
         rootProperty_ = groupManager->addProperty();
-        rootProperty_->setPropertyName(name_);
         if (rootProperty_)
         {
+            rootProperty_->setPropertyName(name_);
+
             // Get number of elements in attribute array and create for property for each array element.
             Attribute<AssetReferenceList> *attribute = FindAttribute<AssetReferenceList>(components_[0].lock());
             if (!attribute)

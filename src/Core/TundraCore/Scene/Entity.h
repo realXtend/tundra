@@ -22,7 +22,7 @@ class QDomElement;
 /** An entity is a collection of components that define the data and the functionality of the entity.
     Entity can have multiple components of the same type as long as the component names are unique.
 
-    Entities should not be directly created, instead use Scene::CreateEntity().
+    Entities should not be directly created, instead use Scene::CreateEntity() et al.
 
     Each different component type that is added to an entity will be available as a dynamic property
     (Q_PROPERTY) of the entity. The property is named in the following following fashion: the (possible)
@@ -37,7 +37,7 @@ class QDomElement;
     dynamic property. If you want to access other components of the same type in the entity, you should use
     the Component(typeName, name) method instead, f.ex.:
     @code
-    entity.Component("EC_EnvironmentLight", "MySpecialLight").ambientColor = new Color(0.33, 0.33, 0.33, 1);
+    entity.Component("EnvironmentLight", "MySpecialLight").ambientColor = new Color(0.33, 0.33, 0.33, 1);
     @endcode
 
     When a component is removed from an entity, the dynamic property association is invalidated, i.e. the
@@ -250,7 +250,7 @@ public slots:
         @sa RemoveComponentById */
     void RemoveComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default); /**< @overload */
     void RemoveComponent(const QString &typeName, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(Component(typeName), change); } /**< @overload @param typeName The component type name, the "EC_" prefix is not required. */
-    void RemoveComponent(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(typeName, name), change); }  /**< @overload */
+    void RemoveComponent(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(Component(typeName, name), change); }  /**< @overload */
     /// Removes component by ID.
     /** @sa RemoveComponent */
     void RemoveComponentById(component_id_t id, AttributeChange::Type change = AttributeChange::Default);
@@ -334,13 +334,10 @@ public slots:
     void Exec(EntityAction::ExecTypeField type, const QString &action, const QVariantList &params);
 
     /// Sets whether entity is temporary. Temporary entities won't be saved when the scene is saved.
-    /** By definition, all components of a temporary entity are temporary as well. Uses the Default changetype. */
-    ///@todo Doesn't need to be slot, exposed as Q_PROPERTY
-    void SetTemporary(bool enable);
+    /** By definition, all components of a temporary entity are temporary as well.
+        @param change Change signaling mode. */
+    void SetTemporary(bool enable, AttributeChange::Type change = AttributeChange::Default);
 
-    /// Sets whether entity is temporary, with change type included
-    void SetTemporary(bool enable, AttributeChange::Type change);
-    
     /// Returns whether entity is temporary. Temporary entities won't be saved when the scene is saved.
     /** By definition, all components of a temporary entity are temporary as well. */
     ///@todo Doesn't need to be slot, exposed as Q_PROPERTY

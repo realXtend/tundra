@@ -14,18 +14,20 @@
 struct TUNDRACORE_API EntityReference
 {
     EntityReference() {}
-    
-    explicit EntityReference(const QString &entityName) : ref(entityName.trimmed()) {}
 
+    explicit EntityReference(const QString &entityName) : ref(entityName.trimmed()) {}
     explicit EntityReference(entity_id_t id) : ref(QString::number(id)) {}
 
     /// Set from an entity. If the name is unique within its parent scene, the name will be set, otherwise ID.
     void Set(EntityPtr entity);
     void Set(Entity* entity);
-    
+
     /// Lookup an entity from the scene according to the ref. Return null pointer if not found
     EntityPtr Lookup(Scene* scene) const;
-    
+
+    /// Returns if @c entity matches this EntityReference.
+    bool Matches(Entity *entity) const;
+
     /// Return whether the ref does not refer to an entity
     bool IsEmpty() const;
 
@@ -40,5 +42,3 @@ struct TUNDRACORE_API EntityReference
 };
 
 Q_DECLARE_METATYPE(EntityReference)
-
-

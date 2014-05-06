@@ -58,6 +58,10 @@ final_target()
 setup_install_directory(${TUNDRA_BIN}/media)
 setup_install_files (${TUNDRA_BIN}/tundra-rendering-ogre.json)
 
+if (NOT ANDROID)
+    setup_remove_directory("media/RTShaderLib")
+endif ()
+
 # Install windows deps
 setup_install_windows_deps("cg.dll" Release|RelWithDebInfo|Debug)
 setup_install_windows_deps("OgreMain.dll" Release|RelWithDebInfo "OgreMain_d.dll" Debug)

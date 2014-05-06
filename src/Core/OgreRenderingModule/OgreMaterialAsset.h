@@ -9,6 +9,7 @@
 #include <OgreMaterial.h>
 
 /// Contains an Ogre .material loaded to memory.
+/// http://www.ogre3d.org/docs/manual/manual_14.html#Material-Scripts
 class OGRE_MODULE_API OgreMaterialAsset : public IAsset
 {
     Q_OBJECT
@@ -65,7 +66,7 @@ public slots:
     /** Format: @c key is "t<x> p<y> tu<z> paramname", to access technique, pass and texture unit specific attributes.
         These can also be omitted to affect all techniques, passes or units as applicable.
 
-        The supported attributes include (as of October 2nd, 2013):
+        The supported attributes include (as of April 14 2015):
         - Material attributes "receive_shadows", and "transparency_casts_shadows".
         - Technique attributes "shadow_caster_material", and "shadow_receiver_material".
         - Pass attributes "ambient", "diffuse", "specular", "emissive", "scene_blend", "separate_scene_blend",
@@ -73,8 +74,8 @@ public slots:
           "alpha_rejection", "normalise_normals", "transparent_sorting", "cull_hardware", "lighting", "shading",
           "polygon_mode", "colour_write", "vertex_program_ref", and "fragment_program_ref".
         - Texture unit attributes "texture", "tex_coord_set", "tex_address_mode", "tex_border_colour", "filtering",
-           "max_anisotropy", "mipmap_bias", "env_map", "scroll", "scroll_anim", "rotate", "rotate_anim", "scale", and
-           "wave_xform". */
+           "max_anisotropy", "mipmap_bias", "env_map", "scroll", "scroll_anim", "rotate", "rotate_anim", "scale",
+           "wave_xform", "colour_op", and "colour_op_ex".*/
     void SetAttribute(const QString& key, const QString& value);
     /// Returns the value of a material attribute, invalid QVariant if attribute not found or supported.
     /** @copydetails SetAttribute */
@@ -120,17 +121,17 @@ public slots:
     /** Supported value types are int, float, float4/Color, float4x4.
         @param techIndex Technique index.
         @param passIndexx Pass index.
-        @param name Name of the shader parameter.
+        @param paramName Name of the shader parameter.
         @param value List of values to be set. */
-    bool SetVertexShaderParameter(int techIndex, int passIndex, const QString& name, const QVariantList &value);
+    bool SetVertexShaderParameter(int techIndex, int passIndex, const QString& paramName, const QVariantList &value);
 
     /// Sets pixel shader parameter value.
     /** Supported value types are int, float, float4/Color, float4x4.
         @param techIndex Technique index.
         @param passIndexx Pass index.
-        @param name Name of the shader parameter.
+        @param paramName Name of the shader parameter.
         @param value List of values to be set. */
-    bool SetPixelShaderParameter(int techIndex, int passIndex, const QString& name, const QVariantList &value);
+    bool SetPixelShaderParameter(int techIndex, int passIndex, const QString& paramName, const QVariantList &value);
 
     /// Enable or disable lighting in a pass
     bool SetLighting(int techIndex, int passIndex, bool enable);

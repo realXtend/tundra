@@ -1,11 +1,9 @@
 float4 main(
-		uniform float time,
-		uniform float4 colorModulate) : COLOR
+    uniform float time,
+    uniform float4 colorModulate,
+    uniform float blinkFrequency) : COLOR
 {
-   float4 color;
-   color.r = colorModulate.r;
-   color.g = colorModulate.g;
-   color.b = colorModulate.b;
-   color.a = colorModulate.a * (abs(sin(time * 4.0)));
-   return color;
+    float4 color = colorModulate;
+    color.a = colorModulate.a * 0.5 * (-cos((5.0 * time * blinkFrequency) - 3.14159265358979) + 1);
+    return color;
 }

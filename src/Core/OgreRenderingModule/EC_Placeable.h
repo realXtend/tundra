@@ -69,9 +69,9 @@
 
     <b>Reacts on the following actions:</b>
     <ul>
-    <li>"ShowEntity": Shows the Entity
-    <li>"HideEntity": Hides the Entity
-    <li>"ToggleEntity": Toggles visibility
+    <li>"ShowEntity": @copydoc Show
+    <li>"HideEntity": @copydoc Hide
+    <li>"ToggleEntity": @copydoc ToggleVisibility
     </ul>
     </td>
     </tr>

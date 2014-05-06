@@ -708,10 +708,7 @@ void ECEditorWindow::ShowEntityContextMenu(const QPoint &pos)
     {
         menu->addAction(actions);
         menu->addAction(functions);
-    }
 
-    if (item)
-    {
         QList<QObject*> targets;
         EntityListWidgetItem* entityItem = checked_static_cast<EntityListWidgetItem*>(item);
         if (entityItem && entityItem->Entity())

@@ -24,7 +24,7 @@
 /// @todo 02.10.2013 This could be in CoreStringUtils.h?
 struct EnumStr
 {
-    EnumStr(QString enumName, unsigned enumValue) :
+    EnumStr(const QString &enumName, unsigned enumValue) :
         name(enumName),
         value(enumValue)
     {
@@ -35,8 +35,8 @@ struct EnumStr
     {
     }
 
-    QString name;
-    unsigned value;
+    const QString name;
+    const unsigned value;
 };
 
 /// @todo 02.10.2013 All of these could be in OgreMaterialUtils.h?
@@ -156,6 +156,45 @@ const EnumStr waveformTypes[] =
     EnumStr("square", Ogre::WFT_SQUARE),
     EnumStr("sawtooth", Ogre::WFT_SAWTOOTH),
     EnumStr("inverse_sawtooth", Ogre::WFT_INVERSE_SAWTOOTH),
+    EnumStr()
+};
+
+const EnumStr cLayerBlendOperationTypes[] =
+{
+    EnumStr("replace", Ogre::LBO_REPLACE),
+    EnumStr("add", Ogre::LBO_ADD),
+    EnumStr("modulate", Ogre::LBO_MODULATE),
+    EnumStr("alpha_blend", Ogre::LBO_ALPHA_BLEND),
+    EnumStr()
+};
+
+const EnumStr cLayerBlendOperationExTypes[] =
+{
+    EnumStr("source1", Ogre::LBX_SOURCE1),
+    EnumStr("source2", Ogre::LBX_SOURCE2),
+    EnumStr("modulate", Ogre::LBX_MODULATE),
+    EnumStr("modulate_x2", Ogre::LBX_MODULATE_X2),
+    EnumStr("modulate_x4", Ogre::LBX_MODULATE_X4),
+    EnumStr("add", Ogre::LBX_ADD),
+    EnumStr("add_signed", Ogre::LBX_ADD_SIGNED),
+    EnumStr("add_smooth", Ogre::LBX_ADD_SMOOTH),
+    EnumStr("subtract", Ogre::LBX_SUBTRACT),
+    EnumStr("blend_diffuse_alpha", Ogre::LBX_BLEND_DIFFUSE_ALPHA),
+    EnumStr("blend_texture_alpha", Ogre::LBX_BLEND_TEXTURE_ALPHA),
+    EnumStr("blend_current_alpha", Ogre::LBX_BLEND_CURRENT_ALPHA),
+    EnumStr("blend_manual", Ogre::LBX_BLEND_MANUAL),
+    EnumStr("dotproduct", Ogre::LBX_DOTPRODUCT),
+    EnumStr("blend_diffuse_colour", Ogre::LBX_BLEND_DIFFUSE_COLOUR),
+    EnumStr()
+};
+
+const EnumStr cLayerBlendSourceTypes[] =
+{
+    EnumStr("src_current", Ogre::LBS_CURRENT),
+    EnumStr("src_texture", Ogre::LBS_TEXTURE),
+    EnumStr("src_diffuse", Ogre::LBS_DIFFUSE),
+    EnumStr("src_specular", Ogre::LBS_SPECULAR),
+    EnumStr("src_manual", Ogre::LBS_MANUAL),
     EnumStr()
 };
 
@@ -1180,7 +1219,7 @@ QString OgreMaterialAsset::PixelShader(int techIndex, int passIndex) const
     return pass->getFragmentProgramName().c_str();
 }
 
-bool OgreMaterialAsset::SetVertexShaderParameter(int techIndex, int passIndex, const QString& name, const QVariantList &value)
+bool OgreMaterialAsset::SetVertexShaderParameter(int techIndex, int passIndex, const QString& paramName, const QVariantList &value)
 {
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
@@ -1203,11 +1242,11 @@ bool OgreMaterialAsset::SetVertexShaderParameter(int techIndex, int passIndex, c
     Ogre::GpuConstantDefinitionIterator mapIter = verPtr->getConstantDefinitionIterator();
     while(mapIter.hasMoreElements())
     {
-        QString paramName(mapIter.peekNextKey().c_str());
+        QString iterName(mapIter.peekNextKey().c_str());
         const Ogre::GpuConstantDefinition &paramDef = mapIter.getNext();
-        if (paramName.lastIndexOf("[0]") != -1) // Filter names that end with '[0]'
+        if (iterName.lastIndexOf("[0]") != -1) // Filter names that end with '[0]'
             continue;
-        if (paramName != name)
+        if (iterName != paramName)
             continue;
 
         bool isFloat = paramDef.isFloat();
@@ -1257,7 +1296,7 @@ bool OgreMaterialAsset::SetVertexShaderParameter(int techIndex, int passIndex, c
         }
         else
         {
-            LogError(QString("OgreMaterialAsset::SetVertexShaderParameter: Invalid value count %1 for %2: %3 expected.").arg(value.size()).arg(name).arg(size));
+            LogError(QString("OgreMaterialAsset::SetVertexShaderParameter: Invalid value count %1 for %2: %3 expected.").arg(value.size()).arg(paramName).arg(size));
             return false;
         }
     }
@@ -1265,7 +1304,7 @@ bool OgreMaterialAsset::SetVertexShaderParameter(int techIndex, int passIndex, c
     return false;
 }
 
-bool OgreMaterialAsset::SetPixelShaderParameter(int techIndex, int passIndex, const QString& name, const QVariantList &value)
+bool OgreMaterialAsset::SetPixelShaderParameter(int techIndex, int passIndex, const QString& paramName, const QVariantList &value)
 {
     Ogre::Pass* pass = GetPass(techIndex, passIndex);
     if (!pass)
@@ -1288,11 +1327,11 @@ bool OgreMaterialAsset::SetPixelShaderParameter(int techIndex, int passIndex, co
     Ogre::GpuConstantDefinitionIterator mapIter = fragPtr->getConstantDefinitionIterator();
     while(mapIter.hasMoreElements())
     {
-        QString paramName(mapIter.peekNextKey().c_str());
+        QString iterName(mapIter.peekNextKey().c_str());
         const Ogre::GpuConstantDefinition &paramDef = mapIter.getNext();
-        if (paramName.lastIndexOf("[0]") != -1) // Filter names that end with '[0]'
+        if (iterName.lastIndexOf("[0]") != -1) // Filter names that end with '[0]'
             continue;
-        if (paramName != name)
+        if (iterName != paramName)
             continue;
 
         bool isFloat = paramDef.isFloat();
@@ -1342,7 +1381,7 @@ bool OgreMaterialAsset::SetPixelShaderParameter(int techIndex, int passIndex, co
         }
         else
         {
-            LogError(QString("OgreMaterialAsset::SetPixelShaderParameter: Invalid value count %1 for %2: %3 expected.").arg(value.size()).arg(name).arg(size));
+            LogError(QString("OgreMaterialAsset::SetPixelShaderParameter: Invalid value count %1 for %2: %3 expected.").arg(value.size()).arg(paramName).arg(size));
             return false;
         }
     }
@@ -1867,7 +1906,7 @@ bool OgreMaterialAsset::HasTextureEffect(int techIndex, int passIndex, int texUn
     if (!texUnit)
     {
         LogError(QString("OgreMaterialAsset::HasTextureEffect: Could not find techique %1 pass %2 texture unit %3.").arg(techIndex).arg(passIndex).arg(texUnitIndex));
-        false;
+        return false;
     }
 
     const Ogre::TextureUnitState::EffectMap &effects = texUnit->getEffects();
@@ -1882,7 +1921,7 @@ bool OgreMaterialAsset::SetMaterialAttribute(const QString& attr, const QString&
         ogreMaterial->setReceiveShadows(ParseBool(val));
         return true;
     }
-    if (attr == "transparency_casts_shadows")
+    else if (attr == "transparency_casts_shadows")
     {
         ogreMaterial->setTransparencyCastsShadows(ParseBool(val));
         return true;
@@ -1906,7 +1945,7 @@ bool OgreMaterialAsset::SetTechniqueAttribute(Ogre::Technique* tech, int techInd
         tech->setShadowCasterMaterial(origVal.toStdString());
         return true;
     }
-    if (attr == "shadow_receiver_material")
+    else if (attr == "shadow_receiver_material")
     {
         tech->setShadowReceiverMaterial(origVal.toStdString());
         return true;
@@ -1935,25 +1974,25 @@ bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int pa
         SetAmbientColor(techIndex, passIndex, Color::FromString(val));
         return true;
     }
-    if (attr == "diffuse")
+    else if (attr == "diffuse")
     {
         SetDiffuseColor(techIndex, passIndex, Color::FromString(val));
         return true;
     }
-    if (attr == "specular")
+    else if (attr == "specular")
     {
         SetSpecularColor(techIndex, passIndex, Color::FromString(val));
         return true;
     }
-    if (attr == "emissive")
+    else if (attr == "emissive")
     {
         SetEmissiveColor(techIndex, passIndex, Color::FromString(val));
         return true;
     }
-    if (attr == "scene_blend")
+    else if (attr == "scene_blend")
     {
         // Check whether value is simple or complex
-        QStringList values = val.split(' ');
+        const QStringList values = val.split(' ');
         if (values.size() < 2)
             SetSceneBlend(techIndex, passIndex, GetEnumValue(val, sceneBlendTypes));
         else
@@ -1961,10 +2000,10 @@ bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int pa
                 (Ogre::SceneBlendFactor)GetEnumValue(values[1], sceneBlendFactors));
         return true;
     }
-    if (attr == "separate_scene_blend")
+    else if (attr == "separate_scene_blend")
     {
         // Check whether value is simple or complex
-        QStringList values = val.split(' ');
+        const QStringList values = val.split(' ');
         if (values.size() == 2)
             pass->setSeparateSceneBlending((Ogre::SceneBlendType)GetEnumValue(values[0], sceneBlendTypes),
                 (Ogre::SceneBlendType)GetEnumValue(values[1], sceneBlendTypes));
@@ -1975,46 +2014,46 @@ bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int pa
                 (Ogre::SceneBlendFactor)GetEnumValue(values[3], sceneBlendFactors));
         return true;
     }
-    if (attr == "scene_blend_op")
+    else if (attr == "scene_blend_op")
     {
         pass->setSceneBlendingOperation((Ogre::SceneBlendOperation)GetEnumValue(val, sceneBlendOps));
         return true;
     }
-    if (attr == "separate_scene_blend_op")
+    else if (attr == "separate_scene_blend_op")
     {
-        QStringList values = val.split(' ');
+        const QStringList values = val.split(' ');
         if (values.size() >= 2)
             pass->setSeparateSceneBlendingOperation((Ogre::SceneBlendOperation)GetEnumValue(values[0], sceneBlendOps),
                 (Ogre::SceneBlendOperation)GetEnumValue(values[1], sceneBlendOps));
         return true;
     }
-    if (attr == "depth_check")
+    else if (attr == "depth_check")
     {
         SetDepthCheck(techIndex, passIndex, ParseBool(val));
         return true;
     }
-    if (attr == "depth_write")
+    else if (attr == "depth_write")
     {
         SetDepthWrite(techIndex, passIndex, ParseBool(val));
         return true;
     }
-    if (attr == "depth_func")
+    else if (attr == "depth_func")
     {
         pass->setDepthFunction((Ogre::CompareFunction)GetEnumValue(val, compareFunctions));
         return true;
     }
-    if (attr == "depth_bias")
+    else if (attr == "depth_bias")
     {
-        QStringList values = val.split(' ');
+        const QStringList values = val.split(' ');
         if (values.size() < 2)
             pass->setDepthBias(val.toFloat());
         else
             pass->setDepthBias(values[0].toFloat(), values[1].toFloat());
         return true;
     }
-    if (attr == "alpha_rejection")
+    else if (attr == "alpha_rejection")
     {
-        QStringList values = val.split(' ');
+        const QStringList values = val.split(' ');
         if (values.size() >= 2)
         {
             pass->setAlphaRejectFunction((Ogre::CompareFunction)GetEnumValue(values[0], compareFunctions));
@@ -2022,47 +2061,47 @@ bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int pa
         }
         return true;
     }
-    if (attr == "normalise_normals")
+    else if (attr == "normalise_normals")
     {
         pass->setNormaliseNormals(ParseBool(val));
         return true;
     }
-    if (attr == "transparent_sorting")
+    else if (attr == "transparent_sorting")
     {
         pass->setTransparentSortingEnabled(ParseBool(val));
         return true;
     }
-    if (attr == "cull_hardware")
+    else if (attr == "cull_hardware")
     {
         pass->setCullingMode((Ogre::CullingMode)GetEnumValue(val, cullingModes));
         return true;
     }
-    if (attr == "lighting")
+    else if (attr == "lighting")
     {
         SetLighting(techIndex, passIndex, ParseBool(val));
         return true;
     }
-    if (attr == "shading")
+    else if (attr == "shading")
     {
         pass->setShadingMode((Ogre::ShadeOptions)GetEnumValue(val, shadingModes));
         return true;
     }
-    if (attr == "polygon_mode")
+    else if (attr == "polygon_mode")
     {
         SetPolygonMode(techIndex, passIndex, (Ogre::PolygonMode)GetEnumValue(val, polygonModes));
         return true;
     }
-    if (attr == "colour_write")
+    else if (attr == "colour_write")
     {
         pass->setColourWriteEnabled(ParseBool(val));
         return true;
     }
-    if (attr == "vertex_program_ref")
+    else if (attr == "vertex_program_ref")
     {
         SetVertexShader(techIndex, passIndex, origVal);
         return true;
     }
-    if (attr == "fragment_program_ref")
+    else if (attr == "fragment_program_ref")
     {
         SetPixelShader(techIndex, passIndex, origVal);
         return true;
@@ -2106,15 +2145,14 @@ bool OgreMaterialAsset::SetTextureUnitAttribute(Ogre::TextureUnitState* texUnit,
         SetTexture(techIndex, passIndex, tuIndex, origVal);
         return true;
     }
-
-    if (attr == "tex_coord_set")
+    else if (attr == "tex_coord_set")
     {
-        texUnit->setTextureCoordSet(val.toInt());
+        texUnit->setTextureCoordSet(val.toUInt());
         return true;
     }
-    if (attr == "tex_address_mode")
+    else if (attr == "tex_address_mode")
     {
-        QStringList values = val.split(' ');
+        const QStringList values = val.split(' ');
         if (values.size() < 2)
             texUnit->setTextureAddressingMode((Ogre::TextureUnitState::TextureAddressingMode)GetEnumValue(val, texAddressModes));
         else
@@ -2132,28 +2170,27 @@ bool OgreMaterialAsset::SetTextureUnitAttribute(Ogre::TextureUnitState* texUnit,
         }
         return true;
     }
-    if (attr == "tex_border_colour")
+    else if (attr == "tex_border_colour")
     {
         texUnit->setTextureBorderColour(Color::FromString(val));
         return true;
     }
-    
-    if (attr == "filtering")
+    else if (attr == "filtering")
     {
         texUnit->setTextureFiltering((Ogre::TextureFilterOptions)GetEnumValue(val, texFilterOptions));
         return true;
     }
-    if (attr == "max_anisotropy")
+    else if (attr == "max_anisotropy")
     {
         texUnit->setTextureAnisotropy(val.toUInt());
         return true;
     }
-    if (attr == "mipmap_bias")
+    else if (attr == "mipmap_bias")
     {
         texUnit->setTextureMipmapBias(val.toFloat());
         return true;
     }
-    if (attr == "env_map")
+    else if (attr == "env_map")
     {
         if (val != "off")
             texUnit->setEnvironmentMap(true, (Ogre::TextureUnitState::EnvMapType)GetEnumValue(val, envMapTypes));
@@ -2161,47 +2198,112 @@ bool OgreMaterialAsset::SetTextureUnitAttribute(Ogre::TextureUnitState* texUnit,
             texUnit->setEnvironmentMap(false);
         return true;
     }
-    if (attr == "scroll")
+    else if (attr == "scroll")
     {
-        QStringList values = val.split(' ');
+        const QStringList values = val.split(' ');
         if (values.size() >= 2)
+        {
             texUnit->setTextureScroll(values[0].toFloat(), values[1].toFloat());
-        return true;
+            return true;
+        }
     }
-    if (attr == "scroll_anim")
+    else if (attr == "scroll_anim")
     {
-        QStringList values = val.split(' ');
+        const QStringList values = val.split(' ');
         if (values.size() >= 2)
+        {
             texUnit->setScrollAnimation(values[0].toFloat(), values[1].toFloat());
-        return true;
+            return true;
+        }
     }
-    if (attr == "rotate")
+    else if (attr == "rotate")
     {
         texUnit->setTextureRotate(Ogre::Degree(val.toFloat()));
         return true;
     }
-    if (attr == "rotate_anim")
+    else if (attr == "rotate_anim")
     {
         texUnit->setRotateAnimation(val.toFloat());
         return true;
     }
-    if (attr == "scale")
+    else if (attr == "scale")
     {
-        QStringList values = val.split(' ');
+        const QStringList values = val.split(' ');
         if (values.size() >= 2)
             texUnit->setTextureScale(values[0].toFloat(), values[1].toFloat());
         return true;
     }
-    if (attr == "wave_xform")
+    else if (attr == "wave_xform")
     {
-        QStringList values = val.split(' ');
-        if (values.size() >= 6)
-            texUnit->setTransformAnimation((Ogre::TextureUnitState::TextureTransformType)GetEnumValue(values[0],
-                textureTransformTypes), (Ogre::WaveformType)GetEnumValue(values[1], waveformTypes), values[2].toFloat(),
-                values[3].toFloat(), values[4].toFloat(), values[5].toFloat());
+        const QStringList values = val.split(' ');
+        if (values.size() == 2)
+        {
+            texUnit->setTransformAnimation(
+                (Ogre::TextureUnitState::TextureTransformType)GetEnumValue(values[0],
+                textureTransformTypes), (Ogre::WaveformType)GetEnumValue(values[1], waveformTypes));
+            return true;
+        }
+        else if (values.size() >= 6)
+        {
+            texUnit->setTransformAnimation(
+                (Ogre::TextureUnitState::TextureTransformType)GetEnumValue(values[0],
+                textureTransformTypes), (Ogre::WaveformType)GetEnumValue(values[1], waveformTypes),
+                values[2].toFloat(),
+                values[3].toFloat(),
+                values[4].toFloat(),
+                values[5].toFloat());
+            return true;
+        }
+    }
+    else if (attr == "colour_op")
+    {
+        texUnit->setColourOperation((Ogre::LayerBlendOperation)GetEnumValue(val, cLayerBlendOperationTypes));
         return true;
     }
-    
+    else if (attr == "colour_op_ex")
+    {
+        // Ogre documentation describes the format as follows:
+        // colour_op_ex <operation> <source1> <source2> [<manual_factor>] [<manual_colour1>] [<manual_colour2>]
+        // so expecting three mandatory values at minimum the rest being optional. Each color must consist of four values.
+        const QStringList values = val.split(' ');
+        switch(values.size())
+        {
+        case 3: // <operation> <source1> <source2>
+            texUnit->setColourOperationEx(
+                (Ogre::LayerBlendOperationEx)GetEnumValue(values[0], cLayerBlendOperationExTypes),
+                (Ogre::LayerBlendSource)GetEnumValue(values[1], cLayerBlendSourceTypes),
+                (Ogre::LayerBlendSource)GetEnumValue(values[2], cLayerBlendSourceTypes));
+            return true;
+        case 4: // <operation> <source1> <source2> [<manual_factor>]
+            texUnit->setColourOperationEx(
+                (Ogre::LayerBlendOperationEx)GetEnumValue(values[0], cLayerBlendOperationExTypes),
+                (Ogre::LayerBlendSource)GetEnumValue(values[1], cLayerBlendSourceTypes),
+                (Ogre::LayerBlendSource)GetEnumValue(values[2], cLayerBlendSourceTypes),
+                texUnit->getColourBlendMode().colourArg1,
+                texUnit->getColourBlendMode().colourArg2,
+                values[3].toFloat());
+            return true;
+        case 4 + 1 * 4: // <operation> <source1> <source2> [<manual_factor>] [<manual_colour1>]
+            texUnit->setColourOperationEx(
+                (Ogre::LayerBlendOperationEx)GetEnumValue(values[0], cLayerBlendOperationExTypes),
+                (Ogre::LayerBlendSource)GetEnumValue(values[1], cLayerBlendSourceTypes),
+                (Ogre::LayerBlendSource)GetEnumValue(values[2], cLayerBlendSourceTypes),
+                Ogre::ColourValue(values[4].toFloat(), values[5].toFloat(), values[6].toFloat(), values[7].toFloat()),
+                texUnit->getColourBlendMode().colourArg2,
+                values[3].toFloat());
+            return true;
+        case 4 + 2 * 4: // <operation> <source1> <source2> [<manual_factor>] [<manual_colour1>] [<manual_colour2>]
+            texUnit->setColourOperationEx(
+                (Ogre::LayerBlendOperationEx)GetEnumValue(values[0], cLayerBlendOperationExTypes),
+                (Ogre::LayerBlendSource)GetEnumValue(values[1], cLayerBlendSourceTypes),
+                (Ogre::LayerBlendSource)GetEnumValue(values[2], cLayerBlendSourceTypes),
+                Ogre::ColourValue(values[4].toFloat(), values[5].toFloat(), values[6].toFloat(), values[7].toFloat()),
+                Ogre::ColourValue(values[8].toFloat(), values[9].toFloat(), values[10].toFloat(), values[11].toFloat()),
+                values[3].toFloat());
+            return true;
+        }
+    }
+
     return false;
 }
 
@@ -2212,9 +2314,9 @@ QVariant OgreMaterialAsset::TextureUnitAttribute(Ogre::TextureUnitState* texUnit
     else if (attr == "tex_address_mode")
     {
         const Ogre::TextureUnitState::UVWAddressingMode &mode = texUnit->getTextureAddressingMode();
-        return float3(mode.u, mode.v, mode.w);
+        return QVariant::fromValue<float3>(float3(mode.u, mode.v, mode.w));
     }
-    else if (attr == "tex_border_colour") return Color(texUnit->getTextureBorderColour());
+    else if (attr == "tex_border_colour") return QVariant::fromValue<Color>(Color(texUnit->getTextureBorderColour()));
     else if (attr == "filtering")
     {
         using namespace Ogre;
@@ -2231,7 +2333,7 @@ QVariant OgreMaterialAsset::TextureUnitAttribute(Ogre::TextureUnitState* texUnit
     else if (attr == "max_anisotropy") return texUnit->getTextureAnisotropy();
     else if (attr == "mipmap_bias") return texUnit->getTextureMipmapBias();
     else if (attr == "env_map") return texUnit->getEffects().find(Ogre::TextureUnitState::ET_ENVIRONMENT_MAP) != texUnit->getEffects().end();
-    else if (attr == "scroll") return float2(texUnit->getTextureUScroll(), texUnit->getTextureVScroll());
+    else if (attr == "scroll") return QVariant::fromValue<float2>(float2(texUnit->getTextureUScroll(), texUnit->getTextureVScroll()));
     else if (attr == "scroll_anim")
     {
         float2 ret(0,0);
@@ -2245,7 +2347,7 @@ QVariant OgreMaterialAsset::TextureUnitAttribute(Ogre::TextureUnitState* texUnit
         it = effects.find(Ogre::TextureUnitState::ET_VSCROLL);
         if (it != effects.end())
             ret.y = it->second.arg1;
-        return ret;
+        return QVariant::fromValue<float2>(ret);
     }
     else if (attr == "rotate") return texUnit->getTextureRotate().valueRadians();
     else if (attr == "rotate_anim")
@@ -2253,7 +2355,7 @@ QVariant OgreMaterialAsset::TextureUnitAttribute(Ogre::TextureUnitState* texUnit
         Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find(Ogre::TextureUnitState::ET_ROTATE);
         return (it != texUnit->getEffects().end() ? it->second.arg1 : 0.f);
     }
-    else if (attr == "scale") return float2(texUnit->getTextureUScale(), texUnit->getTextureVScale());
+    else if (attr == "scale") return QVariant::fromValue<float2>(float2(texUnit->getTextureUScale(), texUnit->getTextureVScale()));
     else if (attr == "wave_xform")
     {
         Ogre::TextureUnitState::EffectMap::const_iterator it = texUnit->getEffects().find(Ogre::TextureUnitState::ET_TRANSFORM);
@@ -2267,6 +2369,21 @@ QVariant OgreMaterialAsset::TextureUnitAttribute(Ogre::TextureUnitState* texUnit
         ret.push_back(it->second.frequency);
         ret.push_back(it->second.phase);
         ret.push_back(it->second.amplitude);
+        return ret;
+    }
+    else if (attr == "colour_op") return texUnit->getColourBlendMode().operation;
+    else if (attr == "colour_op_ex")
+    {
+        // Mirror the "colour_op_ex <operation> <source1> <source2> [<manual_factor>] [<manual_colour1>] [<manual_colour2>]"
+        // syntax on return value.
+        const Ogre::LayerBlendModeEx &mode = texUnit->getColourBlendMode();
+        QVariantList ret;
+        ret.push_back(mode.operation);
+        ret.push_back(mode.source1);
+        ret.push_back(mode.source2);
+        ret.push_back(mode.factor);
+        ret.push_back(QVariant::fromValue<Color>(mode.colourArg1));
+        ret.push_back(QVariant::fromValue<Color>(mode.colourArg2));
         return ret;
     }
     else return QVariant();

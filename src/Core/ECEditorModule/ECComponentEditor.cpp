@@ -41,12 +41,10 @@ ECComponentEditor::ECComponentEditor(ComponentPtr component, QtAbstractPropertyB
        return;
 
     groupPropertyManager_ = new QtGroupPropertyManager(this);
-    if(groupPropertyManager_)
-    {
-        groupProperty_ = groupPropertyManager_->addProperty();
-        CreateAttributeEditors(component);
-        AddNewComponent(component);
-    }
+    groupProperty_ = groupPropertyManager_->addProperty();
+
+    CreateAttributeEditors(component);
+    AddNewComponent(component);
 
     propertyBrowser_->addProperty(groupProperty_);
 }

@@ -304,6 +304,31 @@ bool EC_Mesh::SetMesh(const QString &meshResourceName, bool clone)
     return true;
 }
 
+bool EC_Mesh::CanAttachSkeleton() const
+{
+    if (!entity_ || !entity_->getMesh().get())
+        return false;
+    return CanAttachSkeleton(entity_->getMesh().get());
+}
+
+bool EC_Mesh::CanAttachSkeleton(const Ogre::Mesh *mesh) const
+{
+    if (!mesh)
+        return false;
+
+    for(ushort i=0; i<mesh->getNumSubMeshes(); ++i)
+    {
+        Ogre::SubMesh *sm = mesh->getSubMesh(i);
+        if (!sm)
+            return false;
+
+        const Ogre::Mesh::VertexBoneAssignmentList &assignments = (!sm->useSharedVertices ? sm->getBoneAssignments() : mesh->getBoneAssignments());
+        if (assignments.empty())
+            return false;
+    }
+    return true;
+}
+
 bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, bool clone)
 {
     if (world_.expired() || !ViewEnabled())
@@ -324,7 +349,11 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
     
     try
     {
-        mesh->_notifySkeleton(skel);
+        if (CanAttachSkeleton(mesh))
+            mesh->_notifySkeleton(skel);
+        else
+            LogError(QString("EC_Mesh::SetMeshWithSkeleton: Cannot attach skeleton %1 to mesh %2 in Entity #%3. Mesh has not been authored for skeletal animations.")
+                .arg(skeleton_name.c_str()).arg(mesh_name.c_str()).arg(ParentEntity() ? ParentEntity()->Id() : -1));
     }
     catch(const Ogre::Exception& e)
     {
@@ -459,7 +488,11 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
         }
         try
         {
-            mesh->_notifySkeleton(entity_skel);
+            if (CanAttachSkeleton(mesh))
+                mesh->_notifySkeleton(entity_skel);
+            else
+                LogError(QString("EC_Mesh::SetAttachmentMesh: Cannot attach skeleton %1 to mesh %2 in Entity #%3. Mesh has not been authored for skeletal animations.")
+                    .arg(entity_skel->getName().c_str()).arg(mesh_name.c_str()).arg(ParentEntity() ? ParentEntity()->Id() : -1));
         }
         catch(const Ogre::Exception &/*e*/)
         {
@@ -989,8 +1022,7 @@ void EC_Mesh::AttributesChanged()
     {
         if (entity_)
         {
-            if (entity_)
-                entity_->setCastShadows(castShadows.Get());
+            entity_->setCastShadows(castShadows.Get());
             /// \todo might want to disable shadows for some attachments
             for(uint i = 0; i < attachmentEntities_.size(); ++i)
             {
@@ -1111,9 +1143,15 @@ void EC_Mesh::OnSkeletonAssetLoaded(AssetPtr asset)
         // If old skeleton is same as a new one no need to replace it.
         if (entity_->getSkeleton() && entity_->getSkeleton()->getName() == skeleton->getName())
             return;
-        
-        entity_->getMesh()->_notifySkeleton(skeleton);
-        emit SkeletonChanged(QString::fromStdString(skeleton->getName()));
+
+        if (CanAttachSkeleton(entity_->getMesh().get()))
+        {
+            entity_->getMesh()->_notifySkeleton(skeleton);
+            emit SkeletonChanged(QString::fromStdString(skeleton->getName()));
+        }
+        else
+            LogError(QString("EC_Mesh: Cannot attach skeleton %1 to mesh %2 in Entity #%3. Mesh has not been authored for skeletal animations.")
+            .arg(skeletonAsset->Name()).arg(meshRef.Get().ref).arg(ParentEntity() ? ParentEntity()->Id() : -1));
     }
     catch(...)
     {

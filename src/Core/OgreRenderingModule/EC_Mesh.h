@@ -204,6 +204,15 @@ public slots:
     /** Does not start any asset requests, but sets the data on the currently loaded assets. */
     void ApplyMaterial();
 
+    /// Returns if a skeleton can be attached to this mesh.
+    /** @return True if a skeleton can be attached to the currently used mesh. False if cannot be attached or no mesh is loaded.
+        @note Simply checks if the Ogre::Mesh or submeshes contains bone assignments. Does not check if all the bone indexes
+        in the a particular skeleton can be found from the vertex data.
+        @todo Evaluate if this approach is good. Checking (shared or per submesh) vertex data would be a better way
+        but it seems the blend indices/weights are not there after loading. They are created into the parent Ogre::Entity::mSkelAnimVertexData etc.
+        (presumably from the bone assignments) when they are needed. At that point its too late and we will crash. */
+    bool CanAttachSkeleton() const;
+
     /// Sets adjustment (offset) position
     /** @param position new position */
     void SetAdjustPosition(const float3& position);
@@ -465,6 +474,10 @@ private:
     /** Bails out if mesh or materials are not loaded yet. We cannot create instanced mesh without materials being loaded. 
         @param Mesh asset, if null the current meshRef/meshAsset asset is used.*/
     void CreateInstance(const AssetPtr &meshAsset = AssetPtr());
+
+    /** Returns if there are bone assignments available in the top level Ogre::Mesh or
+        in the Ogre::Submesh if a submesh does not use shared vertex data. */
+    bool CanAttachSkeleton(const Ogre::Mesh *mesh) const;
 
     /// Verifies that placeable is set. If not tries to set it from parent entity.
     void VerifyPlaceable();

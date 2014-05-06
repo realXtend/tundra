@@ -405,7 +405,7 @@ AssetItem *AssetsWindow::FindAssetItemRecursive(QTreeWidgetItem *parent, const A
 {
     PROFILE(AssetsWindow_FindAssetItemRecursive)
     if (!parent || parent->childCount() == 0)
-        return false;
+        return 0;
 
     AssetItem *result = 0;
     for (int i=0; i<parent->childCount(); ++i)

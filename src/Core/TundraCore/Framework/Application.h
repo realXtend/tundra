@@ -177,6 +177,11 @@ public slots:
     bool VersionGreaterOrEquals(uint major, uint minor, uint majorPatch, uint minorPatch);
 
 signals:
+    /// This signal is emitted when the application changes active state.
+    /** @note False equals to no window in this application being active, or operating system suspending the application.
+        @param Active state */
+    void ApplicationActiveChanged(bool active);
+
     /// This signal is sent when QApplication language is changed, provided for convenience.
     void LanguageChanged();
 

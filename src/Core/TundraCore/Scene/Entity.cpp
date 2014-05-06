@@ -126,15 +126,15 @@ void Entity::RemoveComponent(const ComponentPtr &component, AttributeChange::Typ
 {
     if (component)
     {
-        ComponentMap::iterator iter = components_.find(component->Id());
-        if (iter != components_.end())
-        {
-            RemoveComponent(iter, change);
-        }
-        else
-        {
-            LogWarning("Failed to remove component: " + component->TypeName() + " from entity: " + QString::number(Id()));
-        }
+        for(ComponentMap::iterator it = components_.begin(); it != components_.end(); ++it)
+            if (it->second == component)
+            {
+                RemoveComponent(it, change);
+                return;
+            }
+
+        LogWarning(QString("Entity::RemoveComponent: Failed to find %1 \"%2\" from %3.")
+            .arg(component->TypeName()).arg(component->Name()).arg(ToString()));
     }
 }
 
@@ -193,12 +193,9 @@ void Entity::RemoveComponentById(component_id_t id, AttributeChange::Type change
 void Entity::RemoveComponentRaw(QObject* comp)
 {
     LogWarning("Entity::RemoveComponentRaw: This function is deprecated and will be removed. Use RemoveComponent or RemoveComponentById instead.");
-    IComponent* compPtr = dynamic_cast<IComponent*>(comp);
+    IComponent* compPtr = qobject_cast<IComponent*>(comp);
     if (compPtr)
-    {
-        ComponentPtr ptr = Component(compPtr->TypeName(), compPtr->Name()); //the shared_ptr to this component
-        RemoveComponent(ptr);
-    }
+        RemoveComponent(compPtr->shared_from_this());
 }
 
 ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change, bool replicated)
@@ -625,6 +622,8 @@ void Entity::EmitEntityRemoved(AttributeChange::Type change)
 {
     if (change == AttributeChange::Disconnected)
         return;
+    if (change == AttributeChange::Default)
+        change = AttributeChange::Replicate;
     emit EntityRemoved(this, change);
 }
 
@@ -636,11 +635,6 @@ void Entity::EmitEnterView(IComponent* camera)
 void Entity::EmitLeaveView(IComponent* camera)
 {
     emit LeaveView(camera);
-}
-
-void Entity::SetTemporary(bool enable)
-{
-    SetTemporary(enable, AttributeChange::Default);
 }
 
 void Entity::SetTemporary(bool enable, AttributeChange::Type change)

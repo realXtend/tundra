@@ -12,7 +12,6 @@
   <component type="EC_Name" sync="1">
    <attribute value="Plane" name="name"/>
    <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="0,0,-5.01,0,0,0,400,1,400" name="Transform"/>
@@ -34,7 +33,7 @@
    <attribute value="true" name="Draw Debug"/>
    <attribute value="0 0 0" name="Linear velocity"/>
    <attribute value="0 0 0" name="Angular velocity"/>
-   <attribute value="true" name="Gravity"/>
+   <attribute value="true" name="Use gravity"/>
   </component>
  </entity>
  <entity id="2">
@@ -48,7 +47,6 @@
   <component type="EC_Name" sync="1">
    <attribute value="House2" name="name"/>
    <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-70,0,-80,0,0,90,2,2,2" name="Transform"/>
@@ -67,7 +65,6 @@
   <component type="EC_Name" sync="1">
    <attribute value="Jeep" name="name"/>
    <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="5,0,-55,180,0,0,1,1,1" name="Transform"/>
@@ -86,7 +83,6 @@
   <component type="EC_Name" sync="1">
    <attribute value="Tent dome" name="name"/>
    <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-50,0,35,0,0,0,1,1,1" name="Transform"/>
@@ -102,13 +98,12 @@
   <component type="EC_EnvironmentLight" sync="1">
    <attribute value="0.638999999 0.638999999 0.638999999 1" name="Sunlight color"/>
    <attribute value="0.363999993 0.363999993 0.363999993 1" name="Ambient light color"/>
-   <attribute value="0.930000007 0.930000007 0.930000007 1" name="Sunlight diffuse color"/>
    <attribute value="0.000000 -1.000000 1.000000" name="Sunlight direction vector"/>
    <attribute value="true" name="Sunlight cast shadows"/>
   </component>
   <component type="EC_Sky" sync="1">
-   <attribute value="RexSkyBox" name="Material"/>
-   <attribute value="rex_sky_front.dds;rex_sky_back.dds;rex_sky_left.dds;rex_sky_right.dds;rex_sky_top.dds;rex_sky_bot.dds" name="Texture"/>
+   <attribute value="Ogre Media:RexSkyBox.material" name="Material"/>
+   <attribute value="" name="Texture"/>
    <attribute value="50" name="Distance"/>
    <attribute value="0.000000 0.000000 0.000000 1.000000" name="Orientation"/>
    <attribute value="true" name="Draw first"/>
