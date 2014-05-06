@@ -14,7 +14,7 @@
 	- if PSSM_SHADOWS is defined, the shadow code will generate 3 shadow texture coordinates and sample from 3 shadow maps based on depth. Otherwise 1
 
 	- When writing the .material files it is important that the texture_units are presented in the following order:
-	    diffuse, specular, normal, shadow, luminance, opacity
+		diffuse, specular, normal, shadow, luminance, opacity
 	  Each of these correspond to a #define (i.e. diffuse <-> DIFFUSE_MAPPING) Make sure that you specify exactly those texture_units
 	  for which the corresponding #define is set, and those only. This is to guarantee that the order Ogre populates the texture samplers
 	  matches to the order in which the shader reads the textures.
@@ -25,14 +25,18 @@
 
 #include "CommonCode.cg"
 
-#ifndef DISABLE_SHADOWS
-
-#ifdef LOWEND_SHADOWS
-#include "Shadow1Tap.cg"
+#if defined(SHADOW_MAPPING) && !defined(DISABLE_SHADOWS)
+#include "CsmShadowSampleUtils.cg"
+#define JITTER_SHADOWS
+#include "DepthShadowMapReceiverJitter.cg"
+#ifdef CSM_SHADOWS
+#include "CsmShadows.cg"
 #else
-#include "Shadow4Tap.cg"
+uniform float4 fixedDepthBias;
+uniform float4 gradientScaleBias;
+uniform float4 shadowMapSize;
+uniform float4 invShadowMapSize;
 #endif
-
 #endif
 
 
@@ -52,13 +56,13 @@ void mainVS
 	in float4 mat14	: TEXCOORD1,
 	in float4 mat24	: TEXCOORD2,
 	in float4 mat34	: TEXCOORD3,
-    #ifdef LIGHT_MAPPING
-        in float2 tex2 : TEXCOORD4, // This will not work correctly, but added to prevent compile error
-    #endif
+	#ifdef LIGHT_MAPPING
+		in float2 tex2 : TEXCOORD4, // This will not work correctly, but added to prevent compile error
+	#endif
 #else
-    #ifdef LIGHT_MAPPING
-        in float2 tex2 : TEXCOORD1,
-    #endif
+	#ifdef LIGHT_MAPPING
+		in float2 tex2 : TEXCOORD1,
+	#endif
 #endif
 	out float3 oTex,
 #ifdef VERTEX_COLOR
@@ -76,11 +80,7 @@ void mainVS
 	out float4 oLightDir[cNumPerPixelLights],
 #endif
 #ifdef SHADOW_MAPPING
-	out float4 oShadowTex0,
-#ifdef PSSM_SHADOWS
-	out float4 oShadowTex1,
-	out float4 oShadowTex2,
-#endif
+	out float4 oShadowLightspacePos,
 #endif
 
 #if !defined(NORMAL_MAPPING)
@@ -93,7 +93,7 @@ void mainVS
 	float4x4 worldMatrix;
 	worldMatrix[0] = mat14;
 	worldMatrix[1] = mat24;
-    worldMatrix[2] = mat34;
+	worldMatrix[2] = mat34;
 	worldMatrix[3] = float4(0.0f, 0.0f, 0.0f, 1.0f);
 #endif
 
@@ -101,7 +101,7 @@ void mainVS
 #ifndef INSTANCING
 	oPos = mul(worldViewProjMatrix, pos);
 #else
-    oPos = mul(viewProjMatrix, worldPos);
+	oPos = mul(viewProjMatrix, worldPos);
 #endif
 
 	oTex.xy = ComputeTexCoord(tex);
@@ -140,8 +140,8 @@ void mainVS
 #endif
 
 #ifdef VERTEX_COLOR
-    // Vertex color
-    oColor = color;
+	// Vertex color
+	oColor = color;
 #endif
 
 	// Output fog color and strength.
@@ -149,21 +149,9 @@ void mainVS
 
 #ifdef SHADOW_MAPPING
 	oTex.z = oPos.z;
-#ifndef INSTANCING
 	// Calculate shadow map coord
-	oShadowTex0 = mul(lightViewProj0, pos);
-#ifdef PSSM_SHADOWS
-	oShadowTex1 = mul(lightViewProj1, pos);
-	oShadowTex2 = mul(lightViewProj2, pos);
-#endif
-#else
-	// Calculate shadow map coord
-	oShadowTex0 = mul(lightViewProj0, worldPos);
-#ifdef PSSM_SHADOWS
-	oShadowTex1 = mul(lightViewProj1, worldPos);
-	oShadowTex2 = mul(lightViewProj2, worldPos);
-#endif
-#endif
+	oShadowLightspacePos = mul(texMatrix0, worldPos);
+	oShadowLightspacePos.z = oShadowLightspacePos.z / oShadowLightspacePos.w;
 #endif
 
 }
@@ -173,7 +161,7 @@ void mainVS
 
 void mainPS(
 #ifdef VERTEX_COLOR
-    in float4 color : COLOR,
+	in float4 color : COLOR,
 #endif
 	in float3 tex,
 #ifdef LIGHT_MAPPING
@@ -187,11 +175,7 @@ void mainPS(
 	// xyz has the light direction, w has the light strength (precalculated per-vertex attenuation factor).
 	in float4 lightDir[cNumPerPixelLights], // in tangent space
 #ifdef SHADOW_MAPPING
-	in float4 shadowTex0,
-#ifdef PSSM_SHADOWS
-	in float4 shadowTex1,
-	in float4 shadowTex2,
-#endif
+	in float4 shadowLightspacePos,
 #endif
 
 #if !defined(NORMAL_MAPPING)
@@ -244,45 +228,24 @@ void mainPS(
 
 		if (i == 0) // Only the first light - the directional light uses a shadow map.
 		{
-//			lightness = SampleShadowMap1TapPCF(shadowMap, shadowTex);
-//			lightness = SampleShadowMap4TapPCF(shadowMap, shadowTex, 0.f);
+			#ifdef SHADOW_MAPPING
+			// Sample from jitter map
+			float4 jitter = tex2D(jitterMapUnit, float2(0, 0));
 
+			float NDotL = dot(normal, -lightDir[i].xyz);
 
-#ifdef PSSM_SHADOWS
-			if (tex.z <= 3.5f)
-			{
-				#ifdef LOWEND_SHADOWS
-				lightness = SampleShadowMap1TapPCF(shadowMap0, shadowTex0);
-				#else
-				lightness = SampleShadowMap4TapPCF(shadowMap0, shadowTex0, invShadowmapSize, tex.z);
-				#endif
-
-			}
-			else if (tex.z <= 11.f)
-			{	
-				#ifdef LOWEND_SHADOWS
-				lightness = SampleShadowMap1TapPCF(shadowMap1, shadowTex1);
-				#else
-				lightness = SampleShadowMap4TapPCF(shadowMap1, shadowTex1, invShadowmapSize, tex.z);
-				#endif
-			}
-			else
-			{
-				#ifdef LOWEND_SHADOWS
-				lightness = SampleShadowMap1TapPCF(shadowMap2, shadowTex2);
-				#else
-				lightness = SampleShadowMap4TapPCF(shadowMap2, shadowTex2, invShadowmapSize, tex.z);
-				#endif
-
-			}
-#else
-			#ifdef LOWEND_SHADOWS
-			lightness = SampleShadowMap1TapPCF(shadowMap0, shadowTex0);
+			#ifdef CSM_SHADOWS
+				lightness = getCsmShadowFactor(shadowMap0, shadowMap1, shadowMap2, shadowMap3,
+												shadowLightspacePos, NDotL);
 			#else
-			lightness = SampleShadowMap4TapPCF(shadowMap0, shadowTex0, invShadowmapSize, tex.z);
+				lightness = getShadowFactor(shadowMap0, shadowLightspacePos, shadowMapSize.x, invShadowMapSize.x,
+											fixedDepthBias.x, gradientScaleBias.x, NDotL);
 			#endif
-#endif
 
+				// Fade out shadows near max distance
+				half weight = saturate(((tex.z + shadowFadeDist) - shadowMaxDist) / shadowFadeDist);
+				lightness = lerp(lightness, 1, weight) + jitter.x * 0.001;
+			#endif
 		}
 			
 			
@@ -302,8 +265,8 @@ void mainPS(
 	diffuseLightFactor += SampleLuminanceMap(luminanceMap, tex.xy);
 #endif
 
-    // Limit diffuse term to prevent overburn
-    //diffuseLightFactor = min(diffuseLightFactor, float3(1,1,1));
+	// Limit diffuse term to prevent overburn
+	//diffuseLightFactor = min(diffuseLightFactor, float3(1,1,1));
 
 #ifdef SPECULAR_LIGHTING
 	float3 totalColor = diffuseLightFactor * baseColor.rgb + specularLightFactor * specularColor;

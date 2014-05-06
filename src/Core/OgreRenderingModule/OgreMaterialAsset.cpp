@@ -4,6 +4,10 @@
 #define MATH_OGRE_INTEROP
 #include "DebugOperatorNew.h"
 
+#include "Framework.h"
+#include "AssetAPI.h"
+
+#include "OgreRenderingModule.h"
 #include "OgreMaterialAsset.h"
 #include "OgreMaterialUtils.h"
 #include "Renderer.h"
@@ -779,46 +783,102 @@ bool OgreMaterialAsset::CreateOgreMaterial(const std::string &materialData)
         LogWarning("DeserializeFromData: Failed to create an Ogre material from material asset: " + assetName);
         return false;
     }
-    if(!ogreMaterial->getNumTechniques())
+    if (!ogreMaterial->getNumTechniques())
     {
         LogWarning("DeserializeFromData: Failed to create an Ogre material, no Techniques in material asset: "  + assetName);
         ogreMaterial.setNull();
         return false;
     }
-    
-    Renderer::ShadowQualitySetting shadowQuality = Renderer::Shadows_High; ///\todo Regression. Read this ahead of time.
 
-    //workaround: if receives shadows, check the amount of shadowmaps. If only 1 specified, add 2 more to support 3 shadowmaps
-    if(ogreMaterial->getReceiveShadows() && shadowQuality == Renderer::Shadows_High && ogreMaterial->getNumTechniques() > 0)
+    Framework* framework = assetAPI->GetFramework();
+    if (!framework)
+        return false;
+    
+    OgreRenderingModule* ogreRenderingModule = framework->GetModule<OgreRenderingModule>();
+    if (!ogreRenderingModule)
+        return false;
+
+    OgreRenderer::RendererPtr ogreRenderer = ogreRenderingModule->Renderer();
+    if (!ogreRenderer)
+        return false;
+   
+    Renderer::ShadowQualitySetting shadowQuality = ogreRenderer->ShadowQuality();
+
+    Ogre::Technique *tech = ogreMaterial->getTechnique(0);
+    if (tech->getNumPasses() <= 0)
+        return false;
+
+    QString fragmentProgramName = QString::fromStdString(tech->getPass(0)->getFragmentProgramName());
+    bool injectShadows = fragmentProgramName.contains("Shadow");
+    int shadowMapsToInject = (shadowQuality == Renderer::Shadows_High ? 4 : 1);
+
+    if (injectShadows && ogreMaterial->getNumTechniques() > 0)
     {
-        Ogre::Technique *tech = ogreMaterial->getTechnique(0);
-        if(tech)
+        Ogre::Technique::PassIterator passiterator = tech->getPassIterator();
+        while (passiterator.hasMoreElements())
         {
-            Ogre::Technique::PassIterator passiterator = tech->getPassIterator();
-            while(passiterator.hasMoreElements())
+            Ogre::Pass* pass = passiterator.getNext();
+            Ogre::Pass::TextureUnitStateIterator texiterator = pass->getTextureUnitStateIterator();
+            int shadowmaps = 0;
+            bool hasKernelRotationUnit = false;
+
+            while(texiterator.hasMoreElements())
             {
-                Ogre::Pass* pass = passiterator.getNext();
-                Ogre::Pass::TextureUnitStateIterator texiterator = pass->getTextureUnitStateIterator();
-                int shadowmaps = 0;
-                while(texiterator.hasMoreElements())
+                Ogre::TextureUnitState* state = texiterator.getNext();
+                if(QString::fromStdString(state->getTextureName()).contains("KernelRotation"))
+                    hasKernelRotationUnit = true;
+                if(state->getContentType() == Ogre::TextureUnitState::CONTENT_SHADOW)
+                    ++shadowmaps;
+            }
+
+            if (!hasKernelRotationUnit)
+            {
+                // Replace first shadow texture unit with kernel rotation texture.
+                Ogre::Pass::TextureUnitStateIterator kernelTexiterator = pass->getTextureUnitStateIterator();
+                if (shadowmaps > 0)
                 {
-                    Ogre::TextureUnitState* state = texiterator.getNext();
-                    if(state->getContentType() == Ogre::TextureUnitState::CONTENT_SHADOW)
+                    while (kernelTexiterator.hasMoreElements())
                     {
-                        shadowmaps++;
+                        Ogre::TextureUnitState* state = kernelTexiterator.getNext();
+                        if (state->getContentType() == Ogre::TextureUnitState::CONTENT_SHADOW)
+                        {
+                            Ogre::TexturePtr kernelRotationTexture = Ogre::TextureManager::getSingleton().getByName("KernelRotation.png");
+                            if (!kernelRotationTexture.get())
+                                kernelRotationTexture = Ogre::TextureManager::getSingleton().load("KernelRotation.png", "General");
+
+                            state->setTexture(kernelRotationTexture);
+                            state->setContentType(Ogre::TextureUnitState::CONTENT_NAMED);
+                            state->setTextureFiltering(Ogre::TFO_NONE);
+                            ++shadowmaps;
+                            break;
+                        }
                     }
                 }
-                if (shadowmaps > 0 && shadowmaps < 3)
+                else // Create new texture unit for kernel rotation texture.
                 {
-                    Ogre::TextureUnitState* sm2 = pass->createTextureUnitState();
-                    sm2->setContentType(Ogre::TextureUnitState::CONTENT_SHADOW);
+                    Ogre::TextureUnitState* state = pass->createTextureUnitState();
 
-                    Ogre::TextureUnitState* sm3 = pass->createTextureUnitState();
-                    sm3->setContentType(Ogre::TextureUnitState::CONTENT_SHADOW);
+                    Ogre::TexturePtr kernelRotationTexture = Ogre::TextureManager::getSingleton().getByName("KernelRotation.png");
+                    if (!kernelRotationTexture.get())
+                        kernelRotationTexture = Ogre::TextureManager::getSingleton().load("KernelRotation.png", "General");
+                    state->setTexture(kernelRotationTexture);
+                    state->setContentType(Ogre::TextureUnitState::CONTENT_NAMED);
+                    state->setTextureFiltering(Ogre::TFO_NONE);
+                }
+            }
+
+            if (shadowmaps < shadowMapsToInject)
+            {
+                while (shadowmaps < shadowMapsToInject)
+                {
+                    Ogre::TextureUnitState* shadowMapUnit = pass->createTextureUnitState();
+                    shadowMapUnit->setContentType(Ogre::TextureUnitState::CONTENT_SHADOW);
+                    ++shadowmaps;
                 }
             }
         }
     }
+
     return true;
 }
 

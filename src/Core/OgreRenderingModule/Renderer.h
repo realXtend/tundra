@@ -12,6 +12,8 @@
 #include <QVariant>
 #include <QDir>
 
+#include <OgreResourceManager.h>
+
 class QScriptEngine;
 class Framework;
 
@@ -257,6 +259,12 @@ namespace OgreRenderer
     private slots:
         /// Embeds the Renderer types to the given script engine.
         void OnScriptEngineCreated(QScriptEngine* engine);
+
+        /// Command to toggle shadow debug overlays.
+        void OnShadowDebugOverlaysToggled();
+
+        /// Command to enable/disable shadow debug overlays.
+        void OnShadowDebugOverlaysEnabled(bool enabled);
 
     private:
         friend class OgreRenderingModule;

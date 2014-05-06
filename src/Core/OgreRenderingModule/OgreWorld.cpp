@@ -17,6 +17,9 @@
 #include "OgreMaterialAsset.h"
 #include "OgreMeshAsset.h"
 
+#include "ShadowCameraSetupStableCSM.h"
+#include "OgreFocusedShadowCameraSetup.h"
+
 #include "OgreMeshAsset.h"
 #include "Entity.h"
 #include "Scene/Scene.h"
@@ -32,6 +35,7 @@
 #include "Geometry/Plane.h"
 #include "Geometry/LineSegment.h"
 #include "Math/float3.h"
+#include "Math/float4.h"
 #include "Geometry/Circle.h"
 #include "Geometry/Sphere.h"
 
@@ -113,7 +117,8 @@ OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
     rayQuery_(0),
     debugLines_(0),
     debugLinesNoDepth_(0),
-    drawDebugInstancing_(false)
+    drawDebugInstancing_(false),
+    csmGpuConstants_(0)
 {
     assert(renderer_->IsInitialized());
     sceneManager_ = Ogre::Root::getSingleton().createSceneManager(Ogre::ST_GENERIC, scene->Name().toStdString());
@@ -217,6 +222,9 @@ OgreWorld::~OgreWorld()
     OgreCompositionHandler* comp = renderer_->CompositionHandler();
     if (comp)
         comp->RemoveAllCompositors();
+
+    // Destroy shadow debug layers
+    DestroyShadowDebugOverlays();
     
 #ifdef ANDROID
     Ogre::RTShader::ShaderGenerator* shaderGenerator = renderer_->GetShaderGenerator();
@@ -224,6 +232,10 @@ OgreWorld::~OgreWorld()
         shaderGenerator->removeSceneManager(sceneManager_);
 #endif
     Ogre::Root::getSingleton().destroySceneManager(sceneManager_);
+
+    // This is passed to shadow setup that is owned by SceneManager.
+    // The shadow setup impl that we use does not free this ptr itself.
+    SAFE_DELETE(csmGpuConstants_);
 }
 
 std::string OgreWorld::GenerateUniqueObjectName(const std::string &prefix)
@@ -1051,17 +1063,16 @@ void OgreWorld::SetupShadows()
         sceneManager_->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
         return;
     }
-    
-    bool pssmEnabled = (shadowQuality == OgreRenderer::Renderer::Shadows_High);    
+
+    bool csmEnabled = (shadowQuality == OgreRenderer::Renderer::Shadows_High);
     unsigned short shadowTextureFSAA = static_cast<unsigned short>(framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "shadow texture antialias", 0).toInt());
     unsigned short shadowTextureSize = static_cast<unsigned short>(framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "shadow texture size", 2048).toInt());
     unsigned short shadowTextureCount = 1;
-    float shadowFarDist = 50;
 
-    if (pssmEnabled)
+    if (csmEnabled)
     {
-        shadowTextureSize = static_cast<unsigned short>(framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "shadow texture size pssm", 1024).toInt());
-        shadowTextureCount = 3;
+        shadowTextureSize = static_cast<unsigned short>(framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "shadow texture size csm", 1024).toInt());
+        shadowTextureCount = 4;
     }
     
     LogDebug(QString("[OgreWorld]: Shadow quality       : %1").arg((shadowQuality == OgreRenderer::Renderer::Shadows_Low ? "Low" : "High")));
@@ -1072,78 +1083,61 @@ void OgreWorld::SetupShadows()
     /** "rex/ShadowCaster" is the default material to use for shadow buffer rendering pass, can be overridden in user materials.
         @note We use the same single material (vertex program) for each object, so we're relying on that we use Ogre software skinning. 
         Hardware skinning would require us to do different vertex programs for skinned/nonskinned geometry. */
-    sceneManager_->setShadowColour(Ogre::ColourValue(0.6f, 0.6f, 0.6f));
-    sceneManager_->setShadowTextureCountPerLightType(Ogre::Light::LT_DIRECTIONAL, shadowTextureCount);
-    sceneManager_->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
     sceneManager_->setShadowTextureCasterMaterial("rex/ShadowCaster");
-    sceneManager_->setShadowTextureSelfShadow(true);
-    sceneManager_->setShadowTextureFSAA(shadowTextureFSAA);
-
     sceneManager_->setShadowTextureSettings(shadowTextureSize, shadowTextureCount, Ogre::PF_FLOAT32_R);
 
     Ogre::ShadowCameraSetupPtr shadowCameraSetup;
-    if (pssmEnabled)
+    
+    sceneManager_->setShadowTextureCount(shadowTextureCount);
+    sceneManager_->setShadowTextureCountPerLightType(Ogre::Light::LT_DIRECTIONAL, shadowTextureCount);
+    sceneManager_->setShadowColour(Ogre::ColourValue(0.6f, 0.6f, 0.6f));
+    sceneManager_->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_MODULATIVE_INTEGRATED);
+    sceneManager_->setShadowCasterRenderBackFaces(false);
+    sceneManager_->setShadowTextureSelfShadow(true);
+    sceneManager_->setShadowTextureFSAA(shadowTextureFSAA);
+
+    /// This is the default. EC_OgreShadowSetup can adjust it if created.
+    float shadowFarDist = 500.0f;
+    sceneManager_->setShadowFarDistance(shadowFarDist);
+
+    if (csmEnabled)
     {
-        /** The splitpoints are hardcoded also to the shaders. 
-            If you modify these, also change them to the shaders. */
-        OgreShadowCameraSetupFocusedPSSM::SplitPointList splitpoints;
-        splitpoints.push_back(0.1f); // Default nearclip
-        splitpoints.push_back(3.5);
-        splitpoints.push_back(11);
-        splitpoints.push_back(shadowFarDist);
-        
-#include "DisableMemoryLeakCheck.h"
-        OgreShadowCameraSetupFocusedPSSM* pssmSetup = new OgreShadowCameraSetupFocusedPSSM();
-#include "EnableMemoryLeakCheck.h"
-        pssmSetup->setSplitPoints(splitpoints);
-        shadowCameraSetup = Ogre::ShadowCameraSetupPtr(pssmSetup);
+        // Create the CSM shadow setup
+        if (!csmGpuConstants_)
+            csmGpuConstants_ = new Ogre::CSMGpuConstants(shadowTextureCount);
+
+        Ogre::StableCSMShadowCameraSetup* shadowSetup = new Ogre::StableCSMShadowCameraSetup(csmGpuConstants_);
+
+        // Default values. EC_OgreShadowSetup can adjust them if created.
+        // Lower lamdba means more uniform, higher lambda means more logarithmic
+        float lambda = 0.93f;
+        float firstSplitDist = 8.5f;
+        float splitPadding = 1.0f;
+
+        // Calculate
+        shadowSetup->calculateSplitPoints(shadowTextureCount, firstSplitDist, shadowFarDist, lambda);
+
+        // Apply
+        shadowSetup->setSplitPadding(splitPadding);
+        sceneManager_->setShadowCameraSetup(Ogre::ShadowCameraSetupPtr(shadowSetup));
     }
     else
     {
-#include "DisableMemoryLeakCheck.h"
-        Ogre::FocusedShadowCameraSetup* focusedSetup = new Ogre::FocusedShadowCameraSetup();
-#include "EnableMemoryLeakCheck.h"
-        shadowCameraSetup = Ogre::ShadowCameraSetupPtr(focusedSetup);
+        OgreFocusedShadowCameraSetup* shadowSetup = new OgreFocusedShadowCameraSetup();
+        sceneManager_->setShadowCameraSetup(Ogre::ShadowCameraSetupPtr(shadowSetup));
     }
-    
-    sceneManager_->setShadowCameraSetup(shadowCameraSetup);
-    sceneManager_->setShadowFarDistance(shadowFarDist);
-    sceneManager_->setShadowCasterRenderBackFaces(false); // If set to true, problems with objects that clip into the ground
-    
-    // Debug overlays for shadow textures
-    /*
-    if(renderer_.expired())
-        return;
-    Ogre::TexturePtr shadowTex;
-    Ogre::String str("shadowDebug");
-    Ogre::Overlay* debugOverlay = Ogre::OverlayManager::getSingleton().getByName(str);
-    if (!debugOverlay)
-        debugOverlay= Ogre::OverlayManager::getSingleton().create(str);
-    for(int i = 0; i<shadowTextureCount;i++)
-    {
-            shadowTex = sceneManager_->getShadowTexture(i);
 
-            // Set up a debug panel to display the shadow
-            Ogre::MaterialPtr debugMat = Ogre::MaterialManager::getSingleton().create(
-                "Ogre/DebugTexture" + Ogre::StringConverter::toString(i), 
-                Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-            debugMat->getTechnique(0)->getPass(0)->setLightingEnabled(false);
-            Ogre::TextureUnitState *t = debugMat->getTechnique(0)->getPass(0)->createTextureUnitState(shadowTex->getName());
-            t->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
-            //t = debugMat->getTechnique(0)->getPass(0)->createTextureUnitState("spot_shadow_fade.png");
-            //t->setTextureAddressingMode(TextureUnitState::TAM_CLAMP);
-            //t->setColourOperation(LBO_ADD);
+    // Set default values. Can be changed during runtime with EC_OgreShadowSetup.
+    Ogre::GpuSharedParametersPtr shadowParams = Ogre::GpuProgramManager::getSingletonPtr()->getSharedParameters("params_shadowParams");
+    shadowParams->setNamedConstant("shadowMapSize", Ogre::Vector4(shadowTextureSize));
+    shadowParams->setNamedConstant("invShadowMapSize", Ogre::Vector4(1.0f / (float)shadowTextureSize));
 
-            Ogre::OverlayContainer* debugPanel = (Ogre::OverlayContainer*)
-                (Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", "Ogre/DebugTexPanel" + Ogre::StringConverter::toString(i)));
-            debugPanel->_setPosition(0.8, i*0.25+ 0.05);
-            debugPanel->_setDimensions(0.2, 0.24);
-            debugPanel->setMaterialName(debugMat->getName());
-            debugOverlay->add2D(debugPanel);
-    }
-    debugOverlay->show();
-    */
+    shadowParams->setNamedConstant("fixedDepthBias", Ogre::Vector4(0.00005f, 0.00005f, 0.00005f, 0.00005f));
+    shadowParams->setNamedConstant("gradientScaleBias", Ogre::Vector4(0.00005f, 0.00005f, 0.00005f, 0.00005f));
+    shadowParams->setNamedConstant("shadowMaxDist", 500.0f);
+    shadowParams->setNamedConstant("shadowFadeDist", 300.0f);
 
+    /* @todo Figure out if we can and should enable using soft shadows with the new CSM shadows.
     bool softShadowEnabled = framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "soft shadow", false).toBool();
     if (softShadowEnabled)
     {
@@ -1159,7 +1153,99 @@ void OgreWorld::SetupShadows()
             gaussianListener->notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
             gaussianListeners_.push_back(gaussianListener);
         }
+    }*/
+
+    if (framework_->HasCommandLineParameter("--drawShadowDebug"))
+        SetShadowDebugOverlays(true);
+}
+
+void OgreWorld::SetShadowDebugOverlays(bool enabled)
+{
+    if (enabled)
+        CreateShadowDebugOverlays();
+    else
+        DestroyShadowDebugOverlays();
+}
+
+void OgreWorld::CreateShadowDebugOverlays()
+{
+    if (framework_->IsHeadless() || !renderer_)
+        return;
+
+    QString shadowIdentifier = "Tundra/ShadowDebugOverlay";
+    Ogre::Overlay* debugOverlay = Ogre::OverlayManager::getSingleton().getByName(shadowIdentifier.toStdString());
+    if (debugOverlay)
+        return;
+    debugOverlay = Ogre::OverlayManager::getSingleton().create(shadowIdentifier.toStdString());
+
+    OgreRenderer::Renderer::ShadowQualitySetting shadowQuality = renderer_->ShadowQuality();
+    bool csmEnabled = (shadowQuality == OgreRenderer::Renderer::Shadows_High);
+    int shadowTextureCount = (csmEnabled ? 4 : 1);
+
+    for (int i = 0; i < shadowTextureCount; ++i)
+    {
+        Ogre::TexturePtr shadowTex = sceneManager_->getShadowTexture(i);
+        if (!shadowTex.get())
+        {
+            LogWarning(QString("[OgreWorld]: CreateShadowDebugOverlays failed to get shadow texture %1").arg(i+1));
+            continue;
+        }
+
+        // Set up a debug panel to display the shadow
+        Ogre::MaterialPtr debugMat = Ogre::MaterialManager::getSingleton().create(
+            "Tundra/ShadowDebugMaterial_" + Ogre::StringConverter::toString(i), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+        if (!debugMat.get())
+            continue;
+
+        if (!debugMat->getTechnique(0))
+            debugMat->createTechnique();
+        if (!debugMat->getTechnique(0)->getPass(0))
+            debugMat->getTechnique(0)->createPass();
+        Ogre::Pass *debugPass = debugMat->getTechnique(0)->getPass(0);
+        debugPass->setLightingEnabled(false);
+
+        Ogre::TextureUnitState *t = debugPass->createTextureUnitState(shadowTex->getName());
+        t->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
+
+        Ogre::OverlayContainer* debugPanel = dynamic_cast<Ogre::OverlayContainer*>(
+            Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", "Tundra/ShadowDebugTexturePanel_" + Ogre::StringConverter::toString(i)));
+
+        float panelSize = Clamp<float>((1.0 - 0.05 * shadowTextureCount) / shadowTextureCount, 0.1f, 0.3f);
+        debugPanel->_setPosition(1.0 - panelSize - 0.025, 0.025 + i * (panelSize + 0.05f));
+        debugPanel->_setDimensions(panelSize, panelSize);
+        debugPanel->setMaterialName(debugMat->getName());
+        debugOverlay->add2D(debugPanel);
     }
+    debugOverlay->show();
+}
+
+void OgreWorld::DestroyShadowDebugOverlays()
+{
+    if (!renderer_)
+        return;
+
+    QString shadowIdentifier = "Tundra/ShadowDebugOverlay";
+    Ogre::Overlay* debugOverlay = Ogre::OverlayManager::getSingleton().getByName(shadowIdentifier.toStdString());
+    if (!debugOverlay)
+        return;
+
+    OgreRenderer::Renderer::ShadowQualitySetting shadowQuality = renderer_->ShadowQuality();
+    bool csmEnabled = (shadowQuality == OgreRenderer::Renderer::Shadows_High);
+    int shadowTextureCount = (csmEnabled ? 4 : 1);
+
+    for (int i = 0; i < shadowTextureCount; ++i)
+    {
+        Ogre::MaterialPtr debugMat = Ogre::MaterialManager::getSingleton().getByName("Tundra/ShadowDebugMaterial_" + Ogre::StringConverter::toString(i));
+        if (debugMat.get())
+            Ogre::MaterialManager::getSingleton().remove(debugMat->getHandle());
+
+        Ogre::OverlayContainer* debugPanel = dynamic_cast<Ogre::OverlayContainer*>(
+            Ogre::OverlayManager::getSingleton().getOverlayElement("Tundra/ShadowDebugTexturePanel_" + Ogre::StringConverter::toString(i)));
+        if (debugPanel)
+            Ogre::OverlayManager::getSingleton().destroyOverlayElement(debugPanel);
+    }
+
+    Ogre::OverlayManager::getSingleton().destroy(debugOverlay);
 }
 
 Ogre::Camera* OgreWorld::VerifyCurrentSceneCamera() const

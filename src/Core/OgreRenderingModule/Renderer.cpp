@@ -32,11 +32,13 @@
 #include "UiGraphicsView.h"
 #include "LoggingFunctions.h"
 #include "ConfigAPI.h"
+#include "ConsoleAPI.h"
 #include "QScriptEngineHelpers.h"
 
 #include <Ogre.h>
 #include <OgreDefaultHardwareBufferManager.h>
 #include <OgreOverlaySystem.h>
+#include <OgreScriptCompiler.h>
 
 #ifdef ANDROID
 #define OGRE_STATIC_GLES2
@@ -440,11 +442,6 @@ namespace OgreRenderer
         // Report rendering plugin to log so user can check what actually got loaded
         LogInfo(QString("Renderer: Using '%1'").arg(renderSystem->getName().c_str()));
 
-        // Allow PSSM mode shadows only on DirectX
-        // On OpenGL (arbvp & arbfp) it runs out of vertex shader outputs
-        if (shadowQuality == Shadows_High && renderSystem->getName() != cD3D9RenderSystemName)
-            shadowQuality = Shadows_Low;
-
         // This is needed for QWebView to not lock up!!!
         Ogre::ConfigOptionMap& map = renderSystem->getConfigOptions();
         if (map.find("Floating-point mode") != map.end())
@@ -535,6 +532,31 @@ namespace OgreRenderer
                 throw;
             }
 
+            // Shadow setup
+            try
+            {
+                Ogre::GpuProgramManager::getSingletonPtr()->createSharedParameters("params_shadowMatrixScaleBias");
+                Ogre::GpuProgramManager::getSingletonPtr()->createSharedParameters("params_shadowTextureMatrix");
+
+                Ogre::GpuSharedParametersPtr params = Ogre::GpuProgramManager::getSingletonPtr()->createSharedParameters("params_shadowParams");
+                params->addConstantDefinition("fixedDepthBias", Ogre::GCT_FLOAT4);
+                params->addConstantDefinition("gradientScaleBias", Ogre::GCT_FLOAT4);
+                params->addConstantDefinition("shadowMapSize", Ogre::GCT_FLOAT4);
+                params->addConstantDefinition("invShadowMapSize", Ogre::GCT_FLOAT4);
+                params->addConstantDefinition("shadowFadeDist", Ogre::GCT_FLOAT1);
+                params->addConstantDefinition("shadowMaxDist", Ogre::GCT_FLOAT1);
+
+                // Set default values. Can be changed during runtime with EC_OgreShadowSetup.
+                params->setNamedConstant("fixedDepthBias", Ogre::Vector4(0.00005f, 0.00005f, 0.00005f, 0.00005f));
+                params->setNamedConstant("gradientScaleBias", Ogre::Vector4(0.00005f, 0.00005f, 0.00005f, 0.00005f));
+                params->setNamedConstant("shadowMaxDist", 500.0f);
+                params->setNamedConstant("shadowFadeDist", 300.0f);
+            }
+            catch(const Ogre::Exception& e)
+            {
+                LogError(QString("Renderer: Failed to setup shadow parameters: %1").arg(QString::fromStdString(e.getDescription())));
+            }
+
             LogInfo("Renderer: Loading Ogre resources");
             LoadOgreResourceLocations(renderingConfig);
             CreateInstancingShaders();
@@ -554,9 +576,12 @@ namespace OgreRenderer
                 shaderGenerator->addSceneManager(defaultScene);
 #endif
             dummyDefaultCamera = defaultScene->createCamera("DefaultCamera");
-        
+
             mainViewport = renderWindow->OgreRenderWindow()->addViewport(dummyDefaultCamera);
             compositionHandler->SetViewport(mainViewport);
+
+            framework->Console()->RegisterCommand("drawShadowDebug", "Sets or toggles Ogre rendering shadow debug overlays.",
+                this, SLOT(OnShadowDebugOverlaysEnabled(bool)), SLOT(OnShadowDebugOverlaysToggled()));
         }
 
         initialized = true;
@@ -1519,5 +1544,25 @@ namespace OgreRenderer
         qScriptRegisterMetaType<OgreMaterialAssetPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
         qScriptRegisterMetaType<OgreSkeletonAssetPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
         qScriptRegisterMetaType<OgreParticleAssetPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
+    }
+
+    void Renderer::OnShadowDebugOverlaysToggled()
+    {
+        Ogre::Overlay* debugOverlay = Ogre::OverlayManager::getSingleton().getByName("Tundra/ShadowDebugOverlay");
+        if (!debugOverlay)
+            OnShadowDebugOverlaysEnabled(true);
+        else
+            OnShadowDebugOverlaysEnabled(false);
+    }
+
+    void Renderer::OnShadowDebugOverlaysEnabled(bool enabled)
+    {
+        std::map<Scene*, OgreWorldPtr>::iterator it = ogreWorlds.begin();
+        for(; it != ogreWorlds.end(); ++it)
+        {
+            OgreWorldPtr ptr = it->second;
+            if (ptr.get())
+                ptr->SetShadowDebugOverlays(enabled);
+        }
     }
 }

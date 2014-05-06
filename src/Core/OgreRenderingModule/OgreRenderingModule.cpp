@@ -19,6 +19,7 @@
 #include "EC_Fog.h"
 #include "EC_EnvironmentLight.h"
 #include "EC_Sky.h"
+#include "EC_OgreShadowSetup.h"
 #include "OgreWorld.h"
 #include "OgreMeshAsset.h"
 #include "OgreParticleAsset.h"
@@ -120,6 +121,7 @@ void OgreRenderingModule::Load()
     framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_Fog>));
     framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_Sky>));
     framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_EnvironmentLight>));
+    framework_->Scene()->RegisterComponentFactory(MAKE_SHARED(GenericComponentFactory<EC_OgreShadowSetup>));
 
     // Main ogre .mesh extension
     QStringList meshExtensions;

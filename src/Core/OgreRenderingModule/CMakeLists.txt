@@ -9,16 +9,18 @@ init_target(OgreRenderingModule OUTPUT plugins)
 
 # Define source files
 file(GLOB LIBSQUISH_CPP_FILES libsquish/*.cpp)
-file(GLOB CPP_FILES *.cpp)
+file(GLOB CASCADED_SHADOWS_CPP_FILES OgreCascadedShadows/*.cpp)
+file(GLOB CPP_FILES *.cpp OgreCascadedShadows/*.cpp)
 file(GLOB H_FILES *.h)
 file(GLOB UI_FILES *.ui)
 file(GLOB XML_FILES *.xml)
 file(GLOB MOC_FILES RenderWindow.h EC_*.h Renderer.h TextureAsset.h OgreMeshAsset.h OgreParticleAsset.h
-    OgreSkeletonAsset.h OgreMaterialAsset.h OgreRenderingModule.h OgreWorld.h UiPlane.h)
+                    OgreSkeletonAsset.h OgreMaterialAsset.h OgreRenderingModule.h OgreWorld.h UiPlane.h)
+
 if (WIN32)
-    set(SOURCE_FILES ${LIBSQUISH_CPP_FILES} ${CPP_FILES} ${H_FILES})
+    set(SOURCE_FILES ${LIBSQUISH_CPP_FILES} ${CASCADED_SHADOWS_CPP_FILES} ${CPP_FILES} ${H_FILES})
 else()
-    set(SOURCE_FILES ${CPP_FILES} ${H_FILES})
+    set(SOURCE_FILES ${CASCADED_SHADOWS_CPP_FILES} ${CPP_FILES} ${H_FILES})
 endif()
 
 # Qt4 Moc files to subgroup "CMake Moc"
@@ -27,12 +29,12 @@ MocFolder()
 # Build parameters required by Qt - define files for moc prepass, process resource and ui files.
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
-#QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 set(FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
 include_directories (libcrunch)
 include_directories (libsquish)
+include_directories (OgreCascadedShadows)
 
 add_definitions(-DOGRE_MODULE_EXPORTS)
 
@@ -45,6 +47,8 @@ build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 link_package(QT4)
 link_ogre()
 link_modules(TundraCore Math)
+
+target_link_libraries(${TARGET_NAME} Plugin_CgProgramManager)
 
 SetupCompileFlagsWithPCH()
 

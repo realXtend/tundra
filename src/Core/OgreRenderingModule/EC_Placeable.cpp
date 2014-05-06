@@ -180,6 +180,9 @@ EC_Placeable::EC_Placeable(Scene* scene) :
     INIT_ATTRIBUTE_VALUE(parentRef, "Parent entity ref", EntityReference()),
     INIT_ATTRIBUTE_VALUE(parentBone, "Parent bone name", "")
 {
+    /** @todo This is a bug. world_ is never set if this component is created unparented!
+        Add setting world_ in RegisterActions() where scene is guaranteed to be there.
+        This includes creating the sceneNode_ with a delay so needs proper testing! */
     if (scene)
         world_ = scene->GetWorld<OgreWorld>();
     
@@ -200,8 +203,9 @@ EC_Placeable::EC_Placeable(Scene* scene) :
     {
         Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
         sceneNode_ = sceneMgr->createSceneNode(world->GetUniqueObjectName("EC_Placeable_SceneNode"));
-// Would like to do this for improved debugging in the Profiler window, but because we don't have the parent entity yet, we don't know the id or the name of this entity.
-//        sceneNode_ = sceneMgr->createSceneNode(world->GetUniqueObjectName(("EC_Placeable_SceneNode_" + QString::number(ParentEntity()->Id()) + "_" + ParentEntity()->Name()).toStdString()));
+
+        // Would like to do this for improved debugging in the Profiler window, but because we don't have the parent entity yet, we don't know the id or the name of this entity.
+        //        sceneNode_ = sceneMgr->createSceneNode(world->GetUniqueObjectName(("EC_Placeable_SceneNode_" + QString::number(ParentEntity()->Id()) + "_" + ParentEntity()->Name()).toStdString()));
 
         connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
     

@@ -10,6 +10,7 @@
 #include "Math/MathFwd.h"
 #include "IRenderer.h"
 #include "Color.h"
+#include "OgreCascadedShadows/CSMGpuConstants.h"
 
 #include <QObject>
 #include <QList>
@@ -253,6 +254,9 @@ public slots:
     void DebugDrawSphere(const float3& center, float radius, int vertices, const Color &clr, bool depthTest = true);
     void DebugDrawSphere(const float3& center, float radius, int vertices, float r, float g, float b, bool depthTest = true) { DebugDrawSphere(center, radius, vertices, Color(r, g, b), depthTest); } /**< @overload */
 
+    /// Enable shadow debug overlays
+    void SetShadowDebugOverlays(bool enabled = true);
+
 signals:
     /// An entity has entered the view
     void EntityEnterView(Entity* entity);
@@ -276,6 +280,12 @@ private:
 
     /// Setup shadows
     void SetupShadows();
+
+    /// Create shadow debug overlays
+    void CreateShadowDebugOverlays();
+
+    /// Destroy shadow debug overlays
+    void DestroyShadowDebugOverlays();
     
     /// Returns the currently active camera component, if it belongs to this scene. Else return null
     EC_Camera* VerifyCurrentSceneCameraComponent() const;
@@ -341,6 +351,9 @@ private:
 
     /// Prepares a material for instanced use. This function will clone the material if necessary.
     QString PrepareInstancingMaterial(OgreMaterialAsset *material);
+
+    /// Cascaded shadow mapping constants for shaders.
+    Ogre::CSMGpuConstants* csmGpuConstants_;
 };
 
 /// Instancing mesh target data.

@@ -2,7 +2,7 @@
 
 // Supported #defines:
 
-// #define ANIM_TEXTURES      - The vertex texture coordinate set 0 will be transformed by a texture matrix.
+// #define ANIM_TEXTURES	  - The vertex texture coordinate set 0 will be transformed by a texture matrix.
 
 // #define SPECULAR_LIGHTING
 
@@ -13,10 +13,10 @@
 // #define LUMINANCE_MAPPING
 
 // These are mutually exclusive.
-// #define OPACITY_MAPPING     - If true, the object alpha is sampled from a separate opacity map. 
-// #define DIFFUSE_ALPHA       - If true, the object alpha is sampled from the alpha channel of the diffuse map.
-// #define ALPHA_MASKING       - If true, 0 or 1 will be output as the alpha, depending on whether diffuse map alpha is < or > than 0.5f
-// #define SOLID_ALPHA         - If true, the alpha color will be a solid color.
+// #define OPACITY_MAPPING	 - If true, the object alpha is sampled from a separate opacity map. 
+// #define DIFFUSE_ALPHA	 - If true, the object alpha is sampled from the alpha channel of the diffuse map.
+// #define ALPHA_MASKING	 - If true, 0 or 1 will be output as the alpha, depending on whether diffuse map alpha is < or > than 0.5f
+// #define SOLID_ALPHA		 - If true, the alpha color will be a solid color.
 
 // #define REFLECTION_MAPPING  - Reflection mapping done on a virtual cube map (a 2D texture that is mapped like a cube map).
 
@@ -89,14 +89,24 @@ uniform sampler2D normalMap;
 uniform sampler2D lightMap;
 uniform float lightMapFactor;
 #endif
+
 #ifdef SHADOW_MAPPING
 
+uniform float shadowFadeDist;
+uniform float shadowMaxDist;
+
+uniform float4x4 texMatrix0;
+uniform sampler2D jitterMapUnit;
 uniform sampler2D shadowMap0;
-#ifdef PSSM_SHADOWS
+
+#ifdef CSM_SHADOWS
 uniform sampler2D shadowMap1;
 uniform sampler2D shadowMap2;
+uniform sampler2D shadowMap3;
 #endif
+
 #endif
+
 #ifdef LUMINANCE_MAPPING
 uniform sampler2D luminanceMap;
 #endif
@@ -232,13 +242,13 @@ float4 ComputeFog(float viewDepth)
 {
 	float4 fog;
 	
-    // Fog params packed as: exp_density, linear_start, linear_end, 1.0 / (linear_end - linear_start)
-    // Store fog density to w
-    fog.w = clamp((fogParams.z-viewDepth)/(fogParams.z-fogParams.y), 0, 1);
-    // And color to xyz
-    fog.xyz = fogColor.rgb;
-    
-    return fog;
+	// Fog params packed as: exp_density, linear_start, linear_end, 1.0 / (linear_end - linear_start)
+	// Store fog density to w
+	fog.w = clamp((fogParams.z-viewDepth)/(fogParams.z-fogParams.y), 0, 1);
+	// And color to xyz
+	fog.xyz = fogColor.rgb;
+	
+	return fog;
 }
 
 // Applies fogging to the given color.
