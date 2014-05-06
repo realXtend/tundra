@@ -15,6 +15,7 @@
 #include "Scene.h"
 
 #include "OgreCascadedShadows/ShadowCameraSetupStableCSM.h"
+#include "OgreFocusedShadowCameraSetup.h"
 
 #include <Ogre.h>
 #include <OgreGpuProgramManager.h>
@@ -23,8 +24,8 @@ EC_OgreShadowSetup::EC_OgreShadowSetup(Scene* scene) :
     IComponent(scene),
     INIT_ATTRIBUTE_VALUE(splitLambda, "Split lambda", 0.93f),
     INIT_ATTRIBUTE_VALUE(firstSplitDist, "First split distance", 8.5f),
-    INIT_ATTRIBUTE_VALUE(farDist, "Far distance", 500.0f),
-    INIT_ATTRIBUTE_VALUE(fadeDist, "Fade distance", 300.0f),
+    INIT_ATTRIBUTE_VALUE(farDist, "Far distance", 250.0f),
+    INIT_ATTRIBUTE_VALUE(fadeDist, "Fade distance", 50.0f),
     INIT_ATTRIBUTE_VALUE(depthBias1, "Depth bias 1", 0.05f),
     INIT_ATTRIBUTE_VALUE(depthBias2, "Depth bias 2", 0.05f),
     INIT_ATTRIBUTE_VALUE(depthBias3, "Depth bias 3", 0.05f),
@@ -102,22 +103,22 @@ void EC_OgreShadowSetup::UpdateShadowSetup()
     if (!sceneManager)
         return;
 
-    Ogre::StableCSMShadowCameraSetup* shadowSetup = dynamic_cast<Ogre::StableCSMShadowCameraSetup*>(sceneManager->getShadowCameraSetup().get());
-    if (!shadowSetup)
-        return;
-    
-    // Calculate new split points
-    float lambda = splitLambda.Get();
-    shadowSetup->calculateSplitPoints(sceneManager->getShadowTextureCount(), firstSplitDist.Get(), farDist.Get(), lambda);
+    // Set far distance
+    sceneManager->setShadowFarDistance(farDist.Get());
+
+    // Set far distance
+    shadowParams_->setNamedConstant("shadowMaxDist", farDist.Get());
 
     // Sanity check on fade distance. This will trigger an attribute 
     // change and be handled in AttributesChanged().
     if (fadeDist.Get() >= farDist.Get())
         fadeDist.Set(farDist.Get() * 0.04, AttributeChange::LocalOnly);
 
-    // Set far distance
-    shadowParams_->setNamedConstant("shadowMaxDist", farDist.Get());
+    Ogre::StableCSMShadowCameraSetup* shadowSetup = dynamic_cast<Ogre::StableCSMShadowCameraSetup*>(sceneManager->getShadowCameraSetup().get());
+    if (!shadowSetup)
+        return;
 
-    // Set far distance
-    sceneManager->setShadowFarDistance(farDist.Get());
+    // Calculate new split points
+    float lambda = splitLambda.Get();
+    shadowSetup->calculateSplitPoints(sceneManager->getShadowTextureCount(), firstSplitDist.Get(), farDist.Get(), lambda);
 }

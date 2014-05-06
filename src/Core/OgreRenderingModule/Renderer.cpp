@@ -549,8 +549,8 @@ namespace OgreRenderer
                 // Set default values. Can be changed during runtime with EC_OgreShadowSetup.
                 params->setNamedConstant("fixedDepthBias", Ogre::Vector4(0.00005f, 0.00005f, 0.00005f, 0.00005f));
                 params->setNamedConstant("gradientScaleBias", Ogre::Vector4(0.00005f, 0.00005f, 0.00005f, 0.00005f));
-                params->setNamedConstant("shadowMaxDist", 500.0f);
-                params->setNamedConstant("shadowFadeDist", 300.0f);
+                params->setNamedConstant("shadowMaxDist", 250.0f);
+                params->setNamedConstant("shadowFadeDist", 50.0f);
             }
             catch(const Ogre::Exception& e)
             {
