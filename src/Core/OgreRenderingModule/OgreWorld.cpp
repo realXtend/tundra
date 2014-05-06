@@ -1133,8 +1133,8 @@ void OgreWorld::SetupShadows()
 
     shadowParams->setNamedConstant("fixedDepthBias", Ogre::Vector4(0.00005f, 0.00005f, 0.00005f, 0.00005f));
     shadowParams->setNamedConstant("gradientScaleBias", Ogre::Vector4(0.00005f, 0.00005f, 0.00005f, 0.00005f));
-    shadowParams->setNamedConstant("shadowMaxDist", 500.0f);
-    shadowParams->setNamedConstant("shadowFadeDist", 300.0f);
+    shadowParams->setNamedConstant("shadowMaxDist", 250.0f);
+    shadowParams->setNamedConstant("shadowFadeDist", 50.0f);
 
     /* @todo Figure out if we can and should enable using soft shadows with the new CSM shadows.
     bool softShadowEnabled = framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "soft shadow", false).toBool();
