@@ -1257,6 +1257,38 @@ bool OgreMaterialAsset::SetVertexShaderParameter(int techIndex, int passIndex, c
             verPtr->_writeRawConstant(paramDef.physicalIndex, matrix, size);
             return true;
         }
+        else if (value.size() == 8)
+        {
+            if (isFloat)
+            {
+                LogDebug("writing float8");
+                float vector[8];
+                vector[0] = value[0].toDouble();
+                vector[1] = value[1].toDouble();
+                vector[2] = value[2].toDouble();
+                vector[3] = value[3].toDouble();
+                vector[4] = value[4].toDouble();
+                vector[5] = value[5].toDouble();
+                vector[6] = value[6].toDouble();
+                vector[7] = value[7].toDouble();
+                verPtr->_writeRawConstants(paramDef.physicalIndex, &vector[0], 8);
+            }
+            else
+            {
+                LogDebug("writing int8");
+                int vector[8];
+                vector[0] = value[0].toInt();
+                vector[1] = value[1].toInt();
+                vector[2] = value[2].toInt();
+                vector[3] = value[3].toInt();
+                vector[4] = value[4].toInt();
+                vector[5] = value[5].toInt();
+                vector[6] = value[6].toInt();
+                vector[7] = value[7].toInt();
+                verPtr->_writeRawConstants(paramDef.physicalIndex, &vector[0], 8);
+            }
+            return true;
+        }
         else if (value.size() == 4)
         {
             Ogre::Vector4 vector;
@@ -1340,6 +1372,38 @@ bool OgreMaterialAsset::SetPixelShaderParameter(int techIndex, int passIndex, co
                 value[8].toDouble(), value[9].toDouble(), value[10].toDouble(), value[11].toDouble(),
                 value[12].toDouble(), value[13].toDouble(), value[14].toDouble(), value[15].toDouble());
             fragPtr->_writeRawConstant(paramDef.physicalIndex, matrix, size);
+            return true;
+        }
+        else if (value.size() == 8)
+        {
+            if (isFloat)
+            {
+                LogDebug("writing float8");
+                float vector[8];
+                vector[0] = value[0].toDouble();
+                vector[1] = value[1].toDouble();
+                vector[2] = value[2].toDouble();
+                vector[3] = value[3].toDouble();
+                vector[4] = value[4].toDouble();
+                vector[5] = value[5].toDouble();
+                vector[6] = value[6].toDouble();
+                vector[7] = value[7].toDouble();
+                fragPtr->_writeRawConstants(paramDef.physicalIndex, &vector[0], 8);
+            }
+            else
+            {
+                LogDebug("writing int8");
+                int vector[8];
+                vector[0] = value[0].toInt();
+                vector[1] = value[1].toInt();
+                vector[2] = value[2].toInt();
+                vector[3] = value[3].toInt();
+                vector[4] = value[4].toInt();
+                vector[5] = value[5].toInt();
+                vector[6] = value[6].toInt();
+                vector[7] = value[7].toInt();
+                fragPtr->_writeRawConstants(paramDef.physicalIndex, &vector[0], 8);
+            }
             return true;
         }
         else if (value.size() == 4)
