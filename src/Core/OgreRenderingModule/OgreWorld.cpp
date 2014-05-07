@@ -108,9 +108,9 @@ public:
 	}
 };
 
-OgreWorld::OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene) :
+OgreWorld::OgreWorld(OgreRenderer::Renderer* owner, const ScenePtr &scene) :
     framework_(scene->GetFramework()),
-    renderer_(renderer),
+    renderer_(owner),
     scene_(scene),
     sceneManager_(0),
     rayQuery_(0),
@@ -259,7 +259,7 @@ void OgreWorld::SetDefaultSceneFog()
 {
     if (sceneManager_)
         sceneManager_->setFog(Ogre::FOG_LINEAR, Ogre::ColourValue::White, 0.001f, 2000.0f, 4000.0f);
-    if (renderer_ && renderer_->MainViewport())
+    if (renderer_->MainViewport())
         renderer_->MainViewport()->setBackgroundColour(Color::Black);
 }
 
@@ -1167,7 +1167,7 @@ void OgreWorld::SetShadowDebugOverlays(bool enabled)
 
 void OgreWorld::CreateShadowDebugOverlays()
 {
-    if (!renderer_ || framework_->IsHeadless())
+    if (framework_->IsHeadless())
         return;
 
     QString shadowIdentifier = "Tundra/ShadowDebugOverlay";
@@ -1219,7 +1219,7 @@ void OgreWorld::CreateShadowDebugOverlays()
 
 void OgreWorld::DestroyShadowDebugOverlays()
 {
-    if (!renderer_ || framework_->IsHeadless())
+    if (framework_->IsHeadless())
         return;
 
     QString shadowIdentifier = "Tundra/ShadowDebugOverlay";
@@ -1254,8 +1254,6 @@ Ogre::Camera* OgreWorld::VerifyCurrentSceneCamera() const
 
 EC_Camera* OgreWorld::VerifyCurrentSceneCameraComponent() const
 {
-    if (!renderer_)
-        return 0;
     Entity *mainCamera = renderer_->MainCamera();
     if (!mainCamera)
         return 0;

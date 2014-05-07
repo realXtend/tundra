@@ -38,7 +38,7 @@ class OGRE_MODULE_API OgreWorld : public QObject, public enable_shared_from_this
 
 public:
     /// Called by the OgreRenderingModule upon the creation of a new scene
-    OgreWorld(OgreRenderer::Renderer* renderer, ScenePtr scene);
+    OgreWorld(OgreRenderer::Renderer* owner, const ScenePtr &scene);
     /// Fully destroys the Ogre scene
     virtual ~OgreWorld();
 
@@ -296,7 +296,7 @@ private:
     /// Framework
     Framework* framework_;
     
-    /// Parent renderer
+    /// Owner/Parent renderer
     OgreRenderer::Renderer* renderer_;
     
     /// Parent scene
