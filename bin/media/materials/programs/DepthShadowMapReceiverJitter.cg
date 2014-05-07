@@ -28,7 +28,7 @@ half getShadowFactor
 )
 {
     // point on shadowmap
-    float depthAdjust = fixedDepthBias + (1.0f - abs(shadowLightDotLN)) * gradientScaleBias;
+    float depthAdjust = fixedDepthBias; // + ((1.0f - abs(shadowLightDotLN)) * gradientScaleBias;
     lightSpacePos.z -= depthAdjust; // lightSpacePos.z contains lightspace position of current object
 
     const float4 offsets[4] = { float4(-0.3464376f,     -0.7120676f,    0.4692491f,     -0.7939163f)    * jitterSize,
