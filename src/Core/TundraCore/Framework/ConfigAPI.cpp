@@ -213,7 +213,10 @@ void ConfigAPI::Write(QString file, QString section, QString key, const QVariant
 
     QSettings config(GetFilePath(file), QSettings::IniFormat);
     if (!config.isWritable())
+    {
+        LogWarning(QString("ConfigAPI::Write: Config file '%1' is not writable, probably a read only file.").arg(GetFilePath(file)));
         return;
+    }
     if (section.isEmpty())
         config.setValue(key, value);
     else
