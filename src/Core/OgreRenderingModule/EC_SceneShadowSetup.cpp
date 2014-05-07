@@ -8,7 +8,7 @@
     @brief   */
 
 #include "StableHeaders.h"
-#include "EC_OgreShadowSetup.h"
+#include "EC_SceneShadowSetup.h"
 
 #include "AttributeMetadata.h"
 #include "Framework.h"
@@ -20,7 +20,7 @@
 #include <Ogre.h>
 #include <OgreGpuProgramManager.h>
 
-EC_OgreShadowSetup::EC_OgreShadowSetup(Scene* scene) :
+EC_SceneShadowSetup::EC_SceneShadowSetup(Scene* scene) :
     IComponent(scene),
     INIT_ATTRIBUTE_VALUE(splitLambda, "Split lambda", 0.93f),
     INIT_ATTRIBUTE_VALUE(firstSplitDist, "First split distance", 8.5f),
@@ -47,7 +47,7 @@ EC_OgreShadowSetup::EC_OgreShadowSetup(Scene* scene) :
     }
     catch(const Ogre::Exception& e)
     {
-        LogError("[EC_OgreShadowSetup]: Failed to get shader shadow parameters from Ogre: " + e.getFullDescription());
+        LogError("[EC_SceneShadowSetup]: Failed to get shader shadow parameters from Ogre: " + e.getFullDescription());
         return;
     }
 
@@ -57,23 +57,23 @@ EC_OgreShadowSetup::EC_OgreShadowSetup(Scene* scene) :
         connect(this, SIGNAL(ParentEntitySet()), SLOT(OnParentEntitySet()));
 }
 
-EC_OgreShadowSetup::~EC_OgreShadowSetup()
+EC_SceneShadowSetup::~EC_SceneShadowSetup()
 {
 }
 
-void EC_OgreShadowSetup::OnParentEntitySet()
+void EC_SceneShadowSetup::OnParentEntitySet()
 {
     if (world_.expired())
         world_ = ParentScene()->Subsystem<OgreWorld>();
 }
 
-Ogre::SceneManager* EC_OgreShadowSetup::OgreSceneManager() const
+Ogre::SceneManager* EC_SceneShadowSetup::OgreSceneManager() const
 {
     OgreWorld *ogreWorld = world_.lock().get();
     return (ogreWorld ? ogreWorld->OgreSceneManager() : 0);
 }
 
-void EC_OgreShadowSetup::AttributesChanged()
+void EC_SceneShadowSetup::AttributesChanged()
 {
     if (framework->IsHeadless() || !shadowParams_.get())
         return;
@@ -97,7 +97,7 @@ void EC_OgreShadowSetup::AttributesChanged()
         UpdateShadowSetup();
 }
 
-void EC_OgreShadowSetup::UpdateShadowSetup()
+void EC_SceneShadowSetup::UpdateShadowSetup()
 {
     Ogre::SceneManager* sceneManager = OgreSceneManager();
     if (!sceneManager)
@@ -119,6 +119,5 @@ void EC_OgreShadowSetup::UpdateShadowSetup()
         return;
 
     // Calculate new split points
-    float lambda = splitLambda.Get();
-    shadowSetup->calculateSplitPoints(sceneManager->getShadowTextureCount(), firstSplitDist.Get(), farDist.Get(), lambda);
+    shadowSetup->calculateSplitPoints(sceneManager->getShadowTextureCount(), firstSplitDist.Get(), farDist.Get(), splitLambda.Get());
 }

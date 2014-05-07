@@ -19,11 +19,11 @@
 
 #include <Ogre.h>
 
-#include <crn_decomp.h>
-#include <dds_defs.h>
+#include "libcrunch/crn_decomp.h"
+#include "libcrunch/dds_defs.h"
 
 #ifdef WIN32
-#include <squish.h>
+#include "libsquish/squish.h"
 #endif
 
 #if defined(DIRECTX_ENABLED) && defined(WIN32)

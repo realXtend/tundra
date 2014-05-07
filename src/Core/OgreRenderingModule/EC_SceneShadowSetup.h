@@ -11,17 +11,17 @@
 #include <OgreGpuProgramParams.h>
 
 /// Provides a way to configure client side shadow setup during runtime per scene.
-class OGRE_MODULE_API EC_OgreShadowSetup : public IComponent
+class OGRE_MODULE_API EC_SceneShadowSetup : public IComponent
 {
     Q_OBJECT
-    COMPONENT_NAME("OgreShadowSetup", 32)
+    COMPONENT_NAME("SceneShadowSetup", 32)
 
 public:
     /// @cond PRIVATE
     /// Do not directly allocate new components using operator new, but use the factory-based SceneAPI::CreateComponent functions instead.
-    explicit EC_OgreShadowSetup(Scene* scene);
+    explicit EC_SceneShadowSetup(Scene* scene);
     /// @endcond
-    virtual ~EC_OgreShadowSetup();
+    virtual ~EC_SceneShadowSetup();
 
     /// Shadow split lamba. Default is 0.93.
     /** Lower lamdba means more uniform, higher lambda means more logarithmic. */
@@ -32,11 +32,11 @@ public:
     Q_PROPERTY(float firstSplitDist READ getfirstSplitDist WRITE setfirstSplitDist);
     DEFINE_QPROPERTY_ATTRIBUTE(float, firstSplitDist);
 
-    /// Shadow far distance. Default is 500.0f.
+    /// Shadow far distance. Default is 250.
     Q_PROPERTY(float farDist READ getfarDist WRITE setfarDist);
     DEFINE_QPROPERTY_ATTRIBUTE(float, farDist);
 
-    /// Shadow fade distance. Default is 300.0.
+    /// Shadow fade distance. Default is 50.
     Q_PROPERTY(float fadeDist READ getfadeDist WRITE setfadeDist);
     DEFINE_QPROPERTY_ATTRIBUTE(float, fadeDist);
 

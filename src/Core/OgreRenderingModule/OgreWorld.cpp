@@ -16,8 +16,7 @@
 #include "OgreBulletCollisionsDebugLines.h"
 #include "OgreMaterialAsset.h"
 #include "OgreMeshAsset.h"
-
-#include "ShadowCameraSetupStableCSM.h"
+#include "OgreCascadedShadows/ShadowCameraSetupStableCSM.h"
 #include "OgreFocusedShadowCameraSetup.h"
 
 #include "OgreMeshAsset.h"
@@ -1095,8 +1094,8 @@ void OgreWorld::SetupShadows()
     sceneManager_->setShadowTextureSelfShadow(true);
     sceneManager_->setShadowTextureFSAA(shadowTextureFSAA);
 
-    /// This is the default. EC_OgreShadowSetup can adjust it if created.
-    float shadowFarDist = 500.0f;
+    /// This is the default. EC_SceneShadowSetup can adjust it if created.
+    const float shadowFarDist = 250.0f;
     sceneManager_->setShadowFarDistance(shadowFarDist);
 
     if (csmEnabled)
@@ -1107,11 +1106,11 @@ void OgreWorld::SetupShadows()
 
         Ogre::StableCSMShadowCameraSetup* shadowSetup = new Ogre::StableCSMShadowCameraSetup(csmGpuConstants_);
 
-        // Default values. EC_OgreShadowSetup can adjust them if created.
+        // Default values. EC_SceneShadowSetup can adjust them if created.
         // Lower lamdba means more uniform, higher lambda means more logarithmic
-        float lambda = 0.93f;
-        float firstSplitDist = 8.5f;
-        float splitPadding = 1.0f;
+        const float lambda = 0.93f;
+        const float firstSplitDist = 8.5f;
+        const float splitPadding = 1.0f;
 
         // Calculate
         shadowSetup->calculateSplitPoints(shadowTextureCount, firstSplitDist, shadowFarDist, lambda);
@@ -1126,14 +1125,14 @@ void OgreWorld::SetupShadows()
         sceneManager_->setShadowCameraSetup(Ogre::ShadowCameraSetupPtr(shadowSetup));
     }
 
-    // Set default values. Can be changed during runtime with EC_OgreShadowSetup.
+    // Set default values. Can be changed during runtime with EC_SceneShadowSetup.
     Ogre::GpuSharedParametersPtr shadowParams = Ogre::GpuProgramManager::getSingletonPtr()->getSharedParameters("params_shadowParams");
     shadowParams->setNamedConstant("shadowMapSize", Ogre::Vector4(shadowTextureSize));
     shadowParams->setNamedConstant("invShadowMapSize", Ogre::Vector4(1.0f / (float)shadowTextureSize));
 
     shadowParams->setNamedConstant("fixedDepthBias", Ogre::Vector4(0.00005f, 0.00005f, 0.00005f, 0.00005f));
     shadowParams->setNamedConstant("gradientScaleBias", Ogre::Vector4(0.00005f, 0.00005f, 0.00005f, 0.00005f));
-    shadowParams->setNamedConstant("shadowMaxDist", 250.0f);
+    shadowParams->setNamedConstant("shadowMaxDist", shadowFarDist);
     shadowParams->setNamedConstant("shadowFadeDist", 50.0f);
 
     /* @todo Figure out if we can and should enable using soft shadows with the new CSM shadows.
