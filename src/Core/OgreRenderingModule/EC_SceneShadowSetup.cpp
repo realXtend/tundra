@@ -31,9 +31,6 @@ EC_SceneShadowSetup::EC_SceneShadowSetup(Scene* scene) :
     INIT_ATTRIBUTE_VALUE(depthBias3, "Depth bias 3", 0.05f),
     INIT_ATTRIBUTE_VALUE(depthBias4, "Depth bias 4", 0.05f)
 {
-    if (framework->IsHeadless())
-        return;
-
     static AttributeMetadata depthBiasMetadata;
     depthBiasMetadata.step = "0.01";
     depthBias1.SetMetadata(&depthBiasMetadata);
@@ -41,20 +38,7 @@ EC_SceneShadowSetup::EC_SceneShadowSetup(Scene* scene) :
     depthBias3.SetMetadata(&depthBiasMetadata);
     depthBias4.SetMetadata(&depthBiasMetadata);
 
-    try
-    {
-        shadowParams_ = Ogre::GpuProgramManager::getSingletonPtr()->getSharedParameters("params_shadowParams");
-    }
-    catch(const Ogre::Exception& e)
-    {
-        LogError("[EC_SceneShadowSetup]: Failed to get shader shadow parameters from Ogre: " + e.getFullDescription());
-        return;
-    }
-
-    if (scene)
-        world_ = scene->Subsystem<OgreWorld>();
-    else
-        connect(this, SIGNAL(ParentEntitySet()), SLOT(OnParentEntitySet()));
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(OnParentEntitySet()));
 }
 
 EC_SceneShadowSetup::~EC_SceneShadowSetup()
@@ -63,14 +47,24 @@ EC_SceneShadowSetup::~EC_SceneShadowSetup()
 
 void EC_SceneShadowSetup::OnParentEntitySet()
 {
-    if (world_.expired())
-        world_ = ParentScene()->Subsystem<OgreWorld>();
+    world_ = ParentScene()->Subsystem<OgreWorld>();
+    if (!framework->IsHeadless())
+    {
+        try
+        {
+            shadowParams_ = Ogre::GpuProgramManager::getSingletonPtr()->getSharedParameters("params_shadowParams");
+        }
+        catch(const Ogre::Exception& e)
+        {
+            LogError("[EC_SceneShadowSetup]: Failed to get shader shadow parameters from Ogre: " + e.getFullDescription());
+            return;
+        }
+    }
 }
 
 Ogre::SceneManager* EC_SceneShadowSetup::OgreSceneManager() const
 {
-    OgreWorld *ogreWorld = world_.lock().get();
-    return (ogreWorld ? ogreWorld->OgreSceneManager() : 0);
+    return (!world_.expired() ? world_.lock()->OgreSceneManager() : 0);
 }
 
 void EC_SceneShadowSetup::AttributesChanged()

@@ -1167,7 +1167,7 @@ void OgreWorld::SetShadowDebugOverlays(bool enabled)
 
 void OgreWorld::CreateShadowDebugOverlays()
 {
-    if (framework_->IsHeadless() || !renderer_)
+    if (!renderer_ || framework_->IsHeadless())
         return;
 
     QString shadowIdentifier = "Tundra/ShadowDebugOverlay";
@@ -1177,8 +1177,8 @@ void OgreWorld::CreateShadowDebugOverlays()
     debugOverlay = Ogre::OverlayManager::getSingleton().create(shadowIdentifier.toStdString());
 
     OgreRenderer::Renderer::ShadowQualitySetting shadowQuality = renderer_->ShadowQuality();
-    bool csmEnabled = (shadowQuality == OgreRenderer::Renderer::Shadows_High);
-    int shadowTextureCount = (csmEnabled ? 4 : 1);
+    const bool csmEnabled = (shadowQuality == OgreRenderer::Renderer::Shadows_High);
+    const int shadowTextureCount = (csmEnabled ? 4 : 1);
 
     for (int i = 0; i < shadowTextureCount; ++i)
     {
@@ -1219,7 +1219,7 @@ void OgreWorld::CreateShadowDebugOverlays()
 
 void OgreWorld::DestroyShadowDebugOverlays()
 {
-    if (!renderer_)
+    if (!renderer_ || framework_->IsHeadless())
         return;
 
     QString shadowIdentifier = "Tundra/ShadowDebugOverlay";
@@ -1228,8 +1228,8 @@ void OgreWorld::DestroyShadowDebugOverlays()
         return;
 
     OgreRenderer::Renderer::ShadowQualitySetting shadowQuality = renderer_->ShadowQuality();
-    bool csmEnabled = (shadowQuality == OgreRenderer::Renderer::Shadows_High);
-    int shadowTextureCount = (csmEnabled ? 4 : 1);
+    const bool csmEnabled = (shadowQuality == OgreRenderer::Renderer::Shadows_High);
+    const int shadowTextureCount = (csmEnabled ? 4 : 1);
 
     for (int i = 0; i < shadowTextureCount; ++i)
     {
