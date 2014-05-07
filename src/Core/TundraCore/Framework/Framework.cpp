@@ -215,6 +215,7 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
         cmdLineDescs.commands["--ogreCaptureTopWindow"] = "On some systems, the Ogre rendering output is overdrawn by the desktop compositing manager, "
             "but the actual cause of this is uncertain. As a workaround, try this switch to make Ogre output directly on the main window handle of the UI chain. "
             "However, this might introduce graphical issues."; // OgreRenderingModule
+        cmdLineDescs.commands["--drawShadowDebug"] = "Draw shadow rendering debug overlay"; // OgreRenderingModule
         cmdLineDescs.commands["--noUiCompositing"] = "Disables the UI compositing, use for debugging purposes only."; // Framework & OgreRenderingModule
         cmdLineDescs.commands["--noCentralWidget"] = "Disables the usage of QMainWindow's central widget."; // Framework
         cmdLineDescs.commands["--noMenuBar"] = "Disables showing of the application menu bar automatically."; // Framework
