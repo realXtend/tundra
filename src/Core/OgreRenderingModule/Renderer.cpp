@@ -547,7 +547,7 @@ namespace OgreRenderer
                 params->addConstantDefinition("shadowMaxDist", Ogre::GCT_FLOAT1);
 
                 // Set default values. Can be changed during runtime with EC_SceneShadowSetup.
-                params->setNamedConstant("fixedDepthBias", Ogre::Vector4(0.00005f, 0.00005f, 0.00005f, 0.00005f));
+                params->setNamedConstant("fixedDepthBias", Ogre::Vector4(0.000005f, 0.000005f, 0.000005f, 0.000005f));
                 params->setNamedConstant("gradientScaleBias", Ogre::Vector4(0.00005f, 0.00005f, 0.00005f, 0.00005f));
                 params->setNamedConstant("shadowMaxDist", 250.0f);
                 params->setNamedConstant("shadowFadeDist", 50.0f);
