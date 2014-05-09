@@ -48,8 +48,6 @@ link_package(QT4)
 link_ogre()
 link_modules(TundraCore Math)
 
-target_link_libraries(${TARGET_NAME} Plugin_CgProgramManager)
-
 SetupCompileFlagsWithPCH()
 
 final_target()
