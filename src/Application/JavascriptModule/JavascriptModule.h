@@ -27,7 +27,8 @@
 class JavascriptInstance;
 
 /// Enables JavaScript execution and scripting by using QtScript.
-/** http://qt-project.org/doc/qt-4.8/ecmascript.html */
+/** http://qt-project.org/doc/qt-4.8/ecmascript.html
+    http://qt-project.org/doc/qt-4.8/scripting.html */
 class JAVASCRIPT_MODULE_API JavascriptModule : public IModule
 {
     Q_OBJECT
