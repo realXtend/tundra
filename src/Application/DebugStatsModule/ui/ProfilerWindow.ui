@@ -27,7 +27,7 @@
 
 QTabWidget {
 	font: &quot;Arial&quot;;
-	font-size: 8pt;
+	font-size: 11px;
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -70,7 +70,7 @@ QTabWidget {
          </size>
         </property>
         <property name="currentIndex">
-         <number>5</number>
+         <number>2</number>
         </property>
         <property name="documentMode">
          <bool>true</bool>
@@ -457,7 +457,7 @@ QTabWidget {
         <widget class="QWidget" name="ogre">
          <property name="styleSheet">
           <string notr="true">QLabel {
-	font: 10pt &quot;Arial&quot;;
+	font: 13px &quot;Arial&quot;;
 }</string>
          </property>
          <attribute name="title">
@@ -479,7 +479,7 @@ QTabWidget {
           <item>
            <widget class="QTabWidget" name="ogreTabWidget">
             <property name="currentIndex">
-             <number>0</number>
+             <number>1</number>
             </property>
             <property name="documentMode">
              <bool>true</bool>
@@ -505,7 +505,7 @@ QTabWidget {
                   <property name="font">
                    <font>
                     <family>Arial</family>
-                    <pointsize>10</pointsize>
+                    <pointsize>-1</pointsize>
                     <weight>75</weight>
                     <italic>false</italic>
                     <bold>true</bold>
@@ -580,7 +580,7 @@ QTabWidget {
                   <property name="font">
                    <font>
                     <family>Arial</family>
-                    <pointsize>10</pointsize>
+                    <pointsize>-1</pointsize>
                     <weight>75</weight>
                     <italic>false</italic>
                     <bold>true</bold>
@@ -755,7 +755,7 @@ QTabWidget {
                   <property name="font">
                    <font>
                     <family>Arial</family>
-                    <pointsize>10</pointsize>
+                    <pointsize>-1</pointsize>
                     <weight>75</weight>
                     <italic>false</italic>
                     <bold>true</bold>
@@ -990,7 +990,7 @@ QTabWidget {
                 <property name="styleSheet">
                  <string notr="true">QTextEdit {
 	font-family: &quot;Courier New&quot;;
-	font-size: 10pt;
+	font-size: 13px;
 }</string>
                 </property>
                 <property name="textInteractionFlags">
