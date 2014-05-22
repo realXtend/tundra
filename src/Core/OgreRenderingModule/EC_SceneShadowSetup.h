@@ -63,12 +63,15 @@ private slots:
     void OnParentEntitySet();
 
 private:
-    /// Get Ogre scenemanager
+    /// Get Ogre scene manager
     Ogre::SceneManager* OgreSceneManager() const;
 
     /// IComponent override.
     void AttributesChanged();
 
+    /// Checks and sets fade distance
+    void CheckAndSetFadeDistance(bool onlyCheck = false);
+    
     /// Update shadow setup
     void UpdateShadowSetup();
 

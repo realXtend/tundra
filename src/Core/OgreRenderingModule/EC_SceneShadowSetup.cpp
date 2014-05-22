@@ -13,6 +13,7 @@
 #include "AttributeMetadata.h"
 #include "Framework.h"
 #include "Scene.h"
+#include "Math/MathFunc.h"
 
 #include "OgreCascadedShadows/ShadowCameraSetupStableCSM.h"
 #include "OgreFocusedShadowCameraSetup.h"
@@ -73,13 +74,7 @@ void EC_SceneShadowSetup::AttributesChanged()
         return;
 
     if (fadeDist.ValueChanged())
-    {
-        if (fadeDist.Get() < 0.0f)
-            fadeDist.Set(0.0f, AttributeChange::LocalOnly);
-        else if (fadeDist.Get() >= farDist.Get())
-            fadeDist.Set(farDist.Get() * 0.04, AttributeChange::LocalOnly);
-        shadowParams_->setNamedConstant("shadowFadeDist", fadeDist.Get());
-    }
+        CheckAndSetFadeDistance();
     if (depthBias1.ValueChanged() || depthBias2.ValueChanged() || depthBias3.ValueChanged() || depthBias4.ValueChanged())
     {
         // Adjust the range back from UI values to what the shadow params use
@@ -89,6 +84,26 @@ void EC_SceneShadowSetup::AttributesChanged()
 
     if (farDist.ValueChanged() || firstSplitDist.ValueChanged() || splitLambda.ValueChanged())
         UpdateShadowSetup();
+}
+
+void EC_SceneShadowSetup::CheckAndSetFadeDistance(bool onlyCheck)
+{
+    bool changed = false;
+    float value = fadeDist.Get();
+    if (fadeDist.Get() < 0.0f)
+    {
+        changed = true;
+        value = 0.0f;
+        fadeDist.Set(value, AttributeChange::Disconnected);
+    }
+    else if (fadeDist.Get() > farDist.Get())
+    {
+        changed = true;
+        value = Max<float>(0.000001f, farDist.Get() * 0.04);
+        fadeDist.Set(Max<float>(0.000001f, farDist.Get() * 0.04), AttributeChange::Disconnected);
+    }
+    if (!onlyCheck || changed)
+        shadowParams_->setNamedConstant("shadowFadeDist", value);
 }
 
 void EC_SceneShadowSetup::UpdateShadowSetup()
@@ -103,10 +118,7 @@ void EC_SceneShadowSetup::UpdateShadowSetup()
     // Set far distance
     shadowParams_->setNamedConstant("shadowMaxDist", farDist.Get());
 
-    // Sanity check on fade distance. This will trigger an attribute 
-    // change and be handled in AttributesChanged().
-    if (fadeDist.Get() >= farDist.Get())
-        fadeDist.Set(farDist.Get() * 0.04, AttributeChange::LocalOnly);
+    CheckAndSetFadeDistance(true);
 
     Ogre::StableCSMShadowCameraSetup* shadowSetup = dynamic_cast<Ogre::StableCSMShadowCameraSetup*>(sceneManager->getShadowCameraSetup().get());
     if (!shadowSetup)
