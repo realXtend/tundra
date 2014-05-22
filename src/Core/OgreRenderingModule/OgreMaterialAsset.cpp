@@ -2169,15 +2169,15 @@ bool OgreMaterialAsset::SetPassAttribute(Ogre::Pass* pass, int techIndex, int pa
 
 QVariant OgreMaterialAsset::PassAttribute(Ogre::Pass* pass, int techIndex, int passIndex, const QString& attr) const
 {
-    if (attr == "ambient") return AmbientColor(techIndex, passIndex);
-    else if (attr == "diffuse") return DiffuseColor(techIndex, passIndex);
-    else if (attr == "specular") return SpecularColor(techIndex, passIndex);
-    else if (attr == "emissive") return EmissiveColor(techIndex, passIndex);
+    if (attr == "ambient") return QVariant(AmbientColor(techIndex, passIndex));
+    else if (attr == "diffuse") return QVariant(DiffuseColor(techIndex, passIndex));
+    else if (attr == "specular") return QVariant(SpecularColor(techIndex, passIndex));
+    else if (attr == "emissive") return QVariant(EmissiveColor(techIndex, passIndex));
     else if (attr == "scene_blend") return pass->getSceneBlendingOperation();
     else if (attr == "separate_scene_blend")
-        return float4(pass->getSourceBlendFactor(), pass->getDestBlendFactor(), pass->getSourceBlendFactorAlpha(), pass->getDestBlendFactorAlpha());
+        return QVariant(float4(pass->getSourceBlendFactor(), pass->getDestBlendFactor(), pass->getSourceBlendFactorAlpha(), pass->getDestBlendFactorAlpha()));
     else if (attr == "scene_blend_op") return pass->getSceneBlendingOperation();
-    else if (attr == "separate_scene_blend_op") return float2(pass->getSceneBlendingOperation(), pass->getSceneBlendingOperationAlpha());
+    else if (attr == "separate_scene_blend_op") return QVariant(float2(pass->getSceneBlendingOperation(), pass->getSceneBlendingOperationAlpha()));
     else if (attr == "depth_check") return IsDepthCheckEnabled(techIndex, passIndex);
     else if (attr == "depth_write") return IsDepthWriteEnabled(techIndex, passIndex);
     else if (attr == "depth_func") return  pass->getDepthFunction();

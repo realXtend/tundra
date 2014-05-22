@@ -11,6 +11,7 @@
 
 #include <QScriptEngine>
 #include <QMetaType>
+#include <QMetaEnum>
 
 // The following functions help register a custom QObject-derived class to a QScriptEngine.
 // See http://lists.trolltech.com/qt-interest/2007-12/thread00158-0.html .
