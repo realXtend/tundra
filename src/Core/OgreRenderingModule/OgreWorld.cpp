@@ -1165,6 +1165,15 @@ void OgreWorld::SetShadowDebugOverlays(bool enabled)
         DestroyShadowDebugOverlays();
 }
 
+bool OgreWorld::IsShadowDebugOverlaysVisible() const
+{
+    if (framework_->IsHeadless())
+        return false;
+
+    QString shadowIdentifier = "Tundra/ShadowDebugOverlay";
+    return (Ogre::OverlayManager::getSingleton().getByName(shadowIdentifier.toStdString()) != 0);
+}
+
 void OgreWorld::CreateShadowDebugOverlays()
 {
     if (framework_->IsHeadless())

@@ -254,8 +254,10 @@ public slots:
     void DebugDrawSphere(const float3& center, float radius, int vertices, const Color &clr, bool depthTest = true);
     void DebugDrawSphere(const float3& center, float radius, int vertices, float r, float g, float b, bool depthTest = true) { DebugDrawSphere(center, radius, vertices, Color(r, g, b), depthTest); } /**< @overload */
 
-    /// Enable shadow debug overlays
+    /// Enable shadow debug overlays.
     void SetShadowDebugOverlays(bool enabled = true);
+    /// Returns if shadow debug panels are visible.
+    bool IsShadowDebugOverlaysVisible() const;
 
 signals:
     /// An entity has entered the view
