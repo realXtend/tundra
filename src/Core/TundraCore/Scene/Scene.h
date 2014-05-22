@@ -352,9 +352,15 @@ public slots:
     EntityList FindEntities(const QRegExp &pattern) const;
     EntityList FindEntities(const QString &pattern) const; /**< @overload @param pattern String pattern with wildcards. */
 
-    /// Performs a search through the entities, and returns a list of all the entities that contain 'substring' in their names.
-    /** @param substring String to be searched. */
-    EntityList FindEntitiesContaining(const QString &substring) const;
+    /// Performs a search through the entities, and returns a list of all the entities that contain @c substring in their Entity name.
+    /** @param substring String to be searched.
+        @param sensitivity Case sensitivity for the string matching. */
+    EntityList FindEntitiesContaining(const QString &substring, Qt::CaseSensitivity sensitivity = Qt::CaseSensitive) const;
+
+    /// Performs a search through the entities, and returns a list of all the entities where Entity name matches @c name.
+    /** @param name Entity name to match.
+        @param sensitivity Case sensitivity for the string matching. */
+    EntityList FindEntitiesByName(const QString &name, Qt::CaseSensitivity sensitivity = Qt::CaseSensitive) const;
 
     /// Loads the scene from XML.
     /** @param filename File name

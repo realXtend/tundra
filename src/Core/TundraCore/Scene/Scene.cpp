@@ -1511,7 +1511,7 @@ EntityList Scene::FindEntities(const QRegExp &pattern) const
     return entities;
 }
 
-EntityList Scene::FindEntitiesContaining(const QString &substring) const
+EntityList Scene::FindEntitiesContaining(const QString &substring, Qt::CaseSensitivity sensitivity) const
 {
     EntityList entities;
     if (substring.isEmpty())
@@ -1520,7 +1520,21 @@ EntityList Scene::FindEntitiesContaining(const QString &substring) const
     for(const_iterator it = begin(); it != end(); ++it)
     {
         EntityPtr entity = it->second;
-        if (entity->Name().contains(substring, Qt::CaseSensitive))
+        if (entity->Name().contains(substring, sensitivity))
+            entities.push_back(entity);
+    }
+
+    return entities;
+}
+
+EntityList Scene::FindEntitiesByName(const QString &name, Qt::CaseSensitivity sensitivity) const
+{
+    // Don't check if name is empty, we want to allow querying for all entities without a name too.
+    EntityList entities;
+    for(const_iterator it = begin(); it != end(); ++it)
+    {
+        EntityPtr entity = it->second;
+        if (entity->Name().compare(name, sensitivity) == 0)
             entities.push_back(entity);
     }
 
