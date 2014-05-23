@@ -130,8 +130,11 @@ public:
         @param name name of the component */
     ComponentPtr CreateComponentWithId(component_id_t compId, u32 typeId, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
-    /// introspection for the entity, returns all components
+    /// Introspection for the entity, returns all components
     const ComponentMap &Components() const { return components_; }
+
+    /// Returns number of components.
+    size_t NumComponents() const { return components_.size(); }
 
     /// Returns actions map for introspection/reflection.
     const ActionMap &Actions() const { return actions_; }
@@ -251,9 +254,16 @@ public slots:
     void RemoveComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default); /**< @overload */
     void RemoveComponent(const QString &typeName, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(Component(typeName), change); } /**< @overload @param typeName The component type name, the "EC_" prefix is not required. */
     void RemoveComponent(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(Component(typeName, name), change); }  /**< @overload */
+    
     /// Removes component by ID.
     /** @sa RemoveComponent */
     void RemoveComponentById(component_id_t id, AttributeChange::Type change = AttributeChange::Default);
+    
+    /// Removes all components that match @c typeName and returns how many was removed.
+    size_t RemoveComponents(const QString &typeName, AttributeChange::Type change = AttributeChange::Default);
+    
+    /// Removes all components that match @c typeId and returns how many was removed.
+    size_t RemoveComponents(u32 typeId, AttributeChange::Type change = AttributeChange::Default);
 
     /// Removes all components from the entity.
     void RemoveAllComponents(AttributeChange::Type change = AttributeChange::Default);

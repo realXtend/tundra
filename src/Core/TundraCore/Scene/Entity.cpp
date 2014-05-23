@@ -190,6 +190,32 @@ void Entity::RemoveComponentById(component_id_t id, AttributeChange::Type change
         RemoveComponent(comp, change);
 }
 
+size_t Entity::RemoveComponents(const QString &typeName, AttributeChange::Type change)
+{
+    QList<component_id_t> removeIds;
+    for(ComponentMap::const_iterator it = components_.begin(); it != components_.end(); ++it)
+        if (it->second->TypeName().compare(typeName) == 0)
+            removeIds << it->first;
+            
+    foreach(component_id_t id, removeIds)
+        RemoveComponentById(id, change);
+    
+    return removeIds.size();
+}
+
+size_t Entity::RemoveComponents(u32 typeId, AttributeChange::Type change)
+{
+    QList<component_id_t> removeIds;
+    for(ComponentMap::const_iterator it = components_.begin(); it != components_.end(); ++it)
+        if (it->second->TypeId() == typeId)
+            removeIds << it->first;
+
+    foreach(component_id_t id, removeIds)
+        RemoveComponentById(id, change);
+
+    return removeIds.size();
+}
+
 void Entity::RemoveComponentRaw(QObject* comp)
 {
     LogWarning("Entity::RemoveComponentRaw: This function is deprecated and will be removed. Use RemoveComponent or RemoveComponentById instead.");
