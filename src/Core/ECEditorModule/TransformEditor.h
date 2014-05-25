@@ -15,6 +15,10 @@
 #include "InputFwd.h"
 #include "IAttribute.h"
 
+#ifdef EC_TransformGizmo_ENABLED
+#include "EC_TransformGizmo.h"
+#endif
+
 #include <QPointer>
 
 class OgreWorld;
@@ -47,6 +51,16 @@ public:
     /// Destroys the editor.
     /** Destroys the EC_TransformGizmo if it was created. */
     ~TransformEditor();
+    
+    /// Enable or disable user interface windows.
+    /** This widget will by default create a settings window.
+        @note This needs to be called before settings the selection
+        or the window can be seen on screen for a split second. */
+    void SetUserInterfaceEnabled(bool enabled);
+    
+    //// Enable or disable placeable axis visualization.
+    /** Enabled by default. */
+    void SetDragPlaceableAxisEnabled(bool enabled);
 
     /// Returns the current selection
     EntityList Selection() const;
@@ -54,6 +68,7 @@ public:
     /// Sets new selection of entities, clears possible previous selection.
     /** @param entities Entities to be added. */
     void SetSelection(const EntityList &entities);
+    void SetSelection(const EntityPtr &entity); /**< @overload */
 
     /// Appends selection with new entities.
     /** @param entities Entities to be added. */
@@ -74,12 +89,19 @@ public:
     /// Sets visibility of the gizmo (if used).
     void SetGizmoVisible(bool show);
 
+    /// Set gizmo type.
+    void SetGizmoUsesLocalAxes(bool enabled);
+
     /// Returns position of the editing gizmo.
     float3 GizmoPos() const;
 
 #ifdef EC_TransformGizmo_ENABLED
     /// Returns the transform gizmo.
     EC_TransformGizmo *TransformGizmo() const;
+    
+    /// Set gizmo type.
+    /** @note You must set selection first so that the gizmo is created. */
+    void SetGizmoType(EC_TransformGizmo::GizmoType type);
 #endif
 
     /// Returns the transform gizmo editor settings widget.
@@ -123,10 +145,14 @@ private:
     SceneWeakPtr scene; ///< Scene in which the edited entities reside.
     EntityPtr gizmo; ///< Gizmo entity.
     QList<TransformAttributeWeakPtr> targets; ///< Current target transform attributes.
+    UndoManager *undoManager; ///< Undo manager, if undo functionality used.
+    
     InputContextPtr input; ///< Input context for controlling gizmo mode.
     QPointer<EditorSettings> editorSettings; ///< Editor settings window
+    
     bool localAxes; ///< Whether to show object local axes instead of global world axes.
-    UndoManager *undoManager; ///< Undo manager, if undo functionality used.
+    bool uiAllowed;
+    bool debugAxisAllowed;
 
 private slots:
     /// Handles KeyEvents and changes gizmo's mode.

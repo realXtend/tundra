@@ -24,9 +24,7 @@
 #include "UiAPI.h"
 #include "UiMainWindow.h"
 #include "UndoCommands.h"
-#ifdef EC_TransformGizmo_ENABLED
-#include "EC_TransformGizmo.h"
-#endif
+
 #include "Profiler.h"
 #include "ConfigAPI.h"
 #include "Application.h"
@@ -38,7 +36,9 @@ static const ConfigData cWindowPosConfig(ConfigAPI::FILE_FRAMEWORK, "eceditor", 
 TransformEditor::TransformEditor(const ScenePtr &editedScene, UndoManager *manager) :
     localAxes(false),
     scene(editedScene),
-    undoManager(manager)
+    undoManager(manager),
+    uiAllowed(true),
+    debugAxisAllowed(true)
 {
     if (!scene.expired())
     {
@@ -52,6 +52,19 @@ TransformEditor::TransformEditor(const ScenePtr &editedScene, UndoManager *manag
 TransformEditor::~TransformEditor()
 {
     DeleteGizmo();
+}
+
+void TransformEditor::SetUserInterfaceEnabled(bool enabled)
+{
+    uiAllowed = enabled;
+    
+    if (!uiAllowed && editorSettings)
+        SAFE_DELETE(editorSettings);
+}
+
+void TransformEditor::SetDragPlaceableAxisEnabled(bool enabled)
+{
+    debugAxisAllowed = enabled;
 }
 
 EntityList TransformEditor::Selection() const
@@ -71,6 +84,13 @@ void TransformEditor::SetSelection(const EntityList &entities)
     // If settings window was hidden, show it again now
     if (editorSettings && !editorSettings->isVisible() && !targets.isEmpty())
         editorSettings->show();
+}
+
+void TransformEditor::SetSelection(const EntityPtr &entity)
+{
+    EntityList entities;
+    entities.push_back(entity);
+    SetSelection(entities);
 }
 
 void TransformEditor::AppendSelection(const EntityList &entities)
@@ -426,14 +446,17 @@ void TransformEditor::CreateGizmo()
     connect(tg, SIGNAL(Rotated(const Quat &)), SLOT(RotateTargets(const Quat &)));
     connect(tg, SIGNAL(Scaled(const float3 &)), SLOT(ScaleTargets(const float3 &)));
 
-    editorSettings = new EditorSettings(s->GetFramework()->Ui()->MainWindow());
-    editorSettings->setWindowFlags(Qt::Tool);
-    connect(editorSettings->modeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnGizmoModeSelected(int)));
-    connect(editorSettings->axisComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnGizmoAxisSelected(int)));
+    if (uiAllowed)
+    {
+        editorSettings = new EditorSettings(s->GetFramework()->Ui()->MainWindow());
+        editorSettings->setWindowFlags(Qt::Tool);
+        connect(editorSettings->modeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnGizmoModeSelected(int)));
+        connect(editorSettings->axisComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnGizmoAxisSelected(int)));
 
-    // Load position from config
-    QPoint pos = s->GetFramework()->Config()->DeclareSetting(cWindowPosConfig).toPoint();
-    UiMainWindow::EnsurePositionWithinDesktop(editorSettings, pos);
+        // Load position from config
+        QPoint pos = s->GetFramework()->Config()->DeclareSetting(cWindowPosConfig).toPoint();
+        UiMainWindow::EnsurePositionWithinDesktop(editorSettings, pos);
+    }
 #endif
 }
 
@@ -487,31 +510,37 @@ void TransformEditor::HandleKeyEvent(KeyEvent *e)
 
 void TransformEditor::OnGizmoModeSelected(int mode)
 {
-    if (mode < 0)
-        return;
 #ifdef EC_TransformGizmo_ENABLED
-    ScenePtr scn = scene.lock();
-    if (!scn)
-        return;
-    EC_TransformGizmo *tg = TransformGizmo();
-    if (!tg)
-        return;
-    
     if (mode == 0)
-        tg->SetCurrentGizmoType(EC_TransformGizmo::Translate);
-    if (mode == 1)
-        tg->SetCurrentGizmoType(EC_TransformGizmo::Rotate);
-    if (mode == 2)
-        tg->SetCurrentGizmoType(EC_TransformGizmo::Scale);
+        SetGizmoType(EC_TransformGizmo::Translate);
+    else if (mode == 1)
+        SetGizmoType(EC_TransformGizmo::Rotate);
+    else if (mode == 2)
+        SetGizmoType(EC_TransformGizmo::Scale);
 #endif
 }
 
+#ifdef EC_TransformGizmo_ENABLED
+void TransformEditor::SetGizmoType(EC_TransformGizmo::GizmoType type)
+{
+    ScenePtr scn = scene.lock(); // why is this here?
+    if (!scn || type < EC_TransformGizmo::Translate || type > EC_TransformGizmo::Scale)
+        return;
+
+    EC_TransformGizmo *tg = TransformGizmo();
+    if (tg)
+        tg->SetCurrentGizmoType(EC_TransformGizmo::Translate);
+}
+#endif
+
 void TransformEditor::OnGizmoAxisSelected(int axis)
 {
-    if (axis < 0)
-        return;
-    
-    localAxes = axis != 0;
+    SetGizmoUsesLocalAxes(axis != 0);
+}
+
+void TransformEditor::SetGizmoUsesLocalAxes(bool enabled)
+{
+    localAxes = enabled;
     FocusGizmoPivotToAabbCenter();
 }
 
@@ -552,9 +581,12 @@ void TransformEditor::DrawDebug(OgreWorld* world, Entity* entity)
         {
         case EC_Placeable::ComponentTypeId:
             {
-                EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(i->second.get());
-                // Draw without depth test to ensure the axes do not get lost within a mesh for example
-                world->DebugDrawAxes(placeable->WorldTransform(), false);
+                if (debugAxisAllowed)
+                {
+                    EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(i->second.get());
+                    // Draw without depth test to ensure the axes do not get lost within a mesh for example
+                    world->DebugDrawAxes(placeable->WorldTransform(), false);
+                }
             }
             break;
         case EC_Light::ComponentTypeId:
