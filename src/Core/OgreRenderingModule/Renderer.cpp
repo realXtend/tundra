@@ -1279,9 +1279,13 @@ namespace OgreRenderer
                 {
                     if (viewrect.intersects(dirty))
                     {
-                        LogWarning(QString("Renderer::Render: Dirty rect %1,%2 %3x%4 not inside view %5,%6 %7x%8, correcting.")
-                            .arg(dirty.x()).arg(dirty.y()).arg(dirty.width()).arg(dirty.height())
-                            .arg(viewrect.x()).arg(viewrect.y()).arg(viewrect.width()).arg(viewrect.height()));
+                        // Don't spam warnings if not debug logging, this is a fixable situation.
+                        if (IsLogChannelEnabled(LogChannelDebug))
+                        {
+                            LogWarning(QString("Renderer::Render: Dirty rect %1,%2 %3x%4 not inside view %5,%6 %7x%8, correcting.")
+                                .arg(dirty.x()).arg(dirty.y()).arg(dirty.width()).arg(dirty.height())
+                                .arg(viewrect.x()).arg(viewrect.y()).arg(viewrect.width()).arg(viewrect.height()));
+                        }
                         dirty = viewrect.intersected(dirty);
                     }
                 }
@@ -1303,10 +1307,13 @@ namespace OgreRenderer
                     HRESULT hr = surface->LockRect(&lock, &lockRect, 0);
                     if (FAILED(hr))
                     {
-                        LogError(QString("Renderer::Render: D3D9SURFACE9::LockRect failed (view %1,%2 %3x%4 rect %5,%6 %7x%8)")
-                            .arg(viewrect.x()).arg(viewrect.y()).arg(viewrect.width()).arg(viewrect.height())
-                            .arg(dirty.x()).arg(dirty.y()).arg(dirty.width()).arg(dirty.height()));
-                        return; // Instead of returning, could try doing a full surface lock. See commented line above.
+                        if (IsLogChannelEnabled(LogChannelDebug))
+                        {
+                            LogWarning(QString("Renderer::Render: D3D9SURFACE9::LockRect failed (view %1,%2 %3x%4 rect %5,%6 %7x%8)")
+                                .arg(viewrect.x()).arg(viewrect.y()).arg(viewrect.width()).arg(viewrect.height())
+                                .arg(dirty.x()).arg(dirty.y()).arg(dirty.width()).arg(dirty.height()));
+                        }
+                        return;
                     }
                     assert((uint)lock.Pitch >= desc.Width*4);
                 }
