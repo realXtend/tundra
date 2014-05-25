@@ -1497,8 +1497,8 @@ void OgreWorld::DebugDrawSoundSource(const float3 &soundPos, float soundInnerRad
     for(int i = 2; i < 5; ++i)
         DebugDrawSphere(soundPos, i/3.f, 24, i==2?1:0, i==3?1:0, i==4?1:0, depthTest);
 
-    DebugDrawSphere(soundPos, soundInnerRadius, 24*3*3*3, 1, 0, 0, depthTest);
-    DebugDrawSphere(soundPos, soundOuterRadius, 24*3*3*3, 0, 1, 0, depthTest);
+    DebugDrawSphere(soundPos, soundInnerRadius, 384, 1, 0, 0, depthTest);
+    DebugDrawSphere(soundPos, soundOuterRadius, 384, 0, 1, 0, depthTest);
 }
 
 /// MeshInstanceTarget
