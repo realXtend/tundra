@@ -67,7 +67,7 @@ ConsoleWidget::ConsoleWidget(Framework *fw) :
         "QPlainTextEdit, QLineEdit {"
             "background-color: rgba(0,0,0,%1);"
             "font-family: \"Courier New\";"
-            "font-size: 10pt;"
+            "font-size: 13px;"
             "color: rgb(230,230,230);"
             "border: 0px;"
             "padding: 0px;"
