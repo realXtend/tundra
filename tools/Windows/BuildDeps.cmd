@@ -744,6 +744,12 @@ cecho {0D}Deploying %DEBUG_OR_RELEASE% %INTEL_ARCH% %VC_VER% TBB DLL to Tundra b
 copy /Y "%TBB_HOME%\bin\%INTEL_ARCH%\%VC_VER%\tbb%POSTFIX_UNDERSCORE_DEBUG%.dll" "%TUNDRA_BIN%"
 
 cd "%DEPS%\ogre-safe-nocrashes"
+
+:: Set Ogre deps to point into the /SDK/lib where things should have been installed.
+:: Some modes also install to /Dependencies/lib but that folder is scanned by default by Ogre cmake.
+:: Both env variable and cmake parameter are provided to cover our bases.
+set OGRE_DEPENDENCIES_DIR=%CD%\SDK\lib
+
 :: Always regenerate CMake & Ogre solution to support changing the build type
 IF EXIST CMakeCache.txt. del /Q CMakeCache.txt
 IF EXIST OGRE.sln. del /Q OGRE.sln
@@ -752,7 +758,7 @@ IF %USE_BOOST%==FALSE (
 )
 cecho {0D}Running cmake for ogre-safe-nocrashes.{# #}{\n}
 cmake -G %GENERATOR% -DTBB_HOME=%TBB_HOME% -DOGRE_USE_BOOST:BOOL=%USE_BOOST% -DOGRE_BUILD_PLUGIN_BSP:BOOL=OFF ^
-    -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1
+    -DOGRE_BUILD_PLUGIN_PCZ:BOOL=OFF -DOGRE_BUILD_SAMPLES:BOOL=OFF -DOGRE_CONFIG_THREADS:INT=1 -DOGRE_DEPENDENCIES_DIR="%OGRE_DEPENDENCIES_DIR%"
 IF NOT %ERRORLEVEL%==0 GOTO :ERROR
 
 cecho {0D}Building %BUILD_TYPE% ogre-safe-nocrashes. Please be patient, this will take a while.{# #}{\n}
