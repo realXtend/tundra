@@ -12,7 +12,6 @@
 #include <QObject>
 
 class Entity;
-class SceneSyncState;
 
 /// Protocol versioning for client connections.
 enum NetworkProtocolVersion

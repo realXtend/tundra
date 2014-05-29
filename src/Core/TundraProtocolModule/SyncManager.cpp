@@ -23,6 +23,7 @@
 #include "EC_Placeable.h"
 #include "EC_RigidBody.h"
 #include "SceneAPI.h"
+#include "CoreException.h"
 
 #include <kNet.h>
 
@@ -33,10 +34,12 @@
 // Used to print EC mismatch warnings only once per EC.
 static std::set<u32> mismatchingComponentTypes;
 
+static size_t oldAttrDataBufferSize = 16 * 1024;
+
 namespace TundraLogic
 {
 
-void SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPtr comp)
+bool SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPtr comp)
 {
     // Component identification
     ds.AddVLE<kNet::VLE8_16_32>(comp->Id() & UniqueIdGenerator::LAST_REPLICATED_ID);
@@ -44,8 +47,8 @@ void SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPt
     ds.AddString(comp->Name().toStdString());
     
     // Create a nested dataserializer for the attributes, so we can survive unknown or incompatible components
-    kNet::DataSerializer attrDs(attrDataBuffer_, 16 * 1024);
-    
+    kNet::DataSerializer attrDs(attrDataBuffer_, NUMELEMS(attrDataBuffer_));
+
     // Static-structured attributes
     unsigned numStaticAttrs = comp->NumStaticAttributes();
     const AttributeVector& attrs = comp->Attributes();
@@ -63,10 +66,43 @@ void SyncManager::WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPt
             attrs[i]->ToBinary(attrDs);
         }
     }
+
+    if (!ValidateAttributeBuffer(false, attrDs, comp))
+        return false;
     
     // Add the attribute array to the main serializer
     ds.AddVLE<kNet::VLE8_16_32>((u32)attrDs.BytesFilled());
     ds.AddArray<u8>((unsigned char*)attrDataBuffer_, (u32)attrDs.BytesFilled());
+    return true;
+}
+
+bool SyncManager::ValidateAttributeBuffer(bool fatal, kNet::DataSerializer& ds, ComponentPtr &comp, size_t maxBytes)
+{
+    if (maxBytes == 0)
+        maxBytes = oldAttrDataBufferSize;
+
+    /** This is left here until both server and clients have the bigger buffer size.
+        Server will be upgraded to a bigger buffer, but it still cant send bigger buffers
+        than the old clients are able to handle. This below code will stop that from happening.
+        If we don't increase the buffer on the server, the result will be a trashed stack around
+        the buffers. Now we can still recover from it on the server without shutting the server down. */
+    /// @todo Remove check after a couple of releases?!
+    if (ds.BytesFilled() > maxBytes)
+    {
+        // Exceeded the new bigger buffer as well. This will corrupt the buffers and is fatal!
+        if (ds.BytesFilled() > NUMELEMS(attrDataBuffer_))
+            fatal = true;
+
+        QString entityIdentifier = (comp->ParentEntity() ? comp->ParentEntity()->ToString() : "");
+        std::string ex = QString("SyncManager::ValidateAttributeBuffer: Buffer overflow while processing %1 Component id=%2 typeid=%3. Written %4 bytes to buffer of %5 bytes.")
+            .arg(entityIdentifier).arg(comp->Id()).arg(comp->TypeId()).arg(ds.BytesFilled()).arg(maxBytes).toStdString();
+        if (fatal)
+            throw Exception(ex.c_str());
+        else
+            LogError(ex);
+        return false;
+    }
+    return true;
 }
 
 SyncManager::SyncManager(TundraLogicModule* owner) :
@@ -1411,7 +1447,7 @@ void SyncManager::ProcessSyncState(UserConnection* user)
             else
                 removeState = true;
             
-            kNet::DataSerializer ds(removeEntityBuffer_, 1024);
+            kNet::DataSerializer ds(removeEntityBuffer_, NUMELEMS(removeEntityBuffer_));
             ds.AddVLE<kNet::VLE8_16_32>(sceneId);
             ds.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
             user->Send(cRemoveEntityMessage, true, true, ds);
@@ -1420,7 +1456,7 @@ void SyncManager::ProcessSyncState(UserConnection* user)
         // New entity
         else if (entityState.isNew)
         {
-            kNet::DataSerializer ds(createEntityBuffer_, 64 * 1024);
+            kNet::DataSerializer ds(createEntityBuffer_, NUMELEMS(createEntityBuffer_));
             
             // Entity identification and temporary flag
             ds.AddVLE<kNet::VLE8_16_32>(sceneId);
@@ -1439,33 +1475,51 @@ void SyncManager::ProcessSyncState(UserConnection* user)
             ds.AddVLE<kNet::VLE8_16_32>(numReplicatedComponents);
             
             // Serialize each replicated component
+            bool bufferValid = true;
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
             {
                 ComponentPtr comp = i->second;
                 if (!comp->IsReplicated())
                     continue;
-                WriteComponentFullUpdate(ds, comp);
+                if (bufferValid && !WriteComponentFullUpdate(ds, comp))
+                {
+                    bufferValid = false;
+                    ds.ResetFill();
+                }
                 // Mark the component undirty in the receiver's syncstate
                 state->MarkComponentProcessed(entity->Id(), comp->Id());
             }
-            
-            user->Send(cCreateEntityMessage, true, true, ds);
-            ++numMessagesSent;
-            
+            if (bufferValid)
+            {
+                user->Send(cCreateEntityMessage, true, true, ds);
+                ++numMessagesSent;
+            }
+
             // The create has been processed fully. Clear dirty flags.
             state->MarkEntityProcessed(entity->Id());
+
+            /** Client failed to serialize new entity. We need to forcefully
+                destroy this entity or it will cause problems later. */
+            if (!bufferValid && !isServer)
+            {
+                LogError(QString("SyncManager: Failed to send new Entity to the server due to invalid buffer state. %1 will be forcefully destroyed from Scene.")
+                    .arg(entity->ToString()));
+                state->RemoveFromQueue(entity->Id());
+                state->entities.erase(entity->Id());
+                scene->RemoveEntity(entity->Id(), AttributeChange::LocalOnly);
+            }
         }
         else if (entity)
         {
             if (!entityState.dirtyQueue.empty())
             {
                 // Components or attributes have been added, changed, or removed. Prepare the dataserializers
-                kNet::DataSerializer removeCompsDs(removeCompsBuffer_, 1024);
-                kNet::DataSerializer removeAttrsDs(removeAttrsBuffer_, 1024);
-                kNet::DataSerializer createCompsDs(createCompsBuffer_, 64 * 1024);
-                kNet::DataSerializer createAttrsDs(createAttrsBuffer_, 16 * 1024);
-                kNet::DataSerializer editAttrsDs(editAttrsBuffer_, 64 * 1024);
-                
+                kNet::DataSerializer removeCompsDs(removeCompsBuffer_, NUMELEMS(removeCompsBuffer_));
+                kNet::DataSerializer removeAttrsDs(removeAttrsBuffer_, NUMELEMS(removeAttrsBuffer_));
+                kNet::DataSerializer createCompsDs(createCompsBuffer_, NUMELEMS(createCompsBuffer_));
+                kNet::DataSerializer createAttrsDs(createAttrsBuffer_, NUMELEMS(createAttrsBuffer_));
+                kNet::DataSerializer editAttrsDs(editAttrsBuffer_, NUMELEMS(editAttrsBuffer_));
+
                 while (!entityState.dirtyQueue.empty())
                 {
                     ComponentSyncState& compState = *entityState.dirtyQueue.front();
@@ -1512,7 +1566,8 @@ void SyncManager::ProcessSyncState(UserConnection* user)
                             createCompsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                         }
                         // Then add the component data
-                        WriteComponentFullUpdate(createCompsDs, comp);
+                        if (!WriteComponentFullUpdate(createCompsDs, comp))
+                            createCompsDs.ResetFill();
                         // Mark the component undirty in the receiver's syncstate
                         state->MarkComponentProcessed(entity->Id(), comp->Id());
                     }
@@ -1520,7 +1575,8 @@ void SyncManager::ProcessSyncState(UserConnection* user)
                     else if (comp)
                     {
                         const AttributeVector& attrs = comp->Attributes();
-                        
+
+                        bool attrBufferValid = true;
                         for (std::map<u8, bool>::iterator i = compState.newAndRemovedAttributes.begin(); i != compState.newAndRemovedAttributes.end(); ++i)
                         {
                             u8 attrIndex = i->first;
@@ -1536,19 +1592,24 @@ void SyncManager::ProcessSyncState(UserConnection* user)
                                     LogError("CreateAttribute for a static attribute index " + QString::number(attrIndex) + " was queued for component " + comp->TypeName() + " in " + entity->ToString() + ". Discarding.");
                                 else
                                 {
-                                    // If first attribute, write the entity ID first
-                                    if (!createAttrsDs.BytesFilled())
+                                    if (attrBufferValid)
                                     {
-                                        createAttrsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
-                                        createAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                                        // If first attribute, write the entity ID first
+                                        if (!createAttrsDs.BytesFilled())
+                                        {
+                                            createAttrsDs.AddVLE<kNet::VLE8_16_32>(sceneId);
+                                            createAttrsDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                                        }
+
+                                        IAttribute* attr = attrs[attrIndex];
+                                        createAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
+                                        createAttrsDs.Add<u8>(attrIndex); // Index
+                                        createAttrsDs.Add<u8>(attr->TypeId());
+                                        createAttrsDs.AddString(attr->Name().toStdString());
+                                        attr->ToBinary(createAttrsDs);
+
+                                        attrBufferValid = ValidateAttributeBuffer(false, createAttrsDs, comp);
                                     }
-                                    
-                                    IAttribute* attr = attrs[attrIndex];
-                                    createAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
-                                    createAttrsDs.Add<u8>(attrIndex); // Index
-                                    createAttrsDs.Add<u8>(attr->TypeId());
-                                    createAttrsDs.AddString(attr->Name().toStdString());
-                                    attr->ToBinary(createAttrsDs);
                                 }
                             }
                             else
@@ -1565,20 +1626,24 @@ void SyncManager::ProcessSyncState(UserConnection* user)
                             }
                         }
                         compState.newAndRemovedAttributes.clear();
-                        
+
+                        // Buffer in invalid state, reset data so it wont be sent to network.
+                        if (!attrBufferValid)
+                            createAttrsDs.ResetFill();
+
                         // Now, if remaining dirty bits exist, they must be sent in the edit attributes message. These are the majority of our network data.
                         changedAttributes_.clear();
                         unsigned numBytes = ((unsigned)attrs.size() + 7) >> 3;
-                        for (unsigned i = 0; i < numBytes; ++i)
+                        for (unsigned ib = 0; ib < numBytes; ++ib)
                         {
-                            u8 byte = compState.dirtyAttributes[i];
+                            u8 byte = compState.dirtyAttributes[ib];
                             if (byte)
                             {
                                 for (unsigned j = 0; j < 8; ++j)
                                 {
                                     if (byte & (1 << j))
                                     {
-                                        u8 attrIndex = i * 8 + j;
+                                        u8 attrIndex = (ib * 8) + j;
                                         if (attrIndex < attrs.size() && attrs[attrIndex])
                                             changedAttributes_.push_back(attrIndex);
                                         else
@@ -1627,7 +1692,7 @@ void SyncManager::ProcessSyncState(UserConnection* user)
                                 editAttrsDs.AddVLE<kNet::VLE8_16_32>(compState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                             
                                 // Create a nested dataserializer for the actual attribute data, so we can skip components
-                                kNet::DataSerializer attrDataDs(attrDataBuffer_, 16 * 1024);
+                                kNet::DataSerializer attrDataDs(attrDataBuffer_, NUMELEMS(attrDataBuffer_));
                             
                                 // There are changed attributes. Check if it is more optimal to send attribute indices, or the whole bitmask
                                 unsigned bitsMethod1 = (unsigned)changedAttributes_.size() * 8 + 8;
@@ -1658,10 +1723,20 @@ void SyncManager::ProcessSyncState(UserConnection* user)
                                             attrDataDs.Add<kNet::bit>(0);
                                     }
                                 }
-                            
                                 // Add the attribute data array to the main serializer
-                                editAttrsDs.AddVLE<kNet::VLE8_16_32>((u32)attrDataDs.BytesFilled());
-                                editAttrsDs.AddArray<u8>((unsigned char*)attrDataBuffer_, (u32)attrDataDs.BytesFilled());
+                                if (ValidateAttributeBuffer(false, attrDataDs, comp))
+                                {
+                                    editAttrsDs.AddVLE<kNet::VLE8_16_32>((u32)attrDataDs.BytesFilled());
+                                    editAttrsDs.AddArray<u8>((unsigned char*)attrDataBuffer_, (u32)attrDataDs.BytesFilled());
+
+                                    if (!ValidateAttributeBuffer(false, editAttrsDs, comp, NUMELEMS(editAttrsBuffer_)))
+                                        editAttrsDs.ResetFill();
+                                }
+                                else
+                                {
+                                    attrDataDs.ResetFill();
+                                    editAttrsDs.ResetFill();
+                                }
                             }
 
                             // Now zero out all remaining dirty bits
@@ -1705,7 +1780,7 @@ void SyncManager::ProcessSyncState(UserConnection* user)
             // Check if entity has other property changes (temporary flag)
             if (entityState.hasPropertyChanges)
             {
-                kNet::DataSerializer editPropertiesDs(editAttrsBuffer_, 1024);
+                kNet::DataSerializer editPropertiesDs(editAttrsBuffer_, NUMELEMS(editAttrsBuffer_));
                 editPropertiesDs.AddVLE<kNet::VLE8_16_32>(sceneId);
                 editPropertiesDs.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
                 editPropertiesDs.Add<u8>(entity->IsTemporary() ? 1 : 0);
@@ -1853,6 +1928,16 @@ void SyncManager::HandleCreateEntity(UserConnection* source, const char* data, s
             u32 typeID = ds.ReadVLE<kNet::VLE8_16_32>();
             QString name = QString::fromStdString(ds.ReadString());
             unsigned attrDataSize = ds.ReadVLE<kNet::VLE8_16_32>();
+            if (attrDataSize > NUMELEMS(attrDataBuffer_))
+            {
+                /// @todo Inspect if 'state' should be updated or a more fatal error would be appropriate here.
+                LogError(QString("SyncManager::HandleCreateEntity: Attribute data size %1 bytes is bigger than the destination buffer of %2 bytes. In %3 in Entity %4. Entity will be ignored!")
+                    .arg(attrDataSize).arg(NUMELEMS(attrDataBuffer_)).arg(framework_->Scene()->ComponentTypeNameForTypeId(typeID)).arg(entity->Id()));
+                state->RemoveFromQueue(entity->Id());
+                state->entities.erase(entity->Id());
+                scene->RemoveEntity(entity->Id(), AttributeChange::LocalOnly);
+                return;
+            }
             ds.ReadArray<u8>((u8*)&attrDataBuffer_[0], attrDataSize);
             kNet::DataDeserializer attrDs(attrDataBuffer_, attrDataSize);
             
@@ -1940,7 +2025,7 @@ void SyncManager::HandleCreateEntity(UserConnection* source, const char* data, s
     // Send CreateEntityReply (server only)
     if (isServer)
     {
-        kNet::DataSerializer replyDs(createEntityBuffer_, 64 * 1024);
+        kNet::DataSerializer replyDs(createEntityBuffer_, NUMELEMS(createEntityBuffer_));
         replyDs.AddVLE<kNet::VLE8_16_32>(sceneID);
         replyDs.AddVLE<kNet::VLE8_16_32>(senderEntityID & UniqueIdGenerator::LAST_REPLICATED_ID);
         replyDs.AddVLE<kNet::VLE8_16_32>(entityID & UniqueIdGenerator::LAST_REPLICATED_ID);
@@ -2009,6 +2094,14 @@ void SyncManager::HandleCreateComponents(UserConnection* source, const char* dat
             u32 typeID = ds.ReadVLE<kNet::VLE8_16_32>();
             QString name = QString::fromStdString(ds.ReadString());
             unsigned attrDataSize = ds.ReadVLE<kNet::VLE8_16_32>();
+            if (attrDataSize > NUMELEMS(attrDataBuffer_))
+            {
+                /// @todo Inspect if 'state' should be updated or a more fatal error would be appropriate here.
+                state->MarkEntityProcessed(entityID);
+                LogError(QString("SyncManager::HandleCreateComponents: Attribute data size %1 bytes is bigger than the destination buffer of %2 bytes. In %3 in Entity %4. Component(s) will be ignored!")
+                    .arg(attrDataSize).arg(NUMELEMS(attrDataBuffer_)).arg(framework_->Scene()->ComponentTypeNameForTypeId(typeID)).arg(entity->Id()));
+                return;
+            }
             ds.ReadArray<u8>((u8*)&attrDataBuffer_[0], attrDataSize);
             kNet::DataDeserializer attrDs(attrDataBuffer_, attrDataSize);
             
@@ -2094,7 +2187,7 @@ void SyncManager::HandleCreateComponents(UserConnection* source, const char* dat
     // Send CreateComponentsReply (server only)
     if (isServer)
     {
-        kNet::DataSerializer replyDs(createEntityBuffer_, 64 * 1024);
+        kNet::DataSerializer replyDs(createEntityBuffer_, NUMELEMS(createEntityBuffer_));
         replyDs.AddVLE<kNet::VLE8_16_32>(sceneID);
         replyDs.AddVLE<kNet::VLE8_16_32>(entityID & UniqueIdGenerator::LAST_REPLICATED_ID);
         replyDs.AddVLE<kNet::VLE8_16_32>((u32)componentIdRewrites.size());
@@ -2375,7 +2468,7 @@ void SyncManager::HandleEditAttributes(UserConnection* source, const char* data,
     
     if (!ValidateAction(source, cRemoveAttributesMessage, entityID))
         return;
-        
+
     EntityPtr entity = scene->GetEntity(entityID);
 
     if (entity && !scene->AllowModifyEntity(source, entity.get())) // check if allowed to modify this entity.
@@ -2404,6 +2497,14 @@ void SyncManager::HandleEditAttributes(UserConnection* source, const char* data,
     {
         component_id_t compID = ds.ReadVLE<kNet::VLE8_16_32>();
         unsigned attrDataSize = ds.ReadVLE<kNet::VLE8_16_32>();
+        if (attrDataSize > NUMELEMS(attrDataBuffer_))
+        {
+            /// @todo Inspect if 'state' should be updated or a more fatal error would be appropriate here.
+            state->MarkEntityProcessed(entityID);
+            LogError(QString("SyncManager::HandleEditAttributes: Attribute data size %1 bytes is bigger than the destination buffer of %2 bytes. Component id %3 in Entity %4. Attribute(s) will be ignored!")
+                .arg(attrDataSize).arg(NUMELEMS(attrDataBuffer_)).arg(compID).arg(entity->Id()));
+            return;
+        }
         ds.ReadArray<u8>((u8*)&attrDataBuffer_[0], attrDataSize);
         kNet::DataDeserializer attrDs(attrDataBuffer_, attrDataSize);
 

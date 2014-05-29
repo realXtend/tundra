@@ -72,7 +72,8 @@ struct EntitySyncState
         isInQueue(false),
         hasPropertyChanges(false),
         id(0),
-        avgUpdateInterval(0.0f)
+        avgUpdateInterval(0.0f),
+        lastNetworkSendTime(kNet::Clock::Tick())
     {
     }
     
@@ -271,7 +272,7 @@ class TUNDRAPROTOCOL_MODULE_API SceneSyncState : public QObject
     Q_OBJECT
 
 public:
-    SceneSyncState(u32 userConnectionID = 0, bool isServer = false);
+    explicit SceneSyncState(u32 userConnectionID = 0, bool isServer = false);
     virtual ~SceneSyncState();
 
     /// Dirty entities pending processing
@@ -347,7 +348,11 @@ public:
     void MarkEntityProcessed(entity_id_t id);
     void MarkComponentProcessed(entity_id_t id, component_id_t compId);
 
-    void MarkEntityDirty(entity_id_t id, bool hasPropertyChanges = false);
+    /** Mark a entity to be dirty for this client state.
+        @return If entity was marked dirty. This depends if the entity has been marked as pending.
+        If it is the state will refuse to dirty it, it can only be dirtied by application
+        logic by calling MarkPendingEntityDirty. */
+    bool MarkEntityDirty(entity_id_t id, bool hasPropertyChanges = false);
     void MarkEntityRemoved(entity_id_t id);
 
     void MarkComponentDirty(entity_id_t id, component_id_t compId);

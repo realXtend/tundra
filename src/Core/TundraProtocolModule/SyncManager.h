@@ -114,7 +114,7 @@ private slots:
     
 private:
     /// Craft a component full update, with all static and dynamic attributes.
-    void WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPtr comp);
+    bool WriteComponentFullUpdate(kNet::DataSerializer& ds, ComponentPtr comp);
     /// Handle entity action message.
     void HandleEntityAction(UserConnection* source, MsgEntityAction& msg);
     /// Handle create entity message.
@@ -159,6 +159,8 @@ private:
         @param entityID What entity it affects */
     bool ValidateAction(UserConnection* source, unsigned messageID, entity_id_t entityID);
     
+    bool ValidateAttributeBuffer(bool fatal, kNet::DataSerializer& ds, ComponentPtr &comp, size_t maxBytes = 0);
+    
     ScenePtr GetRegisteredScene() const { return scene_.lock(); }
 
     /// Owning module
@@ -187,8 +189,8 @@ private:
     char createEntityBuffer_[64 * 1024];
     char createCompsBuffer_[64 * 1024];
     char editAttrsBuffer_[64 * 1024];
-    char createAttrsBuffer_[16 * 1024];
-    char attrDataBuffer_[16 * 1024];
+    char createAttrsBuffer_[64 * 1024];
+    char attrDataBuffer_[64 * 1024];
     char removeCompsBuffer_[1024];
     char removeEntityBuffer_[1024];
     char removeAttrsBuffer_[1024];

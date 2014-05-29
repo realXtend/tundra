@@ -81,7 +81,7 @@ void SceneSyncState::MarkEntityPending(entity_id_t id)
 
     // If user does not have the entity in the first place, do nothing.
     // Its going to be asked to be added to the state via the permission signals later.
-    std::map<entity_id_t, EntitySyncState>::iterator i = entities.find(id);
+    std::map<entity_id_t, EntitySyncState>::const_iterator i = entities.find(id);
     if (i == entities.end())
         return;
 
@@ -106,6 +106,9 @@ void SceneSyncState::MarkPendingEntitiesDirty()
 
     foreach(entity_id_t entId, entIds)
         MarkPendingEntityDirty(entId);
+
+    if (!pendingEntities_.empty())
+        LogWarning("SceneSyncState::MarkPendingEntitiesDirty: Pending list not empty after processing all pending entities!");
 }
 
 /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
@@ -182,14 +185,20 @@ void SceneSyncState::MarkComponentProcessed(entity_id_t id, component_id_t compI
     compState.DirtyProcessed();
 }
 
-void SceneSyncState::MarkEntityDirty(entity_id_t id, bool hasPropertyChanges)
+bool SceneSyncState::MarkEntityDirty(entity_id_t id, bool hasPropertyChanges)
 {
-    ///@todo This logic should be removed. If a script rejects a change, it results in the change *never* being sent to the client.
-    ///      E.g. if the script decides to reject a change due to the target entity being too far, and then the entity comes closer,
-    ///      the change will not be replicated again, since rejecting here caused SyncState to lose tracking the change.
+    /** @todo This logic should be removed. If a script rejects a change, it results in the change *never* being sent to the client.
+        E.g. if the script decides to reject a change due to the target entity being too far, and then the entity comes closer,
+        the change will not be replicated again, since rejecting here caused SyncState to lose tracking the change. */
+    /** @remark to above comment: Yes, this is the whole intention of this pending logic. If applications (C++ or Script) decide
+        to take over controlling what gets sent, to which client and when, it must also take care of sending them when it sees appropriate.
+        There are actual uses cases where a set of Entities will never be sent to a particular client, or only if the client requests them
+        or by some kind of distance etc. metric mentioned above. Once a pending Entity is released to the state it will be sent fully
+        with its current state on the server, no information is lost. The client just sees it as a normal new Entity. */
+
     // Return if the whole entity change request was rejected
     if (isServer_ && !ShouldMarkAsDirty(id))
-        return;
+        return false;
 
     EntitySyncState& entityState = entities[id]; // Creates new if did not exist
     if (!entityState.id)
@@ -201,6 +210,7 @@ void SceneSyncState::MarkEntityDirty(entity_id_t id, bool hasPropertyChanges)
     }
     if (hasPropertyChanges)
         entityState.hasPropertyChanges = true;
+    return true;
 }
 
 void SceneSyncState::MarkEntityRemoved(entity_id_t id)
@@ -231,51 +241,57 @@ void SceneSyncState::MarkEntityRemoved(entity_id_t id)
 
 void SceneSyncState::MarkComponentDirty(entity_id_t id, component_id_t compId)
 {
-    if (isServer_ && !ShouldMarkAsDirty(id))
-        return;
-
-    MarkEntityDirty(id);
-    EntitySyncState& entityState = entities[id]; // Creates new if did not exist
-    if (!entityState.id)
-        entityState.id = id;
-    entityState.MarkComponentDirty(compId);
+    if (MarkEntityDirty(id))
+    {
+        EntitySyncState& entityState = entities[id]; // Creates new if did not exist
+        if (!entityState.id)
+            entityState.id = id;
+        entityState.MarkComponentDirty(compId);
+    }
 }
 
 void SceneSyncState::MarkComponentRemoved(entity_id_t id, component_id_t compId)
 {
     // If user did not have the entity or component in the first place, do nothing
     std::map<entity_id_t, EntitySyncState>::iterator i = entities.find(id);
-    if (i == entities.end())
-        return;
-    MarkEntityDirty(id);
-    i->second.MarkComponentRemoved(compId);
+    if (i != entities.end())
+    {
+        MarkEntityDirty(id);
+        i->second.MarkComponentRemoved(compId);
+    }
 }
 
 void SceneSyncState::MarkAttributeDirty(entity_id_t id, component_id_t compId, u8 attrIndex)
 {
-    MarkEntityDirty(id);
-    EntitySyncState& entityState = entities[id];
-    entityState.MarkComponentDirty(compId);
-    ComponentSyncState& compState = entityState.components[compId];
-    compState.MarkAttributeDirty(attrIndex);
+    if (MarkEntityDirty(id))
+    {
+        EntitySyncState& entityState = entities[id];
+        entityState.MarkComponentDirty(compId);
+        ComponentSyncState& compState = entityState.components[compId];
+        compState.MarkAttributeDirty(attrIndex);
+    }
 }
 
 void SceneSyncState::MarkAttributeCreated(entity_id_t id, component_id_t compId, u8 attrIndex)
 {
-    MarkEntityDirty(id);
-    EntitySyncState& entityState = entities[id];
-    entityState.MarkComponentDirty(compId);
-    ComponentSyncState& compState = entityState.components[compId];
-    compState.MarkAttributeCreated(attrIndex);
+    if (MarkEntityDirty(id))
+    {
+        EntitySyncState& entityState = entities[id];
+        entityState.MarkComponentDirty(compId);
+        ComponentSyncState& compState = entityState.components[compId];
+        compState.MarkAttributeCreated(attrIndex);
+    }
 }
 
 void SceneSyncState::MarkAttributeRemoved(entity_id_t id, component_id_t compId, u8 attrIndex)
 {
-    MarkEntityDirty(id);
-    EntitySyncState& entityState = entities[id];
-    entityState.MarkComponentDirty(compId);
-    ComponentSyncState& compState = entityState.components[compId];
-    compState.MarkAttributeRemoved(attrIndex);
+    if (MarkEntityDirty(id))
+    {
+        EntitySyncState& entityState = entities[id];
+        entityState.MarkComponentDirty(compId);
+        ComponentSyncState& compState = entityState.components[compId];
+        compState.MarkAttributeRemoved(attrIndex);
+    }
 }
 
 // Private
@@ -379,6 +395,17 @@ void SceneSyncState::AddPendingEntity(entity_id_t id)
 
 EntitySyncState& SceneSyncState::MarkEntityDirtySilent(entity_id_t id)
 {
+    // Verify that this entity is not known to this client state.
+    // If it is we need to remove the ptr from any queues and remove the entity state.
+    // This ensures the below creates a new EntitySyncState with isNew == true.
+    std::map<entity_id_t, EntitySyncState>::iterator existingIter = entities.find(id);
+    if (existingIter != entities.end())
+    {
+        LogWarning(QString("SceneSyncState::MarkEntityDirtySilent: State for Entity %1 already exist, removing for full recreation.").arg(id));
+        RemoveFromQueue(id);
+        entities.erase(existingIter);
+    }
+
     EntitySyncState& entityState = entities[id]; // Creates new if did not exist
     if (!entityState.id)
         entityState.id = id;
