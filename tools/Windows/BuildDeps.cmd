@@ -455,7 +455,15 @@ IF NOT EXIST "%DEPS%\assimp\". (
     :: Note the fixed revision hash (equals SVN rev 1300.) OpenAssetImport does not have an up-to-date tagged release, so fix to a recent revision of trunk.
     git clone https://github.com/assimp/assimp.git assimp
     cd "%DEPS%\assimp"
-    git checkout e22bb03f807b345a9058352e5453b6491a235677
+    :: v3.0
+    ::git checkout e22bb03f807b345a9058352e5453b6491a235677
+    :: ~v3.1
+    git checkout 340b94f9a54132f71f72331b3787b0c9cdf2de88
+
+    :: Deploy int header for <= VS2008 into assimp/include so Tundra build will find it.
+    :: This is a oversight in assimp and has been reported https://github.com/assimp/assimp/issues/290
+    copy /Y "code\pstdint.h" "include\assimp\pstdint.h"
+
     cd "%DEPS%"
 )
 
