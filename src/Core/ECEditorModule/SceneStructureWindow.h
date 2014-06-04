@@ -97,8 +97,13 @@ public slots:
     /// Undecorates all selected entities.
     void ClearSelectedEntites();
 
+signals:
+    /// Emitted when the widget is about to be closed.
+    void AboutToClose(SceneStructureWindow *window);
+
 protected:
-    void changeEvent(QEvent* e); ///< QWidget override.
+    void changeEvent(QEvent* e);     ///< QWidget override.
+    void closeEvent(QCloseEvent *e); ///< QWidget override.
 
 private:
     /// Populates tree widget with all entities.

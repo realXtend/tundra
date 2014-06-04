@@ -106,6 +106,12 @@ private slots:
 
     /// Embeds the ECEditorModule types to the given script engine.
     void OnScriptEngineCreated(QScriptEngine* engine);
+    
+    /// Writes/updates config from source.
+    void WriteECEditorConfig(ECEditorWindow *source);
+
+    /// Reads config to dest.
+    void ReadECEditorConfig(ECEditorWindow *dest);
 };
 
 Q_DECLARE_METATYPE(ECEditorWindow *)

@@ -43,17 +43,26 @@
 
 #include <QToolTip>
 #include <QCursor>
-/* /// @todo Regression: TODO: reimplement! Preferably in some nicer manner that doesn't require compiling OpenAssetImport support into ECEditorModule!
+
+/** @todo Reimplement preferably in some nicer manner that doesn't
+    require compiling OpenAssetImport support into ECEditorModule!
 #ifdef ASSIMP_ENABLED
 #include <OpenAssetImport.h>
-#endif
-*/
+#endif */
+
 #include "MemoryLeakCheck.h"
 
-// Shortcuts for config keys.
-static const char * const cSceneWindowPos = "scene window pos";
-static const char * const cAssetWindowPos = "asset window pos";
-static const char * const cKeyBindingsWindowPos = "key bindings window pos";
+namespace
+{
+    const ConfigData cSceneWindowPosConfig(ConfigAPI::FILE_FRAMEWORK, "scenestructure", "scene window pos", QPoint(50, 50));
+    const ConfigData cSceneWindowSizeConfig(ConfigAPI::FILE_FRAMEWORK, "scenestructure", "scene window size", QSize(50, 50));
+    
+    const ConfigData cAssetWindowPosConfig(ConfigAPI::FILE_FRAMEWORK, "scenestructure", "asset window pos", QPoint(50, 50));
+    const ConfigData cAssetWindowSizeConfig(ConfigAPI::FILE_FRAMEWORK, "scenestructure", "asset window size", QSize(50, 50));
+    
+    const ConfigData cKeyBindingsWindowPosConfig(ConfigAPI::FILE_FRAMEWORK, "scenestructure", "key bindings window pos", QPoint(50, 50));
+    const ConfigData cKeyBindingsWindowSizeConfig(ConfigAPI::FILE_FRAMEWORK, "scenestructure", "key bindings window size", QSize(50, 50));
+}
 
 SceneStructureModule::SceneStructureModule() :
     IModule("SceneStructure"),
@@ -115,9 +124,12 @@ void SceneStructureModule::Initialize()
 
 void SceneStructureModule::Uninitialize()
 {
-    SaveWindowPosition(sceneWindow.data(), cSceneWindowPos);
-    SaveWindowPosition(assetsWindow.data(), cAssetWindowPos);
-    SaveWindowPosition(keyBindingsWindow.data(), cKeyBindingsWindowPos);
+    if (sceneWindow)
+        WriteSceneStructConfig(sceneWindow);
+    if (assetsWindow)
+        WriteAssetWindowConfig(assetsWindow);
+    if (keyBindingsWindow)
+        WriteKeyBindingWindowConfig(keyBindingsWindow);
 }
 
 void SceneStructureModule::InstantiateContent(const QStringList &filenames, const float3 &worldPos, bool /*clearScene*/)
@@ -321,6 +333,58 @@ void SceneStructureModule::CleanReference(QString &fileRef)
     }
 }
 
+void SceneStructureModule::WriteWidgetConfig(const ConfigData &cfgPos, const ConfigData &cfgSize, const QWidget *source)
+{
+    if (!source)
+        return;
+        
+    framework_->Config()->Write(cfgPos, source->pos());
+    framework_->Config()->Write(cfgSize, source->size());
+}
+
+void SceneStructureModule::ReadWidgetConfig(const ConfigData &cfgPos, const ConfigData &cfgSize, QWidget *dest)
+{
+    if (!dest || !framework_)
+        return;
+
+    QSize size = framework_->Config()->Read(cfgSize).toSize();
+    if (size.isValid() && !size.isEmpty() && !size.isNull())
+        dest->resize(size);
+
+    QPoint pos = framework_->Config()->Read(cfgPos).toPoint();
+    UiMainWindow::EnsurePositionWithinDesktop(dest, pos);
+}
+
+void SceneStructureModule::WriteSceneStructConfig(SceneStructureWindow *source)
+{
+    WriteWidgetConfig(cSceneWindowPosConfig, cSceneWindowSizeConfig, source);
+}
+
+void SceneStructureModule::ReadSceneStructConfig(SceneStructureWindow *dest)
+{
+    ReadWidgetConfig(cSceneWindowPosConfig, cSceneWindowSizeConfig, dest);
+}
+
+void SceneStructureModule::WriteAssetWindowConfig(AssetsWindow *source)
+{
+    WriteWidgetConfig(cAssetWindowPosConfig, cAssetWindowSizeConfig, source);
+}
+
+void SceneStructureModule::ReadAssetWindowConfig(AssetsWindow *dest)
+{
+    ReadWidgetConfig(cAssetWindowPosConfig, cAssetWindowSizeConfig, dest);
+}
+
+void SceneStructureModule::WriteKeyBindingWindowConfig(KeyBindingsConfigWindow *source)
+{
+    WriteWidgetConfig(cKeyBindingsWindowPosConfig, cKeyBindingsWindowSizeConfig, source);
+}
+
+void SceneStructureModule::ReadKeyBindingWindowConfig(KeyBindingsConfigWindow *dest)
+{
+    ReadWidgetConfig(cKeyBindingsWindowPosConfig, cKeyBindingsWindowSizeConfig, dest);
+}
+
 void SceneStructureModule::ToggleSceneStructureWindow()
 {
     Scene *scene = GetFramework()->Scene()->MainCameraScene();
@@ -335,17 +399,20 @@ void SceneStructureModule::ToggleSceneStructureWindow()
         sceneWindow->setVisible(!sceneWindow->isVisible());
         if (!sceneWindow->isVisible())
         {
-            SaveWindowPosition(sceneWindow.data(), cSceneWindowPos);
+            WriteSceneStructConfig(sceneWindow);
             sceneWindow->close();
         }
     }
     else
     {
         sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
+        connect(sceneWindow.data(), SIGNAL(AboutToClose(SceneStructureWindow*)), SLOT(WriteSceneStructConfig(SceneStructureWindow*)));
+
         sceneWindow->setAttribute(Qt::WA_DeleteOnClose);
         sceneWindow->setWindowFlags(Qt::Tool);
         sceneWindow->SetShownScene(scene->shared_from_this());
-        LoadWindowPosition(sceneWindow.data(), cSceneWindowPos);
+        
+        ReadSceneStructConfig(sceneWindow);
         sceneWindow->show();
 
         // Reflect possible current selection of EC editor to Scene Structure window right away.
@@ -360,16 +427,19 @@ void SceneStructureModule::ToggleAssetsWindow()
         assetsWindow->setVisible(!assetsWindow->isVisible());
         if (!assetsWindow->isVisible())
         {
-            SaveWindowPosition(assetsWindow.data(), cAssetWindowPos);
+            WriteAssetWindowConfig(assetsWindow);
             assetsWindow->close();
         }
     }
     else
     {
         assetsWindow = new AssetsWindow(framework_, framework_->Ui()->MainWindow());
+        connect(assetsWindow.data(), SIGNAL(AboutToClose(AssetsWindow*)), SLOT(WriteAssetWindowConfig(AssetsWindow*)));
+
         assetsWindow->setAttribute(Qt::WA_DeleteOnClose);
         assetsWindow->setWindowFlags(Qt::Tool);
-        LoadWindowPosition(assetsWindow.data(), cAssetWindowPos);
+        
+        ReadAssetWindowConfig(assetsWindow);
         assetsWindow->show();
     }
 }
@@ -381,16 +451,19 @@ void SceneStructureModule::ToggleKeyBindingsWindow()
         keyBindingsWindow->setVisible(!keyBindingsWindow->isVisible());
         if (!keyBindingsWindow->isVisible())
         {
-            SaveWindowPosition(keyBindingsWindow.data(), cKeyBindingsWindowPos);
+            WriteKeyBindingWindowConfig(keyBindingsWindow);
             keyBindingsWindow->close();
         }
     }
     else
     {
         keyBindingsWindow = new KeyBindingsConfigWindow(framework_, framework_->Ui()->MainWindow());
+        connect(keyBindingsWindow.data(), SIGNAL(AboutToClose(KeyBindingsConfigWindow*)), SLOT(WriteKeyBindingWindowConfig(KeyBindingsConfigWindow*)));
+        
         keyBindingsWindow->setAttribute(Qt::WA_DeleteOnClose);
         keyBindingsWindow->setWindowFlags(Qt::Tool);
-        LoadWindowPosition(keyBindingsWindow.data(), cAssetWindowPos);
+
+        ReadKeyBindingWindowConfig(keyBindingsWindow);
         keyBindingsWindow->show();
     }
 }
@@ -430,25 +503,6 @@ void SceneStructureModule::SetAssetDragAndDropEnabled(bool enabled)
 bool SceneStructureModule::IsAssetDragAndDropEnabled() const
 {
     return assetDragAndDropEnabled_;
-}
-
-void SceneStructureModule::SaveWindowPosition(QWidget *widget, const QString &settingName)
-{
-    if (widget)
-    {
-        ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name(), settingName, widget->pos());
-        framework_->Config()->Write(configData);
-    }
-}
-
-void SceneStructureModule::LoadWindowPosition(QWidget *widget, const QString &settingName)
-{
-    if (framework_->Ui()->MainWindow() && widget)
-    {
-        ConfigData configData(ConfigAPI::FILE_FRAMEWORK, Name(), settingName);
-        QPoint pos = framework_->Config()->Read(configData).toPoint();
-        UiMainWindow::EnsurePositionWithinDesktop(widget, pos);
-    }
 }
 
 void SceneStructureModule::HandleKeyPressed(KeyEvent *e)

@@ -13,6 +13,7 @@
 #include "AssetFwd.h"
 #include "AssetReference.h"
 #include "Math/MathFwd.h"
+#include "ConfigAPI.h"
 
 #include <QPointer>
 #include <QWidget>
@@ -97,9 +98,6 @@ public slots:
     bool IsAssetDragAndDropEnabled() const;
 
 private:
-    void SaveWindowPosition(QWidget *widget, const QString &settingName);
-    void LoadWindowPosition(QWidget *widget, const QString &settingName);
-
     struct SceneMaterialDropData
     {
         SceneMaterialDropData() : mesh(0) {}
@@ -159,4 +157,20 @@ private slots:
 
     /// Decorates entities in SceneStructureWindow to reflect the selection of currently active ECEditorWindow.
     void SyncSelectionWithEcEditor(ECEditorWindow *);
+    
+    /// Write/read config from/to widget.
+    void WriteWidgetConfig(const ConfigData &cfgPos, const ConfigData &cfgSize, const QWidget *source);
+    void ReadWidgetConfig(const ConfigData &cfgPos, const ConfigData &cfgSize, QWidget *dest);
+
+    /// Write/read scene struct config.
+    void WriteSceneStructConfig(SceneStructureWindow *source);
+    void ReadSceneStructConfig(SceneStructureWindow *dest);
+
+    /// Write/read asset window config.
+    void WriteAssetWindowConfig(AssetsWindow *source);
+    void ReadAssetWindowConfig(AssetsWindow *dest);
+    
+    /// Write/read key binding config.
+    void WriteKeyBindingWindowConfig(KeyBindingsConfigWindow *source);
+    void ReadKeyBindingWindowConfig(KeyBindingsConfigWindow *dest);
 };

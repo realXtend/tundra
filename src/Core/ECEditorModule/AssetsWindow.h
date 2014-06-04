@@ -84,6 +84,12 @@ signals:
     /// Emitted when asset picking was canceled.
     void PickCanceled();
 
+    /// Emitted when the widget is about to be closed.
+    void AboutToClose(AssetsWindow *window);
+
+protected:
+    void closeEvent(QCloseEvent *e); ///< QWidget override.
+
 private:
     /// Initializes the UI.
     void Initialize();

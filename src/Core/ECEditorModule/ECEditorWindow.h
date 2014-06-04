@@ -156,10 +156,14 @@ signals:
 
     /// Same as EntitySelected but used for batch selections.
     void EntitiesSelected(const EntityList &entity, bool selected);
+    
+    /// Emitted when the widget is about to be closed.
+    void AboutToClose(ECEditorWindow *editor);
 
 protected:
-    void hideEvent(QHideEvent *e); ///< QWidget override.
-    void changeEvent(QEvent *e); ///< QWidget override.
+    void closeEvent(QCloseEvent *e); ///< QWidget override.
+    void hideEvent(QHideEvent *e);   ///< QWidget override.
+    void changeEvent(QEvent *e);     ///< QWidget override.
     bool eventFilter(QObject *obj, QEvent *event); ///< QWidget override.
 
 private slots:

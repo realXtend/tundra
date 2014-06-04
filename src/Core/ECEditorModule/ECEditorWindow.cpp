@@ -873,6 +873,12 @@ void ECEditorWindow::HighlightEntity(const EntityPtr &entity, bool highlight)
 #endif
 }
 
+void ECEditorWindow::closeEvent(QCloseEvent *e)
+{
+    emit AboutToClose(this);
+    QWidget::closeEvent(e);
+}
+
 void ECEditorWindow::hideEvent(QHideEvent* e)
 {
     ClearEntities();

@@ -31,6 +31,7 @@ namespace
     const ConfigData cGizmoConfig(ConfigAPI::FILE_FRAMEWORK, "ECEditor", "show editing gizmo", true);
     const ConfigData cHighlightConfig(ConfigAPI::FILE_FRAMEWORK, "ECEditor", "highlight selected entities", true);
     const ConfigData cEditorPosConfig(ConfigAPI::FILE_FRAMEWORK, "ECEditor", "eceditor window pos", QPoint(50, 50));
+    const ConfigData cEditorSizeConfig(ConfigAPI::FILE_FRAMEWORK, "ECEditor", "eceditor window size", QSize(50, 50));
 }
 
 ECEditorModule::ECEditorModule() :
@@ -69,11 +70,34 @@ void ECEditorModule::Uninitialize()
     ConfigAPI &cfg = *framework_->Config();
     cfg.Write(cGizmoConfig, cGizmoConfig.key, gizmoEnabled);
     cfg.Write(cHighlightConfig, cHighlightConfig.key, highlightingEnabled);
+
     if (commonEditor)
-        cfg.Write(cEditorPosConfig, cEditorPosConfig.key, commonEditor->pos());
+        WriteECEditorConfig(commonEditor);
 
     SAFE_DELETE(commonEditor);
     SAFE_DELETE_LATER(xmlEditor);
+}
+
+void ECEditorModule::WriteECEditorConfig(ECEditorWindow *source)
+{
+    if (!source)
+        return;
+
+    framework_->Config()->Write(cEditorPosConfig, source->pos());
+    framework_->Config()->Write(cEditorSizeConfig, source->size());
+}
+
+void ECEditorModule::ReadECEditorConfig(ECEditorWindow *dest)
+{
+    if (!dest || !framework_)
+        return;
+        
+    QSize size = framework_->Config()->Read(cEditorSizeConfig).toSize();
+    if (size.isValid() && !size.isEmpty() && !size.isNull())
+        dest->resize(size);
+
+    QPoint pos = framework_->Config()->Read(cEditorPosConfig).toPoint();
+    UiMainWindow::EnsurePositionWithinDesktop(dest, pos);
 }
 
 ECEditorWindow *ECEditorModule::ActiveEditor() const
@@ -147,19 +171,21 @@ void ECEditorModule::ShowEditorWindow()
         commonEditor->setVisible(!commonEditor->isVisible());
         if (!commonEditor->isVisible())
         {
-            framework_->Config()->Write(cEditorPosConfig, cEditorPosConfig.key, commonEditor->pos());
+            WriteECEditorConfig(commonEditor);
             commonEditor->close();
         }
         return;
     }
 
     activeEditor = new ECEditorWindow(GetFramework(), framework_->Ui()->MainWindow());
+    connect(activeEditor.data(), SIGNAL(AboutToClose(ECEditorWindow*)), SLOT(WriteECEditorConfig(ECEditorWindow*)));
+
     commonEditor = activeEditor;
     activeEditor->setWindowFlags(Qt::Tool);
     activeEditor->setAttribute(Qt::WA_DeleteOnClose);
-    // Load position from config
-    QPoint pos = framework_->Config()->Read(cEditorPosConfig).toPoint();
-    UiMainWindow::EnsurePositionWithinDesktop(activeEditor, pos);
+
+    ReadECEditorConfig(activeEditor);
+    
     activeEditor->show();
     activeEditor->activateWindow();
 }

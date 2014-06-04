@@ -153,6 +153,12 @@ void KeyBindingsConfigWindow::ButtonCancel()
     framework->Input()->LoadKeyBindingsFromFile();
 }
 
+void KeyBindingsConfigWindow::closeEvent(QCloseEvent *e)
+{
+    emit AboutToClose(this);
+    QWidget::closeEvent(e);
+}
+
 bool KeyBindingsConfigWindow::eventFilter(QObject *obj, QEvent *event)
 {
     QTreeWidgetItem *current_item = configList->currentItem();

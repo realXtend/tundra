@@ -42,6 +42,11 @@ private:
     /// Edits are done here to allow Cancel to return without modifications having been done.
     QMap<QString, QKeySequence> editedActions;
 
+signals:
+    /// Emitted when the widget is about to be closed.
+    void AboutToClose(KeyBindingsConfigWindow *window);
+
 protected:
-    bool eventFilter(QObject *obj, QEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event); ///< QObject override.
+    void closeEvent(QCloseEvent *e); ///< QWidget override.
 };

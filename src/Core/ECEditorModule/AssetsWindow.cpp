@@ -226,6 +226,12 @@ void AssetsWindow::Initialize()
     connect(treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(OnItemDoubleClicked(QTreeWidgetItem*, int)));
 }
 
+void AssetsWindow::closeEvent(QCloseEvent *e)
+{
+    emit AboutToClose(this);
+    QWidget::closeEvent(e);
+}
+
 void AssetsWindow::AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent)
 {
     PROFILE(AssetsWindow_AddChildren)

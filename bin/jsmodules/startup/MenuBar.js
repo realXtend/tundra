@@ -53,12 +53,11 @@ if (!framework.IsHeadless())
     {
         toolsMenu.addAction("Assets").triggered.connect(OpenAssetsWindow);
         toolsMenu.addAction("Scene").triggered.connect(OpenSceneWindow);
-        toolsMenu.addAction("Key Bindings").triggered.connect(OpenKeyBindingsWindow);
     }
 
     var ecEditor = framework.ModuleByName("ECEditor");
     if (ecEditor)
-        toolsMenu.addAction("EC Editor").triggered.connect(OpenEcEditorWindow);
+        toolsMenu.addAction("Entity Editor").triggered.connect(OpenEcEditorWindow);
 
     // TODO: Avatar Editor menu action disabled for now, as it's not fully ready for end-users
 //    if (framework.ModuleByName("Avatar"))
@@ -77,9 +76,7 @@ if (!framework.IsHeadless())
         settingsMenu.objectName = "SettingsMenu";
 
         settingsMenu.addAction("Open Config Folder").triggered.connect(OpenConfigFolder);
-
-        if (framework.ModuleByName("MumbleVoip"))
-            settingsMenu.addAction("Voice Settings").triggered.connect(OpenVoiceSettings);
+        settingsMenu.addSeparator();
 
         if (ecEditor)
         {
@@ -94,9 +91,14 @@ if (!framework.IsHeadless())
             showHighlightAction.checkable = true;
             showHighlightAction.checked = ecEditor.highlightingEnabled;
             showHighlightAction.triggered.connect(HighlightSelectedEntities);
+
+            settingsMenu.addSeparator();
         }
+
         // TODO Lanuage change is broken, do not show the menu for now.
         //ui.InitLanguageMenu();
+
+        settingsMenu.addAction("Key Bindings").triggered.connect(OpenKeyBindingsWindow);
     }
 
     // Help menu
@@ -289,10 +291,6 @@ if (!framework.IsHeadless())
 
     function OpenProfilerWindow() {
         framework.ModuleByName("DebugStats").ShowProfilerWindow();
-    }
-
-    function OpenVoiceSettings() {
-        framework.ModuleByName("MumbleVoip").ToggleSettingsWidget();
     }
 
     function OpenConsoleWindow() {

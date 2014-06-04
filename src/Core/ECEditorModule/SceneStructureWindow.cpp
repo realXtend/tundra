@@ -348,6 +348,12 @@ void SceneStructureWindow::changeEvent(QEvent* e)
         QWidget::changeEvent(e);
 }
 
+void SceneStructureWindow::closeEvent(QCloseEvent *e)
+{
+    emit AboutToClose(this);
+    QWidget::closeEvent(e);
+}
+
 void SceneStructureWindow::Populate()
 {
     PROFILE(SceneStructureWindow_Populate)
