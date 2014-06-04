@@ -203,7 +203,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
 
     float relX = (float)e->x/GetFramework()->Ui()->GraphicsView()->size().width();
     float relY = (float)e->y/GetFramework()->Ui()->GraphicsView()->size().height();
-    Ray mouseRay = cam->GetMouseRay(relX, relY);
+    Ray mouseRay = cam->ViewportPointToRay(relX, relY);
 
     QList<GizmoAxis> hits;
 
@@ -215,7 +215,6 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
     RaycastResult *result = world->Raycast(e->x, e->y, 0x80000000);
     if (result->entity && result->entity->Component<EC_TransformGizmo>().get() == this)
         hit = true;
-
 
     float offsetX, offsetY, offsetZ;
 
@@ -281,7 +280,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
     switch(state)
     {
     case Inactive:
-        //LogInfo("Inactive");
+    {
         input->ClearMouseCursorOverride();
         if (activeAxes.size())
             activeAxes.clear();
@@ -289,9 +288,10 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
             state = Hovering; // fall through to Hovering.
         else
             break;
+    }
     case Hovering:
         e->Suppress();
-        //LogInfo("Hovering");
+
         if (mouseOnTop)
         {
             foreach(const GizmoAxis &a, hits)
@@ -309,8 +309,9 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
             break;
         }
     case Active:
+    {
         e->Suppress();
-        //LogInfo("Active");
+
         // If mouse released, fall through to default case.
         if (mouseDown)
         {
@@ -327,13 +328,14 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                     if (plane.Intersects(mouseRay, &distance))
                         prevPoint = mouseRay.GetPoint(distance);
                 }
-//                else if (activeAxes.size() == 3 && gizmoType == EC_TransformGizmo::Scale)
-//                    prevPoint = activeAxes.first().ray.ClosestPoint(mouseRay);
+                //else if (activeAxes.size() == 3 && gizmoType == EC_TransformGizmo::Scale)
+                //    prevPoint = activeAxes.first().ray.ClosestPoint(mouseRay);
             }
 
             foreach(const GizmoAxis &a, activeAxes)
                 materials.Set(a.axis, a.material);
             input->SetMouseCursorOverride(QCursor(Qt::ClosedHandCursor));
+
             // Emit only when dragging
             if (mouseDrag)
             {
@@ -349,56 +351,66 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
                     if (plane.Intersects(mouseRay, &distance))
                         curPoint = mouseRay.GetPoint(distance);
                 }
-//                else if (activeAxes.size() == 3 && gizmoType == EC_TransformGizmo::Scale)
-//                    curPoint = activeAxes.first().ray.ClosestPoint(mouseRay);
+                //else if (activeAxes.size() == 3 && gizmoType == EC_TransformGizmo::Scale)
+                //    curPoint = activeAxes.first().ray.ClosestPoint(mouseRay);
 
-                //std::stringstream ss;
+                float3 offset = curPoint - prevPoint;
+
+                /** Rotation is buggy and inconsistent when doing the raycast closest point business.
+                    After a while during the axis drag it gets stuck to zero vec and stops functioning.
+                    Instead get the max relative mouse movement to make the rotation smooth. This is
+                    a bit of a hack/quick fix but is a lot better for the user experience and functionality. */
+                if (gizmoType == EC_TransformGizmo::Rotate)
+                    offset.Set(static_cast<float>(Abs(e->relativeX) > Abs(e->relativeY) ? e->relativeX : -e->relativeY) / 20.f, 0.f, 0.f);
+
                 switch(gizmoType)
                 {
                 case EC_TransformGizmo::Translate:
-                    //ss << curPoint-prevPoint;
-                    //LogInfo("Emitting Translated(" + ss.str() + ")");
-                    emit Translated(curPoint-prevPoint);
+                {                    
                     // To allow unlimited drag, translate also the active axes' rays now
                     for (int i = 0; i < activeAxes.size(); ++i)
-                        activeAxes[i].ray.pos += curPoint - prevPoint;
+                        activeAxes[i].ray.pos += offset;
+                    emit Translated(offset);
                     break;
+                }
                 case EC_TransformGizmo::Rotate:
+                {
                     if (activeAxes.size() == 1)
                     {
-                        float3 delta = curPoint - prevPoint;
-                        const float sensitivity = 0.2f; // Apply a hardcoded sensitivity factor to the mouse delta values.
-                        Quat q = Quat::RotateAxisAngle(activeAxes[0].ray.dir, sensitivity * delta[delta.Abs().MaxElementIndex()]);
+                        // Apply a hardcoded sensitivity factor to the mouse delta values.
+                        const float sensitivity = 0.2f;
+                        Quat q = Quat::RotateAxisAngle(activeAxes[0].ray.dir, sensitivity * offset[offset.Abs().MaxElementIndex()]);
                         emit Rotated(q);
                     }
                     break;
+                }
                 case EC_TransformGizmo::Scale:
-                    //ss << curPoint-prevPoint;
-                    //LogInfo("Emitting Scaled(" + ss.str() + ")");
+                {
                     if (input && input->IsKeyDown(Qt::Key_Shift))
-                        emit Scaled(curPoint-prevPoint);
+                        emit Scaled(offset);
                     else
-                    {
-                        float3 scale = curPoint-prevPoint;
-                        emit Scaled(float3::FromScalar(scale.AverageOfElements()));
-                    }
+                        emit Scaled(float3::FromScalar(offset.AverageOfElements()));
                     break;
+                }
                 }
                 prevPoint = curPoint;
             }
-
             break;
         }
+    }
     default:
+    {
         if (mouseOnTop)
         {
             foreach(const GizmoAxis &a, activeAxes)
+            {
                 if (a.axis == 0)
                     materials.Set(0, cAxisGreenHi);
                 else if (a.axis == 1)
                     materials.Set(1, cAxisRedHi);
                 else if (a.axis == 2)
                     materials.Set(2, cAxisBlueHi);
+            }
 
             state = Hovering;
             input->SetMouseCursorOverride(QCursor(Qt::OpenHandCursor));
@@ -413,6 +425,7 @@ void EC_TransformGizmo::HandleMouseEvent(MouseEvent *e)
             input->ClearMouseCursorOverride();
         }
         break;
+    }
     }
 
     if (mesh->materialRefs.Get() != materials)
