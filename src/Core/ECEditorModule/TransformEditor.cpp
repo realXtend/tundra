@@ -529,7 +529,7 @@ void TransformEditor::SetGizmoType(EC_TransformGizmo::GizmoType type)
 
     EC_TransformGizmo *tg = TransformGizmo();
     if (tg)
-        tg->SetCurrentGizmoType(EC_TransformGizmo::Translate);
+        tg->SetCurrentGizmoType(type);
 }
 #endif
 
