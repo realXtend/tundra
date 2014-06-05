@@ -26,6 +26,7 @@
 #include "Entity.h"
 #include "ConsoleAPI.h"
 #include "InputAPI.h"
+
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "OgreSceneImporter.h"
@@ -40,6 +41,9 @@
 #include "OgreWorld.h"
 #include "ConfigAPI.h"
 #include "OgreMaterialUtils.h"
+
+#include "TundraLogicModule.h"
+#include "Client.h"
 
 #include <QToolTip>
 #include <QCursor>
@@ -119,6 +123,11 @@ void SceneStructureModule::Initialize()
 
         // Enable drag and dropping by default.
         SetAssetDragAndDropEnabled(true);
+        
+        TundraLogic::TundraLogicModule *tundraLogic = framework_->Module<TundraLogic::TundraLogicModule>();
+        TundraLogic::Client *client = (tundraLogic ? tundraLogic->GetClient().get() : 0);
+        if (client)
+            connect(client, SIGNAL(Disconnected()), SLOT(ClientDisconnected()));
     }
 }
 
@@ -331,6 +340,15 @@ void SceneStructureModule::CleanReference(QString &fileRef)
         fileRef = fileRef.mid(1);
 #endif
     }
+}
+
+void SceneStructureModule::ClientDisconnected()
+{
+    /** The scene window clears itself when the underlying scene is destroyed.
+        This make the widget totally useless, so we should close it. It wont
+        function even if you connect to another scene as the scene is not reseted! */
+    if (sceneWindow)
+        sceneWindow->close();
 }
 
 void SceneStructureModule::WriteWidgetConfig(const ConfigData &cfgPos, const ConfigData &cfgSize, const QWidget *source)

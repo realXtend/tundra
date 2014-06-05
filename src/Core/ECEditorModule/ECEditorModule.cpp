@@ -21,6 +21,9 @@
 #include "EC_Placeable.h"
 #include "QScriptEngineHelpers.h"
 
+#include "TundraLogicModule.h"
+#include "Client.h"
+
 #include <QWebView>
 #include <QList>
 
@@ -63,6 +66,14 @@ void ECEditorModule::Initialize()
     /// @todo Ideally we wouldn't do this, but this is needed for now in order to get OnScriptEngineCreated called
     /// (and ECEditorWindow registered to QtScript) without generating dependendy to the JavascriptModule.
     framework_->RegisterDynamicObject("ecEditorModule", this);
+    
+    if (!framework_->IsHeadless())
+    {
+        TundraLogic::TundraLogicModule *tundraLogic = framework_->Module<TundraLogic::TundraLogicModule>();
+        TundraLogic::Client *client = (tundraLogic ? tundraLogic->GetClient().get() : 0);
+        if (client)
+            connect(client, SIGNAL(Disconnected()), SLOT(ClientDisconnected()));
+    }
 }
 
 void ECEditorModule::Uninitialize()
@@ -76,6 +87,17 @@ void ECEditorModule::Uninitialize()
 
     SAFE_DELETE(commonEditor);
     SAFE_DELETE_LATER(xmlEditor);
+}
+
+void ECEditorModule::ClientDisconnected()
+{
+    /** The underlying scene and entity is now gone. Close open editors.
+        Note that there might still be other editors opened from outside of
+        the shift+e (default) logic. */
+    if (commonEditor && ((activeEditor && commonEditor != activeEditor) || !activeEditor))
+        commonEditor->close();
+    if (activeEditor)
+        activeEditor->close();
 }
 
 void ECEditorModule::WriteECEditorConfig(ECEditorWindow *source)

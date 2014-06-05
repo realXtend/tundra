@@ -158,6 +158,9 @@ private slots:
     /// Decorates entities in SceneStructureWindow to reflect the selection of currently active ECEditorWindow.
     void SyncSelectionWithEcEditor(ECEditorWindow *);
     
+    /// Client disconnected handler.
+    void ClientDisconnected();
+    
     /// Write/read config from/to widget.
     void WriteWidgetConfig(const ConfigData &cfgPos, const ConfigData &cfgSize, const QWidget *source);
     void ReadWidgetConfig(const ConfigData &cfgPos, const ConfigData &cfgSize, QWidget *dest);
