@@ -72,6 +72,7 @@ ECEditorWindow::ECEditorWindow(Framework* fw, QWidget *parent) :
     /// @todo Create UI fully in code (very simple UI file).
     setupUi(this);
     installEventFilter(this);
+    setWindowTitle("Entity Editor");
 
     Scene *scene = fw->Scene()->MainCameraScene();
     assert(scene);
@@ -590,6 +591,7 @@ void ECEditorWindow::Refresh()
     EntityList entities = SelectedEntities();
     if (entities.empty()) // If any of entities was not selected clear the browser window.
     {
+        setWindowTitle("Entity Editor");
         ecBrowser->clear();
         transformEditor->SetSelection(entities);
         transformEditor->SetGizmoVisible(false);
@@ -599,6 +601,14 @@ void ECEditorWindow::Refresh()
     EntityList old_entities = ecBrowser->Entities();
     entities.sort();
     old_entities.sort();
+    
+    if (entities.size() == 1 && entities.front().get())
+    {
+        EntityPtr first = entities.front();
+        setWindowTitle(QString("Entity Editor: %1 %2").arg(first->Id()).arg(first->Name()));
+    }
+    else
+        setWindowTitle(QString("Entity Editor: %1 selected").arg(entities.size()));
 
     // Check what entities need to get removed/added to browser.
     EntityList::iterator iter1 = old_entities.begin(), iter2 = entities.begin();
