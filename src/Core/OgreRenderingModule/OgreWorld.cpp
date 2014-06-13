@@ -1130,8 +1130,8 @@ void OgreWorld::SetupShadows()
     shadowParams->setNamedConstant("shadowMapSize", Ogre::Vector4(shadowTextureSize));
     shadowParams->setNamedConstant("invShadowMapSize", Ogre::Vector4(1.0f / (float)shadowTextureSize));
 
-    shadowParams->setNamedConstant("fixedDepthBias", Ogre::Vector4(0.000005f, 0.000005f, 0.000005f, 0.000005f));
-    shadowParams->setNamedConstant("gradientScaleBias", Ogre::Vector4(0.00005f, 0.00005f, 0.00005f, 0.00005f));
+    shadowParams->setNamedConstant("fixedDepthBias", Ogre::Vector4(0.000024f, 0.000072f, 0.0005f, 0.0012f));
+    shadowParams->setNamedConstant("gradientScaleBias", Ogre::Vector4(0.000024f, 0.000072f, 0.0005f, 0.0012f));
     shadowParams->setNamedConstant("shadowMaxDist", shadowFarDist);
     shadowParams->setNamedConstant("shadowFadeDist", 50.0f);
 

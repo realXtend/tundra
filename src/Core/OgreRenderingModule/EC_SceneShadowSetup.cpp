@@ -27,10 +27,10 @@ EC_SceneShadowSetup::EC_SceneShadowSetup(Scene* scene) :
     INIT_ATTRIBUTE_VALUE(firstSplitDist, "First split distance", 8.5f),
     INIT_ATTRIBUTE_VALUE(farDist, "Far distance", 250.0f),
     INIT_ATTRIBUTE_VALUE(fadeDist, "Fade distance", 50.0f),
-    INIT_ATTRIBUTE_VALUE(depthBias1, "Depth bias 1", 0.05f),
-    INIT_ATTRIBUTE_VALUE(depthBias2, "Depth bias 2", 0.05f),
-    INIT_ATTRIBUTE_VALUE(depthBias3, "Depth bias 3", 0.05f),
-    INIT_ATTRIBUTE_VALUE(depthBias4, "Depth bias 4", 0.05f)
+    INIT_ATTRIBUTE_VALUE(depthBias1, "Depth bias 1", 0.24f),
+    INIT_ATTRIBUTE_VALUE(depthBias2, "Depth bias 2", 0.72f),
+    INIT_ATTRIBUTE_VALUE(depthBias3, "Depth bias 3", 5.00f),
+    INIT_ATTRIBUTE_VALUE(depthBias4, "Depth bias 4", 12.00f)
 {
     static AttributeMetadata depthBiasMetadata;
     depthBiasMetadata.step = "0.01";
