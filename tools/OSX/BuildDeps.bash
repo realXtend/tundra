@@ -340,7 +340,7 @@ if [ $USE_BOOST == "ON" ]; then
         cd $pkgbase
         echoInfo "Building $what"
         ./bootstrap.sh --prefix=$prefix/$what
-        ./bjam toolset=darwin link=static threading=multi --with-thread --with-regex --with-system --with-date_time install
+        ./bjam toolset=darwin link=static threading=multi --with-thread --with-regex --with-system --with-date_time --with-random install
         cp LICENSE_1_0.txt $prefix/$what
         touch $tags/$what-done
     fi
@@ -765,16 +765,7 @@ else
     echoInfo "Cloning $what repository, this may take a while..."
     git clone https://github.com/assimp/assimp.git $what
     cd $what
-    git checkout e22bb03f807b345a9058352e5453b6491a235677
-    
-    # Patch assimp 
-    patch -p0 -i $patches/assimp.patch
-    if [ "$USE_BOOST" == "ON" ]; then
-        $LC_CTYPE_OVERRIDE
-        sed -e "s/-stdlib=libc++/ /" < CMakeLists.txt > x
-        $LC_CTYPE_RESTORE
-        mv x CMakeLists.txt
-    fi       
+    git checkout v3.1.1
 
     cmake . -DCMAKE_INSTALL_PREFIX=$prefix/$what
     make -j$NPROCS
