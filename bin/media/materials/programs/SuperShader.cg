@@ -251,11 +251,11 @@ void mainPS(
 			
 #endif
 		float NdotL = max(0.f, dot(normal, lightDir[i].xyz));
-		diffuseLightFactor += lightness * NdotL * lightDiffuseColors[i];
+		diffuseLightFactor += lightness * NdotL * lightDiffuseColors[i] * lightDir[i].w;
 
 #ifdef SPECULAR_LIGHTING
 		float specularFactor = ComputeLightSpecularFactor(normal, NdotL, lightDir[i].xyz, viewDir);
-		specularLightFactor += lightness * specularFactor * lightSpecularColors[i];
+		specularLightFactor += lightness * specularFactor * lightSpecularColors[i] * lightDir[i].w;
 #endif
 	}
 #endif
