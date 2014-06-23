@@ -190,7 +190,11 @@ void EC_Light::AttributesChanged()
         light_->setCastShadows(castShadows.Get());
         light_->setDiffuseColour(diff);
         light_->setSpecularColour(spec);
-        light_->setAttenuation(range.Get(), constAtten.Get() / b , linearAtten.Get() / b, quadraAtten.Get() / b);
+
+        /// @todo This is a Meshmoon specific change for the Meshmoon shaders. This line should not be committed before the rex shaders have been sent to Tundra core.
+        light_->setAttenuation(range.Get(), brightness.Get(), 0.0f, 0.0f);
+        //light_->setAttenuation(range.Get(), constAtten.Get() / b , linearAtten.Get() / b, quadraAtten.Get() / b);
+
         // Note: Ogre throws exception if we try to set this when light is not spotlight
         if (ogreType == Ogre::Light::LT_SPOTLIGHT)
             light_->setSpotlightRange(Ogre::Degree(innerAngle.Get()), Ogre::Degree(outerAngle.Get()));

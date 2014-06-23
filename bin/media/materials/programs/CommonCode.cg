@@ -181,9 +181,12 @@ float4  ComputePointLightDirAndAttenuation(float3 vertexPos, float4 lightPos, fl
 	result.xyz /= lightDist;
 
 	// N.B. lightAtt[i].x (light range) is ignored.
-	result.w = 1.f / (lightAtt.y + lightDist * (lightAtt.z + lightDist * lightAtt.w));
+	//result.w = 1.f / (lightAtt.y + lightDist * (lightAtt.z + lightDist * lightAtt.w));
 	
-	return result;
+	float normalizedDistance = max(0.0f, lightDist / lightAtt.x);
+	return max(0.0f, 1 / (0.65 + 8.5 * normalizedDistance + 3.5 * (normalizedDistance * normalizedDistance)) - 0.08);
+	
+	//return result;
 }
 
 // Returns The diffuse light color for the passed point light.
