@@ -184,7 +184,7 @@ float4  ComputePointLightDirAndAttenuation(float3 vertexPos, float4 lightPos, fl
 	//result.w = 1.f / (lightAtt.y + lightDist * (lightAtt.z + lightDist * lightAtt.w));
 	
 	float normalizedDistance = max(0.0f, lightDist / lightAtt.x);
-	result.w = max(0.0f, 1 / (0.65 + 8.5 * normalizedDistance + 3.5 * (normalizedDistance * normalizedDistance)) - 0.08);
+	result.w = max(0.0f, 1 / (0.65 + 8.5 * normalizedDistance + 3.5 * (normalizedDistance * normalizedDistance)) - 0.08) * lightAtt.y;
 	
 	return result;
 }
