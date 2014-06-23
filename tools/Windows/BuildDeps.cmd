@@ -90,7 +90,7 @@ echo    - Whether were doing 32-bit (x86) or 64-bit (x64) build.
 cecho {0D}  Dependency Directory = %DEPS%{# #}{\n}
 echo    - The directory where Tundra dependencies are fetched and built.
 cecho {0D}  Use Boost            = %USE_BOOST%{# #}{\n}
-echo    - Configures whether dependencies kNet, Ogre, and AssImp are built using Boost.
+echo    - Configures whether dependencies kNet, Ogre, and Assimp are built using Boost.
 cecho {0D}  Build Type           = %BUILD_TYPE%{# #}{\n}
 echo    - The used build type for the dependencies.
 echo      Defaults to RelWithDebInfo if not specified.
@@ -455,15 +455,7 @@ IF NOT EXIST "%DEPS%\assimp\". (
     :: Note the fixed revision hash (equals SVN rev 1300.) OpenAssetImport does not have an up-to-date tagged release, so fix to a recent revision of trunk.
     git clone https://github.com/assimp/assimp.git assimp
     cd "%DEPS%\assimp"
-    :: v3.0
-    ::git checkout e22bb03f807b345a9058352e5453b6491a235677
-    :: ~v3.1
-    git checkout 340b94f9a54132f71f72331b3787b0c9cdf2de88
-
-    :: Deploy int header for <= VS2008 into assimp/include so Tundra build will find it.
-    :: This is a oversight in assimp and has been reported https://github.com/assimp/assimp/issues/290
-    copy /Y "code\pstdint.h" "include\assimp\pstdint.h"
-
+    git checkout v3.1.1
     cd "%DEPS%"
 )
 
