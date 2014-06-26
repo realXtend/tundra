@@ -9,7 +9,6 @@
 #include <OgreResourceBackgroundQueue.h>
 
 /// An Ogre-specific skeleton resource, contains bone structure and skeletal animations
-/** @ingroup OgreRenderingModuleClient */
 class OGRE_MODULE_API OgreSkeletonAsset : public IAsset, Ogre::ResourceBackgroundQueue::Listener
 {
     Q_OBJECT

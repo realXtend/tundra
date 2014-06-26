@@ -10,12 +10,7 @@
 
 namespace OgreRenderer
 {
-    /** @defgroup OgreRenderingModuleClient OgreRenderingModule Client Interface
-        This page lists the public interface of the OgreRenderingModule.
-
-        For details on how to use the public interface, see \ref OgreRenderingModule "Using the Ogre renderer module"
-
-        @bug Ogre assert fail when viewing a mesh that contains a reference to non-existing skeleton. */
+    /** @bug Ogre assert fail when viewing a mesh that contains a reference to non-existing skeleton. */
 
     /// A renderer module using Ogre
     class OGRE_MODULE_API OgreRenderingModule : public IModule

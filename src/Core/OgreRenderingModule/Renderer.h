@@ -35,8 +35,7 @@ namespace OgreRenderer
     class OgreLogListener;
 
     /// Ogre renderer
-    /** Created by OgreRenderingModule. Implements the IRenderer.
-        @ingroup OgreRenderingModuleClient */
+    /** Created by OgreRenderingModule. Implements the IRenderer. */
     class OGRE_MODULE_API Renderer : public QObject, public IRenderer
     {
         Q_OBJECT
