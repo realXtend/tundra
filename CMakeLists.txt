@@ -300,7 +300,7 @@ if (MSVC)
     elseif(MSVC10)
         set(VC_VER "vc10")
     else()
-        message(STATUS "-- Warning: Unsupported Visual Studio version detected. Currently Visual Studio 2008 and 2010 are supported".)
+        message(STATUS "-- Warning: Unsupported Visual Studio version detected. Currently Visual Studio 2008 and 2010 are supported.")
     endif()
 endif()
 
