@@ -1,0 +1,61 @@
+{
+    "Project" : "Meshmoon Tundra Dependencies",
+    "Prefix"  : "../../deps",
+
+    "Targets" :
+    [
+        {
+            "Repo"      : "github.com/flavio/qjson"
+        },
+        {
+            "Repo"      : "github.com/assimp/assimp",
+            "Revision"  : "v3.1.1"
+        },
+        {
+            "Repo"      : "github.com/zaphoyd/websocketpp",
+            "Revision"  : "0.3.0-alpha3"
+        },
+        {
+            "Name"      : "celt",
+            "Repo"      : "downloads.xiph.org/releases/celt/celt-0.11.1.tar.gz"
+        },
+        {
+            "Name"      : "bullet",
+            "Repo"      : "bullet.googlecode.com/files/bullet-2.81-rev2613.tgz",
+            "SkipBuild" : true
+        },
+        {
+            "Repo"      : "github.com/juj/kNet",
+            "Revision"  : "stable",
+            "SkipBuild" : true
+        },
+        {
+            "Repo"      : "bitbucket.org/clb/ogre-safe-nocrashes",
+            "Tool"      : "hg",
+            "Revision"  : "v1-9",
+            "Config"    : "meshmoon-deps-ogre.json",
+            "Patches"   :
+            [
+                "Patches/ogre-safe-nocrashes-0001-add-headless-renderer.patch"
+            ]
+        },
+        {
+            "Repo"      : "git.gitorious.org/qt-labs/qtscriptgenerator",
+            "SkipBuild" : true,
+            "Patches"   :
+            [
+                "Patches/qtscriptgenerator-0001-force-webkit-and-phonon-plugins.patch"
+            ]
+        },
+        {
+            "Repo"      : "git.gitorious.org/qt-solutions/qt-solutions",
+            "SkipBuild" : true
+        },
+        {
+            "Repo"      : "code.google.com/p/realxtend-tundra-deps",
+            "Tool"      : "git",
+            "Branch"    : "sources",
+            "SkipBuild" : true
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "Project" : "ogre-safe-nocrashes Dependencies",
+    "Sources" : "RenderSystems",
+
+    "Targets" :
+    [
+        {
+            "Name"      : "Headless",
+            "Repo"      : "github.com/jonnenauha/ogre-headless-renderer",
+            "SkipBuild" : true
+        }
+    ]
+}

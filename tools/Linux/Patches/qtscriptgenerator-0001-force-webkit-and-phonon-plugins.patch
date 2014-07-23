@@ -1,0 +1,30 @@
+From ef2611e55741dc1a915831d29ae32fae3c056469 Mon Sep 17 00:00:00 2001
+From: Jonne Nauha <jonne@adminotech.com>
+Date: Tue, 22 Jul 2014 09:06:49 +0300
+Subject: [PATCH] Force webkit and phonon plugins.
+
+---
+ generator/qtscript_masterinclude.h | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/generator/qtscript_masterinclude.h b/generator/qtscript_masterinclude.h
+index 6b7f68a..4ac8533 100644
+--- a/generator/qtscript_masterinclude.h
++++ b/generator/qtscript_masterinclude.h
+@@ -53,13 +53,9 @@
+ #  include <QtXmlPatterns/QtXmlPatterns>
+ #endif
+ 
+-#ifndef QT_NO_WEBKIT
+ #  include <QtWebKit/QtWebKit>
+-#endif
+ 
+-#ifndef QT_NO_PHONON
+ #  include <phonon/phonon>
+-#endif
+ 
+ #include "../qtbindings/qtscript_core/qtscriptconcurrent.h"
+ 
+-- 
+1.9.1
+
