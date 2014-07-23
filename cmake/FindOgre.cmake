@@ -3,7 +3,7 @@
 # UNIX/MAC: Uses sagase/find_library in linux as it works there mighty well when its installed on the system.
 # WINDOWS: Uses some more custom logic on windows to find things correct either from Tunda deps, Ogre SDK or Ogre source repo clone.
 
-if (NOT WIN32 AND NOT APPLE)
+if (NOT WIN32 AND NOT APPLE AND NOT UNIX)
 # TODO: Remove configure_ogre and replace it with a use_package_ogre() and link_package_ogre()
 macro(configure_ogre)
 
