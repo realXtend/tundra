@@ -21,6 +21,13 @@ Options:
 EOF
 }
 
+print_title()
+{
+    echo
+    echo $1
+    echo "----------------------------------------"
+}
+
 is_built()
 {
     echo
@@ -108,66 +115,87 @@ mkdir -p $DEPS
 # Packages
 
 if [ "$skip_pkg" = false ] ; then
-    sudo aptitude -y install \
-        build-essential g++ cmake \
-        git subversion mercurial \
-        unzip \
-        libqt4-dev libqt4-opengl-dev libqtwebkit-dev \
-        libboost-all-dev \
-        libogg-dev libvorbis-dev libtheora-dev libspeex-dev libspeexdsp-dev libvlc-dev \
+
+    print_title "Updating apt repositories"
+    sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+    sudo apt-get update
+
+    print_title "Fetching packages: Build tools and utils"
+    sudo apt-get -y install \
+        build-essential gcc-4.9 g++-4.9 \
+        cmake unzip 
+
+    print_title "Fetching packages: Source control"
+    sudo apt-get -y install \
+        git subversion mercurial
+
+    # Main class libraries
+    print_title "Fetching packages: Source control"
+    sudo apt-get -y install \
+        libqt4-dev libqt4-opengl-dev libqtwebkit-dev
+        # libboost-all-dev
+
+    print_title "Fetching packages: Network and protocols"
+    sudo apt-get -y install \
         openssl libssl-dev \
-        libprotobuf-dev libprotobuf-c0 libprotobuf-c0-dev protobuf-c-compiler protobuf-compiler \
-        nvidia-cg-toolkit freeglut3-dev libxml2-dev libalut-dev \
-        liboil0.3-dev libxrandr-dev \
-        libfreetype6-dev libfreeimage-dev libzzip-dev \
-        libxaw7-dev libgl1-mesa-dev libglu1-mesa-dev
+        libprotobuf-dev libprotobuf-c0 libprotobuf-c0-dev \
+        protobuf-c-compiler protobuf-compiler
+
+    print_title "Fetching packages: Audio and video"
+    sudo apt-get -y install \
+        libalut-dev libogg-dev libvorbis-dev libtheora-dev \
+        libspeex-dev libspeexdsp-dev libvlc-dev
+
+    print_title "Fetching packages: Graphics"
+    sudo apt-get -y install \
+        libgl1-mesa-dev libglu1-mesa-dev \
+        freeglut3-dev \
+        libxaw7-dev libxrandr-dev \
+        nvidia-cg-toolkit
+
+    print_title "Fetching packages: Ogre dependencies"
+    sudo apt-get -y install \
+        libfreetype6-dev libfreeimage-dev \
+        libzzip-dev
+
+    # unknown
+    # libxml2-dev liboil0.3-dev 
 fi
 
+export CC="gcc-4.9"
+export CXX="g++-4.9"
 export PKG_CONFIG_PATH=$DEPS_LIB/pkgconfig
 export QTDIR=`qmake -query QT_INSTALL_PREFIX`
+
+CXX_FLAGS="-std=c++11 -O3 -Wno-ignored-qualifiers -Wno-unused-parameter -Wno-unused-but-set-parameter -Wno-cast-qual"
+SHARED_LINKER_FLAGS="-Wl,-O1 -Wl,--no-undefined -Wl,-rpath-link,$DEPS_LIB"
+EXE_LINKER_FLAGS="-Wl,-O1 -Wl,--no-undefined -Wl,-rpath-link,$DEPS_LIB"
 
 if [ "$skip_deps" = false ] ; then
 
     # meshmoon-builder will do most of the heavy lifting for us
 
     meshmoon-builder -config $TOOLS_PATH/meshmoon-deps.json -prefix $DEPS
-
-    #### bullet
-
-    if ! is_built bullet ; then
-        cmake -DCMAKE_INSTALL_PREFIX=$DEPS -DBUILD_DEMOS=OFF -DBUILD_{NVIDIA,AMD,MINICL}_OPENCL_DEMOS=OFF \
-              -DBUILD_CPU_DEMOS=OFF -DINSTALL_EXTRA_LIBS=ON -DCMAKE_CXX_FLAGS_RELEASE="-O2 -g -fPIC" \
-              -DCMAKE_DEBUG_POSTFIX= -DCMAKE_MINSIZEREL_POSTFIX= -DCMAKE_RELWITHDEBINFO_POSTFIX=
-
-        make -j $num_cpu -S
-        make install
-        
-        mark_built bullet
-    fi
-
-    #### knet
-
-    if ! is_built kNet ; then
-        sed -e "s/kNet STATIC/kNet SHARED/" < CMakeLists.txt > x
-        mv x CMakeLists.txt
-
-        cmake -DUSE_TINYXML:BOOL=FALSE
-
-        make -j $num_cpu -S
-        cp lib/libkNet.so $DEPS_LIB/
-        rsync -r include/* $DEPS_INC/
-
-        mark_built kNet
-    fi
+    meshmoon-builder -config $TOOLS_PATH/meshmoon-plugins.json -prefix $TUNDRA
 
     #### realxtend-tundra-deps/hydrax
 
     if ! is_built realxtend-tundra-deps/hydrax ; then
-        sed -i 's!^OGRE_CFLAGS.*!OGRE_CFLAGS = $(shell pkg-config OGRE --cflags)!' makefile
-        sed -i 's!^OGRE_LDFLAGS.*!OGRE_LDFLAGS = $(shell pkg-config OGRE --libs)!' makefile
+        cmake -Wno-dev \
+              -DCMAKE_CXX_FLAGS="$CXX_FLAGS" \
+              -DCMAKE_SHARED_LINKER_FLAGS="$SHARED_LINKER_FLAGS" \
+              -DCMAKE_EXE_LINKER_FLAGS="$EXE_LINKER_FLAGS" \
+              -DCMAKE_INSTALL_PREFIX=$DEPS \
+              -DCMAKE_MODULE_PATH=$DEPS_LIB/OGRE/cmake \
+              -DUSE_BOOST=FALSE \
+              -DOGRE_HOME=$DEPS \
+              -DTBB_HOME=$DEPS_SRC/tbb
+
+        make -j $num_cpu -S -f Makefile
         
-        make -j $num_cpu -S PREFIX=$DEPS
-        make PREFIX=$DEPS install
+        mkdir -p $DEPS_INC/Hydrax
+        cp lib/libHydrax.so $DEPS_LIB/
+        cp -r include/* $DEPS_INC/Hydrax/
 
         mark_built realxtend-tundra-deps/hydrax
     fi
@@ -175,10 +203,19 @@ if [ "$skip_deps" = false ] ; then
     #### realxtend-tundra-deps/skyx
 
     if ! is_built realxtend-tundra-deps/skyx ; then
-        env OGRE_HOME=$DEPS/lib/OGRE cmake -DCMAKE_INSTALL_PREFIX=$DEPS .
-        make -j $num_cpu -S PREFIX=$DEPS
-        make PREFIX=$DEPS install
-        
+        cmake -Wno-dev \
+              -DCMAKE_CXX_FLAGS="$CXX_FLAGS" \
+              -DCMAKE_SHARED_LINKER_FLAGS="$SHARED_LINKER_FLAGS" \
+              -DCMAKE_EXE_LINKER_FLAGS="$EXE_LINKER_FLAGS" \
+              -DCMAKE_INSTALL_PREFIX=$DEPS \
+              -DCMAKE_MODULE_PATH=$DEPS_LIB/OGRE/cmake \
+              -DUSE_BOOST=FALSE \
+              -DOGRE_HOME=$DEPS \
+              -DTBB_HOME=$DEPS_SRC/tbb
+
+        make -j $num_cpu -S
+        make install
+
         mark_built realxtend-tundra-deps/skyx
     fi
 
@@ -222,7 +259,16 @@ if [ "$skip_deps" = false ] ; then
     fi
 fi
 
-# tundra cmake
+# Sync dynamic libraries
+
+rsync -u -L $DEPS_LIB/*.so* $TUNDRA_BIN/
+rsync -u -L $DEPS_LIB/OGRE/Plugin_CgProgramManager.so* \
+            $DEPS_LIB/OGRE/Plugin_ParticleFX.so* \
+            $DEPS_LIB/OGRE/Plugin_OctreeSceneManager.so* \
+            $DEPS_LIB/OGRE/RenderSystem_*.so* \
+            $TUNDRA_BIN/
+
+# Tundra cmake
 
 if [ "$skip_cmake" = false ] ; then
     export TUNDRA_DEP_PATH=$DEPS
@@ -232,15 +278,20 @@ if [ "$skip_cmake" = false ] ; then
     export SKYX_HOME=$DEPS
     export HYDRAX_HOME=$DEPS
 
-    export QTDIR=`qmake -query QT_INSTALL_PREFIX`
-    export BOOST_ROOT=/usr
-
     cd $TUNDRA
     rm -f CMakeCache.txt
-    cmake -DINSTALL_BINARIES_ONLY=TRUE
+    cmake -Wno-dev \
+          -DMAKE_MESHMOON_SERVER=TRUE \
+          -DTUNDRA_NO_BOOST=TRUE \
+          -DTUNDRA_CPP11_ENABLED=TRUE \
+          -DINSTALL_BINARIES_ONLY=TRUE \
+          -DCMAKE_SKIP_RPATH=TRUE \
+          -DCMAKE_CXX_FLAGS="$CXX_FLAGS" \
+          -DCMAKE_SHARED_LINKER_FLAGS="$SHARED_LINKER_FLAGS" \
+          -DCMAKE_EXE_LINKER_FLAGS="$EXE_LINKER_FLAGS"
 fi
 
-# tundra build
+# Tundra build
 
 if [ "$skip_build" = false ] ; then
     cd $TUNDRA

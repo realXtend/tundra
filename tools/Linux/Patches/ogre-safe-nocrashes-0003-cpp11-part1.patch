@@ -1,0 +1,42 @@
+# HG changeset patch
+# User jonnenauha
+# Date 1406237663 -10800
+#      Fri Jul 25 00:34:23 2014 +0300
+# Branch v1-9
+# Node ID e8f1eed6158a2a5db6994ef2048f1163cc1edab0
+# Parent  fd35d2243efc5ebbe7bb7e20d372a628cbd1c058
+Fix build for c++11 + TBB threading.
+
+diff -r fd35d2243efc -r e8f1eed6158a OgreMain/include/OgreWorkQueue.h
+--- a/OgreMain/include/OgreWorkQueue.h	Wed Jul 23 21:26:12 2014 +0300
++++ b/OgreMain/include/OgreWorkQueue.h	Fri Jul 25 00:34:23 2014 +0300
+@@ -219,7 +219,7 @@
+ 		};
+ 
+ 		WorkQueue() : mNextChannel(0) {}
+-		virtual ~WorkQueue() {}
++		virtual ~WorkQueue() noexcept (false) {}
+ 
+ 		/** Start up the queue with the options that have been set.
+ 		@param forceRestart If the queue is already running, whether to shut it
+@@ -366,7 +366,7 @@
+ 		@param name Optional name, just helps to identify logging output
+ 		*/
+ 		DefaultWorkQueueBase(const String& name = StringUtil::BLANK);
+-		virtual ~DefaultWorkQueueBase();
++		virtual ~DefaultWorkQueueBase() noexcept (false);
+ 		/// Get the name of the work queue
+ 		const String& getName() const;
+ 		/** Get the number of worker threads that this queue will start when 
+diff -r fd35d2243efc -r e8f1eed6158a OgreMain/src/OgreWorkQueue.cpp
+--- a/OgreMain/src/OgreWorkQueue.cpp	Wed Jul 23 21:26:12 2014 +0300
++++ b/OgreMain/src/OgreWorkQueue.cpp	Fri Jul 25 00:34:23 2014 +0300
+@@ -108,7 +108,7 @@
+ 		mWorkerRenderSystemAccess = access;
+ 	}
+ 	//---------------------------------------------------------------------
+-	DefaultWorkQueueBase::~DefaultWorkQueueBase()
++	DefaultWorkQueueBase::~DefaultWorkQueueBase() noexcept (false)
+ 	{
+ 		//shutdown(); // can't call here; abstract function
+ 

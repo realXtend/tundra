@@ -1,0 +1,38 @@
+# HG changeset patch
+# User jonnenauha
+# Date 1406139972 -10800
+#      Wed Jul 23 21:26:12 2014 +0300
+# Branch v1-9
+# Node ID fd35d2243efc5ebbe7bb7e20d372a628cbd1c058
+# Parent  d6fb78a77281a0d5e6b82d2bfcfccbcbf160be1b
+Fix finding freetype2 dependency correctly from system (libfreetype6-dev).
+
+diff -r d6fb78a77281 -r fd35d2243efc CMake/Packages/FindFreetype.cmake
+--- a/CMake/Packages/FindFreetype.cmake	Tue Jul 22 07:36:42 2014 +0300
++++ b/CMake/Packages/FindFreetype.cmake	Wed Jul 23 21:26:12 2014 +0300
+@@ -39,12 +39,10 @@
+ # prefer static library over framework 
+ set(CMAKE_FIND_FRAMEWORK "LAST")
+ 
+-message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+ findpkg_framework(FREETYPE)
+-message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+ 
+-find_path(FREETYPE_INCLUDE_DIR NAMES freetype/freetype.h HINTS ${FREETYPE_INC_SEARCH_PATH} ${FREETYPE_PKGC_INCLUDE_DIRS} PATH_SUFFIXES freetype2)
+-find_path(FREETYPE_FT2BUILD_INCLUDE_DIR NAMES ft2build.h HINTS ${FREETYPE_INC_SEARCH_PATH} ${FREETYPE_PKGC_INCLUDE_DIRS})
++find_path(FREETYPE_INCLUDE_DIR NAMES freetype.h HINTS ${FREETYPE_INC_SEARCH_PATH} ${FREETYPE_PKGC_INCLUDE_DIRS} PATH_SUFFIXES freetype2)
++find_path(FREETYPE_FT2BUILD_INCLUDE_DIR NAMES ft2build.h HINTS ${FREETYPE_INC_SEARCH_PATH} ${FREETYPE_PKGC_INCLUDE_DIRS} PATH_SUFFIXES freetype2)
+ 
+ find_library(FREETYPE_LIBRARY_REL NAMES ${FREETYPE_LIBRARY_NAMES} HINTS ${FREETYPE_LIB_SEARCH_PATH} ${FREETYPE_PKGC_LIBRARY_DIRS} PATH_SUFFIXES "" Release RelWithDebInfo MinSizeRel)
+ find_library(FREETYPE_LIBRARY_DBG NAMES ${FREETYPE_LIBRARY_NAMES_DBG} HINTS ${FREETYPE_LIB_SEARCH_PATH} ${FREETYPE_PKGC_LIBRARY_DIRS} PATH_SUFFIXES "" Debug)
+diff -r d6fb78a77281 -r fd35d2243efc CMake/Utils/FindPkgMacros.cmake
+--- a/CMake/Utils/FindPkgMacros.cmake	Tue Jul 22 07:36:42 2014 +0300
++++ b/CMake/Utils/FindPkgMacros.cmake	Wed Jul 23 21:26:12 2014 +0300
+@@ -14,6 +14,7 @@
+ # Begin processing of package
+ macro(findpkg_begin PREFIX)
+   if (NOT ${PREFIX}_FIND_QUIETLY)
++    message(" ")
+     message(STATUS "Looking for ${PREFIX}...")
+   endif ()
+ endmacro(findpkg_begin)

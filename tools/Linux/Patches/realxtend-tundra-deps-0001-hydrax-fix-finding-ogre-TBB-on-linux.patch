@@ -1,0 +1,50 @@
+From 77c825101df115392590c5a416c42f8447d97572 Mon Sep 17 00:00:00 2001
+From: Jonne Nauha <jonne@adminotech.com>
+Date: Fri, 25 Jul 2014 01:56:38 +0300
+Subject: [PATCH] Hydrax: Fix finding ogre + TBB on linux.
+
+---
+ hydrax/CMakeLists.txt | 16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/hydrax/CMakeLists.txt b/hydrax/CMakeLists.txt
+index 81d11a0..428c592 100644
+--- a/hydrax/CMakeLists.txt
++++ b/hydrax/CMakeLists.txt
+@@ -63,7 +63,11 @@ elseif (MSVC11)
+ endif()
+ set(TBB_LIB_VER ${TBB_ARCH}/${TBB_VC_VER})
+ 
+-link_directories(${OGRE_HOME}/lib/$(ConfigurationName) ${BOOST_ROOT}/stage/lib ${TBB_HOME}/lib/${TBB_LIB_VER})
++if (MSVC)
++    link_directories(${OGRE_HOME}/lib/$(ConfigurationName) ${BOOST_ROOT}/stage/lib ${TBB_HOME}/lib/${TBB_LIB_VER})
++else()
++    link_directories(${OGRE_HOME}/lib ${BOOST_ROOT}/stage/lib ${TBB_HOME}/lib/tbb_release)
++endif()
+ 
+ add_library(Hydrax SHARED ${sourceFiles} ${headerFiles})
+ 
+@@ -75,13 +79,17 @@ message("Hydrax TBB_HOME    = " ${TBB_HOME})
+ message("Hydrax BOOST_ROOT  = " ${BOOST_ROOT})
+ #message("Hydrax TBB lib path    = " ${TBB_HOME}/lib/${TBB_LIB_VER})
+ 
+-IF (APPLE)
++if (APPLE)
+     include_directories(${OGRE_HOME}/lib/relwithdebinfo/Ogre.framework/Headers ${BOOST_ROOT})
+     target_link_libraries(Hydrax ${EXTRA_LIBS})
+-ELSE ()
++elseif (MSVC)
+     include_directories(${OGRE_HOME}/include/OGRE ${BOOST_ROOT} ${TBB_HOME}/include)
+     target_link_libraries(Hydrax optimized OgreMain.lib debug OgreMain_d.lib)
+-ENDIF ()
++elseif (UNIX)
++    include_directories(${OGRE_HOME}/include/OGRE ${BOOST_ROOT} ${TBB_HOME}/include)
++    target_link_libraries(Hydrax OgreMain tbb pthread)
++endif()
++
+ target_link_libraries(Hydrax ${EXTRA_LIBS})
+ set_target_properties(Hydrax PROPERTIES
+     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib
+-- 
+1.9.1
+

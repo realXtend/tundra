@@ -2,6 +2,16 @@
     "Project" : "Meshmoon Tundra Dependencies",
     "Prefix"  : "../../deps",
 
+    "Settings" : [ {
+            "Tool" : "cmake",
+            "Parameters" : [
+                "-Wno-dev",
+                "-DCMAKE_CXX_FLAGS=-std=c++11 -O3 -Wno-ignored-qualifiers -Wno-unused-parameter -Wno-unused-but-set-parameter -Wno-cast-qual",
+                "-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-O1 -Wl,--no-undefined"
+            ]
+        }
+    ],
+
     "Targets" :
     [
         {
@@ -22,28 +32,88 @@
         {
             "Name"      : "bullet",
             "Repo"      : "bullet.googlecode.com/files/bullet-2.81-rev2613.tgz",
-            "SkipBuild" : true
+            "Settings"  : [ { 
+                    "Tool" : "cmake", 
+                    "Parameters" : [
+                        "-DBUILD_DEMOS=OFF",
+                        "-DBUILD_CPU_DEMOS=OFF",
+                        "-DINSTALL_EXTRA_LIBS=ON",
+                        "-DCMAKE_CXX_FLAGS_RELEASE=-O2 -g -fPIC"
+                    ]
+                } 
+            ]
+
         },
         {
-            "Repo"      : "github.com/juj/kNet",
-            "Revision"  : "stable",
-            "SkipBuild" : true
+            "Repo"        : "github.com/juj/kNet",
+            "Revision"    : "stable",
+            "SkipInstall" : true,
+            "Patches"     : [
+                "Patches/kNet-0001-build-as-dynamic-lib.patch"
+            ],
+            "Settings"    : [ { 
+                    "Tool" : "cmake", 
+                    "Parameters" : [
+                        "-DUSE_BOOST=FALSE",
+                        "-DUSE_TINYXML=FALSE",
+                        "-DUSE_QT=FALSE"
+                    ]
+                } 
+            ],
+            "PostBuild"   : [ {
+                    "Cmd" : "COPY",
+                    "Parameters" : [
+                        "lib/libkNet.so", "${prefix}/lib/",
+                        "include/*", "${prefix}/include/"
+                    ]
+                }
+            ]
+        },
+        {
+            "Name"        : "tbb",
+            "Repo"        : "https://www.threadingbuildingblocks.org/sites/default/files/software_releases/source/tbb42_20140601oss_src.tgz",
+            "SkipInstall" : true,
+            "Settings"    : [ { 
+                    "Tool" : "make", 
+                    "Parameters" : [ 
+                        "tbb_build_dir=lib", 
+                        "tbb_build_prefix=tbb"
+                    ]
+                } 
+            ]            
         },
         {
             "Repo"      : "bitbucket.org/clb/ogre-safe-nocrashes",
             "Tool"      : "hg",
             "Revision"  : "v1-9",
             "Config"    : "meshmoon-deps-ogre.json",
-            "Patches"   :
-            [
-                "Patches/ogre-safe-nocrashes-0001-add-headless-renderer.patch"
+            "Patches"   : [
+                "Patches/ogre-safe-nocrashes-0001-add-headless-renderer.patch",
+                "Patches/ogre-safe-nocrashes-0002-fix-finding-system-freetype2.patch",
+                "Patches/ogre-safe-nocrashes-0003-cpp11-part1.patch"
+            ],
+            "Settings"  : [ { 
+                    "Tool" : "cmake", 
+                    "Parameters" : [
+                        "-DTBB_HOME=${tbb}",
+                        "-DTBB_PKGC_LIBRARY_DIRS=${tbb}/lib/tbb_release",
+                        "-DOGRE_USE_BOOST=FALSE",
+                        "-DOGRE_BUILD_PLUGIN_BSP=FALSE",
+                        "-DOGRE_BUILD_PLUGIN_PCZ=FALSE",
+                        "-DOGRE_BUILD_COMPONENT_PAGING=FALSE",
+                        "-DOGRE_BUILD_COMPONENT_PROPERTY=FALSE",
+                        "-DOGRE_BUILD_COMPONENT_TERRAIN=FALSE",
+                        "-DOGRE_BUILD_COMPONENT_RTSHADERSYSTEM=FALSE",
+                        "-DOGRE_BUILD_COMPONENT_VOLUME=FALSE",
+                        "-DOGRE_BUILD_SAMPLES=FALSE"
+                    ]
+                } 
             ]
         },
         {
             "Repo"      : "git.gitorious.org/qt-labs/qtscriptgenerator",
             "SkipBuild" : true,
-            "Patches"   :
-            [
+            "Patches"   : [
                 "Patches/qtscriptgenerator-0001-force-webkit-and-phonon-plugins.patch"
             ]
         },
@@ -55,7 +125,11 @@
             "Repo"      : "code.google.com/p/realxtend-tundra-deps",
             "Tool"      : "git",
             "Branch"    : "sources",
-            "SkipBuild" : true
+            "SkipBuild" : true,
+            "Patches"    : [
+                "Patches/realxtend-tundra-deps-0001-hydrax-fix-finding-ogre-TBB-on-linux.patch",
+                "Patches/realxtend-tundra-deps-0002-skyx-dont-override-CMAKE_MODULE_PATH.patch"
+            ]
         }
     ]
 }

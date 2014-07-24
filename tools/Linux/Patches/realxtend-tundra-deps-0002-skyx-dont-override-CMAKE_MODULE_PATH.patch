@@ -1,0 +1,25 @@
+From ed4f575414a3f8f97df56ab8a070e949139b97c0 Mon Sep 17 00:00:00 2001
+From: Jonne Nauha <jonne@adminotech.com>
+Date: Fri, 25 Jul 2014 01:59:59 +0300
+Subject: [PATCH] Skyx: Dont override CMAKE_MODULE_PATH that can be passed from
+ cmd line.
+
+---
+ skyx/CMakeLists.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/skyx/CMakeLists.txt b/skyx/CMakeLists.txt
+index 1e2e431..f477447 100644
+--- a/skyx/CMakeLists.txt
++++ b/skyx/CMakeLists.txt
+@@ -19,6 +19,7 @@ cmake_policy(SET CMP0003 NEW)
+ project(SKYX)
+ # Include necessary submodules
+ set(CMAKE_MODULE_PATH
++  "${CMAKE_MODULE_PATH}"
+   "${SKYX_SOURCE_DIR}/CMake"
+   "${SKYX_SOURCE_DIR}/CMake/Utils"
+ )
+-- 
+1.9.1
+

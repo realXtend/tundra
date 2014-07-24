@@ -1,0 +1,16 @@
+{
+    "Project" : "Meshmoon Plugins",
+    "Prefix"  : "../..",
+
+    "Targets" :
+    [
+        {
+            "Repo"      : "git@github.com:Adminotech/admino-plugins",
+            "SkipBuild" : true
+        },
+        {
+            "Repo"      : "git@github.com:Adminotech/admino-server",
+            "SkipBuild" : true
+        }
+    ]
+}
