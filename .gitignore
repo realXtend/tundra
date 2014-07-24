@@ -46,6 +46,7 @@ Makefile
 *.o
 *.a
 *.so
+bin/*.so*
 
 # CMake -specific
 *.cmake

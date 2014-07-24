@@ -32,10 +32,6 @@ endif()
 # with Boost disabled. See the dependencies scripts for instructions how to control this.
 # On Linux TUNDRA_NO_BOOST can not yet be used
 option(TUNDRA_NO_BOOST "Specifies whether Tundra is built without Boost." ON)
-# TODO No-Boost support for Linux.
-if (NOT WIN32 AND NOT APPLE)
-    set(TUNDRA_NO_BOOST OFF)
-endif()
 
 option(TUNDRA_CPP11_ENABLED "Enables usage of certain C++11 features on Tundra." FALSE)
 
@@ -70,6 +66,8 @@ if (APPLE AND TUNDRA_CPP11_ENABLED) # todo: Test if this works on Linux too
     else()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
     endif()
+elseif (UNIX AND TUNDRA_CPP11_ENABLED)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 elseif (MSVC AND TUNDRA_CPP11_ENABLED)
     # MSVC has partial C++11 support beginning in VC10
     if (MSVC90)
