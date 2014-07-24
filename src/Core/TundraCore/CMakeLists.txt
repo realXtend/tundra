@@ -69,6 +69,8 @@ link_modules(Math)
 # Add log library on Android
 if (ANDROID)
     target_link_libraries (${TARGET_NAME} log)
+elseif (UNIX)
+    target_link_libraries (${TARGET_NAME} dl)
 endif()
 
 SetupCompileFlagsWithPCH()
