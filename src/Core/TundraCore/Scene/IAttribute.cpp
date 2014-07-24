@@ -475,13 +475,13 @@ Color ColorFromQVariant(const QVariant &variant)
         // so outside of it, its already a programmer error.
         Color color;
         QVariantMap map = variant.toMap();
-        if (map.contains("r") && map["r"].type() == QVariant::Double || map["r"].type() == QVariant::Int)
+        if (map.contains("r") && (map["r"].type() == QVariant::Double || map["r"].type() == QVariant::Int))
             color.r = map["r"].toFloat();
-        if (map.contains("g") && map["g"].type() == QVariant::Double || map["g"].type() == QVariant::Int)
+        if (map.contains("g") && (map["g"].type() == QVariant::Double || map["g"].type() == QVariant::Int))
             color.g = map["g"].toFloat();
-        if (map.contains("b") && map["b"].type() == QVariant::Double || map["b"].type() == QVariant::Int)
+        if (map.contains("b") && (map["b"].type() == QVariant::Double || map["b"].type() == QVariant::Int))
             color.b = map["b"].toFloat();
-        if (map.contains("a") && map["a"].type() == QVariant::Double || map["a"].type() == QVariant::Int)
+        if (map.contains("a") && (map["a"].type() == QVariant::Double || map["a"].type() == QVariant::Int))
             color.a = map["a"].toFloat();
         return color;
     }
