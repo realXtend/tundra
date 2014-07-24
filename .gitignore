@@ -77,6 +77,7 @@ doc/html/
 *#
 
 # Tundra bin/ and build/ files
+bin/Tundra
 bin/Tundra*.exe
 bin/fullmemoryleaklog.txt
 bin/qtplugins
