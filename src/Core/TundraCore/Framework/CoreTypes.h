@@ -64,6 +64,8 @@ typedef unsigned int component_id_t;
           This has not been tested yet on Linux, at least to my knowledge. -cs */
 #ifndef TUNDRA_NO_BOOST
 #define CORETYPES_NAMESPACE boost
+#elif defined(Q_OS_LINUX)
+#define CORETYPES_NAMESPACE std
 #elif defined(_MSC_VER) && (_MSC_VER == 1500) || (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 2 && !defined(__APPLE__))
 #define CORETYPES_NAMESPACE std::tr1
 #elif defined(_MSC_VER) && (_MSC_VER >= 1600) || (defined(__APPLE__) && defined(__clang__) && __clang_major__ == 4 && __clang_minor__ == 2) || (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ >= 8 && !defined(__APPLE__))
@@ -92,7 +94,7 @@ using CORETYPES_NAMESPACE::unordered_multimap;
     If make_shared is not available, the shared_ptr is constructed using the old-fashioned way.
     @todo Although make_shared is a nice little optimization, consider if this macro workaround
     is worth the trouble and worth keeping. */
-#if !defined(TUNDRA_NO_BOOST) || (defined(_MSC_VER) && (_MSC_VER >= 1600)) || (defined(__APPLE__) && defined(__clang__) && __clang_major__ == 4 && __clang_minor__ == 2)
+#if !defined(TUNDRA_NO_BOOST) || (defined(_MSC_VER) && (_MSC_VER >= 1600)) || defined(Q_OS_LINUX) || (defined(__APPLE__) && defined(__clang__) && __clang_major__ == 4 && __clang_minor__ == 2)
 #define MAKE_SHARED(type, ...) CORETYPES_NAMESPACE::make_shared<type>(__VA_ARGS__)
 #else
 #define MAKE_SHARED(type, ...) shared_ptr<type>(new type(__VA_ARGS__))
