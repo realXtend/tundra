@@ -1,6 +1,5 @@
 {
     "Project" : "Meshmoon Plugins",
-    "Prefix"  : "../..",
 
     "Targets" :
     [
