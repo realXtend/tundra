@@ -58,6 +58,11 @@
 #include <crtdbg.h>
 #endif
 
+#if defined(__linux__)
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
 #include "MemoryLeakCheck.h"
 
 /// @note Modify these values from the root CMakeLists.txt if you are making a custom Tundra build.
