@@ -258,12 +258,25 @@ if [ "$skip_deps" = false ] ; then
 
         mark_built qt-solutions/qtpropertybrowser
     fi
+
+    #### boost
+
+    if ! is_built boost ; then
+        # Minimal build for the websocketpp library.
+        # The prefix is hidden inside boost folder so
+        # other projects an Tundra won't find it by accident.
+        ./bootstrap.sh
+        ./b2 install --prefix=$DEPS_SRC/boost/build --with-system
+
+        mark_built boost
+    fi
 fi
 
 # Sync dynamic libraries
 
 rsync -u -L $DEPS_LIB/*.so* $TUNDRA_BIN/
 rsync -u -L $DEPS_SRC/tbb/lib/tbb_release/*.so* $TUNDRA_BIN/
+rsync -u -L $DEPS_SRC/boost/build/lib/*.so* $TUNDRA_BIN/
 rsync -u -L $DEPS_LIB/OGRE/Plugin_CgProgramManager.so* \
             $DEPS_LIB/OGRE/Plugin_ParticleFX.so* \
             $DEPS_LIB/OGRE/Plugin_OctreeSceneManager.so* \
@@ -277,6 +290,7 @@ if [ "$skip_cmake" = false ] ; then
     export TUNDRA_DEP_PATH=$DEPS
     export OGRE_HOME=$DEPS_SRC/ogre-safe-nocrashes
     export TBB_HOME=$DEPS_SRC/tbb
+    export BOOST_ROOT=$DEPS_SRC/boost/build
     export KNET_DIR=$DEPS
     export BULLET_DIR=$DEPS
     export SKYX_HOME=$DEPS

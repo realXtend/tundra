@@ -111,6 +111,12 @@
             ]
         },
         {
+            "Name"      : "boost",
+            "Repo"      : "sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.gz/download",
+            "Tool"      : "tar",
+            "SkipBuild" : true
+        },
+        {
             "Repo"      : "git.gitorious.org/qt-labs/qtscriptgenerator",
             "SkipBuild" : true,
             "Patches"   : [
