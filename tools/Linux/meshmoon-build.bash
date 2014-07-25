@@ -10,6 +10,8 @@ cat << EOF
 Usage: $0 OPTIONS
 
 Options:
+  -s, --server           Build Meshmoon server.
+
   -np, --no-packages     Skip running OS package manager.
   -nc, --no-cmake        Skip running Tundra CMake
   -nb, --no-build        Skip building Tundra
@@ -64,6 +66,7 @@ skip_pkg=false
 skip_deps=false
 skip_cmake=false
 skip_build=false
+build_server="FALSE"
 
 # Parse command line args
 
@@ -72,6 +75,9 @@ while [[ $1 = -* ]]; do
     shift
 
     case $arg in
+        --server|-s)
+            build_server="TRUE"
+            ;;
         --no-packages|-np)
             skip_pkg=true
             ;;
@@ -279,7 +285,7 @@ if [ "$skip_cmake" = false ] ; then
     cd $TUNDRA
     rm -f CMakeCache.txt
     cmake -Wno-dev \
-          -DMAKE_MESHMOON_SERVER=TRUE \
+          -DMESHMOON_SERVER_BUILD="$build_server" \
           -DTUNDRA_NO_BOOST=TRUE \
           -DTUNDRA_CPP11_ENABLED=TRUE \
           -DINSTALL_BINARIES_ONLY=TRUE \
