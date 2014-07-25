@@ -324,7 +324,11 @@ include (FindOgre)
 include (FindDirectX)
 
 # Disable unnecessary build types
-set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
+if (NOT UNIX)
+    set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
+else()
+    set(CMAKE_CONFIGURATION_TYPES "" CACHE STRING "Configurations" FORCE)
+endif()
 
 if (MSVC)
     # In Visual Studio, use Unicode character set
