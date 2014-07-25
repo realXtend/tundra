@@ -71,12 +71,19 @@
 
         "Linux" :
         {
-            // Alternatively use system Ogre from /usr/lib/OGRE
-            "Folder"  : "../../naali-deps/install/lib/OGRE",
             "Plugins" :
             [
                 "RenderSystem_GL"
-            ]
+            ],
+
+            "Headless" :
+            {
+                "Renderer" : "Headless Rendering Subsystem",
+                "Plugins"  :
+                [
+                    "RenderSystem_Headless"
+                ]
+            }
         },
 
         "Mac" :
