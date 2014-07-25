@@ -129,11 +129,9 @@ if [ "$skip_pkg" = false ] ; then
     sudo apt-get -y install \
         git subversion mercurial
 
-    # Main class libraries
-    print_title "Fetching packages: Source control"
+    print_title "Fetching packages: Qt"
     sudo apt-get -y install \
         libqt4-dev libqt4-opengl-dev libqtwebkit-dev
-        # libboost-all-dev
 
     print_title "Fetching packages: Network and protocols"
     sudo apt-get -y install \
@@ -157,9 +155,6 @@ if [ "$skip_pkg" = false ] ; then
     sudo apt-get -y install \
         libfreetype6-dev libfreeimage-dev \
         libzzip-dev
-
-    # unknown
-    # libxml2-dev liboil0.3-dev 
 fi
 
 export CC="gcc-4.9"
@@ -262,6 +257,7 @@ fi
 # Sync dynamic libraries
 
 rsync -u -L $DEPS_LIB/*.so* $TUNDRA_BIN/
+rsync -u -L $DEPS_SRC/tbb/lib/tbb_release/*.so* $TUNDRA_BIN/
 rsync -u -L $DEPS_LIB/OGRE/Plugin_CgProgramManager.so* \
             $DEPS_LIB/OGRE/Plugin_ParticleFX.so* \
             $DEPS_LIB/OGRE/Plugin_OctreeSceneManager.so* \
@@ -271,8 +267,10 @@ rsync -u -L $DEPS_LIB/OGRE/Plugin_CgProgramManager.so* \
 # Tundra cmake
 
 if [ "$skip_cmake" = false ] ; then
+
     export TUNDRA_DEP_PATH=$DEPS
     export OGRE_HOME=$DEPS_SRC/ogre-safe-nocrashes
+    export TBB_HOME=$DEPS_SRC/tbb
     export KNET_DIR=$DEPS
     export BULLET_DIR=$DEPS
     export SKYX_HOME=$DEPS
@@ -294,6 +292,7 @@ fi
 # Tundra build
 
 if [ "$skip_build" = false ] ; then
+
     cd $TUNDRA
     make -j $num_cpu -S
 fi
