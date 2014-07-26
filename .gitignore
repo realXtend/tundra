@@ -88,6 +88,7 @@ bin/media/SkyX
 bin/jsmodules/BrowserUi
 bin/asslogger.log
 build/
+build-installer/
 
 # Binary compiled translation files
 bin/data/translations/*.qm
