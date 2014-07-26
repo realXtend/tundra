@@ -27,7 +27,12 @@
 
 #include <kNet/DataSerializer.h>
 
+/** @todo Try building on windows without boost includes and ConnectionWeakPtr typedef.
+    This should really not be needed, as the other typedefs prove. Still did not want
+    to break the build before someone gives it a go on windows. */
+#ifndef Q_OS_LINUX
 #include <boost/weak_ptr.hpp>
+#endif
 
 class QScriptEngine;
 
@@ -35,7 +40,11 @@ namespace WebSocket
 {
     typedef shared_ptr<websocketpp::server<websocketpp::config::asio> > ServerPtr;
     typedef websocketpp::server<websocketpp::config::asio>::connection_ptr ConnectionPtr;
+#ifndef Q_OS_LINUX
     typedef boost::weak_ptr<websocketpp::server<websocketpp::config::asio>::connection_type> ConnectionWeakPtr;
+#else
+    typedef weak_ptr<websocketpp::server<websocketpp::config::asio>::connection_type> ConnectionWeakPtr;
+#endif
     typedef websocketpp::connection_hdl ConnectionHandle;
     typedef websocketpp::server<websocketpp::config::asio>::message_ptr MessagePtr;
     typedef shared_ptr<kNet::DataSerializer> DataSerializerPtr;
