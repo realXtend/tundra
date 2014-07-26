@@ -2,12 +2,17 @@
 
 set -e
 
+# Imports
+
+TOOLS_PATH=$(dirname $(readlink -f $0))
+source ${TOOLS_PATH}/meshmoon-utils.bash
+
 # Functions
 
 print_help()
 {
 cat << EOF
-Usage: $0 OPTIONS
+Usage: $(basename $0) OPTIONS
 
 Options:
   -s, --server           Build Meshmoon server.
@@ -22,43 +27,6 @@ Options:
   Note: Params cannot be combined to a single command eg. -ncnb).
 
 EOF
-}
-
-print_title()
-{
-    echo
-    echo $1
-    echo "----------------------------------------"
-}
-
-is_built()
-{
-    echo
-    echo $1
-
-    # Directory exists?
-    test -d "$DEPS_SRC/$1"
-    if [ $? -ne 0 ] ; then
-        echo "Error: Sources not found from $DEPS_SRC/$1"
-        exit $?
-    fi
-
-    # Build done marker file exists?
-    test -f "$DEPS_SRC/$1/meshmoon-builder.json"
-    result=$?
-    if [ $result -eq 0 ] ; then
-        echo "    Build      OK"
-        cd $DEPS
-    else
-        echo "    Building, please wait..."
-        cd $DEPS_SRC/$1
-    fi
-    return $result
-}
-
-mark_built()
-{
-    touch $DEPS_SRC/$1/meshmoon-builder.json
 }
 
 # Settings affected by comman line args
@@ -104,20 +72,18 @@ done
 
 # Paths
 
-TOOLS_PATH=$(dirname $(readlink -f $0))
+export TUNDRA=$(cd $TOOLS_PATH/../.. && pwd)
+export TUNDRA_BIN=$TUNDRA/bin
 
-TUNDRA=$(cd $TOOLS_PATH/../.. && pwd)
-TUNDRA_BIN=$TUNDRA/bin
-
-DEPS=$TUNDRA/deps
-DEPS_SRC=$DEPS/src
-DEPS_BIN=$DEPS/bin
-DEPS_LIB=$DEPS/lib
-DEPS_INC=$DEPS/include
+export DEPS=$TUNDRA/deps
+export DEPS_SRC=$DEPS/src
+export DEPS_BIN=$DEPS/bin
+export DEPS_LIB=$DEPS/lib
+export DEPS_INC=$DEPS/include
 
 # Misc
 
-num_cpu=`grep -c "^processor" /proc/cpuinfo`
+export num_cpu=`grep -c "^processor" /proc/cpuinfo`
 
 # Prepare
 
@@ -162,6 +128,12 @@ if [ "$skip_pkg" = false ] ; then
         libxaw7-dev libxrandr-dev \
         nvidia-cg-toolkit
 
+    if [ "$build_server" = "FALSE" ] ; then
+        print_title "Fetching packages: Rocket dependencies"
+        sudo apt-get -y install \
+            libxmu-dev libxi-dev
+    fi
+
     print_title "Fetching packages: Ogre dependencies"
     sudo apt-get -y install \
         libfreetype6-dev libfreeimage-dev \
@@ -173,9 +145,9 @@ export CXX="g++-4.9"
 export PKG_CONFIG_PATH=$DEPS_LIB/pkgconfig
 export QTDIR=`qmake -query QT_INSTALL_PREFIX`
 
-CXX_FLAGS="-std=c++11 -O3 -Wno-ignored-qualifiers -Wno-unused-parameter -Wno-unused-but-set-parameter -Wno-cast-qual"
-SHARED_LINKER_FLAGS="-Wl,-O1 -Wl,--no-undefined -Wl,-rpath-link,$DEPS_LIB"
-EXE_LINKER_FLAGS="-Wl,-O1 -Wl,--no-undefined -Wl,-rpath-link,$DEPS_LIB"
+export CXX_FLAGS="-std=c++11 -O3 -Wno-ignored-qualifiers -Wno-unused-parameter -Wno-unused-but-set-parameter -Wno-cast-qual"
+export SHARED_LINKER_FLAGS="-Wl,-O1 -Wl,--no-undefined -Wl,-rpath-link,$DEPS_LIB"
+export EXE_LINKER_FLAGS="-Wl,-O1 -Wl,--no-undefined -Wl,-rpath-link,$DEPS_LIB"
 
 if [ "$skip_deps" = false ] ; then
 
@@ -275,6 +247,10 @@ if [ "$skip_deps" = false ] ; then
 
         mark_built boost
     fi
+
+    if [ "$build_server" = "FALSE" ] ; then
+        $TUNDRA/src/admino-plugins/tools/Linux/Ubuntu/meshmoon-build-deps.bash
+    fi
 fi
 
 # Sync dynamic libraries
@@ -293,9 +269,13 @@ rsync -u -L $DEPS_LIB/OGRE/Plugin_CgProgramManager.so* \
 if [ "$skip_cmake" = false ] ; then
 
     export TUNDRA_DEP_PATH=$DEPS
+
     export OGRE_HOME=$DEPS_SRC/ogre-safe-nocrashes
     export TBB_HOME=$DEPS_SRC/tbb
     export BOOST_ROOT=$DEPS_SRC/boost/build
+    export TRITON_PATH=$DEPS_SRC/triton
+    export SILVERLINING_PATH=$DEPS_SRC/silverlining
+
     export KNET_DIR=$DEPS
     export BULLET_DIR=$DEPS
     export SKYX_HOME=$DEPS
@@ -305,6 +285,7 @@ if [ "$skip_cmake" = false ] ; then
     rm -f CMakeCache.txt
     cmake -Wno-dev \
           -DMESHMOON_SERVER_BUILD="$build_server" \
+          -DROCKET_OCULUS_ENABLED=FALSE \
           -DTUNDRA_NO_BOOST=TRUE \
           -DTUNDRA_CPP11_ENABLED=TRUE \
           -DINSTALL_BINARIES_ONLY=TRUE \
