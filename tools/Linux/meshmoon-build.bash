@@ -11,6 +11,7 @@ Usage: $0 OPTIONS
 
 Options:
   -s, --server           Build Meshmoon server.
+  -p, --package          Build .deb package from results.
 
   -np, --no-packages     Skip running OS package manager.
   -nc, --no-cmake        Skip running Tundra CMake
@@ -66,6 +67,7 @@ skip_pkg=false
 skip_deps=false
 skip_cmake=false
 skip_build=false
+skip_packager=true
 build_server="FALSE"
 
 # Parse command line args
@@ -89,6 +91,9 @@ while [[ $1 = -* ]]; do
             ;;
         --no-build|-nb)
             skip_build=true
+            ;;
+        --package|-p)
+            skip_packager=false
             ;;
         --help|-h)
             print_help
@@ -315,4 +320,10 @@ if [ "$skip_build" = false ] ; then
 
     cd $TUNDRA
     make -j $num_cpu -S
+fi
+
+# Package
+
+if [ "$skip_packager" = false ] ; then
+    $TOOLS_PATH/meshmoon-packager.bash
 fi
