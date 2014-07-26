@@ -113,11 +113,11 @@ src/admino*
 bin/7za.exe
 bin/crunch.exe
 bin/OgreXMLConverter*
-bin/viewer-admino.xml
-bin/asmo.xml
+bin/*.json
 bin/*client.bat
 bin/*server.bat
 bin/Rocket*
+bin/scenes/MeshmoonShader
 bin/media/meshmoon
 bin/data/cef
 bin/data/crash-reporter
