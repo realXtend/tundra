@@ -18,6 +18,8 @@ Options:
   -s, --server           Build Meshmoon server.
   -p, --package          Build .deb package from results.
 
+  --gcc                  Use gcc. Default: clang.
+
   -np, --no-packages     Skip running OS package manager.
   -nc, --no-cmake        Skip running Tundra CMake
   -nb, --no-build        Skip building Tundra
@@ -36,7 +38,13 @@ skip_deps=false
 skip_cmake=false
 skip_build=false
 skip_packager=true
-build_server="FALSE"
+
+# Clang is default. GCC >=4.9 works but
+# is not yet in Ubuntu default repos.
+# (We need it for c++11 regexp)
+
+build_with_clang=true
+build_server=false
 
 # Parse command line args
 
@@ -46,7 +54,7 @@ while [[ $1 = -* ]]; do
 
     case $arg in
         --server|-s)
-            build_server="TRUE"
+            build_server=true
             ;;
         --no-packages|-np)
             skip_pkg=true
@@ -91,16 +99,23 @@ mkdir -p $DEPS
 
 # Packages
 
-if [ "$skip_pkg" = false ] ; then
+if [ $skip_pkg = false ] ; then
 
-    print_title "Updating apt repositories"
-    sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-    sudo apt-get update
+    if [ $build_with_clang = true ] ; then
+        print_title "Fetching packages: Build tools and utils"
+        sudo apt-get -y install \
+            build-essential clang \
+            cmake unzip
+    else
+        print_title "Updating apt repositories from GCC 4.9"
+        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
 
-    print_title "Fetching packages: Build tools and utils"
-    sudo apt-get -y install \
-        build-essential gcc-4.9 g++-4.9 \
-        cmake unzip 
+        print_title "Fetching packages: Build tools and utils"
+        sudo apt-get -y install \
+            build-essential gcc-4.9 g++-4.9 \
+            cmake unzip
+    fi
 
     print_title "Fetching packages: Source control"
     sudo apt-get -y install \
@@ -128,7 +143,7 @@ if [ "$skip_pkg" = false ] ; then
         libxaw7-dev libxrandr-dev \
         nvidia-cg-toolkit
 
-    if [ "$build_server" = "FALSE" ] ; then
+    if [ $build_server = false ] ; then
         print_title "Fetching packages: Rocket dependencies"
         sudo apt-get -y install \
             libxmu-dev libxi-dev
@@ -140,16 +155,41 @@ if [ "$skip_pkg" = false ] ; then
         libzzip-dev
 fi
 
-export CC="gcc-4.9"
-export CXX="g++-4.9"
+# Export build tool env variables.
+
+if [ $build_with_clang = true ] ; then
+    export CXX_FLAGS="-O3 -std=c++11 -Wno-ignored-qualifiers -Wno-unused-parameter -Wno-cast-qual -Wno-deprecated-register -Wno-deprecated-declarations"
+    export C_FLAGS="-g0 -O3 -Wno-unused-variable"
+
+    export MESHMOON_BUILDER_TOOLSET="clang"
+    export MESHMOON_BUILDER_QMAKE_SPEC="unsupported/linux-clang"
+    export CC="clang $C_FLAGS"
+    export CXX="clang++"
+else
+    export CXX_FLAGS="-O3 -std=c++11 -Wno-ignored-qualifiers -Wno-unused-parameter -Wno-unused-but-set-parameter -Wno-cast-qual"
+    export C_FLAGS="-g0 -O3 -Wno-unused-variable"
+
+    export MESHMOON_BUILDER_TOOLSET="gcc"
+    export MESHMOON_BUILDER_QMAKE_SPEC="linux-g++-64"
+    export CC="gcc-4.9 $C_FLAGS"
+    export CXX="g++-4.9"
+fi
+
+export CXXFLAGS=$CXX_FLAGS
+export CFLAGS=$CFLAGS
+export LDFLAGS="-Wl,-O1 -Wl,--no-undefined"
+
 export PKG_CONFIG_PATH=$DEPS_LIB/pkgconfig
-export QTDIR=`qmake -query QT_INSTALL_PREFIX`
 
-export CXX_FLAGS="-std=c++11 -O3 -Wno-ignored-qualifiers -Wno-unused-parameter -Wno-unused-but-set-parameter -Wno-cast-qual"
-export SHARED_LINKER_FLAGS="-Wl,-O1 -Wl,--no-undefined -Wl,-rpath-link,$DEPS_LIB"
-export EXE_LINKER_FLAGS="-Wl,-O1 -Wl,--no-undefined -Wl,-rpath-link,$DEPS_LIB"
+export QTDIR=$(qmake -query QT_INSTALL_PREFIX)
 
-if [ "$skip_deps" = false ] ; then
+print_title "Build tools config"
+echo "    CC=$CC"
+echo "    CXX=$CXX"
+echo "    CXX_FLAGS=$CXX_FLAGS"
+echo "    LDFLAGS=$LDFLAGS"
+
+if [ $skip_deps = false ] ; then
 
     # meshmoon-builder will do most of the heavy lifting for us
 
@@ -161,8 +201,8 @@ if [ "$skip_deps" = false ] ; then
     if ! is_built realxtend-tundra-deps/hydrax ; then
         cmake -Wno-dev \
               -DCMAKE_CXX_FLAGS="$CXX_FLAGS" \
-              -DCMAKE_SHARED_LINKER_FLAGS="$SHARED_LINKER_FLAGS" \
-              -DCMAKE_EXE_LINKER_FLAGS="$EXE_LINKER_FLAGS" \
+              -DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
+              -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS" \
               -DCMAKE_INSTALL_PREFIX=$DEPS \
               -DCMAKE_MODULE_PATH=$DEPS_LIB/OGRE/cmake \
               -DUSE_BOOST=FALSE \
@@ -183,8 +223,8 @@ if [ "$skip_deps" = false ] ; then
     if ! is_built realxtend-tundra-deps/skyx ; then
         cmake -Wno-dev \
               -DCMAKE_CXX_FLAGS="$CXX_FLAGS" \
-              -DCMAKE_SHARED_LINKER_FLAGS="$SHARED_LINKER_FLAGS" \
-              -DCMAKE_EXE_LINKER_FLAGS="$EXE_LINKER_FLAGS" \
+              -DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
+              -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS" \
               -DCMAKE_INSTALL_PREFIX=$DEPS \
               -DCMAKE_MODULE_PATH=$DEPS_LIB/OGRE/cmake \
               -DUSE_BOOST=FALSE \
@@ -202,14 +242,14 @@ if [ "$skip_deps" = false ] ; then
     if ! is_built qtscriptgenerator ; then
         # Build generator
         cd generator
-        qmake
+        qmake -spec ${MESHMOON_BUILDER_QMAKE_SPEC}
         make -j $num_cpu -S
         ./generator --include-paths=`qmake -query QT_INSTALL_HEADERS`
 
         # Build bindings
         cd ../qtbindings
         sed -i 's/qtscript_phonon //' qtbindings.pro
-        qmake
+        qmake -spec ${MESHMOON_BUILDER_QMAKE_SPEC}
         make -j $num_cpu -S
         cd ..
 
@@ -226,7 +266,7 @@ if [ "$skip_deps" = false ] ; then
 
     if ! is_built qt-solutions/qtpropertybrowser ; then
         echo yes | ./configure -library
-        qmake
+        qmake -spec ${MESHMOON_BUILDER_QMAKE_SPEC}
         make -j $num_cpu -S
 
         # Note: luckily only extensionless headers under src match Qt*
@@ -242,13 +282,21 @@ if [ "$skip_deps" = false ] ; then
         # Minimal build for the websocketpp library.
         # The prefix is hidden inside boost folder so
         # other projects an Tundra won't find it by accident.
-        ./bootstrap.sh
-        ./b2 install --prefix=$DEPS_SRC/boost/build --with-system
+        cc_temp=$CC
+        if [ $build_with_clang = true ] ; then
+            # Boost does not like our FLAGS being embedded to $CC
+            export CC="clang"
+        fi
+        ./bootstrap.sh --with-toolset=${MESHMOON_BUILDER_TOOLSET}
+        ./b2 install toolset=${MESHMOON_BUILDER_TOOLSET} cxxflags="-O3 -std=c++11" --prefix=$DEPS_SRC/boost/build --with-system --with-regex
+        export CC="$cc_temp"
 
         mark_built boost
     fi
 
-    if [ "$build_server" = "FALSE" ] ; then
+    # Rocket deps
+
+    if [ $build_server = false ] ; then
         $TUNDRA/src/admino-plugins/tools/Linux/Ubuntu/meshmoon-build-deps.bash
     fi
 fi
@@ -266,7 +314,7 @@ rsync -u -L $DEPS_LIB/OGRE/Plugin_CgProgramManager.so* \
 
 # Tundra cmake
 
-if [ "$skip_cmake" = false ] ; then
+if [ $skip_cmake = false ] ; then
 
     export TUNDRA_DEP_PATH=$DEPS
 
@@ -281,23 +329,37 @@ if [ "$skip_cmake" = false ] ; then
     export SKYX_HOME=$DEPS
     export HYDRAX_HOME=$DEPS
 
+    # Add rpath lookup dir. Otherwise they wont be
+    # found as CMAKE_SKIP_RPATH is defined for Tundra.
+    # Boost is added separately as we didn't want to
+    # pollute $DEPS_LIB with Boost libs.
+    export LDFLAGS="$LDFLAGS -Wl,-rpath-link,$DEPS_LIB -Wl,-rpath-link,$DEPS_SRC/boost/build/lib/"
+
+    cmake_build_server="FALSE"
+    if [ $build_server = true ] ; then
+        cmake_build_server="FALSE"
+    fi
+
     cd $TUNDRA
     rm -f CMakeCache.txt
+    rm -rf CMakeFiles
     cmake -Wno-dev \
-          -DMESHMOON_SERVER_BUILD="$build_server" \
+          -DMESHMOON_SERVER_BUILD="$cmake_build_server" \
           -DROCKET_OCULUS_ENABLED=FALSE \
           -DTUNDRA_NO_BOOST=TRUE \
+          -DTUNDRA_BOOST_REGEX=TRUE \
+          -DTUNDRA_BOOST_SYSTEM=TRUE \
           -DTUNDRA_CPP11_ENABLED=TRUE \
           -DINSTALL_BINARIES_ONLY=TRUE \
           -DCMAKE_SKIP_RPATH=TRUE \
           -DCMAKE_CXX_FLAGS="$CXX_FLAGS" \
-          -DCMAKE_SHARED_LINKER_FLAGS="$SHARED_LINKER_FLAGS" \
-          -DCMAKE_EXE_LINKER_FLAGS="$EXE_LINKER_FLAGS"
+          -DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
+          -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS"
 fi
 
 # Tundra build
 
-if [ "$skip_build" = false ] ; then
+if [ $skip_build = false ] ; then
 
     cd $TUNDRA
     make -j $num_cpu -S
@@ -305,6 +367,6 @@ fi
 
 # Package
 
-if [ "$skip_packager" = false ] ; then
+if [ $skip_packager = false ] ; then
     $TOOLS_PATH/meshmoon-packager.bash
 fi
