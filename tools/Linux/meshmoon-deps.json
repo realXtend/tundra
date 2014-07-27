@@ -98,7 +98,8 @@
             "Patches"   : [
                 "Patches/ogre-safe-nocrashes-0001-add-headless-renderer.patch",
                 "Patches/ogre-safe-nocrashes-0002-fix-finding-system-freetype2.patch",
-                "Patches/ogre-safe-nocrashes-0003-cpp11-part1.patch"
+                "Patches/ogre-safe-nocrashes-0003-cpp11-part1.patch",
+                "Patches/ogre-safe-nocrashes-0004-enable-linux-headless-without-x11.patch"
             ],
             "Settings"  : [ { 
                     "Tool" : "cmake", 
@@ -108,6 +109,8 @@
                         "-DOGRE_USE_BOOST=FALSE",
                         "-DOGRE_BUILD_PLUGIN_BSP=FALSE",
                         "-DOGRE_BUILD_PLUGIN_PCZ=FALSE",
+                        "-DOGRE_BUILD_RENDERSYSTEM_GL=${ENV_MESHMOON_ROCKET_BUILD}",
+                        "-DOGRE_BUILD_HEADLESS=${ENV_MESHMOON_SERVER_BUILD}",
                         "-DOGRE_BUILD_COMPONENT_PAGING=FALSE",
                         "-DOGRE_BUILD_COMPONENT_PROPERTY=FALSE",
                         "-DOGRE_BUILD_COMPONENT_TERRAIN=FALSE",

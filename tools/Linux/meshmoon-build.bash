@@ -93,6 +93,13 @@ export DEPS_INC=$DEPS/include
 
 export num_cpu=`grep -c "^processor" /proc/cpuinfo`
 
+export MESHMOON_ROCKET_BUILD="TRUE"
+export MESHMOON_SERVER_BUILD="FALSE"
+if [ $build_server = true ] ; then
+    export MESHMOON_ROCKET_BUILD="FALSE"
+    export MESHMOON_SERVER_BUILD="TRUE"
+fi
+
 # Prepare
 
 mkdir -p $DEPS
@@ -123,7 +130,7 @@ if [ $skip_pkg = false ] ; then
 
     print_title "Fetching packages: Qt"
     sudo apt-get -y install \
-        libqt4-dev libqt4-opengl-dev libqtwebkit-dev
+        libqt4-dev libqtwebkit-dev
 
     print_title "Fetching packages: Network and protocols"
     sudo apt-get -y install \
@@ -191,10 +198,40 @@ echo "    LDFLAGS=$LDFLAGS"
 
 if [ $skip_deps = false ] ; then
 
+    # Ogre needs to be re-configured and built when going from
+    # Meshmoon Rocket to Meshmoon Server mode and vice versa.
+    # This enabled us to build a Ogre that does not link to x11,
+    # for a truely headless Meshmoon Server.
+
+    if file_exists $DEPS_SRC/ogre-safe-nocrashes/meshmoon-builder.json ; then
+        rebuild_ogre=false
+        if file_exists $DEPS_SRC/ogre-safe-nocrashes/meshmoon-builder-server.json ; then
+            if [ $build_server = false ] ; then
+                rebuild_ogre=true
+            fi
+        fi
+        if file_exists $DEPS_SRC/ogre-safe-nocrashes/meshmoon-builder-client.json ; then
+            if [ $build_server = true ] ; then
+                rebuild_ogre=true
+            fi
+        fi
+        if [ $rebuild_ogre = true ] ; then
+            rm -f $DEPS_SRC/ogre-safe-nocrashes/meshmoon-builder.json $DEPS_SRC/ogre-safe-nocrashes/meshmoon-builder-server.json $DEPS_SRC/ogre-safe-nocrashes/meshmoon-builder-client.json
+        fi
+    fi
+
     # meshmoon-builder will do most of the heavy lifting for us
 
     meshmoon-builder -config $TOOLS_PATH/meshmoon-deps.json -prefix $DEPS
     meshmoon-builder -config $TOOLS_PATH/meshmoon-plugins.json -prefix $TUNDRA
+
+    # Mark Ogre build mode
+
+    if [ $build_server = true ] ; then
+        touch $DEPS_SRC/ogre-safe-nocrashes/meshmoon-builder-server.json
+    else
+        touch $DEPS_SRC/ogre-safe-nocrashes/meshmoon-builder-client.json
+    fi
 
     #### realxtend-tundra-deps/hydrax
 
@@ -335,17 +372,15 @@ if [ $skip_cmake = false ] ; then
     # pollute $DEPS_LIB with Boost libs.
     export LDFLAGS="$LDFLAGS -Wl,-rpath-link,$DEPS_LIB -Wl,-rpath-link,$DEPS_SRC/boost/build/lib/"
 
-    cmake_build_server="FALSE"
-    if [ $build_server = true ] ; then
-        cmake_build_server="FALSE"
-    fi
+    print_title "Running Tundra CMake"
 
     cd $TUNDRA
     rm -f CMakeCache.txt
     rm -rf CMakeFiles
     cmake -Wno-dev \
-          -DMESHMOON_SERVER_BUILD="$cmake_build_server" \
           -DROCKET_OCULUS_ENABLED=FALSE \
+          -DMESHMOON_SERVER_BUILD="$MESHMOON_SERVER_BUILD" \
+          -DTUNDRA_NO_AUDIO="$MESHMOON_SERVER_BUILD" \
           -DTUNDRA_NO_BOOST=TRUE \
           -DTUNDRA_BOOST_REGEX=TRUE \
           -DTUNDRA_BOOST_SYSTEM=TRUE \
@@ -368,5 +403,6 @@ fi
 # Package
 
 if [ $skip_packager = false ] ; then
+
     $TOOLS_PATH/meshmoon-packager.bash
 fi

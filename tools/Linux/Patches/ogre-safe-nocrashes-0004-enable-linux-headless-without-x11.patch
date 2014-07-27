@@ -1,0 +1,114 @@
+# HG changeset patch
+# User jonnenauha
+# Date 1406500362 -10800
+#      Mon Jul 28 01:32:42 2014 +0300
+# Branch v1-9
+# Node ID 9fc683483cffabb3aafc7b8bd6f9a302da3cab4f
+# Parent  e8f1eed6158a2a5db6994ef2048f1163cc1edab0
+Enable Ogre to be built on UNIX without the need to link to x11 etc. with -DOGRE_BUILD_HEADLESS=TRUE
+
+diff -r e8f1eed6158a -r 9fc683483cff CMake/Dependencies.cmake
+--- a/CMake/Dependencies.cmake	Fri Jul 25 00:34:23 2014 +0300
++++ b/CMake/Dependencies.cmake	Mon Jul 28 01:32:42 2014 +0300
+@@ -82,12 +82,14 @@
+ 
+ # Find X11
+ if (UNIX AND NOT APPLE AND NOT ANDROID AND NOT FLASHCC)
+-  find_package(X11)
+-  macro_log_feature(X11_FOUND "X11" "X Window system" "http://www.x.org" TRUE "" "")
+-  macro_log_feature(X11_Xt_FOUND "Xt" "X Toolkit" "http://www.x.org" TRUE "" "")
+-  find_library(XAW_LIBRARY NAMES Xaw Xaw7 PATHS ${OGRE_DEP_SEARCH_PATH} ${DEP_LIB_SEARCH_DIR} ${X11_LIB_SEARCH_PATH})
+-  macro_log_feature(XAW_LIBRARY "Xaw" "X11 Athena widget set" "http://www.x.org" TRUE "" "")
+-  mark_as_advanced(XAW_LIBRARY)
++  if (NOT OGRE_BUILD_HEADLESS)
++    find_package(X11)
++    macro_log_feature(X11_FOUND "X11" "X Window system" "http://www.x.org" TRUE "" "")
++    macro_log_feature(X11_Xt_FOUND "Xt" "X Toolkit" "http://www.x.org" TRUE "" "")
++    find_library(XAW_LIBRARY NAMES Xaw Xaw7 PATHS ${OGRE_DEP_SEARCH_PATH} ${DEP_LIB_SEARCH_DIR} ${X11_LIB_SEARCH_PATH})
++    macro_log_feature(XAW_LIBRARY "Xaw" "X11 Athena widget set" "http://www.x.org" TRUE "" "")
++    mark_as_advanced(XAW_LIBRARY)
++  endif ()
+ endif ()
+ 
+ 
+diff -r e8f1eed6158a -r 9fc683483cff OgreMain/CMakeLists.txt
+--- a/OgreMain/CMakeLists.txt	Fri Jul 25 00:34:23 2014 +0300
++++ b/OgreMain/CMakeLists.txt	Mon Jul 28 01:32:42 2014 +0300
+@@ -611,22 +611,26 @@
+ 
+   set(PLATFORM_HEADER_INSTALL "FlashCC")
+ elseif (UNIX)
+-  include_directories(include/GLX ${X11_INCLUDE_DIR})
+-  set(PLATFORM_HEADERS
+-    include/GLX/OgreConfigDialogImp.h
+-    include/GLX/OgreErrorDialogImp.h
+-    include/GLX/OgreTimerImp.h
+-  )
+-  set(PLATFORM_SOURCE_FILES
+-    src/GLX/GLX_backdrop.h
+-    src/GLX/OgreConfigDialog.cpp
+-    src/GLX/OgreErrorDialog.cpp
+-    src/GLX/OgreFileSystemLayer.cpp
+-    src/GLX/OgreTimer.cpp
+-    src/OgreSearchOps.cpp
+-  )
+-  set(PLATFORM_LIBS ${X11_LIBRARIES} ${X11_Xt_LIB} ${XAW_LIBRARY} pthread)
+-  set(PLATFORM_HEADER_INSTALL "GLX")
++  if (NOT OGRE_BUILD_HEADLESS)
++    include_directories(include/GLX ${X11_INCLUDE_DIR})
++    set(PLATFORM_HEADERS
++      include/GLX/OgreConfigDialogImp.h
++      include/GLX/OgreErrorDialogImp.h
++      include/GLX/OgreTimerImp.h
++    )
++    set(PLATFORM_SOURCE_FILES
++      src/GLX/GLX_backdrop.h
++      src/GLX/OgreConfigDialog.cpp
++      src/GLX/OgreErrorDialog.cpp
++      src/GLX/OgreFileSystemLayer.cpp
++      src/GLX/OgreTimer.cpp
++      src/OgreSearchOps.cpp
++    )
++    set(PLATFORM_LIBS ${X11_LIBRARIES} ${X11_Xt_LIB} ${XAW_LIBRARY} pthread)
++    set(PLATFORM_HEADER_INSTALL "GLX")
++  else ()
++    set(PLATFORM_LIBS pthread)
++  endif ()
+   # some platforms require explicit linking to libdl, see if it's available
+   find_library(DL_LIBRARY NAMES dl dlsym)
+   mark_as_advanced(DL_LIBRARY)
+diff -r e8f1eed6158a -r 9fc683483cff RenderSystems/CMakeLists.txt
+--- a/RenderSystems/CMakeLists.txt	Fri Jul 25 00:34:23 2014 +0300
++++ b/RenderSystems/CMakeLists.txt	Mon Jul 28 01:32:42 2014 +0300
+@@ -29,7 +29,7 @@
+   endif ()
+ endif ()
+ 
+-if (OGRE_BUILD_RENDERSYSTEM_GL)
++if (OGRE_BUILD_RENDERSYSTEM_GL AND NOT OGRE_BUILD_HEADLESS)
+   if (NOT OPENGL_FOUND)
+     MESSAGE(STATUS "Could not find dependency: GL")
+ 	  MESSAGE(STATUS "Skipping GL rendersystem build")
+@@ -74,6 +74,8 @@
+     add_subdirectory(Stage3D)
+ endif()
+ 
+-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Headless)
+-    add_subdirectory (Headless)
++if (OGRE_BUILD_HEADLESS)
++  if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Headless)
++      add_subdirectory (Headless)
++  endif ()
+ endif ()
+diff -r e8f1eed6158a -r 9fc683483cff Tools/CMakeLists.txt
+--- a/Tools/CMakeLists.txt	Fri Jul 25 00:34:23 2014 +0300
++++ b/Tools/CMakeLists.txt	Mon Jul 28 01:32:42 2014 +0300
+@@ -10,7 +10,7 @@
+ # Configure Tools build
+ 
+ # Tools can't be run on the iOS so don't build them
+-if (NOT OGRE_BUILD_PLATFORM_APPLE_IOS AND NOT OGRE_BUILD_PLATFORM_WINRT)
++if (NOT OGRE_BUILD_PLATFORM_APPLE_IOS AND NOT OGRE_BUILD_PLATFORM_WINRT AND NOT OGRE_BUILD_HEADLESS)
+   add_subdirectory(XMLConverter)
+   add_subdirectory(MeshUpgrader)
+ endif (NOT OGRE_BUILD_PLATFORM_APPLE_IOS AND NOT OGRE_BUILD_PLATFORM_WINRT)
