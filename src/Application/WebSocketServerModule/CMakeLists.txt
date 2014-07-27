@@ -5,7 +5,7 @@ if (TUNDRA_NO_BOOST)
 	# Linux can cope with only system.
 	# TODO: Check if this is the same for windows.
 	if (UNIX)
-		set(TUNDRA_BOOST_LIBRARIES "system")
+		set(TUNDRA_BOOST_LIBRARIES system)
 	endif ()
     configure_boost()
 endif()
@@ -52,7 +52,12 @@ if (WIN32)
     )
 else()
     # Visual Studio uses library auto-linking, so this is only necessary for the other platforms.
-    target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+    # TODO: Check if APPLE work with only system and remove this check
+    if (UNIX)
+        target_link_libraries(${TARGET_NAME} optimized ${Boost_SYSTEM_LIBRARY_RELEASE} debug ${Boost_SYSTEM_LIBRARY_DEBUG})
+    else()
+        target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+    endif()
 endif()
 
 SetupCompileFlags()

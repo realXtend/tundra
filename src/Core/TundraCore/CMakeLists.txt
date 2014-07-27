@@ -49,13 +49,7 @@ else()
     build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 endif()
 
-if (NOT TUNDRA_NO_BOOST)
-    # Link Boost to Framework. All plugins link to framework, so Boost dependency will automatically propagate from here to each library.
-    if (UNIX OR APPLE) # Visual Studio uses library auto-linking, so this is only necessary for the other platforms.
-       target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
-    endif()
-endif()
-
+link_boost()
 link_package(QT4)
 link_package(QJSON)
 link_package_knet()     # Scene

@@ -45,8 +45,12 @@ typedef unsigned int component_id_t;
 #include <boost/unordered_map.hpp>
 #else
 #include <memory>
-#include <regex>
 #include <unordered_map>
+#ifndef TUNDRA_BOOST_REGEX
+#include <regex>
+#else
+#include <boost/regex.hpp>
+#endif
 #endif
 
 /** @def CORETYPES_NAMESPACE
@@ -72,6 +76,12 @@ typedef unsigned int component_id_t;
 #define CORETYPES_NAMESPACE std
 #endif
 
+#ifndef TUNDRA_BOOST_REGEX
+#define CORETYPES_REGEX_NAMESPACE CORETYPES_NAMESPACE
+#else
+#define CORETYPES_REGEX_NAMESPACE boost
+#endif
+
 // From <memory>:
 using CORETYPES_NAMESPACE::shared_ptr;
 using CORETYPES_NAMESPACE::weak_ptr;
@@ -79,12 +89,12 @@ using CORETYPES_NAMESPACE::dynamic_pointer_cast;
 using CORETYPES_NAMESPACE::static_pointer_cast;
 using CORETYPES_NAMESPACE::enable_shared_from_this;
 // From <regex>:
-using CORETYPES_NAMESPACE::regex;
-using CORETYPES_NAMESPACE::wregex;
-using CORETYPES_NAMESPACE::sregex_iterator;
-using CORETYPES_NAMESPACE::regex_search;
-using CORETYPES_NAMESPACE::smatch;
-using CORETYPES_NAMESPACE::wsmatch;
+using CORETYPES_REGEX_NAMESPACE::regex;
+using CORETYPES_REGEX_NAMESPACE::wregex;
+using CORETYPES_REGEX_NAMESPACE::sregex_iterator;
+using CORETYPES_REGEX_NAMESPACE::regex_search;
+using CORETYPES_REGEX_NAMESPACE::smatch;
+using CORETYPES_REGEX_NAMESPACE::wsmatch;
 // From <unordered_map>:
 using CORETYPES_NAMESPACE::unordered_map;
 using CORETYPES_NAMESPACE::unordered_multimap;

@@ -19,6 +19,7 @@ use_core_modules(TundraCore Math)
 
 build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
+link_boost()
 link_modules(TundraCore)
 
 SetupCompileFlags()

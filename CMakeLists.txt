@@ -32,6 +32,8 @@ endif()
 # with Boost disabled. See the dependencies scripts for instructions how to control this.
 # On Linux TUNDRA_NO_BOOST can not yet be used
 option(TUNDRA_NO_BOOST "Specifies whether Tundra is built without Boost." ON)
+option(TUNDRA_BOOST_REGEX "Enable regex from the Boost libraries. Can be used with TUNDRA_NO_BOOST=ON. Tip: Use if used STL does not implemement regex." OFF)
+option(TUNDRA_BOOST_SYSTEM "Enable system from the Boost libraries. Can be used with TUNDRA_NO_BOOST=ON. Tip: Use if building WebSocketServerModule." OFF)
 
 option(TUNDRA_CPP11_ENABLED "Enables usage of certain C++11 features on Tundra." FALSE)
 
@@ -396,9 +398,7 @@ endif ()
 message ("\n\n=========== Configuring Dependencies ===========\n")
 
 # Find needed external libraries, abort on error
-if (NOT TUNDRA_NO_BOOST)
-    configure_boost()
-endif()
+configure_boost()
 configure_qt4()
 configure_qjson()
 configure_ogre()
