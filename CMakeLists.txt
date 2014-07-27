@@ -322,6 +322,7 @@ include (Sagase)
 include (ModuleSetup)
 include (ConfigurePackages)
 include (TundraInstall)
+include (FindBoostTundra)
 include (FindOgre)
 include (FindDirectX)
 
