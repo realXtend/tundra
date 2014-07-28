@@ -580,7 +580,7 @@ bool Scene::SaveSceneBinary(const QString& filename, bool getTemporary, bool get
             ent->SerializeToBinary(dest, getTemporary);
     }
     
-    bytes.resize((int)dest.BytesFilled());
+    bytes.resize(static_cast<int>(dest.BytesFilled()));
     QFile scenefile(filename);
     if (scenefile.open(QFile::WriteOnly))
     {
@@ -1059,6 +1059,7 @@ void Scene::CreateEntityFromDesc(EntityPtr parent, const EntityDesc& e, bool use
                     }
                 }                   
             }
+        }
 
         entity->SetTemporary(e.temporary);
         entities.append(entity.get());
@@ -1332,7 +1333,7 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
         {
             EntityDesc entityDesc;
             entity_id_t id = source.Read<u32>();
-            entityDesc.id = QString::number((int)id);
+            entityDesc.id = QString::number(static_cast<uint>(id));
 
             const uint num_components = source.Read<u32>();
             for(uint i = 0; i < num_components; ++i)
@@ -1431,7 +1432,7 @@ QByteArray Scene::GetEntityXml(Entity *entity) const
     if (entity)
     {
         QDomElement entity_elem = scene_doc.createElement("entity");
-        entity_elem.setAttribute("id", QString::number((int)entity->Id()));
+        entity_elem.setAttribute("id", QString::number(static_cast<uint>(entity->Id())));
         const Entity::ComponentMap &components = entity->Components();
         for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
             i->second->SerializeTo(scene_doc, entity_elem);

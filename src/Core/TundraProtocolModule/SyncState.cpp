@@ -187,7 +187,7 @@ void SceneSyncState::MarkComponentProcessed(entity_id_t id, component_id_t compI
     compState.DirtyProcessed();
 }
 
-void SceneSyncState::MarkEntityDirty(entity_id_t id, bool hasPropertyChanges, bool hasParentChange)
+bool SceneSyncState::MarkEntityDirty(entity_id_t id, bool hasPropertyChanges, bool hasParentChange)
 {
     /** @todo This logic should be removed. If a script rejects a change, it results in the change *never* being sent to the client.
         E.g. if the script decides to reject a change due to the target entity being too far, and then the entity comes closer,
