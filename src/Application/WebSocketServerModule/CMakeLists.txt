@@ -1,12 +1,10 @@
 # Define target name and output directory
 init_target (WebSocketServerModule OUTPUT plugins)
 
+# If boost has not been configured yet, do it now
+# and require system to be found.
 if (TUNDRA_NO_BOOST)
-	# Linux can cope with only system.
-	# TODO: Check if this is the same for windows.
-	if (UNIX)
-		set(TUNDRA_BOOST_LIBRARIES system)
-	endif ()
+    set(TUNDRA_BOOST_SYSTEM TRUE)
     configure_boost()
 endif()
 
@@ -22,7 +20,7 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 add_definitions (-DWEBSOCKET_MODULE_EXPORTS)
 if (TUNDRA_CPP11_ENABLED)
-	add_definitions (-D_WEBSOCKETPP_CPP11_STL_)
+    add_definitions (-D_WEBSOCKETPP_CPP11_STL_)
 endif()
 
 # Includes
