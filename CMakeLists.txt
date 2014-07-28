@@ -310,11 +310,13 @@ endif()
 # C4127 conditional expression is constant
 # C4512 'class' : assignment operator could not be generated 
 # TODO Ideally we wouldn't like to disable these, but if we don't, we get warning spam from Qt files.
-if (MSVC)
-    add_definitions (/W4 /wd4127 /wd4512)
-else ()
-    add_definitions (-Wall -Wextra -Wno-unknown-pragmas -Wno-unused -Wno-reorder -Wno-switch -Wno-write-strings)
-endif()
+if ("${CMAKE_CXX_FLAGS}" STREQUAL "")
+    if (MSVC)
+        add_definitions (/W4 /wd4127 /wd4512)
+    else ()
+        add_definitions (-Wall -Wextra -Wno-unknown-pragmas -Wno-unused -Wno-reorder -Wno-switch -Wno-write-strings)
+    endif()
+endif ()
 
 # Set CMake custom module path & include them
 # The following CMake modules are required for the project to build.
