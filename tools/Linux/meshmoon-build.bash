@@ -71,6 +71,10 @@ while [[ $1 = -* ]]; do
         --package|-p)
             skip_packager=false
             ;;
+        --gcc)
+            echo "GCC build are not yet supported"
+            exit 1
+            ;;
         --help|-h)
             print_help
             exit 0
@@ -114,14 +118,16 @@ if [ $skip_pkg = false ] ; then
             build-essential clang \
             cmake unzip
     else
-        print_title "Updating apt repositories from GCC 4.9"
-        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-        sudo apt-get update
+        echo "GCC build are not yet supported"
+        exit 1
+        #print_title "Updating apt repositories from GCC 4.9"
+        #sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        #sudo apt-get update
 
-        print_title "Fetching packages: Build tools and utils"
-        sudo apt-get -y install \
-            build-essential gcc-4.9 g++-4.9 \
-            cmake unzip
+        #print_title "Fetching packages: Build tools and utils"
+        #sudo apt-get -y install \
+        #    build-essential gcc-4.9 g++-4.9 \
+        #    cmake unzip
     fi
 
     print_title "Fetching packages: Source control"
@@ -217,6 +223,8 @@ if [ $skip_deps = false ] ; then
         fi
         if [ $rebuild_ogre = true ] ; then
             rm -f $DEPS_SRC/ogre-safe-nocrashes/meshmoon-builder.json $DEPS_SRC/ogre-safe-nocrashes/meshmoon-builder-server.json $DEPS_SRC/ogre-safe-nocrashes/meshmoon-builder-client.json
+            rm -f $DEPS_LIB/libOgre* $DEPS_BIN/Ogre*
+            rm -rf $DEPS_LIB/OGRE $DEPS_INC/OGRE $DEPS/share/OGRE
         fi
     fi
 
