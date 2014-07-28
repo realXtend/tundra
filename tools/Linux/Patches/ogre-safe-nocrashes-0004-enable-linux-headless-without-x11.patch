@@ -34,7 +34,7 @@ diff -r e8f1eed6158a -r 9fc683483cff CMake/Dependencies.cmake
 diff -r e8f1eed6158a -r 9fc683483cff OgreMain/CMakeLists.txt
 --- a/OgreMain/CMakeLists.txt	Fri Jul 25 00:34:23 2014 +0300
 +++ b/OgreMain/CMakeLists.txt	Mon Jul 28 01:32:42 2014 +0300
-@@ -611,22 +611,26 @@
+@@ -611,22 +611,29 @@
  
    set(PLATFORM_HEADER_INSTALL "FlashCC")
  elseif (UNIX)
@@ -72,7 +72,10 @@ diff -r e8f1eed6158a -r 9fc683483cff OgreMain/CMakeLists.txt
 +    set(PLATFORM_LIBS ${X11_LIBRARIES} ${X11_Xt_LIB} ${XAW_LIBRARY} pthread)
 +    set(PLATFORM_HEADER_INSTALL "GLX")
 +  else ()
++    set(PLATFORM_HEADERS include/GLX/OgreTimerImp.h)
++    set(PLATFORM_SOURCE_FILES src/GLX/OgreTimer.cpp src/OgreSearchOps.cpp)
 +    set(PLATFORM_LIBS pthread)
++    set(PLATFORM_HEADER_INSTALL "GLX")
 +  endif ()
    # some platforms require explicit linking to libdl, see if it's available
    find_library(DL_LIBRARY NAMES dl dlsym)
