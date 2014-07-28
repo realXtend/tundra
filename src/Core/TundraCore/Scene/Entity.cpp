@@ -437,17 +437,31 @@ QObjectList Entity::GetComponentsRaw(const QString &type_name) const
     return ret;
 }
 
-void Entity::SerializeToBinary(kNet::DataSerializer &dst) const
+void Entity::SerializeToBinary(kNet::DataSerializer &dst, bool serializeTemporary, bool serializeChildren) const
 {
     dst.Add<u32>(Id());
     dst.Add<u8>(IsReplicated() ? 1 : 0);
     uint num_serializable = 0;
+    uint num_serializable_children = 0;
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
-        if (!i->second->IsTemporary())
+        if (serializeTemporary || !i->second->IsTemporary())
             num_serializable++;
-    dst.Add<u32>(num_serializable);
+    if (serializeChildren)
+    {
+        for (ChildEntityVector::const_iterator i = children_.begin(); i != children_.end(); ++i)
+            if (serializeTemporary || !i->lock()->IsTemporary())
+                num_serializable_children++;
+    }
+
+    /// \hack Retain binary compatibility with earlier scene format, at the cost of max. 65535 components or child entities
+    if (num_serializable > 0xffff)
+        LogError("Entity::SerializeToBinary: entity contains more than 65535 components, binary save will be erroneous");
+    if (num_serializable_children > 0xffff)
+        LogError("Entity::SerializeToBinary: entity contains more than 65535 child entities, binary save will be erroneous");
+
+    dst.Add<u32>(num_serializable | (num_serializable_children << 16));
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
-        if (!i->second->IsTemporary())
+        if (serializeTemporary || !i->second->IsTemporary())
         {
             dst.Add<u32>(i->second->TypeId()); ///\todo VLE this!
             dst.AddString(i->second->Name().toStdString());
@@ -464,6 +478,14 @@ void Entity::SerializeToBinary(kNet::DataSerializer &dst) const
             dst.Add<u32>(comp_bytes.size());
             dst.AddArray<u8>((const u8*)comp_bytes.data(), comp_bytes.size());
         }
+
+    // Serialize child entities
+    if (serializeChildren)
+    {
+        for (ChildEntityVector::const_iterator i = children_.begin(); i != children_.end(); ++i)
+            if (serializeTemporary || !i->lock()->IsTemporary())
+                i->lock()->SerializeToBinary(dst, serializeTemporary, true);
+    }
 }
 
 /* Disabled for now, since have to decide how entityID conflicts are handled.
@@ -471,7 +493,7 @@ void Entity::DeserializeFromBinary(kNet::DataDeserializer &src, AttributeChange:
 {
 }*/
 
-void Entity::SerializeToXML(QDomDocument &doc, QDomElement &base_element, bool serializeTemporary) const
+void Entity::SerializeToXML(QDomDocument &doc, QDomElement &base_element, bool serializeTemporary, bool serializeChildren) const
 {
     QDomElement entity_elem = doc.createElement("entity");
     entity_elem.setAttribute("id", QString::number(Id()));
@@ -482,7 +504,17 @@ void Entity::SerializeToXML(QDomDocument &doc, QDomElement &base_element, bool s
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
         i->second->SerializeTo(doc, entity_elem, serializeTemporary);
 
-    base_element.appendChild(entity_elem);
+    // Serialize child entities
+    if (serializeChildren)
+    {
+        for(ChildEntityVector::const_iterator i = children_.begin(); i != children_.end(); ++i)
+            i->lock()->SerializeToXML(doc, entity_elem, serializeTemporary, true);
+    }
+
+    if (!base_element.isNull())
+        base_element.appendChild(entity_elem);
+    else
+        doc.appendChild(entity_elem);
 }
 
 /* Disabled for now, since have to decide how entityID conflicts are handled.
@@ -490,13 +522,23 @@ void Entity::DeserializeFromXML(QDomElement& element, AttributeChange::Type chan
 {
 }*/
 
-QString Entity::SerializeToXMLString(bool serializeTemporary) const
+QString Entity::SerializeToXMLString(bool serializeTemporary, bool serializeChildren, bool createSceneElement) const
 {
-    QDomDocument sceneDoc("Scene");
-    QDomElement sceneElem = sceneDoc.createElement("scene");
-    SerializeToXML(sceneDoc, sceneElem, serializeTemporary);
-    sceneDoc.appendChild(sceneElem);
-    return sceneDoc.toString();
+    if (createSceneElement)
+    {
+        QDomDocument sceneDoc("Scene");
+        QDomElement sceneElem = sceneDoc.createElement("scene");
+        SerializeToXML(sceneDoc, sceneElem, serializeTemporary);
+        sceneDoc.appendChild(sceneElem);
+        return sceneDoc.toString();
+    }
+    else
+    {
+        QDomDocument entity_doc("Entity");
+        QDomElement null_elem;
+        SerializeToXML(entity_doc, null_elem, serializeTemporary, serializeChildren);
+        return entity_doc.toString();
+    }
 }
 
 /* Disabled for now, since have to decide how entityID conflicts are handled.
@@ -535,10 +577,18 @@ EntityPtr Entity::Clone(bool local, bool temporary, const QString &cloneName, At
             cloneNameWritten = true;
         }
     }
+    // Serialize child entities
+    for(ChildEntityVector::const_iterator i = children_.begin(); i != children_.end(); ++i)
+        i->lock()->SerializeToXML(doc, entityElem, true, true);
+
     sceneElem.appendChild(entityElem);
     doc.appendChild(sceneElem);
 
     QList<Entity *> newEntities = scene_->CreateContentFromXml(doc, true, changeType);
+    // Set same parent for the new entity as the original has
+    if (newEntities.size())
+        newEntities[0]->SetParent(Parent(), changeType);
+
     return (!newEntities.isEmpty() && newEntities.first() ? newEntities.first()->shared_from_this() : EntityPtr());
 }
 
@@ -686,10 +736,195 @@ QString Entity::ToString() const
 
 QObjectList Entity::ComponentsList() const
 {
-    LogWarning("Entity::ComponentsLis: this function is deprecated and will be removed. Use Entity::Components instead");
+    LogWarning("Entity::ComponentsList: this function is deprecated and will be removed. Use Entity::Components instead");
     QObjectList compList;
     for (ComponentMap::const_iterator i = components_.begin(); i != components_.end(); ++i)
         if (i->second.get())
             compList << i->second.get();
     return compList;
+}
+
+void Entity::AddChild(EntityPtr child, AttributeChange::Type change)
+{
+    if (!child)
+    {
+        LogWarning("Entity::AddChild: null child entity specified");
+        return;
+    }
+
+    child->SetParent(this->shared_from_this(), change);
+}
+
+void Entity::RemoveChild(EntityPtr child, AttributeChange::Type change)
+{
+    if (child->Parent().get() != this)
+    {
+        LogWarning("Entity::RemoveChild: the specified entity is not parented to this entity");
+        return;
+    }
+
+    // RemoveEntity does a silent SetParent(0) to remove the child from the parent's child vector
+    if (scene_)
+        scene_->RemoveEntity(child->Id(), change);
+    else
+        LogError("Entity::RemoveChild: null parent scene, can not remove the entity from scene");
+}
+
+void Entity::RemoveAllChildren(AttributeChange::Type change)
+{
+    while (children_.size())
+        RemoveChild(children_[0].lock(), change);
+}
+
+void Entity::DetachChild(EntityPtr child, AttributeChange::Type change)
+{
+    if (!child)
+    {
+        LogWarning("Entity::DetachChild: null child entity specified");
+        return;
+    }
+    if (child->Parent().get() != this)
+    {
+        LogWarning("Entity::DetachChild: the specified entity is not parented to this entity");
+        return;
+    }
+
+    child->SetParent(EntityPtr(), change);
+}
+
+void Entity::SetParent(EntityPtr parent, AttributeChange::Type change)
+{
+    EntityPtr oldParent = parent_.lock();
+    if (oldParent == parent)
+        return; // Nothing to do
+
+    // Prevent self assignment
+    if (parent.get() == this)
+    {
+        LogError("Entity::SetParent: self parenting attempted.");
+        return;
+    }
+
+    // Prevent cyclic assignment
+    if (parent)
+    {
+        Entity* parentCheck = parent.get();
+        while (parentCheck)
+        {
+            if (parentCheck == this)
+            {
+                LogError("Entity::SetParent: Cyclic parenting attempted.");
+                return;
+            }
+            parentCheck = parentCheck->Parent().get();
+        }
+    }
+
+    // Remove from old parent's child vector
+    if (oldParent)
+    {
+        ChildEntityVector& children = oldParent->children_;
+        for (size_t i = 0; i < children.size(); ++i)
+        {
+            if (children[i].lock().get() == this)
+            {
+                children.erase(children.begin() + i);
+                break;
+            }
+        }
+    }
+
+    // Add to new parent's child vector
+    if (parent)
+        parent->children_.push_back(shared_from_this());
+
+    parent_ = parent;
+
+    // Emit change signals
+    if (change != AttributeChange::Disconnected)
+    {
+        if (change == AttributeChange::Default)
+            change = IsLocal() ? AttributeChange::LocalOnly : AttributeChange::Replicate;
+        emit ParentChanged(this, parent.get(), change);
+        if (scene_)
+            scene_->EmitEntityParentChanged(this, parent.get(), change);
+    }
+}
+
+EntityPtr Entity::CreateChild(entity_id_t id, const QStringList &components, AttributeChange::Type change, bool replicated, bool componentsReplicated, bool temporary)
+{
+    if (!scene_)
+    {
+        LogError("Entity::CreateChild: not attached to a scene, can not create a child entity");
+        return EntityPtr();
+    }
+
+    EntityPtr child = scene_->CreateEntity(id, components, change, replicated, componentsReplicated, temporary);
+    // Set the parent silently to match entity creation signaling, which is only done at the end of the frame
+    if (child)
+        child->SetParent(this->shared_from_this(), AttributeChange::Disconnected);
+    return child;
+}
+
+EntityPtr Entity::CreateLocalChild(const QStringList &components, AttributeChange::Type change, bool componentsReplicated, bool temporary)
+{
+    if (!scene_)
+    {
+        LogError("Entity::CreateLocalChild: not attached to a scene, can not create a child entity");
+        return EntityPtr();
+    }
+
+    EntityPtr child = scene_->CreateLocalEntity(components, change, componentsReplicated, temporary);
+    if (child)
+        child->SetParent(this->shared_from_this(), change);
+    return child;
+}
+
+EntityPtr Entity::Child(size_t index) const
+{
+    return index < children_.size() ? children_[index].lock() : EntityPtr();
+}
+
+EntityPtr Entity::ChildByName(const QString& name, bool recursive) const
+{
+    for (size_t i = 0; i < children_.size(); ++i)
+    {
+        // Safeguard in case the entity has become null without us knowing
+        EntityPtr child = children_[i].lock();
+        if (child)
+        {
+            if (QString::compare(name, child->Name(), Qt::CaseInsensitive) == 0)
+                return child;
+            if (recursive)
+            {
+                EntityPtr childResult = child->ChildByName(name, true);
+                if (childResult)
+                    return childResult;
+            }
+        }
+    }
+
+    return EntityPtr();
+}
+
+EntityList Entity::Children(bool recursive) const
+{
+    EntityList ret;
+    CollectChildren(ret, recursive);
+    return ret;
+}
+
+void Entity::CollectChildren(EntityList& children, bool recursive) const
+{
+    for (size_t i = 0; i < children_.size(); ++i)
+    {
+        // Safeguard in case the entity has become null without us knowing
+        EntityPtr child = children_[i].lock();
+        if (child)
+        {
+            children.push_back(child);
+            if (recursive)
+                child->CollectChildren(children, true);
+        }
+    }
 }

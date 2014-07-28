@@ -112,7 +112,8 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     interestmanager_(0),
     updateAcc_(0.0),
     maxLinExtrapTime_(3.0f),
-    noClientPhysicsHandoff_(false)
+    noClientPhysicsHandoff_(false),
+    componentTypeSender_(0)
 {
     if (framework_->HasCommandLineParameter("--noclientphysics"))
         noClientPhysicsHandoff_ = true;
@@ -166,6 +167,9 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     // Connect to network messages from the server
     serverConnection_ = owner_->GetClient()->ServerUserConnection();
     connect(serverConnection_.get(), SIGNAL(NetworkMessageReceived(UserConnection*, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)), this, SLOT(HandleNetworkMessage(UserConnection*, kNet::packet_id_t, kNet::message_id_t, const char *, size_t)));
+
+    // Connect to SceneAPI's PlaceholderComponentTypeRegistered signal
+    connect(framework_->Scene(), SIGNAL(PlaceholderComponentTypeRegistered(u32, const QString&, AttributeChange::Type)), this, SLOT(OnPlaceholderComponentTypeRegistered(u32, const QString&, AttributeChange::Type)));
 }
 
 SyncManager::~SyncManager()
@@ -311,6 +315,7 @@ void SyncManager::RegisterToScene(ScenePtr scene)
     serverConnection_->syncState->Clear();
     serverConnection_->syncState->SetParentScene(SceneWeakPtr(scene));
     scene_.reset();
+    componentTypesFromServer_.clear();
     
     if (!scene)
     {
@@ -338,6 +343,7 @@ void SyncManager::RegisterToScene(ScenePtr scene)
     connect(sceneptr, SIGNAL( ActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecTypeField) ),
         SLOT( OnActionTriggered(Entity *, const QString &, const QStringList &, EntityAction::ExecTypeField)));
     connect(sceneptr, SIGNAL( EntityTemporaryStateToggled(Entity *, AttributeChange::Type) ), SLOT( OnEntityPropertiesChanged(Entity *, AttributeChange::Type) ));
+    connect(sceneptr, SIGNAL( EntityParentChanged(Entity *, Entity*, AttributeChange::Type) ), SLOT( OnEntityParentChanged(Entity *, Entity *, AttributeChange::Type) ));
 }
 
 void SyncManager::HandleNetworkMessage(UserConnection* user, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
@@ -385,11 +391,17 @@ void SyncManager::HandleNetworkMessage(UserConnection* user, kNet::packet_id_t p
         case cEditEntityPropertiesMessage:
             HandleEditEntityProperties(user, data, numBytes);
             break;
+        case cSetEntityParentMessage:
+            HandleSetEntityParent(user, data, numBytes);
+            break;
         case cEntityActionMessage:
             {
                 MsgEntityAction msg(data, numBytes);
                 HandleEntityAction(user, msg);
             }
+            break;
+        case cRegisterComponentTypeMessage:
+            HandleRegisterComponentType(user, data, numBytes);
             break;
         }
     }
@@ -679,10 +691,12 @@ void SyncManager::OnActionTriggered(Entity *entity, const QString &action, const
     if (isServer && (type & EntityAction::Peers) != 0)
     {
         msg.executionType = (u8)EntityAction::Local; // Propagate as local actions.
+        // On server, queue the actions and send after entity sync
+        /// \todo Making copy is inefficient, consider storing pointers
         foreach(UserConnectionPtr c, owner_->GetServer()->UserConnections())
         {
             if (c->properties["authenticated"].toBool() == true)
-                c->Send(msg);
+                c->syncState->queuedActions.push_back(msg);
         }
     }
 }
@@ -731,6 +745,90 @@ void SyncManager::OnEntityPropertiesChanged(Entity* entity, AttributeChange::Typ
     else
     {
         serverConnection_->syncState->MarkEntityDirty(entity->Id(), true);
+    }
+}
+
+void SyncManager::OnEntityParentChanged(Entity* entity, Entity* newParent, AttributeChange::Type change)
+{
+    assert(entity);
+    if (!entity)
+        return;
+    if ((change != AttributeChange::Replicate) || (entity->IsLocal()))
+        return;
+    if (newParent && newParent->IsLocal())
+    {
+        LogError("Replicated entity " + QString::number(entity->Id()) + " is parented to a local entity, can not replicate parenting properly over the network");
+        return;
+    }
+
+    if (owner_->IsServer())
+    {
+        UserConnectionList& users = owner_->GetServer()->UserConnections();
+        for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        {
+            if ((*i)->syncState)
+                (*i)->syncState->MarkEntityDirty(entity->Id(), false, true);
+        }
+    }
+    else
+    {
+        serverConnection_->syncState->MarkEntityDirty(entity->Id(), false, true);
+    }
+}
+
+void SyncManager::OnPlaceholderComponentTypeRegistered(u32 typeId, const QString& typeName, AttributeChange::Type change)
+{
+    if (change == AttributeChange::Default)
+        change = AttributeChange::Replicate;
+    if (change != AttributeChange::Replicate)
+        return;
+    ReplicateComponentType(typeId);
+}
+
+void SyncManager::ReplicateComponentType(u32 typeId, UserConnection* connection)
+{
+    SceneAPI* sceneAPI = framework_->Scene();
+    const SceneAPI::PlaceholderComponentTypeMap& descs = sceneAPI->GetPlaceholderComponentTypes();
+    SceneAPI::PlaceholderComponentTypeMap::const_iterator it = descs.find(typeId);
+    if (it == descs.end())
+    {
+        LogWarning("SyncManager::SendComponentTypeDescription: unknown component type " + QString::number(typeId));
+        return;
+    }
+
+    const ComponentDesc& desc = it->second;
+
+    kNet::DataSerializer ds(64 * 1024);
+    ds.AddVLE<kNet::VLE8_16_32>(desc.typeId);
+    ds.AddString(desc.typeName.toStdString());
+    ds.AddVLE<kNet::VLE8_16_32>(desc.attributes.size());
+    for (int i = 0; i < desc.attributes.size(); ++i)
+    {
+        const AttributeDesc& attrDesc = desc.attributes[i];
+        ds.Add<u8>(sceneAPI->GetAttributeTypeId(attrDesc.typeName));
+        /// \todo Use UTF-8 encoding
+        ds.AddString(attrDesc.id.toStdString());
+        ds.AddString(attrDesc.name.toStdString());
+    }
+
+    if (!connection)
+    {
+        if (owner_->IsServer())
+        {
+            UserConnectionList users = owner_->GetServer()->AuthenticatedUsers();
+            for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+            {
+                if ((*i)->ProtocolVersion() >= ProtocolCustomComponents && (*i).get() != componentTypeSender_)
+                    (*i)->Send(cRegisterComponentTypeMessage, true, true, ds);
+            }
+        }   
+        else if (serverConnection_ && serverConnection_->ProtocolVersion() >= ProtocolCustomComponents)
+            serverConnection_->Send(cRegisterComponentTypeMessage, true, true, ds);
+    }
+    else
+    {
+        if (connection->ProtocolVersion() >= ProtocolCustomComponents)
+            connection->Send(cRegisterComponentTypeMessage, true, true, ds);
     }
 }
 
@@ -1373,7 +1471,7 @@ void SyncManager::HandleEditEntityProperties(UserConnection* source, const char*
     UNREFERENCED_PARAM(sceneID)
     entity_id_t entityID = ds.ReadVLE<kNet::VLE8_16_32>();
     
-    if (!ValidateAction(source, cRemoveAttributesMessage, entityID))
+    if (!ValidateAction(source, cEditEntityPropertiesMessage, entityID))
         return;
         
     EntityPtr entity = scene->GetEntity(entityID);
@@ -1391,8 +1489,125 @@ void SyncManager::HandleEditEntityProperties(UserConnection* source, const char*
     bool newTemporary = ds.Read<u8>() ? true : false;
     entity->SetTemporary(newTemporary, change);
     
-    // Remove the properties dirty bit from sender's syncstate so that we do not echo the change bac
+    // Remove the properties dirty bit from sender's syncstate so that we do not echo the change back
     state->entities[entityID].hasPropertyChanges = false;
+}
+
+void SyncManager::HandleSetEntityParent(UserConnection* source, const char* data, size_t numBytes)
+{
+    assert(source);
+    // Get matching syncstate for reflecting the changes
+    SceneSyncState* state = source->syncState.get();
+    ScenePtr scene = GetRegisteredScene();
+    if (!scene || !state)
+    {
+        LogWarning("Null scene or sync state, disregarding SetEntityParent message");
+        return;
+    }
+    
+    bool isServer = owner_->IsServer();
+    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
+    
+    kNet::DataDeserializer ds(data, numBytes);
+    unsigned sceneID = ds.ReadVLE<kNet::VLE8_16_32>(); ///\todo Dummy ID. Lookup scene once multiscene is properly supported
+    UNREFERENCED_PARAM(sceneID)
+    entity_id_t entityID = ds.Read<u32>();
+    entity_id_t parentEntityID = ds.Read<u32>();
+    
+    // If either entity ID is an unacked range ID, try to convert
+    if (isServer)
+    {
+        if (entityID >= UniqueIdGenerator::FIRST_UNACKED_ID && entityID < UniqueIdGenerator::FIRST_LOCAL_ID)
+        {
+            if (source->unackedIdsToRealIds.find(entityID) != source->unackedIdsToRealIds.end())
+                entityID = source->unackedIdsToRealIds[entityID];
+            else
+            {
+                LogWarning("Client sent unknown unacked entity ID " + QString::number(entityID) + " in SetEntityParent message");
+                return;
+            }
+        }
+        if (parentEntityID >= UniqueIdGenerator::FIRST_UNACKED_ID && parentEntityID < UniqueIdGenerator::FIRST_LOCAL_ID)
+        {
+            if (source->unackedIdsToRealIds.find(parentEntityID) != source->unackedIdsToRealIds.end())
+                parentEntityID = source->unackedIdsToRealIds[parentEntityID];
+            else
+            {
+                LogWarning("Client sent unknown unacked parent entity ID " + QString::number(parentEntityID) + " in SetEntityParent message");
+                return;
+            }
+        }
+    }    
+    
+    if (!ValidateAction(source, cSetEntityParentMessage, entityID))
+        return;
+    
+    EntityPtr entity = scene->GetEntity(entityID);
+    EntityPtr parentEntity = parentEntityID ? scene->GetEntity(parentEntityID) : EntityPtr();
+
+    if (entity && !scene->AllowModifyEntity(source, entity.get())) // check if allowed to modify this entity.
+        return;
+
+    if (!entity)
+    {
+        LogWarning("Entity " + QString::number(entityID) + " not found for SetEntityParent message");
+        return;
+    }
+
+    if (parentEntityID && !parentEntity)
+    {
+        LogWarning("Parent entity " + QString::number(parentEntityID) + " not found for SetEntityParent message");
+        return;
+    }
+    
+    entity->SetParent(parentEntity, change);
+    
+    // Remove the properties dirty bit from sender's syncstate so that we do not echo the change back
+    state->entities[entityID].hasParentChange = false;
+}
+
+void SyncManager::HandleRegisterComponentType(UserConnection* source, const char* data, size_t numBytes)
+{
+    assert(source);
+    
+    bool isServer = owner_->IsServer();
+    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
+    
+    if (!ValidateAction(source, cRegisterComponentTypeMessage, 0))
+        return;
+
+    kNet::DataDeserializer ds(data, numBytes);
+    ComponentDesc desc;
+    desc.typeId = ds.ReadVLE<kNet::VLE8_16_32>();
+    desc.typeName = QString::fromStdString(ds.ReadString());
+
+    // On client, remember the component types server has sent, so that we don't unnecessarily echo them back
+    if (!isServer)
+        componentTypesFromServer_.insert(desc.typeId);
+
+    // If component type already exists as actual C++ component, no action necessary
+    // However, allow to update an earlier custom component description
+    SceneAPI* sceneAPI = framework_->Scene();
+    if (sceneAPI->IsComponentFactoryRegistered(desc.typeName))
+        return;
+
+    size_t numAttrs = ds.ReadVLE<kNet::VLE8_16_32>();
+    for (size_t i = 0; i < numAttrs; ++i)
+    {
+        AttributeDesc attrDesc;
+        attrDesc.typeName = sceneAPI->GetAttributeTypeName(ds.Read<u8>());
+        /// \todo Use UTF-8 encoding
+        attrDesc.id = QString::fromStdString(ds.ReadString());
+        attrDesc.name = QString::fromStdString(ds.ReadString());
+        desc.attributes.push_back(attrDesc);
+    }
+
+    // Do not send back to sender
+    componentTypeSender_ = source;
+    sceneAPI->RegisterPlaceholderComponentType(desc, change);
+    componentTypeSender_ = 0;
 }
 
 void SyncManager::ProcessSyncState(UserConnection* user)
@@ -1407,6 +1622,19 @@ void SyncManager::ProcessSyncState(UserConnection* user)
     UNREFERENCED_PARAM(isServer)
     SceneSyncState* state = user->syncState.get();
     
+    // Send knowledge of registered placeholder components to the remote peer
+    if (user->ProtocolVersion() >= ProtocolCustomComponents && state->NeedSendPlaceholderComponents())
+    {
+        SceneAPI* sceneAPI = framework_->Scene();
+        const SceneAPI::PlaceholderComponentTypeMap& descs = sceneAPI->GetPlaceholderComponentTypes();
+        for (SceneAPI::PlaceholderComponentTypeMap::const_iterator i = descs.begin(); i != descs.end(); ++i)
+        {
+            if (isServer || componentTypesFromServer_.find(i->first) == componentTypesFromServer_.end())
+                ReplicateComponentType(i->first, user);
+        }
+        state->MarkPlaceholderComponentsSent();
+    }
+
     // Process the state's dirty entity queue.
     /// \todo Limit and prioritize the data sent. For now the whole queue is processed, regardless of whether the connection is being saturated.
     while (!state->dirtyQueue.empty())
@@ -1463,6 +1691,14 @@ void SyncManager::ProcessSyncState(UserConnection* user)
             ds.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
             // Do not write the temporary flag as a bit to not desync the byte alignment at this point, as a lot of data potentially follows
             ds.Add<u8>(entity->IsTemporary() ? 1 : 0);
+            // If hierarchic scene is supported, send parent entity ID or 0 if unparented. Note that this is a full 32bit ID to handle the unacked range if necessary
+            if (user->ProtocolVersion() >= ProtocolHierarchicScene)
+            {
+                if (entity->Parent() && entity->Parent()->IsLocal())
+                    LogWarning("Replicated entity " + QString::number(entityState.id) + " is parented to a local entity, can not replicate parenting properly over the network");
+
+                ds.Add<u32>(entity->Parent() ? entity->Parent()->Id() : 0);
+            }
             
             const Entity::ComponentMap& components = entity->Components();
             // Count the amount of replicated components
@@ -1787,6 +2023,16 @@ void SyncManager::ProcessSyncState(UserConnection* user)
                 user->Send(cEditEntityPropertiesMessage, true, true, editPropertiesDs);
                 ++numMessagesSent;
             }
+            if (entityState.hasParentChange && user->ProtocolVersion() >= ProtocolHierarchicScene)
+            {
+                EntityPtr parent = entity->Parent();
+                kNet::DataSerializer editParentDs(editAttrsBuffer_, 1024);
+                editParentDs.AddVLE<kNet::VLE8_16_32>(sceneId);
+                editParentDs.Add<u32>(entityState.id);
+                editParentDs.Add<u32>(parent ? parent->Id() : 0);
+                user->Send(cSetEntityParentMessage, true, true, editParentDs);
+                ++numMessagesSent;
+            }
             
             // The entity has been processed fully. Clear dirty flags.
             state->MarkEntityProcessed(entity->Id());
@@ -1795,6 +2041,16 @@ void SyncManager::ProcessSyncState(UserConnection* user)
         if (removeState)
             state->entities.erase(entityState.id);
     }
+
+    // Send queued entity actions after scene sync
+    if (state->queuedActions.size())
+    {
+        for (size_t i = 0; i < state->queuedActions.size(); ++i)
+            user->Send(state->queuedActions[i]);
+
+        state->queuedActions.clear();
+    }
+
     //if (numMessagesSent)
     //    std::cout << "Sent " << numMessagesSent << " scenesync messages" << std::endl;
 }
@@ -1887,6 +2143,8 @@ void SyncManager::HandleCreateEntity(UserConnection* source, const char* data, s
     {
         // Server never uses the client's entityID.
         entityID = scene->NextFreeId();
+        // Store the unacked-to-real mapping in the UserConnection, in case it refers to the pending ID in later messages
+        source->unackedIdsToRealIds[senderEntityID | UniqueIdGenerator::FIRST_UNACKED_ID] = entityID;
     }
     
     EntityPtr entity = scene->CreateEntity(entityID);
@@ -1910,12 +2168,38 @@ void SyncManager::HandleCreateEntity(UserConnection* source, const char* data, s
     
     std::vector<std::pair<component_id_t, component_id_t> > componentIdRewrites;
 
+    entity_id_t parentEntityID = 0;
+
     try
     {    
         // Read the temporary flag
         bool temporary = ds.Read<u8>() != 0;
         entity->SetTemporary(temporary);
-        
+
+        // In hierarchic scene protocol, read the parent entity ID
+        if (source->ProtocolVersion() >= ProtocolHierarchicScene)
+        {
+            parentEntityID = ds.Read<u32>();
+            
+            // Convert unacked ID if we can
+            if (isServer && parentEntityID >= UniqueIdGenerator::FIRST_UNACKED_ID && parentEntityID < UniqueIdGenerator::FIRST_LOCAL_ID)
+            {
+                if (source->unackedIdsToRealIds.find(parentEntityID) != source->unackedIdsToRealIds.end())
+                    parentEntityID = source->unackedIdsToRealIds[parentEntityID];
+                else
+                    LogWarning("Client sent unknown unacked parent entity ID " + QString::number(parentEntityID) + " in CreateEntity message");
+            }
+
+            if (parentEntityID)
+            {
+                EntityPtr parentEntity = scene->EntityById(parentEntityID);
+                if (parentEntity)
+                    entity->SetParent(parentEntity, change);
+                else
+                    LogWarning("Parent entity id " + QString::number(parentEntityID) + " not found from scene when handling CreateEntity message");
+            }
+        }
+
         // Read the components
         unsigned numComponents = ds.ReadVLE<kNet::VLE8_16_32>();
         for(uint i = 0; i < numComponents; ++i)
@@ -2771,7 +3055,7 @@ void SyncManager::HandleEntityAction(UserConnection* source, MsgEntityAction& ms
         msg.executionType = (u8)EntityAction::Local;
         foreach(UserConnectionPtr userConn, owner_->GetServer()->UserConnections())
             if (userConn.get() != source) // The EC action will not be sent to the machine that originated the request to send an action to all peers.
-                userConn->Send(msg);
+                userConn->syncState->queuedActions.push_back(msg);
         handled = true;
     }
     

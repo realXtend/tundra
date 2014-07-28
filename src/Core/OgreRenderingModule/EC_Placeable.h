@@ -292,6 +292,8 @@ public slots:
 signals:
     /// Emitted when about to be destroyed
     void AboutToBeDestroyed();
+    /// Emitted when the Ogre scene node transform has been changed
+    void TransformChanged();
 
 private slots:
     /// Registers the action this EC provides to the parent entity, when it's set.
@@ -311,6 +313,12 @@ private slots:
     
     /// Handle a component being added to the parent entity, in case it is the missing component we need
     void OnComponentAdded(IComponent* component, AttributeChange::Type change);
+
+    /// Handle parent placeable's transform changing. Used when skeletally attached; handle manual position update when the parent skeletal mesh does not animate
+    void OnParentPlaceableTransformChanged();
+
+    /// Handle the entity reparenting itself
+    void OnEntityParentChanged();
 
 private:
     /// Handle attributechange

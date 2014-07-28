@@ -19,6 +19,7 @@ SceneSyncState::SceneSyncState(u32 userConnectionID, bool isServer) :
     userConnectionID_(userConnectionID),
     changeRequest_(userConnectionID),
     isServer_(isServer),
+    placeholderComponentsSent_(false),
     locationInitialized(false),
     clientLocation(float3::nan),
     initialLocation(float3::nan)
@@ -141,6 +142,7 @@ void SceneSyncState::Clear()
     pendingEntities_.clear();
     changeRequest_.Reset();
     scene_.reset();
+    placeholderComponentsSent_ = false;
 }
 
 void SceneSyncState::RemoveFromQueue(entity_id_t id)
@@ -185,7 +187,7 @@ void SceneSyncState::MarkComponentProcessed(entity_id_t id, component_id_t compI
     compState.DirtyProcessed();
 }
 
-bool SceneSyncState::MarkEntityDirty(entity_id_t id, bool hasPropertyChanges)
+void SceneSyncState::MarkEntityDirty(entity_id_t id, bool hasPropertyChanges, bool hasParentChange)
 {
     /** @todo This logic should be removed. If a script rejects a change, it results in the change *never* being sent to the client.
         E.g. if the script decides to reject a change due to the target entity being too far, and then the entity comes closer,
@@ -210,6 +212,8 @@ bool SceneSyncState::MarkEntityDirty(entity_id_t id, bool hasPropertyChanges)
     }
     if (hasPropertyChanges)
         entityState.hasPropertyChanges = true;
+    if (hasParentChange)
+        entityState.hasParentChange = true;
     return true;
 }
 

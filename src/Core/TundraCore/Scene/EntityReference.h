@@ -24,6 +24,8 @@ struct TUNDRACORE_API EntityReference
 
     /// Lookup an entity from the scene according to the ref. Return null pointer if not found
     EntityPtr Lookup(Scene* scene) const;
+    /// Lookup a parent entity from the scene according to the ref. If the ref is empty, use the entity's parent (default value).
+    EntityPtr LookupParent(Entity* entity) const;
 
     /// Returns if @c entity matches this EntityReference.
     bool Matches(Entity *entity) const;

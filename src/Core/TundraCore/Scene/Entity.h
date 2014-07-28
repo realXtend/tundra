@@ -56,11 +56,13 @@ class TUNDRACORE_API Entity : public QObject, public enable_shared_from_this<Ent
     Q_PROPERTY(bool unacked READ IsUnacked) /**< @copydoc IsUnacked */
     Q_PROPERTY(bool temporary READ IsTemporary WRITE SetTemporary) /**< @copydoc IsTemporary */
     Q_PROPERTY(ComponentMap components READ Components) /**< @copydoc Components */
+    Q_PROPERTY(EntityPtr parent READ Parent WRITE SetParent); /**< @copydoc Parent */
 
 public:
     typedef std::map<component_id_t, ComponentPtr> ComponentMap; ///< Component container.
     typedef std::vector<ComponentPtr> ComponentVector; ///< Component vector container.
     typedef QMap<QString, EntityAction *> ActionMap; ///< Action container
+    typedef std::vector<EntityWeakPtr> ChildEntityVector; ///< Child entity vector container.
 
     /// If entity has components that are still alive, they become free-floating.
     ~Entity();
@@ -101,7 +103,7 @@ public:
     /// @todo Implement a deserialization flow that takes that into account. In the meanwhile, use Scene
     /// functions for achieving the same.
 
-    void SerializeToBinary(kNet::DataSerializer &dst) const;
+    void SerializeToBinary(kNet::DataSerializer &dst, bool saveTemporary = false, bool saveChildren = true) const;
 //        void DeserializeFromBinary(kNet::DataDeserializer &src, AttributeChange::Type change);
 
     /// Emit EnterView signal. Called by the rendering subsystem
@@ -287,14 +289,17 @@ public slots:
     /// Serializes this entity and its' components to the given XML document
     /** @param doc The XML document to serialize this entity to.
         @param base_element Points to the <scene> element of this XML document. This entity will be serialized as a child to base_element.
-        @param serializeTemporary Serialize temporary entities for application-specific purposes. The default value is false. */
-    void SerializeToXML(QDomDocument& doc, QDomElement& base_element, bool serializeTemporary = false) const;
+        @param serializeTemporary Serialize temporary entities for application-specific purposes. The default value is false. 
+        @param serializeChildren Serialize child entities. Default true. */
+    void SerializeToXML(QDomDocument& doc, QDomElement& base_element, bool serializeTemporary = false, bool serializeChildren = true) const;
 //        void DeserializeFromXML(QDomElement& element, AttributeChange::Type change);
 
     /// Serializes this entity, and returns the generated XML as a string
     /** @param serializeTemporary Serialize temporary entities for application-specific purposes. The default value is false.
+        @param serializeChildren Serialize child entities. Default true.
+        @param createSceneElement Whether to wrap the entity XML element in a scene XML element. Default true.
         @sa SerializeToXML */
-    QString SerializeToXMLString(bool serializeTemporary = false) const;
+    QString SerializeToXMLString(bool serializeTemporary = false, bool serializeChildren = true, bool createSceneElement = true) const;
 //        bool DeserializeFromXMLString(const QString &src, AttributeChange::Type change);
 
     /// Sets name of the entity to EC_Name component. If the component doesn't exist, it will be created.
@@ -384,6 +389,71 @@ public slots:
     /// Returns parent scene of this entity.
     Scene* ParentScene() const { return scene_; }
 
+    /// Add an entity as a child.
+    /** When an entity is added as a child, its rendering transform in the EC_Placeable component will automatically follow the parent entity,
+        unless the EC_Placeable component specifies an alternate parent (such as a bone) to follow. Child entities are also 
+        automatically removed from the scene when the parent entity is removed.
+        If the child already is parented to another entity, the existing parent assignment is removed.
+        @param entity Entity to add as a child.
+        @param change Change signaling mode. Normally this should be Default or Replicate, so that parent assignment is propagated over the network. */
+    void AddChild(EntityPtr child, AttributeChange::Type change = AttributeChange::Default);
+
+    /// Remove a child entity.
+    /** Will remove the child entity from the scene. If the intention is to re-parent the entity, AddChild() to the new parent
+        should be called instead. 
+        @param child Child entity to remove.
+        @param change Change signaling mode. */
+    void RemoveChild(EntityPtr child, AttributeChange::Type change = AttributeChange::Default);
+
+    /// Remove all child entities.
+    void RemoveAllChildren(AttributeChange::Type change = AttributeChange::Default);
+
+    /// Detach a child entity to the scene root level (make it parentless) without removing it from the scene.
+    /** @param child Child entity to detach.
+        @param change Change signaling mode. */
+    void DetachChild(EntityPtr child, AttributeChange::Type change = AttributeChange::Default);
+
+    /// Set the parent entity of the entity. Null parent will set to the scene root level (default.)
+    /** Same as calling AddChild() on the new parent entity, or DetachChild() in case of setting a null parent.
+        @param parent New parent entity.
+        @param change Change signaling mode. */
+    void SetParent(EntityPtr parent, AttributeChange::Type change = AttributeChange::Default);
+
+    /// Creates new child entity that contains the specified components.
+    /** To create an empty entity, omit the components parameter.
+        @param id Id of the new entity. Specify 0 to use the next free (replicated) ID, see also NextFreeId and NextFreeIdLocal.
+        @param components Optional list of component names ("EC_" prefix can be omitted) the entity will use. If omitted or the list is empty, creates an empty entity.
+        @param change Notification/network replication mode
+        @param replicated Whether entity is replicated. Default true.
+        @param componentsReplicated Whether components will be replicated, true by default.
+        @param temporary Will the entity be temporary i.e. it is no serialized to disk by default, false by default. */
+    EntityPtr CreateChild(entity_id_t id = 0, const QStringList &components = QStringList(),
+        AttributeChange::Type change = AttributeChange::Default, bool replicated = true, bool componentsReplicated = true, bool temporary = false);
+
+    /// Creates new local child entity that contains the specified components
+    /** To create an empty entity omit components parameter.
+        @param components Optional list of component names ("EC_" prefix can be omitted) the entity will use. If omitted or the list is empty, creates an empty entity.
+        @param change Notification/network replication mode
+        @param componentsReplicated Whether components will be replicated, false by default, but components of local entities are not replicated so this has no effect.
+        @param temporary Will the entity be temporary i.e. it is no serialized to disk by default. */
+    EntityPtr CreateLocalChild(const QStringList &components = QStringList(),
+        AttributeChange::Type change = AttributeChange::Default, bool componentsReplicated = false, bool temporary = false);
+
+    /// Returns parent entity of this entity, or null if entity is on the root level.
+    EntityPtr Parent() const { return parent_.lock(); }
+
+    /// Returns number of child entities.
+    size_t NumChildren() const { return children_.size(); }
+
+    /// Returns child entity by index.
+    EntityPtr Child(size_t index) const;
+
+    /// Returns child entity by name. Optionally recursive.
+    EntityPtr ChildByName(const QString& name, bool recursive = false) const;
+
+    /// Returns child entities. Optionally recursive
+    EntityList Children(bool recursive = false) const;
+
     // DEPRECATED:
     /// @cond PRIVATE
     ComponentPtr GetComponentById(component_id_t id) const { return ComponentById(id); } /**< @deprecated Use ComponentById instead. @todo Add deprecation warning print. @todo Remove. */
@@ -418,6 +488,9 @@ signals:
     /// The entity has left a camera's view. Triggered by the rendering subsystem.
     void LeaveView(IComponent* camera);
 
+    /// The entity's parent has changed.
+    void ParentChanged(Entity* entity, Entity* newParent, AttributeChange::Type change);
+
 private:
     friend class Scene;
 
@@ -433,6 +506,9 @@ private:
     /// Remove a component by iterator. Called internally
     void RemoveComponent(ComponentMap::iterator iter, AttributeChange::Type change);
 
+    /// Collect child entities into an entity list, optionally recursive.
+    void CollectChildren(EntityList& children, bool recursive) const;
+
     UniqueIdGenerator idGenerator_; ///< Component ID generator
     ComponentMap components_; ///< a list of all components
     entity_id_t id_; ///< Unique id for this entity
@@ -440,6 +516,9 @@ private:
     Scene* scene_; ///< Pointer to scene
     ActionMap actions_; ///< Map of registered entity actions.
     bool temporary_; ///< Temporary-flag
+
+    ChildEntityVector children_; ///< Child entities. Note that the entities are authoritatively owned by the scene; the child reference is weak intentionally.
+    EntityWeakPtr parent_; ///< Parent entity. Note that the entities are authoritatively owned by the scene; the parent reference is weak intentionally.
 };
 Q_DECLARE_METATYPE(Entity*)
 Q_DECLARE_METATYPE(Entity::ComponentVector)

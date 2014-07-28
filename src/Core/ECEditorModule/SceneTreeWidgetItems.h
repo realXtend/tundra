@@ -62,7 +62,6 @@ private:
     Q_DISABLE_COPY(EntityItem)
     entity_id_t id; ///< Entity ID associated with this tree widget item.
     EntityWeakPtr ptr; ///< Weak pointer to the component this item represents.
-    EntityGroupItem *parentItem;
 };
 
 /// Tree widget item representing a component.

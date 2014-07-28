@@ -187,6 +187,7 @@ void SceneStructureWindow::SetShownScene(const ScenePtr &newScene)
         connect(s, SIGNAL(ComponentAdded(Entity *, IComponent *, AttributeChange::Type)), SLOT(AddComponent(Entity *, IComponent *)));
         connect(s, SIGNAL(ComponentRemoved(Entity *, IComponent *, AttributeChange::Type)), SLOT(RemoveComponent(Entity *, IComponent *)));
         connect(s, SIGNAL(SceneCleared(Scene*)), SLOT(Clear()));
+        connect(s, SIGNAL(EntityParentChanged(Entity *, Entity *, AttributeChange::Type)), SLOT(UpdateEntityParent(Entity *)));
 
         Populate();
     }
@@ -406,8 +407,16 @@ void SceneStructureWindow::Populate()
 
     treeWidget->setSortingEnabled(false);
 
+    // First add entities without updating parents, as the order isn't guaranteed
     for(Scene::iterator it = s->begin(); it != s->end(); ++it)
-        AddEntity((*it).second.get());
+        AddEntity((*it).second.get(), false);
+
+    // Now do second pass to update parents
+    for(Scene::iterator it = s->begin(); it != s->end(); ++it)
+    {
+        if (it->second->Parent())
+            UpdateEntityParent((*it).second.get());
+    }
 
     Refresh();
     ShowGroups(showGroups);
@@ -427,20 +436,27 @@ void SceneStructureWindow::Clear()
 
     /// @todo 28.08.2013 Check memory leak report for this file!
 
+    treeWidget->clear(); // This deletes all child items
+
+    /*
     for(AttributeItemMap::const_iterator it = attributeItems.begin(); it != attributeItems.end(); ++it)
     {
         AttributeItem *item = it->second;
         SAFE_DELETE(item);
     }
+    */
     attributeItems.clear();
 
+    /*
     for(ComponentItemMap::const_iterator it = componentItems.begin(); it != componentItems.end(); ++it)
     {
         ComponentItem *item = it->second;
         SAFE_DELETE(item);
     }
+    */
     componentItems.clear();
 
+    /*
     for(EntityItemMap::const_iterator it = entityItems.begin(); it != entityItems.end(); ++it)
     {
         EntityItem *item = it->second;
@@ -450,16 +466,20 @@ void SceneStructureWindow::Clear()
             item->parent()->removeChild(item);
         SAFE_DELETE(item);
     }
+    */
     entityItems.clear();
 
     // entityItemsById holds only "weak" refs to EntityItems.
     entityItemsById.clear();
 
+    /*
     for(EntityGroupItemMap::const_iterator it = entityGroupItems.begin(); it != entityGroupItems.end(); ++it)
     {
         EntityGroupItem *item = *it;
         SAFE_DELETE(item);
     }
+    */
+
     entityGroupItems.clear();
 
     treeWidget->setSortingEnabled(true);
@@ -575,7 +595,7 @@ void SceneStructureWindow::Refresh()
         TreeWidgetSearch(treeWidget, 0, searchField->text());
 }
 
-void SceneStructureWindow::AddEntity(Entity* entity)
+void SceneStructureWindow::AddEntity(Entity* entity, bool setParent)
 {
     PROFILE(SceneStructureWindow_AddEntity)
 
@@ -607,6 +627,9 @@ void SceneStructureWindow::AddEntity(Entity* entity)
         for(Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
             AddComponent(entityItem, entity, i->second.get());
     }
+
+    if (setParent)
+        UpdateEntityParent(entity);
 
     Refresh();
 }
@@ -661,6 +684,9 @@ void SceneStructureWindow::RemoveEntityItem(EntityItem* eItem)
 
     entityItemsById.erase(eItem->Id());
 
+    // Remove child entity items and their component items from our internal tracking, as they will be deleted
+    RemoveChildEntityItems(eItem);
+
     EntityGroupItem *gItem = eItem->Parent();
     SAFE_DELETE(eItem);
 
@@ -669,6 +695,28 @@ void SceneStructureWindow::RemoveEntityItem(EntityItem* eItem)
         RemoveEntityGroupItem(gItem);
 
     Refresh();
+}
+
+void SceneStructureWindow::RemoveChildEntityItems(EntityItem* eItem)
+{
+    for (int i = 0; i < eItem->childCount(); ++i)
+    {
+        EntityItem* childItem = dynamic_cast<EntityItem*>(eItem->child(i));
+        if (childItem)
+        {
+            EntityPtr entity = childItem->Entity();
+            if (entity)
+            {
+                const Entity::ComponentMap &components = entity->Components();
+                for(Entity::ComponentMap::const_iterator it = components.begin(); it != components.end(); ++it)
+                    RemoveComponent(eItem, 0/*entity.get()*/, it->second.get());
+            }
+
+            entityItems.erase(entity.get());
+            entityItemsById.erase(childItem->Id());
+            RemoveChildEntityItems(childItem);
+        }
+    }
 }
 
 void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
@@ -945,6 +993,38 @@ void SceneStructureWindow::UpdateComponentName()
     ComponentItem *cItem = (comp ? ComponentItemOfComponent(comp) : 0);
     if (cItem)
         cItem->SetText(comp);
+}
+
+void SceneStructureWindow::UpdateEntityParent(Entity* entity)
+{
+    EntityItem* eItem = EntityItemOfEntity(entity);
+    if (!eItem)
+        return;
+    /// \todo Will not currently work with groups
+    if (eItem->Parent())
+        return;
+
+    EntityPtr parentEntity = entity->Parent();
+    if (parentEntity)
+    {
+        EntityItem* peItem = EntityItemOfEntity(parentEntity.get());
+        if (!peItem)
+            return;
+        if (eItem->parent() == 0)
+            treeWidget->takeTopLevelItem(treeWidget->indexOfTopLevelItem(eItem));
+        else
+            eItem->parent()->takeChild(eItem->parent()->indexOfChild(eItem));
+
+        peItem->addChild(eItem);
+    }
+    else
+    {
+        if (eItem->parent())
+        {
+            eItem->parent()->takeChild(eItem->parent()->indexOfChild(eItem));
+            treeWidget->addTopLevelItem(eItem);
+        }
+    }
 }
 
 void SceneStructureWindow::Sort(int column)

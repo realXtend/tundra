@@ -24,7 +24,7 @@ struct TUNDRACORE_API SceneDesc
     QString filename; ///< Name of the file from which the description was created.
     QString name; ///< Name.
     bool viewEnabled; ///< Is scene view enabled (ie. rendering-related components actually create stuff)
-    QList<EntityDesc> entities; ///< List of entities the scene has.
+    QList<EntityDesc> entities; ///< List of (root-level) entities the scene has.
     AssetMap assets; ///< Map of unique assets.
 
     /// Returns true if the scene description has no entities, false otherwise.
@@ -46,6 +46,7 @@ struct TUNDRACORE_API EntityDesc
     bool local; ///< Is entity local.
     bool temporary; ///< Is entity temporary.
     QList<ComponentDesc> components; ///< List of components the entity has.
+    QList<EntityDesc> children; ///< List of child entities the entity has.
 
     /// Default constructor.
     EntityDesc() : local(false), temporary(false) {}

@@ -195,6 +195,10 @@ void Server::Update(float /*frametime*/)
                 {
                     bool ok = false;
                     QString loginDataString = ReadUtf8String(dd);
+                    // Read optional protocol version
+                    if (dd.BytesLeft())
+                        userConnection->protocolVersion = (NetworkProtocolVersion)dd.ReadVLE<kNet::VLE8_16_32>();
+
                     QVariantMap map = TundraJson::Parse(loginDataString.toUtf8(), &ok).toMap();
                     if (ok)
                     {

@@ -79,6 +79,11 @@ void IAttribute::Changed(AttributeChange::Type change)
         owner->EmitAttributeChanged(this, change);
 }
 
+void IAttribute::SetName(const QString& newName)
+{
+    name = newName;
+}
+
 void IAttribute::SetMetadata(AttributeMetadata *meta)
 {
     metadata = meta;

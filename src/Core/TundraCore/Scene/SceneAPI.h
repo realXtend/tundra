@@ -7,10 +7,12 @@
 #include "CoreTypes.h"
 #include "CoreStringUtils.h"
 #include "AttributeChangeType.h"
+#include "SceneDesc.h"
 
 #include <QObject>
 
 class Framework;
+class QDomElement;
 
 /// Gives access to the scenes in the system.
 /** With this API you can create, remove, query scenes and listen to scene additions and removals.
@@ -22,6 +24,9 @@ class TUNDRACORE_API SceneAPI : public QObject
     Q_PROPERTY(SceneMap scenes READ Scenes) /**< @copydoc Scenes */
 
 public:
+    typedef std::map<u32, ComponentDesc> PlaceholderComponentTypeMap;
+    typedef std::map<QString, u32> PlaceholderComponentTypeIdMap;
+
     ~SceneAPI();
 
     /// Creates new component of the type @c T.
@@ -46,6 +51,15 @@ public:
     /// Returns the scene map for self reflection / introspection.
     SceneMap &Scenes();
     const SceneMap &Scenes() const;
+
+    /// Register a placeholder component type by using an XML dump of the component's data
+    void RegisterPlaceholderComponentType(QDomElement& element, AttributeChange::Type change = AttributeChange::Default);
+
+    /// Register a placeholder component type by using a ComponentDesc
+    void RegisterPlaceholderComponentType(ComponentDesc desc, AttributeChange::Type change = AttributeChange::Default);
+
+    /// Returns the registered placeholder component descs.
+    const PlaceholderComponentTypeMap& GetPlaceholderComponentTypes() const { return placeholderComponentTypes; }
 
 public slots:
     /// Returns a pointer to a scene
@@ -98,6 +112,12 @@ public slots:
     /// Return if a component factory has been registered for a type name.
     bool IsComponentFactoryRegistered(const QString &typeName) const;
 
+    /// Return if a placeholder component type has been registered for a type name.
+    bool IsPlaceholderComponentRegistered(const QString &typeName) const;
+
+    /// Return if a component type has been registered either as a C++ component factory or a placeholder type.
+    bool IsComponentTypeRegistered(const QString &typeName) const;
+
     /// Registers a new factory to create new components of type name IComponentFactory::TypeName and ID IComponentFactory::TypeId.
     void RegisterComponentFactory(const ComponentFactoryPtr &factory);
 
@@ -137,6 +157,12 @@ public slots:
     /// Returns a list of all component type names that can be used in the CreateComponentByName function to create a component.
     QStringList ComponentTypes() const;
 
+    /// Register a custom static-attribute component type by using an existing component (EC_DynamicComponent) as a blueprint.
+    /** This is the same mechanism as the RegisterPlaceholderComponent above, but meant to be used from scripts.
+        @param typeName The typename that is to be registered
+        @param component The EC_DynamicComponent that is used as a blueprint */
+    void RegisterComponentType(const QString& typeName, IComponent* component);
+
     // DEPRECATED
     /// @cond PRIVATE
     bool HasScene(const QString &name) const { return scenes.find(name) != scenes.end(); } /**< @deprecated Use GetScene instead @todo Remove */
@@ -170,6 +196,11 @@ signals:
     void SceneAdded(const QString &name); /**< @deprecated Use SceneCreated instead. */
     /// @endcond
 
+    /// Emitted after a new placeholder (custom) component type has been registered.
+    /** @param typeId Id of new component type
+        @param typeName Name of new component type */
+    void PlaceholderComponentTypeRegistered(u32 typeId, const QString& typeName, AttributeChange::Type change);
+
 private:
     friend class Framework;
 
@@ -181,6 +212,9 @@ private:
     /** Called by Framework during application shutdown. */
     void Reset();
 
+    /// Creates a placeholder component when the real component is not available
+    ComponentPtr CreatePlaceholderComponentById(Scene* scene, u32 componentTypeid, const QString &newComponentName = "") const;
+
     ComponentFactoryPtr GetFactory(const QString &typeName) const;
     ComponentFactoryPtr GetFactory(u32 typeId) const;
 
@@ -189,6 +223,9 @@ private:
 
     ComponentFactoryMap componentFactories;
     ComponentFactoryWeakMap componentFactoriesByTypeid;
+    PlaceholderComponentTypeMap placeholderComponentTypes;
+    PlaceholderComponentTypeIdMap placeholderComponentTypeIds;
+
     Framework *framework;
     SceneMap scenes; ///< All currently created scenes.
     static const QStringList attributeTypeNames;

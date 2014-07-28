@@ -638,13 +638,13 @@ else
         mv x CMakeLists.txt
     else
         $LC_CTYPE_OVERRIDE
-        sed -e "s/kNet STATIC/kNet SHARED/" -e "s/COMPONENTS thread system/COMPONENTS thread/" < CMakeLists.txt > x
+        sed -e "s/kNet STATIC/kNet SHARED/" < CMakeLists.txt > x
         $LC_CTYPE_RESTORE
         mv x CMakeLists.txt
     fi
 
     echoInfo "Building $what:"
-    cmake . -DUSE_BOOST:BOOL=$USE_BOOST -DBOOST_ROOT=$prefix/boost -DUSE_TINYXML:BOOL=FALSE
+    cmake . -DUSE_BOOST:BOOL=FALSE -DUSE_TINYXML:BOOL=FALSE
     make VERBOSE=1
 
     mkdir -p $prefix/$what/{lib,include}
@@ -908,9 +908,8 @@ else
     cd $build
     rm -rf $what
     echoInfo "Fetching $what, this may take a while... "
-    git clone https://github.com/zaphoyd/websocketpp.git $what
+    git clone https://github.com/realXtend/websocketpp.git $what
     cd $what
-    git checkout 0.3.0-alpha3
     mkdir -p $prefix/include/$what
     rsync -r $what/* $prefix/include/$what
     touch $tags/$what-done
@@ -921,28 +920,7 @@ cd $build
 
 # All deps are now fetched and built. Do the actual Tundra build.
 
-# Detect Mac OS X SDKs:
-XCODE_VERSION=`xcodebuild -version | grep Xcode | sed -e 's/[^0-9]*//'`
-XCODE_VERSION_MINOR=`echo $XCODE_VERSION | sed -e 's/[0-9]\.*//'`
-XCODE_VERSION_MAJOR=`echo $XCODE_VERSION | sed -e 's/\.[0-9]*//'`
-
-XCODE_MOUNTAIN_LION_SDK=macosx10.8
-XCODE_LION_SDK=macosx10.7  # note: Since XCode 4.2, the SDK is in /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
-XCODE_SNOW_LEOPARD_SDK=macosx10.6
-OSX_SDK_ROOT=$XCODE_LION_SDK
-
-if [[ $XCODE_VERSION_MAJOR == 5 ]]; then # Xcode 5 dropped MacOSX10.7 SDK
-    OSX_SDK_ROOT=$XCODE_MOUNTAIN_LION_SDK
-elif [[ $OSX_VERSION == 10.7.* ]] || [[ $OSX_VERSION == 10.8.* ]]; then
-    OSX_SDK_ROOT=$XCODE_LION_SDK
-elif [[ $OSX_VERSION == 10.6.* ]]; then
-    OSX_SDK_ROOT=$XCODE_SNOW_LEOPARD_SDK
-else
-    echoError "Failed to set Mac OS X SDK root. Are you using an unsupported Mac version? (the version detected by this script was $OSX_VERSION )"
-    exit 0
-fi
-
-echoInfo "Using Mac OS X $OSX_VERSION, Xcode version $XCODE_VERSION, SDK system root: $OSX_SDK_ROOT, build configuration: $BUILD_CONFIGURATION"
+echoInfo "Using Mac OS X $OSX_VERSION, Xcode version $XCODE_VERSION, build configuration: $BUILD_CONFIGURATION"
 
 XCODE_SUFFIX=
 if [ "$MAKE_XCODE" == "1" ]; then
@@ -951,7 +929,7 @@ fi
 
 cd $viewer
 if [ "$RUN_CMAKE" == "1" ]; then
-    TUNDRA_DEP_PATH=$prefix cmake . $XCODE_SUFFIX -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION -DCMAKE_OSX_SYSROOT=$OSX_SDK_ROOT -DTUNDRA_NO_BOOST:BOOL=$NO_BOOST -DTUNDRA_CPP11_ENABLED:BOOL=$NO_BOOST -DTUNDRA_VERSION_POSTFIX="$TUNDRA_VERSION_POSTFIX"
+    TUNDRA_DEP_PATH=$prefix cmake . $XCODE_SUFFIX -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION -DTUNDRA_NO_BOOST:BOOL=$NO_BOOST -DTUNDRA_CPP11_ENABLED:BOOL=$NO_BOOST -DTUNDRA_VERSION_POSTFIX="$TUNDRA_VERSION_POSTFIX"
 fi
 
 if [ "$RUN_MAKE" == "1" ]; then

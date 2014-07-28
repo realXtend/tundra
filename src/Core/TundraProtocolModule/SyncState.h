@@ -11,6 +11,7 @@
 #include "kNet/Types.h"
 #include "Transform.h"
 #include "Math/float3.h"
+#include "MsgEntityAction.h"
 
 #include <QObject>
 #include <QVariant>
@@ -71,6 +72,7 @@ struct EntitySyncState
         isNew(true),
         isInQueue(false),
         hasPropertyChanges(false),
+        hasParentChange(false),
         id(0),
         avgUpdateInterval(0.0f),
         lastNetworkSendTime(kNet::Clock::Tick())
@@ -141,6 +143,7 @@ struct EntitySyncState
         dirtyQueue.clear();
         isNew = false;
         hasPropertyChanges = false;
+        hasParentChange = false;
     }
     
     void UpdateReceived()
@@ -164,6 +167,7 @@ struct EntitySyncState
     bool isNew; ///< The client does not have the entity and it must be serialized in full
     bool isInQueue; ///< The entity is already in the scene's dirty queue
     bool hasPropertyChanges; ///< The entity has changes into its other properties, such as temporary flag
+    bool hasParentChange; ///> The entity's parent has changed
     
     kNet::PolledTimer updateTimer; ///< Last update received timer
     float avgUpdateInterval; ///< Average network update interval in seconds
@@ -301,6 +305,9 @@ public:
     float3 initialLocation; //Clients initial pos
     bool locationInitialized;
 
+    /// Queued EntityAction messages. These will be sent to the user on the next network update tick.
+    std::vector<MsgEntityAction> queuedActions;
+
 signals:
     /// This signal is emitted when a entity is being added to the client sync state.
     /// All needed data for evaluation logic is in the StateChangeRequest parameter object.
@@ -352,7 +359,7 @@ public:
         @return If entity was marked dirty. This depends if the entity has been marked as pending.
         If it is the state will refuse to dirty it, it can only be dirtied by application
         logic by calling MarkPendingEntityDirty. */
-    bool MarkEntityDirty(entity_id_t id, bool hasPropertyChanges = false);
+    bool MarkEntityDirty(entity_id_t id, bool hasPropertyChanges = false, bool hasParentChange = false);
     void MarkEntityRemoved(entity_id_t id);
 
     void MarkComponentDirty(entity_id_t id, component_id_t compId);
@@ -367,6 +374,9 @@ public:
 
     // Removes entity from pending lists.
     void RemovePendingEntity(entity_id_t id);
+
+    bool NeedSendPlaceholderComponents() const { return !placeholderComponentsSent_; }
+    void MarkPlaceholderComponentsSent() { placeholderComponentsSent_ = true; }
 
 private:
     // Returns if entity with id should be added to the sync state.
@@ -385,6 +395,7 @@ private:
 
     StateChangeRequest changeRequest_;
     bool isServer_;
+    bool placeholderComponentsSent_;
     u32 userConnectionID_;
 
     SceneWeakPtr scene_;

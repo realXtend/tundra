@@ -57,7 +57,7 @@ bool EntityReference::IsEmpty() const
 }
 
 EntityPtr EntityReference::Lookup(Scene* scene) const
-{    
+{
     if (!scene || ref.isEmpty())
         return EntityPtr();
     // If ref looks like an ID, lookup by ID first
@@ -71,6 +71,15 @@ EntityPtr EntityReference::Lookup(Scene* scene) const
     }
     // Then get by name
     return scene->GetEntityByName(ref.trimmed());
+}
+
+EntityPtr EntityReference::LookupParent(Entity* entity) const
+{
+    if (!entity)
+        return EntityPtr();
+    else if (ref.isEmpty())
+        return entity->Parent();
+    else return Lookup(entity->ParentScene());
 }
 
 bool EntityReference::Matches(Entity *entity) const

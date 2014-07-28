@@ -283,7 +283,7 @@ public slots:
     int NumAttributes() const;
 
     /// Returns the number of static (i.e. not dynamically allocated) attributes in this component. These are always in the beginning of the attribute vector.
-    int NumStaticAttributes() const;
+    virtual int NumStaticAttributes() const;
 
     /// Informs this component that the value of a member Attribute of this component has changed.
     /** You may call this function manually to force Attribute change signal to
@@ -401,7 +401,7 @@ protected:
     bool BeginDeserialization(QDomElement& compElement);
 
     /// Add attribute to this component.
-    /** If the component and the attribute is dynamic, a matching QObject property will be automatically added to this component.
+    /** If the attribute is dynamic, a matching QObject property will be automatically added to this component.
         This property will be updated automatically when ever the underlying IAttribute value changes.
         The QObject property is not created if the IAttribute::Id() cannot be converted into a valid property name,
         it must only contain alphanumeric, underscore '_' and space ' ' characters and it cannot start with a number.
@@ -410,7 +410,7 @@ protected:
     void AddAttribute(IAttribute* attr);
 
     /// Add attribute to this component at specified index, creating new holes if necessary. Static attributes can not be overwritten. Return true if successful.
-        /** If the component and the attribute is dynamic, a matching QObject property will be automatically added to this component.
+        /** If the attribute is dynamic, a matching QObject property will be automatically added to this component.
         This property will be updated automatically when ever the underlying IAttribute value changes.
         The QObject property is not created if the IAttribute::Id() cannot be converted into a valid property name,
         it must only contain alphanumeric, underscore '_' and space ' ' characters and it cannot start with a number.
@@ -419,7 +419,6 @@ protected:
     bool AddAttribute(IAttribute* attr, u8 index);
 
     /** This event filter is used to monitor attribute changes setting then via QObject::setProperty.
-        The filter is only installed if SupportsDynamicAttributes == true.
         @note If you override the QObject::eventFilter in your own dynamic component implementation.
         Be sure to also call this base implementation so that attributes are correctly updated. */
     virtual bool eventFilter(QObject *obj, QEvent *e);
@@ -434,13 +433,13 @@ protected:
     bool temporary; ///< Temporary-flag
 
 private slots:
-    /// Create a QObject dynamic property. @note Only used if SupportsDynamicAttributes() == true.
+    /// Create a QObject dynamic property. @note Only used for dynamic attributes registered as dynamic QProperties.
     void CreateDynamicProperty(IAttribute* attribute);
 
-    /// Update a QObject dynamic property. @note Only used if SupportsDynamicAttributes() == true.
+    /// Update a QObject dynamic property. @note Only used for dynamic attributes registered as dynamic QProperties.
     void UpdateDynamicProperty(IAttribute* attribute, AttributeChange::Type change);
 
-    /// Remove a QObject dynamic property. @note Only used if SupportsDynamicAttributes() == true.
+    /// Remove a QObject dynamic property. @note Only used for dynamic attributes registered as dynamic QProperties.
     void RemoveDynamicProperty(IAttribute* attribute);
 
 private:
@@ -457,10 +456,10 @@ private:
     void SetNewId(component_id_t newId);
 
     /// Flag to avoid infinite recursion in handling QObject property <-> IAttribute state sync.
-    /// @note Only used if SupportsDynamicAttributes() == true.
+    /// @note Only used for dynamic attributes registered as dynamic QProperties.
     bool internalQObjectPropertyUpdateOngoing_;
 
-    /// Update a QObject dynamic property. @note Only used if SupportsDynamicAttributes() == true.
+    /// Update a QObject dynamic property.
     QHash<QString, QByteArray> dynamicPropertyNames_;
 };
 Q_DECLARE_METATYPE(IComponent*)

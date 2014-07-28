@@ -130,6 +130,7 @@ private:
     /// @note This function does lookup from a different map than EntityItemOfEntity.
     EntityItem* EntityItemById(entity_id_t id) const ;
     void RemoveEntityItem(EntityItem* item);
+    void RemoveChildEntityItems(EntityItem* eItem);
     ComponentItem *ComponentItemOfComponent(IComponent *) const;
     std::vector<AttributeItem *> AttributeItemOfAttribute(IAttribute *) const;
     void SetEntityItemSelected(EntityItem *item, bool selected);
@@ -170,7 +171,7 @@ private slots:
     void Clear();
 
     /// Adds the item represeting the @c entity to the tree widget.
-    void AddEntity(Entity *entity);
+    void AddEntity(Entity *entity, bool setParent = true);
 
     /// Removes item representing @c entity from the tree widget.
     void RemoveEntity(Entity *entity);
@@ -206,6 +207,9 @@ private slots:
 
     /// Updates the sender component's name in the tree widget when the component's name changeds.
     void UpdateComponentName();
+
+    /// Updates the parent of an entity (moves it in the tree widget.)
+    void UpdateEntityParent(Entity* entity);
 
     /// Sort items in the tree widget. The outstanding sort order is used.
     /** @param column Column that is used as the sorting criteria. */

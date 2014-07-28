@@ -16,11 +16,13 @@ class Entity;
 /// Protocol versioning for client connections.
 enum NetworkProtocolVersion
 {
-    ProtocolOriginal = 0x1
+    ProtocolOriginal = 0x1,         // Original
+    ProtocolCustomComponents = 0x2, // Adds support for transmitting new static-structured component types without actual C++ implementation, using EC_PlaceholderComponent
+    ProtocolHierarchicScene = 0x3   // Adds support for hierarchic scene, ie. entities having child entities,
 };
 
 /// Highest supported protocol version in the build. Update this when a new protocol version is added
-const NetworkProtocolVersion cHighestSupportedProtocolVersion = ProtocolOriginal;
+const NetworkProtocolVersion cHighestSupportedProtocolVersion = ProtocolHierarchicScene;
 
 /// Represents a client connection on the server side. Subclassed by networking implementations.
 class TUNDRAPROTOCOL_MODULE_API UserConnection : public QObject, public enable_shared_from_this<UserConnection>
@@ -53,6 +55,8 @@ public:
     shared_ptr<SceneSyncState> syncState;
     /// Network protocol version in use
     NetworkProtocolVersion protocolVersion;
+    /// Map of the unacked entity IDs a user has sent, and the real entity IDs they have been assigned
+    std::map<u32, u32> unackedIdsToRealIds;
 
     /// Queue a network message to be sent to the client. All implementations may not use the reliable, inOrder, priority and contentID parameters.
     virtual void Send(kNet::message_id_t id, const char* data, size_t numBytes, bool reliable, bool inOrder, unsigned long priority = 100, unsigned long contentID = 0) = 0;

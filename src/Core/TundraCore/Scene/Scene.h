@@ -362,6 +362,9 @@ public slots:
         @param sensitivity Case sensitivity for the string matching. */
     EntityList FindEntitiesByName(const QString &name, Qt::CaseSensitivity sensitivity = Qt::CaseSensitive) const;
 
+    /// Return root-level entities, ie. those that have no parent.
+    EntityList RootLevelEntities() const;
+
     /// Loads the scene from XML.
     /** @param filename File name
         @param clearScene Do we want to clear the existing scene.
@@ -438,6 +441,12 @@ public slots:
         @param change Change signaling mode */
     void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
 
+    /// Emits a notification of entity reparenting
+    /** @param entity Entity that is being reparented
+        @paran newParent New parent entity
+        @param change Change signaling mode */
+    void EmitEntityParentChanged(Entity *entity, Entity *newParent, AttributeChange::Type change = AttributeChange::Default);
+
     /// @cond PRIVATE
     // DEPRECATED function signatures
     EntityPtr GetEntity(entity_id_t id) const { return EntityById(id); } /**< @deprecated Use EntityById @todo Add warning print, remove in some distant future */
@@ -508,12 +517,24 @@ signals:
     /// Signal when the whole scene is cleared
     void SceneCleared(Scene* scene);
 
+    /// An entity's parent has changed.
+    void EntityParentChanged(Entity* entity, Entity* newParent, AttributeChange::Type change);
+
 private slots:
     /// Handle frame update. Signal this frame's entity creations.
     void OnUpdated(float frameTime);
 
 private:
     friend class ::SceneAPI;
+
+    /// Create entity from an XML element and recurse into child entities. Called internally.
+    void CreateEntityFromXml(EntityPtr parent, const QDomElement& ent_elem, bool useEntityIDsFromFile, AttributeChange::Type change, std::vector<EntityWeakPtr>& entities, QHash<entity_id_t, entity_id_t>& oldToNewIds);
+    /// Create entity from binary data and recurse into child entities. Called internally.
+    void CreateEntityFromBinary(EntityPtr parent, kNet::DataDeserializer& source, bool useEntityIDsFromFile, AttributeChange::Type change, std::vector<EntityWeakPtr>& entities, QHash<entity_id_t, entity_id_t>& oldToNewIds);
+    /// Create entity from entity desc and recurse into child entities. Called internally.
+    void CreateEntityFromDesc(EntityPtr parent, const EntityDesc& source, bool useEntityIDsFromFile, AttributeChange::Type change, QList<Entity *>& entities, QHash<entity_id_t, entity_id_t>& oldToNewIds);
+    /// Create entity desc from an XML element and recurse into child entities. Called internally.
+    void CreateEntityDescFromXml(SceneDesc& sceneDesc, QList<EntityDesc>& dest, const QDomElement& ent_elem) const;
 
     /// Container for an ongoing attribute interpolation
     struct AttributeInterpolation

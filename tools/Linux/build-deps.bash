@@ -100,6 +100,9 @@ else
         cd $what
     fi
 
+    sed -e "s/CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)/CMAKE_MINIMUM_REQUIRED(VERSION 2.8.7)/" < CMakeLists.txt > x
+    mv x CMakeLists.txt
+
     cmake . -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_BUILD_TYPE=RELWITHDEBINFO -DQJSON_BUILD_TESTS=no
     make -j $nprocs
     make install
@@ -397,9 +400,8 @@ if test -f $tags/$what-done; then
 else
     rm -rf $what
     echo Fetching $what, this may take a while...
-    git clone https://github.com/zaphoyd/websocketpp.git $what
+    git clone https://github.com/realXtend/websocketpp.git $what
     cd $what
-    git checkout 0.3.0-alpha3
     mkdir -p $prefix/include/$what
     rsync -r $what/* $prefix/include/$what
     touch $tags/$what-done

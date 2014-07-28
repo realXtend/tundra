@@ -48,6 +48,9 @@ public:
     /// Returns human-readable name of the attribute. This is shown in the EC editor. For dynamic attributes, is the same as ID.
     const QString &Name() const { return name; }
 
+    /// Change the attribute's name. Needed for PlaceholderComponent when constructing attributes dynamically at deserialization
+    void SetName(const QString& newName);
+
     /// Writes attribute to string for XML serialization
     virtual QString ToString() const = 0;
 

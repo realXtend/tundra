@@ -1234,12 +1234,9 @@ IF NOT EXIST "%DEPS%\zziplib\lib\zziplib%POSTFIX_D%.lib". (
 
 :: websocketpp
 IF NOT EXIST "%DEPS%\websocketpp\". (
-    cecho {0D}Cloning websocketpp library from https://https://github.com/zaphoyd/websocketpp.git into "%DEPS%\websocketpp".{# #}{\n}
+    cecho {0D}Cloning websocketpp library from https://https://github.com/realXtend/websocketpp.git into "%DEPS%\websocketpp".{# #}{\n}
     cd "%DEPS%"
-    git clone https://github.com/zaphoyd/websocketpp.git websocketpp
-    cd "%DEPS%\websocketpp"
-    git checkout 0.3.0-alpha3
-    cd "%DEPS%"
+    git clone https://github.com/realXtend/websocketpp.git websocketpp
 )
 
 echo.
