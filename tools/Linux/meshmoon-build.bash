@@ -225,6 +225,7 @@ if [ $skip_deps = false ] ; then
             rm -f $DEPS_SRC/ogre-safe-nocrashes/meshmoon-builder.json $DEPS_SRC/ogre-safe-nocrashes/meshmoon-builder-server.json $DEPS_SRC/ogre-safe-nocrashes/meshmoon-builder-client.json
             rm -f $DEPS_LIB/libOgre* $DEPS_BIN/Ogre*
             rm -rf $DEPS_LIB/OGRE $DEPS_INC/OGRE $DEPS/share/OGRE
+            rm -f $TUNDRA_BIN/libOgre* $TUNDRA_BIN/Plugin_* $TUNDRA_BIN/RenderSystem_*
         fi
     fi
 
@@ -299,6 +300,7 @@ if [ $skip_deps = false ] ; then
         cd ..
 
         # Install
+        rm -rf $DEPS_LIB/qtplugins/script $TUNDRA_BIN/qtplugins/script
         mkdir -p $DEPS_LIB/qtplugins/script
         mkdir -p $TUNDRA_BIN/qtplugins/script
         cp -lf plugins/script/* $DEPS_LIB/qtplugins/script/
