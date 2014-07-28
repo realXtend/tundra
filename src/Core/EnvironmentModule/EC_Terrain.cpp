@@ -1461,8 +1461,8 @@ void EC_Terrain::RegenerateDirtyTerrainPatches()
                 {
                     uint nX = x + neighbors[i][0];
                     uint nY = y + neighbors[i][1];
-                    if (nX >= 0 && nX < patchWidth &&
-                        nY >= 0 && nY < patchHeight &&
+                    if (nX < patchWidth &&
+                        nY < patchHeight &&
                         GetPatch(nX, nY).heightData.size() == 0)
                     {
                         neighborsLoaded = false;
