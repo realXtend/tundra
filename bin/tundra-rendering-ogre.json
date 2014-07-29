@@ -45,7 +45,6 @@
         "Common" :
         [
             "Plugin_ParticleFX",
-            "Plugin_CgProgramManager",
             "Plugin_OctreeSceneManager"
         ],
 
@@ -54,6 +53,7 @@
             "DebugPostfix" : "_d",
             "Plugins"      :
             [
+                "Plugin_CgProgramManager",
                 "RenderSystem_Direct3D9",
                 // "RenderSystem_Direct3D11",
                 "RenderSystem_GL"
@@ -73,6 +73,7 @@
         {
             "Plugins" :
             [
+                "Plugin_CgProgramManager",
                 "RenderSystem_GL"
             ],
 
@@ -90,6 +91,7 @@
         {
             "Plugins" :
             [
+                "Plugin_CgProgramManager",
                 "RenderSystem_GL"
             ]
         }
