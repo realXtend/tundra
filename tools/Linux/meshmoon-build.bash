@@ -166,6 +166,9 @@ if [ $skip_pkg = false ] ; then
     sudo apt-get -y install \
         libfreetype6-dev libfreeimage-dev \
         libzzip-dev
+
+    print_title "Updating 'locate' database, please wait..."
+    sudo updatedb
 fi
 
 # Export build tool env variables.
