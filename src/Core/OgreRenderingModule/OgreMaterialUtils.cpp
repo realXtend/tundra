@@ -331,9 +331,36 @@ QSet<QString> ProcessMaterialForTextures(const QString &material)
     QStringList lines = material.split("\n");
     for(int i = 0; i < lines.size(); ++i)
     {
-        int idx = lines[i].indexOf("texture ");
+        int idx = lines[i].indexOf("cubic_texture ");
         if (idx != -1)
-            textures.insert(lines[i].mid(idx + 8).trimmed());
+        {
+            /** Format
+                  - Short: cubic_texture <base_name> <combinedUVW|separateUV>
+                  - Long:  cubic_texture <front> <back> <left> <right> <up> <down> separateUV */
+            QString ref = lines[i].mid(idx + 14).trimmed();
+            if (ref.contains(" "))
+            {
+                // We shall assume every texture ref contains a '.<ext>'.
+                QStringList refParts = ref.split(" ", QString::SkipEmptyParts);
+                foreach(const QString &refPart, refParts)
+                    if (refPart.contains("."))
+                        textures.insert(refPart);        
+            }
+            else
+                textures.insert(ref);
+        }
+        else
+        {
+            idx = lines[i].indexOf("texture ");
+            if (idx != -1)
+            {
+                // Format: texture <texturename> [<type>] [unlimited | numMipMaps] [alpha] [<PixelFormat>] [gamma]
+                QString ref = lines[i].mid(idx + 8).trimmed();
+                if (!ref.startsWith("Ogre Media:", Qt::CaseInsensitive) && ref.contains(" "))
+                    ref = ref.left(ref.indexOf(" "));
+                textures.insert(ref);
+            }
+        }
     }
 
     return textures;
