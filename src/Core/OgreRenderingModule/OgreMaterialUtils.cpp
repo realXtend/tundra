@@ -327,6 +327,9 @@ QSet<QString> ProcessMaterialFileForTextures(const QString& matfilename, const Q
 
 QSet<QString> ProcessMaterialForTextures(const QString &material)
 {
+    /** @todo Implement keeping 'Ogre Media:<ref>' intact in both cases.
+        If encountered the full line is returned, meaning you cant use <separateUV> etc.
+        properties on this kind of texture define. */
     QSet<QString> textures;
     QStringList lines = material.split("\n");
     for(int i = 0; i < lines.size(); ++i)
@@ -340,11 +343,31 @@ QSet<QString> ProcessMaterialForTextures(const QString &material)
             QString ref = lines[i].mid(idx + 14).trimmed();
             if (ref.contains(" "))
             {
-                // We shall assume every texture ref contains a '.<ext>'.
-                QStringList refParts = ref.split(" ", QString::SkipEmptyParts);
-                foreach(const QString &refPart, refParts)
-                    if (refPart.contains("."))
-                        textures.insert(refPart);        
+                // If there are " quoted refs we need to pull them out before splitting at spaces.
+                while (ref.count("\"") >= 2)
+                {
+                    int quoteIdx = ref.indexOf("\"");
+                    int quoteIdxEnd = ref.indexOf("\"", quoteIdx + 1);
+                    int len = quoteIdxEnd-quoteIdx+1;
+                    if (quoteIdx == -1 || quoteIdxEnd == -1 || len <= 0)
+                        break;
+                    // Don't include the quotes in results.
+                    QString quotedRef = ref.mid(quoteIdx+1, len-2);
+                    ref.remove(quoteIdx, len);
+
+                    textures.insert(quotedRef);
+                    ref = ref.trimmed();
+                }
+                if (!ref.isEmpty())
+                {
+                    // We shall assume every texture ref contains a '.<ext>'
+                    QStringList refParts = ref.split(" ", QString::SkipEmptyParts);
+                    foreach(const QString &refPart, refParts)
+                    {
+                        if (refPart.contains("."))
+                            textures.insert(refPart);        
+                    }
+                }
             }
             else
                 textures.insert(ref);
@@ -357,7 +380,20 @@ QSet<QString> ProcessMaterialForTextures(const QString &material)
                 // Format: texture <texturename> [<type>] [unlimited | numMipMaps] [alpha] [<PixelFormat>] [gamma]
                 QString ref = lines[i].mid(idx + 8).trimmed();
                 if (!ref.startsWith("Ogre Media:", Qt::CaseInsensitive) && ref.contains(" "))
-                    ref = ref.left(ref.indexOf(" "));
+                {
+                    // Rare but handle quoted ref with spaces "C:\assets\my textures\my.png" 
+                    if (ref.count("\"") == 2)
+                    {
+                        int quoteIdx = ref.indexOf("\"");
+                        int quoteIdxEnd = ref.indexOf("\"", quoteIdx + 1);
+                        int len = quoteIdxEnd-quoteIdx+1;
+                        // Don't include the quotes in results.
+                        ref = ref.mid(quoteIdx+1, len-2);
+                    }
+                    // Just pick the first element which is the texture.
+                    else
+                        ref = ref.left(ref.indexOf(" "));
+                }
                 textures.insert(ref);
             }
         }
