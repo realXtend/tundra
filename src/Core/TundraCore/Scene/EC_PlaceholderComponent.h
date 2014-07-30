@@ -45,7 +45,7 @@ public:
 
     /// IComponent override
     /** PlaceholderComponent attributes need to be treated as static for the network protocol, though they are dynamically allocated */
-    virtual int NumStaticAttributes() const { return attributes.size(); }
+    virtual int NumStaticAttributes() const { return static_cast<int>(attributes.size()); }
 
     void SetTypeId(u32 newTypeId);
     void SetTypeName(const QString& newTypeName);

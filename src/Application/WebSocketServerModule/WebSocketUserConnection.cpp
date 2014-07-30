@@ -29,7 +29,7 @@ void UserConnection::Send(kNet::message_id_t id, const char* data, size_t numByt
     kNet::DataSerializer ds(numBytes + 2);
     ds.Add<u16>(id);
     if (numBytes)
-        ds.AddAlignedByteArray(data, numBytes);
+        ds.AddAlignedByteArray(data, static_cast<u32>(numBytes));
     Send(ds);
 }
 

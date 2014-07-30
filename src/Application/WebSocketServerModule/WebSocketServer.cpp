@@ -420,7 +420,7 @@ void Server::OnMessage(ConnectionHandle connection, MessagePtr data)
         }
         SocketEvent *event = new SocketEvent(connectionPtr, SocketEvent::Data); /**< @todo 12.02.2014 no need to dynamically allocate these */
         event->data = DataSerializerPtr(new kNet::DataSerializer(payload.size()));
-        event->data->AddAlignedByteArray(&payload[0], payload.size());
+        event->data->AddAlignedByteArray(&payload[0], static_cast<u32>(payload.size()));
 
         events_ << event;
     }
