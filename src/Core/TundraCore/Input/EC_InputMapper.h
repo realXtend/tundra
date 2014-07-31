@@ -35,7 +35,7 @@
     ic.KeyReleased.connect(function(e) { if (e.keyCode == Qt.Key_W) me.Exec(EntityAction.Server, "Stop" ,forward); });
 
     // RegisterKeyEvent can be handy also, especially for key sequences.
-    var moveFwd = ic.RegisterKeyEvent(new QKeySequence(Qt.Key_W));
+    var moveFwd = ic.RegisterKeyEvent(new QKeySequence("W")); // Note that QKeySequence has no constructor taking Qt::Key enum.
     moveFwd.SequencePressed.connect(function() { me.Exec(EntityAction.Server, "Move", "forward"); });
     moveFwd.SequenceReleased.connect(function() { me.Exec(EntityAction.Server, "Stop", "forward"); });
 
