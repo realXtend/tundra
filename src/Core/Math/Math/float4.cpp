@@ -422,7 +422,7 @@ std::string float4::ToString() const
 std::string float4::SerializeToString() const
 {
 	char str[256];
-	sprintf(str, "%f %f %f %f", x, y, z, w);
+	sprintf(str, "%.9g %.9g %.9g %.9g", x, y, z, w);
 	return std::string(str);
 }
 #endif

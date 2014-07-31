@@ -564,7 +564,7 @@ std::string MUST_USE_RESULT Quat::ToString2() const
 std::string MUST_USE_RESULT Quat::SerializeToString() const
 {
 	char str[256];
-	sprintf(str, "%f %f %f %f", x, y, z, w);
+	sprintf(str, "%.9g %.9g %.9g %.9g", x, y, z, w);
 	return std::string(str);
 }
 

@@ -172,7 +172,7 @@ template<> QString TUNDRACORE_API Attribute<uint>::ToString() const
 template<> QString TUNDRACORE_API Attribute<float>::ToString() const
 {
     char str[256];
-    sprintf(str, "%f", Get());
+    sprintf(str, "%.9g", Get());
     return str;
 }
 

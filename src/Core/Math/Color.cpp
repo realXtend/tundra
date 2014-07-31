@@ -42,7 +42,7 @@ Color::operator QString() const
 QString Color::SerializeToString() const
 {
     char str[256];
-    sprintf(str, "%f %f %f %f", r, g, b, a);
+    sprintf(str, "%.9g %.9g %.9g %.9g", r, g, b, a);
     return str;
 }
 #endif

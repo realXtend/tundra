@@ -222,7 +222,7 @@ std::string float3::ToString() const
 std::string float3::SerializeToString() const
 {
 	char str[256];
-	sprintf(str, "%f %f %f", x, y, z);
+	sprintf(str, "%.9g %.9g %.9g", x, y, z);
 	return std::string(str);
 }
 #endif

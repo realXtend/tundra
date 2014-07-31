@@ -26,7 +26,7 @@ Transform::operator QString() const
 QString Transform::SerializeToString() const
 {
     char str[256];
-    sprintf(str, "%f,%f,%f,%f,%f,%f,%f,%f,%f", pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, scale.x, scale.y, scale.z);
+    sprintf(str, "%.9g,%.9g,%.9g,%.9g,%.9g,%.9g,%.9g,%.9g,%.9g", pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, scale.x, scale.y, scale.z);
     return str;
 }
 
