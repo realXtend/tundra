@@ -201,7 +201,7 @@ void JavascriptInstance::Load()
                 ": " + syntaxResult.errorMessage());
 
             // Delete our loaded script content (if any exists).
-            program_ == "";
+            program_ = "";
         }
     }
 }
