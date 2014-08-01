@@ -10,6 +10,10 @@
         {
             "Repo"      : "git@github.com:Adminotech/admino-server",
             "SkipBuild" : true
+        },
+        {
+            "Repo"      : "https://github.com/realXtend/TundraAddons",
+            "SkipBuild" : true
         }
     ]
 }
