@@ -357,7 +357,7 @@ del /Q "%TUNDRA_BIN%\QtTest*.dll"
 IF NOT EXIST "%DEPS%\qjson\". (
     cecho {0D}Cloning QJson into "%DEPS%\qjson".{# #}{\n}
     cd "%DEPS%"
-    git clone https://github.com/jonnenauha/qjson.git
+    call git clone https://github.com/jonnenauha/qjson.git
     IF NOT EXIST "%DEPS%\qjson\.git" GOTO :ERROR
 )
 
@@ -453,9 +453,9 @@ IF NOT EXIST "%DEPS%\assimp\". (
     cecho {0D}Checking out OpenAssetImport library from https://github.com/assimp/assimp.git into "%DEPS%\assimp".{# #}{\n}
     cd "%DEPS%"
     :: Note the fixed revision hash (equals SVN rev 1300.) OpenAssetImport does not have an up-to-date tagged release, so fix to a recent revision of trunk.
-    git clone https://github.com/assimp/assimp.git assimp
+    call git clone https://github.com/assimp/assimp.git assimp
     cd "%DEPS%\assimp"
-    git checkout v3.1.1
+    call git checkout v3.1.1
     cd "%DEPS%"
 )
 
@@ -630,7 +630,7 @@ IF NOT EXIST "%DEPS%\realxtend-tundra-deps\.git". (
     cecho {0D}Updating realxtend-tundra-deps to newest.{# #}{\n}
     cd "%DEPS%\realxtend-tundra-deps"
     call git fetch origin sources:refs/remotes/origin/sources
-    git rebase origin/sources
+    call git rebase origin/sources
 )
 
 set OGRE_HOME=%DEPS%\ogre-safe-nocrashes\SDK
@@ -655,7 +655,7 @@ IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\.hg". (
 IF NOT EXIST "%DEPS%\ogre-safe-nocrashes\RenderSystems\Headless". (
    cecho {0D}Closing RenderSystem_Headless to be built with ogre-safe-nocrashes.{# #}{\n}
    cd "%DEPS%\ogre-safe-nocrashes\RenderSystems"
-   git clone https://github.com/jonnenauha/ogre-headless-renderer.git Headless
+   call git clone https://github.com/jonnenauha/ogre-headless-renderer.git Headless
    copy /Y "%TOOLS%\Mods\Ogre_RenderSystems_CMakeLists.txt" "%DEPS%\ogre-safe-nocrashes\RenderSystems\CMakeLists.txt"
 )
 
@@ -664,7 +664,7 @@ REM   echo add_subdirectory(Headless) >> "%DEPS%\ogre-safe-nocrashes\RenderSyste
 
 cecho {0D}Updating RenderSystem_Headless to the newest version in ogre-safe-nocrashes.{# #}{\n}
 cd "%DEPS%\ogre-safe-nocrashes\RenderSystems\Headless"
-git pull
+call git pull
 
 :: Ogre dependencies
 :: Clone a specific changeset we know to work
@@ -1236,7 +1236,7 @@ IF NOT EXIST "%DEPS%\zziplib\lib\zziplib%POSTFIX_D%.lib". (
 IF NOT EXIST "%DEPS%\websocketpp\". (
     cecho {0D}Cloning websocketpp library from https://https://github.com/realXtend/websocketpp.git into "%DEPS%\websocketpp".{# #}{\n}
     cd "%DEPS%"
-    git clone https://github.com/realXtend/websocketpp.git websocketpp
+    call git clone https://github.com/realXtend/websocketpp.git websocketpp
 )
 
 echo.
