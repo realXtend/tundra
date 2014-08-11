@@ -374,6 +374,8 @@ void InputAPI::SceneReleaseMouseButtons()
             mouseEvent.otherButtons = 0;
 
             mouseEvent.timestamp = framework->Frame()->WallClockTime();
+
+            TriggerMouseEvent(mouseEvent);
         }
 }
 
