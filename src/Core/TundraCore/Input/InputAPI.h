@@ -87,6 +87,8 @@ public:
     /// This emits gesture events to the input contexts
     void TriggerGestureEvent(GestureEvent &gesture);
 
+    Framework *Fw() const { return framework; }
+
 public slots:
     /// Creates a new input context with the given name.
     /** The name is not an ID, i.e. it does not have to be unique with 

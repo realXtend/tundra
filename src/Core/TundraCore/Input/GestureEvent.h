@@ -17,12 +17,14 @@ class TUNDRACORE_API GestureEvent : public QObject
     Q_PROPERTY(EventType eventType READ Type)
     Q_PROPERTY(QGesture* gesture READ Gesture)
     Q_PROPERTY(Qt::GestureType gestureType READ GestureType)
+    Q_PROPERTY(float timestamp READ Timestamp)
 
 public:
     GestureEvent() :
         eventType(GestureInvalid),
         handled(false),
-        gesture(0)
+        gesture(0),
+        timestamp(0.f)
     {
     }
 
@@ -53,7 +55,11 @@ public:
     /// By default, this field is set to false when the event is fired to the event queue.
     bool handled;
 
+    /// Wall clock time when the event occurred.
+    float timestamp;
+
     EventType Type() const { return eventType; }
+    float Timestamp() const { return timestamp; }
 
 public slots:
     /// Marks this event as having been handled already, which will suppress this event from

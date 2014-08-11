@@ -31,6 +31,7 @@ class TUNDRACORE_API MouseEvent : public QObject
     Q_PROPERTY(int globalX READ GlobalX)
     Q_PROPERTY(int globalY READ GlobalY)
     Q_PROPERTY(unsigned long otherButtons READ OtherButtons)
+    Q_PROPERTY(float timestamp READ Timestamp)
 
 public:
     MouseEvent()
@@ -43,7 +44,8 @@ public:
     otherButtons(0),
     modifiers(0),
     handled(false),
-    itemUnderMouse(0)
+    itemUnderMouse(0),
+    timestamp(0.f)
     {
     }
     virtual ~MouseEvent() {}
@@ -67,9 +69,10 @@ public:
         MouseScroll, ///< The mouse wheel position moved.
         MousePressed, ///< A mouse button was pressed down.
         MouseReleased, ///< A mouse button was released.
-///\todo Offer these additional events.
-//        MouseClicked,  ///< A mouse click occurs when mouse button is pressed and released inside a short interval.
         MouseDoubleClicked
+        /// @todo Offer this additional event:
+        ///        MouseClicked  ///< A mouse click occurs when mouse button is pressed and released inside a short interval.
+        /// @note Must be the last one in the enum so that we don't break scripts or other instances that could be using number instead of the symbol.
     };
 
     /// PressOrigin tells whether a mouse press originated on top of a Qt widget or on top of the 3D scene area.
@@ -148,7 +151,8 @@ public:
     /// topmost of them is returned here.
     QGraphicsItem *itemUnderMouse;
 
-    ///\todo Add a time stamp of the event.
+    /// Wall clock time when the event occurred.
+    float timestamp;
 
     int X() const { return x; }
     int Y() const { return y; }
@@ -168,6 +172,7 @@ public:
     EventType Type() const { return eventType; }
     MouseButton Button() const { return button; }
     PressOrigin Origin() const { return origin; }
+    float Timestamp() const { return timestamp; }
 
 public slots:
     /// Marks this event as having been handled already, which will suppress this event from

@@ -12,6 +12,7 @@
 #include "CoreDefines.h"
 #include "ConfigAPI.h"
 #include "Profiler.h"
+#include "FrameAPI.h"
 
 #include <QList>
 #include <QVector>
@@ -371,6 +372,8 @@ void InputAPI::SceneReleaseMouseButtons()
             mouseEvent.globalY = 0;
 
             mouseEvent.otherButtons = 0;
+
+            mouseEvent.timestamp = framework->Frame()->WallClockTime();
         }
 }
 
@@ -628,7 +631,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         keyEvent.text = e->text();
         keyEvent.sequence = QKeySequence(e->key() | e->modifiers()); ///\todo Track multi-key sequences.
         keyEvent.eventType = KeyEvent::KeyPressed;
-
+        keyEvent.timestamp = framework->Frame()->WallClockTime();
         // Assign the keys from the heldKeys map to the keyEvent.otherHeldKeys vector
         for (std::map<Qt::Key, KeyPressInformation>::const_iterator current = heldKeys.begin(); current != heldKeys.end(); ++ current)
             keyEvent.otherHeldKeys.push_back((*current).first);
@@ -712,6 +715,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         keyEvent.eventType = KeyEvent::KeyReleased;
         //keyEvent.otherHeldKeys = heldKeys; ///\todo
         keyEvent.handled = false;
+        keyEvent.timestamp = framework->Frame()->WallClockTime();
 
 #ifdef Q_WS_MAC
         /** @hack Recognize arrow keys for mac. Text and sequence will have garbage on mac arrow key 
@@ -805,6 +809,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         for (std::map<Qt::Key, KeyPressInformation>::const_iterator current = heldKeys.begin(); current != heldKeys.end(); ++ current)
             mouseEvent.heldKeys.push_back((*current).first);
         mouseEvent.handled = false;
+        mouseEvent.timestamp = framework->Frame()->WallClockTime();
 
         // If the mouse press is going to the inworld scene, clear keyboard focus from the QGraphicsScene widget (if any had it) so key events also go to inworld scene.
         if ((event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick) && !mouseEvent.itemUnderMouse && mouseCursorVisible)
@@ -883,6 +888,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         for (std::map<Qt::Key, KeyPressInformation>::const_iterator current = heldKeys.begin(); current != heldKeys.end(); ++ current)
             mouseEvent.heldKeys.push_back((*current).first);
         mouseEvent.handled = false;
+        mouseEvent.timestamp = framework->Frame()->WallClockTime();
 
         // Save the absolute coordinates to be able to compute the proper relative movement values in the next
         // mouse event.
@@ -940,6 +946,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         for (std::map<Qt::Key, KeyPressInformation>::const_iterator current = heldKeys.begin(); current != heldKeys.end(); ++ current)
             mouseEvent.heldKeys.push_back((*current).first);
         mouseEvent.handled = false;
+        mouseEvent.timestamp = framework->Frame()->WallClockTime();
 
         TriggerMouseEvent(mouseEvent);
 
@@ -961,6 +968,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
             gestureEvent.gesture = gesture;
             gestureEvent.gestureType = gesture->gestureType();
             gestureEvent.eventType = (GestureEvent::EventType)gesture->state();
+            gestureEvent.timestamp = framework->Frame()->WallClockTime();
             TriggerGestureEvent(gestureEvent);
             e->setAccepted(gesture, gestureEvent.handled);
         }

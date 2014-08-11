@@ -9,6 +9,8 @@
 #include "MouseEvent.h"
 #include "GestureEvent.h"
 #include "KeyEventSignal.h"
+#include "Framework.h"
+#include "FrameAPI.h"
 
 #include <QList>
 #include <QCursor>
@@ -110,6 +112,7 @@ void InputContext::TriggerKeyReleaseEvent(Qt::Key keyCode)
     release.keyCode = keyCode;
     release.keyPressCount = iter->second.keyPressCount;
     release.eventType = KeyEvent::KeyReleased;
+    release.timestamp = inputApi->Fw()->Frame()->WallClockTime();
     TriggerKeyEvent(release);
 }
 

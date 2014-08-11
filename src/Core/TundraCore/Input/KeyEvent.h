@@ -22,6 +22,7 @@ class TUNDRACORE_API KeyEvent : public QObject
     Q_PROPERTY(unsigned long modifiers READ Modifiers)
     Q_PROPERTY(int keyPressCount READ KeyPressCount)
     Q_PROPERTY(Qt::Key keyCode READ KeyCode)
+    Q_PROPERTY(float timestamp READ Timestamp)
 
 public:
     KeyEvent()
@@ -30,7 +31,8 @@ public:
     modifiers(0),
     eventType(KeyEventInvalid),
     handled(false),
-    qtEvent(0)
+    qtEvent(0),
+    timestamp(0.f)
     {
     }
 
@@ -85,7 +87,8 @@ public:
     /// By default, this field is set to false when the event is fired to the event queue.
     bool handled;
 
-    ///\todo Add a time stamp of the event.
+    /// Wall clock time when the event occurred.
+    float timestamp;
     ///\todo Add hold duration if this is a release/repeated press.
 
     QKeySequence Sequence() const { return sequence; }
@@ -94,6 +97,7 @@ public:
     int KeyPressCount() const { return keyPressCount; }
     Qt::Key KeyCode() const { return keyCode; }
     EventType Type() const { return eventType; }
+    float Timestamp() const { return timestamp; }
 
 public slots:
     /// Marks this event as having been handled already, which will suppress this event from
