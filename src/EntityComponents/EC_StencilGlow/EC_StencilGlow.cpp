@@ -31,6 +31,7 @@ EC_StencilGlow::EC_StencilGlow(Scene *scene) :
     INIT_ATTRIBUTE_VALUE(scale, "Scale", float3::FromScalar(1.05f)),
     INIT_ATTRIBUTE_VALUE(blinkFrequency, "Blink frequency", 0.f),
     isEnabled(false),
+    ownEntity_(0),
     outlineEntity_(0),
     outlineSceneNode_(0)
 {
@@ -85,6 +86,8 @@ void EC_StencilGlow::CreateStencilGlow()
     if (!entity)
         return;
 
+    ownEntity_ = entity;
+
     if (!outlineEntity_ && !outlineSceneNode_)
     {
         OgreWorldPtr w = world_.lock();
@@ -115,6 +118,8 @@ void EC_StencilGlow::DestroyStencilGlow()
     if (world_.expired())
         return;
 
+    SetStencilGlowEnabled(false);
+
     if (outlineEntity_)
     {
         world_.lock()->OgreSceneManager()->destroyEntity(outlineEntity_);
@@ -126,6 +131,8 @@ void EC_StencilGlow::DestroyStencilGlow()
         world_.lock()->OgreSceneManager()->destroySceneNode(outlineSceneNode_);
         outlineSceneNode_ = 0;
     }
+
+    ownEntity_ = 0;
 }
 
 void EC_StencilGlow::SetStencilGlowEnabled(bool enable)
@@ -133,12 +140,7 @@ void EC_StencilGlow::SetStencilGlowEnabled(bool enable)
     if (!ViewEnabled())
         return;
 
-    EC_Mesh* mesh = GetMesh();
-    if (!mesh)
-        return;
-    
-    Ogre::Entity* entity = mesh->OgreEntity();
-    if (!entity)
+    if (!ownEntity_)
         return;
 
     if (!outlineSceneNode_ && !outlineEntity_)
@@ -146,13 +148,13 @@ void EC_StencilGlow::SetStencilGlowEnabled(bool enable)
 
     if (enable && !isEnabled)
     {
-        entity->setRenderQueueGroup(STENCIL_GLOW_ENTITY);
+        ownEntity_->setRenderQueueGroup(STENCIL_GLOW_ENTITY);
         outlineSceneNode_->attachObject(outlineEntity_);
         isEnabled = true;
     }
     else if (!enable && isEnabled)
     {
-        entity->setRenderQueueGroup(Ogre::RENDER_QUEUE_MAIN);
+        ownEntity_->setRenderQueueGroup(Ogre::RENDER_QUEUE_MAIN);
         outlineSceneNode_->detachObject(outlineEntity_);
         isEnabled = false;
     }

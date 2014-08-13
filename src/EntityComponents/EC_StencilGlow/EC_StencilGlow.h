@@ -61,6 +61,7 @@ private:
 
     EC_Mesh* GetMesh() const;
 
+    Ogre::Entity* ownEntity_;
     Ogre::Entity* outlineEntity_;
     Ogre::SceneNode* outlineSceneNode_;
 

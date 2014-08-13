@@ -68,7 +68,7 @@ struct RaycastResultLessThan
 class OgreStencilOpQueueListener : public Ogre::RenderQueueListener
 {
 public:
-	virtual void renderQueueStarted(Ogre::uint8 queueGroupId, const Ogre::String& invocation, bool& skipThisInvocation)
+	virtual void renderQueueStarted(Ogre::uint8 queueGroupId, const Ogre::String& /*invocation*/, bool& /*skipThisInvocation*/)
 	{
 		if (queueGroupId == STENCIL_GLOW_ENTITY) // outline glow object
 		{
@@ -97,7 +97,7 @@ public:
 		}
 	}
 
-	virtual void renderQueueEnded(Ogre::uint8 queueGroupId, const Ogre::String& invocation, bool& repeatThisInvocation)
+	virtual void renderQueueEnded(Ogre::uint8 queueGroupId, const Ogre::String& /*invocation*/, bool& /*repeatThisInvocation*/)
 	{
 		if (queueGroupId == STENCIL_GLOW_ENTITY || queueGroupId == STENCIL_GLOW_OUTLINE)
 		{
