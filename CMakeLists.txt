@@ -330,7 +330,7 @@ include (FindOgre)
 include (FindDirectX)
 
 # Disable unnecessary build types
-if (NOT UNIX OR APPLE)
+if (NOT LINUX)
     set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
 else()
     set(CMAKE_CONFIGURATION_TYPES "" CACHE STRING "Configurations" FORCE)
