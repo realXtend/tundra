@@ -131,9 +131,16 @@ Application::Application(int &argc, char **argv) :
     if (!path.exists())
         path.mkpath(".");
 
-    // Add <install_dir>/qtplugins for qt to search plugins
+    // Add <install_dir>/qtplugins for qt to search plugins.
+    // On Windows dont leave any other paths, this should be the only path to load Qt plugins.
+    // Linux and other systems might have system paths in there, dont override them.
     QString runDirectory = QDir::fromNativeSeparators(InstallationDirectory() + "/qtplugins");
+#ifdef Q_OS_WIN
+    setLibraryPaths(QStringList() << runDirectory);
+#else
     addLibraryPath(runDirectory);
+#endif
+
     // In headless mode, we create windows that are never shown.
     // Also, the user can open up debugging windows like the profiler or kNet network stats from the console,
     // so disable the whole application from closing when these are shut down.
