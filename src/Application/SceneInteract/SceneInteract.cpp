@@ -17,6 +17,10 @@
 #include "Renderer.h"
 #include "OgreWorld.h"
 
+#include "Math/MathConstants.h"
+#include "Math/MathFunc.h"
+#include "Geometry/Ray.h"
+
 SceneInteract::SceneInteract() :
     IModule("SceneInteract"),
     lastX(-1),
@@ -56,6 +60,81 @@ void SceneInteract::Update(f64 /*frameTime*/)
 RaycastResult* SceneInteract::CurrentMouseRaycastResult() const
 {
     return lastRaycast;
+}
+
+float3 SceneInteract::RaycastClosestIntersect(const float3 &from, const float3 &to, unsigned layerMask, float maxDistance) const
+{
+    return RaycastClosestIntersect(from, QList<float3>() << to, layerMask, maxDistance);
+}
+
+float3 SceneInteract::RaycastClosestIntersect(const float3 &from, const QList<float3> &to, unsigned layerMask, float maxDistance) const
+{
+    float3 intersection = float3::zero;
+    OgreWorldPtr world = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer()->GetActiveOgreWorld();
+    if (!world)
+        return intersection;
+        
+    Ray ray;
+    ray.pos = from;
+
+    float closest = FLT_MAX;
+    for (int i=0, len=to.size(); i<len; ++i)
+    {
+        ray.dir = to[i].Sub(from).Normalized();
+        
+        // We use Raycast as the closest hit entity is enough for us.
+        RaycastResult *result = world->Raycast(ray, layerMask, maxDistance);
+        if (result && result->entity && !EqualAbs(result->t, FLOAT_INF))
+        {
+            if (result->t < closest)
+            {
+                closest = result->t;
+                intersection = result->pos;
+            }
+        }
+    }
+    return intersection;
+}
+
+float3 SceneInteract::RaycastFurthestIntersect(const float3 &from, const float3 &to, unsigned layerMask) const
+{
+    return RaycastFurthestIntersect(from, QList<float3>() << to, layerMask);
+}
+
+float3 SceneInteract::RaycastFurthestIntersect(const float3 &from, const QList<float3> &to, unsigned layerMask) const
+{
+    float3 intersection = float3::zero;
+    OgreWorldPtr world = framework_->GetModule<OgreRenderer::OgreRenderingModule>()->GetRenderer()->GetActiveOgreWorld();
+    if (!world)
+        return intersection;
+
+    Ray ray;
+    ray.pos = from;
+
+    float furthest = 0.0f;
+    for (int i=0, len=to.size(); i<len; ++i)
+    {
+        ray.dir = to[i].Sub(from).Normalized();
+
+        // We use raycast all as there might be multiple entities in between 'from' and 'to'
+        // and this function should return the closest hit to the 'to' target.
+        float maxDistance = from.Distance(to[i]);
+        QList<RaycastResult*> results = world->RaycastAll(ray, layerMask, maxDistance);
+        if (!results.isEmpty())
+        {
+            // Last result is picked as the results are already ordered by distance.
+            RaycastResult *result = results.last();
+            if (result && result->entity && !EqualAbs(result->t, FLOAT_INF))
+            {
+                if (result->t > furthest)
+                {
+                    furthest = result->t;
+                    intersection = result->pos;
+                }
+            }
+        }
+    }
+    return intersection;
 }
 
 RaycastResult* SceneInteract::ExecuteRaycast()

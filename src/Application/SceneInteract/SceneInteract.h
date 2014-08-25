@@ -21,7 +21,10 @@
 #include "InputFwd.h"
 #include "CoreDefines.h"
 
+#include "Math/float3.h"
+
 #include <QObject>
+#include <QList>
 
 /// Transforms generic mouse and keyboard input events on scene entities to input-related entity actions and signals.
 /** Performs a raycast to the mouse position each frame and executes entity actions depending current input.
@@ -64,6 +67,24 @@ public slots:
         is a change the returned result is incorrect. If you want to be absolutely sure
         use the your mouse events position to execute a raycast operation yourself. */
     RaycastResult* CurrentMouseRaycastResult() const;
+
+    /// Returns the closest intersect point when raycasting from @c from to @to.
+    /** @param Source position where raycast is executed.
+     ** @param Target position for the raycast.
+     ** @param Layer mask @see OgreWorld::Raycast. 
+     ** @return Intersect world position. float3::zero is returned if nothing was hit, use float3::IsZero() to check the result. */
+    float3 RaycastClosestIntersect(const float3 &from, const float3 &to, unsigned layerMask = 0xffffffff, float maxDistance = 1000.0f) const;
+    /// @overload
+    float3 RaycastClosestIntersect(const float3 &from, const QList<float3> &to, unsigned layerMask = 0xffffffff, float maxDistance = 1000.0f) const;
+    
+    /// Returns the furthest intersect point when raycasting from @c from to @to.
+    /** @param Source position where raycast is executed.
+     ** @param Target position for the raycast.
+     ** @param Layer mask @see OgreWorld::Raycast. 
+     ** @return Intersect world position. float3::zero is returned if nothing was hit, use float3::IsZero() to check the result. */
+    float3 RaycastFurthestIntersect(const float3 &from, const float3 &to, unsigned layerMask = 0xffffffff) const;
+    /// @overload
+    float3 RaycastFurthestIntersect(const float3 &from, const QList<float3> &to, unsigned layerMask = 0xffffffff) const;
 
 signals:
     /// Emitted when mouse cursor moves on top of an entity.
