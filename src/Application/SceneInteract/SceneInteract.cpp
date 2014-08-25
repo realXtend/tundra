@@ -84,7 +84,7 @@ float3 SceneInteract::RaycastClosestIntersect(const float3 &from, const QList<fl
         
         // We use Raycast as the closest hit entity is enough for us.
         RaycastResult *result = world->Raycast(ray, layerMask, maxDistance);
-        if (result && result->entity && !EqualAbs(result->t, FLOAT_INF))
+        if (result && result->entity && !IsInf(result->t))
         {
             if (result->t < closest)
             {
@@ -124,7 +124,7 @@ float3 SceneInteract::RaycastFurthestIntersect(const float3 &from, const QList<f
         {
             // Last result is picked as the results are already ordered by distance.
             RaycastResult *result = results.last();
-            if (result && result->entity && !EqualAbs(result->t, FLOAT_INF))
+            if (result && result->entity && !IsInf(result->t))
             {
                 if (result->t > furthest)
                 {
