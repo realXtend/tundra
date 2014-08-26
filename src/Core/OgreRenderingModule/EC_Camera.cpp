@@ -566,6 +566,8 @@ void EC_Camera::QueryVisibleEntities()
     for(Ogre::SceneQueryResultMovableList::iterator iter = results.movables.begin(); iter != results.movables.end(); ++iter)
     {
         Ogre::MovableObject *m = *iter;
+        if (!m->isVisible())
+            continue;
         const Ogre::Any& any = m->getUserAny();
         if (any.isEmpty())
             continue;
