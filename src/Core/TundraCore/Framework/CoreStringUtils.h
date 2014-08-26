@@ -36,11 +36,11 @@ inline float ParseFloat(const std::string &val, float defaultValue) { return Par
 
 /// Converts string to an integer, returns defaultValue if conversion fails.
 inline int ParseInt(const QString &val, int defaultValue) { bool ok; int ret = val.toInt(&ok); return ok ? ret : defaultValue; }
-inline float ParseInt(const std::string &val, int defaultValue) { return ParseInt(QString::fromStdString(val), defaultValue); } /**< @overload */
+inline int ParseInt(const std::string &val, int defaultValue) { return ParseInt(QString::fromStdString(val), defaultValue); } /**< @overload */
 
 /// Converts string to an unsigned integer, returns defaultValue if conversion fails.
 inline uint ParseUInt(const QString &val, uint defaultValue) { bool ok; uint ret = val.toUInt(&ok); return ok ? ret : defaultValue; }
-inline float ParseUInt(const std::string &val, uint defaultValue) { return ParseInt(QString::fromStdString(val), defaultValue); } /**< @overload */
+inline uint ParseUInt(const std::string &val, uint defaultValue) { return ParseUInt(QString::fromStdString(val), defaultValue); } /**< @overload */
 
 /// Removes requested lines from data.
 /** Parses data line by line, ignoring starting whitespace and matching linePrefixes. Matched lines will be removed.
@@ -49,7 +49,7 @@ inline float ParseUInt(const std::string &val, uint defaultValue) { return Parse
     @param Line prefixes. If a line starts with one of these (after starting whitespace) it will be removed.
     @param Removed line count will be reported here if ptr is not null.
     @return Result data. */
-QByteArray TUNDRACORE_API RemoveLines(const QByteArray &data, QStringList linePrefixes, uint *removedLineCount = 0);
+QByteArray TUNDRACORE_API RemoveLines(const QByteArray &data, const QStringList &linePrefixes, uint *removedLineCount = 0);
 
 /// Split a string by separator char
 StringVector TUNDRACORE_API SplitString(const std::string& str, char separator);

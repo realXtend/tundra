@@ -92,7 +92,7 @@ std::vector<s8> StringToBuffer(const std::string& str)
     return ret;
 }
 
-QByteArray RemoveLines(const QByteArray &data, QStringList linePrefixes, uint *removedLineCount)
+QByteArray RemoveLines(const QByteArray &data, const QStringList &linePrefixes, uint *removedLineCount)
 {
     if (removedLineCount != 0)
         *removedLineCount = 0;
