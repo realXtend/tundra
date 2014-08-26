@@ -708,7 +708,7 @@ bool Framework::LoadStartupOptionsFromJSON(const QString &configurationFile)
     }
     if (startupOptions.isEmpty())
     {
-        LogWarning("Config file does not seem to have any values is it: " + configurationFile);
+        LogWarning("Config file does not seem to have any values in it: " + configurationFile);
         return false;
     }
 
