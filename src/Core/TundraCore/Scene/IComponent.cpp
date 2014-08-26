@@ -481,9 +481,8 @@ void IComponent::WriteAttribute(QDomDocument& doc, QDomElement& comp_element, co
 
 bool IComponent::BeginDeserialization(QDomElement& compElem)
 {
-    /// @todo 27.09.2013 Make typeId take precedence over typeName when enough time has passed.
-    if (EnsureTypeNameWithPrefix(compElem.attribute("type")) == TypeName() ||
-        ParseUInt(compElem.attribute("typeId"), 0xffffffff) == TypeId())
+    if (ParseUInt(compElem.attribute("typeId"), 0xffffffff) == TypeId() || // typeId takes precedence over typeName
+        EnsureTypeNameWithPrefix(compElem.attribute("type")) == TypeName())
     {
         SetName(compElem.attribute("name"));
         return true;
