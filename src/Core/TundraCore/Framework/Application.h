@@ -97,11 +97,12 @@ public:
     static QString UserDocumentsDirectory();
 
     /// Parse a filename for specific wildcard modifiers, and return as parsed
-    /** $(CWD) is expanded to the current working directory.
-        $(INSTDIR) is expanded to the Tundra installation directory (Application::InstallationDirectory)
-        $(USERDATA) is expanded to Application::UserDataDirectory.
-        $(USERDOCS) is expanded to Application::UserDocumentsDirectory.
-        $(DATE:format) is expanded to show the current time, in this format http://doc.qt.nokia.com/latest/qdatetime.html#toString . */
+    /** - "$(CWD)" is expanded to the current working directory.
+        - "$(INSTDIR)" is expanded to the Tundra installation directory (Application::InstallationDirectory)
+        - "$(USERDATA)" is expanded to Application::UserDataDirectory.
+        - "$(USERDOCS)" is expanded to Application::UserDocumentsDirectory.
+        - "$(DATE:format)" is expanded to show the current time, in this format http://doc.qt.nokia.com/latest/qdatetime.html#toString .
+            E.g. $(DATE:yyyyMMdd) gives something like "20110905". */
     static QString ParseWildCardFilename(const QString& input);
 
     /// Return organization of the application, e.g. "realXtend".
