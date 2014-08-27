@@ -969,15 +969,22 @@ void SceneStructureWindow::UpdateEntityName(IAttribute * /*attr*/)
             if (!newGroupName.isEmpty())
                 newGroup = GetOrCreateEntityGroupItem(newGroupName);
 
-            if (oldGroup)
+            // This should not happen as group attribute wont trigger a change
+            // if the value did not actually change. But we end up here with new
+            // and old groups being the same when server/network is involved in
+            // a mass Entity import where groups are set.
+            if (oldGroup != newGroup)
             {
-                oldGroup->RemoveEntityItem(item);
-                if (oldGroup->childCount() == 0)
-                    RemoveEntityGroupItem(oldGroup);
-            }
+                if (oldGroup)
+                {
+                    oldGroup->RemoveEntityItem(item);
+                    if (oldGroup->childCount() == 0)
+                        RemoveEntityGroupItem(oldGroup);
+                }
 
-            if (newGroup)
-                newGroup->AddEntityItem(item);
+                if (newGroup)
+                    newGroup->AddEntityItem(item);
+            }
 
             ShowGroups(showGroups); /**< @todo quick'd'dirty */
         }
