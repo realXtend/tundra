@@ -2,7 +2,7 @@
     For conditions of distribution and use, see copyright notice in LICENSE
 
     @file   SceneDesc.h
-    @brief  Light-weigth structures for describing scene and its contents. */
+    @brief  Light-weight structures for describing scene and its contents. */
 
 #pragma once
 
@@ -10,6 +10,8 @@
 #include "SceneFwd.h"
 
 #include <QMap>
+#include <QHash>
+#include <QList>
 #include <QPair>
 
 /// Description of a scene (Scene).
@@ -152,4 +154,38 @@ struct TUNDRACORE_API AssetDesc
 
     /// Equality operator. Returns true if filenames match, false otherwise.
     bool operator ==(const AssetDesc &rhs) const { return source == rhs.source; }
+};
+
+/** Helper for tracking, managing and fixing parent child
+    relationships when a group of Entities is created.
+
+    @note This utility cannot be used by multiple imports at the same
+    time. You need to create a struct per import or wait for the first
+    one to return true from Ack() and call FixParenting(). */
+struct TUNDRACORE_API ParentingTracker
+{
+    typedef QList<entity_id_t> EntityIdList;
+    typedef QHash<entity_id_t, entity_id_t> EntityIdMap;
+
+    EntityIdList Unacked;
+    EntityIdMap UnackedToAcked;
+
+    /// Returns if tracking is in progress.
+    bool IsTracking() const;
+
+    /// Add entity to tracking
+    /** @note This needs to be called after Entity has
+        been created and before server acks a new Entity id for it. */
+    void Track(Entity *ent);
+
+    /// Acks a expected entity.
+    /** @param New acked Entity id.
+        @param Old Entity id that was replaced with @c newId
+        @return True if all pending unacked Entities have now been acked.
+        False if still pending or no acks were expected. */
+    void Ack(Scene *scene, entity_id_t newId, entity_id_t oldId);
+
+    /// Fixes parenting that is referencing unacked and no longer existing Entities.
+    /** @note Do not call this function from outside. Use Track and Ack instead. */
+    void _fixParenting(Scene *scene);
 };

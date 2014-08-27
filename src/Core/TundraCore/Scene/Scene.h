@@ -554,6 +554,7 @@ private:
     bool authority_; ///< Authority -flag
     std::vector<AttributeInterpolation> interpolations_; ///< Running attribute interpolations.
     std::vector<std::pair<EntityWeakPtr, AttributeChange::Type> > entitiesCreatedThisFrame_; ///< Entities to signal for creation at frame end.
+    ParentingTracker parentTracker_; ///< Tracker for client side mass Entity imports (eg. SceneDesc based).
 };
 Q_DECLARE_METATYPE(Scene*);
 Q_DECLARE_METATYPE(Scene::EntityMap)

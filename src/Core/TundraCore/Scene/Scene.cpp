@@ -425,7 +425,16 @@ bool Scene::AllowModifyEntity(UserConnection* user, Entity *entity)
 void Scene::EmitEntityAcked(Entity* entity, entity_id_t oldId)
 {
     if (entity)
+    {
         emit EntityAcked(entity, oldId);
+
+        /** On client feed the acked ids, once tracker receives the last
+            id it will process the tracked scene part for broken parenting.
+            This is done after above emit so that behavior for all entities
+            in the tracker is the same (emit before parenting is fixed). */
+        if (!IsAuthority())
+            parentTracker_.Ack(this, entity->Id(), oldId);
+    }
 }
 
 void Scene::EmitComponentAcked(IComponent* comp, component_id_t oldId)
@@ -613,6 +622,8 @@ QList<Entity *> Scene::CreateContentFromXml(const QString &xml,  bool useEntityI
 
 QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
+    /// @todo Use and test parentTracker_ when !IsAuthority() (client side mass imports). See CreateContentFromSceneDesc().
+
     /// @todo Make server fix any broken parenting when it changes the entity IDs from unacked to replicated!
     if (!IsAuthority() && !useEntityIDsFromFile)
         LogWarning("Scene::CreateContentFromXml: The created entitity IDs need to be verified from the server. This will break EC_Placeable parenting.");
@@ -790,6 +801,8 @@ QList<Entity *> Scene::CreateContentFromBinary(const QString &filename, bool use
 
 QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
+    /// @todo Use and test parentTracker_ when !IsAuthority() (client side mass imports). See CreateContentFromSceneDesc().
+
     /// @todo Make server fix any broken parenting when it changes the entity IDs from unacked to replicated!
     if (!IsAuthority() && !useEntityIDsFromFile)
         LogWarning("Scene::CreateContentFromBinary: The created entitity IDs need to be verified from the server. This will break EC_Placeable parenting.");
@@ -939,7 +952,12 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
 
     if (desc.entities.empty())
     {
-        LogError("Empty scene description.");
+        LogError("Scene::CreateContentFromSceneDesc: Empty scene description.");
+        return ret;
+    }
+    if (!IsAuthority() && parentTracker_.IsTracking())
+    {
+        LogError("Scene::CreateContentFromSceneDesc: Still waiting for previous content creation to complete on the server. Try again after it completes.");
         return ret;
     }
 
@@ -951,6 +969,10 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
     // All entities & components have been loaded. Trigger change for them now.
     foreach(Entity *entity, ret)
     {
+        // On client start tracking the server ack message.
+        if (!IsAuthority())
+            parentTracker_.Track(entity);
+
         EmitEntityCreated(entity, change);
         const Entity::ComponentMap &components = entity->Components();
         for(Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
