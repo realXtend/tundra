@@ -167,8 +167,8 @@ struct TUNDRACORE_API ParentingTracker
     typedef QList<entity_id_t> EntityIdList;
     typedef QHash<entity_id_t, entity_id_t> EntityIdMap;
 
-    EntityIdList Unacked;
-    EntityIdMap UnackedToAcked;
+    EntityIdList unacked;
+    EntityIdMap unackedToAcked;
 
     /// Returns if tracking is in progress.
     bool IsTracking() const;

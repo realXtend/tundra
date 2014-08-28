@@ -13,7 +13,7 @@
 
 bool ParentingTracker::IsTracking() const
 {
-    return !Unacked.isEmpty();
+    return !unacked.isEmpty();
 }
 
 void ParentingTracker::Track(Entity *ent)
@@ -21,30 +21,30 @@ void ParentingTracker::Track(Entity *ent)
     if (ent)
     {
         LogDebug(QString("[ParentingTracker]: Tracking unacked id %1").arg(ent->Id()));
-        Unacked.push_back(ent->Id());
+        unacked.push_back(ent->Id());
     }
 }
 
 void ParentingTracker::Ack(Scene *scene, entity_id_t newId, entity_id_t oldId)
 {
     // Check that we are tracking this entity.
-    if (Unacked.isEmpty() || !Unacked.contains(oldId))
+    if (unacked.isEmpty() || !unacked.contains(oldId))
         return;
-    Unacked.removeAll(oldId);
+    unacked.removeAll(oldId);
     
     // Store the new to old id for later processing.
-    UnackedToAcked[oldId] = newId;
+    unackedToAcked[oldId] = newId;
     
     // If new ids for all tracked entities are now known, return true.
-    if (Unacked.isEmpty())
+    if (unacked.isEmpty())
         _fixParenting(scene);
 }
 
 void ParentingTracker::_fixParenting(Scene *scene)
 {
-    LogDebug(QString("[ParentingTracker]: Received new Entity ids for %1 tracked Entities. Processing broken parenting refs.").arg(UnackedToAcked.size()));
+    LogDebug(QString("[ParentingTracker]: Received new Entity ids for %1 tracked Entities. Processing broken parenting refs.").arg(unackedToAcked.size()));
     
-    QList<entity_id_t> ackedIds = UnackedToAcked.values();
+    QList<entity_id_t> ackedIds = unackedToAcked.values();
     for (int ai=0, ailen=ackedIds.size(); ai<ailen; ++ai)
     {
         EntityPtr ent = scene->EntityById(ackedIds[ai]);
@@ -73,14 +73,14 @@ void ParentingTracker::_fixParenting(Scene *scene)
                 // and not addressed by Tundra).
                 bool isNumber = false;
                 entity_id_t potentialUnackedId = parentRef->Get().ref.toUInt(&isNumber);
-                if (isNumber && potentialUnackedId > 0 && UnackedToAcked.contains(potentialUnackedId))
+                if (isNumber && potentialUnackedId > 0 && unackedToAcked.contains(potentialUnackedId))
                 {
-                    entity_id_t ackedId = UnackedToAcked[potentialUnackedId];
+                    entity_id_t ackedId = unackedToAcked[potentialUnackedId];
                     LogDebug(QString("[ParentingTracker]:    EC_Placeable::parentRef from unacked id %1 to acked id %2").arg(potentialUnackedId).arg(ackedId));
                     parentRef->Set(EntityReference(ackedId), AttributeChange::Replicate);
                 }
             }
         }
     }
-    UnackedToAcked.clear();
+    unackedToAcked.clear();
 }
