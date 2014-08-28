@@ -369,7 +369,7 @@ void EC_Placeable::AttachNode()
                         }
                         parentCheck = parentCheck->parentPlaceable_;
                     }
-                    
+                                       
                     parentPlaceable_ = parentPlaceable;
                     parentPlaceable_->GetSceneNode()->addChild(sceneNode_);
                     
@@ -455,17 +455,45 @@ void EC_Placeable::DetachNode()
 void EC_Placeable::Show()
 {
     if (sceneNode_)
-        sceneNode_->setVisible(true);
+    {
+        /** Show with recurse, but hide child placeables that
+            have visible attribute as false. Recurse is left here
+            because there might be billboards, manual
+            objects etc. attached to this node manually. */
+        sceneNode_->setVisible(true, true);
+
+        EntityList childEnts = Children();
+        for (EntityList::iterator iter = childEnts.begin(); iter != childEnts.end(); ++iter)
+        {
+            EntityPtr childEnt = (*iter);
+            if (childEnt.get())
+            {
+                shared_ptr<EC_Placeable> childPlaceable = childEnt->Component<EC_Placeable>();
+                if (childPlaceable.get() && !childPlaceable->visible.Get())
+                    childPlaceable->Hide();
+            }
+        }
+    }
 }
 
 void EC_Placeable::Hide()
 {
     if (sceneNode_)
-        sceneNode_->setVisible(false);
+    {
+        /** Hiding always recurses. All children no matter their visible
+            attribute should be hidden if the parent hides. */
+        sceneNode_->setVisible(false, true);
+    }
 }
 
 void EC_Placeable::ToggleVisibility()
 {
+    /** @todo When toggling to visible, this will show children
+        even if their EC_Placeable::visible if false. See Show().
+        This is not as trivial as calling Show/Hide here, as we
+        cant rely on the visible attribute. Current visibility
+        should be queried from the Ogre::SceneNode which again
+        seems to be harder than you might expect via the Ogre APIs. */
     if (sceneNode_)
         sceneNode_->flipVisibility();
 }
@@ -727,7 +755,12 @@ void EC_Placeable::AttributesChanged()
         SetShowBoundingBoxRecursive(sceneNode_, drawDebug.Get());
 
     if (visible.ValueChanged())
-        sceneNode_->setVisible(visible.Get());
+    {
+        if (visible.Get())
+            Show();
+        else
+            Hide();
+    }
 }
 
 void EC_Placeable::OnParentMeshDestroyed()
