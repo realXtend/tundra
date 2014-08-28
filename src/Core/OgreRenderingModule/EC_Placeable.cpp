@@ -456,10 +456,10 @@ void EC_Placeable::Show()
 {
     if (sceneNode_)
     {
-        /** Show with recurse, but hide child placeables that
-            have visible attribute as false. Recurse is left here
-            because there might be billboards, manual
-            objects etc. attached to this node manually. */
+        /* Show with recurse, but hide child placeables that
+           have visible attribute as false. Recurse is left here
+           because there might be billboards, manual
+           objects etc. attached to this node manually. */
         sceneNode_->setVisible(true, true);
 
         EntityList childEnts = Children();
@@ -480,8 +480,8 @@ void EC_Placeable::Hide()
 {
     if (sceneNode_)
     {
-        /** Hiding always recurses. All children no matter their visible
-            attribute should be hidden if the parent hides. */
+        /* Hiding always recurses. All children no matter their visible
+           attribute should be hidden if the parent hides. */
         sceneNode_->setVisible(false, true);
     }
 }
