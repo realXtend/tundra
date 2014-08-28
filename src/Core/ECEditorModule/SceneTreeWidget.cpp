@@ -1032,6 +1032,7 @@ void SceneTreeWidget::SaveSceneAs()
     SaveSceneDialog *dialog = new SaveSceneDialog(framework, framework->Ui()->MainWindow(), Qt::Tool);
     connect(dialog, SIGNAL(Selected(QString, bool, bool, bool)), this, SLOT(SaveSceneDialogFinalize(QString, bool, bool, bool)));
     dialog->show();
+    dialog->activateWindow();
 }
 
 void SceneTreeWidget::ExportAll()
