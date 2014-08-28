@@ -145,7 +145,7 @@ void SaveSceneDialog::PickFile()
     }
 
     SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
-        tr("Pick Scene File"), dir, this, this, SLOT(OnFilePicked(int)));
+        tr("Save Scene As"), dir, this, this, SLOT(OnFilePicked(int)));
 }
 
 void SaveSceneDialog::SetFile(QString file, bool xml)
