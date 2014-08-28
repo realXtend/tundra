@@ -213,6 +213,7 @@ private slots:
     /// Called by "Save Scene" save file dialog when it's closed.
     /** @param result Result of dialog closure. Save is 1, Cancel is 0. */
     void SaveSceneDialogClosed(int result);
+    void SaveSceneDialogFinalize(QString file, bool xml, bool temporary, bool local);
 
     /// Called by "Export all" file dialog when it's closed
     /** @param result Result of dialog closure. Save is 1, Cancel is 0. */

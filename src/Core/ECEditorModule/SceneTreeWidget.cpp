@@ -23,6 +23,7 @@
 #include "ConfigAPI.h"
 #include "ECEditorWindow.h"
 #include "ECEditorModule.h"
+#include "SaveSceneDialog.h"
 #include "EntityActionDialog.h"
 #include "AddComponentDialog.h"
 #include "NewEntityDialog.h"
@@ -1028,10 +1029,9 @@ void SceneTreeWidget::SaveAs()
 
 void SceneTreeWidget::SaveSceneAs()
 {
-    if (fileDialog)
-        fileDialog->close();
-    fileDialog = SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
-        tr("Save Scene"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
+    SaveSceneDialog *dialog = new SaveSceneDialog(framework, framework->Ui()->MainWindow(), Qt::Tool);
+    connect(dialog, SIGNAL(Selected(QString, bool, bool, bool)), this, SLOT(SaveSceneDialogFinalize(QString, bool, bool, bool)));
+    dialog->show();
 }
 
 void SceneTreeWidget::ExportAll()
@@ -1340,44 +1340,35 @@ void SceneTreeWidget::SaveSceneDialogClosed(int result)
 {
     QFileDialog *dialog = qobject_cast<QFileDialog *>(sender());
     assert(dialog);
-    if (!dialog)
-        return;
-
-    if (result != QDialog::Accepted)
+    if (!dialog || result != QDialog::Accepted)
         return;
 
     QStringList files = dialog->selectedFiles();
-    if (files.size() != 1)
-        return;
+    if (files.size() == 1)       
+        SaveSceneDialogFinalize(files.first(), dialog->selectedNameFilter() == cTundraXmlFileFilter, false, true);
+}
 
+void SceneTreeWidget::SaveSceneDialogFinalize(QString file, bool xml, bool temporary, bool local)
+{
     if (scene.expired())
         return;
 
-    // Check out file extension. If filename has none, use the selected name filter from the save file dialog.
-    bool binary = false;
-    QString fileExtension;
-    if (files[0].lastIndexOf('.') != -1)
+    // Complete extension or detect binary/xml
+    if (file.lastIndexOf('.') != -1)
     {
-        fileExtension = files[0].mid(files[0].lastIndexOf('.'));
-        if (fileExtension.compare(cTundraXmlFileExtension, Qt::CaseInsensitive) != 0)
-            binary = true;
+        QString ext = file.mid(file.lastIndexOf('.'));
+        if (ext.compare(cTundraXmlFileExtension, Qt::CaseInsensitive) != 0)
+            xml = false;
     }
-    else if (dialog->selectedNameFilter() == cTundraXmlFileFilter)
-    {
-        fileExtension = cTundraXmlFileExtension;
-        files[0].append(fileExtension);
-    }
-    else if (dialog->selectedNameFilter() == cTundraBinaryFileFilter)
-    {
-        fileExtension = cTundraBinFileExtension;
-        files[0].append(fileExtension);
-        binary = true;
-    }
-
-    if (binary)
-        scene.lock()->SaveSceneBinary(files[0], false, true); /**< @todo Possibility to choose whether or not save local and temporay */
+    else if (xml)
+        file.append(cTundraXmlFileExtension);
     else
-        scene.lock()->SaveSceneXML(files[0], false, true); /**< @todo Possibility to choose whether or not save local and temporay */
+        file.append(cTundraBinFileExtension);
+
+    if (!xml)
+        scene.lock()->SaveSceneBinary(file, temporary, local);
+    else
+        scene.lock()->SaveSceneXML(file, temporary, local);
 }
 
 void SceneTreeWidget::ExportAllDialogClosed(int result)
