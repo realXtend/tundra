@@ -176,6 +176,7 @@ void ConsoleWidget::HandleInput()
     lineEdit->clear();
     commandStub.clear();
     commandHistory.push_front(cmd);
+    commandHistoryIndex = -1;
 }
 
 void ConsoleWidget::AdjustToSceneRect(const QRectF& rect)
