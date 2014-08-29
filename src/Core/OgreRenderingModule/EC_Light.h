@@ -160,13 +160,16 @@ private:
 
     /// Automatically checks for placeable in same entity
     void CheckForPlaceable();
-    
+
     /// Attaches light to placeable
     void AttachLight();
-    
+
     /// Detaches light from placeable
     void DetachLight();
-    
+
+    /// Update light with all current attribute values.
+    void FullUpdate();
+
     ComponentPtr placeable_;
     OgreWorldWeakPtr world_;
     Ogre::Light* light_;

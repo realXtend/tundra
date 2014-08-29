@@ -77,6 +77,9 @@ void EC_Light::UpdateSignals()
             OgreWorldPtr world = world_.lock();
             Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
             light_ = sceneMgr->createLight(world->GetUniqueObjectName("EC_Light"));
+
+            // Update light to reflect current values.
+            FullUpdate();
         }
 
         connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
@@ -154,9 +157,14 @@ void EC_Light::DetachLight()
 
 void EC_Light::AttributesChanged()
 {
+    FullUpdate();
+}
+
+void EC_Light::FullUpdate()
+{
     if (!light_)
         return;
-    
+
     Ogre::Light::LightTypes ogreType = Ogre::Light::LT_POINT;
 
     switch(type.Get())
