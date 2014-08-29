@@ -460,6 +460,9 @@ private:
     /// Called when some of the attributes has been changed.
     void AttributesChanged();
 
+    /// Sets default materials to submeshes that do not have a material set.
+    void SetEmptyMaterials();
+
     /// Prepares a mesh for creating an entity. some safeguards are needed because of Ogre "features"
     /** @param meshName Mesh to prepare
         @param clone Whether should return an uniquely named clone of the mesh, rather than the original

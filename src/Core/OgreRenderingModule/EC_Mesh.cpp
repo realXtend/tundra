@@ -289,6 +289,7 @@ bool EC_Mesh::SetMesh(const QString &meshResourceName, bool clone)
         adjustmentNode_->setScale(Max(newTransform.scale, float3::FromScalar(0.0000001f)));
 
         // Force a re-apply of all materials to this new mesh.
+        SetEmptyMaterials();
         ApplyMaterial();
     }
     catch(const Ogre::Exception &e)
@@ -385,6 +386,9 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
             if (skel)
                 skel->setBlendMode(Ogre::ANIMBLEND_CUMULATIVE);
         }
+
+        SetEmptyMaterials();
+        /// @todo Should ApplyMaterial() be called like done in SetMesh()?
     }
     catch(const Ogre::Exception& e)
     {
@@ -598,6 +602,32 @@ void EC_Mesh::RemoveAllAttachments()
         RemoveAttachmentMesh(i);
     attachmentEntities_.clear();
     attachmentNodes_.clear();
+}
+
+void EC_Mesh::SetEmptyMaterials()
+{
+    if (!entity_)
+        return;
+
+    // Reset all the materials in submeshes which have an empty material asset reference set.
+    uint numMaterials = NumMaterials();
+    if (numMaterials == 0)
+        return;
+
+    AssetReferenceList materials = materialRefs.Get();
+    for(uint i=0; i<numMaterials; ++i)
+    {
+        if (static_cast<int>(i) >= materials.Size() || materials[i].ref.trimmed().isEmpty())
+        {
+            try
+            {
+                Ogre::SubEntity *subEnt = entity_->getSubEntity(i);
+                if (subEnt)
+                    subEnt->setMaterialName(Renderer::DEFAULT_MATERIAL_NAME);
+            }
+            catch(...) {}
+        }
+    }
 }
 
 bool EC_Mesh::SetMaterial(uint index, const QString& material_name, AttributeChange::Type change)
@@ -1064,19 +1094,10 @@ void EC_Mesh::AttributesChanged()
         if (!ViewEnabled())
             return;
 
-        AssetReferenceList materials = materialRefs.Get();
-
-        // Reset all the materials from the submeshes which now have an empty material asset reference set.
-        for(uint i = 0; i < GetNumMaterials(); ++i)
-        {
-            if ((int)i >= materials.Size() || materials[i].ref.trimmed().isEmpty())
-            {
-                if (entity_ && entity_->getSubEntity(i))
-                    entity_->getSubEntity(i)->setMaterialName("");
-            }
-        }
+        SetEmptyMaterials();
 
         // Reallocate the number of material asset ref listeners.
+        AssetReferenceList materials = materialRefs.Get();
         while(materialAssets.size() > (size_t)materials.Size())
             materialAssets.pop_back();
         while(materialAssets.size() < (size_t)materials.Size())

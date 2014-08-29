@@ -240,6 +240,8 @@ namespace OgreRenderer
     };
     /// @endcond
 
+    std::string Renderer::DEFAULT_MATERIAL_NAME = "";
+
     Renderer::Renderer(Framework* fw) :
         initialized(false),
         framework(fw),

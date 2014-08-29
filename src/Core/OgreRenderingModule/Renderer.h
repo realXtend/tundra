@@ -54,6 +54,11 @@ namespace OgreRenderer
 
         virtual ~Renderer();
 
+        /** Default empty material that should be used on submeshes
+            that do not have material set to them. Defaults to empty
+            string that will in turn use Ogres default material. */
+        static std::string DEFAULT_MATERIAL_NAME;
+
         /// Returns framework
         Framework* GetFramework() const { return framework; }
 
