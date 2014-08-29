@@ -57,7 +57,7 @@ namespace OgreRenderer
         /** Default material name that should be used on submeshes
             that do not have material set to them. Defaults to empty
             string that will in turn use Ogres default material. */
-        static std::string DEFAULT_MATERIAL_NAME;
+        static std::string DefaultMaterialName;
 
         /** Error material name that should be used to express
             resource loading errors on the submesh, billboards etc.
@@ -65,11 +65,11 @@ namespace OgreRenderer
             with a checkered pink/yellow patter. Point of this material
             is to make the scene author notice the loading error so
             it can be fixed. */
-        static std::string ERROR_MATERIAL_NAME;
+        static std::string ErrorMaterialName;
 
         /** Error texture name. @see ERROR_MATERIAL_NAME.
             Defaults to "AssetLoadError.png". */
-        static std::string ERROR_TEXTURE_NAME;
+        static std::string ErrorTextureName;
 
         /// Returns framework
         Framework* GetFramework() const { return framework; }

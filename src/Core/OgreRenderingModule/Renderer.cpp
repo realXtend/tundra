@@ -238,9 +238,9 @@ namespace OgreRenderer
     };
     /// @endcond
 
-    std::string Renderer::DEFAULT_MATERIAL_NAME  = "";
-    std::string Renderer::ERROR_MATERIAL_NAME    = "AssetLoadError";
-    std::string Renderer::ERROR_TEXTURE_NAME     = "AssetLoadError.png";
+    std::string Renderer::DefaultMaterialName    = "";
+    std::string Renderer::ErrorMaterialName      = "AssetLoadError";
+    std::string Renderer::ErrorTextureName       = "AssetLoadError.png";
 
     Renderer::Renderer(Framework* fw) :
         initialized(false),
