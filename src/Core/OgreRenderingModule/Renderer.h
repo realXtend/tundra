@@ -54,10 +54,22 @@ namespace OgreRenderer
 
         virtual ~Renderer();
 
-        /** Default empty material that should be used on submeshes
+        /** Default material name that should be used on submeshes
             that do not have material set to them. Defaults to empty
             string that will in turn use Ogres default material. */
         static std::string DEFAULT_MATERIAL_NAME;
+
+        /** Error material name that should be used to express
+            resource loading errors on the submesh, billboards etc.
+            Defaults to "AssetLoadError" from Tundra shipped Ogre media
+            with a checkered pink/yellow patter. Point of this material
+            is to make the scene author notice the loading error so
+            it can be fixed. */
+        static std::string ERROR_MATERIAL_NAME;
+
+        /** Error texture name. @see ERROR_MATERIAL_NAME.
+            Defaults to "AssetLoadError.png". */
+        static std::string ERROR_TEXTURE_NAME;
 
         /// Returns framework
         Framework* GetFramework() const { return framework; }

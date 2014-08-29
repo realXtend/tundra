@@ -381,7 +381,7 @@ void EC_HoveringText::OnMaterialAssetFailed(IAssetTransfer* transfer, QString re
     DeleteMaterial();
 
     if (billboardSet_)
-        billboardSet_->setMaterialName("AssetLoadError");
+        billboardSet_->setMaterialName(OgreRenderer::Renderer::ERROR_MATERIAL_NAME);
 }
 
 void EC_HoveringText::RecreateMaterial()

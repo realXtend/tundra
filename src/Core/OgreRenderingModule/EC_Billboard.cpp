@@ -248,5 +248,5 @@ void EC_Billboard::OnMaterialAssetLoaded(AssetPtr asset)
 void EC_Billboard::OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason)
 {
     if (billboardSet_)
-        billboardSet_->setMaterialName("AssetLoadError");
+        billboardSet_->setMaterialName(OgreRenderer::Renderer::ERROR_MATERIAL_NAME);
 }

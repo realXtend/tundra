@@ -49,8 +49,6 @@
 #include <OgreShaderGenerator.h>
 #endif
 
-
-
 // Clamp elapsed frame time to avoid Ogre controllers going crazy
 static const float MAX_FRAME_TIME = 0.1f;
 
@@ -240,7 +238,9 @@ namespace OgreRenderer
     };
     /// @endcond
 
-    std::string Renderer::DEFAULT_MATERIAL_NAME = "";
+    std::string Renderer::DEFAULT_MATERIAL_NAME  = "";
+    std::string Renderer::ERROR_MATERIAL_NAME    = "AssetLoadError";
+    std::string Renderer::ERROR_TEXTURE_NAME     = "AssetLoadError.png";
 
     Renderer::Renderer(Framework* fw) :
         initialized(false),

@@ -882,11 +882,12 @@ void EC_Mesh::CreateMesh(const AssetPtr &meshAsset)
         try
         {
             if (entity_ && entity_->getSubEntity(failedIndex))
-                entity_->getSubEntity(failedIndex)->setMaterialName("AssetLoadError");
+                entity_->getSubEntity(failedIndex)->setMaterialName(Renderer::ERROR_MATERIAL_NAME);
         }
         catch(const Ogre::Exception& e)
         {
-            LogError(QString("EC_Mesh::CreateMesh: Could not set error material AssetLoadError: ") + e.what());
+            LogError(QString("EC_Mesh::CreateMesh: Could not set error material '%1': %2")
+                .arg(QString::fromStdString(Renderer::ERROR_MATERIAL_NAME)).arg(e.what()));
         }
     }
     pendingFailedMaterials_.clear();
@@ -1234,7 +1235,7 @@ void EC_Mesh::OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason)
         QString absoluteRef = framework->Asset()->ResolveAssetRef("", materialList[i].ref);
         if (absoluteRef == transfer->source.ref)
         {
-            // Do not use SetMaterial here as it will modify materialRefss into "AssetLoadError"
+            // Do not use SetMaterial here as it will modify materialRefs into Renderer::ERROR_MATERIAL_NAME
             // which is not what we want to do here. If the asset it later created/loaded the 
             // string compare in OnMaterialAssetLoaded breaks. This is a valid scenario in some 
             // components like EC_Material.
@@ -1244,11 +1245,12 @@ void EC_Mesh::OnMaterialAssetFailed(IAssetTransfer* transfer, QString reason)
                 {
                     try
                     {
-                        entity_->getSubEntity(i)->setMaterialName("AssetLoadError");
+                        entity_->getSubEntity(i)->setMaterialName(Renderer::ERROR_MATERIAL_NAME);
                     }
                     catch(const Ogre::Exception& e)
                     {
-                        LogError(QString("EC_Mesh::OnMaterialAssetFailed: Could not set error material AssetLoadError: ") + e.what());
+                        LogError(QString("EC_Mesh::OnMaterialAssetFailed: Could not set error material '%1': %2")
+                            .arg(QString::fromStdString(Renderer::ERROR_MATERIAL_NAME)).arg(e.what()));
                     }
                 }
             }

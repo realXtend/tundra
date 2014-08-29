@@ -2488,11 +2488,12 @@ void OgreMaterialAsset::OnTransferFailed(IAssetTransfer* transfer, QString reaso
             {
                 try
                 {
-                    texUnit->setTextureName("AssetLoadError.png");
+                    texUnit->setTextureName(OgreRenderer::Renderer::ERROR_TEXTURE_NAME);
                 }
                 catch (Ogre::Exception& e)
                 {
-                    LogError("SetTexture exception for " + Name() + ", reason: " + QString(e.what()));
+                    LogError(QString("OgreMaterialAsset::OnTransferFailed: Could not set error texture '%1' for %2: %3")
+                        .arg(QString::fromStdString(OgreRenderer::Renderer::ERROR_TEXTURE_NAME)).arg(Name()).arg(e.what()));
                 }
             }
             pendingApplies.erase(pendingApplies.begin() + i);
