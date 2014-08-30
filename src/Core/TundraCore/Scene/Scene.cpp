@@ -1967,7 +1967,7 @@ entity_id_t Scene::PlaceableParentId(const EntityDesc &ent) const
     return 0;
 }
 
-void Scene::FixPlaceableParentIds(const std::vector<EntityWeakPtr> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change) const
+void Scene::FixPlaceableParentIds(const std::vector<EntityWeakPtr> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change, bool printStats) const
 {
     QList<Entity*> rawEntities;
     for (size_t i=0, len=entities.size(); i<len; ++i)
@@ -1975,10 +1975,10 @@ void Scene::FixPlaceableParentIds(const std::vector<EntityWeakPtr> entities, con
         if (!entities[i].expired())
             rawEntities << entities[i].lock().get();
     }
-    FixPlaceableParentIds(rawEntities, oldToNewIds, change);
+    FixPlaceableParentIds(rawEntities, oldToNewIds, change, printStats);
 }
 
-void Scene::FixPlaceableParentIds(const QList<EntityWeakPtr> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change) const
+void Scene::FixPlaceableParentIds(const QList<EntityWeakPtr> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change, bool printStats) const
 {
     QList<Entity*> rawEntities;
     for (int i=0, len=entities.size(); i<len; ++i)
@@ -1986,10 +1986,10 @@ void Scene::FixPlaceableParentIds(const QList<EntityWeakPtr> entities, const QHa
         if (!entities[i].expired())
             rawEntities << entities[i].lock().get();
     }
-    FixPlaceableParentIds(rawEntities, oldToNewIds, change);
+    FixPlaceableParentIds(rawEntities, oldToNewIds, change, printStats);
 }
 
-void Scene::FixPlaceableParentIds(const QList<Entity*> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change) const
+void Scene::FixPlaceableParentIds(const QList<Entity*> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change, bool printStats) const
 {
     PolledTimer t; t.Start();
     int fixed = 0;
@@ -2003,19 +2003,21 @@ void Scene::FixPlaceableParentIds(const QList<Entity*> entities, const QHash<ent
         Attribute<EntityReference> *parentRef = (placeable.get() ? dynamic_cast<Attribute<EntityReference> *>(placeable->AttributeById("parentRef")) : 0);
         if (parentRef && !parentRef->Get().IsEmpty())
         {
-            // We only need to fix the id parent refs.
-            // Ones with entity names should work as expected.
+            // We only need to fix the id parent refs. Ones with Entity names should
+            // work as expected (if names are unique which would be a authoring problem
+            // and not addressed by Tundra).
             bool isNumber = false;
             entity_id_t refId = parentRef->Get().ref.toUInt(&isNumber);
             if (isNumber && refId > 0 && oldToNewIds.contains(refId))
             {
-                // Below ComponentChanged will trigger the right signals.
-                // This cannot be allowed to emit signals as EmitEntityCreated is not yet fired.
                 parentRef->Set(EntityReference(oldToNewIds[refId]), change);
                 fixed++;
             }
         }
     }
 
-    LogDebug(QString("Scene::FixPlaceableParentIds: Fixed %1 parentRefs in %2 msecs. Input Entities %3").arg(fixed).arg(t.MSecsElapsed(), 0, 'f', 4).arg(entities.size()));
+    if (printStats && fixed > 0)
+        LogInfo(QString("Scene::FixPlaceableParentIds: Fixed %1 parentRefs in %2 msecs. Input Entities %3").arg(fixed).arg(t.MSecsElapsed(), 0, 'f', 4).arg(entities.size()));
+    else
+        LogDebug(QString("Scene::FixPlaceableParentIds: Fixed %1 parentRefs in %2 msecs. Input Entities %3").arg(fixed).arg(t.MSecsElapsed(), 0, 'f', 4).arg(entities.size()));
 }

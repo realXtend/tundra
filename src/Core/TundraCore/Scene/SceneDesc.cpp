@@ -80,6 +80,11 @@ void ParentingTracker::_fixParenting(Scene *scene)
 {
     LogInfo(QString("[ParentingTracker]: Received new ids for %1 tracked Entities. Processing scene hierarchy.").arg(unackedToAcked.size()));
     
+    /** @todo Check and fix ent->Parent() stuff here!? See if ent->Parent()->Id()
+        is old unacked or new acked at this point! Or if there is a better place 
+        to handle this adjustment? */
+
+    QList<Entity*> entitiesToCheck;
     QList<entity_id_t> ackedIds = unackedToAcked.values();
     for (int ai=0, ailen=ackedIds.size(); ai<ailen; ++ai)
     {
@@ -89,33 +94,7 @@ void ParentingTracker::_fixParenting(Scene *scene)
             LogWarning(QString("[ParentingTracker]: Failed to find Entity by new acked id %1").arg(ackedIds[ai]));
             continue; 
         }
-
-        /** @todo Check and fix ent->Parent() stuff here!? See if ent->Parent()->Id()
-            is old unacked or new acked at this point! Or if there is a better place 
-            to handle this adjustment? */
-
-        /** Check if EC_Placeable::parentRef needs to be adjusted.
-            This is replicated change to the scene that the client that started the import will perform.
-            @note How this is done is a hack that does not require us to link or include EC_Placeable.
-            Scenes will (or should) be ported over time to the new Entity level parenting. */
-        ComponentPtr comp = ent->Component(20); // EC_Placeable
-        if (comp.get())
-        {
-            Attribute<EntityReference> *parentRef = dynamic_cast<Attribute<EntityReference> *>(comp->AttributeById("parentRef"));
-            if (parentRef && !parentRef->Get().IsEmpty())
-            {
-                // We only need to fix the id parent refs. Ones with entity names should
-                // work as expected (if names are unique which would be a authoring problem
-                // and not addressed by Tundra).
-                bool isNumber = false;
-                entity_id_t potentialUnackedId = parentRef->Get().ref.toUInt(&isNumber);
-                if (isNumber && potentialUnackedId > 0 && unackedToAcked.contains(potentialUnackedId))
-                {
-                    entity_id_t ackedId = unackedToAcked[potentialUnackedId];
-                    LogDebug(QString("[ParentingTracker]:    EC_Placeable::parentRef from unacked id %1 to acked id %2").arg(potentialUnackedId).arg(ackedId));
-                    parentRef->Set(EntityReference(ackedId), AttributeChange::Replicate);
-                }
-            }
-        }
+        entitiesToCheck << ent.get();
     }
+    scene->FixPlaceableParentIds(entitiesToCheck, unackedToAcked, AttributeChange::Replicate, true);
 }

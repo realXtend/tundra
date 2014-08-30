@@ -219,6 +219,15 @@ public:
     template <class T> shared_ptr<T> GetWorld() const { return Subsystem<T>(); } /**< @deprecated Use Subsystem instead. @todo Remove. */
     /// @endcond
 
+    /// @cond PRIVATE
+    // Not publicly documented as ideally Scene should not know about Placeable until its defined in TundraCore.
+    /// Fix parent Entity ids that are set to EC_Placeable::parentRef.
+    /** If @c printStats is true, a summary of the exeuction is printed once done. */
+    void FixPlaceableParentIds(const QList<Entity*> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change, bool printStats = false) const;
+    void FixPlaceableParentIds(const QList<EntityWeakPtr> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change, bool printStats = false) const; ///< @overload
+    void FixPlaceableParentIds(const std::vector<EntityWeakPtr> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change, bool printStats = false) const; ///< @overload
+    /// @endcond
+
 public slots:
     /// Creates new entity that contains the specified components.
     /** Entities should never be created directly, but instead created with this function.
@@ -562,11 +571,6 @@ private:
     /** @return Returns 0 if parent is not set or the parent ref is not a Entity id (but a entity name). */
     entity_id_t PlaceableParentId(const Entity *ent) const;
     entity_id_t PlaceableParentId(const EntityDesc &ent) const; ///< @overload
-
-    /// Fix parent Entity ids that are set to EC_Placeable::parentRef.
-    void FixPlaceableParentIds(const QList<Entity*> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change) const;
-    void FixPlaceableParentIds(const QList<EntityWeakPtr> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change) const; ///< @overload
-    void FixPlaceableParentIds(const std::vector<EntityWeakPtr> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change) const; ///< @overload
 
     UniqueIdGenerator idGenerator_; ///< Entity ID generator
     EntityMap entities_; ///< All entities in the scene.
