@@ -545,6 +545,14 @@ private:
         float length;
     };
 
+    /// Resolved parent Entity id that is set to EC_Placeable::parentRef.
+    /** @return Returns 0 if parent is not set or the parent ref is not a Entity id (but a entity name). */
+    entity_id_t PlaceableParentId(const EntityDesc &ent);
+
+    /// Fix parent Entity ids that are set to EC_Placeable::parentRef.
+    void FixPlaceableParentIds(const std::vector<EntityWeakPtr> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change);
+    void FixPlaceableParentIds(const QList<Entity*> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change);
+
     UniqueIdGenerator idGenerator_; ///< Entity ID generator
     EntityMap entities_; ///< All entities in the scene.
     Framework *framework_; ///< Parent framework.

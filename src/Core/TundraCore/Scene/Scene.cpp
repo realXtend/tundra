@@ -656,6 +656,12 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
         ent_elem = ent_elem.nextSiblingElement("entity");
     }
 
+    // Fix parent ref of EC_Placeable if new entity IDs were generated.
+    // This should be done first so that we wont be firing signals
+    // with partially updated state (these ends are already in the scene for querying).
+    if (!useEntityIDsFromFile)
+        FixPlaceableParentIds(entities, oldToNewIds, AttributeChange::Disconnected);
+
     // Now that we have each entity spawned to the scene, trigger all the signals for EntityCreated/ComponentChanged messages.
     for(unsigned i = 0; i < entities.size(); ++i)
     {
@@ -666,24 +672,7 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
             EntityPtr entityShared = entities[i].lock();
             const Entity::ComponentMap &components = entityShared->Components();
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
-            {
-                /// @todo Duplicate code
-                if (!useEntityIDsFromFile && i->second->TypeId() == 20 /*EC_Placeable*/)
-                {
-                    // Go and fix parent ref of EC_Placeable if new entity IDs were generated
-                    Attribute<EntityReference> *parentRef = dynamic_cast<Attribute<EntityReference> *>(i->second->AttributeById("parentRef"));
-                    if (parentRef && !parentRef->Get().IsEmpty())
-                    {
-                        // We only need to fix the id parent refs.
-                        // Ones with entity names should work as expected.
-                        bool isNumber = false;
-                        entity_id_t refId = parentRef->Get().ref.toUInt(&isNumber);
-                        if (isNumber && refId > 0 && oldToNewIds.contains(refId))
-                            parentRef->Set(EntityReference(oldToNewIds[refId]), change);
-                    }
-                }
                 i->second->ComponentChanged(change);
-            }
         }
     }
     
@@ -807,10 +796,12 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
     if (!IsAuthority() && !useEntityIDsFromFile)
         LogWarning("Scene::CreateContentFromBinary: The created entitity IDs need to be verified from the server. This will break EC_Placeable parenting.");
 
-    std::vector<EntityWeakPtr> entities;
     assert(data);
     assert(numBytes > 0);
+
+    std::vector<EntityWeakPtr> entities;
     QHash<entity_id_t, entity_id_t> oldToNewIds;
+
     try
     {
         DataDeserializer source(data, numBytes);
@@ -825,6 +816,12 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
         return QList<Entity *>();
     }
 
+    // Fix parent ref of EC_Placeable if new entity IDs were generated.
+    // This should be done first so that we wont be firing signals
+    // with partially updated state (these ends are already in the scene for querying).
+    if (!useEntityIDsFromFile)
+        FixPlaceableParentIds(entities, oldToNewIds, AttributeChange::Disconnected);
+
     // Now that we have each entity spawned to the scene, trigger all the signals for EntityCreated/ComponentChanged messages.
     for(unsigned i = 0; i < entities.size(); ++i)
     {
@@ -835,24 +832,7 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
             EntityPtr entityShared = entities[i].lock();
             const Entity::ComponentMap &components = entityShared->Components();
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
-            {
-                /// @todo Duplicate code
-                if (!useEntityIDsFromFile && i->second->TypeId() == 20 /* EC_Placeable*/)
-                {
-                    // Go and fix parent ref of EC_Placeable if new entity IDs were generated
-                    Attribute<EntityReference> *parentRef = dynamic_cast<Attribute<EntityReference> *>(i->second->AttributeById("parentRef"));
-                    if (parentRef && !parentRef->Get().IsEmpty())
-                    {
-                        // We only need to fix the id parent refs.
-                        // Ones with entity names should work as expected.
-                        bool isNumber = false;
-                        entity_id_t refId = parentRef->Get().ref.toUInt(&isNumber);
-                        if (isNumber && refId > 0 && oldToNewIds.contains(refId))
-                            parentRef->Set(EntityReference(oldToNewIds[refId]), change);
-                    }
-                }
                 i->second->ComponentChanged(change);
-            }
         }
     }
     
@@ -949,7 +929,6 @@ void Scene::CreateEntityFromBinary(EntityPtr parent, kNet::DataDeserializer& sou
 QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
     QList<Entity *> ret;
-
     if (desc.entities.empty())
     {
         LogError("Scene::CreateContentFromSceneDesc: Empty scene description.");
@@ -961,39 +940,104 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
         return ret;
     }
 
-    QHash<entity_id_t, entity_id_t> oldToNewIds;
+    // Sort the entity list so that parents are before children.
+    // This is done to combat the runtime detection of "parent entity/placeable created"
+    // that slows down the import considerably on large scenes that relies heavily on parenting.
+    EntityDescList iterDescEntities = desc.entities;
+    EntityDescList sortedDescEntities;
 
-    foreach(const EntityDesc &e, desc.entities)
-        CreateEntityFromDesc(EntityPtr(), e, useEntityIDsFromFile, change, ret, oldToNewIds);
+    // Put Entities that have children first (real Entity level parenting).
+    for (int ei=0; ei<iterDescEntities.size(); ++ei)
+    {
+        const EntityDesc &ent = iterDescEntities[ei];
+        if (!ent.children.isEmpty())
+        {
+            // This does not yet mean its a root level Entity.
+            // Check for deeper hierarchies: parent -> child with children.
+            int insertIndex = -1;
+            for (int sorti=0, sortlen=sortedDescEntities.size(); sorti<sortlen; ++sorti)
+            {
+                const EntityDesc &parentCandidate = sortedDescEntities[sorti];
+                if (parentCandidate.IsParentFor(ent))
+                {
+                    insertIndex = sorti + 1;
+                    break;
+                }
+            }
+            if (insertIndex == -1 || insertIndex >= sortedDescEntities.size())
+                sortedDescEntities.push_back(ent);
+            else
+                sortedDescEntities.insert(insertIndex, ent);
+
+            iterDescEntities.removeAt(ei);
+            ei--;
+        }
+    }
+
+    // Find entities that have parent ref set (EC_Placeble::parentRef parenting).
+    int childrenStartIndex = sortedDescEntities.size();
+    for (int ei=0; ei<iterDescEntities.size(); ++ei)
+    {
+        int insertIndex = -1;
+        const EntityDesc &ent = iterDescEntities[ei];
+
+        entity_id_t parentId = PlaceableParentId(ent);
+        if (parentId > 0)
+        {
+            // Find parent from the list and insert after, othewise add to end.
+            QString parentIdStr = QString::number(parentId);
+            for (int sorti=childrenStartIndex, sortlen=sortedDescEntities.size(); sorti<sortlen; ++sorti)
+            {
+                const EntityDesc &parentCandidate = sortedDescEntities[sorti];
+                if (parentCandidate.id == parentIdStr)
+                {
+                    insertIndex = sorti + 1;
+                    break;
+                }
+            }
+        }
+        if (insertIndex == -1 || insertIndex >= sortedDescEntities.size())
+            sortedDescEntities.push_back(ent);
+        else
+            sortedDescEntities.insert(insertIndex, ent);
+
+        iterDescEntities.removeAt(ei);
+        ei--;
+    }
+
+    // Double check no information was lost. If these do not match, use the original passed in entity desc list.
+    if (!iterDescEntities.isEmpty() || sortedDescEntities.size() != desc.entities.size())
+    {
+        LogError("Scene::CreateContentFromSceneDesc: Sorting Entity hierarchy resulted in loss of information. Using original unsorted Entity list. " +
+            QString("Iteration list size: %1 Sorted Entities: %2 Original Entities: %3")
+                .arg(iterDescEntities.size()).arg(sortedDescEntities.size()).arg(desc.entities.size()));
+        sortedDescEntities = desc.entities;
+    }
+
+    QHash<entity_id_t, entity_id_t> oldToNewIds;
+    for (int ei=0, eilen=sortedDescEntities.size(); ei<eilen; ++ei)
+        CreateEntityFromDesc(EntityPtr(), sortedDescEntities[ei], useEntityIDsFromFile, change, ret, oldToNewIds);
+
+    // Fix parent ref of EC_Placeable if new entity IDs were generated.
+    // This should be done first so that we wont be firing signals
+    // with partially updated state (these ends are already in the scene for querying).
+    if (!useEntityIDsFromFile)
+        FixPlaceableParentIds(ret, oldToNewIds, AttributeChange::Disconnected);
 
     // All entities & components have been loaded. Trigger change for them now.
     foreach(Entity *entity, ret)
     {
-        // On client start tracking the server ack message.
+        // On a client start tracking of the server ack messages.
         if (!IsAuthority())
             parentTracker_.Track(entity);
 
+        // Entity
         EmitEntityCreated(entity, change);
+
+        // Components
         const Entity::ComponentMap &components = entity->Components();
         for(Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
-        {
-            /// @todo Duplicate code
-            if (!useEntityIDsFromFile && i->second->TypeId() == 20 /*EC_Placeable*/)
-            {
-                // Go and fix parent ref of EC_Placeable if new entity IDs were generated
-                Attribute<EntityReference> *parentRef = dynamic_cast<Attribute<EntityReference> *>(i->second->AttributeById("parentRef"));
-                if (parentRef && !parentRef->Get().IsEmpty())
-                {
-                    // We only need to fix the id parent refs.
-                    // Ones with entity names should work as expected.
-                    bool isNumber = false;
-                    entity_id_t refId = parentRef->Get().ref.toUInt(&isNumber);
-                    if (isNumber && refId > 0 && oldToNewIds.contains(refId))
-                        parentRef->Set(EntityReference(oldToNewIds[refId]), change);
-                }
-            }
             i->second->ComponentChanged(change);
-        }
     }
 
     return ret;
@@ -1673,4 +1717,70 @@ EntityList Scene::RootLevelEntities() const
     }
 
     return entities;
+}
+
+entity_id_t Scene::PlaceableParentId(const EntityDesc &ent)
+{
+    // Find placeable typeId 20
+    for (int ci=0, cilen=ent.components.size(); ci<cilen; ++ci)
+    {
+        const ComponentDesc &comp = ent.components[ci];
+        if (comp.typeId == 20)
+        {
+            entity_id_t parentId = 0;
+            const QString attrId = "parentRef";
+
+            // Find attribute "parentRef"
+            for (int ai=0, ailen=comp.attributes.size(); ai<ailen; ++ai)
+            {
+                const AttributeDesc &attr = comp.attributes[ai];
+                if (attr.id.compare(attrId, Qt::CaseSensitive) == 0)
+                {
+                    bool isNumber = false;
+                    parentId = attr.value.toUInt(&isNumber);
+                    if (!isNumber)
+                        parentId = 0;
+                    break;
+                }
+            }
+            return parentId;
+        }
+    }
+    return 0;
+}
+
+void Scene::FixPlaceableParentIds(const std::vector<EntityWeakPtr> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change)
+{
+    QList<Entity*> rawEntities;
+    for (size_t i=0, len=entities.size(); i<len; ++i)
+    {
+        if (!entities[i].expired())
+            rawEntities << entities[i].lock().get();
+    }
+    FixPlaceableParentIds(rawEntities, oldToNewIds, change);
+}
+
+void Scene::FixPlaceableParentIds(const QList<Entity*> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change)
+{
+    foreach(Entity *entity, entities)
+    {
+        if (!entity)
+            continue;
+
+        ComponentPtr placeable = entity->Component(20); // EC_Placeable
+        Attribute<EntityReference> *parentRef = (placeable.get() ? dynamic_cast<Attribute<EntityReference> *>(placeable->AttributeById("parentRef")) : 0);
+        if (parentRef && !parentRef->Get().IsEmpty())
+        {
+            // We only need to fix the id parent refs.
+            // Ones with entity names should work as expected.
+            bool isNumber = false;
+            entity_id_t refId = parentRef->Get().ref.toUInt(&isNumber);
+            if (isNumber && refId > 0 && oldToNewIds.contains(refId))
+            {
+                // Below ComponentChanged will trigger the right signals.
+                // This cannot be allowed to emit signals as EmitEntityCreated is not yet fired.
+                parentRef->Set(EntityReference(oldToNewIds[refId]), change);
+            }
+        }
+    }
 }
