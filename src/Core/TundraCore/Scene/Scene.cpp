@@ -30,6 +30,7 @@
 
 #include <kNet/DataDeserializer.h>
 #include <kNet/DataSerializer.h>
+#include <kNet/PolledTimer.h>
 
 #include <utility>
 #include "MemoryLeakCheck.h"
@@ -622,11 +623,11 @@ QList<Entity *> Scene::CreateContentFromXml(const QString &xml,  bool useEntityI
 
 QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
-    /// @todo Use and test parentTracker_ when !IsAuthority() (client side mass imports). See CreateContentFromSceneDesc().
-
-    /// @todo Make server fix any broken parenting when it changes the entity IDs from unacked to replicated!
-    if (!IsAuthority() && !useEntityIDsFromFile)
-        LogWarning("Scene::CreateContentFromXml: The created entitity IDs need to be verified from the server. This will break EC_Placeable parenting.");
+    if (!IsAuthority() && parentTracker_.IsTracking())
+    {
+        LogError("Scene::CreateContentFromXml: Still waiting for previous content creation to complete on the server. Try again after it completes.");
+        return QList<Entity*>();
+    }
 
     std::vector<EntityWeakPtr> entities;
     
@@ -656,20 +657,34 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
         ent_elem = ent_elem.nextSiblingElement("entity");
     }
 
+    // Sort the entity list so that parents are before children.
+    // This is done to combat the runtime detection of "parent entity/placeable created"
+    // that slows down the import considerably on large scenes that relies heavily on parenting.
+    // Note: Unlike CreateContentFromSceneDesc this is done post Entity creation as we don't have full
+    // infomation prior to it. This will create the entities but the actual signaling happens below,
+    // so sorting here still makes a difference.
+    QList<EntityWeakPtr> sortedDescEntities = SortEntities(entities);
+
     // Fix parent ref of EC_Placeable if new entity IDs were generated.
     // This should be done first so that we wont be firing signals
     // with partially updated state (these ends are already in the scene for querying).
     if (!useEntityIDsFromFile)
-        FixPlaceableParentIds(entities, oldToNewIds, AttributeChange::Disconnected);
+        FixPlaceableParentIds(sortedDescEntities, oldToNewIds, AttributeChange::Disconnected);
 
     // Now that we have each entity spawned to the scene, trigger all the signals for EntityCreated/ComponentChanged messages.
-    for(unsigned i = 0; i < entities.size(); ++i)
+    for(int i=0, len=sortedDescEntities.size(); i<len; ++i)
     {
-        if (!entities[i].expired())
-            EmitEntityCreated(entities[i].lock().get(), change);
-        if (!entities[i].expired())
+        EntityWeakPtr weakEnt = sortedDescEntities[i];
+
+        // On a client start tracking of the server ack messages.
+        if (!IsAuthority() && !weakEnt.expired())
+            parentTracker_.Track(weakEnt.lock().get());
+
+        if (!weakEnt.expired())
+            EmitEntityCreated(weakEnt.lock().get(), change);
+        if (!weakEnt.expired())
         {
-            EntityPtr entityShared = entities[i].lock();
+            EntityPtr entityShared = weakEnt.lock();
             const Entity::ComponentMap &components = entityShared->Components();
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
                 i->second->ComponentChanged(change);
@@ -678,10 +693,10 @@ QList<Entity *> Scene::CreateContentFromXml(const QDomDocument &xml, bool useEnt
     
     // The above signals may have caused scripts to remove entities. Return those that still exist.
     QList<Entity *> ret;
-    for(unsigned i = 0; i < entities.size(); ++i)
+    for(int i=0, len=sortedDescEntities.size(); i<len; ++i)
     {
-        if (!entities[i].expired())
-            ret.append(entities[i].lock().get());
+        if (!sortedDescEntities[i].expired())
+            ret.append(sortedDescEntities[i].lock().get());
     }
     
     return ret;
@@ -765,10 +780,8 @@ void Scene::CreateEntityFromXml(EntityPtr parent, const QDomElement& ent_elem, b
     }
 }
 
-
 QList<Entity *> Scene::CreateContentFromBinary(const QString &filename, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
-
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly))
     {
@@ -790,11 +803,11 @@ QList<Entity *> Scene::CreateContentFromBinary(const QString &filename, bool use
 
 QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, bool useEntityIDsFromFile, AttributeChange::Type change)
 {
-    /// @todo Use and test parentTracker_ when !IsAuthority() (client side mass imports). See CreateContentFromSceneDesc().
-
-    /// @todo Make server fix any broken parenting when it changes the entity IDs from unacked to replicated!
-    if (!IsAuthority() && !useEntityIDsFromFile)
-        LogWarning("Scene::CreateContentFromBinary: The created entitity IDs need to be verified from the server. This will break EC_Placeable parenting.");
+    if (!IsAuthority() && parentTracker_.IsTracking())
+    {
+        LogError("Scene::CreateContentFromBinary: Still waiting for previous content creation to complete on the server. Try again after it completes.");
+        return QList<Entity*>();
+    }
 
     assert(data);
     assert(numBytes > 0);
@@ -825,11 +838,17 @@ QList<Entity *> Scene::CreateContentFromBinary(const char *data, int numBytes, b
     // Now that we have each entity spawned to the scene, trigger all the signals for EntityCreated/ComponentChanged messages.
     for(unsigned i = 0; i < entities.size(); ++i)
     {
-        if (!entities[i].expired())
-            EmitEntityCreated(entities[i].lock().get(), change);
-        if (!entities[i].expired())
+        EntityWeakPtr weakEnt = entities[i];
+
+        // On a client start tracking of the server ack messages.
+        if (!IsAuthority() && !weakEnt.expired())
+            parentTracker_.Track(weakEnt.lock().get());
+
+        if (!weakEnt.expired())
+            EmitEntityCreated(weakEnt.lock().get(), change);
+        if (!weakEnt.expired())
         {
-            EntityPtr entityShared = entities[i].lock();
+            EntityPtr entityShared = weakEnt.lock();
             const Entity::ComponentMap &components = entityShared->Components();
             for (Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
                 i->second->ComponentChanged(change);
@@ -943,76 +962,7 @@ QList<Entity *> Scene::CreateContentFromSceneDesc(const SceneDesc &desc, bool us
     // Sort the entity list so that parents are before children.
     // This is done to combat the runtime detection of "parent entity/placeable created"
     // that slows down the import considerably on large scenes that relies heavily on parenting.
-    EntityDescList iterDescEntities = desc.entities;
-    EntityDescList sortedDescEntities;
-
-    // Put Entities that have children first (real Entity level parenting).
-    for (int ei=0; ei<iterDescEntities.size(); ++ei)
-    {
-        const EntityDesc &ent = iterDescEntities[ei];
-        if (!ent.children.isEmpty())
-        {
-            // This does not yet mean its a root level Entity.
-            // Check for deeper hierarchies: parent -> child with children.
-            int insertIndex = -1;
-            for (int sorti=0, sortlen=sortedDescEntities.size(); sorti<sortlen; ++sorti)
-            {
-                const EntityDesc &parentCandidate = sortedDescEntities[sorti];
-                if (parentCandidate.IsParentFor(ent))
-                {
-                    insertIndex = sorti + 1;
-                    break;
-                }
-            }
-            if (insertIndex == -1 || insertIndex >= sortedDescEntities.size())
-                sortedDescEntities.push_back(ent);
-            else
-                sortedDescEntities.insert(insertIndex, ent);
-
-            iterDescEntities.removeAt(ei);
-            ei--;
-        }
-    }
-
-    // Find entities that have parent ref set (EC_Placeble::parentRef parenting).
-    int childrenStartIndex = sortedDescEntities.size();
-    for (int ei=0; ei<iterDescEntities.size(); ++ei)
-    {
-        int insertIndex = -1;
-        const EntityDesc &ent = iterDescEntities[ei];
-
-        entity_id_t parentId = PlaceableParentId(ent);
-        if (parentId > 0)
-        {
-            // Find parent from the list and insert after, othewise add to end.
-            QString parentIdStr = QString::number(parentId);
-            for (int sorti=childrenStartIndex, sortlen=sortedDescEntities.size(); sorti<sortlen; ++sorti)
-            {
-                const EntityDesc &parentCandidate = sortedDescEntities[sorti];
-                if (parentCandidate.id == parentIdStr)
-                {
-                    insertIndex = sorti + 1;
-                    break;
-                }
-            }
-        }
-        if (insertIndex == -1 || insertIndex >= sortedDescEntities.size())
-            sortedDescEntities.push_back(ent);
-        else
-            sortedDescEntities.insert(insertIndex, ent);
-
-        iterDescEntities.removeAt(ei);
-        ei--;
-    }
-
-    // Double check no information was lost. If these do not match, use the original passed in entity desc list.
-    if (!iterDescEntities.isEmpty() || sortedDescEntities.size() != desc.entities.size())
-    {
-        LogError("Scene::CreateContentFromSceneDesc: Sorting Entity hierarchy resulted in loss of information. Using original unsorted Entity list. " +
-            QString("Iteration list size: %1 Sorted Entities: %2 Original Entities: %3")
-                .arg(iterDescEntities.size()).arg(sortedDescEntities.size()).arg(desc.entities.size()));
-        sortedDescEntities = desc.entities;
-    }
+    EntityDescList sortedDescEntities = SortEntities(desc.entities);
 
     QHash<entity_id_t, entity_id_t> oldToNewIds;
     for (int ei=0, eilen=sortedDescEntities.size(); ei<eilen; ++ei)
@@ -1726,7 +1676,268 @@ EntityList Scene::RootLevelEntities() const
     return entities;
 }
 
-entity_id_t Scene::PlaceableParentId(const EntityDesc &ent)
+// Returns insert index to 'container' for 'ent'. Return -1 if can be appended as last element.
+// Note: At the moment the Entity parenting with both Entity and Placable level is so complex that this proably
+// will not handle all exotic deep recursions correctly. In the case of Placeable parenting children may come before parent
+// in 'container'. In the case of Entity level parenting the 'container' can be assumed to be in the correct order already.
+// Todo: Deeper Placeable hierarchy inspection to fix above note.
+template <typename T>
+int EntityInsertIndex(const Scene *scene, const Entity *ent, T &container)
+{
+    int insertIndex = -1;
+    if (!ent)
+        return insertIndex;
+
+    entity_id_t parentId = scene->EntityParentId(ent);
+    
+    // Has children
+    if (ent->NumChildren() > 0)
+    {
+        // Parented parent
+        if (parentId > 0)
+        {
+            for (int sorti=0, sortlen=container.size(); sorti<sortlen; ++sorti)
+            {
+                // Todo: Inspect if parent is one of children of this entity?
+                // Parent already in the container? Insert after it.
+                if (container[sorti]->Id() == parentId)
+                {
+                    insertIndex = sorti + 1;
+                    break;
+                }
+            }
+        }
+        // - Parented parent where the parent was not already in container
+        // - Unparented parent
+        if (insertIndex == -1)
+        {
+            // Find first non-parent Entity and insert before it.
+            for (int sorti=0, sortlen=container.size(); sorti<sortlen; ++sorti)
+            {
+                if (container[sorti]->NumChildren() == 0)
+                {
+                    insertIndex = sorti;
+                    break;
+                }
+            }
+        }
+    }
+    // No children
+    else
+    {
+        if (parentId > 0)
+        {
+            for (int sorti=0, sortlen=container.size(); sorti<sortlen; ++sorti)
+            {
+                // Todo: Inspect if parent is one of children of this entity?
+                // Parent already in the container? Insert after it.
+                if (container[sorti]->Id() == parentId)
+                {
+                    insertIndex = sorti + 1;
+                    break;
+                }
+            }
+        }
+        // - Parented entity where the parent was not already in container.
+        // - Unparented entity
+        if (insertIndex == -1)
+        {
+            // Find first non-parent + unparented Entity and insert after it.
+            for (int sorti=0, sortlen=container.size(); sorti<sortlen; ++sorti)
+            {
+                if (container[sorti]->NumChildren() == 0 && scene->EntityParentId(container[sorti]) == 0)
+                {
+                    insertIndex = sorti + 1;
+                    break;
+                }
+            }
+        }
+    }
+    return (insertIndex < container.size() ? insertIndex : -1);
+}
+
+QList<EntityWeakPtr> ConvertStdToQtList(const std::vector<EntityWeakPtr> entities)
+{
+    QList<EntityWeakPtr> temp;
+    for (size_t tempi=0, templen=entities.size(); tempi<templen; ++tempi)
+        temp.push_back(entities[tempi]);
+    return temp;
+}
+
+QList<EntityWeakPtr> Scene::SortEntities(const std::vector<EntityWeakPtr> entities) const
+{
+    PolledTimer t; t.Start();
+
+    QList<Entity*> rawEntities;
+    for (size_t ei=0, eilen=entities.size(); ei<eilen; ++ei)
+    {
+        EntityWeakPtr weakEnt = entities[ei];
+        if (weakEnt.expired())
+        {
+            LogError(QString("Scene::SortEntities: Input std::vector<EntityWeakPtr> contained expired pointer at index %1. Aborting sort and returning original list.").arg(ei));
+            return ConvertStdToQtList(entities);
+        }
+        rawEntities.push_back(weakEnt.lock().get());
+    }
+
+    QList<EntityWeakPtr> sortedEntities;
+    for (size_t ei=0, eilen=entities.size(); ei<eilen; ++ei)
+    {
+        EntityWeakPtr weakEnt = entities[ei];
+        int insertIndex = EntityInsertIndex(this, weakEnt.lock().get(), rawEntities);
+        if (insertIndex == -1 || insertIndex >= sortedEntities.size())
+            sortedEntities.push_back(weakEnt);
+        else
+            sortedEntities.insert(insertIndex, weakEnt);
+    }
+    if (sortedEntities.size() != entities.size())
+    {
+        LogError(QString("Scene::SortEntities: Sorting resulted in loss of information. Returning original unsorted list. Sorted size: %1 Unsorted size: %2.")
+            .arg(sortedEntities.size()).arg(entities.size()));
+        return ConvertStdToQtList(entities);
+    }
+
+    LogDebug(QString("Scene::SortEntities: Sorted Entities in %1 msecs. Input Entities %2").arg(t.MSecsElapsed(), 0, 'f', 4).arg(entities.size()));
+    return sortedEntities;
+}
+
+QList<Entity*> Scene::SortEntities(const QList<Entity*> &entities) const
+{
+    PolledTimer t; t.Start();
+
+    QList<Entity*> sortedEntities;
+    for (int ei=0, eilen=entities.size(); ei<eilen; ++ei)
+    {
+        Entity *ent = entities[ei];
+        if (!ent)
+        {
+            LogError(QString("Scene::SortEntities: Input QList<Entity*> contained null pointer at index %1. Aborting sort and returning original list.").arg(ei));
+            return entities;
+        }
+
+        int insertIndex = EntityInsertIndex(this, ent, sortedEntities);
+        if (insertIndex == -1 || insertIndex >= sortedEntities.size())
+            sortedEntities.push_back(ent);
+        else
+            sortedEntities.insert(insertIndex, ent);
+    }
+    if (sortedEntities.size() != entities.size())
+    {
+        LogError(QString("Scene::SortEntities: Sorting resulted in loss of information. Returning original unsorted list. Sorted size: %1 Unsorted size: %2.")
+            .arg(sortedEntities.size()).arg(entities.size()));
+        return entities;
+    }
+
+    LogDebug(QString("Scene::SortEntities: Sorted Entities in %1 msecs. Input Entities %2").arg(t.MSecsElapsed(), 0, 'f', 4).arg(entities.size()));
+    return sortedEntities;
+}
+
+EntityDescList Scene::SortEntities(const EntityDescList &entities) const
+{
+    PolledTimer t; t.Start();
+
+    EntityDescList iterDescEntities = entities;
+    EntityDescList sortedDescEntities;
+
+    // Put Entities that have children first (real Entity level parenting).
+    for (int ei=0; ei<iterDescEntities.size(); ++ei)
+    {
+        const EntityDesc &ent = iterDescEntities[ei];
+        if (!ent.children.isEmpty())
+        {
+            // This does not yet mean its a root level Entity.
+            // Check for deeper hierarchies: parent -> child with children.
+            int insertIndex = -1;
+            for (int sorti=0, sortlen=sortedDescEntities.size(); sorti<sortlen; ++sorti)
+            {
+                const EntityDesc &parentCandidate = sortedDescEntities[sorti];
+                if (parentCandidate.IsParentFor(ent))
+                {
+                    insertIndex = sorti + 1;
+                    break;
+                }
+            }
+            if (insertIndex == -1 || insertIndex >= sortedDescEntities.size())
+                sortedDescEntities.push_back(ent);
+            else
+                sortedDescEntities.insert(insertIndex, ent);
+
+            iterDescEntities.removeAt(ei);
+            ei--;
+        }
+    }
+
+    // Find entities that have parent ref set (EC_Placeble::parentRef parenting).
+    int childrenStartIndex = sortedDescEntities.size();
+    for (int ei=0; ei<iterDescEntities.size(); ++ei)
+    {
+        int insertIndex = -1;
+        const EntityDesc &ent = iterDescEntities[ei];
+
+        entity_id_t parentId = PlaceableParentId(ent);
+        if (parentId > 0)
+        {
+            // Find parent from the list and insert after, othewise add to end.
+            QString parentIdStr = QString::number(parentId);
+            for (int sorti=childrenStartIndex, sortlen=sortedDescEntities.size(); sorti<sortlen; ++sorti)
+            {
+                const EntityDesc &parentCandidate = sortedDescEntities[sorti];
+                if (parentCandidate.id == parentIdStr)
+                {
+                    insertIndex = sorti + 1;
+                    break;
+                }
+            }
+        }
+        if (insertIndex == -1 || insertIndex >= sortedDescEntities.size())
+            sortedDescEntities.push_back(ent);
+        else
+            sortedDescEntities.insert(insertIndex, ent);
+
+        iterDescEntities.removeAt(ei);
+        ei--;
+    }
+
+    // Double check no information was lost. If these do not match, use the original passed in entity desc list.
+    if (!iterDescEntities.isEmpty() || sortedDescEntities.size() != entities.size())
+    {
+        LogError("Scene::SortEntities: Sorting Entity hierarchy resulted in loss of information. Using original unsorted Entity list. " +
+            QString("Iteration list size: %1 Sorted Entities: %2 Original Entities: %3")
+                .arg(iterDescEntities.size()).arg(sortedDescEntities.size()).arg(entities.size()));
+        return entities;
+    }
+
+    LogDebug(QString("Scene::SortEntities: Sorted EntityDescs in %1 msecs. Input Entities %2").arg(t.MSecsElapsed(), 0, 'f', 4).arg(entities.size()));
+    return sortedDescEntities;
+}
+
+entity_id_t Scene::EntityParentId(const Entity *ent) const
+{
+    if (ent->HasParent())
+        return ent->Parent()->Id();
+    return PlaceableParentId(ent);
+}
+
+entity_id_t Scene::PlaceableParentId(const Entity *ent) const
+{
+    ComponentPtr comp = ent->Component(20); // EC_Placeable
+
+    entity_id_t parentId = 0;
+    if (!comp.get())
+        return parentId;
+    
+    Attribute<EntityReference> *parentRef = dynamic_cast<Attribute<EntityReference> *>(comp->AttributeById("parentRef"));
+    if (parentRef && !parentRef->Get().IsEmpty())
+    {
+        bool isNumber = false;
+        parentId = parentRef->Get().ref.toUInt(&isNumber);
+        if (!isNumber)
+            parentId = 0;
+    }
+    return parentId;
+}
+
+entity_id_t Scene::PlaceableParentId(const EntityDesc &ent) const
 {
     // Find placeable typeId 20
     for (int ci=0, cilen=ent.components.size(); ci<cilen; ++ci)
@@ -1756,7 +1967,7 @@ entity_id_t Scene::PlaceableParentId(const EntityDesc &ent)
     return 0;
 }
 
-void Scene::FixPlaceableParentIds(const std::vector<EntityWeakPtr> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change)
+void Scene::FixPlaceableParentIds(const std::vector<EntityWeakPtr> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change) const
 {
     QList<Entity*> rawEntities;
     for (size_t i=0, len=entities.size(); i<len; ++i)
@@ -1767,8 +1978,22 @@ void Scene::FixPlaceableParentIds(const std::vector<EntityWeakPtr> entities, con
     FixPlaceableParentIds(rawEntities, oldToNewIds, change);
 }
 
-void Scene::FixPlaceableParentIds(const QList<Entity*> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change)
+void Scene::FixPlaceableParentIds(const QList<EntityWeakPtr> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change) const
 {
+    QList<Entity*> rawEntities;
+    for (int i=0, len=entities.size(); i<len; ++i)
+    {
+        if (!entities[i].expired())
+            rawEntities << entities[i].lock().get();
+    }
+    FixPlaceableParentIds(rawEntities, oldToNewIds, change);
+}
+
+void Scene::FixPlaceableParentIds(const QList<Entity*> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change) const
+{
+    PolledTimer t; t.Start();
+    int fixed = 0;
+
     foreach(Entity *entity, entities)
     {
         if (!entity)
@@ -1787,7 +2012,10 @@ void Scene::FixPlaceableParentIds(const QList<Entity*> entities, const QHash<ent
                 // Below ComponentChanged will trigger the right signals.
                 // This cannot be allowed to emit signals as EmitEntityCreated is not yet fired.
                 parentRef->Set(EntityReference(oldToNewIds[refId]), change);
+                fixed++;
             }
         }
     }
+
+    LogDebug(QString("Scene::FixPlaceableParentIds: Fixed %1 parentRefs in %2 msecs. Input Entities %3").arg(fixed).arg(t.MSecsElapsed(), 0, 'f', 4).arg(entities.size()));
 }

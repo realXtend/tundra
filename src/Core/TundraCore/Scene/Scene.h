@@ -429,6 +429,19 @@ public slots:
     QList<Entity *> CreateContentFromBinary(const QString &filename, bool useEntityIDsFromFile, AttributeChange::Type change);
     QList<Entity *> CreateContentFromBinary(const char *data, int numBytes, bool useEntityIDsFromFile, AttributeChange::Type change); /**< @overload @param data Data buffer @param numBytes Data size. */
 
+    /// Returns @c ent parent Entity id.
+    /** Check both Entity and EC_Placeble::parentRef parenting,
+        Entity parenting takes presedence.
+        @return Returns 0 if parent is not set or the parent ref is not a Entity id (but a entity name). */
+    entity_id_t EntityParentId(const Entity *ent) const;
+
+    /// Sorts @c entities by scene hierarchy and returns the sorted list.
+    /** Takes into account both Entity::Parent and EC_Placeable::parentRef pareting,
+        Entity leven parenting takes presedence. */
+    QList<Entity*> SortEntities(const QList<Entity*> &entities) const;
+    QList<EntityWeakPtr> SortEntities(const std::vector<EntityWeakPtr> entities) const; ///< @overload
+    EntityDescList SortEntities(const EntityDescList &entities) const; ///< @overload
+
     /// Checks whether editing an entity is allowed.
     /** Emits AboutToModifyEntity.
         @user entity Connection that is requesting permission to modify an entity.
@@ -547,11 +560,13 @@ private:
 
     /// Resolved parent Entity id that is set to EC_Placeable::parentRef.
     /** @return Returns 0 if parent is not set or the parent ref is not a Entity id (but a entity name). */
-    entity_id_t PlaceableParentId(const EntityDesc &ent);
+    entity_id_t PlaceableParentId(const Entity *ent) const;
+    entity_id_t PlaceableParentId(const EntityDesc &ent) const; ///< @overload
 
     /// Fix parent Entity ids that are set to EC_Placeable::parentRef.
-    void FixPlaceableParentIds(const std::vector<EntityWeakPtr> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change);
-    void FixPlaceableParentIds(const QList<Entity*> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change);
+    void FixPlaceableParentIds(const QList<Entity*> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change) const;
+    void FixPlaceableParentIds(const QList<EntityWeakPtr> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change) const; ///< @overload
+    void FixPlaceableParentIds(const std::vector<EntityWeakPtr> entities, const QHash<entity_id_t, entity_id_t> &oldToNewIds, AttributeChange::Type change) const; ///< @overload
 
     UniqueIdGenerator idGenerator_; ///< Entity ID generator
     EntityMap entities_; ///< All entities in the scene.
