@@ -86,6 +86,9 @@ protected:
     /// QAbstractItemView override.
     void dropEvent(QDropEvent *e);
 
+    /// QWidget override.
+    void paintEvent(QPaintEvent *e);
+
 private:
     /// Creates and adds applicable actions to the right-click context menu.
     /** @param menu Context menu. */

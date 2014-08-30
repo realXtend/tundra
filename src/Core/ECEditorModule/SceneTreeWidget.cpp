@@ -223,7 +223,39 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
         QTreeWidget::dropEvent(e);
 }
 
-UndoManager * SceneTreeWidget::GetUndoManager() const
+void SceneTreeWidget::paintEvent(QPaintEvent *e)
+{
+    QTreeWidget::paintEvent(e);
+
+    if (!isSortingEnabled())
+    {
+        int numRemoving = 0;
+        QList<const RemoveCommand*> removeCommands = undoManager_->Commands<RemoveCommand>();
+        foreach(const RemoveCommand *cmd, removeCommands)
+            if (cmd && cmd->IsExecuting())
+                numRemoving += cmd->PendingEntityRemoves();
+
+        if (numRemoving > 0)
+        {
+            QPainter p(this->viewport());
+            p.fillRect(this->viewport()->rect(), QColor(234,234,234,150));
+
+            QFont font;
+            font.setBold(true);
+            font.setPixelSize(22);
+            p.setFont(font);
+            p.setPen(QColor(68,68,68));
+
+            QTextOption formatting;
+            formatting.setAlignment(Qt::AlignCenter);
+
+            p.drawText(this->viewport()->rect(), QString("Removing %1 Entities").arg(numRemoving), formatting);
+            p.end();
+        }
+    }
+}
+
+UndoManager *SceneTreeWidget::GetUndoManager() const
 {
     return undoManager_;
 }

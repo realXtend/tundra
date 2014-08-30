@@ -471,6 +471,11 @@ bool RemoveCommand::IsExecuting() const
     return executing_;
 }
 
+int RemoveCommand::PendingEntityRemoves() const
+{
+    return pendingIds_.size();
+}
+
 int RemoveCommand::id() const
 {
     return Id;

@@ -384,6 +384,9 @@ public:
     /// Removes if this command is currently executing.
     bool IsExecuting() const;
 
+    /// Return how many Entities are still pending removal.
+    int PendingEntityRemoves() const;
+
 signals:
     /// Emitted before first entity/component is removed from the scene.
     void Starting();
