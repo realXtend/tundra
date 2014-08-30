@@ -45,14 +45,13 @@ void EntityReference::Set(Entity* entity)
 
 bool EntityReference::IsEmpty() const
 {
-    bool ok = false;
-    entity_id_t id = ref.toInt(&ok);
-    // ID 0 can not be an entity
-    if ((ok) && (id == 0))
-        return true;
     if (ref.trimmed().isEmpty())
         return true;
-    
+    bool ok = false;
+    entity_id_t id = ref.toInt(&ok);
+    // 0 is not a valid Entity id.
+    if (ok && id == 0)
+        return true;
     return false;
 }
 
@@ -65,12 +64,12 @@ EntityPtr EntityReference::Lookup(Scene* scene) const
     entity_id_t id = ref.toInt(&ok);
     if (ok)
     {
-        EntityPtr entity = scene->GetEntity(id);
+        EntityPtr entity = scene->EntityById(id);
         if (entity)
             return entity;
     }
     // Then get by name
-    return scene->GetEntityByName(ref.trimmed());
+    return scene->EntityByName(ref.trimmed());
 }
 
 EntityPtr EntityReference::LookupParent(Entity* entity) const
