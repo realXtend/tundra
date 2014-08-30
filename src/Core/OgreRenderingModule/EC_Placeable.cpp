@@ -235,6 +235,8 @@ EC_Placeable::~EC_Placeable()
     
     OgreWorldPtr world = world_.lock();
     Ogre::SceneManager* sceneMgr = world->OgreSceneManager();
+
+    childPlaceables_.clear();
     
     if (sceneNode_)
     {
@@ -303,6 +305,8 @@ void EC_Placeable::AttachNode()
             }
             if (parentEntity)
             {
+                disconnect(parentEntity, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
+
                 QString boneName = parentBone.Get();
                 if (!boneName.isEmpty())
                 {
@@ -328,6 +332,7 @@ void EC_Placeable::AttachNode()
                             // (in that case bones don't get automatically updated)
                             EC_Placeable* parentPlaceable = parentEntity->GetComponent<EC_Placeable>().get();
                             parentPlaceable_ = parentPlaceable;
+                            parentPlaceable_->ChildAttached(shared_from_this());
                             connect(parentPlaceable_, SIGNAL(TransformChanged()), this, SLOT(OnParentPlaceableTransformChanged()), Qt::UniqueConnection);
 
                             parentBone_ = bone;
@@ -369,9 +374,10 @@ void EC_Placeable::AttachNode()
                         }
                         parentCheck = parentCheck->parentPlaceable_;
                     }
-                                       
+
                     parentPlaceable_ = parentPlaceable;
                     parentPlaceable_->GetSceneNode()->addChild(sceneNode_);
+                    parentPlaceable_->ChildAttached(shared_from_this());
                     
                     // Connect to destruction of the placeable to be able to detach gracefully
                     connect(parentPlaceable_, SIGNAL(AboutToBeDestroyed()), this, SLOT(OnParentPlaceableDestroyed()), Qt::UniqueConnection);
@@ -433,23 +439,77 @@ void EC_Placeable::DetachNode()
             boneAttachmentNode_->removeChild(sceneNode_);
             parentBone_ = 0;
             parentMesh_ = 0;
-            parentPlaceable_ = 0;
         }
         else if (parentPlaceable_)
         {
             disconnect(parentPlaceable_, SIGNAL(AboutToBeDestroyed()), this, SLOT(OnParentPlaceableDestroyed()));
             parentPlaceable_->GetSceneNode()->removeChild(sceneNode_);
-            parentPlaceable_ = 0;
         }
         else
             root_node->removeChild(sceneNode_);
-        
+
+        if (parentPlaceable_)
+            parentPlaceable_->ChildDetached(this);
+        parentPlaceable_ = 0;
+
         attached_ = false;
     }
     catch (Ogre::Exception& e)
     {
         LogError("EC_Placeable::DetachNode: Ogre exception " + std::string(e.what()));
     }
+}
+
+void EC_Placeable::CleanExpiredChildren()
+{
+    for (int i=0; i<childPlaceables_.size(); ++i)
+    {
+        ComponentWeakPtr &weak = childPlaceables_[i];
+        if (weak.expired())
+        {
+            weak.reset();
+            childPlaceables_.removeAt(i);
+            i--;
+        }
+    }
+}
+
+bool EC_Placeable::HasAttachedChild(IComponent *placeable)
+{
+    for (int i=0, len=childPlaceables_.size(); i<len; ++i)
+    {
+        const ComponentWeakPtr &weak = childPlaceables_[i];
+        if (!weak.expired() && weak.lock().get() == placeable)
+            return true;
+    }
+    return false;
+}
+
+void EC_Placeable::ChildAttached(shared_ptr<IComponent> placeable)
+{
+    if (!placeable.get() || HasAttachedChild(placeable.get()))
+        return;
+
+    CleanExpiredChildren();
+    childPlaceables_.push_back(ComponentWeakPtr(placeable));
+}
+
+void EC_Placeable::ChildDetached(IComponent *placeable)
+{
+    if (placeable)
+    {
+        for (int i=0, len=childPlaceables_.size(); i<len; ++i)
+        {
+            ComponentWeakPtr &weak = childPlaceables_[i];
+            if (!weak.expired() && weak.lock().get() == placeable)
+            {
+                weak.reset();
+                childPlaceables_.removeAt(i);
+                break;
+            }
+        }
+    }
+    CleanExpiredChildren();
 }
 
 void EC_Placeable::Show()
@@ -682,17 +742,25 @@ EntityList EC_Placeable::Grandchildren(Entity *entity) const
 EntityList EC_Placeable::Children() const
 {
     EntityList children;
+    if (!ParentEntity() || !ParentEntity()->ParentScene())
+        return children;
 
     Scene *scene = ParentEntity()->ParentScene();
-    ///\todo Optimize this function! The current implementation is very slow since it iterates through the whole scene! Instead, keep a list of weak_ptrs to child EC_Placeables.
-    for(Scene::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    for (int i=0, len=childPlaceables_.size(); i<len; ++i)
     {
-        shared_ptr<EC_Placeable> placeable = iter->second->GetComponent<EC_Placeable>();
-        if (placeable)
+        const ComponentWeakPtr &weak = childPlaceables_[i];
+        if (!weak.expired())
         {
-            EntityPtr parent = placeable->parentRef.Get().Lookup(scene);
-            if (parent.get() == this->ParentEntity())
-                children.push_back(iter->second);
+            // Verify that the list is still accurate.
+            /** @todo We might want to skip this verification in the future. EnityReference::Lookup
+                is fast for id based entities but can get slow on name based parenting on large scenes. */
+            EC_Placeable *childPlaceable = dynamic_cast<EC_Placeable*>(weak.lock().get());
+            if (childPlaceable && childPlaceable->ParentEntity())
+            {
+                EntityPtr parent = childPlaceable->parentRef.Get().Lookup(scene);
+                if (parent.get() == ParentEntity())
+                    children.push_back(childPlaceable->ParentEntity()->shared_from_this());
+            }
         }
     }
     return children;
@@ -797,8 +865,7 @@ void EC_Placeable::OnParentMeshChanged()
 
 void EC_Placeable::OnComponentAdded(IComponent* component, AttributeChange::Type change)
 {
-    /// @todo Should only go to AttachNode if EC_Placeable or EC_Mesh?
-    if (!attached_)
+    if (!attached_ && component && (component->TypeId() == EC_Placeable::TypeIdStatic() || component->TypeId() == EC_Mesh::TypeIdStatic()))
         AttachNode();
 }
 

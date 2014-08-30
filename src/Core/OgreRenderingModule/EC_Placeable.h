@@ -329,24 +329,44 @@ private:
     
     /// detaches scenenode from parent
     void DetachNode();
-    
+
+    /// Marks @c placeable as a child of this placeable.
+    /** This tracking is a performance optimization for Children()
+        so that it does not have to iterate scene each time its
+        children are queried. This gets impossibly slow with big scenes. */
+    void ChildAttached(shared_ptr<IComponent> placeable);
+
+    /// Unmarks @c placeable as a child of this placeable.
+    /** @see ChildAttached. */
+    void ChildDetached(IComponent *placeable);
+
+    /// Cleans expired weak ptrs from childPlaceables_.
+    void CleanExpiredChildren();
+
+    /// Returns if @c placeable is already attached.
+    bool HasAttachedChild(IComponent *placeable);
+
     /// Ogre world ptr
     OgreWorldWeakPtr world_;
-    
+
     /// Ogre scene node for geometry. This always exists as long as the EC_Placeable is alive
     Ogre::SceneNode* sceneNode_;
-    
+
     /// Ogre scene node for manual bone attachment
     Ogre::SceneNode* boneAttachmentNode_;
 
     /// The bone we are tracking in bone attachment mode
     Ogre::Bone* parentBone_;
-    
+
     /// Parent placeable, if any
     EC_Placeable* parentPlaceable_;
-    
+
     /// Parent mesh in bone attachment mode
     EC_Mesh* parentMesh_;
+
+    /// Weak ptrs to known children.
+    /** @see ChildAttached and ChildDetached. */
+    QList<ComponentWeakPtr> childPlaceables_;
 
     /// attached to scene hierarchy-flag
     bool attached_;
