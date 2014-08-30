@@ -417,7 +417,6 @@ void AddContentWindow::AddAssets(const QStringList &fileNames)
     {
         AssetDesc ad;
         ad.source = file;
-        ad.dataInMemory = false;
         QString type = scene.lock().get() ? scene.lock()->GetFramework()->Asset()->GetResourceTypeFromAssetRef(file) : "Binary";
         ad.typeName = type.isEmpty() ? "Binary" : type;
         ad.destinationName = QFileInfo(file).fileName();

@@ -1138,7 +1138,7 @@ void Scene::CreateEntityFromDesc(EntityPtr parent, const EntityDesc& e, bool use
 
 SceneDesc Scene::CreateSceneDescFromXml(const QString &filename) const
 {
-    SceneDesc sceneDesc;
+    SceneDesc sceneDesc(filename);
     if (!filename.endsWith(".txml", Qt::CaseInsensitive))
     {
         if (filename.endsWith(".tbin", Qt::CaseInsensitive))
@@ -1147,8 +1147,6 @@ SceneDesc Scene::CreateSceneDescFromXml(const QString &filename) const
             LogError("Scene::CreateSceneDescFromXml: Unsupported file extension " + filename + " when trying to create scene description.");
         return sceneDesc;
     }
-
-    sceneDesc.filename = filename;
 
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly))
@@ -1199,99 +1197,103 @@ SceneDesc Scene::CreateSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) 
 void Scene::CreateEntityDescFromXml(SceneDesc& sceneDesc, QList<EntityDesc>& dest, const QDomElement& ent_elem) const
 {
     QString id_str = ent_elem.attribute("id");
-    if (!id_str.isEmpty())
+    if (id_str.isEmpty())
+        return;
+    
+    EntityDesc entityDesc;
+    entityDesc.id = id_str;
+    entityDesc.local = !ParseBool(ent_elem.attribute("sync"), true); /**< @todo if no "sync"* attr, deduct from the ID. */
+    entityDesc.temporary = ParseBool(ent_elem.attribute("temporary"), false);
+
+    QDomElement comp_elem = ent_elem.firstChildElement("component");
+    while(!comp_elem.isNull())
     {
-        EntityDesc entityDesc;
-        entityDesc.id = id_str;
-        entityDesc.local = !ParseBool(ent_elem.attribute("sync"), true); /**< @todo if no "sync"* attr, deduct from the ID. */
-        entityDesc.temporary = ParseBool(ent_elem.attribute("temporary"), false);
+        ComponentDesc compDesc;
+        compDesc.typeName = comp_elem.attribute("type");
+        compDesc.typeId = ParseUInt(comp_elem.attribute("typeId"), 0xffffffff);
+        /// @todo 27.09.2013 assert that typeName and typeId match
+        /// @todo 27.09.2013 If mismatch, show warning, and use SceneAPI's
+        /// ComponentTypeNameForTypeId and ComponentTypeIdForTypeName to resolve one or the other?
+        compDesc.name = comp_elem.attribute("name");
+        compDesc.sync = ParseBool(comp_elem.attribute("sync"));
+        const bool hasTypeId = compDesc.typeId != 0xffffffff;
 
-        QDomElement comp_elem = ent_elem.firstChildElement("component");
-        while(!comp_elem.isNull())
+        // A bit of a hack to get the name from EC_Name.
+        if (entityDesc.name.isEmpty() && (compDesc.typeId == EC_Name::ComponentTypeId ||
+            IComponent::EnsureTypeNameWithPrefix(compDesc.typeName) == EC_Name::TypeNameStatic()))
         {
-            ComponentDesc compDesc;
-            compDesc.typeName = comp_elem.attribute("type");
-            compDesc.typeId = ParseUInt(comp_elem.attribute("typeId"), 0xffffffff);
-            /// @todo 27.09.2013 assert that typeName and typeId match
-            /// @todo 27.09.2013 If mismatch, show warning, and use SceneAPI's
-            /// ComponentTypeNameForTypeId and ComponentTypeIdForTypeName to resolve one or the other?
-            compDesc.name = comp_elem.attribute("name");
-            compDesc.sync = ParseBool(comp_elem.attribute("sync"));
-            const bool hasTypeId = compDesc.typeId != 0xffffffff;
-
-            // A bit of a hack to get the name from EC_Name.
-            if (entityDesc.name.isEmpty() && (compDesc.typeId == EC_Name::ComponentTypeId ||
-                IComponent::EnsureTypeNameWithPrefix(compDesc.typeName) == EC_Name::TypeNameStatic()))
-            {
-                ComponentPtr comp = (hasTypeId ? framework_->Scene()->CreateComponentById(0, compDesc.typeId, compDesc.name) :
-                    framework_->Scene()->CreateComponentByName(0, compDesc.typeName, compDesc.name));
-                EC_Name *ecName = checked_static_cast<EC_Name*>(comp.get());
-                ecName->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
-                entityDesc.name = ecName->name.Get();
-                entityDesc.group = ecName->group.Get();
-            }
-
             ComponentPtr comp = (hasTypeId ? framework_->Scene()->CreateComponentById(0, compDesc.typeId, compDesc.name) :
                 framework_->Scene()->CreateComponentByName(0, compDesc.typeName, compDesc.name));
-            if (!comp) // Move to next element if component creation fails.
-            {
-                comp_elem = comp_elem.nextSiblingElement("component");
-                continue;
-            }
-
-            // Find asset references.
-            comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
-            foreach(IAttribute *a,comp->Attributes())
-            {
-                if (!a)
-                    continue;
-                    
-                const QString typeName = a->TypeName();
-                AttributeDesc attrDesc = { typeName, a->Name(), a->ToString(), a->Id() };
-                compDesc.attributes.append(attrDesc);
-
-                QString attrValue = a->ToString();
-                if ((typeName.compare("AssetReference", Qt::CaseInsensitive) == 0 || typeName.compare("AssetReferenceList", Qt::CaseInsensitive) == 0|| 
-                    (a->Metadata() && a->Metadata()->elementType.compare("AssetReference", Qt::CaseInsensitive) == 0)) &&
-                    !attrValue.isEmpty())
-                {
-                    // We might have multiple references, ";" used as a separator.
-                    QStringList values = attrValue.split(";");
-                    foreach(QString value, values)
-                    {
-                        AssetDesc ad;
-                        ad.typeName = a->Name();
-                        ad.dataInMemory = false;
-
-                        // Rewrite source refs for asset descs, if necessary.
-                        QString basePath = QFileInfo(sceneDesc.filename).dir().path();
-                        framework_->Asset()->ResolveLocalAssetPath(value, basePath, ad.source);
-                        ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
-
-                        sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
-
-                        // If this is a script, look for dependecies
-                        if (ad.source.toLower().endsWith(".js"))
-                            SearchScriptAssetDependencies(ad.source, sceneDesc);
-                    } 
-                }
-            }
-
-            entityDesc.components.append(compDesc);
-
-            comp_elem = comp_elem.nextSiblingElement("component");
+            EC_Name *ecName = checked_static_cast<EC_Name*>(comp.get());
+            ecName->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+            entityDesc.name = ecName->name.Get();
+            entityDesc.group = ecName->group.Get();
         }
 
-        // Process child entities
-        QDomElement childEnt_elem = ent_elem.firstChildElement("entity");
-        while (!childEnt_elem.isNull())
+        ComponentPtr comp = (hasTypeId ? framework_->Scene()->CreateComponentById(0, compDesc.typeId, compDesc.name) :
+            framework_->Scene()->CreateComponentByName(0, compDesc.typeName, compDesc.name));
+        if (!comp) // Move to next element if component creation fails.
         {
-            CreateEntityDescFromXml(sceneDesc, entityDesc.children, childEnt_elem);
-            childEnt_elem = childEnt_elem.nextSiblingElement("entity");
+            comp_elem = comp_elem.nextSiblingElement("component");
+            continue;
         }
 
-        dest.append(entityDesc);
+        // Find asset references.
+        comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+        foreach(IAttribute *a,comp->Attributes())
+        {
+            if (!a)
+                continue;
+                    
+            const QString typeName = a->TypeName();
+            AttributeDesc attrDesc = { typeName, a->Name(), a->ToString(), a->Id() };
+            compDesc.attributes.append(attrDesc);
+
+            QString attrValue = a->ToString();
+            if ((typeName.compare("AssetReference", Qt::CaseInsensitive) == 0 || typeName.compare("AssetReferenceList", Qt::CaseInsensitive) == 0|| 
+                (a->Metadata() && a->Metadata()->elementType.compare("AssetReference", Qt::CaseInsensitive) == 0)) &&
+                !attrValue.isEmpty())
+            {
+                // We might have multiple references, ";" used as a separator.
+                QStringList assetRefs = attrValue.split(";");
+                for (int avi=0, avilen=assetRefs.size(); avi<avilen; ++avi)
+                {
+                    const QString &assetRef = assetRefs[avi];
+
+                    AssetDesc ad;
+                    ad.typeName = a->Name();
+
+                    // Resolve absolute file path for asset reference and the destination name (just the filename).
+                    if (!sceneDesc.assetCache.Fill(assetRef, ad))
+                    {
+                        framework_->Asset()->ResolveLocalAssetPath(assetRef, sceneDesc.assetCache.basePath, ad.source);
+                        ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
+                        sceneDesc.assetCache.Add(assetRef, ad);
+                    }
+
+                    sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
+
+                    // If this is a script, look for dependecies
+                    if (ad.source.toLower().endsWith(".js"))
+                        SearchScriptAssetDependencies(ad.source, sceneDesc);
+                } 
+            }
+        }
+
+        entityDesc.components.append(compDesc);
+
+        comp_elem = comp_elem.nextSiblingElement("component");
     }
+
+    // Process child entities
+    QDomElement childEnt_elem = ent_elem.firstChildElement("entity");
+    while (!childEnt_elem.isNull())
+    {
+        CreateEntityDescFromXml(sceneDesc, entityDesc.children, childEnt_elem);
+        childEnt_elem = childEnt_elem.nextSiblingElement("entity");
+    }
+
+    dest.append(entityDesc);
 }
 
 ///\todo This function is a redundant duplicate copy of void ScriptAsset::ParseReferences(). Delete this code. -jj.
@@ -1330,7 +1332,6 @@ void Scene::SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sc
             {
                 AssetDesc ad;
                 ad.typeName = "Script dependency";
-                ad.dataInMemory = false;
 
                 QString basePath = QFileInfo(sceneDesc.filename).dir().path();
                 framework_->Asset()->ResolveLocalAssetPath(scriptDependency, basePath, ad.source);
@@ -1355,7 +1356,7 @@ void Scene::SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sc
 
 SceneDesc Scene::CreateSceneDescFromBinary(const QString &filename) const
 {
-    SceneDesc sceneDesc;
+    SceneDesc sceneDesc(filename);
 
     if (!filename.endsWith(".tbin", Qt::CaseInsensitive))
     {
@@ -1365,8 +1366,6 @@ SceneDesc Scene::CreateSceneDescFromBinary(const QString &filename) const
             LogError("Scene::CreateSceneDescFromBinary: Unsupported file extension : " + filename + " when trying to create scene description.");
         return sceneDesc;
     }
-
-    sceneDesc.filename = filename;
 
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly))
@@ -1445,19 +1444,27 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
                                     !attrValue.isEmpty())
                                 {
                                     // We might have multiple references, ";" used as a separator.
-                                    QStringList values = attrValue.split(";");
-                                    foreach(QString value, values)
+                                    QStringList assetRefs = attrValue.split(";");
+                                    for (int avi=0, avilen=assetRefs.size(); avi<avilen; ++avi)
                                     {
+                                        const QString &assetRef = assetRefs[avi];
+
                                         AssetDesc ad;
                                         ad.typeName = a->Name();
-                                        ad.dataInMemory = false;
 
-                                        // Rewrite source refs for asset descs, if necessary.
-                                        QString basePath = QFileInfo(sceneDesc.filename).dir().path();
-                                        framework_->Asset()->ResolveLocalAssetPath(value, basePath, ad.source);
-                                        ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
+                                        // Resolve absolute file path for asset reference and the destination name (just the filename).
+                                        if (!sceneDesc.assetCache.Fill(assetRef, ad))
+                                        {
+                                            framework_->Asset()->ResolveLocalAssetPath(assetRef, sceneDesc.assetCache.basePath, ad.source);
+                                            ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
+                                            sceneDesc.assetCache.Add(assetRef, ad);
+                                        }
 
                                         sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
+
+                                        // If this is a script, look for dependecies
+                                        if (ad.source.toLower().endsWith(".js"))
+                                            SearchScriptAssetDependencies(ad.source, sceneDesc);
                                     }
                                 }
                             }
@@ -1484,7 +1491,7 @@ SceneDesc Scene::CreateSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDes
     catch(...)
     {
         // Note: if exception happens, no change signals are emitted
-        return SceneDesc();
+        return SceneDesc("");
     }
 
     return sceneDesc;

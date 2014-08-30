@@ -889,7 +889,6 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                                 ad.typeName = "Texture";
                                 ad.source = dropFolder + textureName;
                                 ad.destinationName = textureName;
-                                ad.dataInMemory = false;
                                 sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
                             }
                         }

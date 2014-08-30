@@ -14,6 +14,27 @@
 #include <QList>
 #include <QPair>
 
+/// Cache that can be utilized on a SceneDesc import.
+/** Resolving Tundras asset references can involde recursive disk searches
+    that can get slow on large imports.
+    @see SceneDest::assetCache. */
+struct TUNDRACORE_API AssetDescCache
+{
+    /// First = AssetDesc::source, Second = AssetDesc::destinationName.
+    typedef QPair<QString, QString> FileInfoPair;
+
+    QString basePath;
+    QHash<QString, FileInfoPair > cache;
+
+    /// Fills @c desc source and destinationName attributes.
+    /** @return True if found and filled, false otherwise. */
+    bool Fill(const QString assetRef, AssetDesc &desc);
+
+    /// Add @c desc to cache.
+    /** @return Returns if added. */
+    bool Add(const QString &assetRef, const AssetDesc &desc);
+};
+
 /// Description of a Scene.
 /** A source-agnostic scene graph description of a Tundra scene.
     A Tundra scene consist of entities, components, attributes and assets references.
@@ -29,9 +50,10 @@ struct TUNDRACORE_API SceneDesc
 
     EntityDescList entities;            ///< List of (root-level) entities the scene has.
     AssetMap assets;                    ///< Map of unique assets.
+    AssetDescCache assetCache;          ///< Cache for assets encountered in this scene.
 
     /// Default constructor.
-    SceneDesc() : viewEnabled(false) {}
+    SceneDesc(const QString &_filename = "");
 
     /// Returns true if the scene description has no entities, false otherwise.
     bool IsEmpty() const
@@ -162,6 +184,8 @@ struct TUNDRACORE_API AssetDesc
     QString subname; ///< If the source filename is a container for multiple files, subname represents name within the file.
     QString typeName; ///< Type name of the asset.
     QString destinationName; ///< Name for the asset in the destination asset storage.
+
+    AssetDesc() : dataInMemory(false) {}
 
 #define LEX_CMP(a, b) if ((a) < (b)) return true; else if ((a) > (b)) return false;
 

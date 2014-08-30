@@ -24,6 +24,7 @@ struct EntityDesc;
 struct ComponentDesc;
 struct AttributeDesc;
 struct AssetDesc;
+struct AssetDescCache;
 struct EntityReference;
 struct ParentingTracker;
 

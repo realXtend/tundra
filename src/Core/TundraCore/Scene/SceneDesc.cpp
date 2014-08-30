@@ -9,6 +9,39 @@
 #include "IAttribute.h"
 #include "EntityReference.h"
 
+// SceneDesc
+
+SceneDesc::SceneDesc(const QString &_filename) :
+    viewEnabled(false),
+    filename(_filename)
+{
+    if (!filename.isEmpty())
+        assetCache.basePath = QFileInfo(filename).dir().path();
+}
+
+// AssetDescCache
+
+bool AssetDescCache::Fill(const QString assetRef, AssetDesc &desc)
+{
+    bool found = cache.contains(assetRef);
+    if (found)
+    {
+        FileInfoPair value = cache[assetRef];
+        desc.source = value.first;
+        desc.destinationName = value.second;
+    }
+    return found;
+}
+
+bool AssetDescCache::Add(const QString &assetRef, const AssetDesc &desc)
+{
+    if (cache.contains(assetRef) || desc.source.isEmpty() || desc.destinationName.isEmpty())
+        return false;
+
+    cache[assetRef] = FileInfoPair(desc.source, desc.destinationName);
+    return true;
+}
+
 // ParentingTracker
 
 bool ParentingTracker::IsTracking() const

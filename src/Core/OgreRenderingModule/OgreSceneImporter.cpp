@@ -330,15 +330,13 @@ bool OgreSceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname
 
 SceneDesc OgreSceneImporter::CreateSceneDescFromMesh(const QString &source) const
 {
-    SceneDesc sceneDesc;
+    SceneDesc sceneDesc(source);
 
     if (!source.endsWith(".mesh", Qt::CaseInsensitive))
     {
         LogError("OgreSceneImporter::CreateSceneDescFromMesh: Unsupported file type for scene description creation: " + source);
         return sceneDesc;
     }
-
-    sceneDesc.filename = source;
 
     // For files
     QStringList materialNames;
@@ -391,7 +389,6 @@ SceneDesc OgreSceneImporter::CreateSceneDescFromMesh(const QString &source) cons
         // Create asset description
         AssetDesc ad;
         ad.source = source;
-        ad.dataInMemory = false;
         ad.typeName = "mesh";
         ad.destinationName = "";
         sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
@@ -471,15 +468,13 @@ SceneDesc OgreSceneImporter::CreateSceneDescFromMesh(const QString &source) cons
 
 SceneDesc OgreSceneImporter::CreateSceneDescFromScene(const QString &filename)
 {
-    SceneDesc sceneDesc;
+    SceneDesc sceneDesc(filename);
 
     if (!filename.endsWith(".scene", Qt::CaseInsensitive))
     {
         LogError("OgreSceneImporter::CreateSceneDescFromScene: Unsupported file type for scene description creation: " + filename);
         return sceneDesc;
     }
-
-    sceneDesc.filename = filename;
 
     QFile file(filename);
     if (!file.open(QFile::ReadOnly))
@@ -1005,7 +1000,6 @@ void OgreSceneImporter::CreateAssetDescs(const QString &path, const QStringList 
     {
         AssetDesc ad;
         ad.source = filename;
-        ad.dataInMemory = false;
         ad.typeName = "OgreMesh";
         ad.destinationName = QFileInfo(filename).fileName();//meshAssetDesc.source;
         desc.assets[qMakePair(ad.source, ad.subname)] = ad;
@@ -1015,7 +1009,6 @@ void OgreSceneImporter::CreateAssetDescs(const QString &path, const QStringList 
     {
         AssetDesc ad;
         ad.source = path + "/" + skeleton; // This is already an absolute path. No need to use ResolveLocalAssetPath.
-        ad.dataInMemory = false;
         ad.typeName = "OgreSkeleton";
         ad.destinationName = skeleton;
         desc.assets[qMakePair(ad.source, ad.subname)] = ad;
@@ -1059,7 +1052,6 @@ void OgreSceneImporter::CreateAssetDescs(const QString &path, const QStringList 
     {
         AssetDesc ad;
         ad.typeName = "Texture";
-        ad.dataInMemory = false;
         AssetAPI::FileQueryResult result = scene_->GetFramework()->Asset()->ResolveLocalAssetPath(tex, path, ad.source);
         if (result == AssetAPI::FileQueryLocalFileMissing)
             LogWarning("Texture file \"" + tex + "\" cannot be found from path \"" + path + "\"!");
