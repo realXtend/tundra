@@ -4,19 +4,15 @@
 */
 
 #include "StableHeaders.h"
-
 #include "CSMGpuConstants.h"
 
-#include <qdebug.h>
-
-namespace Ogre {
-
+namespace Ogre
+{
 const Matrix4 PROJECTIONCLIPSPACE2DTOIMAGESPACE_PERSPECTIVE(
     0.5,    0,    0,  0.5, 
     0,   -0.5,    0,  0.5, 
     0,      0,    1,    0,
     0,      0,    0,    1);
-
 
 CSMGpuConstants::CSMGpuConstants(size_t cascadeCount)
 {

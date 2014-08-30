@@ -2,19 +2,17 @@
     This file is subject to the terms and conditions defined in
     file 'License.txt', which is part of this source code package.
 */
+
 #include "StableHeaders.h"
 #include "FocusedGpuConstants.h"
 
-#include <qdebug.h>
-
-namespace Ogre {
-
+namespace Ogre
+{
 const Matrix4 PROJECTIONCLIPSPACE2DTOIMAGESPACE_PERSPECTIVE(
     0.5,    0,    0,  0.5, 
     0,   -0.5,    0,  0.5, 
     0,      0,    1,    0,
     0,      0,    0,    1);
-
 
 FocusedGpuConstants::FocusedGpuConstants()
 {

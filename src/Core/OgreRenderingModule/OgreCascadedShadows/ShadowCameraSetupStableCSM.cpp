@@ -4,25 +4,22 @@
 */
 
 #include "StableHeaders.h"
-
 #include "ShadowCameraSetupStableCSM.h"
 #include "CSMGpuConstants.h"
 
-#include <qdebug.h>
-
-namespace Ogre {
-
+namespace Ogre
+{
 StableCSMShadowCameraSetup::StableCSMShadowCameraSetup(CSMGpuConstants* constants) :
     mSplitPadding(1.0f),
     mGpuConstants(constants)
 {
     calculateSplitPoints(3, 100, 100000);
 }
-//---------------------------------------------------------------------
+
 StableCSMShadowCameraSetup::~StableCSMShadowCameraSetup()
 {
 }
-//---------------------------------------------------------------------
+
 void StableCSMShadowCameraSetup::calculateSplitPoints(size_t cascadeCount, Real firstSplitDist, Real farDist, Real lambda)
 {
     if (cascadeCount < 2)
@@ -45,7 +42,7 @@ void StableCSMShadowCameraSetup::calculateSplitPoints(size_t cascadeCount, Real 
         mSplitPoints[i] = splitPoint;
     }
 }
-//---------------------------------------------------------------------
+
 void StableCSMShadowCameraSetup::setSplitPoints(const SplitPointList& newSplitPoints)
 {
     if (newSplitPoints.size() < 3) // 3, not 2 since splits + 1 points
@@ -55,7 +52,6 @@ void StableCSMShadowCameraSetup::setSplitPoints(const SplitPointList& newSplitPo
     mSplitPoints = newSplitPoints;
 }
 
-//---------------------------------------------------------------------
 void StableCSMShadowCameraSetup::getShadowCamera(const Ogre::SceneManager *sm, const Ogre::Camera *cam,
     const Ogre::Viewport *vp, const Ogre::Light *light, Ogre::Camera *texCam, size_t iteration) const
 {
@@ -79,8 +75,6 @@ void StableCSMShadowCameraSetup::getShadowCamera(const Ogre::SceneManager *sm, c
 
     getShadowCameraForCascade(sm, cam, vp, light, texCam, iteration, nearDist, farDist);
 }
-
-
 
 void StableCSMShadowCameraSetup::getShadowCameraForCascade (const SceneManager *sm, const Camera *cam, 
     const Viewport *vp, const Light *light, Camera *texCam, size_t iteration,
