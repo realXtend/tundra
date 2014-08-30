@@ -442,6 +442,9 @@ public slots:
     /// Returns parent entity of this entity, or null if entity is on the root level.
     EntityPtr Parent() const { return parent_.lock(); }
 
+    /// Returns if parent entity is set.
+    bool HasParent() const { return !parent_.expired(); }
+
     /// Returns number of child entities.
     size_t NumChildren() const { return children_.size(); }
 
