@@ -12,11 +12,16 @@
 #include "IComponent.h"
 #include "IAttribute.h"
 #include "UiAPI.h"
+#include "FrameAPI.h"
 #include "UiMainWindow.h"
 #include "Entity.h"
 #include "EC_DynamicComponent.h"
 #include "Transform.h"
 #include "EC_Placeable.h"
+
+#include "Time/Clock.h"
+
+// EditIAttributeCommand
 
 EditIAttributeCommand::EditIAttributeCommand(IAttribute *attr, QUndoCommand *parent) :
     IEditAttributeCommand(parent),
@@ -45,6 +50,8 @@ template<> bool EditAttributeCommand<Color>::mergeWith(const QUndoCommand *other
 
     return (undoValue == otherCommand->undoValue);
 }
+
+// AddAttributeCommand
 
 AddAttributeCommand::AddAttributeCommand(EC_DynamicComponent *comp, const QString &typeName, const QString &name, QUndoCommand * parent) :
     owner(static_pointer_cast<EC_DynamicComponent>(comp->shared_from_this())),
@@ -84,6 +91,7 @@ void AddAttributeCommand::redo()
     }
 }
 
+// RemoveAttributeCommand
 
 RemoveAttributeCommand::RemoveAttributeCommand(IAttribute *attr, QUndoCommand *parent) : 
     owner(static_pointer_cast<EC_DynamicComponent>(attr->Owner()->shared_from_this())),
@@ -119,6 +127,8 @@ void RemoveAttributeCommand::redo()
         dynComp->ComponentChanged(AttributeChange::Default);
     }
 }
+
+// AddComponentCommand
 
 AddComponentCommand::AddComponentCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const EntityIdList &entities,
     u32 compType, const QString &compName, bool sync, bool temp, QUndoCommand * parent) :
@@ -235,6 +245,8 @@ void AddComponentCommand::redo()
     }
 }
 
+// EditXMLCommand
+
 EditXMLCommand::EditXMLCommand(const ScenePtr &scene, const QDomDocument &oldDoc, const QDomDocument &newDoc, QUndoCommand * parent) : 
     scene_(scene),
     oldState_(oldDoc),
@@ -315,6 +327,8 @@ void EditXMLCommand::Deserialize(const QDomDocument docState)
     }
 }
 
+// AddEntityCommand
+
 AddEntityCommand::AddEntityCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QString &name, bool sync, bool temp, QUndoCommand *parent) :
     QUndoCommand(parent),
     scene_(scene),
@@ -369,6 +383,8 @@ void AddEntityCommand::redo()
     QUndoCommand::redo();
 }
 
+// RemoveCommand
+
 RemoveCommand::RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker * tracker, const QList<EntityWeakPtr> &entities, const QList<ComponentWeakPtr> &components, QUndoCommand * parent) :
     QUndoCommand(parent),
     scene_(scene),
@@ -420,10 +436,12 @@ void RemoveCommand::undo()
     if (!scene.get())
         return;
 
+    Execute(false);
+
     if (!entitiesDocument_.isNull())
     {
         QDomElement sceneElement = entitiesDocument_.firstChildElement("scene");
-        QDomElement entityElement = sceneElement.firstChildElement("entity");
+        QDomElement entityElement = !sceneElement.isNull() ? sceneElement.firstChildElement("entity") : QDomElement();
         while (!entityElement.isNull())
         {
             entity_id_t id = entityElement.attribute("id").toUInt();
@@ -484,6 +502,14 @@ void RemoveCommand::redo()
     if (!scene.get())
         return;
 
+    if (componentMap_.isEmpty() && entityList_.isEmpty())
+        return;
+
+    Execute(true);
+
+    // Component removals will block. We are assuming here that there cant be so many components
+    // per command that it would be too slow. You would have to multiselect from multiple ents.
+    // If this becomes a problem for UI responsiveness make also this incremenetal like ent remove.
     if (!componentMap_.isEmpty())
     {
         componentsDocument_ = QDomDocument();
@@ -517,20 +543,40 @@ void RemoveCommand::redo()
         QDomElement sceneElement = entitiesDocument_.createElement("scene");
         entitiesDocument_.appendChild(sceneElement);
 
-        foreach(entity_id_t id, entityList_)
-        {
-            EntityPtr ent = scene->EntityById(tracker_->RetrieveId(id));
-            if (ent.get())
-            {
-                ent->SerializeToXML(entitiesDocument_, sceneElement, true);
-                scene->RemoveEntity(ent->Id(), AttributeChange::Replicate);
-            }
-        }
+        pendingIds_ = entityList_;
+    }
+    else
+        Execute(false);    
+}
+
+void RemoveCommand::Execute(bool execute)
+{
+    if (execute == executing_)
+        return;
+    
+    ScenePtr scene = scene_.lock();
+    executing_ = execute;
+
+    if (executing_)
+    {
+        emit Starting();
+        if (scene.get() && scene->GetFramework())
+            connect(scene->GetFramework()->Frame(), SIGNAL(Updated(float)), this, SLOT(OnUpdate(float)), Qt::UniqueConnection);
+    }
+    else
+    {
+        pendingIds_.clear();
+
+        emit Stopped();
+        if (scene.get() && scene->GetFramework())
+            disconnect(scene->GetFramework()->Frame(), SIGNAL(Updated(float)), this, SLOT(OnUpdate(float)));
     }
 }
 
 void RemoveCommand::Initialize(const QList<EntityWeakPtr> &entityList, const QList<ComponentWeakPtr> &componentList)
 {
+    executing_ = false;
+
     QStringList componentTypes;
     bool componentMultiParented = false;
     
@@ -567,6 +613,38 @@ void RemoveCommand::Initialize(const QList<EntityWeakPtr> &entityList, const QLi
     else if (entityList_.size() > 0)
         setText(QString("* Removed %1 Entities").arg(entityList_.size()));
 }
+
+void RemoveCommand::OnUpdate(float frametime)
+{
+    ScenePtr scene = scene_.lock();
+    if (scene.get() && !pendingIds_.isEmpty())
+    {
+        QDomElement sceneElement = entitiesDocument_.firstChildElement("scene");
+
+        const int maxMSecs = 10;
+        tick_t startTime = Clock::Tick();
+
+        while(!pendingIds_.isEmpty())
+        {
+            entity_id_t id = pendingIds_.takeFirst();
+            EntityPtr ent = scene->EntityById(tracker_->RetrieveId(id));
+            if (ent)
+            {
+                ent->SerializeToXML(entitiesDocument_, sceneElement, true);
+                scene->RemoveEntity(ent->Id(), AttributeChange::Replicate);
+
+                // 10 msec already spent? Tundra UI updates are so slow that usually only one entity
+                // gets removed per 10 msecs.
+                if ((Clock::Tick() - startTime) >= (Clock::TicksPerSec() * maxMSecs / 1000))
+                    break;
+            }
+        }
+    }
+    else
+        Execute(false);
+}
+
+// RenameCommand
 
 RenameCommand::RenameCommand(EntityWeakPtr entity, EntityIdChangeTracker * tracker, const QString oldName, const QString newName, QUndoCommand * parent) : 
     tracker_(tracker),
@@ -608,6 +686,8 @@ void RenameCommand::redo()
     if (entity.get())
         entity->SetName(newName_);
 }
+
+// ToggleTemporaryCommand
 
 ToggleTemporaryCommand::ToggleTemporaryCommand(const QList<EntityWeakPtr> &entities, EntityIdChangeTracker * tracker, bool temporary, QUndoCommand *parent) :
     tracker_(tracker),
@@ -656,6 +736,8 @@ void ToggleTemporaryCommand::ToggleTemporary(bool temporary)
             entity->SetTemporary(temporary);
     }
 }
+
+// TransformCommand
 
 TransformCommand::TransformCommand(const TransformAttributeWeakPtrList &attributes, int numberOfItems, Action action, const float3 &offset, QUndoCommand *parent) : 
     targets_(attributes),
@@ -827,6 +909,8 @@ bool TransformCommand::mergeWith(const QUndoCommand *other)
     return true;
 }
 
+// GroupEntitiesCommand
+
 GroupEntitiesCommand::GroupEntitiesCommand(const QList<EntityWeakPtr> &entities, EntityIdChangeTracker * tracker, const QString oldGroupName, const QString newGroupName, QUndoCommand *parent) :
     tracker_(tracker),
     oldGroupName_(oldGroupName),
@@ -875,7 +959,6 @@ void GroupEntitiesCommand::DoGroupUngroup(QString groupName)
             entity->SetGroup(groupName);
     }
 }
-
 
 /*
 PasteCommand::PasteCommand(QUndoCommand *parent) :

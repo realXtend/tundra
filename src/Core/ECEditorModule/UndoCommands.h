@@ -348,8 +348,10 @@ public:
     bool temp_; ///< Temporary state of the entity
 };
 
-class ECEDITOR_MODULE_API RemoveCommand : public QUndoCommand
+class ECEDITOR_MODULE_API RemoveCommand : public QObject, public QUndoCommand
 {
+    Q_OBJECT
+
 public:
     /// Internal QUndoCommand unique ID
     enum { Id = 106 };
@@ -379,6 +381,24 @@ public:
     /// QUndoCommand override
     void redo();
 
+    /// Removes if this command is currently executing.
+    bool IsExecuting() const;
+
+signals:
+    /// Emitted before first entity/component is removed from the scene.
+    void Starting();
+
+    /// Emitted after entity/component removal is done.
+    /** @note As this is done incrementally, not in a single blocking call,
+        all targets might not be removed at this point if the user executed a
+        undo mid removal. */
+    void Stopped();
+
+private slots:
+    void OnUpdate(float frametime);
+
+    void Execute(bool executing);
+
 private:
     void Initialize(const QList<EntityWeakPtr> &entities, const QList<ComponentWeakPtr> &components);
 
@@ -391,6 +411,9 @@ private:
     EntityIdChangeTracker * tracker_; ///< Pointer to the tracker object, taken from an undo manager
     QDomDocument entitiesDocument_; ///< XML document containing data about the entities to be removed
     QDomDocument componentsDocument_; ///< XML document containing data about the components to be removed
+
+    EntityIdList pendingIds_;
+    bool executing_;
 };
 
 /// Represents a rename operation over an entity or a component
