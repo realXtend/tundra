@@ -930,7 +930,30 @@ void SceneTreeWidget::Delete()
             entities << eItem->Entity();
 
     if (undoManager_)
-        undoManager_->Push(new RemoveCommand(scene.lock(), undoManager_->Tracker(), entities, components));
+    {
+        RemoveCommand *command = new RemoveCommand(scene.lock(), undoManager_->Tracker(), entities, components);
+        connect(command, SIGNAL(Starting()), this, SLOT(OnDeleteStarting()));
+        connect(command, SIGNAL(Stopped()), this, SLOT(OnDeleteStopped()));
+        undoManager_->Push(command);
+    }
+}
+
+void SceneTreeWidget::OnDeleteStarting()
+{
+    setSortingEnabled(false);
+}
+
+void SceneTreeWidget::OnDeleteStopped()
+{
+    // There can be multiple executing delete operation, wait for all of them to complete.
+    QList<const RemoveCommand*> removeCommands = undoManager_->Commands<RemoveCommand>();
+    foreach(const RemoveCommand *cmd, removeCommands)
+    {
+        if (cmd && cmd->IsExecuting())
+            return;
+    }
+
+    setSortingEnabled(true);
 }
 
 void SceneTreeWidget::Copy()

@@ -173,7 +173,7 @@ void UndoManager::OnActionTriggered(QAction * action)
         undoStack_->setIndex(index + 1);
 }
 
-void UndoManager::Push(QUndoCommand * command)
+void UndoManager::Push(QUndoCommand *command)
 {
     actions_.resize(undoStack_->index());
 

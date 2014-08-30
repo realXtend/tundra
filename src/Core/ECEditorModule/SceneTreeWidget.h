@@ -171,6 +171,12 @@ private slots:
     /// Deletes an existing entity or component.
     void Delete();
 
+    // Delete command starting execution.
+    void OnDeleteStarting();
+
+    // Delete command stopping execution.
+    void OnDeleteStopped();
+
     /// Copies selected entities as XML to clipboard.
     void Copy();
 

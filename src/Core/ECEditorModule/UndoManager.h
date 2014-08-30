@@ -59,6 +59,22 @@ public:
     /// Returns a pointer to the entity ID change tracker
     EntityIdChangeTracker *Tracker() const;
 
+    /// Return command by type. See UndoCommands.h for the Tundra types.
+    template <typename T>
+    QList<const T*> Commands() const
+    {
+        QList<const T*> result;
+        if (!undoStack_)
+            return result;
+        for(int i=0, len=undoStack_->count(); i<len; ++i)
+        {
+            const T *cmd = dynamic_cast<const T*>(undoStack_->command(i));
+            if (cmd)
+                result << cmd;
+        }
+        return result;
+    }
+
 public slots:
     /// Calls the undo stack's undo() method
     void Undo();

@@ -68,6 +68,7 @@ public:
 
     /// Sets the sorting criteria and sorts the contents accordingly.
     void SortBy(SortCriteria criteria, Qt::SortOrder order);
+
     /// Returns the currently used sorting criteria.
     SortCriteria SortingCriteria() const { return sortingCriteria; }
 

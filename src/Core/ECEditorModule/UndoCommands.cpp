@@ -425,6 +425,52 @@ RemoveCommand::RemoveCommand(const ScenePtr &scene, EntityIdChangeTracker *track
     Initialize(QList<EntityWeakPtr>(), QList<ComponentWeakPtr>(QList<ComponentWeakPtr>() << component));
 }
 
+void RemoveCommand::Initialize(const QList<EntityWeakPtr> &entityList, const QList<ComponentWeakPtr> &componentList)
+{
+    executing_ = false;
+
+    QStringList componentTypes;
+    bool componentMultiParented = false;
+
+    for (QList<EntityWeakPtr>::const_iterator i = entityList.begin(); i != entityList.end(); ++i)
+    {
+        EntityPtr ent = (*i).lock();
+        if (ent.get())
+            entityList_ << ent->Id();
+    }
+
+    for (QList<ComponentWeakPtr>::const_iterator i = componentList.begin(); i != componentList.end(); ++i)
+    {
+        ComponentPtr comp = (*i).lock();
+        if (comp.get())
+        {
+            if (entityList_.contains(comp->ParentEntity()->Id()))
+                continue;
+
+            componentMap_[comp->ParentEntity()->Id()] << qMakePair(comp->TypeName(), comp->Name());
+
+            QString cleanTypeName = QString(comp->TypeName()).replace("EC_", "");
+            if (!componentTypes.contains(cleanTypeName))
+                componentTypes << cleanTypeName;
+
+            if (i != componentList.begin())
+                componentMultiParented = true;
+        }
+    }
+
+    if (!componentTypes.isEmpty() && entityList_.size() > 0)
+        setText("* Removed Entities and Components");
+    else if (!componentTypes.isEmpty())
+        setText(QString("* Removed ") + (!componentTypes.isEmpty() ? componentTypes.join(", ") : "") + (componentTypes.size() > 1 ? " Components" : " Component") + (componentMultiParented ? " from multiple entities" : "")); 
+    else if (entityList_.size() > 0)
+        setText(QString("* Removed %1 Entities").arg(entityList_.size()));
+}
+
+bool RemoveCommand::IsExecuting() const
+{
+    return executing_;
+}
+
 int RemoveCommand::id() const
 {
     return Id;
@@ -571,47 +617,6 @@ void RemoveCommand::Execute(bool execute)
         if (scene.get() && scene->GetFramework())
             disconnect(scene->GetFramework()->Frame(), SIGNAL(Updated(float)), this, SLOT(OnUpdate(float)));
     }
-}
-
-void RemoveCommand::Initialize(const QList<EntityWeakPtr> &entityList, const QList<ComponentWeakPtr> &componentList)
-{
-    executing_ = false;
-
-    QStringList componentTypes;
-    bool componentMultiParented = false;
-    
-    for (QList<EntityWeakPtr>::const_iterator i = entityList.begin(); i != entityList.end(); ++i)
-    {
-        EntityPtr ent = (*i).lock();
-        if (ent.get())
-            entityList_ << ent->Id();
-    }
-
-    for (QList<ComponentWeakPtr>::const_iterator i = componentList.begin(); i != componentList.end(); ++i)
-    {
-        ComponentPtr comp = (*i).lock();
-        if (comp.get())
-        {
-            if (entityList_.contains(comp->ParentEntity()->Id()))
-                continue;
-
-            componentMap_[comp->ParentEntity()->Id()] << qMakePair(comp->TypeName(), comp->Name());
-
-            QString cleanTypeName = QString(comp->TypeName()).replace("EC_", "");
-            if (!componentTypes.contains(cleanTypeName))
-                componentTypes << cleanTypeName;
-                
-            if (i != componentList.begin())
-                componentMultiParented = true;
-        }
-    }
-    
-    if (!componentTypes.isEmpty() && entityList_.size() > 0)
-        setText("* Removed Entities and Components");
-    else if (!componentTypes.isEmpty())
-        setText(QString("* Removed ") + (!componentTypes.isEmpty() ? componentTypes.join(", ") : "") + (componentTypes.size() > 1 ? " Components" : " Component") + (componentMultiParented ? " from multiple entities" : "")); 
-    else if (entityList_.size() > 0)
-        setText(QString("* Removed %1 Entities").arg(entityList_.size()));
 }
 
 void RemoveCommand::OnUpdate(float frametime)
