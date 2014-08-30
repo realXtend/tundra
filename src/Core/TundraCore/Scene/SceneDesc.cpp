@@ -37,12 +37,15 @@ void ParentingTracker::Ack(Scene *scene, entity_id_t newId, entity_id_t oldId)
     
     // If new ids for all tracked entities are now known, return true.
     if (unacked.isEmpty())
+    {
         _fixParenting(scene);
+        unackedToAcked.clear();
+    }
 }
 
 void ParentingTracker::_fixParenting(Scene *scene)
 {
-    LogDebug(QString("[ParentingTracker]: Received new Entity ids for %1 tracked Entities. Processing broken parenting refs.").arg(unackedToAcked.size()));
+    LogInfo(QString("[ParentingTracker]: Received new ids for %1 tracked Entities. Processing scene hierarchy.").arg(unackedToAcked.size()));
     
     QList<entity_id_t> ackedIds = unackedToAcked.values();
     for (int ai=0, ailen=ackedIds.size(); ai<ailen; ++ai)
@@ -56,7 +59,7 @@ void ParentingTracker::_fixParenting(Scene *scene)
 
         /** @todo Check and fix ent->Parent() stuff here!? See if ent->Parent()->Id()
             is old unacked or new acked at this point! Or if there is a better place 
-            to handle this adjustment. */
+            to handle this adjustment? */
 
         /** Check if EC_Placeable::parentRef needs to be adjusted.
             This is replicated change to the scene that the client that started the import will perform.
@@ -82,5 +85,4 @@ void ParentingTracker::_fixParenting(Scene *scene)
             }
         }
     }
-    unackedToAcked.clear();
 }

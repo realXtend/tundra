@@ -14,23 +14,30 @@
 #include <QList>
 #include <QPair>
 
-/// Description of a scene (Scene).
+/// Description of a Scene.
 /** A source-agnostic scene graph description of a Tundra scene.
     A Tundra scene consist of entities, components, attributes and assets references.
     @sa EntityDesc, ComponentDesc, AttributeDesc and AssetDesc */
 struct TUNDRACORE_API SceneDesc
 {
-    typedef QPair<QString, QString> AssetMapKey; ///< source-subname pair used to idenfity assets.
-    typedef QMap<AssetMapKey, AssetDesc> AssetMap; ///< Map of assets.
+    typedef QPair<QString, QString> AssetMapKey;    ///< source-subname pair used to idenfity assets.
+    typedef QMap<AssetMapKey, AssetDesc> AssetMap;  ///< Map of assets.
 
-    QString filename; ///< Name of the file from which the description was created.
-    QString name; ///< Name.
-    bool viewEnabled; ///< Is scene view enabled (ie. rendering-related components actually create stuff)
-    QList<EntityDesc> entities; ///< List of (root-level) entities the scene has.
-    AssetMap assets; ///< Map of unique assets.
+    QString filename;                   ///< Name of the file from which the description was created.
+    QString name;                       ///< Name.
+    bool viewEnabled;                   ///< Is scene view enabled (ie. rendering-related components actually create stuff)
+
+    EntityDescList entities;            ///< List of (root-level) entities the scene has.
+    AssetMap assets;                    ///< Map of unique assets.
+
+    /// Default constructor.
+    SceneDesc() : viewEnabled(false) {}
 
     /// Returns true if the scene description has no entities, false otherwise.
-    bool IsEmpty() const { return entities.isEmpty(); }
+    bool IsEmpty() const
+    {
+        return entities.isEmpty();
+    }
 
     /// Equality operator. Returns true if all values match, false otherwise.
     bool operator ==(const SceneDesc &rhs) const
@@ -42,13 +49,15 @@ struct TUNDRACORE_API SceneDesc
 /// Description of an entity (Entity).
 struct TUNDRACORE_API EntityDesc
 {
-    QString id; ///< ID (if applicable).
-    QString name; ///< Name (EC_Name::name).
-    QString group; ///< Group (EC_Name::group).
-    bool local; ///< Is entity local.
-    bool temporary; ///< Is entity temporary.
-    QList<ComponentDesc> components; ///< List of components the entity has.
-    QList<EntityDesc> children; ///< List of child entities the entity has.
+    QString id;                         ///< ID (if applicable).
+    QString name;                       ///< Name (EC_Name::name).
+    QString group;                      ///< Group (EC_Name::group).
+    
+    bool local;                         ///< Is entity local.
+    bool temporary;                     ///< Is entity temporary.
+    
+    ComponentDescList components;       ///< List of components the entity has.
+    EntityDescList children;            ///< List of child entities the entity has.
 
     /// Default constructor.
     EntityDesc() : local(false), temporary(false) {}
@@ -62,6 +71,19 @@ struct TUNDRACORE_API EntityDesc
     {
     }
 
+    bool IsParentFor(const EntityDesc &ent) const
+    {
+        if (ent.id.isEmpty())
+            return false;
+
+        for (int i=0, len=children.size(); i<len; ++i)
+        {
+            if (children[i].id == ent.id)
+                return true;
+        }
+        return false;
+    }
+
     /// Equality operator. Returns true if ID and name match, false otherwise.
     bool operator ==(const EntityDesc &rhs) const
     {
@@ -72,14 +94,15 @@ struct TUNDRACORE_API EntityDesc
 /// Description of an entity-component (EC_*, IComponent).
 struct TUNDRACORE_API ComponentDesc
 {
-     /// Unique type name.
-    /** @note Might or might not have the "EC_"-prefix so remember to take that into account.
-        See IComponent::EnsureTypeNameWithoutPrefix, IComponent::EnsureTypeNameWithPrefix. */
-    QString typeName;
-    u32 typeId; /**< Unique type ID, if available, 0xffffffff if not. */
-    QString name; ///< Name (if applicable).
-    bool sync; ///< Synchronize component.
-    QList<AttributeDesc> attributes; ///< List of attributes the component has.
+    /** @note 'typeName' might or might not have the "EC_"-prefix so remember to take that into account.
+        @see IComponent::EnsureTypeNameWithoutPrefix, IComponent::EnsureTypeNameWithPrefix. */
+
+    u32 typeId;                         ///< Unique type ID, if available, 0xffffffff if not.
+    QString typeName;                   ///< Unique type name.
+    QString name;                       ///< Name (if applicable).
+
+    bool sync;                          ///< Synchronize component.
+    AttributeDescList attributes;       ///< List of attributes the component has.
 
     ComponentDesc() : sync(true), typeId(0xffffffff) {}
 
@@ -95,10 +118,10 @@ struct TUNDRACORE_API ComponentDesc
     so a case-insensitive comparison is always recommended these values. */
 struct TUNDRACORE_API AttributeDesc
 {
-    QString typeName; ///< Attribute type name, f.ex. "Color".
-    QString name; ///< Human-readable attribute name, f.ex. "Ambient light color".
-    QString value; ///< Value of the attribute serialized to string, f.ex. "0.333 0.667 0.333 1.0".
-    QString id; ///< Unique ID (within the parent component), i.e. the variable name, of the attribute, f.ex. "ambientLightColor".
+    QString typeName;       ///< Attribute type name, f.ex. "Color".
+    QString name;           ///< Human-readable attribute name, f.ex. "Ambient light color".
+    QString value;          ///< Value of the attribute serialized to string, f.ex. "0.333 0.667 0.333 1.0".
+    QString id;             ///< Unique ID (within the parent component), i.e. the variable name, of the attribute, f.ex. "ambientLightColor".
 
 #define LEX_CMP(a, b, sensitivity) if (a.compare(b, sensitivity) < 0) return true; else if (a.compare(b, sensitivity) > 0) return false;
 

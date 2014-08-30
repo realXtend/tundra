@@ -25,6 +25,7 @@ struct ComponentDesc;
 struct AttributeDesc;
 struct AssetDesc;
 struct EntityReference;
+struct ParentingTracker;
 
 typedef shared_ptr<Scene> ScenePtr;
 typedef weak_ptr<Scene> SceneWeakPtr;
@@ -36,6 +37,11 @@ typedef weak_ptr<IComponent> ComponentWeakPtr;
 typedef shared_ptr<IComponentFactory> ComponentFactoryPtr;
 typedef std::vector<IAttribute*> AttributeVector;
 typedef std::map<QString, ScenePtr> SceneMap;
+
+typedef QList<EntityDesc> EntityDescList;
+typedef QList<ComponentDesc> ComponentDescList;
+typedef QList<AttributeDesc> AttributeDescList;
+typedef QList<AssetDesc> AssetDescList;
 
 Q_DECLARE_METATYPE(ScenePtr)
 Q_DECLARE_METATYPE(EntityPtr)
