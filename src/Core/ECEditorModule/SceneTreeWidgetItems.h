@@ -21,11 +21,18 @@ public:
 
     const QString &GroupName() const { return name; }
     void UpdateText();
+
     /// If @c eItem is attached to another group, it will be removed from that group.
-    void AddEntityItem(EntityItem *eItem);
+    void AddEntityItems(QList<EntityItem*> eItems, bool checkParenting, bool addAsChild, bool updateText);
+    void AddEntityItem(EntityItem *eItem, bool checkParenting = true, bool addAsChild = true, bool updateText = true);
     void RemoveEntityItem(EntityItem *eItem);
+    void ClearEntityItems(bool updateText);
 
     QList<EntityItem *> entityItems;
+
+    /// QTreeWidgetItem override.
+    /** Uses SceneStructureWindow::SortingCriteria for the criteria, if applicable, otherwise treeWidget::sortColumn(). */
+    bool operator <(const QTreeWidgetItem &rhs) const;
 
 private:
     Q_DISABLE_COPY(EntityGroupItem)

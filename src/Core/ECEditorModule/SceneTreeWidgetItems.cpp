@@ -42,26 +42,47 @@ void EntityGroupItem::UpdateText()
     setText(0, QString("Group: %1 (%2 item(s))").arg(name).arg(entityItems.size()));
 }
 
-void EntityGroupItem::AddEntityItem(EntityItem *eItem)
+void EntityGroupItem::AddEntityItems(QList<EntityItem*> eItems, bool checkParenting, bool addAsChild, bool updateText)
+{
+    foreach(EntityItem *eItem, eItems)
+        AddEntityItem(eItem, checkParenting, addAsChild, false);
+
+    if (updateText)
+        UpdateText();
+}
+
+void EntityGroupItem::AddEntityItem(EntityItem *eItem, bool checkParenting, bool addAsChild, bool updateText)
 {
     if (entityItems.contains(eItem))
         return;
-    EntityGroupItem *parentItem = eItem->Parent();
-    if (!parentItem && treeWidget())
+
+    if (checkParenting)
     {
-        // Currently a top-level item, remove from top-level.
-        int topLevelIndex = treeWidget()->indexOfTopLevelItem(eItem);
-        if (topLevelIndex != -1)
-            treeWidget()->takeTopLevelItem(topLevelIndex);
+        EntityGroupItem *parentItem = eItem->Parent();
+        if (!parentItem && treeWidget())
+        {
+            // Currently a top-level item, remove from top-level.
+            int topLevelIndex = treeWidget()->indexOfTopLevelItem(eItem);
+            if (topLevelIndex != -1)
+                treeWidget()->takeTopLevelItem(topLevelIndex);
+        }
+        else if (parentItem && parentItem != this)
+            eItem->Parent()->RemoveEntityItem(eItem);
     }
 
-    if (parentItem && parentItem != this)
-        eItem->Parent()->RemoveEntityItem(eItem);
-
-    addChild(eItem);
-
+    if (addAsChild)
+        addChild(eItem);
     entityItems << eItem;
-    UpdateText();
+
+    if (updateText)
+        UpdateText();
+}
+
+void EntityGroupItem::ClearEntityItems(bool updateText)
+{
+    entityItems.clear();
+    if (updateText)
+        UpdateText();
 }
 
 void EntityGroupItem::RemoveEntityItem(EntityItem *eItem)
@@ -77,6 +98,18 @@ void EntityGroupItem::RemoveEntityItem(EntityItem *eItem)
 
     entityItems.removeAll(eItem);
     UpdateText();
+}
+
+bool EntityGroupItem::operator <(const QTreeWidgetItem &rhs) const
+{
+    PROFILE(EntityGroupItem_OperatorLessThan)
+
+    // Entities never go before groups, even when sorting by name.
+    const EntityGroupItem *group = dynamic_cast<const EntityGroupItem*>(&rhs);
+    if (!group)
+        return false;
+    // note This is deliberately >= 0 to sort groups alphabetically in the default view (decending).
+    return name.localeAwareCompare(group->GroupName()) >= 0;
 }
 
 // EntityItem
@@ -157,11 +190,32 @@ bool EntityItem::operator <(const QTreeWidgetItem &rhs) const
 {
     PROFILE(EntityItem_OperatorLessThan)
 
+    // Entities never go before groups, even when sorting by name.
+    const EntityGroupItem *group = dynamic_cast<const EntityGroupItem*>(&rhs);
+    if (group)
+        return true;
+
     // Cannot trust to treeWidget()->sortColumn() here due to our hackish approach:
     // no separate tree widget columns for ID and Name, sort column is only considered
     // as metadata.
     SceneStructureWindow *w = qobject_cast<SceneStructureWindow *>(treeWidget()->parent());
     const int criteria = w ? (int)w->SortingCriteria() : treeWidget()->sortColumn();
+
+    // Optimize to cast and check id without string parsing
+    if (criteria == 0)
+    {
+        const EntityItem *other = dynamic_cast<const EntityItem*>(&rhs);
+        if (other)
+            return id < other->Id();
+    }
+    /// @todo It would see its faster to fetch names from the entities than the string splitting below.s
+    /*else if (criteria == 1)
+    {
+        const EntityItem *other = dynamic_cast<const EntityItem*>(&rhs);
+        if (other && Entity() && other->Entity())
+            return Entity()->Name().localeAwareCompare(other->Entity()->Name()) < 0;
+    }*/
+
     switch(criteria)
     {
     case 0: // ID

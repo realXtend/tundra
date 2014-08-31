@@ -124,7 +124,7 @@ private:
         @param attr AssetReference attribute. */
     void CreateAttributeItem(QTreeWidgetItem *parentItem, IAttribute *attr);
 
-    EntityGroupItem *GetOrCreateEntityGroupItem(const QString &name);
+    EntityGroupItem *GetOrCreateEntityGroupItem(const QString &name, bool addToTreeRoot);
     void RemoveEntityGroupItem(const QString &name);
     /// @note gItem will be deleted and null after calling this function.
     void RemoveEntityGroupItem(EntityGroupItem *gItem);
@@ -155,8 +155,6 @@ private:
     QCheckBox *componentCheckBox;
     QComboBox *attributeComboBox;
 
-    QTimer showGroupsDelay_;
-
     /// @todo 15.09.2013 Profile if unordered_(multi)map would give better performance
     typedef std::map<entity_id_t, EntityItem *> EntityItemIdMap;
     typedef std::map<Entity *, EntityItem *> EntityItemMap;
@@ -172,9 +170,6 @@ private:
     AttributeItemMap attributeItems;
 
 private slots:
-    /// Shows groups as per current showGroups boolean.
-    void ShowGroupsNow();
-
     /// Clears the whole tree widget.
     void Clear();
 

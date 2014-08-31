@@ -64,9 +64,6 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     showComponents = cfg.DeclareSetting(cShowComponentsSetting).toBool();
     attributeVisibility = static_cast<AttributeVisibilityType>(cfg.DeclareSetting(cAttributeVisibilitySetting).toUInt());
 
-    showGroupsDelay_.setSingleShot(true);
-    connect(&showGroupsDelay_, SIGNAL(timeout()), SLOT(ShowGroupsNow()));
-
     // Init main widget
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 5, 5, 5);
@@ -204,114 +201,196 @@ void SceneStructureWindow::SetShownScene(const ScenePtr &newScene)
 
 void SceneStructureWindow::ShowGroups(bool show)
 {
+    if (scene.expired())
+    {
+        LogError("SceneStructureWindow::ShowGroups: Cannot create groups, Scene has expired");
+        return;
+    }
+    // If everything uses EntityItem and EntityGroupItem APIs correctly and
+    // check 'showGroups' in approptiate places, there is no need to execute if
+    // 'showGroups' wont change.
+    if (showGroups == show)
+        return;
     showGroups = show;
 
-    // When a large set of entities is added or other major scene changes happen
-    // this function gets spammed a lot. Even if ShowGroupsNow() is quite careful
-    // about sorting it still should only be called after all the tree changes have
-    // been done. This 25 msec delay will accomplish this.
-    if (showGroupsDelay_.isActive())
-        showGroupsDelay_.stop();
-    showGroupsDelay_.start(25);
-}
-
-void SceneStructureWindow::ShowGroupsNow()
-{
-    PROFILE(SceneStructureWindow_ShowGroups)
-
-    // This function get a bit tricky, but basically we dont want to disable sorting and enable it back
-    // if there are not real changes in the hierarchy. This function gets called a lot unneccesarily
-    // and the sorting resulted in disable/enable even without any changes to the tree can take tens of msecs.
-    
     // There might be other funtionality that has disabled sorting prior
     // to this function call. Don't enable it back if we did not disable sorting.
+    // This function also does not disable sorting if no actual tree changes are done.
     bool sortingIsEnabled = treeWidget->isSortingEnabled();
     bool sortingWasEnabled = sortingIsEnabled;
 
-    // (new parent, child) mapping. Null as a new parent means that child should be added to the top-level items.
-    typedef std::multimap<QTreeWidgetItem *, QTreeWidgetItem *> ParentChildMap;
+    QHash<EntityGroupItem*, QList<EntityItem*> > groupped;
+    QList<EntityItem*> ungroupped;
 
-    for(EntityGroupItemMap::const_iterator it = entityGroupItems.begin(); it != entityGroupItems.end(); ++it)
+    // Iterate scene once to find groupped Entities
+    Scene *s = scene.lock().get();
+    std::vector<shared_ptr<EC_Name> > names = s->Components<EC_Name>();
+    std::vector<shared_ptr<EC_Name> >::const_iterator iter = names.begin();
+    std::vector<shared_ptr<EC_Name> >::const_iterator end = names.end();
+    for (;iter != end; ++iter)
     {
-        ParentChildMap toBeReparented;
+        const EC_Name *name = (*iter).get();
+        if (!name)
+            continue;
+        EntityItem *item = EntityItemOfEntity(name->ParentEntity());
+        if (!item)
+            continue;
 
-        EntityGroupItem *groupItem = (*it);
-
-        if (showGroups)
+        const QString groupName = (name ? name->group.Get().trimmed() : "");               
+        if (showGroups && !groupName.isEmpty())
         {
-            /// @todo Optimize 29.08.2013
-            EntityList entities = ShownScene()->EntitiesOfGroup(groupItem->GroupName());
-            for(EntityList::const_iterator iter = entities.begin(); iter != entities.end(); ++iter)
-                toBeReparented.insert(std::make_pair(groupItem, EntityItemOfEntity((*iter).get())));
-
-            // Add group to tree
-            int i = treeWidget->indexOfTopLevelItem(groupItem);
-            if (i < 0)
-            {
-                if (sortingIsEnabled)
-                {
-                    sortingIsEnabled = false;
-                    treeWidget->setSortingEnabled(false);
-                }
-                treeWidget->addTopLevelItem(groupItem);
-            }
+            EntityGroupItem *group = GetOrCreateEntityGroupItem(groupName, false);
+            groupped[group].push_back(item);
         }
         else
         {
-            foreach(QTreeWidgetItem *eItem, groupItem->takeChildren())
-                toBeReparented.insert(std::make_pair((QTreeWidgetItem *)0, eItem));
+            // If groups are hidden, hide all existing ones here.
+            // Only the ungroupped EntityItems are processed as we continue.
+            if (!showGroups && !groupName.isEmpty())
+            {
+                EntityGroupItem *group = entityGroupItems[groupName];
+                if (group)
+                {
+                    int currentRootIndex = treeWidget->indexOfTopLevelItem(group);
+                    if (currentRootIndex > -1)
+                    {
+                        if (sortingIsEnabled)
+                        {
+                            sortingIsEnabled = false;
+                            treeWidget->setSortingEnabled(false);
+                        }
+                        treeWidget->takeTopLevelItem(currentRootIndex);
 
-            // Remove group from tree
-            int i = treeWidget->indexOfTopLevelItem(groupItem);
-            if (i > 0)
+                        // Remove all children so we dont have to do it later per EntityItem.
+                        group->takeChildren();
+                        group->ClearEntityItems(false);
+                    }
+                }
+            }
+            ungroupped.push_back(item);
+        }
+    }
+
+    if (!groupped.isEmpty())
+    {
+        QList<QTreeWidgetItem*> unparentedGroups;
+        QHash<EntityGroupItem*, QList<EntityItem*> >::const_iterator gIter = groupped.begin();
+        QHash<EntityGroupItem*, QList<EntityItem*> >::const_iterator gEnd = groupped.end();
+        for(; gIter != gEnd; ++gIter)
+        {
+            EntityGroupItem *group = gIter.key();
+            const QList<EntityItem*> &children = gIter.value();
+            QList<QTreeWidgetItem*> items;
+
+            // Add children to group
+            for (int ci=0, cilen=children.size(); ci<cilen; ++ci)
+            {
+                EntityItem *child = children[ci];
+                // Already in group, no op
+                if (child->parent() == group)
+                    continue;
+
+                if (sortingIsEnabled)
+                {
+                    sortingIsEnabled = false;
+                    treeWidget->setSortingEnabled(false);
+                }
+                // This is very slow when going from flat view to grouped view
+                // if groups have not already been created (hence group->takeChildren()
+                // was not executed above). There is no batch operation for removing items.
+                treeWidget->takeTopLevelItem(treeWidget->indexOfTopLevelItem(child));
+                items << child;
+            }
+
+            int childCount = items.size() + group->childCount();
+            int currentRootIndex = treeWidget->indexOfTopLevelItem(group);
+
+            // Has children and is not in tree
+            if (childCount > 0 && currentRootIndex < 0)
             {
                 if (sortingIsEnabled)
                 {
                     sortingIsEnabled = false;
                     treeWidget->setSortingEnabled(false);
                 }
-                treeWidget->takeTopLevelItem(i);
+                // Add unparented children
+                if (items.size() > 0)
+                    group->addChildren(items);
+                // Add EntityItem ptrs to group and update text
+                group->AddEntityItems(children, false, false, true);
+                // Add group to batch operation
+                unparentedGroups << group;
+            }
+            // Has new children and is in the tree
+            else if (items.size() > 0 && currentRootIndex > -1)
+            {
+                if (sortingIsEnabled)
+                {
+                    sortingIsEnabled = false;
+                    treeWidget->setSortingEnabled(false);
+                }
+                // Add unparented children
+                group->addChildren(items);
+                // Add EntityItem ptrs to group and update text
+                group->AddEntityItems(children, false, false, true);
+            }
+            // Does not have children and is in the tree
+            else if (childCount <= 0 && currentRootIndex > -1)
+            {
+                if (sortingIsEnabled)
+                {
+                    sortingIsEnabled = false;
+                    treeWidget->setSortingEnabled(false);
+                }
+                treeWidget->takeTopLevelItem(currentRootIndex);
+                group->ClearEntityItems(false);
             }
         }
-
-        for(ParentChildMap::const_iterator it = toBeReparented.begin(); it != toBeReparented.end(); ++it)
+        // Batch add all groups to the root
+        if (!unparentedGroups.isEmpty())
         {
-            if (!it->second)
-                continue;
-
-            QTreeWidgetItem *iterGroup = it->first;
-            QTreeWidgetItem *iterItem = it->second;
-
-            if (iterGroup)
+            if (sortingIsEnabled)
             {
-                if (iterItem->parent() != iterGroup)
-                {
-                    if (sortingIsEnabled)
-                    {
-                        sortingIsEnabled = false;
-                        treeWidget->setSortingEnabled(false);
-                    }
-                    treeWidget->takeTopLevelItem(treeWidget->indexOfTopLevelItem(iterItem));
-                    iterGroup->addChild(iterItem);
-                }
+                sortingIsEnabled = false;
+                treeWidget->setSortingEnabled(false);
             }
-            else
-            {
-                int i = treeWidget->indexOfTopLevelItem(iterItem);
-                if (i < 0)
-                {
-                    if (sortingIsEnabled)
-                    {
-                        sortingIsEnabled = false;
-                        treeWidget->setSortingEnabled(false);
-                    }
-                    treeWidget->addTopLevelItem(iterItem);
-                }
-            }
+            treeWidget->addTopLevelItems(unparentedGroups);
         }
-        SetTreeWidgetItemVisible(groupItem, showGroups);
     }
 
+    if (!ungroupped.isEmpty())
+    {
+        QList<QTreeWidgetItem*> unparentedEntities;
+        for (int ugi=0, ugilen=ungroupped.size(); ugi<ugilen; ++ugi)
+        {
+            // Add items to batch operation if not at root.
+            // We don't need to remove it from the previous group
+            // parent, it was batch executed a bit above (group->takeChildren()).
+            EntityItem *item = ungroupped[ugi];
+            int currentRootIndex = treeWidget->indexOfTopLevelItem(item);
+            if (currentRootIndex < 0)
+            {
+                if (sortingIsEnabled)
+                {
+                    sortingIsEnabled = false;
+                    treeWidget->setSortingEnabled(false);
+                }
+                unparentedEntities << item;
+            }
+        }
+        // Batch add all items to the root
+        if (!unparentedEntities.isEmpty())
+        {
+            if (sortingIsEnabled)
+            {
+                sortingIsEnabled = false;
+                treeWidget->setSortingEnabled(false);
+            }
+            treeWidget->addTopLevelItems(unparentedEntities);
+        }
+    }
+
+    // Sort if sorting was enabled before all the above and we changed the tree.
     if (sortingWasEnabled && !treeWidget->isSortingEnabled())
         treeWidget->setSortingEnabled(true);
 }
@@ -491,10 +570,8 @@ void SceneStructureWindow::Populate()
     }
 
     Refresh();
-    ShowGroups(showGroups);
 
     treeWidget->setSortingEnabled(true);
-
     SortBy(sortingCriteria, treeWidget->header()->sortIndicatorOrder());
 }
 
@@ -557,16 +634,21 @@ void SceneStructureWindow::Clear()
     treeWidget->setSortingEnabled(true);
 }
 
-EntityGroupItem *SceneStructureWindow::GetOrCreateEntityGroupItem(const QString &name)
+EntityGroupItem *SceneStructureWindow::GetOrCreateEntityGroupItem(const QString &name, bool addToTreeRoot)
 {
+    if (!showGroups)
+        return 0;
+
     EntityGroupItem *groupItem = entityGroupItems[name];
     if (!groupItem)
     {
         groupItem = new EntityGroupItem(name);
         groupItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
-        treeWidget->addTopLevelItem(groupItem);
-        SetTreeWidgetItemVisible(groupItem, showGroups);
         entityGroupItems[name] = groupItem;
+
+        SetTreeWidgetItemVisible(groupItem, showGroups);
+        if (addToTreeRoot)
+            treeWidget->addTopLevelItem(groupItem);
     }
 
     return groupItem;
@@ -678,8 +760,8 @@ void SceneStructureWindow::AddEntity(Entity* entity, bool setParent)
 
     EntityGroupItem *groupItem = 0;
     const QString groupName = entity->Group();
-    if (!groupName.isEmpty())
-        groupItem = GetOrCreateEntityGroupItem(groupName);
+    if (!groupName.isEmpty() && showGroups)
+        groupItem = GetOrCreateEntityGroupItem(groupName, true);
 
     EntityItem *entityItem = new EntityItem(entity->shared_from_this(), groupItem);
     entityItem->setFlags(flags);
@@ -1025,22 +1107,23 @@ void SceneStructureWindow::UpdateDynamicAttribute(IAttribute *attr)
         items[i]->Update(attr);
 }
 
-void SceneStructureWindow::UpdateEntityName(IAttribute * /*attr*/)
+void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
 {
+    // We are only interested in EC_Name name and group attributes.
     EC_Name *nameComp = qobject_cast<EC_Name *>(sender());
-    if (!nameComp || !nameComp->ParentEntity())
+    if (!nameComp || !nameComp->ParentEntity() || attr->Id() == "description")
         return;
 
     Entity *entity = nameComp->ParentEntity();
     EntityItem *item = EntityItemOfEntity(entity);
     if (item)
     {
-        if (nameComp->group.ValueChanged())
+        if (showGroups && nameComp->group.ValueChanged())
         {
             EntityGroupItem *oldGroup = item->Parent(), *newGroup = 0;
             const QString newGroupName = nameComp->group.Get().trimmed();
             if (!newGroupName.isEmpty())
-                newGroup = GetOrCreateEntityGroupItem(newGroupName);
+                newGroup = GetOrCreateEntityGroupItem(newGroupName, true);
 
             // This should not happen as group attribute wont trigger a change
             // if the value did not actually change. But we end up here with new
@@ -1058,8 +1141,6 @@ void SceneStructureWindow::UpdateEntityName(IAttribute * /*attr*/)
                 if (newGroup)
                     newGroup->AddEntityItem(item);
             }
-
-            ShowGroups(showGroups);
         }
         if (nameComp->name.ValueChanged())
             item->SetText(entity);
