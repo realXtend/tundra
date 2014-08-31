@@ -10,6 +10,7 @@
 #include "CoreTypes.h"
 
 #include <QWidget>
+#include <QTimer>
 #include <QHash>
 
 class SceneTreeWidget;
@@ -74,7 +75,8 @@ public:
 
 public slots:
     /// Sets do we want to entity groups in the tree view.
-    /** @param show Visibility of entity groups in the tree view. */
+    /** @param show Visibility of entity groups in the tree view.
+        @note Due to optimizations this will not immediately sort the tree. */
     void ShowGroups(bool show);
 
     /// Sets do we want to show components in the tree view.
@@ -153,6 +155,8 @@ private:
     QCheckBox *componentCheckBox;
     QComboBox *attributeComboBox;
 
+    QTimer showGroupsDelay_;
+
     /// @todo 15.09.2013 Profile if unordered_(multi)map would give better performance
     typedef std::map<entity_id_t, EntityItem *> EntityItemIdMap;
     typedef std::map<Entity *, EntityItem *> EntityItemMap;
@@ -168,6 +172,9 @@ private:
     AttributeItemMap attributeItems;
 
 private slots:
+    /// Shows groups as per current showGroups boolean.
+    void ShowGroupsNow();
+
     /// Clears the whole tree widget.
     void Clear();
 

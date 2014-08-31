@@ -104,19 +104,20 @@ void EntityItem::SetText(::Entity *entity)
         LogWarning("EntityItem::SetText: the entity given is different than the entity this item represents.");
 
     QString name = QString("%1 %2").arg(entity->Id()).arg(entity->Name().isEmpty() ? "(no name)" : entity->Name());
-
-    setTextColor(0, QColor(Qt::black));
-    
+   
     const bool local = entity->IsLocal();
     const bool temp = entity->IsTemporary();
+
+    if (!local && !temp)
+        setTextColor(0, QColor(Qt::black));
 
     QString info;
     if (local)
     {
-        setTextColor(0, QColor(Qt::blue));
+        if (!temp)
+            setTextColor(0, QColor(Qt::blue));
         info.append("Local");
     }
-
     if (temp)
     {
         setTextColor(0, QColor(Qt::red));
@@ -125,13 +126,15 @@ void EntityItem::SetText(::Entity *entity)
         info.append("Temporary");
     }
 
+    QString current = text(0);
     if (!info.isEmpty())
     {
         info.prepend(" [");
         info.append("]");
-        setText(0, name + info);
+        if (current != name + info)
+            setText(0, name + info);
     }
-    else
+    else if (current != name)
         setText(0, name);
 }
 

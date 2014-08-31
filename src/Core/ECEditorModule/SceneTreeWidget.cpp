@@ -227,6 +227,7 @@ void SceneTreeWidget::paintEvent(QPaintEvent *e)
 {
     QTreeWidget::paintEvent(e);
 
+    // Sorting should be disabled only when adding/removing stuff from/to the tree
     if (!isSortingEnabled())
     {
         int numRemoving = 0;
@@ -1071,7 +1072,10 @@ void SceneTreeWidget::Paste()
 
     if (undoManager_)
         undoManager_->Clear(); // Unsupported action, clear undo stack
+
+    setSortingEnabled(false);
     scene.lock()->CreateContentFromXml(sceneDoc, false, AttributeChange::Replicate);
+    setSortingEnabled(true);
 }
 
 void SceneTreeWidget::SaveAs()

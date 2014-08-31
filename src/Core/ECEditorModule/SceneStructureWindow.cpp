@@ -37,8 +37,14 @@ namespace
 
     inline void SetTreeWidgetItemVisible(QTreeWidgetItem *item, bool visible)
     {
-        item->setHidden(!visible);
-        item->setDisabled(!visible);
+        // Believe it or not but even if the item was already visible and was set
+        // to visible here, Qt spent up to 30 msec per item. And thats the item
+        // even not being in the tree yet! Don't remove these checks as it seems
+        // QTreeWidgetItem does not do them and will update lots of state inside.
+        if (item->isHidden() == visible)
+            item->setHidden(!visible);
+        if (item->isDisabled() == visible)
+            item->setDisabled(!visible);
     }
 }
 
@@ -57,6 +63,9 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     showGroups = cfg.DeclareSetting(cShowGroupsSetting).toBool();
     showComponents = cfg.DeclareSetting(cShowComponentsSetting).toBool();
     attributeVisibility = static_cast<AttributeVisibilityType>(cfg.DeclareSetting(cAttributeVisibilitySetting).toUInt());
+
+    showGroupsDelay_.setSingleShot(true);
+    connect(&showGroupsDelay_, SIGNAL(timeout()), SLOT(ShowGroupsNow()));
 
     // Init main widget
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -180,14 +189,14 @@ void SceneStructureWindow::SetShownScene(const ScenePtr &newScene)
         connect(redoButton_, SIGNAL(clicked()), undoMgr, SLOT(Redo()), Qt::UniqueConnection);
 
         Scene* s = ShownScene().get();
-        connect(s, SIGNAL(EntityAcked(Entity *, entity_id_t)), SLOT(AckEntity(Entity *, entity_id_t)));
-        connect(s, SIGNAL(EntityCreated(Entity *, AttributeChange::Type)), SLOT(AddEntity(Entity *)));
-        connect(s, SIGNAL(EntityTemporaryStateToggled(Entity *, AttributeChange::Type)), SLOT(UpdateEntityTemporaryState(Entity *)));
-        connect(s, SIGNAL(EntityRemoved(Entity *, AttributeChange::Type)), SLOT(RemoveEntity(Entity *)));
-        connect(s, SIGNAL(ComponentAdded(Entity *, IComponent *, AttributeChange::Type)), SLOT(AddComponent(Entity *, IComponent *)));
-        connect(s, SIGNAL(ComponentRemoved(Entity *, IComponent *, AttributeChange::Type)), SLOT(RemoveComponent(Entity *, IComponent *)));
-        connect(s, SIGNAL(SceneCleared(Scene*)), SLOT(Clear()));
-        connect(s, SIGNAL(EntityParentChanged(Entity *, Entity *, AttributeChange::Type)), SLOT(UpdateEntityParent(Entity *)));
+        connect(s, SIGNAL(EntityAcked(Entity *, entity_id_t)), SLOT(AckEntity(Entity *, entity_id_t)), Qt::UniqueConnection);
+        connect(s, SIGNAL(EntityCreated(Entity *, AttributeChange::Type)), SLOT(AddEntity(Entity *)), Qt::UniqueConnection);
+        connect(s, SIGNAL(EntityTemporaryStateToggled(Entity *, AttributeChange::Type)), SLOT(UpdateEntityTemporaryState(Entity *)), Qt::UniqueConnection);
+        connect(s, SIGNAL(EntityRemoved(Entity *, AttributeChange::Type)), SLOT(RemoveEntity(Entity *)), Qt::UniqueConnection);
+        connect(s, SIGNAL(ComponentAdded(Entity *, IComponent *, AttributeChange::Type)), SLOT(AddComponent(Entity *, IComponent *)), Qt::UniqueConnection);
+        connect(s, SIGNAL(ComponentRemoved(Entity *, IComponent *, AttributeChange::Type)), SLOT(RemoveComponent(Entity *, IComponent *)), Qt::UniqueConnection);
+        connect(s, SIGNAL(SceneCleared(Scene*)), SLOT(Clear()), Qt::UniqueConnection);
+        connect(s, SIGNAL(EntityParentChanged(Entity *, Entity *, AttributeChange::Type)), SLOT(UpdateEntityParent(Entity *)), Qt::UniqueConnection);
 
         Populate();
     }
@@ -195,11 +204,29 @@ void SceneStructureWindow::SetShownScene(const ScenePtr &newScene)
 
 void SceneStructureWindow::ShowGroups(bool show)
 {
-    PROFILE(SceneStructureWindow_ShowGroups)
-
     showGroups = show;
 
-    treeWidget->setSortingEnabled(false);
+    // When a large set of entities is added or other major scene changes happen
+    // this function gets spammed a lot. Even if ShowGroupsNow() is quite careful
+    // about sorting it still should only be called after all the tree changes have
+    // been done. This 25 msec delay will accomplish this.
+    if (showGroupsDelay_.isActive())
+        showGroupsDelay_.stop();
+    showGroupsDelay_.start(25);
+}
+
+void SceneStructureWindow::ShowGroupsNow()
+{
+    PROFILE(SceneStructureWindow_ShowGroups)
+
+    // This function get a bit tricky, but basically we dont want to disable sorting and enable it back
+    // if there are not real changes in the hierarchy. This function gets called a lot unneccesarily
+    // and the sorting resulted in disable/enable even without any changes to the tree can take tens of msecs.
+    
+    // There might be other funtionality that has disabled sorting prior
+    // to this function call. Don't enable it back if we did not disable sorting.
+    bool sortingIsEnabled = treeWidget->isSortingEnabled();
+    bool sortingWasEnabled = sortingIsEnabled;
 
     // (new parent, child) mapping. Null as a new parent means that child should be added to the top-level items.
     typedef std::multimap<QTreeWidgetItem *, QTreeWidgetItem *> ParentChildMap;
@@ -208,40 +235,85 @@ void SceneStructureWindow::ShowGroups(bool show)
     {
         ParentChildMap toBeReparented;
 
-        EntityGroupItem *gItem = *it;
+        EntityGroupItem *groupItem = (*it);
 
         if (showGroups)
         {
             /// @todo Optimize 29.08.2013
-            EntityList entities = ShownScene()->EntitiesOfGroup(gItem->GroupName());
+            EntityList entities = ShownScene()->EntitiesOfGroup(groupItem->GroupName());
             for(EntityList::const_iterator iter = entities.begin(); iter != entities.end(); ++iter)
-                toBeReparented.insert(std::make_pair(gItem, EntityItemOfEntity((*iter).get())));
+                toBeReparented.insert(std::make_pair(groupItem, EntityItemOfEntity((*iter).get())));
+
+            // Add group to tree
+            int i = treeWidget->indexOfTopLevelItem(groupItem);
+            if (i < 0)
+            {
+                if (sortingIsEnabled)
+                {
+                    sortingIsEnabled = false;
+                    treeWidget->setSortingEnabled(false);
+                }
+                treeWidget->addTopLevelItem(groupItem);
+            }
         }
         else
         {
-            foreach(QTreeWidgetItem *eItem, gItem->takeChildren())
+            foreach(QTreeWidgetItem *eItem, groupItem->takeChildren())
                 toBeReparented.insert(std::make_pair((QTreeWidgetItem *)0, eItem));
+
+            // Remove group from tree
+            int i = treeWidget->indexOfTopLevelItem(groupItem);
+            if (i > 0)
+            {
+                if (sortingIsEnabled)
+                {
+                    sortingIsEnabled = false;
+                    treeWidget->setSortingEnabled(false);
+                }
+                treeWidget->takeTopLevelItem(i);
+            }
         }
 
         for(ParentChildMap::const_iterator it = toBeReparented.begin(); it != toBeReparented.end(); ++it)
         {
-            if (it->first)
+            if (!it->second)
+                continue;
+
+            QTreeWidgetItem *iterGroup = it->first;
+            QTreeWidgetItem *iterItem = it->second;
+
+            if (iterGroup)
             {
-                treeWidget->takeTopLevelItem(treeWidget->indexOfTopLevelItem(it->second));
-                treeWidget->addTopLevelItem(it->first);
-                it->first->addChild(it->second);
+                if (iterItem->parent() != iterGroup)
+                {
+                    if (sortingIsEnabled)
+                    {
+                        sortingIsEnabled = false;
+                        treeWidget->setSortingEnabled(false);
+                    }
+                    treeWidget->takeTopLevelItem(treeWidget->indexOfTopLevelItem(iterItem));
+                    iterGroup->addChild(iterItem);
+                }
             }
             else
             {
-                treeWidget->takeTopLevelItem(treeWidget->indexOfTopLevelItem(gItem));
-                treeWidget->addTopLevelItem(it->second);
+                int i = treeWidget->indexOfTopLevelItem(iterItem);
+                if (i < 0)
+                {
+                    if (sortingIsEnabled)
+                    {
+                        sortingIsEnabled = false;
+                        treeWidget->setSortingEnabled(false);
+                    }
+                    treeWidget->addTopLevelItem(iterItem);
+                }
             }
         }
-
-        SetTreeWidgetItemVisible(gItem, showGroups);
+        SetTreeWidgetItemVisible(groupItem, showGroups);
     }
 
-    treeWidget->setSortingEnabled(true);
+    if (sortingWasEnabled && !treeWidget->isSortingEnabled())
+        treeWidget->setSortingEnabled(true);
 }
 
 /// @todo Optimize! Reparenting attribute items way too heavy when dealing with hundreds of entities and all attribute shown 09.09.2013
@@ -736,6 +808,7 @@ void SceneStructureWindow::AddComponent(EntityItem *eItem, Entity *entity, IComp
 
     ComponentItem *cItem = new ComponentItem(comp->shared_from_this(), eItem);
     componentItems[comp] = cItem;
+
     SetTreeWidgetItemVisible(cItem, showComponents);
 
     eItem->addChild(cItem);
@@ -986,9 +1059,8 @@ void SceneStructureWindow::UpdateEntityName(IAttribute * /*attr*/)
                     newGroup->AddEntityItem(item);
             }
 
-            ShowGroups(showGroups); /**< @todo quick'd'dirty */
+            ShowGroups(showGroups);
         }
-
         if (nameComp->name.ValueChanged())
             item->SetText(entity);
     }
