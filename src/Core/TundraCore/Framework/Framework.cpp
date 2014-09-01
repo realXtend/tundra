@@ -234,8 +234,16 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
     if (exitSignal)
     {
 #ifdef WIN32
-        std::cout << std::endl;
-        system("pause");
+        // Only pause if a new cmd prompt has been created.
+        // If attached to the underlying prompt we want to just
+        // exit. This is good for utils that eg. query --version
+        // and want to parse the result. We should not halt execution
+        // until 'press any key to continue' in this case.
+        if (!GetConsoleWindow())
+        {
+            std::cout << std::endl;
+            system("pause");
+        }
 #endif
         // Use ForceExit as we can't let anything to cancel exiting and leave Application and Framework in uninitialized state.
         ForceExit();
