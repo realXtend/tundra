@@ -5,58 +5,17 @@
 #include "LoggingFunctions.h"
 #include "Framework.h"
 #include "Application.h"
+#include "SystemInfo.h"
 
 #include <QtXml>
 #include <QDir>
 #include <QFile>
 
-#include <vector>
-#include <sstream>
-
 #ifdef WIN32
 #include "Win.h"
-#elif defined(_POSIX_C_SOURCE) || defined(Q_WS_MAC) || defined(ANDROID)
+#else
 #include <dlfcn.h>
 #endif
-
-/// @todo Move to CoreStringUtils?
-static std::string WStringToString(const std::wstring &str)
-{
-    std::vector<char> c((str.length()+1)*4);
-    wcstombs(&c[0], str.c_str(), c.size()-1);
-    return &c[0];
-}
-
-/// @todo Move to SystemInfo?
-static std::string GetErrorString(int error)
-{
-#ifdef WIN32
-    void *lpMsgBuf = 0;
-
-    HRESULT hresult = HRESULT_FROM_WIN32(error);
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        0, hresult, 0 /*Default language*/, (LPTSTR) &lpMsgBuf, 0, 0);
-
-    // Copy message to C++ -style string, since the data need to be freed before return.
-#ifdef UNICODE
-    std::wstringstream ss;
-#else
-    std::stringstream ss;
-#endif
-    ss << (LPTSTR)lpMsgBuf << "(" << error << ")";
-    LocalFree(lpMsgBuf);
-#ifdef UNICODE
-    return WStringToString(ss.str());
-#else
-    return ss.str();
-#endif
-
-#else
-    std::stringstream ss;
-    ss << strerror(error) << "(" << error << ")";
-    return ss.str();
-#endif
-}
 
 /// Signature for Tundra plugins
 typedef void (*TundraPluginMainSignature)(Framework *owner);

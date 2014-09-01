@@ -68,6 +68,13 @@ QString WStringToQString(const std::wstring &str)
     return QStringFromWCharArray(str.data(), (int)str.size());
 }
 
+std::string WStringToString(const std::wstring &str)
+{
+    std::vector<char> c((str.length()+1)*4);
+    wcstombs(&c[0], str.c_str(), c.size()-1);
+    return &c[0];
+}
+
 std::wstring ToWString(const std::string &str)
 {
     std::wstring w_str(str.length(), L' ');

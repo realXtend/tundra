@@ -29,6 +29,7 @@ QString TUNDRACORE_API WStringToQString(const std::wstring &str);
 std::wstring TUNDRACORE_API ToWString(const std::string &str);
 std::wstring TUNDRACORE_API QStringToWString(const QString &qstr);
 QString TUNDRACORE_API WStringToQString(const std::wstring &str);
+std::string TUNDRACORE_API WStringToString(const std::wstring &str);
 
 /// Converts string to a float, returns defaultValue if conversion fails.
 inline float ParseFloat(const QString &val, float defaultValue) { bool ok; float ret = val.toFloat(&ok); return ok ? ret : defaultValue; }

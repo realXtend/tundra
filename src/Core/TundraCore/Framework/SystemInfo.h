@@ -14,7 +14,7 @@
 
 /** @file   SystemInfo.h
     @brief  Utility functions for retrieving system information.
-    @note   Code originally from MathGeoLib and modified for Tundra usage. */
+    @note   Most of the code originally from MathGeoLib and modified for Tundra usage. */
 
 #pragma once
 
@@ -29,6 +29,9 @@
     @param bugfixVersion OSX bugfix version */
 void TUNDRACORE_API OSXVersionInfo(s32 *majorVersion, s32 *minorVersion, s32 *bugfixVersion);
 #endif
+
+/// Returns a string presentation for an operating system error code.
+std::string TUNDRACORE_API GetErrorString(int error);
 
 /// Returns the operating system information, for example "Microsoft Windows 8 (build 9200), 64-bit" or "Mac OS X 10.8.0 (Mountain Lion)".
 QString TUNDRACORE_API OsDisplayString();
