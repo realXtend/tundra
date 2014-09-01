@@ -152,7 +152,7 @@ void AssetModule::ConsoleRefreshHttpStorages()
 
 void AssetModule::ConsoleRequestAsset(const QString &assetRef, const QString &assetType)
 {
-    AssetTransferPtr transfer = framework_->Asset()->RequestAsset(assetRef, assetType);
+    AssetTransferPtr transfer = framework_->Asset()->RequestAsset(assetRef, assetType, true);
 }
 
 void AssetModule::AddAssetStorage(const QString &storageString)
