@@ -54,9 +54,8 @@ void PluginAPI::LoadPlugin(const QString &filename)
     LogInfo("Loading plugin " + filename);
     owner->App()->SetSplashMessage("Loading plugin " + filename);
 
-    ///\todo Unicode support!
 #ifdef WIN32
-    HMODULE module = LoadLibraryA(path.toStdString().c_str());
+    HMODULE module = LoadLibrary(QStringToWString(path).c_str());
     if (module == NULL)
     {
         DWORD errorCode = GetLastError();
@@ -96,12 +95,14 @@ void PluginAPI::LoadPlugin(const QString &filename)
 void PluginAPI::UnloadPlugins()
 {
     for(std::list<Plugin>::reverse_iterator iter = plugins.rbegin(); iter != plugins.rend(); ++iter)
+    {
 #ifdef WIN32
         FreeLibrary((HMODULE)iter->handle);
 #else
     /// \bug caused memory errors in destructors in the dlclose call chain
     //        dlclose(iter->handle);
 #endif
+    }
     plugins.clear();
 }
 
