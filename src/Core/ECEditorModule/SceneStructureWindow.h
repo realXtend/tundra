@@ -81,7 +81,7 @@ public slots:
 
     /// Sets do we want to show components in the tree view.
     /** @param show Visibility of components in the tree view. */
-    void ShowComponents(bool show);
+    void ShowComponents(bool show, bool refreshView);
 
     /// Sets what kind of attributes we want to show in the tree view.
     /** @param type The type of attributes we want to show. */
@@ -117,7 +117,7 @@ private:
     void CreateAttributesForItem(EntityItem *eItem);
 
     /// Shows attributes of the current visibility type or hides the all.
-    void SetAttributesVisible(bool show);
+    void SetAttributesVisible(bool show, bool refreshView);
 
     /// Create asset reference item to the tree widget.
     /** @param parentItem Parent item, can be entity or component item.
@@ -132,6 +132,10 @@ private:
     EntityItem* EntityItemOfEntity(Entity* ent) const;
     /// @note This function does lookup from a different map than EntityItemOfEntity.
     EntityItem* EntityItemById(entity_id_t id) const ;
+
+    /// Item @c eItem was acked as @c entity with previous id @c oldId
+    void EntityItemAcked(EntityItem* entityItem, Entity *entity, entity_id_t oldId);
+
     void RemoveEntityItem(EntityItem* item);
     void RemoveChildEntityItems(EntityItem* eItem);
     ComponentItem *ComponentItemOfComponent(IComponent *) const;
@@ -154,6 +158,7 @@ private:
     QCheckBox *groupCheckBox;
     QCheckBox *componentCheckBox;
     QComboBox *attributeComboBox;
+    QTimer addEntitiesTimer_;
 
     /// @todo 15.09.2013 Profile if unordered_(multi)map would give better performance
     typedef std::map<entity_id_t, EntityItem *> EntityItemIdMap;
@@ -163,18 +168,41 @@ private:
     typedef std::pair<AttributeItemMap::iterator, AttributeItemMap::iterator> AttributeItemMapRange;
     typedef std::pair<AttributeItemMap::const_iterator, AttributeItemMap::const_iterator> AttributeItemMapConstRange;
     typedef QHash<QString, EntityGroupItem *> EntityGroupItemMap;
+    typedef QList<EntityWeakPtr > EntityWeakPtrList;
+    typedef QPair<QTreeWidgetItem*, QTreeWidgetItem*> ParentChildPair;
+    
     EntityGroupItemMap entityGroupItems; ///< Entity groups
     EntityItemIdMap entityItemsById;
     EntityItemMap entityItems;
     ComponentItemMap componentItems;
     AttributeItemMap attributeItems;
+    EntityWeakPtrList pendingNewEntities;
 
 private slots:
+    /// Add new entity to the pending logic. This should only be called for
+    /// Entities that are not yet in the tree.
+    void AddPendingEntity(EntityPtr &entity);
+    void AddPendingEntity(Entity *entity);
+    void AddPendingEntities(QList<Entity*> entities);
+
+    /// Entity level main tree manipulator.
+    ParentChildPair AddEntity(Entity *entity, bool addToTreeRoot, bool setParent, bool refreshView);
+
+    /// Removes @c entity from pending logic.
+    void RemovePendingEntity(Entity *entity);
+    void RemovePendingEntity(entity_id_t id);
+
+    /// Returns if @c entity is already in the pending entity list.
+    bool IsPendingEntityKnown(const EntityWeakPtr &entity) const;
+
+    /// Process pending new Entities as a batch operation.
+    void ProcessPendingNewEntities();
+
     /// Clears the whole tree widget.
     void Clear();
 
     /// Adds the item represeting the @c entity to the tree widget.
-    void AddEntity(Entity *entity, bool setParent = true);
+    void AddEntity(Entity *entity);
 
     /// Removes item representing @c entity from the tree widget.
     void RemoveEntity(Entity *entity);
@@ -189,7 +217,7 @@ private slots:
 
     /// Adds the entity to the tree widget, performs EntityItemOfEntity lookup.
     void AddComponent(Entity *entity, IComponent *comp);
-    void AddComponent(EntityItem *eItem, Entity *entity, IComponent *comp);
+    void AddComponent(EntityItem *eItem, Entity *entity, IComponent *comp, bool updateView);
 
     /// Removes entity from the tree widget, performs EntityItemOfEntity lookup.
     void RemoveComponent(Entity *entity, IComponent *comp);
@@ -211,8 +239,12 @@ private slots:
     /// Updates the sender component's name in the tree widget when the component's name changeds.
     void UpdateComponentName();
 
+    /// Handler for entity parent changed signal.
+    void EntityParentChanged(Entity* entity);
+
     /// Updates the parent of an entity (moves it in the tree widget.)
-    void UpdateEntityParent(Entity* entity);
+    /** @return New EntityItem parent if was reparented. */
+    EntityItem *UpdateEntityParent(Entity* entity, bool movetoRootIfUnparented);
 
     /// Sort items in the tree widget. The outstanding sort order is used.
     /** @param column Column that is used as the sorting criteria. */
@@ -234,6 +266,8 @@ private slots:
 
     void SetUndoEnabled(bool canUndo);
     void SetRedoEnabled(bool canRedo);
-    void SetAttributeVisibilityInternal(int mode) { SetAttributeVisibility(static_cast<AttributeVisibilityType>(mode)); }
     void OnSceneRemoved(Scene *);
+
+    void ShowComponentsInternal(bool show) { ShowComponents(show, true); }
+    void SetAttributeVisibilityInternal(int mode) { SetAttributeVisibility(static_cast<AttributeVisibilityType>(mode)); }
 };

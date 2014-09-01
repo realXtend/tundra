@@ -48,6 +48,9 @@ public:
     explicit EntityItem(const EntityPtr &entity, EntityGroupItem *parent = 0);
     virtual ~EntityItem();
 
+    /// Entity was acked. Updates ptr, id and text.
+    void Acked(const EntityPtr &entity);
+
     /// Decorates the item (text + color) accordingly to the entity information.
     /** @param entity Entity which the item represents. */
     void SetText(::Entity *entity);

@@ -131,6 +131,14 @@ EntityItem::~EntityItem()
         Parent()->RemoveEntityItem(this);
 }
 
+void EntityItem::Acked(const EntityPtr &entity)
+{
+    ptr = entity;
+    id = entity->Id();
+
+    SetText(entity.get());
+}
+
 void EntityItem::SetText(::Entity *entity)
 {
     if (ptr.lock().get() != entity)

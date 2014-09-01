@@ -64,6 +64,9 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     showComponents = cfg.DeclareSetting(cShowComponentsSetting).toBool();
     attributeVisibility = static_cast<AttributeVisibilityType>(cfg.DeclareSetting(cAttributeVisibilitySetting).toUInt());
 
+    addEntitiesTimer_.setSingleShot(true);
+    connect(&addEntitiesTimer_, SIGNAL(timeout()), this, SLOT(ProcessPendingNewEntities()));
+
     // Init main widget
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 5, 5, 5);
@@ -74,6 +77,7 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
 
     // Create child widgets
     treeWidget = new SceneTreeWidget(fw, this);
+
     expandAndCollapseButton = new QPushButton(tr("Expand All"), this);
     expandAndCollapseButton->setFixedHeight(22);
 
@@ -136,10 +140,14 @@ SceneStructureWindow::SceneStructureWindow(Framework *fw, QWidget *parent) :
     layout->addWidget(treeWidget);
     layout->addLayout(layoutSettingsVisibility);
 
+    // While the tree is still empty set sorting column.
+    // Later simple calls to setSortingEnabled() will suffice.
+    SortBy(sortingCriteria, treeWidget->header()->sortIndicatorOrder());
+
     // Connect to widget signals
     connect(attributeComboBox, SIGNAL(currentIndexChanged(int)), SLOT(SetAttributeVisibilityInternal(int)));
     connect(groupCheckBox, SIGNAL(toggled(bool)), SLOT(ShowGroups(bool)));
-    connect(componentCheckBox, SIGNAL(toggled(bool)), SLOT(ShowComponents(bool)));
+    connect(componentCheckBox, SIGNAL(toggled(bool)), SLOT(ShowComponentsInternal(bool)));
     connect(sortComboBox, SIGNAL(currentIndexChanged(int)), SLOT(Sort(int)));
     connect(searchField, SIGNAL(textEdited(const QString &)), SLOT(Search(const QString &)));
     connect(expandAndCollapseButton, SIGNAL(clicked()), SLOT(ExpandOrCollapseAll()));
@@ -188,12 +196,15 @@ void SceneStructureWindow::SetShownScene(const ScenePtr &newScene)
         Scene* s = ShownScene().get();
         connect(s, SIGNAL(EntityAcked(Entity *, entity_id_t)), SLOT(AckEntity(Entity *, entity_id_t)), Qt::UniqueConnection);
         connect(s, SIGNAL(EntityCreated(Entity *, AttributeChange::Type)), SLOT(AddEntity(Entity *)), Qt::UniqueConnection);
-        connect(s, SIGNAL(EntityTemporaryStateToggled(Entity *, AttributeChange::Type)), SLOT(UpdateEntityTemporaryState(Entity *)), Qt::UniqueConnection);
         connect(s, SIGNAL(EntityRemoved(Entity *, AttributeChange::Type)), SLOT(RemoveEntity(Entity *)), Qt::UniqueConnection);
+
         connect(s, SIGNAL(ComponentAdded(Entity *, IComponent *, AttributeChange::Type)), SLOT(AddComponent(Entity *, IComponent *)), Qt::UniqueConnection);
         connect(s, SIGNAL(ComponentRemoved(Entity *, IComponent *, AttributeChange::Type)), SLOT(RemoveComponent(Entity *, IComponent *)), Qt::UniqueConnection);
+
+        connect(s, SIGNAL(EntityTemporaryStateToggled(Entity *, AttributeChange::Type)), SLOT(UpdateEntityTemporaryState(Entity *)), Qt::UniqueConnection);
+        connect(s, SIGNAL(EntityParentChanged(Entity *, Entity *, AttributeChange::Type)), SLOT(EntityParentChanged(Entity *)), Qt::UniqueConnection);
+
         connect(s, SIGNAL(SceneCleared(Scene*)), SLOT(Clear()), Qt::UniqueConnection);
-        connect(s, SIGNAL(EntityParentChanged(Entity *, Entity *, AttributeChange::Type)), SLOT(UpdateEntityParent(Entity *)), Qt::UniqueConnection);
 
         Populate();
     }
@@ -396,7 +407,7 @@ void SceneStructureWindow::ShowGroups(bool show)
 }
 
 /// @todo Optimize! Reparenting attribute items way too heavy when dealing with hundreds of entities and all attribute shown 09.09.2013
-void SceneStructureWindow::ShowComponents(bool show)
+void SceneStructureWindow::ShowComponents(bool show, bool refreshView)
 {
     PROFILE(SceneStructureWindow_ShowComponents)
 
@@ -406,7 +417,9 @@ void SceneStructureWindow::ShowComponents(bool show)
     showComponents = show;
     treeWidget->showComponents = show;
 
-    treeWidget->setSortingEnabled(false);
+    bool sortingWasEnabled = treeWidget->isSortingEnabled();
+    if (sortingWasEnabled)
+        treeWidget->setSortingEnabled(false);
 
     // Set component items' visiblity and reparented attribute items.
     typedef std::multimap<QTreeWidgetItem *, QTreeWidgetItem *> ParentChildMap; // (new parent, child) mapping.
@@ -450,11 +463,13 @@ void SceneStructureWindow::ShowComponents(bool show)
     }
 
     /// @todo Make attribute visibility works correctly without this potentially quite heavy call.
-    SetAttributesVisible(attributeVisibility != DoNotShowAttributes);
+    SetAttributesVisible(attributeVisibility != DoNotShowAttributes, false);
 
-    Refresh();
+    if (refreshView)
+        Refresh();
 
-    treeWidget->setSortingEnabled(true);
+    if (sortingWasEnabled)
+        treeWidget->setSortingEnabled(true);
 }
 
 void SceneStructureWindow::SetAttributeVisibility(AttributeVisibilityType type)
@@ -472,7 +487,7 @@ void SceneStructureWindow::SetAttributeVisibility(AttributeVisibilityType type)
         return;
     }
 
-    SetAttributesVisible(attributeVisibility != DoNotShowAttributes);
+    SetAttributesVisible(attributeVisibility != DoNotShowAttributes, true);
 }
 
 void SceneStructureWindow::SetEntitySelected(const EntityPtr &entity, bool selected)
@@ -517,62 +532,184 @@ void SceneStructureWindow::Populate()
         return;
     }
 
-    /// @todo Would reserving size for the item maps be any help?
-    /*for(Scene::const_iterator eit = s->begin(); eit != s->end(); ++eit)
+    QList<Entity*> entities;
+    for(Scene::iterator it = s->begin(); it != s->end(); ++it)
+        entities << (*it).second.get();
+
+    AddPendingEntities(entities);
+    return;
+}
+
+bool SceneStructureWindow::IsPendingEntityKnown(const EntityWeakPtr &entity) const
+{
+    const Entity *entityRaw = entity.lock().get();
+    EntityWeakPtrList::const_iterator iter = pendingNewEntities.begin();
+    EntityWeakPtrList::const_iterator end = pendingNewEntities.end();
+    while(iter != end)
     {
-        entityItems[eit->second.get()] = 0;
-        entityItemsById[eit->first] = 0;
-        const Entity::ComponentMap &components = eit->second->Components();
-        for(Entity::ComponentMap::const_iterator cit = components.begin(); cit != components.end(); ++cit)
+        if (iter->lock().get() == entityRaw)
+            return true;
+        ++iter;
+    }
+    return false;
+}
+
+void SceneStructureWindow::AddPendingEntity(Entity *entity)
+{
+    if (!entity)
+        return;
+
+    EntityPtr shared = entity->shared_from_this();
+    AddPendingEntity(shared);
+}
+
+void SceneStructureWindow::AddPendingEntity(EntityPtr &entity)
+{
+    if (!entity.get())
+        return;
+
+    EntityWeakPtr weak = EntityWeakPtr(entity);
+    if (!IsPendingEntityKnown(weak))
+        pendingNewEntities.push_back(weak);
+    addEntitiesTimer_.start(50); // More than a single network tick if new entities are still coming in
+}
+
+void SceneStructureWindow::AddPendingEntities(QList<Entity*> entities)
+{
+    for (int ei=0, eilen=entities.size(); ei<eilen; ++ei)
+    {
+        Entity *entity = entities[ei];
+        if (!entity)
+            continue;
+        EntityWeakPtr weak = EntityWeakPtr(entity->shared_from_this());
+        if (!IsPendingEntityKnown(weak))
+            pendingNewEntities.push_back(weak);
+    }
+    addEntitiesTimer_.start(50); // More than a single network tick if new entities are still coming in
+}
+
+void SceneStructureWindow::RemovePendingEntity(Entity *entity)
+{
+    if (!entity)
+        return;
+
+    // Cleanup the pending entity list
+    for (int ei=0; ei<pendingNewEntities.size(); ++ei)
+    {
+        EntityWeakPtr &weak = pendingNewEntities[ei];
+        if (!weak.expired() && weak.lock().get() == entity)
         {
-            componentItems[cit->second.get()] = 0;
-            const AttributeVector& attrs = cit->second->Attributes();
-            for(size_t ait = 0; ait < attrs.size(); ++ait)
-                attributeItems.insert(std::make_pair(attrs[ait], (AttributeItem *)0));
+            pendingNewEntities.removeAt(ei);
+            ei--;
         }
-    }*/
-    // If using unordered maps:
-    /*size_t numEntities = s->Entities().size();
-    size_t numComps = 0, numAttrs = 0;
-    for(Scene::const_iterator eit = s->begin(); eit != s->end(); ++eit)
-    {
-        const Entity::ComponentMap &components = eit->second->Components();
-        numComps += components.size();
-        for(Entity::ComponentMap::const_iterator cit = components.begin(); cit != components.end(); ++cit)
-            numAttrs += cit->second->Attributes().size();
     }
-    // Emulate the missing reserve() function, http://stackoverflow.com/questions/10617829/boostunordered-map-missing-reserve-like-stdunordered-map/10618264#10618264
-    entityItems.rehash(std::ceil(numEntities / entityItems.max_load_factor()));
-    entityItemsById.rehash(std::ceil(numEntities/ entityItemsById.max_load_factor()));
-    componentItems.rehash(std::ceil(numComps / componentItems.max_load_factor()));
-    attributeItems.rehash(std::ceil(numAttrs / attributeItems.max_load_factor()));
-    */
+}
 
-    // If we have a huge amount of entities in the scene, do not create component and attribute
-    // items by default.That could freeze the applications for tens of seconds or even for minutes.
-    if (s->Entities().size() > 4000)
+void SceneStructureWindow::RemovePendingEntity(entity_id_t id)
+{
+    for (int ei=0; ei<pendingNewEntities.size(); ++ei)
     {
-        showComponents = false;
+        EntityWeakPtr &weak = pendingNewEntities[ei];
+        if (!weak.expired() && weak.lock()->Id() == id)
+        {
+            pendingNewEntities.removeAt(ei);
+            ei--;
+        }
+    }
+}
+
+void SceneStructureWindow::ProcessPendingNewEntities()
+{
+    // If we have a huge amount of entities in the scene, do not create attribute by default.
+    // Components are fine for this approach.
+    if (pendingNewEntities.size() > 4000)
         attributeVisibility = DoNotShowAttributes;
-    }
 
-    treeWidget->setSortingEnabled(false);
+    int preRootItems = treeWidget->invisibleRootItem()->childCount();
+    bool sortingWasEnabled = treeWidget->isSortingEnabled();
+    if (sortingWasEnabled)
+        treeWidget->setSortingEnabled(false);
 
-    // First add entities without updating parents, as the order isn't guaranteed
-    for(Scene::iterator it = s->begin(); it != s->end(); ++it)
-        AddEntity((*it).second.get(), false);
+    QList<QTreeWidgetItem*> createdRootItems;
+    QHash<QTreeWidgetItem*, QList<QTreeWidgetItem*> > groupChildren;
 
-    // Now do second pass to update parents
-    for(Scene::iterator it = s->begin(); it != s->end(); ++it)
+    for (int ei=0, eilen=pendingNewEntities.size(); ei<eilen; ++ei)
     {
-        if (it->second->Parent())
-            UpdateEntityParent((*it).second.get());
+        EntityWeakPtr &weak = pendingNewEntities[ei];
+        if (weak.expired())
+            continue;
+
+        // It is important to not add duplicates. If group view is enabled
+        // AddEntity will return the same group as many times as it has children.
+        ParentChildPair pair = AddEntity(weak.lock().get(), false, false, false);
+
+        // Group parented
+        if (pair.first)
+        {
+            if (!createdRootItems.contains(pair.first))
+            {
+                int rootIndex = treeWidget->indexOfTopLevelItem(pair.first);
+                if (rootIndex < 0)
+                    createdRootItems << pair.first;
+            }
+            int groupIndex = pair.first->indexOfChild(pair.second);
+            if (groupIndex < 0)
+                groupChildren[pair.first] << pair.second;
+        }
+        // Root parented
+        else if (pair.second && !createdRootItems.contains(pair.second))
+        {
+            int rootIndex = treeWidget->indexOfTopLevelItem(pair.second);
+            if (rootIndex < 0)
+                createdRootItems << pair.second;
+        }
     }
 
-    Refresh();
+    // 2nd pass to update parenting
+    for (int ei=0, eilen=pendingNewEntities.size(); ei<eilen; ++ei)
+    {
+        EntityWeakPtr &weak = pendingNewEntities[ei];
+        if (weak.expired())
+            continue;
+        if (weak.lock()->Parent())
+        {
+            // @todo This post reparenting manipulates the tree and
+            // will have bad perf impact in large scenes. Refactor UpdateEntityParent
+            // so that we can tell it if it should modify the tree like other funcs do.
+            EntityItem *newParent = UpdateEntityParent(weak.lock().get(), false);
+            if (newParent)
+            {
+                // Reparented, have to remove from createdRootItems and from groupChildren.
+                // This should be guarenteed to return a valid ptr.
+                QTreeWidgetItem *reparented = dynamic_cast<QTreeWidgetItem*>(EntityItemOfEntity(weak.lock().get()));
+                if (reparented)
+                {
+                    createdRootItems.removeAll(reparented);
 
-    treeWidget->setSortingEnabled(true);
-    SortBy(sortingCriteria, treeWidget->header()->sortIndicatorOrder());
+                    QHash<QTreeWidgetItem*, QList<QTreeWidgetItem*> >::iterator gIter = groupChildren.begin();
+                    QHash<QTreeWidgetItem*, QList<QTreeWidgetItem*> >::iterator gEnd = groupChildren.end();
+                    for(; gIter!=gEnd; ++gIter)
+                        gIter.value().removeAll(reparented);
+                }
+            }
+        }
+    }
+
+    pendingNewEntities.clear();
+
+    // Batch add children to groups
+    QHash<QTreeWidgetItem*, QList<QTreeWidgetItem*> >::iterator gIter = groupChildren.begin();
+    QHash<QTreeWidgetItem*, QList<QTreeWidgetItem*> >::iterator gEnd = groupChildren.end();
+    for(; gIter!=gEnd; ++gIter)
+        gIter.key()->addChildren(gIter.value());
+
+    // Batch add root level items (both groups and ents)
+    treeWidget->addTopLevelItems(createdRootItems);
+
+    // Refresh filtering and sort
+    Refresh();
+    if (sortingWasEnabled || preRootItems == 0)
+        treeWidget->setSortingEnabled(true);
 }
 
 void SceneStructureWindow::Clear()
@@ -581,7 +718,7 @@ void SceneStructureWindow::Clear()
     treeWidget->setSortingEnabled(false);
 
     // Show component items before deleting them. Makes the removal of all items a lot cheaper operation.
-    ShowComponents(true);
+    ShowComponents(true, false);
 
     /// @todo 28.08.2013 Check memory leak report for this file!
 
@@ -630,6 +767,8 @@ void SceneStructureWindow::Clear()
     */
 
     entityGroupItems.clear();
+
+    pendingNewEntities.clear();
 
     treeWidget->setSortingEnabled(true);
 }
@@ -749,29 +888,35 @@ void SceneStructureWindow::Refresh()
         TreeWidgetSearch(treeWidget, 0, searchField->text());
 }
 
-void SceneStructureWindow::AddEntity(Entity* entity, bool setParent)
+void SceneStructureWindow::AddEntity(Entity* entity)
+{
+    AddPendingEntity(entity->shared_from_this());
+}
+
+SceneStructureWindow::ParentChildPair SceneStructureWindow::AddEntity(Entity* entity, bool addToTreeRoot, bool setParent, bool refreshView)
 {
     PROFILE(SceneStructureWindow_AddEntity)
 
+    ParentChildPair result(0, 0);
     if (EntityItemOfEntity(entity))
-        return;
+        return result;
 
     const Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
 
     EntityGroupItem *groupItem = 0;
     const QString groupName = entity->Group();
     if (!groupName.isEmpty() && showGroups)
-        groupItem = GetOrCreateEntityGroupItem(groupName, true);
+        groupItem = GetOrCreateEntityGroupItem(groupName, addToTreeRoot);
 
-    EntityItem *entityItem = new EntityItem(entity->shared_from_this(), groupItem);
+    EntityItem *entityItem = new EntityItem(entity->shared_from_this(), 0);
     entityItem->setFlags(flags);
 
     entityItems[entity] = entityItem;
     entityItemsById[entity->Id()] = entityItem;
 
     if (groupItem)
-        groupItem->AddEntityItem(entityItem);
-    else
+        groupItem->AddEntityItem(entityItem, addToTreeRoot, addToTreeRoot);
+    else if (addToTreeRoot)
         treeWidget->addTopLevelItem(entityItem);
 
     /// @todo 05.03.2014 Create component items only if showComponents true?
@@ -779,23 +924,37 @@ void SceneStructureWindow::AddEntity(Entity* entity, bool setParent)
     {
         const Entity::ComponentMap &components = entity->Components();
         for(Entity::ComponentMap::const_iterator i = components.begin(); i != components.end(); ++i)
-            AddComponent(entityItem, entity, i->second.get());
+            AddComponent(entityItem, entity, i->second.get(), false);
     }
 
     if (setParent)
-        UpdateEntityParent(entity);
+        result.first = UpdateEntityParent(entity, false);
 
-    Refresh();
+    if (refreshView)
+        Refresh();
+
+    if (!result.first)
+        result.first = groupItem;
+    result.second = entityItem;
+    return result;
 }
 
 void SceneStructureWindow::AckEntity(Entity* entity, entity_id_t oldId)
 {
-    RemoveEntityById(oldId);
-    AddEntity(entity);
+    // There is no need to remove and recreate the entity
+    // if its found. If not in the tree, add a new peding entity.
+    // It will handle the new entity already being in the tree correctly
+    // (dont see how that could happen).
+    EntityItem *existing = EntityItemById(oldId);
+    if (existing)
+        EntityItemAcked(existing, entity, oldId);
+    else
+        AddPendingEntity(entity->shared_from_this());
 }
 
 void SceneStructureWindow::UpdateEntityTemporaryState(Entity *entity)
 {
+    // Check if already in tree
     EntityItem *entItem = EntityItemOfEntity(entity);
     if (!entItem)
         return;
@@ -815,6 +974,8 @@ void SceneStructureWindow::RemoveEntity(Entity* entity)
     EntityItem *item = EntityItemOfEntity(entity);
     if (item)
         RemoveEntityItem(item);
+
+    RemovePendingEntity(entity);
 }
 
 void SceneStructureWindow::RemoveEntityById(entity_id_t id)
@@ -822,6 +983,22 @@ void SceneStructureWindow::RemoveEntityById(entity_id_t id)
     EntityItem *item = EntityItemById(id);
     if (item)
         RemoveEntityItem(item);
+
+    RemovePendingEntity(id);
+}
+
+void SceneStructureWindow::EntityItemAcked(EntityItem* entityItem, Entity *entity, entity_id_t oldId)
+{
+    entityItem->Acked(entity->shared_from_this());
+
+    // Only the entity items stores an id.
+    // Other maps are up to date as no ptr:s
+    // have been changed (this would be bug).
+    entityItems.erase(entity);
+    entityItemsById.erase(oldId);
+
+    entityItems[entity] = entityItem;
+    entityItemsById[entity->Id()] = entityItem;
 }
 
 void SceneStructureWindow::RemoveEntityItem(EntityItem* eItem)
@@ -875,17 +1052,15 @@ void SceneStructureWindow::RemoveChildEntityItems(EntityItem* eItem)
 
 void SceneStructureWindow::AddComponent(Entity* entity, IComponent* comp)
 {
-    AddComponent(EntityItemOfEntity(entity), entity, comp);
+    AddComponent(EntityItemOfEntity(entity), entity, comp, true);
 }
 
-void SceneStructureWindow::AddComponent(EntityItem *eItem, Entity *entity, IComponent *comp)
+void SceneStructureWindow::AddComponent(EntityItem *eItem, Entity *entity, IComponent *comp, bool updateView)
 {
     PROFILE(SceneStructureWindow_AddComponent)
 
-    if (!eItem)
-        return;
-
-    if (ComponentItemOfComponent(comp))
+    // Check if already in tree
+    if (!eItem || ComponentItemOfComponent(comp))
         return;
 
     ComponentItem *cItem = new ComponentItem(comp->shared_from_this(), eItem);
@@ -925,7 +1100,8 @@ void SceneStructureWindow::AddComponent(EntityItem *eItem, Entity *entity, IComp
             CreateAttributesForItem(eItem);
     }
 
-    Refresh();
+    if (updateView)
+        Refresh();
 }
 
 void SceneStructureWindow::RemoveComponent(Entity* entity, IComponent* comp)
@@ -974,20 +1150,22 @@ void SceneStructureWindow::CreateAttributesForItem(EntityItem *eItem)
     }
 }
 
-void SceneStructureWindow::SetAttributesVisible(bool show)
+void SceneStructureWindow::SetAttributesVisible(bool show, bool refreshView)
 {
     PROFILE(SceneStructureWindow_SetAttributesVisible)
 
-    treeWidget->setSortingEnabled(false);
+    bool sortingWasEnabled = treeWidget->isSortingEnabled();
+    if (sortingWasEnabled)
+        treeWidget->setSortingEnabled(false);
 
     if (show)
     {
-            if (showComponents)
-                for(ComponentItemMap::const_iterator it = componentItems.begin(); it != componentItems.end(); ++it)
-                    CreateAttributesForItem(it->second);  // Parent to component items.
-            else
-                for(EntityItemMap::const_iterator it = entityItems.begin(); it != entityItems.end(); ++it)
-                    CreateAttributesForItem(it->second); // Parent to entity items.
+        if (showComponents)
+            for(ComponentItemMap::const_iterator it = componentItems.begin(); it != componentItems.end(); ++it)
+                CreateAttributesForItem(it->second);  // Parent to component items.
+        else
+            for(EntityItemMap::const_iterator it = entityItems.begin(); it != entityItems.end(); ++it)
+                CreateAttributesForItem(it->second); // Parent to entity items.
     }
     else
     {
@@ -995,9 +1173,11 @@ void SceneStructureWindow::SetAttributesVisible(bool show)
             SetTreeWidgetItemVisible(it->second, false);
     }
 
-    Refresh();
+    if (refreshView)
+        Refresh();
 
-    treeWidget->setSortingEnabled(true);
+    if (sortingWasEnabled)
+        treeWidget->setSortingEnabled(true);
 }
 
 void SceneStructureWindow::CreateAttributeItem(QTreeWidgetItem *parentItem, IAttribute *attr)
@@ -1155,29 +1335,37 @@ void SceneStructureWindow::UpdateComponentName()
         cItem->SetText(comp);
 }
 
-void SceneStructureWindow::UpdateEntityParent(Entity* entity)
+void SceneStructureWindow::EntityParentChanged(Entity* entity)
+{
+    UpdateEntityParent(entity, true);
+}
+
+EntityItem *SceneStructureWindow::UpdateEntityParent(Entity* entity, bool movetoRootIfUnparented)
 {
     EntityItem* eItem = EntityItemOfEntity(entity);
     if (!eItem)
-        return;
-    /// \todo Will not currently work with groups
+        return 0;
+
+    /// @todo Will not currently work with groups,
     if (eItem->Parent())
-        return;
+        return 0;
 
     EntityPtr parentEntity = entity->Parent();
     if (parentEntity)
     {
         EntityItem* peItem = EntityItemOfEntity(parentEntity.get());
         if (!peItem)
-            return;
+            return 0;
+
         if (eItem->parent() == 0)
             treeWidget->takeTopLevelItem(treeWidget->indexOfTopLevelItem(eItem));
         else
             eItem->parent()->takeChild(eItem->parent()->indexOfChild(eItem));
 
         peItem->addChild(eItem);
+        return peItem;
     }
-    else
+    else if (movetoRootIfUnparented)
     {
         if (eItem->parent())
         {
@@ -1185,6 +1373,7 @@ void SceneStructureWindow::UpdateEntityParent(Entity* entity)
             treeWidget->addTopLevelItem(eItem);
         }
     }
+    return 0;
 }
 
 void SceneStructureWindow::Sort(int column)
