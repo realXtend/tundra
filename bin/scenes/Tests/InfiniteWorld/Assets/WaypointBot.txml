@@ -1,0 +1,62 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="1" sync="1">
+  <component type="EC_Name" sync="1">
+   <attribute value="WaypointBot" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-0.00463164,-0.844072,-0.00120704,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+  <component type="EC_AnimationController" sync="1">
+   <attribute value="" name="Animation state"/>
+  </component>
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,-1.2,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="Roboto.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="Roboto.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+   <attribute value="-1" name="Raycast submesh mask"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="10" name="Mass"/>
+   <attribute value="3" name="Shape type"/>
+   <attribute value="1.000000 2.800000 1.000000" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0.05" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
+   <attribute value="0.000000 0.000000 0.000000" name="Angular factor"/>
+   <attribute value="false" name="Kinematic"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="-0.000976 -0.000048 -0.001052" name="Linear velocity"/>
+   <attribute value="0.000000 0.000000 0.000000" name="Angular velocity"/>
+   <attribute value="-1" name="Collision Layer"/>
+   <attribute value="-1" name="Collision Mask"/>
+  </component>
+  <component temporary="false" type="EC_PhysicsMotor" sync="false">
+   <attribute value="0.000000 0.000000 0.000000" name="Absolute Move Force"/>
+   <attribute value="0.000000 0.000000 0.000000" name="Relative Move Force"/>
+   <attribute value="3.000000 0.000000 3.000000" name="Damping Force"/>
+  </component>
+  <!--
+  <component type="EC_Script" sync="1">
+   <attribute value="WaypointBot.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+  -->
+ </entity>
+</scene>

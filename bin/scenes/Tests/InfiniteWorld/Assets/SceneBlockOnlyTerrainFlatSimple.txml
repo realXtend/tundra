@@ -1,0 +1,49 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity temporary="false" id="1" sync="true">
+  <component temporary="false" type="EC_Name" sync="true">
+   <attribute value="TerrainBlock" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component temporary="false" type="EC_Mesh" sync="true">
+   <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" name="Transform"/>
+   <attribute value="Box.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="Box.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+  </component>
+  <component temporary="false" type="EC_Placeable" sync="true">
+   <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,156.000000,1.000000,156.000000" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+  <component temporary="false" type="EC_RigidBody" sync="true">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Angular factor"/>
+   <attribute value="false" name="Kinematic"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000000 0.000000 0.000000" name="Linear velocity"/>
+   <attribute value="0.000000 0.000000 0.000000" name="Angular velocity"/>
+   <attribute value="-1" name="Collision Layer"/>
+   <attribute value="-1" name="Collision Mask"/>
+  </component>
+  <component temporary="true" type="EC_Highlight" sync="false" name="EcEditorHighlight">
+   <attribute value="true" name="Is visible"/>
+   <attribute value="0.300000 0.500000 0.100000 0.500000" name="Solid color"/>
+   <attribute value="1.000000 1.000000 1.000000 0.500000" name="Outline color"/>
+  </component>
+ </entity>
+</scene>

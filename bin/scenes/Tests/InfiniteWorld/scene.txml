@@ -1,0 +1,67 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="1" sync="1">
+  <component type="EC_Script" sync="1">
+   <attribute value="InfiniteWorld.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="InfiniteWorld" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+ </entity>
+ <entity id="2" sync="1">
+  <component type="EC_Script" sync="1">
+   <attribute value="AvatarApplication.js;SimpleAvatar.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="AvatarApp" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="AvatarApplication" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component temporary="false" type="EC_Name" sync="true">
+   <attribute value="AvatarApplication" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+ </entity>
+ <entity temporary="0" id="3" sync="1">
+  <component temporary="false" type="EC_Name" sync="true">
+   <attribute value="Environment" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component temporary="false" type="EC_SkyX" sync="true">
+   <attribute value="1" name="Cloud type"/>
+   <attribute value="0" name="Time multiplier"/>
+   <attribute value="14" name="Time [0-24]"/>
+   <attribute value="7.5" name="Time sunrise [0-24]"/>
+   <attribute value="20.5" name="Time sunset [0-24]"/>
+   <attribute value="50" name="Cloud coverage [0-100]"/>
+   <attribute value="50" name="Cloud average size [0-100]"/>
+   <attribute value="100" name="Cloud height"/>
+   <attribute value="58.3333321" name="Moon phase [0-100]"/>
+   <attribute value="9.75" name="Sun inner radius"/>
+   <attribute value="10.25" name="Sun outer radius"/>
+   <attribute value="0" name="Wind direction"/>
+   <attribute value="5" name="Wind speed"/>
+  </component>
+ </entity>
+ <entity id="5" sync="1">
+  <component type="EC_Name" sync="1">
+   <attribute value="Instructions" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="Instructions.js" name="Script ref"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="0" name="Run mode"/>
+   <attribute value="" name="Script application name"/>
+   <attribute value="" name="Script class name"/>
+  </component>
+ </entity>
+</scene>

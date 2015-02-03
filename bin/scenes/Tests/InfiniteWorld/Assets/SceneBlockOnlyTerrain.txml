@@ -1,0 +1,45 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="1" sync="1">
+  <component type="EC_Name" sync="1">
+   <attribute value="Terrain" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Terrain" sync="1">
+   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="8" name="Grid Width"/>
+   <attribute value="8" name="Grid Height"/>
+   <attribute value="0.129999995" name="Tex. U scale"/>
+   <attribute value="0.129999995" name="Tex. V scale"/>
+   <attribute value="Ogre Media:RexTerrainPCF.material" name="Material"/>
+   <attribute value="TerrainHeightmap128x128.ntf" name="Heightmap"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="0" name="Mass"/>
+   <attribute value="5" name="Shape type"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/> 
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Linear factor"/>
+   <attribute value="1.000000 1.000000 1.000000" name="Angular factor"/>
+   <attribute value="false" name="Kinematic"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000000 0.000000 0.000000" name="Linear velocity"/>
+   <attribute value="0.000000 0.000000 0.000000" name="Angular velocity"/>
+   <attribute value="-1" name="Collision Layer"/>
+   <attribute value="-1" name="Collision Mask"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+   <attribute value="1" name="Selection layer"/>
+   <attribute value="" name="Parent entity ref"/>
+   <attribute value="" name="Parent bone name"/>
+  </component>
+ </entity>
+</scene>

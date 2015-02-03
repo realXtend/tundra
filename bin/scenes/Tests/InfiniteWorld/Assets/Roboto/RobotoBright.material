@@ -1,0 +1,21 @@
+material Roboto
+{
+    technique
+    {
+        pass
+        {
+            texture_unit
+            {
+                texture RobotoTexture.jpg
+            }
+        }
+        pass
+        {
+            scene_blend add
+            texture_unit
+            {
+                texture RobotoTexture.jpg
+            }
+        }
+    }
+}
