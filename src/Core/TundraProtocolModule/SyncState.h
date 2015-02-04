@@ -266,8 +266,6 @@ private:
     Entity* entity_;
 };
 
-typedef std::list<component_id_t> ComponentIdList;
-
 /// Scene's per-user network sync state
 class TUNDRAPROTOCOL_MODULE_API SceneSyncState : public QObject
 {
@@ -285,23 +283,6 @@ public:
 
     /// Entity interpolations
     std::map<entity_id_t, RigidBodyInterpolationState> entityInterpolations;
-
-    /// Maps containing the relevance factors and visibility data
-    /// @remarks InterestManager functionality
-    std::map<entity_id_t, bool> visibleEntities;
-    std::map<entity_id_t, float> relevanceFactors;
-
-    /// Couple of maps containing the timestamps of last updates and raycasts
-    /// @remarks InterestManager functionality
-    std::map<entity_id_t, float> lastUpdatedEntitys_;
-    std::map<entity_id_t, float> lastRaycastedEntitys_;
-
-    /// @remarks InterestManager functionality
-    Quat clientOrientation;
-    Quat initialOrientation;
-    float3 clientLocation;  //Clients current pos
-    float3 initialLocation; //Clients initial pos
-    bool locationInitialized;
 
     /// Queued EntityAction messages. These will be sent to the user on the next network update tick.
     std::vector<MsgEntityAction> queuedActions;
@@ -336,7 +317,7 @@ public slots:
     /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     entity_id_t NextPendingEntityID() const;
 
-    /// Returns if we have any pending entitys.
+    /// Returns if we have any pending entities.
     /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     bool HasPendingEntities() const;
 

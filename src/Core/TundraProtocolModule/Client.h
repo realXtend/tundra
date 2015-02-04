@@ -121,10 +121,6 @@ public slots:
     /// Deletes all set login properties.
     void ClearLoginProperties() { properties.clear(); }
 
-    /// Get the current camera orientation
-    /// @todo SyncManager/InterestManager functionality. Move away from here.
-    void GetCameraOrientation();
-
     QString GetLoginProperty(QString key) const { return LoginProperty(key).toString(); } /**< @deprecated Use LoginProperty. @todo Add warning print */
     u32 GetConnectionID() const { return ConnectionId(); } /**< @deprecated Use ConnectionId. @todo Add warning print. */
 
@@ -162,10 +158,6 @@ private:
     /// Handles pending login to server
     void CheckLogin();
 
-    /// Handles a camera orientation request message
-    /// @todo SyncManager/InterestManager functionality. Move away from here.
-    void HandleCameraOrientationRequest(kNet::MessageConnection* source, const MsgCameraOrientationRequest& msg);
-
     /// Handles a loginreply message
     void HandleLoginReply(kNet::MessageConnection* source, const char *data, size_t numBytes);
 
@@ -181,21 +173,6 @@ private:
     u32 client_id_; ///< User ID, once known
     TundraLogicModule* owner_; ///< Owning module
     Framework* framework_; ///< Framework pointer
-
-    /// @todo SyncManager/InterestManager functionality. Move away from here.
-    QTimer *cameraUpdateTimer;
-    // Current camera orientation
-    /// @todo SyncManager/InterestManager functionality. Move away from here.
-    Quat currentcameraorientation_;
-    // Current camera location
-    /// @todo SyncManager/InterestManager functionality. Move away from here.
-    float3 currentcameralocation_;
-    // Variable controlling whether or not to send camera orientation updates
-    /// @todo SyncManager/InterestManager functionality. Move away from here.
-    bool sendCameraUpdates_;
-    /// @todo SyncManager/InterestManager functionality. Move away from here.
-    bool firstCameraUpdateSent_;
-
     /// "Virtual" user connection representing the server and its syncstate (client only)
     KNetUserConnectionPtr serverUserConnection_;
 };

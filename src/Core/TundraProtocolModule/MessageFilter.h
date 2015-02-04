@@ -2,22 +2,22 @@
 
 #pragma once
 
-#include "SyncState.h"
-#include "EC_Placeable.h"
-#include "UserConnection.h"
-
-/*Currently implemented filters*/
-enum IMFilter
-{
-    A3,
-    EA3,
-    EUCLIDEAN_DISTANCE,
-    RAY_VISIBILITY,
-    RELEVANCE
-};
+#include "TundraProtocolModuleFwd.h"
+#include "Math/float3.h"
+#include "SceneFwd.h"
 
 struct IMParameters
 {
+    /*Currently implemented filters*/
+    enum IMFilter
+    {
+        A3,
+        EA3,
+        EUCLIDEAN_DISTANCE,
+        RAY_VISIBILITY,
+        RELEVANCE
+    };
+
     IMParameters() :    headless(false),
                         dot(0),
                         distance(0),
@@ -40,17 +40,17 @@ class MessageFilter
 {
 public:
 
-    MessageFilter(IMFilter type, bool enabled) : type_(type), enabled_(enabled) {}
+    MessageFilter(IMParameters::IMFilter type, bool enabled) : type_(type), enabled_(enabled) {}
     virtual ~MessageFilter() {}
 
     virtual bool Filter(const IMParameters& params) = 0;
 
     virtual void SetEnabled(bool e)     { enabled_ = e; }
     virtual bool Enabled()              { return enabled_; }
-    virtual IMFilter Info()             { return type_; }
+    virtual IMParameters::IMFilter Info()             { return type_; }
     virtual QString ToString() = 0;
 
 protected:
-    IMFilter type_;
+    IMParameters::IMFilter type_;
     bool enabled_;
 };

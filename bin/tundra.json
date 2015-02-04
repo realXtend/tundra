@@ -36,7 +36,6 @@
                        "MenuBar.js",
                        "RendererSettings.js",
                        "SoundSettings.js",
-                       "InterestManagerSettings.js",
                        "LoadingScreen.js",
                        "SceneInstructions.js" ]
     },
