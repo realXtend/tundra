@@ -165,16 +165,11 @@ function CreateBoxes()
     for(var i = 0; i < numRows; ++i)
         for(var j = 0; j < numColums; ++j)
         {
-            var box = scene.CreateEntity(scene.NextFreeId(), ["EC_Name", "EC_Mesh", "EC_Placeable"]);
+            var box = scene.CreateEntity(0, ["Name", "Mesh", "Placeable"]);
             box.name = "Box" + i.toString() + j.toString();
 
-            var meshRef = box.mesh.meshRef;
-            meshRef.ref = "Box.mesh";
-            box.mesh.meshRef = meshRef;
-
-            var matRefs = new AssetReferenceList();
-            matRefs = [ "Box.material" ];
-            box.mesh.meshMaterial = matRefs;
+            box.mesh.meshRef = "Box.mesh";
+            box.mesh.meshMaterial = [ "Box.material" ];
 
             box.placeable.SetScale(new float3(5, 5, 5));
             box.placeable.SetPosition(new float3(7*i, 0, 7*j));
@@ -287,7 +282,7 @@ function ScaleBoxes()
         if (moveTimer === 0)
         {
             startScales[i] = currentScale;
-            dest = new float3(1,1,1).Mul(Math.random() * 5);
+            destinationScales[i] = new float3(1,1,1).Mul(Math.random() * 5);
         }
 
         currentScale = float3.Lerp(startScales[i], dest, moveTimer/dirChangeFreq);
