@@ -156,6 +156,11 @@ public:
     static bool Raycast(Ogre::Entity* meshEntity, const Ray& ray, float* distance = 0, unsigned* subMeshIndex = 0,
         unsigned* triangleIndex = 0, float3* hitPosition = 0, float3* normal = 0, float2* uv = 0);
 
+    /// Forces mesh asset load, even in headless mode, where it doesn't normally occur at all.
+    /** @note Successful mesh asset load in headless mode results in usable MeshAsset(), but OgreEntity() is not
+        usable still, or any other functions that depend on it (e.g. WorldOBB() et al.). */
+    void ForceMeshLoad();
+
     // DEPRECATED
     Ogre::Entity* GetEntity() const { return OgreEntity(); } /**< @deprecated use OgreEntity instead. @todo Add warning print. */
     Ogre::Bone* GetBone(const QString& boneName) const { return OgreBone(boneName); } /**< @deprecated use OgreBone instead. @todo Add warning print. */

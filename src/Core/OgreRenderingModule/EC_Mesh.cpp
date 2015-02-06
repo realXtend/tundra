@@ -1626,6 +1626,11 @@ bool EC_Mesh::Raycast(Ogre::Entity* meshEntity, const Ray& ray, float* distance,
     return closestDistance >= 0.0f;
 }
 
+void EC_Mesh::ForceMeshLoad()
+{
+    meshAsset->HandleAssetRefChange(&meshRef);
+}
+
 Ogre::Entity* EC_Mesh::OgreEntity() const
 {
     return entity_;
