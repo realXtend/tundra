@@ -6,9 +6,6 @@
 
 #include "CoreTypes.h"
 #include "SceneFwd.h"
-
-#include "kNet/PolledTimer.h"
-#include "kNet/Types.h"
 #include "Transform.h"
 #include "Math/float3.h"
 #include "MsgEntityAction.h"
@@ -20,7 +17,11 @@
 #include <map>
 #include <set>
 
+#include <kNet/PolledTimer.h>
+#include <kNet/Types.h>
+
 /// Component's per-user network sync state
+/* @sa EntitySyncState, SceneSyncState */
 struct ComponentSyncState
 {
     ComponentSyncState() :
@@ -65,6 +66,7 @@ struct ComponentSyncState
 };
 
 /// Entity's per-user network sync state
+/* @sa ComponentSyncState, SceneSyncState */
 struct EntitySyncState
 {
     EntitySyncState() :
@@ -74,7 +76,9 @@ struct EntitySyncState
         hasPropertyChanges(false),
         hasParentChange(false),
         id(0),
-        avgUpdateInterval(0.0f)
+        avgUpdateInterval(0.0f),
+        priority(-1.f),
+        relevancy(-1.f)
     {
     }
     
@@ -144,7 +148,8 @@ struct EntitySyncState
         hasPropertyChanges = false;
         hasParentChange = false;
     }
-    
+
+    /// @todo Rename to something less ambiguous, maybe RecomputeAvgUpdateInterval() or something?
     void UpdateReceived()
     {
         float time = updateTimer.MSecsElapsed() * 0.001f;
@@ -158,7 +163,26 @@ struct EntitySyncState
         else
             avgUpdateInterval = 0.5 * time + 0.5 * avgUpdateInterval;
     }
-    
+
+    /// Compares EntitySyncStates by FinalPriority().
+    /*  @remark Interest management */
+    bool operator < (const EntitySyncState &rhs) const
+    {
+        return FinalPriority() < rhs.FinalPriority();
+    }
+
+    /// Computes prioritized network update interval in seconds.
+    /*  @remark Interest management */
+//    float ComputePrioritizedUpdateInterval(float maxUpdateRate) const { return Clamp(maxUpdateRate / FinalPriority(), maxUpdateRate, MinUpdateRate); }
+    float ComputePrioritizedUpdateInterval(float maxUpdateRate) const { return Clamp(maxUpdateRate * Log2(100.f / FinalPriority()), maxUpdateRate, MinUpdateRate); }
+
+    /// Returns final/combined priority of this sync state.
+    /*  @remark Interest management */
+    float FinalPriority() const { return priority * relevancy; }
+
+    static const float MinUpdateRate; ///< 5 (in seconds)
+//    static const float MaxUpdateRate; ///< 0.005 (in seconds)
+
     std::list<ComponentSyncState*> dirtyQueue; ///< Dirty components
     std::map<component_id_t, ComponentSyncState> components; ///< Component syncstates
     entity_id_t id; ///< Entity ID. Duplicated here intentionally to allow recognizing the entity without the parent map.
@@ -167,16 +191,29 @@ struct EntitySyncState
     bool isInQueue; ///< The entity is already in the scene's dirty queue
     bool hasPropertyChanges; ///< The entity has changes into its other properties, such as temporary flag
     bool hasParentChange; ///> The entity's parent has changed
-    
-    kNet::PolledTimer updateTimer; ///< Last update received timer
-    float avgUpdateInterval; ///< Average network update interval in seconds
+
+    kNet::PolledTimer updateTimer; ///< Last update received timer, for calculating avgUpdateInterval.
+    float avgUpdateInterval; ///< Average network update interval in seconds, used for interpolation.
 
     // Special cases for rigid body streaming:
     // On the server side, remember the last sent rigid body parameters, so that we can perform effective pruning of redundant data.
     Transform transform;
     float3 linearVelocity;
     float3 angularVelocity;
-    kNet::tick_t lastNetworkSendTime;
+    kNet::tick_t lastNetworkSendTime; /**< @note Shared usage by rigid body optimization and interest management. */
+
+    /// Priority = size / distance for visible entities, inf for non-visible.
+    /** Larger number means larger importancy. If this value has not been yet calculated it's < 0.
+        Used to determinate the prioritized update interval of the entity together with relevancy.
+        @remark Interest management */
+    float priority;
+
+    /// Arbitrary relevancy factor.
+    /** Larger number means larger importancy. If this has not been yet calculated it's < 0.
+        F.ex. direction or visibility or of the entity can affect this.
+        Used to determinate the prioritized update interval of the entity together with priority.
+        @remark Interest management */
+    float relevancy;
 };
 
 struct RigidBodyInterpolationState
@@ -208,65 +245,54 @@ struct RigidBodyInterpolationState
 class TUNDRAPROTOCOL_MODULE_API StateChangeRequest : public QObject
 {
     Q_OBJECT
-
     Q_PROPERTY(bool accepted READ Accepted WRITE SetAccepted)
     Q_PROPERTY(u32 connectionID READ ConnectionID)
-
     Q_PROPERTY(entity_id_t entityId READ EntityId)
     Q_PROPERTY(Entity* entity READ GetEntity)
 
 public:
     StateChangeRequest(u32 connectionID) :
-        connectionID_(connectionID)
-    { 
-        Reset(); 
+        connectionID_(connectionID),
+        accepted_(true),
+        entityId_(0),
+        entity_(0)
+    {
     }
 
     void Reset(entity_id_t entityId = 0)
     {
         accepted_ = true;
         entityId_ = entityId;
-        entity_ = 0;
+        entity_ = 0; /**< @todo Should we fetch the Entity by ID here if ID > 0? */
     }
 
 public slots:
     /// Set the change request accepted
-    void SetAccepted(bool accepted)         
-    { 
-        accepted_ = accepted; 
-    }
+    void SetAccepted(bool accepted) { accepted_ = accepted; }
 
     /// Accept the whole change request.
-    void Accept()
-    {
-        accepted_ = true;
-    }
+    void Accept() { accepted_ = true; }
 
     /// Reject the whole change request.
-    void Reject()
-    {
-        accepted_ = false;
-    }
+    void Reject() { accepted_ = false; }
 
 public:
-    bool Accepted()                         { return accepted_; }
-    bool Rejected()                         { return !accepted_; }
-
-    u32 ConnectionID()                      { return connectionID_; }
-
-    entity_id_t EntityId()                  { return entityId_; }
-    Entity* GetEntity()                     { return entity_; }
-    void SetEntity(Entity* entity)          { entity_ = entity; }
+    bool Accepted() const { return accepted_; }
+    bool Rejected() const { return !accepted_; }
+    u32 ConnectionID()const { return connectionID_; }
+    entity_id_t EntityId() const { return entityId_; }
+    Entity* GetEntity() const { return entity_; }
+    void SetEntity(Entity* entity) { entity_ = entity; }
 
 private:
     bool accepted_;
     u32 connectionID_;
-
     entity_id_t entityId_;
     Entity* entity_;
 };
 
 /// Scene's per-user network sync state
+/* @sa ComponentSyncState, EntitySyncState */
 class TUNDRAPROTOCOL_MODULE_API SceneSyncState : public QObject
 {
     Q_OBJECT
@@ -287,13 +313,21 @@ public:
     /// Queued EntityAction messages. These will be sent to the user on the next network update tick.
     std::vector<MsgEntityAction> queuedActions;
 
+    /// Last sent (client) or received (server) observer position.
+    /** If !IsFinite() ObserverPosition message has not been been received from the client. */
+    float3 observerPos;
+    /// Last sent (client) or received (server) observer orientation.
+    /** If !IsFinite() ObserverPosition message has not been been received from the client. */
+    float3 observerRot;
+
 signals:
-    /// This signal is emitted when a entity is being added to the client sync state.
+    /// This signal is emitted when an entity is being added to the client sync state.
     /// All needed data for evaluation logic is in the StateChangeRequest parameter object.
     /// If 'request.Accepted()' is true (default) the entity will be added to the sync state,
     /// otherwise it will be added to the pending entities list. 
-    /// @note See also HasPendingEntity and MarkPendingEntityDirty.
+    /// @sa HasPendingEntity and MarkPendingEntityDirty.
     /// @param request StateChangeRequest object.
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     void AboutToDirtyEntity(StateChangeRequest *request);
 
 public slots:
@@ -344,23 +378,28 @@ public:
     void MarkAttributeCreated(entity_id_t id, component_id_t compId, u8 attrIndex);
     void MarkAttributeRemoved(entity_id_t id, component_id_t compId, u8 attrIndex);
 
-    // Silently does the same as MarkEntityDirty without emitting change request signal.
+    /// Silently does the same as MarkEntityDirty without emitting change request signal.
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     EntitySyncState& MarkEntityDirtySilent(entity_id_t id);
 
-    // Removes entity from pending lists.
+    /// Removes entity from pending lists.
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     void RemovePendingEntity(entity_id_t id);
 
     bool NeedSendPlaceholderComponents() const { return !placeholderComponentsSent_; }
     void MarkPlaceholderComponentsSent() { placeholderComponentsSent_ = true; }
 
 private:
-    // Returns if entity with id should be added to the sync state.
+    /// Returns if entity with id should be added to the sync state.
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     bool ShouldMarkAsDirty(entity_id_t id);
 
-    // Fills changeRequest_ with entity data, returns if request is valid. 
+    /// Fills changeRequest_ with entity data, returns if request is valid. 
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     bool FillRequest(entity_id_t id);
-    
-    // Adds the entity id to the pending entity list.
+
+    /// Adds the entity id to the pending entity list.
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     void AddPendingEntity(entity_id_t id);
 
     /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.

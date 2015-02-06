@@ -20,11 +20,16 @@ class Framework;
 namespace TundraLogic
 {
 /// Performs synchronization of the changes in a scene between the server and the client.
-/** SyncManager and SceneSyncState combined can be used to implement prioritization logic on how and when
-    a sync state is filled per client connection. SyncManager object is only exposed to scripting on the server. */
+/** @todo Interest management functionality description.
+
+    Alternatively, SyncManager and SceneSyncState can be used to implement prioritization logic on how and when
+    a sync state is filled per client connection. */
 class TUNDRAPROTOCOL_MODULE_API SyncManager : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(float updatePeriod READ GetUpdatePeriod WRITE SetUpdatePeriod) /**< @copydoc updatePeriod_ */
+    Q_PROPERTY(bool interestManagementEnabled READ IsInterestManagementEnabled WRITE SetInterestManagementEnabled) /**< @copydoc interestManagementEnabled */
+    Q_PROPERTY(EntityPtr observer READ Observer WRITE SetObserver) /**< @copydoc observer */
 
 public:
     explicit SyncManager(TundraLogicModule* owner);
@@ -39,15 +44,26 @@ public:
     /// Create new replication state for user and dirty it (server operation only)
     void NewUserConnected(const UserConnectionPtr &user);
 
+    /// Enables or disables the interest management. @remark Interest management
+    void SetInterestManagementEnabled(bool enabled) { interestManagementEnabled = enabled; }
+    /// Returns is the interest management enabled. @remark Interest management
+    bool IsInterestManagementEnabled() const { return interestManagementEnabled; }
+
+    /// Sets the client's observer entity. @remark Interest management
+    /** @note The entity needs to have Placeable component present in order to be usable. */
+    void SetObserver(const EntityPtr &entity) { observer = entity; }
+    /// Returns the observer entity, if any. @remark Interest management
+    EntityPtr Observer() const { return observer.lock(); }
+
 public slots:
-    /// Set update period (seconds)
+    /// Set update period (seconds), 0.01 at fastest.
     void SetUpdatePeriod(float period);
 
     /// Get update period
     float GetUpdatePeriod() const { return updatePeriod_; }
 
     /// Returns SceneSyncState for a client connection.
-    /** @note This slot is only exposed on Server, other wise will return null ptr.
+    /** @note This slot is only usable when running as server, otherwise will return null ptr.
         @param u32 connection ID of the client. */
     SceneSyncState* SceneState(u32 connectionId) const;
     SceneSyncState* SceneState(const UserConnectionPtr &connection) const; /**< @overload @param connection Client connection.*/
@@ -55,6 +71,7 @@ public slots:
 signals:
     /// This signal is emitted when a new user connects and a new SceneSyncState is created for the connection.
     /// @note See signals of the SceneSyncState object to build prioritization logic how the sync state is filled.
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     void SceneStateCreated(UserConnection *user, SceneSyncState *state);
     
 private slots:
@@ -150,6 +167,15 @@ private:
     
     ScenePtr GetRegisteredScene() const { return scene_.lock(); }
 
+    /// @remark Interest management.
+    void HandleObserverPosition(UserConnection* source, const char* data, size_t numBytes);
+    /// Sends client's observer information. @remark Interest management
+    void SendObserverPosition(UserConnection* connection, SceneSyncState *senderState);
+    /// (Re)computes priority for entity. @remark Interest management
+    void ComputePriorityForEntitySyncState(SceneSyncState *sceneState, EntitySyncState *entityState, Entity *entity) const;
+    /// (Re)computes priorities for all entities in the scene. @remark Interest management
+    void ComputePrioritiesForEntitySyncStates(SceneSyncState *sceneState) const;
+
     /// Owning module
     TundraLogicModule* owner_;
     
@@ -188,6 +214,16 @@ private:
 
     /// Set of custom component type id's that were received from the server, to avoid echoing them back in ProcessSyncState
     std::set<u32> componentTypesFromServer_;
+
+    float prioUpdateAcc_; /**< Time accumulator for priority update @remark Interest management */
+    /// Is interest management enabled.
+    /** On client this means that the observer's position information is sent to the server.
+        On server this means that dirty entities are sorted and synced according to their priority that is calculated according to observer position.
+        @remark Interest management */
+    bool interestManagementEnabled;
+    /// If interestManagementEnabled is true, on client this entity's position information is sent to the server.
+    /** @remark Interest management */
+    EntityWeakPtr observer;
 };
 
 }

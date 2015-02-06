@@ -15,17 +15,22 @@ typedef std::vector<entity_id_t> EntityIdList;
 typedef EntityIdList::const_iterator PendingConstIter;
 typedef EntityIdList::iterator PendingIter;
 
+const float EntitySyncState::MinUpdateRate = 5.f;
+//const float EntitySyncState::MaxUpdateRate = 0.005f;
+
 SceneSyncState::SceneSyncState(u32 userConnectionID, bool isServer) :
     userConnectionID_(userConnectionID),
     changeRequest_(userConnectionID),
     isServer_(isServer),
-    placeholderComponentsSent_(false)
+    placeholderComponentsSent_(false),
+    observerPos(float3::nan),
+    observerRot(float3::nan)
 {
-    Clear();
 }
 
 SceneSyncState::~SceneSyncState()
 {
+    Clear();
 }
 
 // Public slots

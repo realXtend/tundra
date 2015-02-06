@@ -112,14 +112,10 @@ void TundraLogicModule::Initialize()
     client_ = MAKE_SHARED(Client, this);
     server_ = MAKE_SHARED(Server, this);
     syncManager_ = MAKE_SHARED(SyncManager, this); // Syncmanager expects client & server to exist
-    
-    // Expose client and server to everyone
+
     framework_->RegisterDynamicObject("client", client_.get());
     framework_->RegisterDynamicObject("server", server_.get());
-
-    // Expose SyncManager only on the server side for scripting
-    if (server_->IsAboutToStart())
-        framework_->RegisterDynamicObject("syncmanager", syncManager_.get());
+    framework_->RegisterDynamicObject("syncmanager", syncManager_.get());
 
     framework_->Console()->RegisterCommand("startServer", "Starts a server. Usage: startServer(port,protocol)",
         server_.get(), SLOT(Start(unsigned short,QString)));

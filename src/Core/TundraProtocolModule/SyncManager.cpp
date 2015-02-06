@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE
 
 #include "StableHeaders.h"
+#define MATH_OGRE_INTEROP
 #include "DebugOperatorNew.h"
 
 #include "SyncManager.h"
@@ -9,12 +10,10 @@
 #include "Server.h"
 #include "TundraMessages.h"
 #include "MsgEntityAction.h"
-#include "OgreWorld.h"
 #include "Scene/Scene.h"
 #include "Entity.h"
 #include "CoreStringUtils.h"
 #include "EC_DynamicComponent.h"
-#include "EC_Camera.h"
 #include "AssetAPI.h"
 #include "IAssetStorage.h"
 #include "AttributeMetadata.h"
@@ -24,6 +23,9 @@
 #include "EC_RigidBody.h"
 #include "SceneAPI.h"
 #include "UserConnection.h"
+#include "EC_Mesh.h"
+#include "OgreMeshAsset.h"
+//#include "EC_Sound.h"
 
 #include <kNet.h>
 
@@ -77,8 +79,14 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     updateAcc_(0.0),
     maxLinExtrapTime_(3.0f),
     noClientPhysicsHandoff_(false),
-    componentTypeSender_(0)
+    componentTypeSender_(0),
+    prioUpdateAcc_(0.0),
+    interestManagementEnabled(false)
 {
+    QStringList imArg = framework_->CommandLineParameters("--interestManagement");
+    if (!imArg.empty())
+        SetInterestManagementEnabled(ParseBool(imArg.last()));
+
     if (framework_->HasCommandLineParameter("--noclientphysics"))
         noClientPhysicsHandoff_ = true;
 
@@ -184,13 +192,16 @@ void SyncManager::RegisterToScene(ScenePtr scene)
 
 void SyncManager::HandleNetworkMessage(UserConnection* user, kNet::packet_id_t packetId, kNet::message_id_t messageId, const char* data, size_t numBytes)
 {
-    if (!user || !scene_.lock().get())
+    if (!user || scene_.expired())
         return;
 
     try
     {
         switch(messageId)
         {
+        case cObserverPositionMessage:
+            HandleObserverPosition(user, data, numBytes);
+            break;
         case cCreateEntityMessage:
             HandleCreateEntity(user, data, numBytes);
             break;
@@ -275,8 +286,9 @@ void SyncManager::NewUserConnected(const UserConnectionPtr &user)
         EntityPtr entity = iter->second;
         if (entity->IsLocal())
             continue;
-        entity_id_t id = entity->Id();
-        user->syncState->MarkEntityDirty(id);
+        if (interestManagementEnabled)
+            ComputePriorityForEntitySyncState(user->syncState.get(), 0, entity.get());
+        user->syncState->MarkEntityDirty(entity->Id());
     }
 }
 
@@ -800,6 +812,7 @@ void SyncManager::Update(f64 frametime)
 
     // Check if it is yet time to perform a network update tick.
     updateAcc_ += (float)frametime;
+    prioUpdateAcc_ += (float)frametime;
     if (updateAcc_ < updatePeriod_)
         return;
 
@@ -819,23 +832,40 @@ void SyncManager::Update(f64 frametime)
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
             if ((*i)->syncState)
             {
-                // As of now only native clients understand the optimized rigid body sync message.
-                // This may change with future protocol versions
-                if (dynamic_cast<KNetUserConnection*>(i->get()))
-                { 
-                    // First send out all changes to rigid bodies.
-                    // After processing this function, the bits related to rigid body states have been cleared,
-                    // so the generic sync will not double-replicate the rigid body positions and velocities.
-                    ReplicateRigidBodyChanges((*i).get());
+                // First sort the dirty queue according to priority if IM enabled
+                if (interestManagementEnabled)
+                {
+                    const float prioUpdatePeriod = 1.0f; /**< @todo Make configurable. */
+                    if (prioUpdateAcc_ >= prioUpdatePeriod)
+                    {
+                        ComputePrioritiesForEntitySyncStates((*i)->syncState.get());
+                        prioUpdateAcc_ = fmod(prioUpdateAcc_, prioUpdatePeriod);
+                    }
+                    PROFILE(SyncManager_Update_SortDirtyQueue);
+                    (*i)->syncState->dirtyQueue.sort();
                 }
+
+                // First send out all changes to rigid bodies.
+                // After processing this function, the bits related to rigid body states have been cleared,
+                // so the generic sync will not double-replicate the rigid body positions and velocities.
+                /// @note As of now only native clients understand the optimized rigid body sync message.
+                /// This may change with future protocol versions
+                if (dynamic_pointer_cast<KNetUserConnection>(*i))
+                    ReplicateRigidBodyChanges((*i).get());
+                // Then send out changes to other attributes via the generic sync mechanism.
                 ProcessSyncState((*i).get());
             }
     }
     else
     {
         // If we are client and the connection is current, process just the server sync state
-        if (static_cast<KNetUserConnection*>(serverConnection_.get())->connection)
+        kNet::MessageConnection* connection = static_pointer_cast<KNetUserConnection>(serverConnection_)->connection;
+        if (connection)
+        {
             ProcessSyncState(serverConnection_.get());
+            if (interestManagementEnabled)
+                SendObserverPosition(serverConnection_.get(), serverConnection_->syncState.get());
+        }
     }
 }
 
@@ -924,10 +954,13 @@ void SyncManager::ReplicateRigidBodyChanges(UserConnection* user)
         if (!transformDirty && !velocityDirty && !angularVelocityDirty)
             continue;
 
-        const Transform &t = placeable->transform.Get();
-
         float timeSinceLastSend = kNet::Clock::SecondsSinceF(ess.lastNetworkSendTime);
+        /// @todo Is this the best place for this check?
+        if (interestManagementEnabled && timeSinceLastSend < ess.ComputePrioritizedUpdateInterval(updatePeriod_))
+            continue;
+
         const float3 predictedClientSidePosition = ess.transform.pos + timeSinceLastSend * ess.linearVelocity;
+        const Transform &t = placeable->transform.Get();
         float error = t.pos.DistanceSq(predictedClientSidePosition);
         UNREFERENCED_PARAM(error)
         // TEST: To have the server estimate how far the client has simulated, use this.
@@ -1200,7 +1233,7 @@ void SyncManager::HandleRigidBodyChanges(UserConnection* source, kNet::packet_id
         if (posSendType != 0 || rotSendType != 0 || scaleSendType != 0 || velSendType != 0 || angVelSendType != 0)
         {
             // Create or update the interpolation state.
-            Transform orig = placeable->transform.Get();
+            const Transform &orig = placeable->transform.Get();
 
             std::map<entity_id_t, RigidBodyInterpolationState>::iterator iter = serverConnection_->syncState->entityInterpolations.find(entityID);
             if (iter != serverConnection_->syncState->entityInterpolations.end())
@@ -1437,9 +1470,8 @@ void SyncManager::ProcessSyncState(UserConnection* user)
     unsigned sceneId = 0; ///\todo Replace with proper scene ID once multiscene support is in place.
     
     ScenePtr scene = scene_.lock();
-    int numMessagesSent = 0;
-    bool isServer = owner_->IsServer();
-    UNREFERENCED_PARAM(isServer)
+    int numMessagesSent = 0; /**< @todo debug variable, can be removed (or enable only in debug build?) */
+    const bool isServer = owner_->IsServer();
     SceneSyncState* state = user->syncState.get();
     
     // Send knowledge of registered placeholder components to the remote peer
@@ -1455,14 +1487,23 @@ void SyncManager::ProcessSyncState(UserConnection* user)
         state->MarkPlaceholderComponentsSent();
     }
 
+    // Interest management sync priorization performed only on the server
+    const bool serverImEnabled = (isServer && interestManagementEnabled);
+
     // Process the state's dirty entity queue.
-    /// \todo Limit and prioritize the data sent. For now the whole queue is processed, regardless of whether the connection is being saturated.
-    while (!state->dirtyQueue.empty())
+    std::list<EntitySyncState*>::iterator it = state->dirtyQueue.begin();
+    while(it != state->dirtyQueue.end())
     {
-        EntitySyncState& entityState = *state->dirtyQueue.front();
-        state->dirtyQueue.pop_front();
+        EntitySyncState& entityState = **it;
+        // See if we need to sync yet.
+        float timeSinceLastSend = kNet::Clock::SecondsSinceF(entityState.lastNetworkSendTime);
+        if (serverImEnabled && timeSinceLastSend < entityState.ComputePrioritizedUpdateInterval(updatePeriod_))
+        {
+            ++it;
+            continue;
+        }
+
         entityState.isInQueue = false;
-        
         EntityPtr entity = scene->GetEntity(entityState.id);
         bool removeState = false;
         if (!entity)
@@ -1476,7 +1517,10 @@ void SyncManager::ProcessSyncState(UserConnection* user)
         {
             // Make sure we don't send data for local entities, or unacked entities after the create
             if (entity->IsLocal() || (!entityState.isNew && entity->IsUnacked()))
+            {
+                it = state->dirtyQueue.erase(it);
                 continue;
+            }
         }
         
         // Remove entity
@@ -1500,6 +1544,7 @@ void SyncManager::ProcessSyncState(UserConnection* user)
             ds.AddVLE<kNet::VLE8_16_32>(entityState.id & UniqueIdGenerator::LAST_REPLICATED_ID);
             user->Send(cRemoveEntityMessage, true, true, ds);
             ++numMessagesSent;
+            it = state->dirtyQueue.erase(it);
         }
         // New entity
         else if (entityState.isNew)
@@ -1543,7 +1588,7 @@ void SyncManager::ProcessSyncState(UserConnection* user)
             
             user->Send(cCreateEntityMessage, true, true, ds);
             ++numMessagesSent;
-            
+            it = state->dirtyQueue.erase(it);
             // The create has been processed fully. Clear dirty flags.
             state->MarkEntityProcessed(entity->Id());
         }
@@ -1814,7 +1859,8 @@ void SyncManager::ProcessSyncState(UserConnection* user)
                 user->Send(cSetEntityParentMessage, true, true, editParentDs);
                 ++numMessagesSent;
             }
-            
+
+            it = state->dirtyQueue.erase(it);
             // The entity has been processed fully. Clear dirty flags.
             state->MarkEntityProcessed(entity->Id());
         }
@@ -2727,8 +2773,6 @@ void SyncManager::HandleCreateComponentsReply(UserConnection* source, const char
 
 void SyncManager::HandleEntityAction(UserConnection* source, MsgEntityAction& msg)
 {
-    bool isServer = owner_->IsServer();
-    
     ScenePtr scene = GetRegisteredScene();
     if (!scene)
     {
@@ -2744,15 +2788,10 @@ void SyncManager::HandleEntityAction(UserConnection* source, MsgEntityAction& ms
         return;
     }
 
-    // If we are server, get the user who sent the action, so it can be queried
-    if (isServer)
-    {
-        Server* server = owner_->GetServer().get();
-        if (server)
-        {
-            server->SetActionSender(source->shared_from_this());
-        }
-    }
+    const bool isServer = owner_->IsServer();
+    Server *server = owner_->GetServer().get();
+    if (isServer) // Set the user who sent the action, so it can be queried
+        server->SetActionSender(source->shared_from_this());
     
     QString action = BufferToString(msg.name).c_str();
     QStringList params;
@@ -2782,10 +2821,167 @@ void SyncManager::HandleEntityAction(UserConnection* source, MsgEntityAction& ms
     if (!handled)
         LogWarning("SyncManager: Received MsgEntityAction message \"" + action + "\", but it went unhandled because of its type=" + QString::number(type));
 
-    // Clear the action sender after action handling
-    Server *server = owner_->GetServer().get();
-    if (server)
-        server->SetActionSender(UserConnectionPtr());
+    server->SetActionSender(UserConnectionPtr()); // Clear the action sender after action handling
+}
+
+
+void SyncManager::SendObserverPosition(UserConnection *connection, SceneSyncState *senderState)
+{
+    EC_Placeable *placeable = !observer.expired() ? observer.lock()->Component<EC_Placeable>().get() : 0;
+    if (placeable)
+    {
+        float3 pos = placeable->WorldPosition();
+        float3 rot = placeable->WorldOrientation().ToEulerZYX();
+        if (!pos.Equals(senderState->observerPos) || !rot.Equals(senderState->observerRot))
+        {
+            senderState->observerPos = pos;
+            senderState->observerRot = rot;
+            /// @todo Use optimized pos and rot format when applicable
+            const size_t dataSize = sizeof(uint) + 6 * sizeof(float); /** <@todo use scene_id_t instead of uint when available */
+            char dataBuffer[dataSize];
+            kNet::DataSerializer ds(dataBuffer, dataSize);
+            ds.AddVLE<kNet::VLE8_16_32>((uint)0/*scene->Id()*/);/** <@todo Use proper scene ID when available */
+            ds.Add<float>(pos.x);
+            ds.Add<float>(pos.y);
+            ds.Add<float>(pos.z);
+            ds.Add<float>(rot.x);
+            ds.Add<float>(rot.y);
+            ds.Add<float>(rot.z);
+            connection->Send(cObserverPositionMessage, false, false, ds);
+        }
+    }
+}
+
+void SyncManager::ComputePriorityForEntitySyncState(SceneSyncState *sceneState, EntitySyncState *entityState, Entity *entity) const
+{
+    assert(sceneState);
+    assert(entityState || entity);
+    if (!sceneState)
+        return;
+    if (!sceneState->observerPos.IsFinite() || !sceneState->observerRot.IsFinite())
+        return; // camera information not received yet.
+    if (!entityState && entity)
+    {
+        if (sceneState->entities.find(entity->Id()) == sceneState->entities.end())
+        {
+            LogWarning("SyncManager::ComputePriorityForEntitySyncState: " + entity->ToString() + " does not exists in SceneSyncState.");
+            return;
+        }
+        entityState = &sceneState->entities[entity->Id()];
+    }
+    if (entityState && !entity)
+        entity = scene_.lock()->EntityById(entityState->id).get();
+//    assert((entity && entityState));
+    if (!entityState || !entity)
+        return; // we (might) end up here e.g. when entity was just deleted
+
+    shared_ptr<EC_Placeable> placeable = entity->Component<EC_Placeable>();
+    shared_ptr<EC_Mesh> mesh = entity->Component<EC_Mesh>();
+    shared_ptr<EC_RigidBody> rigidBody = entity->Component<EC_RigidBody>();
+
+    /// @todo sound sources
+/*
+    shared_ptr<EC_Sound> sound = entity->Component<EC_Sound>();
+    if (sound)
+    {
+        if (sound->spatial.Get() && placeable)
+        {
+            float r = audio->soundOuterRadius.Get();
+            r *= r;
+            entityState->priority = 4.f * pi * r / sceneState->observerPos.DistanceSq(placeable->WorldPosition());
+        }
+        else
+            entityState->priority = inf;
+    }
+*/
+    /// @todo Handle terrains
+//    shared_ptr<EC_Terrain> terrain = entity->Component<EC_Terrain>();
+//    if (terrain) { ... }
+
+    if (!placeable)
+    {
+        /// @todo Should handle special case entities with rigid body but no placeable?
+        //if (rigidBody)
+        // Non-spatial (probably), use max priority
+        /// @todo Can have f.ex. Terrain component that has its own transform, but it can use Placeable too.
+        entityState->priority = inf;
+    }
+    else if (placeable && !mesh)
+    {
+        // Spatial, but no mesh, for now use a harcoded priority of 20 (updateInterval = 1 / (priority * relevance),
+        // so will probably yield the default SyncManager's update period 1/20th of a second
+        entityState->priority = 20.f;
+        /// @todo retrieve/calculate bounding volumes of possible billboards, particle systems, lights, etc.
+        /// Not going to be easy with Ogre though, especially when running in headless mode.
+    }
+    else if (placeable && mesh)
+    {
+        OBB worldObb;
+        if (framework_->IsHeadless())
+        {
+            // On headless mode, force mesh asset load in order to be able to inspect its AABB.
+            if (!mesh->MeshAsset() && !mesh->meshRef.Get().ref.trimmed().isEmpty())
+            {
+                mesh->ForceMeshLoad();
+                return; // compute the priority next time when mesh asset is available
+            }
+            // EC_Mesh::WorldOBB not usable in headless mode (no Ogre::Entity available),
+            // so we must dig the bounding volume information from OgreMeshAsset (Ogre::Mesh) instead.
+            /// @todo For some meshes (f.ex. floor of the Avatar scene) there seems to be significant disperancy
+            // between the OBB values when running as headless or not. Investigate.
+            Ogre::MeshPtr ogreMesh = mesh->MeshAsset() ? mesh->MeshAsset()->ogreMesh : Ogre::MeshPtr();
+            if (ogreMesh.isNull())
+                LogWarning("SyncManager::ComputePriorityForEntitySyncState: " + entity->ToString().toStdString() + " has null Ogre mesh " + mesh->GetMeshName());
+            worldObb = !ogreMesh.isNull() ? AABB(ogreMesh->getBounds()) : OBB();
+            worldObb.Transform(placeable->LocalToWorld());
+        }
+        else
+            worldObb = mesh->WorldOBB();
+        float sizeSq = worldObb.SurfaceArea();
+        sizeSq *= sizeSq;
+        float distanceSq = sceneState->observerPos.DistanceSq(placeable->WorldPosition());
+        entityState->priority = sizeSq/distanceSq;
+//        LogDebug(QString("%1 sizeSq %2 distanceSq %3").arg(entity->ToString()).arg(sizeSq).arg(distanceSq));
+    }
+
+    /// @todo Take direction and velocity of rigid bodies into account
+        //if (rigibBody)
+    /// @todo Hardcoded relevancy of 10 for entities with RigidBody component and 1 for others for now.
+    entityState->relevancy = rigidBody /*entity->Component("EC_Avatar")*/ ? 10.f : 1.f;
+    LogDebug(QString("%1 P %2 R %3 P*R %4 syncRate %5").arg(entity->ToString()).arg(
+        entityState->priority).arg(entityState->relevancy).arg(entityState->FinalPriority()).arg(entityState->ComputePrioritizedUpdateInterval(updatePeriod_)));
+}
+
+void SyncManager::ComputePrioritiesForEntitySyncStates(SceneSyncState *sceneState) const
+{
+    PROFILE(SyncManager_ComputePrioritiesForEntitySyncStates);
+    for(std::map<entity_id_t, EntitySyncState>::iterator it = sceneState->entities.begin(); it != sceneState->entities.end(); ++it)
+        ComputePriorityForEntitySyncState(sceneState, &(*it).second, 0);
+}
+
+void SyncManager::HandleObserverPosition(UserConnection* source, const char* data, size_t numBytes)
+{
+    SceneSyncState *syncState = source->syncState.get();
+    if (!syncState)
+        return;
+    kNet::DataDeserializer dd(data, numBytes);
+    uint sceneId = dd.ReadVLE<kNet::VLE8_16_32>(); /**< @todo scene_id_t */
+    UNREFERENCED_PARAM(sceneId) /**< @todo Scene lookup, when multi-scene support is in place. */
+    float3 pos, rot;
+    pos.x = dd.Read<float>();
+    pos.y = dd.Read<float>();
+    pos.z = dd.Read<float>();
+    rot.x = dd.Read<float>();
+    rot.y = dd.Read<float>();
+    rot.z = dd.Read<float>();
+    if (!pos.Equals(syncState->observerPos) || !rot.Equals(syncState->observerRot))
+    {
+        // Save observer information always, but compute priorities only if IM enabled.
+        syncState->observerPos = pos;
+        syncState->observerRot = rot;
+        //if (interestManagementEnabled)
+          //  ComputePrioritiesForEntitySyncStates(syncState);
+    }
 }
 
 }

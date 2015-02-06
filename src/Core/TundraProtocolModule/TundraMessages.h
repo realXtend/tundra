@@ -8,11 +8,12 @@ const unsigned long cLoginReplyMessage = 101;
 const unsigned long cClientJoinedMessage = 102;
 const unsigned long cClientLeftMessage = 103;
 
-// Camera
-const unsigned long cCameraOrientationUpdate = 104;
-const unsigned long cCameraOrientationRequest = 105;
+// Interest management
+/// @todo const unsigned long cSetObserverMessage = 104; // Server->client, tells what entity to use as the observer
+const unsigned long cObserverPositionMessage = 105; // Client->server only currently, but could be used server->client also to tell that "you are now here".
 
 // Scenesync
+// NOTE 106-108 should be reserved for Scene messages (Create, EditProperties, Remove)
 const unsigned long cEditEntityPropertiesMessage = 109;
 const unsigned long cCreateEntityMessage = 110;
 const unsigned long cCreateComponentsMessage = 111;
