@@ -62,11 +62,9 @@ public slots:
     /// Get update period
     float GetUpdatePeriod() const { return updatePeriod_; }
 
-    /// Returns SceneSyncState for a client connection.
-    /** @note This slot is only usable when running as server, otherwise will return null ptr.
-        @param u32 connection ID of the client. */
-    SceneSyncState* SceneState(u32 connectionId) const;
-    SceneSyncState* SceneState(const UserConnectionPtr &connection) const; /**< @overload @param connection Client connection.*/
+    // DEPRECATED
+    SceneSyncState* SceneState(u32 connectionId) const;/** @deprecated Use UserConnection::syncState property from script @note This slot is only usable when running as server, otherwise will return null ptr. */
+    SceneSyncState* SceneState(const UserConnectionPtr &connection) const; /** @deprecated Use UserConnection::syncState property from script @overload*/
 
 signals:
     /// This signal is emitted when a new user connects and a new SceneSyncState is created for the connection.

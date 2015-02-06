@@ -296,6 +296,11 @@ private:
 class TUNDRAPROTOCOL_MODULE_API SceneSyncState : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(float3 observerPos READ ObserverPos) /**< @copydoc observerPos */
+    Q_PROPERTY(float3 observerRot READ ObserverRot) /**< @copydoc observerRot */
+    // Q_PROPERTY machinery
+    const float3 &ObserverPos() const { return observerPos; }
+    const float3 &ObserverRot() const { return observerRot; }
 
 public:
     SceneSyncState(u32 userConnectionID = 0, bool isServer = false);

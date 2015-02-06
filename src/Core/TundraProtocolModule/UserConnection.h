@@ -32,6 +32,9 @@ class TUNDRAPROTOCOL_MODULE_API UserConnection : public QObject, public enable_s
     Q_PROPERTY(int id READ ConnectionId)
     Q_PROPERTY(int protocolVersion READ ProtocolVersion)
     Q_PROPERTY(QString connectionType READ ConnectionType)
+    Q_PROPERTY(SceneSyncState *syncState READ SyncState)
+    // Q_PROPERTY machinery
+    SceneSyncState *SyncState() const { return syncState.get(); }
 
 public:
     UserConnection() : 
