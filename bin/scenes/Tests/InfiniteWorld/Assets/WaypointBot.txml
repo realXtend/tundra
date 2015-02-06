@@ -23,7 +23,6 @@
    <attribute value="Roboto.material" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="true" name="Cast shadows"/>
-   <attribute value="-1" name="Raycast submesh mask"/>
   </component>
   <component type="EC_RigidBody" sync="1">
    <attribute value="10" name="Mass"/>
