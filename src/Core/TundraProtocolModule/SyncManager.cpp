@@ -33,8 +33,108 @@
 
 #include "MemoryLeakCheck.h"
 
+namespace
+{
 // Used to print EC mismatch warnings only once per EC.
-static std::set<u32> mismatchingComponentTypes;
+std::set<u32> mismatchingComponentTypes;
+
+// Helper function for optimizing network transfer of position and orientation
+void WriteOptimizedPosAndRot(kNet::DataSerializer &ds, int posSendType, const float3 &pos, int rotSendType, const float3x3 &rot)
+{
+    if (posSendType == 1) // Sends fixed 57 bits.
+    {
+        ds.AddSignedFixedPoint(11, 8, pos.x);
+        ds.AddSignedFixedPoint(11, 8, pos.y);
+        ds.AddSignedFixedPoint(11, 8, pos.z);
+    }
+    else if (posSendType == 2) // Sends fixed 96 bits.
+    {
+        ds.Add<float>(pos.x);
+        ds.Add<float>(pos.y);
+        ds.Add<float>(pos.z);
+    }
+
+    if (rotSendType == 1) // Orientation with 1 DOF, only yaw.
+    {
+        // The transform is looking straight forward, i.e. the +y vector of the transform local space points straight towards +y in world space.
+        // Therefore the forward vector has y == 0, so send (x,z) as a 2D vector.
+        ds.AddNormalizedVector2D(rot.Col(2).x, rot.Col(2).z, 8);  // Sends fixed 8 bits.
+    }
+    else if (rotSendType == 2) // Orientation with 2 DOF, yaw and pitch.
+    {
+        float3 forward = rot.Col(2);
+        forward.Normalize();
+        ds.AddNormalizedVector3D(forward.x, forward.y, forward.z, 9, 8); // Sends fixed 17 bits.
+    }
+    else if (rotSendType == 3) // Orientation with 3 DOF, full yaw, pitch and roll.
+    {
+        Quat o = rot.ToQuat();
+
+        float3 axis;
+        float angle;
+        o.ToAxisAngle(axis, angle);
+        if (angle >= 3.141592654f) // Remove the quaternion double cover representation by constraining angle to [0, pi].
+        {
+            axis = -axis;
+            angle = 2.f * 3.141592654f - angle;
+        }
+
+        // Sends 10-31 bits.
+        u32 quantizedAngle = ds.AddQuantizedFloat(0, 3.141592654f, 10, angle);
+        if (quantizedAngle != 0)
+            ds.AddNormalizedVector3D(axis.x, axis.y, axis.z, 11, 10);
+    }
+}
+
+// Helper function for optimizing network transfer of position and orientation
+void ReadOptimizedPosAndRot(kNet::DataDeserializer &dd, int posSendType, float3 &pos, int rotSendType, Quat &rot)
+{
+    if (posSendType == 1)
+    {
+        pos.x = dd.ReadSignedFixedPoint(11, 8);
+        pos.y = dd.ReadSignedFixedPoint(11, 8);
+        pos.z = dd.ReadSignedFixedPoint(11, 8);
+    }
+    else if (posSendType == 2)
+    {
+        pos.x = dd.Read<float>();
+        pos.y = dd.Read<float>();
+        pos.z = dd.Read<float>();
+    }
+
+    if (rotSendType == 1) // 1 DOF
+    {
+        float3 forward;
+        dd.ReadNormalizedVector2D(8, forward.x, forward.z);
+        forward.y = 0.f;
+        float3x3 orientation = float3x3::LookAt(float3::unitZ, forward, float3::unitY, float3::unitY);
+        rot.Set(orientation);
+    }
+    else if (rotSendType == 2)
+    {
+        float3 forward;
+        dd.ReadNormalizedVector3D(9, 8, forward.x, forward.y, forward.z);
+
+        float3x3 orientation = float3x3::LookAt(float3::unitZ, forward, float3::unitY, float3::unitY);
+        rot.Set(orientation);
+    }
+    else if (rotSendType == 3)
+    {
+        // Read the quantized float manually, without a call to ReadQuantizedFloat, to be able to compare the quantized bit pattern.
+        u32 quantizedAngle = dd.ReadBits(10);
+        if (quantizedAngle != 0)
+        {
+            float angle = quantizedAngle * 3.141592654f / (float)((1 << 10) - 1);
+            float3 axis;
+            dd.ReadNormalizedVector3D(11, 10, axis.x, axis.y, axis.z);
+            rot = Quat(axis, angle);
+        }
+        else
+            rot = Quat::identity;
+    }
+}
+
+} // ~unnamed namespace
 
 namespace TundraLogic
 {
@@ -1018,49 +1118,8 @@ void SyncManager::ReplicateRigidBodyChanges(UserConnection* user)
         ds.AddVLE<kNet::VLE8_16_32>(ess.id); // Sends max. 32 bits.
 
         ds.AddArithmeticEncoded(8, posSendType, 3, rotSendType, 4, scaleSendType, 3, velSendType, 3, angVelSendType, 2); // Sends fixed 8 bits.
-        if (posSendType == 1) // Sends fixed 57 bits.
-        {
-            ds.AddSignedFixedPoint(11, 8, t.pos.x);
-            ds.AddSignedFixedPoint(11, 8, t.pos.y);
-            ds.AddSignedFixedPoint(11, 8, t.pos.z);
-        }
-        else if (posSendType == 2) // Sends fixed 96 bits.
-        {
-            ds.Add<float>(t.pos.x);
-            ds.Add<float>(t.pos.y);
-            ds.Add<float>(t.pos.z);
-        }        
 
-        if (rotSendType == 1) // Orientation with 1 DOF, only yaw.
-        {
-            // The transform is looking straight forward, i.e. the +y vector of the transform local space points straight towards +y in world space.
-            // Therefore the forward vector has y == 0, so send (x,z) as a 2D vector.
-            ds.AddNormalizedVector2D(rot.Col(2).x, rot.Col(2).z, 8);  // Sends fixed 8 bits.
-        }
-        else if (rotSendType == 2) // Orientation with 2 DOF, yaw and pitch.
-        {
-            float3 forward = rot.Col(2);
-            forward.Normalize();
-            ds.AddNormalizedVector3D(forward.x, forward.y, forward.z, 9, 8); // Sends fixed 17 bits.
-        }
-        else if (rotSendType == 3) // Orientation with 3 DOF, full yaw, pitch and roll.
-        {
-            Quat o = t.Orientation();
-
-            float3 axis;
-            float angle;
-            o.ToAxisAngle(axis, angle);
-            if (angle >= 3.141592654f) // Remove the quaternion double cover representation by constraining angle to [0, pi].
-            {
-                axis = -axis;
-                angle = 2.f * 3.141592654f - angle;
-            }
-
-            // Sends 10-31 bits.
-            u32 quantizedAngle = ds.AddQuantizedFloat(0, 3.141592654f, 10, angle);
-            if (quantizedAngle != 0)
-                ds.AddNormalizedVector3D(axis.x, axis.y, axis.z, 11, 10);
-        }
+        WriteOptimizedPosAndRot(ds, posSendType, t.pos, rotSendType, rot);
 
         if (scaleSendType == 1) // Sends fixed 32 bytes.
         {
@@ -1149,50 +1208,9 @@ void SyncManager::HandleRigidBodyChanges(UserConnection* source, kNet::packet_id
         int angVelSendType;
         dd.ReadArithmeticEncoded(8, posSendType, 3, rotSendType, 4, scaleSendType, 3, velSendType, 3, angVelSendType, 2);
 
-        if (posSendType == 1)
-        {
-            t.pos.x = dd.ReadSignedFixedPoint(11, 8);
-            t.pos.y = dd.ReadSignedFixedPoint(11, 8);
-            t.pos.z = dd.ReadSignedFixedPoint(11, 8);
-        }
-        else if (posSendType == 2)
-        {
-            t.pos.x = dd.Read<float>();
-            t.pos.y = dd.Read<float>();
-            t.pos.z = dd.Read<float>();
-        }
-
-        if (rotSendType == 1) // 1 DOF
-        {
-            float3 forward;
-            dd.ReadNormalizedVector2D(8, forward.x, forward.z);
-            forward.y = 0.f;
-            float3x3 orientation = float3x3::LookAt(float3::unitZ, forward, float3::unitY, float3::unitY);
-            t.SetOrientation(orientation);
-        }
-        else if (rotSendType == 2)
-        {
-            float3 forward;
-            dd.ReadNormalizedVector3D(9, 8, forward.x, forward.y, forward.z);
-
-            float3x3 orientation = float3x3::LookAt(float3::unitZ, forward, float3::unitY, float3::unitY);
-            t.SetOrientation(orientation);
-
-        }
-        else if (rotSendType == 3)
-        {
-            // Read the quantized float manually, without a call to ReadQuantizedFloat, to be able to compare the quantized bit pattern.
-            u32 quantizedAngle = dd.ReadBits(10);
-            if (quantizedAngle != 0)
-            {
-                float angle = quantizedAngle * 3.141592654f / (float)((1 << 10) - 1);
-                float3 axis;
-                dd.ReadNormalizedVector3D(11, 10, axis.x, axis.y, axis.z);
-                t.SetOrientation(Quat(axis, angle));
-            }
-            else
-                t.SetOrientation(Quat::identity);
-        }
+        Quat rot = Quat::identity;
+        ReadOptimizedPosAndRot(dd, posSendType, t.pos, rotSendType, rot);
+        t.SetOrientation(rot);
 
         if (scaleSendType == 1)
             t.scale = float3::FromScalar(dd.Read<float>());
