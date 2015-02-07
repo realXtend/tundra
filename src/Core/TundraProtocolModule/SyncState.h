@@ -318,10 +318,10 @@ public:
     /// Queued EntityAction messages. These will be sent to the user on the next network update tick.
     std::vector<MsgEntityAction> queuedActions;
 
-    /// Last sent (client) or received (server) observer position.
+    /// Last sent (client) or received (server) observer position in world coordinates.
     /** If !IsFinite() ObserverPosition message has not been been received from the client. */
     float3 observerPos;
-    /// Last sent (client) or received (server) observer orientation.
+    /// Last sent (client) or received (server) observer orientation in world coordinates, Euler ZYX in degrees.
     /** If !IsFinite() ObserverPosition message has not been been received from the client. */
     float3 observerRot;
 

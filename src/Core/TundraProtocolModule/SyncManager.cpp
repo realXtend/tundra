@@ -38,7 +38,7 @@ namespace
 // Used to print EC mismatch warnings only once per EC.
 std::set<u32> mismatchingComponentTypes;
 
-// Helper function for optimizing network transfer of position and orientation
+// Helper function for optimizing network transfer of position and orientation.
 void WriteOptimizedPosAndRot(kNet::DataSerializer &ds, int posSendType, const float3 &pos, int rotSendType, const float3x3 &rot)
 {
     if (posSendType == 1) // Sends fixed 57 bits.
@@ -86,7 +86,7 @@ void WriteOptimizedPosAndRot(kNet::DataSerializer &ds, int posSendType, const fl
     }
 }
 
-// Helper function for optimizing network transfer of position and orientation
+// Helper function for optimizing network transfer of position and orientation.
 void ReadOptimizedPosAndRot(kNet::DataDeserializer &dd, int posSendType, float3 &pos, int rotSendType, Quat &rot)
 {
     if (posSendType == 1)
@@ -132,6 +132,33 @@ void ReadOptimizedPosAndRot(kNet::DataDeserializer &dd, int posSendType, float3 
         else
             rot = Quat::identity;
     }
+}
+
+// Helper function for optimizing network transfer of orientation: 0 - don't send, 1 - send compact, 2 - send full.
+int DetectPosSendType(bool posChanged, const float3 &pos)
+{
+    return posChanged ? (pos.Abs().MaxElement() >= 1023.f ? 2 : 1) : 0;
+}
+
+// Helper function for optimizing network transfer of orientation: 0 - don't send, 1 - 1 DOF, 2 - 2 DOF, 3 - 3 DOF.
+int DetectRotSendType(bool rotChanged, const float3x3 &rot)
+{
+    if (rotChanged)
+    {
+        float3 fwd = rot.Col(2);
+        float3 up = rot.Col(1);
+        float3 planeNormal = float3::unitY.Cross(rot.Col(2));
+        float d = planeNormal.Dot(rot.Col(1));
+
+        if (up.Dot(float3::unitY) >= 0.999f)
+            return 1; // Looking upright, 1 DOF.
+        else if (Abs(d) <= 0.001f && Abs(fwd.Dot(float3::unitY)) < 0.95f && up.Dot(float3::unitY) > 0.f)
+            return 2; // No roll, i.e. 2 DOF. Use this only if not looking too close towards the +Y axis, due to precision issues, and only when object +Y is towards world up.
+        else
+            return 3; // Full 3 DOF
+    }
+    else
+        return 0;
 }
 
 } // ~unnamed namespace
@@ -1070,31 +1097,14 @@ void SyncManager::ReplicateRigidBodyChanges(UserConnection* user)
         bool scaleChanged = transformDirty && (t.scale.DistanceSq(ess.transform.scale) > 1e-3f);
 
         // Detect whether to send compact or full states for each variable.
-        // 0 - don't send, 1 - send compact, 2 - send full.
-        int posSendType = posChanged ? (t.pos.Abs().MaxElement() >= 1023.f ? 2 : 1) : 0;
+        int posSendType = DetectPosSendType(posChanged, t.pos);
         int rotSendType;
         int scaleSendType;
         int velSendType;
         int angVelSendType;
 
-        float3x3 rot;
-        if (rotChanged)
-        {
-            rot = t.Orientation3x3();
-            float3 fwd = rot.Col(2);
-            float3 up = rot.Col(1);
-            float3 planeNormal = float3::unitY.Cross(rot.Col(2));
-            float d = planeNormal.Dot(rot.Col(1));
-
-            if (up.Dot(float3::unitY) >= 0.999f)
-                rotSendType = 1; // Looking upright, 1 DOF.
-            else if (Abs(d) <= 0.001f && Abs(fwd.Dot(float3::unitY)) < 0.95f && up.Dot(float3::unitY) > 0.f)
-                rotSendType = 2; // No roll, i.e. 2 DOF. Use this only if not looking too close towards the +Y axis, due to precision issues, and only when object +Y is towards world up.
-            else
-                rotSendType = 3; // Full 3 DOF
-        }
-        else
-            rotSendType = 0;
+        float3x3 rot = t.Orientation3x3();
+        rotSendType = DetectRotSendType(rotChanged, rot);
 
         if (scaleChanged)
         {
@@ -2842,29 +2852,35 @@ void SyncManager::HandleEntityAction(UserConnection* source, MsgEntityAction& ms
     server->SetActionSender(UserConnectionPtr()); // Clear the action sender after action handling
 }
 
-
 void SyncManager::SendObserverPosition(UserConnection *connection, SceneSyncState *senderState)
 {
     EC_Placeable *placeable = !observer.expired() ? observer.lock()->Component<EC_Placeable>().get() : 0;
     if (placeable)
     {
-        float3 pos = placeable->WorldPosition();
-        float3 rot = placeable->WorldOrientation().ToEulerZYX();
-        if (!pos.Equals(senderState->observerPos) || !rot.Equals(senderState->observerRot))
+        const float3 pos = placeable->WorldPosition();
+        const float3 rot = RadToDeg(placeable->WorldOrientation().ToEulerZYX());
+        const bool posChanged = !pos.Equals(senderState->observerPos);
+        const bool rotChanged = !rot.Equals(senderState->observerRot);
+        if (posChanged || rotChanged)
         {
             senderState->observerPos = pos;
             senderState->observerRot = rot;
-            /// @todo Use optimized pos and rot format when applicable
-            const size_t dataSize = sizeof(uint) + 6 * sizeof(float); /** <@todo use scene_id_t instead of uint when available */
-            char dataBuffer[dataSize];
-            kNet::DataSerializer ds(dataBuffer, dataSize);
+
+            const size_t maxDataSize = sizeof(uint) + 1 + 6 * sizeof(float); /** <@todo use scene_id_t instead of uint when available */
+            char dataBuffer[maxDataSize];
+            kNet::DataSerializer ds(dataBuffer, maxDataSize);
             ds.AddVLE<kNet::VLE8_16_32>((uint)0/*scene->Id()*/);/** <@todo Use proper scene ID when available */
-            ds.Add<float>(pos.x);
-            ds.Add<float>(pos.y);
-            ds.Add<float>(pos.z);
-            ds.Add<float>(rot.x);
-            ds.Add<float>(rot.y);
-            ds.Add<float>(rot.z);
+
+            // Detect whether to send compact or full states for each variable.
+            int posSendType = DetectPosSendType(posChanged, pos);
+
+            float3x3 rot3x3 = placeable->WorldOrientation().ToFloat3x3();
+            int rotSendType = DetectRotSendType(rotChanged, rot3x3);
+
+            ds.AddArithmeticEncoded(8, posSendType, 3, rotSendType, 4);
+
+            WriteOptimizedPosAndRot(ds, posSendType, pos, rotSendType, rot3x3);
+
             connection->Send(cObserverPositionMessage, false, false, ds);
         }
     }
@@ -2982,24 +2998,24 @@ void SyncManager::HandleObserverPosition(UserConnection* source, const char* dat
     SceneSyncState *syncState = source->syncState.get();
     if (!syncState)
         return;
+
     kNet::DataDeserializer dd(data, numBytes);
     uint sceneId = dd.ReadVLE<kNet::VLE8_16_32>(); /**< @todo scene_id_t */
     UNREFERENCED_PARAM(sceneId) /**< @todo Scene lookup, when multi-scene support is in place. */
-    float3 pos, rot;
-    pos.x = dd.Read<float>();
-    pos.y = dd.Read<float>();
-    pos.z = dd.Read<float>();
-    rot.x = dd.Read<float>();
-    rot.y = dd.Read<float>();
-    rot.z = dd.Read<float>();
-    if (!pos.Equals(syncState->observerPos) || !rot.Equals(syncState->observerRot))
-    {
-        // Save observer information always, but compute priorities only if IM enabled.
+
+    int posSendType;
+    int rotSendType;
+    dd.ReadArithmeticEncoded(8, posSendType, 3, rotSendType, 4);
+
+    float3 pos;
+    Quat rot = Quat::identity;
+    ReadOptimizedPosAndRot(dd, posSendType, pos, rotSendType, rot);
+
+    // Save observer information always, but compute priorities only on fixed interval.
+    if (posSendType)
         syncState->observerPos = pos;
-        syncState->observerRot = rot;
-        //if (interestManagementEnabled)
-          //  ComputePrioritiesForEntitySyncStates(syncState);
-    }
+    if (rotSendType)
+        syncState->observerRot = RadToDeg(rot.ToEulerZYX());
 }
 
 }
