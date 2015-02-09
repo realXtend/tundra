@@ -208,7 +208,8 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
     noClientPhysicsHandoff_(false),
     componentTypeSender_(0),
     prioUpdateAcc_(0.0),
-    interestManagementEnabled(false)
+    interestManagementEnabled_(false),
+    priorityUpdatePeriod_(1.f)
 {
     QStringList imArg = framework_->CommandLineParameters("--interestManagement");
     if (!imArg.empty())
@@ -231,6 +232,13 @@ SyncManager::SyncManager(TundraLogicModule* owner) :
 
 SyncManager::~SyncManager()
 {
+}
+
+void SyncManager::SetPriorityUpdatePeriod(float period)
+{
+    priorityUpdatePeriod_ = period;
+    if (priorityUpdatePeriod_ < updatePeriod_)
+        priorityUpdatePeriod_ = updatePeriod_;
 }
 
 void SyncManager::SetUpdatePeriod(float period)
@@ -413,7 +421,7 @@ void SyncManager::NewUserConnected(const UserConnectionPtr &user)
         EntityPtr entity = iter->second;
         if (entity->IsLocal())
             continue;
-        if (interestManagementEnabled)
+        if (interestManagementEnabled_)
             ComputePriorityForEntitySyncState(user->syncState.get(), 0, entity.get());
         user->syncState->MarkEntityDirty(entity->Id());
     }
@@ -960,13 +968,12 @@ void SyncManager::Update(f64 frametime)
             if ((*i)->syncState)
             {
                 // First sort the dirty queue according to priority if IM enabled
-                if (interestManagementEnabled)
+                if (interestManagementEnabled_)
                 {
-                    const float prioUpdatePeriod = 1.0f; /**< @todo Make configurable. */
-                    if (prioUpdateAcc_ >= prioUpdatePeriod)
+                    if (prioUpdateAcc_ >= priorityUpdatePeriod_)
                     {
+                        prioUpdateAcc_ = fmod(prioUpdateAcc_, priorityUpdatePeriod_);
                         ComputePrioritiesForEntitySyncStates((*i)->syncState.get());
-                        prioUpdateAcc_ = fmod(prioUpdateAcc_, prioUpdatePeriod);
                     }
                     PROFILE(SyncManager_Update_SortDirtyQueue);
                     (*i)->syncState->dirtyQueue.sort();
@@ -990,8 +997,12 @@ void SyncManager::Update(f64 frametime)
         if (connection)
         {
             ProcessSyncState(serverConnection_.get());
-            if (interestManagementEnabled)
+            if (interestManagementEnabled_ && prioUpdateAcc_ >= priorityUpdatePeriod_)
+            {
+                prioUpdateAcc_ = fmod(prioUpdateAcc_, priorityUpdatePeriod_);
                 SendObserverPosition(serverConnection_.get(), serverConnection_->syncState.get());
+
+            }
         }
     }
 }
@@ -1083,7 +1094,7 @@ void SyncManager::ReplicateRigidBodyChanges(UserConnection* user)
 
         float timeSinceLastSend = kNet::Clock::SecondsSinceF(ess.lastNetworkSendTime);
         /// @todo Is this the best place for this check?
-        if (interestManagementEnabled && timeSinceLastSend < ess.ComputePrioritizedUpdateInterval(updatePeriod_))
+        if (interestManagementEnabled_ && timeSinceLastSend < ess.ComputePrioritizedUpdateInterval(updatePeriod_))
             continue;
 
         const float3 predictedClientSidePosition = ess.transform.pos + timeSinceLastSend * ess.linearVelocity;
@@ -1516,7 +1527,7 @@ void SyncManager::ProcessSyncState(UserConnection* user)
     }
 
     // Interest management sync priorization performed only on the server
-    const bool serverImEnabled = (isServer && interestManagementEnabled);
+    const bool serverImEnabled = (isServer && interestManagementEnabled_);
 
     // Process the state's dirty entity queue.
     std::list<EntitySyncState*>::iterator it = state->dirtyQueue.begin();
@@ -2854,7 +2865,7 @@ void SyncManager::HandleEntityAction(UserConnection* source, MsgEntityAction& ms
 
 void SyncManager::SendObserverPosition(UserConnection *connection, SceneSyncState *senderState)
 {
-    EC_Placeable *placeable = !observer.expired() ? observer.lock()->Component<EC_Placeable>().get() : 0;
+    EC_Placeable *placeable = !observer_.expired() ? observer_.lock()->Component<EC_Placeable>().get() : 0;
     if (placeable)
     {
         const float3 pos = placeable->WorldPosition();
