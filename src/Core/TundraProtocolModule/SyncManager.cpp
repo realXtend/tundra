@@ -2582,7 +2582,7 @@ void SyncManager::HandleEditAttributes(UserConnection* source, const char* data,
     std::map<entity_id_t, EntitySyncState>::iterator it = state->entities.find(entityID);
     if (it != state->entities.end())
     {
-        it->second.UpdateReceived();
+        it->second.RefreshAvgUpdateInterval();
         if (it->second.avgUpdateInterval > 0.0f)
             updateInterval = it->second.avgUpdateInterval;
     }

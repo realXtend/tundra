@@ -149,14 +149,10 @@ struct EntitySyncState
         hasParentChange = false;
     }
 
-    /// @todo Rename to something less ambiguous, maybe RecomputeAvgUpdateInterval() or something?
-    void UpdateReceived()
+    void RefreshAvgUpdateInterval()
     {
         float time = updateTimer.MSecsElapsed() * 0.001f;
         updateTimer.Start();
-        // Maximum update rate should be 100fps. Discard either very frequent or very infrequent updates.
-        if (time < 0.005f || time >= 0.5f)
-            return;
         // If it's the first measurement, set time directly. Else smooth
         if (avgUpdateInterval == 0.0f)
             avgUpdateInterval = time;
@@ -412,6 +408,7 @@ private:
     ///       with the same dirty bit in EntitySyncState and ComponentSyncState.
     std::vector<entity_id_t> pendingEntities_;
 
+    /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     StateChangeRequest changeRequest_;
     bool isServer_;
     bool placeholderComponentsSent_;

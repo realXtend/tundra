@@ -189,7 +189,7 @@ private:
     /// Scene pointer
     SceneWeakPtr scene_;
     
-    /// Time period for update, default 1/30th of a second
+    /// Time period for update, by default 1/20th of a second, 1/100 allowed at fastest.
     float updatePeriod_;
     /// Time accumulator for update
     float updateAcc_;
