@@ -421,9 +421,12 @@ void SyncManager::NewUserConnected(const UserConnectionPtr &user)
         EntityPtr entity = iter->second;
         if (entity->IsLocal())
             continue;
-        if (interestManagementEnabled_)
-            ComputePriorityForEntitySyncState(user->syncState.get(), 0, entity.get());
         user->syncState->MarkEntityDirty(entity->Id());
+        if (interestManagementEnabled_)
+        {
+            // MarkEntityDirty() above has created the EntitySyncState.
+            ComputePriorityForEntitySyncState(user->syncState.get(), user->syncState->entities[entity->Id()], entity.get());
+        }
     }
 }
 
@@ -2897,27 +2900,15 @@ void SyncManager::SendObserverPosition(UserConnection *connection, SceneSyncStat
     }
 }
 
-void SyncManager::ComputePriorityForEntitySyncState(SceneSyncState *sceneState, EntitySyncState *entityState, Entity *entity) const
+void SyncManager::ComputePriorityForEntitySyncState(SceneSyncState *sceneState, EntitySyncState &entityState, Entity *entity) const
 {
-    assert(sceneState);
-    assert(entityState || entity);
     if (!sceneState)
         return;
     if (!sceneState->observerPos.IsFinite() || !sceneState->observerRot.IsFinite())
         return; // camera information not received yet.
-    if (!entityState && entity)
-    {
-        if (sceneState->entities.find(entity->Id()) == sceneState->entities.end())
-        {
-            LogWarning("SyncManager::ComputePriorityForEntitySyncState: " + entity->ToString() + " does not exists in SceneSyncState.");
-            return;
-        }
-        entityState = &sceneState->entities[entity->Id()];
-    }
-    if (entityState && !entity)
-        entity = scene_.lock()->EntityById(entityState->id).get();
-//    assert((entity && entityState));
-    if (!entityState || !entity)
+    if (!entity)
+        entity = scene_.lock()->EntityById(entityState.id).get(); /**< @todo store weak_ptr to Entity in EntitySyncState */
+    if (!entity)
         return; // we (might) end up here e.g. when entity was just deleted
 
     shared_ptr<EC_Placeable> placeable = entity->Component<EC_Placeable>();
@@ -2933,10 +2924,10 @@ void SyncManager::ComputePriorityForEntitySyncState(SceneSyncState *sceneState, 
         {
             float r = audio->soundOuterRadius.Get();
             r *= r;
-            entityState->priority = 4.f * pi * r / sceneState->observerPos.DistanceSq(placeable->WorldPosition());
+            entityState.priority = 4.f * pi * r / sceneState->observerPos.DistanceSq(placeable->WorldPosition());
         }
         else
-            entityState->priority = inf;
+            entityState.priority = inf;
     }
 */
     /// @todo Handle terrains
@@ -2949,13 +2940,13 @@ void SyncManager::ComputePriorityForEntitySyncState(SceneSyncState *sceneState, 
         //if (rigidBody)
         // Non-spatial (probably), use max priority
         /// @todo Can have f.ex. Terrain component that has its own transform, but it can use Placeable too.
-        entityState->priority = inf;
+        entityState.priority = inf;
     }
     else if (placeable && !mesh)
     {
         // Spatial, but no mesh, for now use a harcoded priority of 20 (updateInterval = 1 / (priority * relevance),
         // so will probably yield the default SyncManager's update period 1/20th of a second
-        entityState->priority = 20.f;
+        entityState.priority = 20.f;
         /// @todo retrieve/calculate bounding volumes of possible billboards, particle systems, lights, etc.
         /// Not going to be easy with Ogre though, especially when running in headless mode.
     }
@@ -2985,23 +2976,24 @@ void SyncManager::ComputePriorityForEntitySyncState(SceneSyncState *sceneState, 
         float sizeSq = worldObb.SurfaceArea();
         sizeSq *= sizeSq;
         float distanceSq = sceneState->observerPos.DistanceSq(placeable->WorldPosition());
-        entityState->priority = sizeSq/distanceSq;
+        entityState.priority = sizeSq/distanceSq;
 //        LogDebug(QString("%1 sizeSq %2 distanceSq %3").arg(entity->ToString()).arg(sizeSq).arg(distanceSq));
     }
 
     /// @todo Take direction and velocity of rigid bodies into account
         //if (rigibBody)
     /// @todo Hardcoded relevancy of 10 for entities with RigidBody component and 1 for others for now.
-    entityState->relevancy = rigidBody /*entity->Component("EC_Avatar")*/ ? 10.f : 1.f;
+    /// @todo Movement of non-physical entities is too jerky.
+    entityState.relevancy = rigidBody /*entity->Component("EC_Avatar")*/ ? 10.f : 1.f;
     LogDebug(QString("%1 P %2 R %3 P*R %4 syncRate %5").arg(entity->ToString()).arg(
-        entityState->priority).arg(entityState->relevancy).arg(entityState->FinalPriority()).arg(entityState->ComputePrioritizedUpdateInterval(updatePeriod_)));
+        entityState.priority).arg(entityState.relevancy).arg(entityState.FinalPriority()).arg(entityState.ComputePrioritizedUpdateInterval(updatePeriod_)));
 }
 
 void SyncManager::ComputePrioritiesForEntitySyncStates(SceneSyncState *sceneState) const
 {
     PROFILE(SyncManager_ComputePrioritiesForEntitySyncStates);
     for(std::map<entity_id_t, EntitySyncState>::iterator it = sceneState->entities.begin(); it != sceneState->entities.end(); ++it)
-        ComputePriorityForEntitySyncState(sceneState, &(*it).second, 0);
+        ComputePriorityForEntitySyncState(sceneState, it->second, 0);
 }
 
 void SyncManager::HandleObserverPosition(UserConnection* source, const char* data, size_t numBytes)

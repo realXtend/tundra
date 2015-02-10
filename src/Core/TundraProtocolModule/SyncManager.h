@@ -69,8 +69,8 @@ public slots:
     float GetUpdatePeriod() const { return updatePeriod_; }
 
     // DEPRECATED
-    SceneSyncState* SceneState(u32 connectionId) const;/** @deprecated Use UserConnection::syncState property from script @note This slot is only usable when running as server, otherwise will return null ptr. */
-    SceneSyncState* SceneState(const UserConnectionPtr &connection) const; /** @deprecated Use UserConnection::syncState property from script @overload*/
+    SceneSyncState* SceneState(u32 connectionId) const;/**< @deprecated Use UserConnection::syncState property from script @note This slot is only usable when running as server, otherwise will return null ptr. */
+    SceneSyncState* SceneState(const UserConnectionPtr &connection) const; /**< @deprecated Use UserConnection::syncState property from script @overload*/
 
 signals:
     /// This signal is emitted when a new user connects and a new SceneSyncState is created for the connection.
@@ -176,7 +176,8 @@ private:
     /// Sends client's observer information. @remark Interest management
     void SendObserverPosition(UserConnection* connection, SceneSyncState *senderState);
     /// (Re)computes priority for entity. @remark Interest management
-    void ComputePriorityForEntitySyncState(SceneSyncState *sceneState, EntitySyncState *entityState, Entity *entity) const;
+    /** @param entity Entity pointer, if available, otherwise retrieved from Scene by ID. */
+    void ComputePriorityForEntitySyncState(SceneSyncState *sceneState, EntitySyncState &entityState, Entity *entity) const;
     /// (Re)computes priorities for all entities in the scene. @remark Interest management
     void ComputePrioritiesForEntitySyncStates(SceneSyncState *sceneState) const;
 
