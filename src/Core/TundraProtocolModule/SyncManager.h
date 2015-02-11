@@ -175,11 +175,9 @@ private:
     void HandleObserverPosition(UserConnection* source, const char* data, size_t numBytes);
     /// Sends client's observer information. @remark Interest management
     void SendObserverPosition(UserConnection* connection, SceneSyncState *senderState);
-    /// (Re)computes priority for entity. @remark Interest management
-    /** @param entity Entity pointer, if available, otherwise retrieved from Scene by ID. */
-    void ComputePriorityForEntitySyncState(SceneSyncState *sceneState, EntitySyncState &entityState, Entity *entity) const;
     /// (Re)computes priorities for all entities in the scene. @remark Interest management
-    void ComputePrioritiesForEntitySyncStates(SceneSyncState *sceneState) const;
+    void ComputeSyncPriorities(EntitySyncStateMap &entities, const float3 &observerPos, const float3 &observerRot) const;
+    void ComputeSyncPriorities(EntitySyncState &entityState, const float3 &observerPos, const float3 &observerRot) const; /**< @overload */
 
     /// Owning module
     TundraLogicModule* owner_;

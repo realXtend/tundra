@@ -410,7 +410,7 @@ private:
 
     /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     StateChangeRequest changeRequest_;
-    bool isServer_;
+    const bool isServer_; // cannot change during SceneSyncState's lifetime
     bool placeholderComponentsSent_;
     u32 userConnectionID_;
 

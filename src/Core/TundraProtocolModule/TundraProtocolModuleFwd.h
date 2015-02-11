@@ -34,6 +34,7 @@ typedef std::list<UserConnectionPtr> UserConnectionList;
 class SceneSyncState;
 struct EntitySyncState;
 struct ComponentSyncState;
+typedef std::map<entity_id_t, EntitySyncState> EntitySyncStateMap;
 struct UserConnectedResponseData;
 
 typedef QVariantMap LoginPropertyMap; ///< propertyName-propertyValue map of login properties.
