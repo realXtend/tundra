@@ -28,9 +28,16 @@ class TUNDRAPROTOCOL_MODULE_API SyncManager : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(float updatePeriod READ GetUpdatePeriod WRITE SetUpdatePeriod) /**< @copydoc updatePeriod_ */
-    Q_PROPERTY(bool interestManagementEnabled READ IsInterestManagementEnabled WRITE SetInterestManagementEnabled) /**< @copydoc interestManagementEnabled */
     Q_PROPERTY(EntityPtr observer READ Observer WRITE SetObserver) /**< @copydoc observer */
     Q_PROPERTY(float priorityUpdatePeriod READ PriorityUpdatePeriod WRITE SetPriorityUpdatePeriod) /**< @copydoc priorityUpdatePeriod_ */
+    /// Is interest management enabled.
+    /** On client this means that the observer's position information is sent to the server.
+        On server this means that DefaultEntityPrioritizer is used and dirty entities are sorted 
+        and synced according to their priority that is calculated according to observer position.
+        @remark Interest management */
+    Q_PROPERTY(bool interestManagementEnabled READ IsInterestManagementEnabled WRITE SetInterestManagementEnabled)
+    void SetInterestManagementEnabled(bool enabled);
+    bool IsInterestManagementEnabled() const { return Prioritizer() != 0; }
 
 public:
     explicit SyncManager(TundraLogicModule* owner);
@@ -45,21 +52,23 @@ public:
     /// Create new replication state for user and dirty it (server operation only)
     void NewUserConnected(const UserConnectionPtr &user);
 
-    /// Enables or disables the interest management. @remark Interest management
-    void SetInterestManagementEnabled(bool enabled) { interestManagementEnabled_ = enabled; }
-    /// Returns is the interest management enabled. @remark Interest management
-    bool IsInterestManagementEnabled() const { return interestManagementEnabled_; }
-
     /// Sets the client's observer entity. @remark Interest management
     /** @note The entity needs to have Placeable component present in order to be usable. */
     void SetObserver(const EntityPtr &entity) { observer_ = entity; }
     /// Returns the observer entity, if any. @remark Interest management
     EntityPtr Observer() const { return observer_.lock(); }
 
-    /// Sets priority update period, cannot be faster that sync update period. @copydoc priorityUpdatePeriod_ @remark Interest management
+    /// Sets priority update period, cannot be faster that sync update period. @remark Interest management
     void SetPriorityUpdatePeriod(float period);
-    /// Returns priority update period. @copydoc priorityUpdatePeriod_ @remark Interest management
+    /// Returns priority update period. @remark Interest management
     float PriorityUpdatePeriod() const { return priorityUpdatePeriod_; }
+
+    /// Sets the prioritizer.
+    /** Takes ownership of the object. Possible existing prioritizer is deleted.
+        @remark Interest management */
+    void SetPrioritizer(EntityPrioritizer *prioritizer);
+    /// Returns the prioritizer, if any. @remark Interest management
+    EntityPrioritizer *Prioritizer() const { return prioritizer_; }
 
 public slots:
     /// Set update period (seconds), 0.01 at fastest.
@@ -175,9 +184,6 @@ private:
     void HandleObserverPosition(UserConnection* source, const char* data, size_t numBytes);
     /// Sends client's observer information. @remark Interest management
     void SendObserverPosition(UserConnection* connection, SceneSyncState *senderState);
-    /// (Re)computes priorities for all entities in the scene. @remark Interest management
-    void ComputeSyncPriorities(EntitySyncStateMap &entities, const float3 &observerPos, const float3 &observerRot) const;
-    void ComputeSyncPriorities(EntitySyncState &entityState, const float3 &observerPos, const float3 &observerRot) const; /**< @overload */
 
     /// Owning module
     TundraLogicModule* owner_;
@@ -223,14 +229,11 @@ private:
         @remark Interest management */
     float priorityUpdatePeriod_;
     float prioUpdateAcc_; /**< Time accumulator for priority update @remark Interest management */
-    /// Is interest management enabled.
-    /** On client this means that the observer_'s position information is sent to the server.
-        On server this means that dirty entities are sorted and synced according to their priority that is calculated according to observer_ position.
-        @remark Interest management */
-    bool interestManagementEnabled_;
-    /// If interestManagementEnabled_ is true, on client this entity's position information is sent to the server.
+    /// If prioritizer != 0, on client this entity's position information is sent to the server.
     /** @remark Interest management */
     EntityWeakPtr observer_;
+    /// @remark Interest management
+    EntityPrioritizer *prioritizer_;
 };
 
 }

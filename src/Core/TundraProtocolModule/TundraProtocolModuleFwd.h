@@ -36,6 +36,7 @@ struct EntitySyncState;
 struct ComponentSyncState;
 typedef std::map<entity_id_t, EntitySyncState> EntitySyncStateMap;
 struct UserConnectedResponseData;
+class EntityPrioritizer;
 
 typedef QVariantMap LoginPropertyMap; ///< propertyName-propertyValue map of login properties.
 
