@@ -13,6 +13,8 @@ class TUNDRAPROTOCOL_MODULE_API EntityPrioritizer
 {
 public:
     /// Computes priorities provided entity sync states.
+    /// @todo In addition, or instead, could provide a function with begin and end iterators as input. This could useful
+    /// when dealing when very large container and only a fixed number of priority calculation would be wanted per frame.
     virtual void ComputeSyncPriorities(EntitySyncStateMap & UNUSED_PARAM(entities), const float3 & UNUSED_PARAM(observerPos),const float3 & UNUSED_PARAM(observerRot))
     {
     }
@@ -21,6 +23,8 @@ public:
     virtual void ComputeSyncPriorities(EntitySyncState & UNUSED_PARAM(entityState), const float3 & UNUSED_PARAM(observerPos), const float3 & UNUSED_PARAM(observerRot))
     {
     }
+
+    /// @todo Provide virtual Sort() function? Prioritizer could sort then dirty queue using custom predicates.
 };
 
 /// Subclass to perform application-specific entity prioritizing.

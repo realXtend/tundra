@@ -10,7 +10,11 @@ const unsigned long cClientLeftMessage = 103;
 
 // Interest management
 /// @todo const unsigned long cSetObserverMessage = 104; // Server->client, tells what entity to use as the observer
-const unsigned long cObserverPositionMessage = 105; // Client->server only currently, but could be used server->client also to tell that "you are now here".
+/// The message would contain a scene ID and an entity reference (ID or name) of the desired observer entity.
+/// This message would allow the server to tell what entity the client must use as the observer when the client joins the server.
+/// The message could also be client->server and use to negotiate various observer settings (cutoff radius etc.)
+/// @todo ObserverPosition message could be made server->client also to tell the initial position, or to force the position, of the observer.
+const unsigned long cObserverPositionMessage = 105; // Client->server currently
 
 // Scenesync
 // NOTE 106-108 should be reserved for Scene messages (Create, EditProperties, Remove)

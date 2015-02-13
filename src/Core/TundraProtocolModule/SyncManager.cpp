@@ -971,8 +971,8 @@ void SyncManager::Update(f64 frametime)
     if (owner_->IsServer())
     {
         // If we are server, process all authenticated users
-
-        // Then send out changes to other attributes via the generic sync mechanism.
+        // SyncState is not added to the user before it's authenticated, so using UserConnections() instead of
+        // AuthenticatedUsers() and checking for SyncState's existence does the same thing in a little more efficient fashion.
         UserConnectionList& users = owner_->GetServer()->UserConnections();
         for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
@@ -993,14 +993,14 @@ void SyncManager::Update(f64 frametime)
                     syncState->dirtyQueue.sort();
                 }
 
-                // First send out all changes to rigid bodies.
+                // Then send out all changes to rigid bodies.
                 // After processing this function, the bits related to rigid body states have been cleared,
                 // so the generic sync will not double-replicate the rigid body positions and velocities.
                 /// @note As of now only native clients understand the optimized rigid body sync message.
                 /// This may change with future protocol versions
                 if (dynamic_pointer_cast<KNetUserConnection>(*i))
                     ReplicateRigidBodyChanges((*i).get());
-                // Then send out changes to other attributes via the generic sync mechanism.
+                // Finally send out changes to other attributes via the generic sync mechanism.
                 ProcessSyncState((*i).get());
             }
         }
@@ -1544,6 +1544,8 @@ void SyncManager::ProcessSyncState(UserConnection* user)
     const bool serverImEnabled = (isServer && prioritizer_);
 
     // Process the state's dirty entity queue.
+    /// @todo Ideally, the server should be able to define an output per user threshold, 
+    /// which the server could automatically adjust accordingly to the number of concurrent users.
     std::list<EntitySyncState*>::iterator it = state->dirtyQueue.begin();
     while(it != state->dirtyQueue.end())
     {

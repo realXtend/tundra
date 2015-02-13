@@ -47,7 +47,7 @@ void DefaultEntityPrioritizer::ComputeSyncPriorities(EntitySyncStateMap &entitie
         {
             if (sound->spatial.Get() && placeable)
             {
-                float r = audio->soundOuterRadius.Get();
+                float r = sound->soundOuterRadius.Get();
                 r *= r;
                 entityState.priority = 4.f * pi * r / observerPos.DistanceSq(placeable->WorldPosition());
             }
