@@ -982,12 +982,11 @@ void SyncManager::Update(f64 frametime)
                     (*i)->syncState->dirtyQueue.sort();
                 }
 
-                // First send out all changes to rigid bodies.
-                // After processing this function, the bits related to rigid body states have been cleared,
-                // so the generic sync will not double-replicate the rigid body positions and velocities.
-                /// @note As of now only native clients understand the optimized rigid body sync message.
-                /// This may change with future protocol versions
-                if (dynamic_pointer_cast<KNetUserConnection>(*i))
+                // First send out all changes to rigid bodies. Supported on desktop (kNet) clients and web clients
+                // with sufficiently high protocol version. After processing this function, the bits related to 
+                // rigid body states have been cleared, so the generic sync will not double-replicate the rigid body
+                // positions and velocities.
+                if (dynamic_pointer_cast<KNetUserConnection>(*i) || (*i)->protocolVersion >= ProtocolWebClientRigidBodyMessage)
                     ReplicateRigidBodyChanges((*i).get());
                 // Then send out changes to other attributes via the generic sync mechanism.
                 ProcessSyncState((*i).get());
@@ -1768,10 +1767,10 @@ void SyncManager::ProcessSyncState(UserConnection* user)
                         }
                         if (changedAttributes_.size())
                         {
-                            /// @todo HACK for web clients while ReplicateRigidBodyChanges() is not implemented! 
+                            /// Hack for web clients that don't support ReplicateRigidBodyChanges()
                             /// Don't send out minuscule pos/rot/scale changes as it spams the network.
                             bool sendChanges = true;
-                            if (dynamic_cast<KNetUserConnection*>(user) == 0)
+                            if (dynamic_cast<KNetUserConnection*>(user) == 0 && user->protocolVersion < ProtocolWebClientRigidBodyMessage)
                             {
                                 if (comp->TypeId() == EC_Placeable::TypeIdStatic() && changedAttributes_.size() == 1 && changedAttributes_[0] == 0)
                                 {
