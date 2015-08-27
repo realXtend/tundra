@@ -31,6 +31,7 @@
 #endif
 #include <iostream>
 #include <sstream>
+#include <locale.h>
 
 #include <QDir>
 #include <QDomDocument>
@@ -128,6 +129,9 @@ Framework::Framework(int argc_, char** argv_, Application *app) :
     profilerQObj(0),
     renderer(0)
 {
+    // Make sure the C locale is set to ensure e.g. proper txml loading
+    setlocale(LC_ALL, "C");
+
     // Remember this Framework instance in a static pointer. Note that this does not help visibility for external DLL code linking to Framework.
     instance = this;
     // Create ConsoleAPI as early as possible in order to catch log prints.
