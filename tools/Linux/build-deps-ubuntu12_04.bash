@@ -282,8 +282,8 @@ then
     echo "Cloning source of HydraX/SkyX/PythonQT/NullRenderer..."
     git init $depdir
     cd $depdir
-    git fetch https://code.google.com/p/realxtend-tundra-deps/ sources:refs/remotes/origin/sources
-    git remote add origin https://code.google.com/p/realxtend-tundra-deps/
+    git fetch https://github.com/realXtend/realxtend-tundra-deps.git sources:refs/remotes/origin/sources
+    git remote add https://github.com/realXtend/realxtend-tundra-deps.git
     git checkout sources
 else
     cd $depdir

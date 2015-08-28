@@ -625,8 +625,8 @@ IF NOT EXIST "%DEPS%\realxtend-tundra-deps\.git". (
     cd "%DEPS%"
     call git init realxtend-tundra-deps
     cd realxtend-tundra-deps
-    call git fetch https://code.google.com/p/realxtend-tundra-deps/ sources:refs/remotes/origin/sources
-    call git remote add origin https://code.google.com/p/realxtend-tundra-deps/
+    call git fetch https://github.com/realXtend/realxtend-tundra-deps.git sources:refs/remotes/origin/sources
+    call git remote add origin https://github.com/realXtend/realxtend-tundra-deps.git
     call git checkout sources
     IF NOT EXIST "%DEPS%\realxtend-tundra-deps\.git" GOTO :ERROR
 ) ELSE (
