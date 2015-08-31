@@ -150,7 +150,7 @@ if test -f $tags/$what-done; then
 else
     cd $build
     rm -rf $what
-    git clone https://git.gitorious.org/qt-labs/$what.git
+    git clone https://github.com/realXtend/$what.git
     cd $what
     patch -l -p1 <<EOF
 Description: Include QtWebkit and Phonon unconditionally.
@@ -360,7 +360,7 @@ else
     else
         echo Cloning QtPropertyBrowser into "$build/qt-solutions".
         cd $build
-        git clone https://git.gitorious.org/qt-solutions/qt-solutions.git
+        git clone https://github.com/realXtend/qt-solutions.git
     fi
     cd $build/qt-solutions/qtpropertybrowser
     echo yes | ./configure -library

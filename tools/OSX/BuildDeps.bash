@@ -468,7 +468,7 @@ if test -f $tags/$what-done; then
     echoInfo "$what is done"
 else
     rm -rf qt-solutions
-    echoInfo "Fetching $what, this may take a while... " && git clone git://gitorious.org/qt-solutions/qt-solutions.git
+    echoInfo "Fetching $what, this may take a while... " && git clone https://github.com/realXtend/qt-solutions.git
     cd qt-solutions/$what
     echo "CONFIG += release" >> qtpropertybrowser.pro
     echo "CONFIG -= debug" >> qtpropertybrowser.pro
@@ -591,13 +591,13 @@ else
 fi
 
 what=qtscriptgenerator
-if test -f $tags/$what-done; then 
+if test -f $tags/$what-done; then
    echoInfo "$what is done"
 else
     cd $build
     rm -rf $what
     echoInfo "Fetching $what, this may take a while... "
-    git clone git://gitorious.org/qt-labs/$what.git
+    git clone https://github.com/realXtend/$what.git
     cd $what
 
     echoInfo "Building generator:"
