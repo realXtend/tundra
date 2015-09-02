@@ -160,7 +160,8 @@ public:
     Q_PROPERTY(float3 linearFactor READ getlinearFactor WRITE setlinearFactor)
     DEFINE_QPROPERTY_ATTRIBUTE(float3, linearFactor);
 
-    /// Angular factor. Defines in which dimensions the object can rotate
+    /// Specifies the axes on which torques can act on the object, making it rotate.
+    /** Set to 0,0,0 to make for example an avatar capsule that does not tip over by itself. */
     Q_PROPERTY(float3 angularFactor READ getangularFactor WRITE setangularFactor)
     DEFINE_QPROPERTY_ATTRIBUTE(float3, angularFactor);
 
@@ -180,8 +181,7 @@ public:
     Q_PROPERTY(float3 linearVelocity READ getlinearVelocity WRITE setlinearVelocity)
     DEFINE_QPROPERTY_ATTRIBUTE(float3, linearVelocity)
 
-    /// Specifies the axes on which torques can act on the object, making it rotate.
-    /** Set to 0,0,0 to make for example an avatar capsule that does not tip over by itself. */
+    /// Angular velocity
     Q_PROPERTY(float3 angularVelocity READ getangularVelocity WRITE setangularVelocity)
     DEFINE_QPROPERTY_ATTRIBUTE(float3, angularVelocity)
 
