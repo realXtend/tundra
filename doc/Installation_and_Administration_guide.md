@@ -105,6 +105,8 @@ FIWARE Guides
 
 [Synchronization - Installation and Administration Guide](doc/Installation_and_Administration_guide.md)
 
+[Synchronization - User and Programmers Guide](doc/User_and_Programmers_Guide.md)
+
 ---------------------------------------------------------------------------------------------------------
 This project is part of FIWARE.
 https://www.fiware.org/
