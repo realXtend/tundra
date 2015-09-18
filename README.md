@@ -99,3 +99,10 @@ New releases are announced on the mailing lists and at the [realXtend blog]. The
 [android/Build-instructions.txt]: https://github.com/realXtend/naali/tree/tundra2/android/Build-instructions.txt "android/Build-instructions.txt"
 [Doxygen]:  http://www.stack.nl/~dimitri/doxygen/ "doxygen homepage"
 [realXtend Tundra Google Code]: http://code.google.com/p/realxtend-naali/downloads/list
+
+---------------------------------------------------------------------------------------------------------
+This project is part of FIWARE.
+https://www.fiware.org/
+
+Link to the Synchronization GE FIWARE catalogue:
+http://catalogue.fiware.org/enablers/synchronization
