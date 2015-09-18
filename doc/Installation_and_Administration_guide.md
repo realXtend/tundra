@@ -1,115 +1,179 @@
-realXtend Tundra
-================
+# Synchronization - Installation and Administration Guide
 
-Tundra is a scriptable 3D internet application development platform. It is aimed primarily for application developers, as a platform for creating networked 3D worlds with customized content.
+## Introduction
 
-Tundra is licensed under [Apache 2.0] and based on [Qt] and [Ogre3D].
+This document describes installing and running the server and client parts of the Synchronization GE.
 
-Getting Started
----------------
+## System Requirements
 
-Tundra uses the traditional client-server architecture for networking. After installing you will find the `Tundra` (and `TundraConsole` on Windows) executable from the install directory, run `Tundra --help` for available command line parameters. This executable can be configured to run a set of C++ and JavaScript plugins and act either as a client or a server. You can create your own configuration file, or use the ones provided.
+The server part of the Synchronization GE is based on the realXtend Tundra SDK, therefore its hardware requirements are the same as of the Tundra SDK.
 
-### Tundra Startup Examples  
-- `Tundra --config tundra-client.json` - Starts Tundra with a client configuration which provides an user interface for connecting to Tundra servers.
-- `Tundra --connect localhost:2345;udp;TestUser` - Starts Tundra and automatically connects to a localhost server using port 2345 and UDP protocol (the Tundra server's defaults).   
-- `Tundra --server --headless --port 6565 --protocol tcp` - Starts Tundra with the default plugin set in server mode serving TCP connections at port 6565.
+### Hardware Requirements
 
-The Tundra server defaults are port 2345 and UDP protocol, for it you can simply run `Tundra --server --headless`. If no `--config` parameter is provided, the default `tundra.json` is used.  
+Server requirements
 
-The Tundra server mode is used for standalone-mode editing and viewing Tundra documents. To host a 3D scene, run Tundra in dedicated mode using the `--server` and `--headless` command line parameters. The Tundra client mode is used to connect to a server.
+- Minimum of 1GB memory
+- About 40GB free hard disk space when building Tundra, 1GB free when running
+- Intel-compatible CPU with SSE instruction support, minimum processor speed 1.66 GHz
+- If running graphics, a GPU with minimum of 256MB memory
 
-### Demo Scenes and Applications
-See the [bin/scenes] folder for example demo scenes and applications. F.e.x. `Tundra --file scenes/Canvas/scene.txml`
+### Operating System Support
 
-### Additional Plugins
-Additional Tundra plugins can be found from the [TundraAddons] repository.
+Server requirements
 
-Compiling from Sources
-----------------------
+- Windows XP or newer
+- Mac OS X 10.6 or newer
+- Ubuntu Linux 12.04 or newer. Other distributions may work but are not guaranteed.
 
-Tundra source code is available at the [realXtend github repository]. This repository hosts various branches for current and deprecated development lines from the realXtend team, so be sure to checkout `tundra2` branch after cloning.
+The client code is operating system independent, as it's JavaScript code running in a browser.
 
-Tundra uses [CMake] as its build system and depends on various other open source projects.
+### Software Requirements
 
-### Windows
+The client part of the Synchronization GE requires a browser that has WebSocket support, such as
 
-Visual Studio 2008 and 2010 build environments are currently supported. Make sure that you have the latest Visual Studio Service Packs installed. Visual Studio 2012 and newer can be used to open and build the VS2010-generated Tundra solution as long as the solution is not upgraded to the newer format.
+- Internet Explorer 10.0+
+- Firefox 6.0+
+- Chrome 14.0+
+- Safari 6.0+
+- Opera 12.1+
+- iOS Safari 6.0+
+- Android Browser 4.4+
+- Opera Mobile 12.1+
+- Chrome for android 31.0+
+- Firefox for Android 25.0+
+- Internet Explorer Mobile 10.0+
 
-The Tundra dependencies are acquired and built using an automated build script:  
-1. Open up the Visual Studio (x64 Win64) Command Prompt which is required in order to have the required build tools and several other utilities in your PATH.  
-2. Navigate to `<Tundra>\tools\Windows\VS<VersionNumber>\`  
-3. Run `BuildDeps_<BuildType>`, or `BuildDepsX64_<BuildType>` (if wanting to do a 64-bit build). RelWithDebInfo is recommended for the common development work, but you probably want to have the Debug builds available too.  
-   The build script will print information what you need in order to proceed, follow the instructions carefully. You can abort the script with Ctrl+C at this point and setup your environment.  
-4. Once you are done setting up your build environment, hit any key to continue the script as it instructs. The full depedency build might take up to 2 hours.
-5. After the script has completed, the dependencies can be found `deps-vs<VersionNumber>-<TargetArchitecture>\`. The needed runtime libraries are automatically copied to `bin\`.  
-6. Now run CMake batch script corresponding to your desired build configration. This script will set up the needed build environment variables for CMake and invoke CMake to generate a tundra.sln solution.  
-7. Build Tundra using the solution file.
+For serving the synchronization client HTML and JavaScript code, an HTTP server such as Apache can be used. For testing use the browser can also be pointed to local files.
 
-### Linux
+## Software Installation and Configuration
 
-Currently Ubuntu, Mint, Debian, and Kali are officially supported. See [tools/Linux/build-deps.bash] for the unified build script. 
+### Server installation
 
-### OS X
+There are two options, to download a prebuilt binary package, or build from source.
 
-See [tools/OSX/BuildDeps.bash] for automated dependency and Tundra build script.
+#### Prebuilt binaries (Linux)
 
-### Android
+To install a Tundra package and its dependencies, use these commands. You need to have root privileges and an active Internet connection for downloading dependencies.
 
-Experimental Android support exists, see [android/Build-instructions.txt] for the build instructions.
+- apt-get update
+- dpkg -i <package file name>
+- apt-get -f install
 
-Developer Documentation
------------------------
+After successful installation, the Tundra binary and examples scenes are placed in the /opt/realxtend-tundra directory.
 
-Tundra uses [Doxygen] as its main documentation tool. In order to generate and view the developer documentation, follow these steps:  
-1. have Doxygen installed,  
-2. `cd doc`,  
-3. `doxygen tundra.Doxyfile`,  
-4. `cd html`, and  
-5. open up `index.html`.
+Note! "dpkg -i <package file name>" will print missing dependencies error, but "apt-get -f install" should find & install them.
 
-Contributing
-------------
-0. Preferably interact with the developers already in advance before starting your work.
-1. Fork Tundra.
-2. Preferably create a feature branch for your work.
-3. Make sure to follow the coding conventions (doc/dox/CodingConventions.dox).
-4. Make a pull request.
+#### Prebuilt binaries (Windows)
 
-Contact Information
--------------------
+32-bit and 64-bit installers are provided. These require an active Internet connection for downloading Microsoft redistributables.
 
-You can find Tundra developers from IRC `#realxtend-dev @ freenode`. Also check out the [user-oriented mailing list](http://groups.google.com/group/realxtend) and the [developer-oriented mailing list](http://groups.google.com/group/realxtend-dev).
+After successful installation, Tundra can be run from the installation directory using the command prompt. This is the recommended way of running instead of Start Menu shortcuts, to be able to specify the command line parameters. On Windows there are Tundra.exe and TundraConsole.exe executables, where TundraConsole will display a console window and is therefore recommended for server usage.
 
-Releases
---------
+#### Building from source
 
-New releases are announced on the mailing lists and at the [realXtend blog]. The releases are available at the [realXtend Tundra Google Code] project site.
+Clone the Tundra git repository at https://github.com/realXtend/tundra.git, then clone the TundraAddons repository from https://github.com/realXtend/TundraAddons.git into the subdirectory src/TundraAddons of the Tundra clone. Then follow the README.md file in the root directory of the Tundra clone for build instructions. More detailed instructions are also found from the files (use Doxygen to generate html format documentation)
 
-[Qt]: http://qt.digia.com/ "Qt homepage"
-[Ogre3D]: http://www.ogre3d.org/ "Ogre3D homepage"
-[bin/scenes]: https://github.com/realXtend/naali/tree/tundra2/bin/scenes "bin/scenes"
-[TundraAddons]: https://github.com/realXtend/TundraAddons/ "TundraAddons"
-[Apache 2.0]: http://www.apache.org/licenses/LICENSE-2.0.txt "Apache 2.0 license"
-[CMake]: http://www.cmake.org/ "CMake homepage"
-[realXtend blog]: http://www.realxtend.org "realXtend blog"
-[realXtend github repository]: https://github.com/realXtend/naali/tree/tundra2 "realXtend Tundra repository"
-[tools/OSX/BuildDeps.bash]: https://github.com/realXtend/naali/blob/tundra2/tools/OSX/BuildDeps.bash "tools/OSX/BuildDeps.bash"
-[tools/Linux/build-deps.bash]: https://github.com/realXtend/naali/tree/tundra2/tools/Linux/build-deps.bash "tools/Linux/build-deps.bash"
-[android/Build-instructions.txt]: https://github.com/realXtend/naali/tree/tundra2/android/Build-instructions.txt "android/Build-instructions.txt"
-[Doxygen]:  http://www.stack.nl/~dimitri/doxygen/ "doxygen homepage"
-[realXtend Tundra Google Code]: http://code.google.com/p/realxtend-naali/downloads/list
+- https://github.com/realXtend/tundra/blob/tundra2/doc/dox/BuildOnMac.dox
+- https://github.com/realXtend/tundra/blob/tundra2/doc/dox/BuildOnUbuntu.dox
+- https://github.com/realXtend/tundra/blob/tundra2/doc/dox/BuildOnWindows.dox
 
-FIWARE Guides
--------------
+After a successful build of Tundra, it can be run from the bin subdirectory. On Windows there are Tundra.exe and TundraConsole.exe executables, where TundraConsole will display a console window and is therefore recommended for server usage. On Linux / OS X there is just an executable called Tundra.
 
-[Synchronization - Installation and Administration Guide](doc/Installation_and_Administration_guide.md)
+Note! There is separate build scripts for Ubuntu 14.04 and 12.04 and both scripts can be found at
+<pre> tools/Linux/build-deps-ubuntu14_04.bash tools/Linux/build-deps-ubuntu12_04.bash</pre>
+Its recommended to use Ubuntu 14.04 version, since 12.04 version will cause rendering errors and need to be run in headless mode.
 
-[Synchronization - User and Programmers Guide](doc/User_and_Programmers_Guide.md)
+#### Testing the installation (all methods)
 
----------------------------------------------------------------------------------------------------------
-This project is part of FIWARE.
-https://www.fiware.org/
+To load an example scene with server mode (both the Real-time Synchronization & SceneAPI services) enabled for testing, run the following command. On Windows, replace Tundra with TundraConsole:
 
-Link to the Synchronization GE FIWARE catalogue:
-http://catalogue.fiware.org/enablers/synchronization
+ Tundra --config tundra.json --config tundra-addons.json --file scenes/Avatar/scene.txml --server --headless --httpport 2346
+
+If running from prebuilt binaries, the extra configuration file tundra-addons.json is already enabled. Therefore the --config command line options can be omitted.
+
+ Tundra --file scenes/Avatar/scene.txml --server --headless --httpport 2346
+
+When running on a Linux server without X11 session, xvfb is required to run:
+
+ xvfb-run ./Tundra --file scenes/Avatar/scene.txml --server --headless --httpport 2346
+
+If your using prebuild binaries on Linux, Tundra executable and example scenes can be found at /opt/realxtend-tundra directory
+
+### Client installation
+
+The client part of the Synchronization GE is supplied as part of the WebTundra JavaScript libraries. There are two options for getting it:
+
+- Download a packaged release
+- Clone the git repository at https://github.com/realXtend/WebTundra (dev2 branch)
+
+To test connecting to a localhost synchronization server, open the file html/client.html in your browser from the source code clone or extracted package, then click "Connect" in the displayed login screen. 
+You may need to serve the client source directory in a web server such as Apache or node.js server due to permission problems with the local file:// protocol.
+
+## Sanity check procedures
+
+### End to End testing
+
+For both the server and the client, it is recommended to have at least 1 GB free RAM and 1 GB free hard disk space, a broadband network connection, and to ensure that the system is not unnecessarily loaded with other processes.
+
+#### Real-time Synchronization
+When the Tundra server is running using the command line above, and the client HTML page html/client.html is open, you should be able to test connecting to the localhost server by clicking the "Connect" button.
+At this point the JavaScript synchronization code should connect to the Tundra server. You should see the following in Tundra server console:
+
+ [WebSocketServer]: Connection ID 1 login successful
+
+The connection ID may not be exactly the same.
+
+Also, when inspecting the client page using a web developer console, you should see the log message "Server connection established" after clicking "Connect".
+
+Seeing these prints confirms that a WebSocket connection between the Tundra server and the JavaScript client code is functioning, and synchronization can be used.
+
+#### SceneAPI REST service
+When the Tundra server is running using the command line above, point a web browser to the following local address to confirm that the SceneAPI is operational:
+
+ http://localhost:2346/entities
+
+This should display a dump of the scene loaded on the Tundra server as XML data.
+
+### List of Running Processes
+
+Server:
+Tundra or TundraConsole
+
+### Network interfaces Up & Open
+Port 2345, both TCP & UDP. This is the default Tundra port for serving scenes using the real-time synchronization and can be changed with the --port <portnumber> startup parameter.
+
+Port 2346, TCP (HTTP). SceneAPI REST service. This was specified on the Tundra server command line (parameter --httpport 2346). There is no default value; if this parameter is not specified the SceneAPI service will not start up.
+
+### Databases
+N/A
+
+## Diagnosis Procedures
+
+If connection fails between the server and the client, verify the following:
+
+- that the server was started with the --server command line parameter
+- that the WebSocketServerModule is loaded on the server; the row "Loading plugin WebSocketServerModule" should be printed to the server console during server startup, with no error messages following it
+- that firewall is not blocking port 2345
+- if the client and server are not on the same machine, or the server port is not the default 2345, make sure that you supply the correct address and port number in the client login screen.
+
+If connection to the SceneAPI service fails, verify the following:
+
+- that the http server port was specified on the server command line parameter, eg. --httpport 2346
+- that the HttpServerModule is loaded on the server; the row "Loading plugin HttpServerModule" should be printed to the server console during server startup, with no error messages following it. The loading of this module is controlled by the configuration file tundra-addons.json, which is enabled by the parameter --config tundra-addons.json on the server command line. This should have been copied to the Tundra executable directory as part of the TundraAddons build process
+- that firewall is not blocking port 2346
+
+### Resource availability
+The server memory consumption should be around 50 MB when running a simple scene without rendering. With rendering enabled, it may be between 100 MB and 200 MB. A typical desktop web browser typically uses around 100 MB of memory when showing a Synchronization client application. CPU usage depends on the amount of activity in the networked scene, but should be when there is nothing happening.
+
+### Remote Service Access
+N/A
+
+### Resource consumption
+As resource consumption is dependent on the scene complexity, the scripts that are running in it, the amount of client connections to the server and their activity, it is hard to give directions to what kind of eg. a memory consumption on the server would be considered abnormal. One guideline would be to note the amount of memory in use once a server has started up and loaded the scene: if memory use for example rapidly doubles from that figure and continues to grow unbounded, then it's likely that an application script is misbehaving and leaking memory.
+
+In a demanding application or scene that uses physics and heavy scripting, it is not uncommon to see high CPU use figures by the server (up to full utilization of one processor core) with high numbers of active clients. For an example, consider a high number (50-100) of clients connected to a scene running an "avatar application": each client gets an avatar to move around, which is physically simulated and uses scripts for movement, collision response etc. Rectifying high CPU utilization in such case will require either using more powerful hardware, simplifying the application (for example not using actual physics simulation, or simplifying the scripts) or limiting the amount of users that can simultaneously connect.
+
+Note that this is considering the processing on the Tundra server process as a whole. The network synchronization itself is fairly lightweight in its processing requirements.
+
+### I/O flows
+The Synchronization GE will by default use TCP (WebSocket) traffic on the port 2345. Additionally native (Tundra) clients will use UDP traffic on the same port. The SceneAPI REST service will use TCP (HTTP) traffic on the chosen port.  The amount of traffic on the server will depend the scene being served and the amount of connected clients; typical would be in the order of tens to hundred kilobytes per second.
