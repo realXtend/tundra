@@ -1,3 +1,21 @@
+v2.5.4 https://github.com/realXtend/naali/compare/tundra2.5.3...tundra2.5.4
+------
+
+- Rewritten interest management and demo scene by Stinkfist0.
+- Fixed build script for Ubuntu 14.
+- Fixed WebSocketServerModule not working when machine has also an IPv6 address.
+- Added new protocol version level for web clients which are able to read the optimized rigid body messages.
+- Fixed scenes loading incorrectly if locale is not C.
+- Forked 3rd party dependencies which are no longer hosted at their original repositories (QtPropertyBrowser, QtScriptGenerator.)
+- Moved to use realxtend-tundra-deps repository from github, as Google Code will shut down in the near future.
+
+v2.5.3 https://github.com/realXtend/naali/compare/tundra2.5.2...tundra2.5.3
+------
+
+- Support for user-defined static-structured components without C++ counterpart.
+- Support for entities having child entities.
+- HttpServerModule in the Tundra addons, which implements an optional http-based scene query and modification API.
+
 v2.5.2 https://github.com/realXtend/naali/compare/tundra2.5.1...tundra2.5.2
 ------
 
