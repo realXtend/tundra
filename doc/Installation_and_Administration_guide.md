@@ -91,7 +91,8 @@ It is recommended to use Ubuntu 14.04 version, since 12.04 version will cause re
 To load an example scene with server mode (both the Real-time Synchronization & SceneAPI services) enabled for testing, run the following command. On Windows, replace Tundra with TundraConsole:
 
 <pre>
-Tundra --config tundra.json --config tundra-addons.json --file scenes/Avatar/scene.txml --server --headless --httpport 2346
+Tundra --config tundra.json --config tundra-addons.json --file scenes/Avatar/scene.txml 
+ --server --headless --httpport 2346
 </pre>
 
 If running from prebuilt binaries, the extra configuration file tundra-addons.json is already enabled. Therefore the --config command line options can be omitted.

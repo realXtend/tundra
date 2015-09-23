@@ -54,12 +54,16 @@ Tundra --help
 The following command line options are often used:
 
 <pre>
---file scenename.txml  Specify the txml scene file to open on startup. Example scenes exist in the bin/scenes directory.
+--file scenename.txml  Specify the txml scene file to open on startup. Example scenes exist 
+                       in the bin/scenes directory.
 --server               Run as a server
---port portnumber      Specify which port the server listens on. This is both for native clients (UDP protocol) and WebSocket clients (TCP protocol)
+--port portnumber      Specify which port the server listens on. This is both for native
+                       clients (UDP protocol) and WebSocket clients (TCP protocol)
 --headless             Run without graphics rendering
---httpport portnumber  Enable Tundra HTTP server, which provides the SceneAPI REST service. This  requires the HttpServerModule to be loaded
---config configfile    Specify the JSON configuration file(s) to use. If not specified, the default configuration file tundra.json is used.
+--httpport portnumber  Enable Tundra HTTP server, which provides the SceneAPI REST service. 
+                       This requires the HttpServerModule to be loaded
+--config configfile    Specify the JSON configuration file(s) to use. If not specified, the 
+                       default configuration file tundra.json is used.
 </pre>
 
 ### Example
@@ -69,7 +73,8 @@ Without going into actual programming, the scene data synchronization functional
 Start up the Tundra server with rendering enabled so that you can see the scene. Here we choose the Physics2 example scene which consists of a large number of physics objects and a ball suspended above them. The server mode is enabled so that clients can connect. Additionally the tundra-addons.json configuration file is loaded, which allows the HttpServerModule (implements the SceneAPI REST service) to be loaded. The SceneAPI REST service is bound to port 2346.
 
 <pre>
-Tundra --config tundra.json --config tundra-addons.json --file scenes/Physics2/scene.txml --server --httpport 2346
+Tundra --config tundra.json --config tundra-addons.json --file scenes/Physics2/scene.txml 
+ --server --httpport 2346
 </pre>
 
 Note: if running the server from prebuilt binaries, the --config command line options can be omitted, as the tundra-addons.json configuration file is already being run by default.
