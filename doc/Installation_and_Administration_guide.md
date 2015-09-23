@@ -119,7 +119,7 @@ The client part of the Synchronization GE is supplied as part of the WebTundra J
 To test connecting to a localhost synchronization server, open the file html/client.html in your browser from the source code clone or extracted package, then click "Connect" in the displayed login screen. 
 You may need to serve the client source directory in a web server such as Apache or node.js server due to permission problems with the local file:// protocol.
 
-## Sanity check procedures =
+## Sanity check procedures
 
 ### End to End testing
 
