@@ -1,0 +1,14 @@
+Package: realxtend-tundra
+Section: web
+Version: 2.5.4
+Maintainer: Lasse Oorni <lasse.oorni@ludocraft.com>
+Priority: optional
+Architecture: amd64
+Essential: no
+Depends: libqt4-core (>=4.8.1), libqt4-gui (>=4.8.1), libqt4-network (>=4.8.1), libqt4-script (>=4.8.1), libqt4-webkit (>=4.8.1), libqt4-xml (>=4.8.1), libboost-thread1.54.0, libboost-filesystem1.54.0, libboost-system1.54.0, libboost-regex1.54.0, zziplib-bin, libfreetype6, libfreeimage3, libgl1-mesa-glx | libgl1, libglu1-mesa | libglu1, libx11-6, libxaw7, libxrandr2, libxt6, libopenal1, xvfb, libvorbisfile3, libogg0, libvorbis0a
+Installed-Size:
+Replaces: realxtend-tundra (<<2.5.2)
+Homepage: http://www.realxtend.org
+Bugs: http://github.com/realXtend/tundra/issues
+Description: realXtend Tundra 3D Internet Platform
+
