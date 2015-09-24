@@ -1,0 +1,3095 @@
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SceneAPI v1 Specification</title>
+    <link href="css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+    <link href="css/font-awesome.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/idea.css">
+    <script src="js/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <link rel="stylesheet" type="text/css" href="css/api-specification.css"> 
+
+    
+</head>
+<body id="respecDocument" class="h-entry">
+<div class="container">
+  <div id="TOC-container">
+    
+<section id="toc">
+
+        <div id="fiware-logo"></div>
+    <ul class="toc">
+
+
+    
+    
+
+
+
+
+
+<li><a href="#API_specification">API Specification</a>
+    <ul class="toc">
+    
+
+                        <li>
+                            
+                                <a href="#resource_group_scene" title = "Group Scene">Group Scene</a>
+                            
+                            <ul class="toc">
+                              
+                                
+                                    <li>
+                                        <a href="#resource_entities" title = "Resource Entities">Resource Entities</a>
+                                        <ul class="toc  ">
+                                        
+                                            
+                                                <li><a href="#action_retrieve-data-of-all-entities" title ="GET - Retrieve Data of All Entities">GET - Retrieve Data of All Entities</a></li>
+                                            
+
+                                        
+                                            
+                                                <li><a href="#action_retrieve-an-entity-by-name" title ="GET - Retrieve an Entity by Name">GET - Retrieve an Entity by Name</a></li>
+                                            
+
+                                        
+                                            
+                                                <li><a href="#action_create-a-new-entity" title ="POST - Create a New Entity">POST - Create a New Entity</a></li>
+                                            
+
+                                        
+                                        </ul>
+                                    </li>
+                                
+                              
+                                
+                                    <li>
+                                        <a href="#resource_entity" title = "Resource Entity">Resource Entity</a>
+                                        <ul class="toc  ">
+                                        
+                                            
+                                                <li><a href="#action_retrieve-data-of-an-entity" title ="GET - Retrieve Data of an Entity">GET - Retrieve Data of an Entity</a></li>
+                                            
+
+                                        
+                                            
+                                                <li><a href="#action_create-a-new-entity-with-a-specified-id" title ="POST - Create a New Entity with a Specified ID">POST - Create a New Entity with a Specified ID</a></li>
+                                            
+
+                                        
+                                            
+                                                <li><a href="#action_set-entity's-component-data" title ="PUT - Set Entity's Component Data">PUT - Set Entity's Component Data</a></li>
+                                            
+
+                                        
+                                            
+                                                <li><a href="#action_delete-an-entity" title ="DELETE - Delete an Entity">DELETE - Delete an Entity</a></li>
+                                            
+
+                                        
+                                        </ul>
+                                    </li>
+                                
+                              
+                                
+                                    <li>
+                                        <a href="#resource_component" title = "Resource Component">Resource Component</a>
+                                        <ul class="toc  ">
+                                        
+                                            
+                                                <li><a href="#action_retrieve-data-of-a-component" title ="GET - Retrieve Data of a Component">GET - Retrieve Data of a Component</a></li>
+                                            
+
+                                        
+                                            
+                                                <li><a href="#action_create-a-new-component-into-an-entity" title ="POST - Create a New Component Into an Entity">POST - Create a New Component Into an Entity</a></li>
+                                            
+
+                                        
+                                            
+                                                <li><a href="#action_set-new-attribute-values-into-a-component" title ="PUT - Set New Attribute Values Into a Component">PUT - Set New Attribute Values Into a Component</a></li>
+                                            
+
+                                        
+                                            
+                                                <li><a href="#action_set-new-attribute-value-into-a-component" title ="PUT - Set New Attribute Value Into a Component">PUT - Set New Attribute Value Into a Component</a></li>
+                                            
+
+                                        
+                                            
+                                                <li><a href="#action_delete-a-component-from-an-entity" title ="DELETE - Delete a Component From an Entity">DELETE - Delete a Component From an Entity</a></li>
+                                            
+
+                                        
+                                        </ul>
+                                    </li>
+                                
+                              
+                                
+                                    <li>
+                                        <a href="#resource_attribute" title = "Resource Attribute">Resource Attribute</a>
+                                        <ul class="toc  ">
+                                        
+                                            
+                                                <li><a href="#action_retrieve-the-value-of-an-attribute" title ="GET - Retrieve the Value of an Attribute">GET - Retrieve the Value of an Attribute</a></li>
+                                            
+
+                                        
+                                        </ul>
+                                    </li>
+                                
+                              
+                            </ul>
+                        </li>
+                      
+    <li><a href="#examples">Examples</a></li>
+    </ul>
+</li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+   </ul>
+</section>
+
+  </div>
+  <div id="API-content">
+  
+	
+
+	
+
+	
+		<h1>Synchronization GE SceneAPI v1 Specification </h1>
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+		<span class="dateLabel">DATE:</span> <span class="dateValue"> 14 September 2015 </span>
+	
+
+	
+
+	
+
+
+
+
+	
+
+	
+		
+		<dl>
+		
+			
+		
+			
+		
+			
+		
+			
+		
+			
+				<dt class="versionLabel">This version:</dt> 
+				<dd class="versionValue"> <a href="http://realxtend.github.io/fiware-synchronization/api/v1.0">
+					http://realxtend.github.io/fiware-synchronization/api/v1.0</a> </dd>
+			
+		
+			
+		
+
+		
+			
+		
+			
+		
+			
+		
+			
+		
+			
+		
+			
+		
+
+		<dt class="versionLabel">Latest version:</dt> 
+		<dd class="versionValue"> <a href="http://realxtend.github.io/fiware-synchronization/api/latest">http://realxtend.github.io/fiware-synchronization/api/latest</a> </dd>
+
+
+		</dl>
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+		<h2 id="editors">Editors</h2>
+		<ol>
+<li>Lasse &Ouml;&ouml;rni, LudoCraft Ltd.</li>
+</ol>
+	
+
+	
+
+	
+
+
+
+	
+
+	
+		<h2 id="copyright">Copyright</h2>
+		<p>This specification is licensed under the
+[FIWARE Open Specification License]
+(http://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/FI-WARE_Open_Specification_Legal_Notice_%28essential_patents_license%29).</p>
+	
+
+	
+
+
+<hr>
+
+
+	<h2 id="abstract">Abstract</h2>
+	<p>The SceneAPI in the Synchronization GE provides a RESTful API for querying and modifying Entity-Component-Attribute formatted scene data. The scene data is communicated via XML.</p>
+<p>For a description of the Entity-Component-Attribute data model, see
+[Scene and EC model]
+(https://github.com/realXtend/tundra/wiki/Scene-and-EC-Model).</p>
+<h1>REST API</h1>
+
+
+
+
+	
+
+	
+
+	
+		<h2 id="status">Status of this document</h2>
+		<p>Final version of the SceneAPI.</p>
+	
+
+<hr>
+
+    
+    
+
+
+
+
+		
+	
+	
+		
+	
+		
+	
+		
+	
+
+
+
+
+
+	
+		
+	
+		
+	
+		
+	
+
+
+
+    
+
+  
+  <section id="API_specification">
+      <h1>API Specification</h1>
+      
+
+
+
+
+        
+            <section id="resource_group_scene" class="resourceGroup">
+            <h2 id="h-resource_group_scene">Scene</h2>
+        
+	<p>The resources include scene entities, which contain components, which contain attributes.</p>
+        
+            <section id="resource_entities" class="resource">
+                 <div class= "header" ><h3 id="h-resource_entities">Entities [/entities]</h3> </div>
+                <p>The collection of all entities in the scene.</p>
+                
+                
+
+		        
+                
+                
+
+
+
+
+
+
+    
+
+
+                
+
+
+                    
+                        
+                            <div id="action_retrieve-data-of-all-entities" class="action GET">
+                        
+
+                        
+    <h4 id="h-action_retrieve-data-of-all-entities">
+        Retrieve Data of All Entities -
+        GET
+        
+            /entities
+        
+    </h4>
+
+        
+                            <div id="retrieve-data-of-all-entities_body" class="">
+                                <p>The entities' data, including their components and attributes is returned in XML format.</p>
+                                
+                                
+                                
+			
+                                
+                                
+      
+                                    
+        	                            
+    
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+     
+</div>
+        	                            
+                                    
+                                    
+                                    <div class="goExample">
+                                        <a href="#action_retrieve-data-of-all-entities_examples">Go to example</a>
+                                    </div>
+                                    
+                                        
+    <div class="goApiary">
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a target="_blank" href="http://docs.sceneapi.apiary.io/#reference/scene/entities/retrieve-data-of-all-entities">View in Apiary</a>
+            
+        
+    
+    </div>
+
+                                    
+                                
+                            </div>
+                        </div>
+                    
+                        
+                            <div id="action_retrieve-an-entity-by-name" class="action GET">
+                        
+
+                        
+    <h4 id="h-action_retrieve-an-entity-by-name">
+        Retrieve an Entity by Name -
+        GET
+        
+            /entities?name={entity_name}
+        
+    </h4>
+
+        
+                            <div id="retrieve-an-entity-by-name_body" class="">
+                                <p>Using the query syntax, search for an entity by name. The entity's data and the components it contains + their attributes are returned as XML.</p>
+                                
+                                
+                                
+			
+                                
+                                
+      
+                                    
+        	                            
+    
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+     
+</div>
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 404</span> 
+            
+            
+     
+</div>
+        	                            
+                                    
+                                    
+                                    <div class="goExample">
+                                        <a href="#action_retrieve-an-entity-by-name_examples">Go to example</a>
+                                    </div>
+                                    
+                                        
+    <div class="goApiary">
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a target="_blank" href="http://docs.sceneapi.apiary.io/#reference/scene/entities/retrieve-an-entity-by-name">View in Apiary</a>
+            
+        
+    
+    </div>
+
+                                    
+                                
+                            </div>
+                        </div>
+                    
+                        
+                            <div id="action_create-a-new-entity" class="action POST">
+                        
+
+                        
+    <h4 id="h-action_create-a-new-entity">
+        Create a New Entity -
+        POST
+        
+            /entities
+        
+    </h4>
+
+        
+                            <div id="create-a-new-entity_body" class="">
+                                <p>The POST request body may contain XML-serialized data to be put inside the entity (components &amp; their attribute values). If omitted, an empty entity is created. A free ID is assigned to the new entity and its data is returned as XML.</p>
+                                
+                                
+                                
+			
+                                
+                                
+      
+                                    
+        	                            
+    
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+     
+</div>
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 400</span> 
+            
+            
+     
+</div>
+        	                            
+                                    
+                                    
+                                    <div class="goExample">
+                                        <a href="#action_create-a-new-entity_examples">Go to example</a>
+                                    </div>
+                                    
+                                        
+    <div class="goApiary">
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a target="_blank" href="http://docs.sceneapi.apiary.io/#reference/scene/entities/create-a-new-entity">View in Apiary</a>
+            
+        
+    
+    </div>
+
+                                    
+                                
+                            </div>
+                        </div>
+                    
+            </section>
+        
+            <section id="resource_entity" class="resource">
+                 <div class= "header" ><h3 id="h-resource_entity">Entity [/entities/{entity_id}]</h3> </div>
+                <p>Represents a single entity in the scene. In addition to the components it contains, each entity has an integer ID and a temporary flag, which means whether or not to persist it when the scene is saved on the server.</p>
+                
+                
+
+		        
+                
+                
+
+
+
+
+
+
+    
+
+
+                
+
+
+                    
+                        
+                            <div id="action_retrieve-data-of-an-entity" class="action GET">
+                        
+
+                        
+    <h4 id="h-action_retrieve-data-of-an-entity">
+        Retrieve Data of an Entity -
+        GET
+        
+            /entities/{entity_id}
+        
+    </h4>
+
+        
+                            <div id="retrieve-data-of-an-entity_body" class="">
+                                <p>The entity's data and the components it contains + their attributes are returned as XML.</p>
+                                
+                                
+                                
+			
+                                
+                                
+      
+                                    
+        	                            
+    
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+     
+</div>
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 404</span> 
+            
+            
+     
+</div>
+        	                            
+                                    
+                                    
+                                    <div class="goExample">
+                                        <a href="#action_retrieve-data-of-an-entity_examples">Go to example</a>
+                                    </div>
+                                    
+                                        
+    <div class="goApiary">
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a target="_blank" href="http://docs.sceneapi.apiary.io/#reference/scene/entity/retrieve-data-of-an-entity">View in Apiary</a>
+            
+        
+    
+    </div>
+
+                                    
+                                
+                            </div>
+                        </div>
+                    
+                        
+                            <div id="action_create-a-new-entity-with-a-specified-id" class="action POST">
+                        
+
+                        
+    <h4 id="h-action_create-a-new-entity-with-a-specified-id">
+        Create a New Entity with a Specified ID -
+        POST
+        
+            /entities/{entity_id}
+        
+    </h4>
+
+        
+                            <div id="create-a-new-entity-with-a-specified-id_body" class="">
+                                <p>The POST request body may contain XML data to be put inside the entity (components &amp; their attribute values). If omitted, an empty entity is created. If there is an ID conflict with an existing entity, another free ID is chosen. The entity's data is returned as XML.</p>
+                                
+                                
+                                
+			
+                                
+                                
+      
+                                    
+        	                            
+    
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+     
+</div>
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 400</span> 
+            
+            
+     
+</div>
+        	                            
+                                    
+                                    
+                                    <div class="goExample">
+                                        <a href="#action_create-a-new-entity-with-a-specified-id_examples">Go to example</a>
+                                    </div>
+                                    
+                                        
+    <div class="goApiary">
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a target="_blank" href="http://docs.sceneapi.apiary.io/#reference/scene/entity/create-a-new-entity-with-a-specified-id">View in Apiary</a>
+            
+        
+    
+    </div>
+
+                                    
+                                
+                            </div>
+                        </div>
+                    
+                        
+                            <div id="action_set-entity's-component-data" class="action PUT">
+                        
+
+                        
+    <h4 id="h-action_set-entity's-component-data">
+        Set Entity's Component Data -
+        PUT
+        
+            /entities/{entity_id}
+        
+    </h4>
+
+        
+                            <div id="set-entity's-component-data_body" class="">
+                                <p>The entity with the specified ID must already exist in the scene. Its new components and their attribute data are to be contained in the PUT request body as XML. All existing components in the entity will be deleted and replaced with those contained in the request body. The entity's new data is returned as XML.</p>
+                                
+                                
+                                
+			
+                                
+                                
+      
+                                    
+        	                            
+    
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+     
+</div>
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 400</span> 
+            
+            
+     
+</div>
+        	                            
+                                    
+                                    
+                                    <div class="goExample">
+                                        <a href="#action_set-entity's-component-data_examples">Go to example</a>
+                                    </div>
+                                    
+                                        
+    <div class="goApiary">
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a target="_blank" href="http://docs.sceneapi.apiary.io/#reference/scene/entity/set-entity's-component-data">View in Apiary</a>
+            
+        
+    
+    </div>
+
+                                    
+                                
+                            </div>
+                        </div>
+                    
+                        
+                            <div id="action_delete-an-entity" class="action DELETE">
+                        
+
+                        
+    <h4 id="h-action_delete-an-entity">
+        Delete an Entity -
+        DELETE
+        
+            /entities/{entity_id}
+        
+    </h4>
+
+        
+                            <div id="delete-an-entity_body" class="">
+                                
+                                
+                                
+                                
+			
+                                
+                                
+      
+                                    
+        	                            
+    
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+            
+            
+     
+</div>
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 400</span> 
+            
+            
+     
+</div>
+        	                            
+                                    
+                                    
+                                    <div class="goExample">
+                                        <a href="#action_delete-an-entity_examples">Go to example</a>
+                                    </div>
+                                    
+                                        
+    <div class="goApiary">
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a target="_blank" href="http://docs.sceneapi.apiary.io/#reference/scene/entity/delete-an-entity">View in Apiary</a>
+            
+        
+    
+    </div>
+
+                                    
+                                
+                            </div>
+                        </div>
+                    
+            </section>
+        
+            <section id="resource_component" class="resource">
+                 <div class= "header" ><h3 id="h-resource_component">Component [/entities/{entity_id}/{component_type}]</h3> </div>
+                <p>Components within an entity are identified by their type name, for example Placeable, Name or Script. They may also be temporary, which is indicated by a boolean.</p>
+                
+                
+
+		        
+                
+                
+
+
+
+
+
+
+    
+
+
+                
+
+
+                    
+                        
+                            <div id="action_retrieve-data-of-a-component" class="action GET">
+                        
+
+                        
+    <h4 id="h-action_retrieve-data-of-a-component">
+        Retrieve Data of a Component -
+        GET
+        
+            /entities/{entity_id}/{component_type}
+        
+    </h4>
+
+        
+                            <div id="retrieve-data-of-a-component_body" class="">
+                                <p>Returns the component's data as XML.</p>
+                                
+                                
+                                
+			
+                                
+                                
+      
+                                    
+        	                            
+    
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+     
+</div>
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 404</span> 
+            
+            
+     
+</div>
+        	                            
+                                    
+                                    
+                                    <div class="goExample">
+                                        <a href="#action_retrieve-data-of-a-component_examples">Go to example</a>
+                                    </div>
+                                    
+                                        
+    <div class="goApiary">
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a target="_blank" href="http://docs.sceneapi.apiary.io/#reference/scene/component/retrieve-data-of-a-component">View in Apiary</a>
+            
+        
+    
+    </div>
+
+                                    
+                                
+                            </div>
+                        </div>
+                    
+                        
+                            <div id="action_create-a-new-component-into-an-entity" class="action POST">
+                        
+
+                        
+    <h4 id="h-action_create-a-new-component-into-an-entity">
+        Create a New Component Into an Entity -
+        POST
+        
+            /entities/{entity_id}/{component_type}
+        
+    </h4>
+
+        
+                            <div id="create-a-new-component-into-an-entity_body" class="">
+                                <p>The POST request body may contain initial attribute values as XML to be put into the created component. If omitted, the attributes will have default values. The component's new data is returned as XML.</p>
+                                
+                                
+                                
+			
+                                
+                                
+      
+                                    
+        	                            
+    
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+     
+</div>
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 400</span> 
+            
+            
+     
+</div>
+        	                            
+                                    
+                                    
+                                    <div class="goExample">
+                                        <a href="#action_create-a-new-component-into-an-entity_examples">Go to example</a>
+                                    </div>
+                                    
+                                        
+    <div class="goApiary">
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a target="_blank" href="http://docs.sceneapi.apiary.io/#reference/scene/component/create-a-new-component-into-an-entity">View in Apiary</a>
+            
+        
+    
+    </div>
+
+                                    
+                                
+                            </div>
+                        </div>
+                    
+                        
+                            <div id="action_set-new-attribute-values-into-a-component" class="action PUT">
+                        
+
+                        
+    <h4 id="h-action_set-new-attribute-values-into-a-component">
+        Set New Attribute Values Into a Component -
+        PUT
+        
+            /entities/{entity_id}/{component_type}
+        
+    </h4>
+
+        
+                            <div id="set-new-attribute-values-into-a-component_body" class="">
+                                <p>The attribute values are to be contained inside the PUT request body as XML. The component's new data is returned as XML.</p>
+                                
+                                
+                                
+			
+                                
+                                
+      
+                                    
+        	                            
+    
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+     
+</div>
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 400</span> 
+            
+            
+     
+</div>
+        	                            
+                                    
+                                    
+                                    <div class="goExample">
+                                        <a href="#action_set-new-attribute-values-into-a-component_examples">Go to example</a>
+                                    </div>
+                                    
+                                        
+    <div class="goApiary">
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a target="_blank" href="http://docs.sceneapi.apiary.io/#reference/scene/component/set-new-attribute-values-into-a-component">View in Apiary</a>
+            
+        
+    
+    </div>
+
+                                    
+                                
+                            </div>
+                        </div>
+                    
+                        
+                            <div id="action_set-new-attribute-value-into-a-component" class="action PUT">
+                        
+
+                        
+    <h4 id="h-action_set-new-attribute-value-into-a-component">
+        Set New Attribute Value Into a Component -
+        PUT
+        
+            /entities/{entity_id}/{component_type}?{attribute_name}={new_attribute_value}
+        
+    </h4>
+
+        
+                            <div id="set-new-attribute-value-into-a-component_body" class="">
+                                <p>Set a single attribute inside a component to a new value using the query syntax. The component's new data is returned as XML.</p>
+                                
+                                
+                                
+			
+                                
+                                
+      
+                                    
+        	                            
+    
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+            
+            
+     
+</div>
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 400</span> 
+            
+            
+     
+</div>
+        	                            
+                                    
+                                    
+                                    <div class="goExample">
+                                        <a href="#action_set-new-attribute-value-into-a-component_examples">Go to example</a>
+                                    </div>
+                                    
+                                        
+    <div class="goApiary">
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a target="_blank" href="http://docs.sceneapi.apiary.io/#reference/scene/component/set-new-attribute-value-into-a-component">View in Apiary</a>
+            
+        
+    
+    </div>
+
+                                    
+                                
+                            </div>
+                        </div>
+                    
+                        
+                            <div id="action_delete-a-component-from-an-entity" class="action DELETE">
+                        
+
+                        
+    <h4 id="h-action_delete-a-component-from-an-entity">
+        Delete a Component From an Entity -
+        DELETE
+        
+            /entities/{entity_id}/{component_type}
+        
+    </h4>
+
+        
+                            <div id="delete-a-component-from-an-entity_body" class="">
+                                
+                                
+                                
+                                
+			
+                                
+                                
+      
+                                    
+        	                            
+    
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+            
+            
+     
+</div>
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 400</span> 
+            
+            
+     
+</div>
+        	                            
+                                    
+                                    
+                                    <div class="goExample">
+                                        <a href="#action_delete-a-component-from-an-entity_examples">Go to example</a>
+                                    </div>
+                                    
+                                        
+    <div class="goApiary">
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a target="_blank" href="http://docs.sceneapi.apiary.io/#reference/scene/component/delete-a-component-from-an-entity">View in Apiary</a>
+            
+        
+    
+    </div>
+
+                                    
+                                
+                            </div>
+                        </div>
+                    
+            </section>
+        
+            <section id="resource_attribute" class="resource">
+                 <div class= "header" ><h3 id="h-resource_attribute">Attribute [/entities/{entity_id}/{component_type}/{attribute_name}]</h3> </div>
+                <p>Attributes are typed values (for example integer, boolean, 3-dimensional vector) inside the component, identified by their names.</p>
+                
+                
+
+		        
+                
+                
+
+
+
+
+
+
+    
+
+
+                
+
+
+                    
+                        
+                            <div id="action_retrieve-the-value-of-an-attribute" class="action GET">
+                        
+
+                        
+    <h4 id="h-action_retrieve-the-value-of-an-attribute">
+        Retrieve the Value of an Attribute -
+        GET
+        
+            /entities/{entity_id}/{component_type}/{attribute_name}
+        
+    </h4>
+
+        
+                            <div id="retrieve-the-value-of-an-attribute_body" class="">
+                                <p>The value is returned as text.</p>
+                                
+                                
+                                
+			
+                                
+                                
+      
+                                    
+        	                            
+    
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (text/plain)
+        
+    
+            
+            
+     
+</div>
+        	                            
+        		                            
+                                        
+                                        
+                                        
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 404</span> 
+            
+            
+     
+</div>
+        	                            
+                                    
+                                    
+                                    <div class="goExample">
+                                        <a href="#action_retrieve-the-value-of-an-attribute_examples">Go to example</a>
+                                    </div>
+                                    
+                                        
+    <div class="goApiary">
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a target="_blank" href="http://docs.sceneapi.apiary.io/#reference/scene/attribute/retrieve-the-value-of-an-attribute">View in Apiary</a>
+            
+        
+    
+    </div>
+
+                                    
+                                
+                            </div>
+                        </div>
+                    
+            </section>
+        
+    </section>
+
+<section id="examples">
+    <div class= "header" ><h2>Examples</h2> </div>
+    
+        
+            <section id="resource_group_scene_example" class="resourceGroupExample">
+                <div class= "header" ><h3 id="h-resource_group_scene_example">Scene</h3> </div>
+        
+
+                
+                    <section id="resource_entities_example" class="resourceExample">
+                         <div class= "header" ><h4 id="h-resource_entities_example">Entities [/entities]</h4></div>
+                            
+                            
+                            
+
+                            
+                            
+                            
+
+                            
+
+
+                            
+                                <div id="action_retrieve-data-of-all-entities_examples" class="actionExample GET">
+
+                                    
+    <h4 id="h-action_retrieve-data-of-all-entities_examples">
+        Retrieve Data of All Entities -
+        GET
+        
+            /entities
+        
+    </h4>
+
+                
+                                    <div id="action_retrieve-data-of-all-entities_body" class=""> 
+                                        
+                                        
+                                        
+                                        
+         
+                                        
+                                            
+                                            
+                                                
+            
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_retrieve-data-of-all-entities_Response_1_body" class=" action-div-body">
+                <p></p>
+
+                
+        	         <div class= "header"><p>Headers</p></div>
+                    
+                    
+                        
+                    
+
+        	        <pre><code>Content-Type: application/xml</code></pre>
+                
+
+                
+                    <div class= "header"><p>Body</p></div>
+                    <pre><code>&lt;scene>
+ &lt;entity temporary="false" id="1" sync="true">
+  &lt;component temporary="false" typeId="5" type="Script" sync="true">
+   &lt;attribute value="avatarmenu.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+   &lt;attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+   &lt;attribute value="0" type="int" id="runMode" name="Run mode"/>
+   &lt;attribute value="" type="string" id="applicationName" name="Script application name"/>
+   &lt;attribute value="" type="string" id="className" name="Script class name"/>
+  &lt;/component>
+  &lt;component temporary="false" typeId="26" type="Name" sync="true">
+   &lt;attribute value="AvatarMenu" type="string" id="name" name="Name"/>
+   &lt;attribute value="" type="string" id="description" name="Description"/>
+   &lt;attribute value="" type="string" id="group" name="Group"/>
+  &lt;/component>
+ &lt;/entity>
+ &lt;entity temporary="false" id="2" sync="true">
+  &lt;component temporary="false" typeId="5" type="Script" sync="true">
+   &lt;attribute value="avatarapplication.js;simpleavatar.js;exampleavataraddon.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+   &lt;attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+   &lt;attribute value="0" type="int" id="runMode" name="Run mode"/>
+   &lt;attribute value="AvatarApp" type="string" id="applicationName" name="Script application name"/>
+   &lt;attribute value="" type="string" id="className" name="Script class name"/>
+  &lt;/component>
+  &lt;component temporary="false" typeId="26" type="Name" sync="true">
+   &lt;attribute value="AvatarApp" type="string" id="name" name="Name"/>
+   &lt;attribute value="" type="string" id="description" name="Description"/>
+   &lt;attribute value="" type="string" id="group" name="Group"/>
+  &lt;/component>
+ &lt;/entity>
+&lt;/scene>
+</code></pre>
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                            
+                                            <div class="goActions">
+                                                <a href="#action_retrieve-data-of-all-entities">Go to specification</a>
+                                            </div>
+                                    </div>
+                                </div>
+                            
+                                <div id="action_retrieve-an-entity-by-name_examples" class="actionExample GET">
+
+                                    
+    <h4 id="h-action_retrieve-an-entity-by-name_examples">
+        Retrieve an Entity by Name -
+        GET
+        
+            /entities?name={entity_name}
+        
+    </h4>
+
+                
+                                    <div id="action_retrieve-an-entity-by-name_body" class=""> 
+                                        
+                                        
+                                        
+                                        
+         
+                                        
+                                            
+                                            
+                                                
+            
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_retrieve-an-entity-by-name_Response_1_body" class=" action-div-body">
+                <p></p>
+
+                
+        	         <div class= "header"><p>Headers</p></div>
+                    
+                    
+                        
+                    
+
+        	        <pre><code>Content-Type: application/xml</code></pre>
+                
+
+                
+                    <div class= "header"><p>Body</p></div>
+                    <pre><code>&lt;entity temporary="false" id="1" sync="true">
+ &lt;component temporary="false" typeId="5" type="Script" sync="true">
+  &lt;attribute value="avatarmenu.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+  &lt;attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+  &lt;attribute value="0" type="int" id="runMode" name="Run mode"/>
+  &lt;attribute value="" type="string" id="applicationName" name="Script application name"/>
+  &lt;attribute value="" type="string" id="className" name="Script class name"/>
+ &lt;/component>
+ &lt;component temporary="false" typeId="26" type="Name" sync="true">
+  &lt;attribute value="AvatarMenu" type="string" id="name" name="Name"/>
+  &lt;attribute value="" type="string" id="description" name="Description"/>
+  &lt;attribute value="" type="string" id="group" name="Group"/>
+ &lt;/component>
+&lt;/entity>
+</code></pre>
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 404</span> 
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_retrieve-an-entity-by-name_Response_2_body" class=" action-div-body">
+                <p></p>
+
+                
+
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                            
+                                            <div class="goActions">
+                                                <a href="#action_retrieve-an-entity-by-name">Go to specification</a>
+                                            </div>
+                                    </div>
+                                </div>
+                            
+                                <div id="action_create-a-new-entity_examples" class="actionExample POST">
+
+                                    
+    <h4 id="h-action_create-a-new-entity_examples">
+        Create a New Entity -
+        POST
+        
+            /entities
+        
+    </h4>
+
+                
+                                    <div id="action_create-a-new-entity_body" class=""> 
+                                        
+                                        
+                                        
+                                        
+         
+                                        
+                                            
+                                            
+                                                
+            
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_create-a-new-entity_Response_1_body" class=" action-div-body">
+                <p></p>
+
+                
+        	         <div class= "header"><p>Headers</p></div>
+                    
+                    
+                        
+                    
+
+        	        <pre><code>Content-Type: application/xml</code></pre>
+                
+
+                
+                    <div class= "header"><p>Body</p></div>
+                    <pre><code>&lt;entity temporary="false" id="1" sync="true"/>
+</code></pre>
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 400</span> 
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_create-a-new-entity_Response_2_body" class=" action-div-body">
+                <p></p>
+
+                
+
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                            
+                                            <div class="goActions">
+                                                <a href="#action_create-a-new-entity">Go to specification</a>
+                                            </div>
+                                    </div>
+                                </div>
+                            
+                    </section>
+            
+                    <section id="resource_entity_example" class="resourceExample">
+                         <div class= "header" ><h4 id="h-resource_entity_example">Entity [/entities/{entity_id}]</h4></div>
+                            
+                            
+                            
+
+                            
+                            
+                            
+
+                            
+
+
+                            
+                                <div id="action_retrieve-data-of-an-entity_examples" class="actionExample GET">
+
+                                    
+    <h4 id="h-action_retrieve-data-of-an-entity_examples">
+        Retrieve Data of an Entity -
+        GET
+        
+            /entities/{entity_id}
+        
+    </h4>
+
+                
+                                    <div id="action_retrieve-data-of-an-entity_body" class=""> 
+                                        
+                                        
+                                        
+                                        
+         
+                                        
+                                            
+                                            
+                                                
+            
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_retrieve-data-of-an-entity_Response_1_body" class=" action-div-body">
+                <p></p>
+
+                
+        	         <div class= "header"><p>Headers</p></div>
+                    
+                    
+                        
+                    
+
+        	        <pre><code>Content-Type: application/xml</code></pre>
+                
+
+                
+                    <div class= "header"><p>Body</p></div>
+                    <pre><code>&lt;entity temporary="false" id="1" sync="true">
+ &lt;component temporary="false" typeId="5" type="Script" sync="true">
+  &lt;attribute value="avatarmenu.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+  &lt;attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+  &lt;attribute value="0" type="int" id="runMode" name="Run mode"/>
+  &lt;attribute value="" type="string" id="applicationName" name="Script application name"/>
+  &lt;attribute value="" type="string" id="className" name="Script class name"/>
+ &lt;/component>
+ &lt;component temporary="false" typeId="26" type="Name" sync="true">
+  &lt;attribute value="AvatarMenu" type="string" id="name" name="Name"/>
+  &lt;attribute value="" type="string" id="description" name="Description"/>
+  &lt;attribute value="" type="string" id="group" name="Group"/>
+ &lt;/component>
+&lt;/entity>
+</code></pre>
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 404</span> 
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_retrieve-data-of-an-entity_Response_2_body" class=" action-div-body">
+                <p></p>
+
+                
+
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                            
+                                            <div class="goActions">
+                                                <a href="#action_retrieve-data-of-an-entity">Go to specification</a>
+                                            </div>
+                                    </div>
+                                </div>
+                            
+                                <div id="action_create-a-new-entity-with-a-specified-id_examples" class="actionExample POST">
+
+                                    
+    <h4 id="h-action_create-a-new-entity-with-a-specified-id_examples">
+        Create a New Entity with a Specified ID -
+        POST
+        
+            /entities/{entity_id}
+        
+    </h4>
+
+                
+                                    <div id="action_create-a-new-entity-with-a-specified-id_body" class=""> 
+                                        
+                                        
+                                        
+                                        
+         
+                                        
+                                            
+                                            
+                                                
+            
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_create-a-new-entity-with-a-specified-id_Response_1_body" class=" action-div-body">
+                <p></p>
+
+                
+        	         <div class= "header"><p>Headers</p></div>
+                    
+                    
+                        
+                    
+
+        	        <pre><code>Content-Type: application/xml</code></pre>
+                
+
+                
+                    <div class= "header"><p>Body</p></div>
+                    <pre><code>&lt;entity temporary="false" id="10" sync="true"/>
+</code></pre>
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 400</span> 
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_create-a-new-entity-with-a-specified-id_Response_2_body" class=" action-div-body">
+                <p></p>
+
+                
+
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                            
+                                            <div class="goActions">
+                                                <a href="#action_create-a-new-entity-with-a-specified-id">Go to specification</a>
+                                            </div>
+                                    </div>
+                                </div>
+                            
+                                <div id="action_set-entity's-component-data_examples" class="actionExample PUT">
+
+                                    
+    <h4 id="h-action_set-entity's-component-data_examples">
+        Set Entity's Component Data -
+        PUT
+        
+            /entities/{entity_id}
+        
+    </h4>
+
+                
+                                    <div id="action_set-entity's-component-data_body" class=""> 
+                                        
+                                        
+                                        
+                                        
+         
+                                        
+                                            
+                                            
+                                                
+            
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_set-entity's-component-data_Response_1_body" class=" action-div-body">
+                <p></p>
+
+                
+        	         <div class= "header"><p>Headers</p></div>
+                    
+                    
+                        
+                    
+
+        	        <pre><code>Content-Type: application/xml</code></pre>
+                
+
+                
+                    <div class= "header"><p>Body</p></div>
+                    <pre><code>&lt;entity temporary="false" id="1" sync="true">
+ &lt;component temporary="false" typeId="20" type="Placeable" sync="true">
+  &lt;attribute value="0.000000,50.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="transform" name="Transform"/>
+  &lt;attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
+  &lt;attribute value="true" type="bool" id="visible" name="Visible"/>
+  &lt;attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
+  &lt;attribute value="" type="EntityReference" id="parentRef" name="Parent entity ref"/>
+  &lt;attribute value="" type="string" id="parentBone" name="Parent bone name"/>
+ &lt;/component>
+ &lt;component temporary="false" typeId="26" type="Name" sync="true">
+  &lt;attribute value="NewName" type="string" id="name" name="Name"/>
+  &lt;attribute value="" type="string" id="description" name="Description"/>
+  &lt;attribute value="" type="string" id="group" name="Group"/>
+ &lt;/component>
+&lt;/entity>
+</code></pre>
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 400</span> 
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_set-entity's-component-data_Response_2_body" class=" action-div-body">
+                <p></p>
+
+                
+
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                            
+                                            <div class="goActions">
+                                                <a href="#action_set-entity's-component-data">Go to specification</a>
+                                            </div>
+                                    </div>
+                                </div>
+                            
+                                <div id="action_delete-an-entity_examples" class="actionExample DELETE">
+
+                                    
+    <h4 id="h-action_delete-an-entity_examples">
+        Delete an Entity -
+        DELETE
+        
+            /entities/{entity_id}
+        
+    </h4>
+
+                
+                                    <div id="action_delete-an-entity_body" class=""> 
+                                        
+                                        
+                                        
+                                        
+         
+                                        
+                                            
+                                            
+                                                
+            
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_delete-an-entity_Response_1_body" class=" action-div-body">
+                <p></p>
+
+                
+
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 400</span> 
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_delete-an-entity_Response_2_body" class=" action-div-body">
+                <p></p>
+
+                
+
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                            
+                                            <div class="goActions">
+                                                <a href="#action_delete-an-entity">Go to specification</a>
+                                            </div>
+                                    </div>
+                                </div>
+                            
+                    </section>
+            
+                    <section id="resource_component_example" class="resourceExample">
+                         <div class= "header" ><h4 id="h-resource_component_example">Component [/entities/{entity_id}/{component_type}]</h4></div>
+                            
+                            
+                            
+
+                            
+                            
+                            
+
+                            
+
+
+                            
+                                <div id="action_retrieve-data-of-a-component_examples" class="actionExample GET">
+
+                                    
+    <h4 id="h-action_retrieve-data-of-a-component_examples">
+        Retrieve Data of a Component -
+        GET
+        
+            /entities/{entity_id}/{component_type}
+        
+    </h4>
+
+                
+                                    <div id="action_retrieve-data-of-a-component_body" class=""> 
+                                        
+                                        
+                                        
+                                        
+         
+                                        
+                                            
+                                            
+                                                
+            
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_retrieve-data-of-a-component_Response_1_body" class=" action-div-body">
+                <p></p>
+
+                
+        	         <div class= "header"><p>Headers</p></div>
+                    
+                    
+                        
+                    
+
+        	        <pre><code>Content-Type: application/xml</code></pre>
+                
+
+                
+                    <div class= "header"><p>Body</p></div>
+                    <pre><code>&lt;component temporary="false" typeId="5" type="Script" sync="true">
+ &lt;attribute value="avatarmenu.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+ &lt;attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+ &lt;attribute value="0" type="int" id="runMode" name="Run mode"/>
+ &lt;attribute value="" type="string" id="applicationName" name="Script application name"/>
+ &lt;attribute value="" type="string" id="className" name="Script class name"/>
+&lt;/component>
+</code></pre>
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 404</span> 
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_retrieve-data-of-a-component_Response_2_body" class=" action-div-body">
+                <p></p>
+
+                
+
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                            
+                                            <div class="goActions">
+                                                <a href="#action_retrieve-data-of-a-component">Go to specification</a>
+                                            </div>
+                                    </div>
+                                </div>
+                            
+                                <div id="action_create-a-new-component-into-an-entity_examples" class="actionExample POST">
+
+                                    
+    <h4 id="h-action_create-a-new-component-into-an-entity_examples">
+        Create a New Component Into an Entity -
+        POST
+        
+            /entities/{entity_id}/{component_type}
+        
+    </h4>
+
+                
+                                    <div id="action_create-a-new-component-into-an-entity_body" class=""> 
+                                        
+                                        
+                                        
+                                        
+         
+                                        
+                                            
+                                            
+                                                
+            
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_create-a-new-component-into-an-entity_Response_1_body" class=" action-div-body">
+                <p></p>
+
+                
+        	         <div class= "header"><p>Headers</p></div>
+                    
+                    
+                        
+                    
+
+        	        <pre><code>Content-Type: application/xml</code></pre>
+                
+
+                
+                    <div class= "header"><p>Body</p></div>
+                    <pre><code>&lt;component temporary="false" typeId="20" type="Placeable" sync="true">
+ &lt;attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="transform" name="Transform"/>
+ &lt;attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
+ &lt;attribute value="true" type="bool" id="visible" name="Visible"/>
+ &lt;attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
+ &lt;attribute value="" type="EntityReference" id="parentRef" name="Parent entity ref"/>
+ &lt;attribute value="" type="string" id="parentBone" name="Parent bone name"/>
+&lt;/component>
+</code></pre>
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 400</span> 
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_create-a-new-component-into-an-entity_Response_2_body" class=" action-div-body">
+                <p></p>
+
+                
+
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                            
+                                            <div class="goActions">
+                                                <a href="#action_create-a-new-component-into-an-entity">Go to specification</a>
+                                            </div>
+                                    </div>
+                                </div>
+                            
+                                <div id="action_set-new-attribute-values-into-a-component_examples" class="actionExample PUT">
+
+                                    
+    <h4 id="h-action_set-new-attribute-values-into-a-component_examples">
+        Set New Attribute Values Into a Component -
+        PUT
+        
+            /entities/{entity_id}/{component_type}
+        
+    </h4>
+
+                
+                                    <div id="action_set-new-attribute-values-into-a-component_body" class=""> 
+                                        
+                                        
+                                        
+                                        
+         
+                                        
+                                            
+                                            
+                                                
+            
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (application/xml)
+        
+    
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_set-new-attribute-values-into-a-component_Response_1_body" class=" action-div-body">
+                <p></p>
+
+                
+        	         <div class= "header"><p>Headers</p></div>
+                    
+                    
+                        
+                    
+
+        	        <pre><code>Content-Type: application/xml</code></pre>
+                
+
+                
+                    <div class= "header"><p>Body</p></div>
+                    <pre><code>&lt;component temporary="false" typeId="20" type="Placeable" sync="true">
+ &lt;attribute value="0.000000,50.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="transform" name="Transform"/>
+ &lt;attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
+ &lt;attribute value="true" type="bool" id="visible" name="Visible"/>
+ &lt;attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
+ &lt;attribute value="" type="EntityReference" id="parentRef" name="Parent entity ref"/>
+ &lt;attribute value="" type="string" id="parentBone" name="Parent bone name"/>
+&lt;/component>
+</code></pre>
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 400</span> 
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_set-new-attribute-values-into-a-component_Response_2_body" class=" action-div-body">
+                <p></p>
+
+                
+
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                            
+                                            <div class="goActions">
+                                                <a href="#action_set-new-attribute-values-into-a-component">Go to specification</a>
+                                            </div>
+                                    </div>
+                                </div>
+                            
+                                <div id="action_set-new-attribute-value-into-a-component_examples" class="actionExample PUT">
+
+                                    
+    <h4 id="h-action_set-new-attribute-value-into-a-component_examples">
+        Set New Attribute Value Into a Component -
+        PUT
+        
+            /entities/{entity_id}/{component_type}?{attribute_name}={new_attribute_value}
+        
+    </h4>
+
+                
+                                    <div id="action_set-new-attribute-value-into-a-component_body" class=""> 
+                                        
+                                        
+                                        
+                                        
+         
+                                        
+                                            
+                                            
+                                                
+            
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_set-new-attribute-value-into-a-component_Response_1_body" class=" action-div-body">
+                <p></p>
+
+                
+
+                
+                    <div class= "header"><p>Body</p></div>
+                    <pre><code>&lt;component temporary="false" typeId="20" type="Placeable" sync="true">
+ &lt;attribute value="0.000000,50.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="transform" name="Transform"/>
+ &lt;attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
+ &lt;attribute value="true" type="bool" id="visible" name="Visible"/>
+ &lt;attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
+ &lt;attribute value="" type="EntityReference" id="parentRef" name="Parent entity ref"/>
+ &lt;attribute value="" type="string" id="parentBone" name="Parent bone name"/>
+&lt;/component>
+</code></pre>
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 400</span> 
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_set-new-attribute-value-into-a-component_Response_2_body" class=" action-div-body">
+                <p></p>
+
+                
+
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                            
+                                            <div class="goActions">
+                                                <a href="#action_set-new-attribute-value-into-a-component">Go to specification</a>
+                                            </div>
+                                    </div>
+                                </div>
+                            
+                                <div id="action_delete-a-component-from-an-entity_examples" class="actionExample DELETE">
+
+                                    
+    <h4 id="h-action_delete-a-component-from-an-entity_examples">
+        Delete a Component From an Entity -
+        DELETE
+        
+            /entities/{entity_id}/{component_type}
+        
+    </h4>
+
+                
+                                    <div id="action_delete-a-component-from-an-entity_body" class=""> 
+                                        
+                                        
+                                        
+                                        
+         
+                                        
+                                            
+                                            
+                                                
+            
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_delete-a-component-from-an-entity_Response_1_body" class=" action-div-body">
+                <p></p>
+
+                
+
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 400</span> 
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_delete-a-component-from-an-entity_Response_2_body" class=" action-div-body">
+                <p></p>
+
+                
+
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                            
+                                            <div class="goActions">
+                                                <a href="#action_delete-a-component-from-an-entity">Go to specification</a>
+                                            </div>
+                                    </div>
+                                </div>
+                            
+                    </section>
+            
+                    <section id="resource_attribute_example" class="resourceExample">
+                         <div class= "header" ><h4 id="h-resource_attribute_example">Attribute [/entities/{entity_id}/{component_type}/{attribute_name}]</h4></div>
+                            
+                            
+                            
+
+                            
+                            
+                            
+
+                            
+
+
+                            
+                                <div id="action_retrieve-the-value-of-an-attribute_examples" class="actionExample GET">
+
+                                    
+    <h4 id="h-action_retrieve-the-value-of-an-attribute_examples">
+        Retrieve the Value of an Attribute -
+        GET
+        
+            /entities/{entity_id}/{component_type}/{attribute_name}
+        
+    </h4>
+
+                
+                                    <div id="action_retrieve-the-value-of-an-attribute_body" class=""> 
+                                        
+                                        
+                                        
+                                        
+         
+                                        
+                                            
+                                            
+                                                
+            
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 200</span> 
+        
+            (text/plain)
+        
+    
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_retrieve-the-value-of-an-attribute_Response_1_body" class=" action-div-body">
+                <p></p>
+
+                
+        	         <div class= "header"><p>Headers</p></div>
+                    
+                    
+                        
+                    
+
+        	        <pre><code>Content-Type: text/plain</code></pre>
+                
+
+                
+                    <div class= "header"><p>Body</p></div>
+                    <pre><code>0.000000,50.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000
+</code></pre>
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                                    
+                                                
+                                                
+                                                
+
+<div class="rest-packet-div">
+
+            <span class="packetType">Response 404</span> 
+            
+            
+            
+            
+
+
+
+ 
+            <div id="action_retrieve-the-value-of-an-attribute_Response_2_body" class=" action-div-body">
+                <p></p>
+
+                
+
+                
+
+                
+            </div>
+            
+            
+     
+</div>
+                                                
+                                            
+                                            <div class="goActions">
+                                                <a href="#action_retrieve-the-value-of-an-attribute">Go to specification</a>
+                                            </div>
+                                    </div>
+                                </div>
+                            
+                    </section>
+            
+        </section>
+    
+
+
+
+</section>
+  </section>
+  
+   
+
+
+
+	
+
+	
+
+	
+
+    
+    
+    
+  </div>
+</div>
+</body>
+</html>
