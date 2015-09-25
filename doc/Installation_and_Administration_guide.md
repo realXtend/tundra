@@ -53,6 +53,10 @@ There are two options, to download a prebuilt binary package, or build from sour
 
 #### Prebuilt binaries (Linux)
 
+A prebuilt binary is provided for Ubuntu 14.04 64bit.
+
+- [https://forge.fiware.org/frs/download.php/1694/Synchronization-Server-2.5.4-ubuntu-14.04-amd64.deb](https://forge.fiware.org/frs/download.php/1694/Synchronization-Server-2.5.4-ubuntu-14.04-amd64.deb)
+
 To install a Tundra package and its dependencies, use these commands. You need to have root privileges and an active Internet connection for downloading dependencies.
 
 - apt-get update
@@ -63,9 +67,16 @@ After successful installation, the Tundra binary and examples scenes are placed 
 
 Note! "dpkg -i <package file name>" will print missing dependencies error, but "apt-get -f install" should find & install them.
 
+The server is also available as a Docker image:
+
+- [https://hub.docker.com/r/loorni/synchronization/](https://hub.docker.com/r/loorni/synchronization/)
+
 #### Prebuilt binaries (Windows)
 
 32-bit and 64-bit installers are provided. These require an active Internet connection for downloading Microsoft redistributables.
+
+- [https://forge.fiware.org/frs/download.php/1692/Synchronization-Server-2.5.4-Windows-x86.exe](https://forge.fiware.org/frs/download.php/1692/Synchronization-Server-2.5.4-Windows-x86.exe)
+- [https://forge.fiware.org/frs/download.php/1693/Synchronization-Server-2.5.4-Windows-x64.exe](https://forge.fiware.org/frs/download.php/1693/Synchronization-Server-2.5.4-Windows-x64.exe)
 
 After successful installation, Tundra can be run from the installation directory using the command prompt. This is the recommended way of running instead of Start Menu shortcuts, to be able to specify the command line parameters. On Windows there are Tundra.exe and TundraConsole.exe executables, where TundraConsole will display a console window and is therefore recommended for server usage.
 
@@ -91,7 +102,7 @@ It is recommended to use Ubuntu 14.04 version, since 12.04 version will cause re
 To load an example scene with server mode (both the Real-time Synchronization & SceneAPI services) enabled for testing, run the following command. On Windows, replace Tundra with TundraConsole:
 
 <pre>
-Tundra --config tundra.json --config tundra-addons.json --file scenes/Avatar/scene.txml 
+Tundra --config tundra.json --config tundra-addons.json --file scenes/Avatar/scene.txml
  --server --headless --httpport 2346
 </pre>
 
