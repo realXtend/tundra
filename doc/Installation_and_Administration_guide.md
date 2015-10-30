@@ -76,7 +76,7 @@ The server is also available as a Docker image:
 32-bit and 64-bit installers are provided. These require an active Internet connection for downloading Microsoft redistributables.
 
 - [https://forge.fiware.org/frs/download.php/1692/Synchronization-Server-2.5.4-Windows-x86.exe](https://forge.fiware.org/frs/download.php/1692/Synchronization-Server-2.5.4-Windows-x86.exe)
-- [https://forge.fiware.org/frs/download.php/1693/Synchronization-Server-2.5.4-Windows-x64.exe](https://forge.fiware.org/frs/download.php/1693/Synchronization-Server-2.5.4-Windows-x64.exe)
+- [https://forge.fiware.org/frs/download.php/1702/Synchronization-Server-2.5.4-Windows-x64.exe](https://forge.fiware.org/frs/download.php/1693/Synchronization-Server-2.5.4-Windows-x64.exe)
 
 After successful installation, Tundra can be run from the installation directory using the command prompt. This is the recommended way of running instead of Start Menu shortcuts, to be able to specify the command line parameters. On Windows there are Tundra.exe and TundraConsole.exe executables, where TundraConsole will display a console window and is therefore recommended for server usage.
 
