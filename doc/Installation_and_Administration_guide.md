@@ -60,12 +60,12 @@ A prebuilt binary is provided for Ubuntu 14.04 64bit.
 To install a Tundra package and its dependencies, use these commands. You need to have root privileges and an active Internet connection for downloading dependencies.
 
 - apt-get update
-- dpkg -i <package file name>
+- dpkg -i PackageFileName.deb
 - apt-get -f install
 
 After successful installation, the Tundra binary and examples scenes are placed in the /opt/realxtend-tundra directory.
 
-Note! "dpkg -i <package file name>" will print missing dependencies error, but "apt-get -f install" should find & install them.
+Note! "dpkg -i PackageFileName.deb" will print missing dependencies error, but "apt-get -f install" should find & install them.
 
 The server is also available as a Docker image:
 
