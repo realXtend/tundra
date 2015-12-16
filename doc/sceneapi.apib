@@ -1,0 +1,267 @@
+FORMAT: 1A
+HOST: http://realxtend.github.io/fiware-synchronization/api/
+TITLE: Synchronization GE SceneAPI v1 Specification
+DATE: 14 September 2015
+VERSION: v1.0
+APIARY_PROJECT: sceneapi
+
+# SceneAPI v1 Specification
+
+The SceneAPI in the Synchronization GE provides a RESTful API for querying and modifying Entity-Component-Attribute formatted scene data. The scene data is communicated via XML.
+
+For a description of the Entity-Component-Attribute data model, see
+[Scene and EC model]
+(https://github.com/realXtend/tundra/wiki/Scene-and-EC-Model).
+
+## Editors
+
+  1. Lasse &Ouml;&ouml;rni, LudoCraft Ltd.
+
+## Copyright
+
+This specification is licensed under the
+[FIWARE Open Specification License]
+(http://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/FI-WARE_Open_Specification_Legal_Notice_%28implicit_patents_license%29).
+
+## Status
+
+Final version of the SceneAPI.
+
+# REST API
+
+# Group Scene
+
+The resources include scene entities, which contain components, which contain attributes.
+
+# Entities [/entities]
+
+The collection of all entities in the scene.
+
+## Retrieve Data of All Entities [GET]
+
+The entities' data, including their components and attributes is returned in XML format.
+
++ Response 200 (application/xml)
+
+        <scene>
+         <entity temporary="false" id="1" sync="true">
+          <component temporary="false" typeId="5" type="Script" sync="true">
+           <attribute value="avatarmenu.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+           <attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+           <attribute value="0" type="int" id="runMode" name="Run mode"/>
+           <attribute value="" type="string" id="applicationName" name="Script application name"/>
+           <attribute value="" type="string" id="className" name="Script class name"/>
+          </component>
+          <component temporary="false" typeId="26" type="Name" sync="true">
+           <attribute value="AvatarMenu" type="string" id="name" name="Name"/>
+           <attribute value="" type="string" id="description" name="Description"/>
+           <attribute value="" type="string" id="group" name="Group"/>
+          </component>
+         </entity>
+         <entity temporary="false" id="2" sync="true">
+          <component temporary="false" typeId="5" type="Script" sync="true">
+           <attribute value="avatarapplication.js;simpleavatar.js;exampleavataraddon.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+           <attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+           <attribute value="0" type="int" id="runMode" name="Run mode"/>
+           <attribute value="AvatarApp" type="string" id="applicationName" name="Script application name"/>
+           <attribute value="" type="string" id="className" name="Script class name"/>
+          </component>
+          <component temporary="false" typeId="26" type="Name" sync="true">
+           <attribute value="AvatarApp" type="string" id="name" name="Name"/>
+           <attribute value="" type="string" id="description" name="Description"/>
+           <attribute value="" type="string" id="group" name="Group"/>
+          </component>
+         </entity>
+        </scene>
+
+## Retrieve an Entity by Name [GET /entities?name={entity_name}]
+
+Using the query syntax, search for an entity by name. The entity's data and the components it contains + their attributes are returned as XML.
+
++ Response 200 (application/xml)
+
+        <entity temporary="false" id="1" sync="true">
+         <component temporary="false" typeId="5" type="Script" sync="true">
+          <attribute value="avatarmenu.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+          <attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+          <attribute value="0" type="int" id="runMode" name="Run mode"/>
+          <attribute value="" type="string" id="applicationName" name="Script application name"/>
+          <attribute value="" type="string" id="className" name="Script class name"/>
+         </component>
+         <component temporary="false" typeId="26" type="Name" sync="true">
+          <attribute value="AvatarMenu" type="string" id="name" name="Name"/>
+          <attribute value="" type="string" id="description" name="Description"/>
+          <attribute value="" type="string" id="group" name="Group"/>
+         </component>
+        </entity>
+
++ Response 404
+
+## Create a New Entity [POST]
+
+The POST request body may contain XML-serialized data to be put inside the entity (components & their attribute values). If omitted, an empty entity is created. A free ID is assigned to the new entity and its data is returned as XML.
+
++ Response 200 (application/xml)
+
+        <entity temporary="false" id="1" sync="true"/>
+
++ Response 400
+
+## Entity [/entities/{entity_id}]
+
+Represents a single entity in the scene. In addition to the components it contains, each entity has an integer ID and a temporary flag, which means whether or not to persist it when the scene is saved on the server.
+
+### Retrieve Data of an Entity [GET]
+
+The entity's data and the components it contains + their attributes are returned as XML.
+
++ Response 200 (application/xml)
+
+        <entity temporary="false" id="1" sync="true">
+         <component temporary="false" typeId="5" type="Script" sync="true">
+          <attribute value="avatarmenu.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+          <attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+          <attribute value="0" type="int" id="runMode" name="Run mode"/>
+          <attribute value="" type="string" id="applicationName" name="Script application name"/>
+          <attribute value="" type="string" id="className" name="Script class name"/>
+         </component>
+         <component temporary="false" typeId="26" type="Name" sync="true">
+          <attribute value="AvatarMenu" type="string" id="name" name="Name"/>
+          <attribute value="" type="string" id="description" name="Description"/>
+          <attribute value="" type="string" id="group" name="Group"/>
+         </component>
+        </entity>
+
++ Response 404
+
+### Create a New Entity with a Specified ID [POST]
+
+The POST request body may contain XML data to be put inside the entity (components & their attribute values). If omitted, an empty entity is created. If there is an ID conflict with an existing entity, another free ID is chosen. The entity's data is returned as XML.
+
++ Response 200 (application/xml)
+
+        <entity temporary="false" id="10" sync="true"/>
+
++ Response 400
+
+### Set Entity's Component Data [PUT]
+
+The entity with the specified ID must already exist in the scene. Its new components and their attribute data are to be contained in the PUT request body as XML. All existing components in the entity will be deleted and replaced with those contained in the request body. The entity's new data is returned as XML.
+
++ Response 200 (application/xml)
+
+        <entity temporary="false" id="1" sync="true">
+         <component temporary="false" typeId="20" type="Placeable" sync="true">
+          <attribute value="0.000000,50.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="transform" name="Transform"/>
+          <attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
+          <attribute value="true" type="bool" id="visible" name="Visible"/>
+          <attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
+          <attribute value="" type="EntityReference" id="parentRef" name="Parent entity ref"/>
+          <attribute value="" type="string" id="parentBone" name="Parent bone name"/>
+         </component>
+         <component temporary="false" typeId="26" type="Name" sync="true">
+          <attribute value="NewName" type="string" id="name" name="Name"/>
+          <attribute value="" type="string" id="description" name="Description"/>
+          <attribute value="" type="string" id="group" name="Group"/>
+         </component>
+        </entity>
+
++ Response 400
+
+### Delete an Entity [DELETE]
+
++ Response 200
+
++ Response 400
+
+## Component [/entities/{entity_id}/{component_type}]
+
+Components within an entity are identified by their type name, for example Placeable, Name or Script. They may also be temporary, which is indicated by a boolean.
+
+### Retrieve Data of a Component [GET]
+
+Returns the component's data as XML.
+
++ Response 200 (application/xml)
+
+        <component temporary="false" typeId="5" type="Script" sync="true">
+         <attribute value="avatarmenu.js" type="AssetReferenceList" id="scriptRef" name="Script ref"/>
+         <attribute value="true" type="bool" id="runOnLoad" name="Run on load"/>
+         <attribute value="0" type="int" id="runMode" name="Run mode"/>
+         <attribute value="" type="string" id="applicationName" name="Script application name"/>
+         <attribute value="" type="string" id="className" name="Script class name"/>
+        </component>
+
++ Response 404
+
+### Create a New Component Into an Entity [POST]
+
+The POST request body may contain initial attribute values as XML to be put into the created component. If omitted, the attributes will have default values. The component's new data is returned as XML.
+
++ Response 200 (application/xml)
+
+        <component temporary="false" typeId="20" type="Placeable" sync="true">
+         <attribute value="0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="transform" name="Transform"/>
+         <attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
+         <attribute value="true" type="bool" id="visible" name="Visible"/>
+         <attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
+         <attribute value="" type="EntityReference" id="parentRef" name="Parent entity ref"/>
+         <attribute value="" type="string" id="parentBone" name="Parent bone name"/>
+        </component>
+
++ Response 400
+
+### Set New Attribute Values Into a Component [PUT]
+
+The attribute values are to be contained inside the PUT request body as XML. The component's new data is returned as XML.
+
++ Response 200 (application/xml)
+
+        <component temporary="false" typeId="20" type="Placeable" sync="true">
+         <attribute value="0.000000,50.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="transform" name="Transform"/>
+         <attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
+         <attribute value="true" type="bool" id="visible" name="Visible"/>
+         <attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
+         <attribute value="" type="EntityReference" id="parentRef" name="Parent entity ref"/>
+         <attribute value="" type="string" id="parentBone" name="Parent bone name"/>
+        </component>
+
++ Response 400
+
+## Set New Attribute Value Into a Component [PUT /entities/{entity_id}/{component_type}?{attribute_name}={new_attribute_value}]
+
+Set a single attribute inside a component to a new value using the query syntax. The component's new data is returned as XML.
+
++ Response
+
+        <component temporary="false" typeId="20" type="Placeable" sync="true">
+         <attribute value="0.000000,50.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000" type="Transform" id="transform" name="Transform"/>
+         <attribute value="false" type="bool" id="drawDebug" name="Show bounding box"/>
+         <attribute value="true" type="bool" id="visible" name="Visible"/>
+         <attribute value="1" type="int" id="selectionLayer" name="Selection layer"/>
+         <attribute value="" type="EntityReference" id="parentRef" name="Parent entity ref"/>
+         <attribute value="" type="string" id="parentBone" name="Parent bone name"/>
+        </component>
+    
++ Response 400
+
+### Delete a Component From an Entity [DELETE]
+
++ Response 200
+
++ Response 400
+
+## Attribute [/entities/{entity_id}/{component_type}/{attribute_name}]
+
+Attributes are typed values (for example integer, boolean, 3-dimensional vector) inside the component, identified by their names.
+
+### Retrieve the Value of an Attribute [GET]
+
+The value is returned as text.
+
++ Response 200 (text/plain)
+
+        0.000000,50.000000,0.000000,0.000000,0.000000,0.000000,1.000000,1.000000,1.000000
+
++ Response 404
+
