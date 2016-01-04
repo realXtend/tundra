@@ -303,6 +303,13 @@ public:
     virtual ~SceneSyncState();
 
     /// Dirty entities pending processing
+    /// @todo Some other data structure could be used for the dirty object list instead of the current doubly-linked list,
+    /// for example a min-max heap or other type of priority queue. The min-max heap, for example, would remove the need to
+    /// sort the list manually, but would make insertions and removals slower, so, profiling advantages and disadvantages of
+    /// different data structures would be required when seeking the most suitable data structure for the task. 
+    /// Also, maintaining some kind of priority groups or ranges for objects, instead of every object having its own priority,
+    /// could make sense as the priorities can be virtually the same for objects within the same area and small changes in the
+    /// priority don’t have significant effects on the synchronization rate.
     std::list<EntitySyncState*> dirtyQueue; 
 
     /// Entity sync states
@@ -410,7 +417,7 @@ private:
 
     /// @remark Enables a 'pending' logic in SyncManager, with which a script can throttle the sending of entities to clients.
     StateChangeRequest changeRequest_;
-    bool isServer_;
+    const bool isServer_; // cannot change during SceneSyncState's lifetime
     bool placeholderComponentsSent_;
     u32 userConnectionID_;
 
