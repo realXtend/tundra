@@ -1,0 +1,14 @@
+site_name: Synchronization
+site_url: https://synchronization.readthedocs.org
+repo_url: https://github.com/realxtend/tundra.git
+site_description: Synchronization Documentation
+docs_dir: doc
+site_dir: html
+markdown_extensions: [toc,fenced_code]
+use_directory_urls: false
+theme: readthedocs
+extra_css: ["https://fiware.org/style/fiware_readthedocs.css"]
+pages:
+  - Home: index.md
+  - 'Installation and Administration guide': Installation_and_Administration_guide.md
+  - 'User and Programmers guide': User_and_Programmers_guide.md
