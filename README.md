@@ -1,6 +1,11 @@
 realXtend Tundra
 ================
 
+[![License badge](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Documentation badge](https://readthedocs.org/projects/synchronization/badge/?version=latest)](http://synchronization.readthedocs.org/en/latest)
+[![Docker badge](https://img.shields.io/docker/pulls/loorni/synchronization.svg)](https://hub.docker.com/r/loorni/synchronization/)
+[![Support badge]( https://img.shields.io/badge/support-sof-yellowgreen.svg)](http://stackoverflow.com/questions/tagged/fiware-synchronization)
+
 Tundra is a scriptable 3D internet application development platform. It is aimed primarily for application developers, as a platform for creating networked 3D worlds with customized content.
 
 Tundra is licensed under [Apache 2.0] and based on [Qt] and [Ogre3D].
