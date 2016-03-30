@@ -100,9 +100,9 @@ The Synchronization client code is housed in the WebTundra code base [https://gi
 
 Download latest WebTundra package from [Catalog](http://catalogue.fiware.org/enablers/3dui-webtundra/downloads) and extract the zip file
 
-Startup the Synchronization server `TundraConsole --server --headless --file scenes/Physics/scene.txml`
+Startup the Synchronization server TundraConsole --server --headless --file scenes/Physics/scene.txml
 
-Start `apache2` or `node.js http-server` in folder where you extracted the zip file and open `client.html` in web browser and press connect.
+Start apache2 or node.js http-server in folder where you extracted the zip file and open client.html in web browser and press connect.
 
 #### From source ####
 
@@ -112,17 +112,17 @@ Clone WebTundra from GitHub:
 
 Setup [`node.js`](http://nodejs.org/) and [`grunt`](http://gruntjs.com/) for making build:
 
-1. Install [`node.js`](http://nodejs.org/)
-2. Run `npm install` on the repo root folder to fetch dependencies.
-3. Run `npm install -g grunt-cli` to install the grunt executable as a global tool.
+1. Install node.js
+2. Run npm install on the repo root folder to fetch dependencies.
+3. Run npm install -g grunt-cli to install the grunt executable as a global tool.
 
-Run [`grunt`](http://gruntjs.com/) in WebTundra root folder:
+Run grunt in WebTundra root folder:
 
 <pre>grunt build</pre>
 
-Startup the Synchronization server `TundraConsole --server --headless --file scenes/Physics/scene.txml`
+Startup the Synchronization server TundraConsole --server --headless --file scenes/Physics/scene.txml
 
-Start `apache2` or `node.js http-server` in folder where you extracted the zip file and open `client.html` in web browser and press connect.
+Start apache2 or node.js http-server in folder where you extracted the zip file and open client.html in web browser and press connect.
 
 ### SceneAPI REST service
 
