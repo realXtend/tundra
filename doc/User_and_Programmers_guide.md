@@ -94,25 +94,30 @@ The programmer's guide describes the JavaScript client library API, the SceneAPI
 
 ### JavaScript client library
 
-The Synchronization client code is housed in the WebTundra code base [https://github.com/realxtend/webtundra](https://github.com/realxtend/webtundra). See its documentation for full details. Some simple example is described here:
+The Synchronization client code is housed in the WebTundra code base [https://github.com/realxtend/webtundra](https://github.com/realxtend/webtundra). See its documentation for full details. Some simple example how to run WebTundra is described here:
 
-Clone WebTundra from GitHub: `git clone https://github.com/realXtend/WebTundra.git`
+#### From source ####
+
+Clone WebTundra from GitHub:
+
+<pre>git clone https://github.com/realXtend/WebTundra.git</pre>
 
 Install [`node.js`](http://nodejs.org/) and [`grunt`](http://gruntjs.com/) for making build:
-
+<pre>
 1. Install [node.js](http://nodejs.org/)
 2. Run `npm install` on the repo root folder to fetch dependencies.
 3. Run `npm install -g grunt-cli` to install the grunt executable as a global tool.
+</pre>
 
 Run [`grunt`](http://gruntjs.com/) in WebTundra root folder:
 
 <pre>grunt build</pre>
 
-Run the server with `TundraConsole --server --headless --file scenes/Physics/scene.txml`
+Startup the Synchronization server:
 
-Connecting to a server:
+<pre>TundraConsole --server --headless --file scenes/Physics/scene.txml</pre>
 
-Start apache2 or node.js http-server in `WebTundra/build` folder and open client.html and press connect.
+Start apache2 or node.js http-server in `WebTundra/build` folder and open client.html in browser and press connect.
 
 ### SceneAPI REST service
 
