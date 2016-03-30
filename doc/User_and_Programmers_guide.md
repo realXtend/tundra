@@ -110,12 +110,11 @@ Clone WebTundra from GitHub:
 
 <pre>git clone https://github.com/realXtend/WebTundra.git</pre>
 
-Install [`node.js`](http://nodejs.org/) and [`grunt`](http://gruntjs.com/) for making build:
-<pre>
-1. Install [node.js](http://nodejs.org/)
+Setup [`node.js`](http://nodejs.org/) and [`grunt`](http://gruntjs.com/) for making build:
+
+1. Install [`node.js`](http://nodejs.org/)
 2. Run `npm install` on the repo root folder to fetch dependencies.
 3. Run `npm install -g grunt-cli` to install the grunt executable as a global tool.
-</pre>
 
 Run [`grunt`](http://gruntjs.com/) in WebTundra root folder:
 
