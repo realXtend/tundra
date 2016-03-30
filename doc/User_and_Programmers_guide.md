@@ -73,8 +73,7 @@ Without going into actual programming, the scene data synchronization functional
 Start up the Tundra server with rendering enabled so that you can see the scene. Here we choose the Physics2 example scene which consists of a large number of physics objects and a ball suspended above them. The server mode is enabled so that clients can connect. Additionally the tundra-addons.json configuration file is loaded, which allows the HttpServerModule (implements the SceneAPI REST service) to be loaded. The SceneAPI REST service is bound to port 2346.
 
 <pre>
-Tundra --config tundra.json --config tundra-addons.json --file scenes/Physics2/scene.txml 
- --server --httpport 2346
+Tundra --config tundra.json --config tundra-addons.json --file scenes/Physics2/scene.txml --server --httpport 2346
 </pre>
 
 Note: if running the server from prebuilt binaries, the --config command line options can be omitted, as the tundra-addons.json configuration file is already being run by default.
@@ -95,49 +94,25 @@ The programmer's guide describes the JavaScript client library API, the SceneAPI
 
 ### JavaScript client library
 
-The Synchronization client code is housed in the WebTundra code base [https://github.com/realxtend/webtundra](https://github.com/realxtend/webtundra), dev2 branch. See its documentation for full details. Some simple examples are described here:
+The Synchronization client code is housed in the WebTundra code base [https://github.com/realxtend/webtundra](https://github.com/realxtend/webtundra). See its documentation for full details. Some simple example is described here:
 
-Initializing the client framework:
+Clone WebTundra from GitHub: `git clone https://github.com/realXtend/WebTundra.git`
 
-(using a packaged build)
+Install [`node.js`](http://nodejs.org/) and [`grunt`](http://gruntjs.com/) for making build:
 
-<pre>
-var client = tundra.createWebTundraClient();
-</pre>
+1. Install [node.js](http://nodejs.org/)
+2. Run `npm install` on the repo root folder to fetch dependencies.
+3. Run `npm install -g grunt-cli` to install the grunt executable as a global tool.
 
-(using development sources)
+Run [`grunt`](http://gruntjs.com/) in WebTundra root folder:
 
-<pre>
-var client = new TundraClient();
-</pre>
+<pre>grunt build</pre>
 
-After creation, the client is also available as TundraSDK.framework.client.
+Run the server with `TundraConsole --server --headless --file scenes/Physics/scene.txml`
 
 Connecting to a server:
 
-<pre>
-TundraSDK.framework.client.connect(address, loginProperties);
-</pre>
-
-where address is the WebSocket protocol specifier + the server address including the port, for example "ws://127.0.0.1:2345" and loginProperties is a JavaScript object containing data to be sent during login, for example
-
-<pre>
-{
-    username : "MyUserName"
-}
-</pre>
-
-Accessing the scene's entities: (a JavaScript array)
-
-<pre>
-var entities = TundraSDK.framework.scene.entities;
-</pre>
-
-Getting a scene entity by id:
-
-<pre>
-var entity = TundraSDK.framework.scene.entityById(id);
-</pre>
+Start apache2 or node.js http-server in `WebTundra/build` folder and open client.html and press connect.
 
 ### SceneAPI REST service
 
