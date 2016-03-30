@@ -96,6 +96,16 @@ The programmer's guide describes the JavaScript client library API, the SceneAPI
 
 The Synchronization client code is housed in the WebTundra code base [https://github.com/realxtend/webtundra](https://github.com/realxtend/webtundra). See its documentation for full details. Some simple example how to run WebTundra is described here:
 
+#### From binary ####
+
+Download latest WebTundra package from [WebTundra Catalog](http://catalogue.fiware.org/enablers/3dui-webtundra/downloads) and extract the zip file
+
+Startup the Synchronization server:
+
+<pre>TundraConsole --server --headless --file scenes/Physics/scene.txml</pre>
+
+Start `apache2` or `node.js http-server` in where you extracted the zip file and open `client.html` in web browser and press connect.
+
 #### From source ####
 
 Clone WebTundra from GitHub:
@@ -117,7 +127,7 @@ Startup the Synchronization server:
 
 <pre>TundraConsole --server --headless --file scenes/Physics/scene.txml</pre>
 
-Start apache2 or node.js http-server in `WebTundra/build` folder and open client.html in browser and press connect.
+Start `apache2` or `node.js http-server` in `WebTundra/build` folder and open `client.html` in web browser and press connect.
 
 ### SceneAPI REST service
 
